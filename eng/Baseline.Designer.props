@@ -2,71 +2,71 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <ExtensionsBaselineVersion>3.1.30</ExtensionsBaselineVersion>
+    <ExtensionsBaselineVersion>3.1.31</ExtensionsBaselineVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.Extensions.Caching.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Abstractions' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Abstractions' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Caching.Memory-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Memory' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Memory' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.Memory' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Caching.SqlServer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.SqlServer' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.SqlServer' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
     <BaselinePackageReference Include="Microsoft.Data.SqlClient" Version="[1.0.19239.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Caching.StackExchangeRedis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Caching.StackExchangeRedis' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
     <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.593, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Abstractions' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Abstractions' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.AzureKeyVault-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.AzureKeyVault' ">
@@ -80,155 +80,155 @@
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.Binder-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Binder' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Binder' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Binder' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.CommandLine-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.CommandLine' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.CommandLine' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.CommandLine' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.EnvironmentVariables-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.EnvironmentVariables' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.EnvironmentVariables' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.EnvironmentVariables' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.FileExtensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.FileExtensions' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.FileExtensions' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.FileExtensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.Ini-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Ini' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Ini' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Ini' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.Json-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Json' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Json' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Json' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.7.2, )" />
     <BaselinePackageReference Include="System.Text.Json" Version="[4.7.2, )" />
     <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.KeyPerFile-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.NewtonsoftJson-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.NewtonsoftJson' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.NewtonsoftJson' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.UserSecrets-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.UserSecrets' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.UserSecrets' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.UserSecrets' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.Xml-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Xml' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Xml' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.Security.Cryptography.X509Certificates" Version="[4.3.2, )" />
     <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[4.7.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Xml' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.Security.Cryptography.X509Certificates" Version="[4.3.2, )" />
     <BaselinePackageReference Include="System.Security.Cryptography.Xml" Version="[4.7.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.DependencyInjection-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
     <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.1.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
     <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.1.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.DependencyInjection.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection.Abstractions' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.Extensions.DependencyInjection.Specification.Tests-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection.Specification.Tests' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DependencyInjection.Specification.Tests' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
     <BaselinePackageReference Include="xunit.assert" Version="[2.4.1, )" />
     <BaselinePackageReference Include="xunit.extensibility.core" Version="[2.4.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.DiagnosticAdapter-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.DiagnosticAdapter' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="System.Diagnostics.DiagnosticSource" Version="[4.7.1, )" />
@@ -241,359 +241,359 @@
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.Extensions.FileProviders.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Abstractions' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Abstractions' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.FileProviders.Composite-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Composite' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Composite' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Composite' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.FileProviders.Embedded-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Embedded' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Embedded' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Embedded' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.FileProviders.Physical-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Physical' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Physical' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileProviders.Physical' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.FileSystemGlobbing-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileSystemGlobbing' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.FileSystemGlobbing' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.Extensions.Hosting-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Console" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Debug" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Console" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Debug" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Console" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Debug" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Console" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Debug" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
     <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.1.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Console" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Debug" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Console" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Debug" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventSource" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Hosting.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.Abstractions' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.Abstractions' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.31, )" />
     <BaselinePackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[1.1.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Hosting.Systemd-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.Systemd' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.Systemd' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Hosting.WindowsServices-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.WindowsServices' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.WindowsServices' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.ServiceProcess.ServiceController" Version="[4.7.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Hosting.WindowsServices' AND '$(TargetFramework)' == 'netstandard2.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.ServiceProcess.ServiceController" Version="[4.7.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Http-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Http.Polly-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http.Polly' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Http.Polly' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Http" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Http" Version="[3.1.31, )" />
     <BaselinePackageReference Include="Polly" Version="[7.1.0, )" />
     <BaselinePackageReference Include="Polly.Extensions.Http" Version="[3.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Localization-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Localization.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization.Abstractions' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization.Abstractions' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Localization.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.Extensions.Logging-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Logging.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Abstractions' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.Extensions.Logging.AzureAppServices-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.AzureAppServices' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Json" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.ValueTuple" Version="[4.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Logging.Configuration-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Configuration' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Configuration' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Configuration' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Logging.Console-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Console' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Console' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Console' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Logging.Debug-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Debug' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Debug' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Debug' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Logging.EventLog-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventLog' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventLog' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.Diagnostics.EventLog" Version="[4.7.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventLog' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.Diagnostics.EventLog" Version="[4.7.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventLog' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.Diagnostics.EventLog" Version="[4.7.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Logging.EventSource-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventSource' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventSource' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventSource' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.7.2, )" />
     <BaselinePackageReference Include="System.Text.Json" Version="[4.7.2, )" />
     <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.4, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Logging.TraceSource-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.TraceSource' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.TraceSource' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.TraceSource' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.ObjectPool-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ObjectPool' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.ObjectPool' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.Extensions.Options-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[4.7.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Options.ConfigurationExtensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options.ConfigurationExtensions' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options.ConfigurationExtensions' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options.ConfigurationExtensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Options.DataAnnotations-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options.DataAnnotations' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options.DataAnnotations' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Options.DataAnnotations' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[4.7.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Primitives-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Primitives' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Primitives' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Primitives' AND '$(TargetFramework)' == 'netstandard2.0' ">
@@ -602,20 +602,20 @@
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.WebEncoders-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.WebEncoders' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.30, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.30, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.31, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.31, )" />
     <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.7.2, )" />
   </ItemGroup>
   <!-- Package: Microsoft.JSInterop-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.JSInterop' ">
-    <BaselinePackageVersion>3.1.30</BaselinePackageVersion>
+    <BaselinePackageVersion>3.1.31</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.JSInterop' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.JSInterop' AND '$(TargetFramework)' == 'netstandard2.0' ">

@@ -10,7 +10,7 @@
     <MinorVersion>1</MinorVersion>
     <PatchVersion>32</PatchVersion>
     <!-- This property should be 'false' between branding & code-merging, 'true' the rest of the time -->
-    <ValidateBaseline>false</ValidateBaseline>
+    <ValidateBaseline>true</ValidateBaseline>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
     <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
     <AssemblyVersion Condition="'$(IsReferenceAssemblyProject)' != 'true'">$(VersionPrefix).0</AssemblyVersion>
