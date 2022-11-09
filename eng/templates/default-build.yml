@@ -44,10 +44,6 @@ jobs:
   pool:
     ${{ if ne(parameters.poolName, '') }}:
       name: ${{ parameters.poolName }}
-    ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'macOS')) }}:
-      vmImage: macOS-10.15
-    ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Linux')) }}:
-      vmImage: ubuntu-18.04
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Windows')) }}:
       vmImage: windows-2019
       ${{ if ne(variables['System.TeamProject'], 'public') }}:
@@ -72,6 +68,16 @@ jobs:
         _SignType: test
       ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
         _SignType: real
+        # Enable CodeQL3000 auto-injected tasks. These tasks will no-op if two builds run w/in the same week.
+        Codeql.Cadence: 168
+        # Enable CodeQL3000 unconditionally so it may be run on any branch.
+        Codeql.Enabled: true
+        # Ignore infrastructure code.
+        Codeql.SourceRoot: src
+        # CodeQL3000 needs this plumbed along as a variable to enable TSA.
+        Codeql.TSAEnabled: true
+        # Default expects tsaoptions.json under SourceRoot.
+        Codeql.TSAOptionsPath: '$(Build.SourcesDirectory)/.config/tsaoptions.json'
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
       PB_PackageVersionPropsUrl: ''
       PB_AssetRootUrl: ''
@@ -94,8 +100,16 @@ jobs:
         signType: $(_SignType)
         zipSources: false
         feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
+    - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
+      # CodeQL3000 tasks can be auto-injected but only in builds of a repo's default branch. Be explicit here.
+      - task: CodeQL3000Init@0
+        displayName: CodeQL Initialize
+      - script: "echo ##vso[build.addbuildtag]CodeQL3000"
+        displayName: 'Set CI CodeQL3000 tag'
+        condition: ne(variables.CODEQL_DIST,'')
+
   - ${{ if eq(parameters.agentOs, 'Windows') }}:
-    - script: .\build.cmd -ci /p:SignType=$(_SignType) /p:Configuration=$(BuildConfiguration) $(BuildScriptArgs)
+    - script: .\build.cmd -ci /p:SignType=$(_SignType) /p:Configuration=$(BuildConfiguration) /bl:build.binlog $(BuildScriptArgs)
       env:
         PB_PackageVersionPropsUrl: $(PB_PackageVersionPropsUrl)
         PB_AssetRootUrl: $(PB_AssetRootUrl)
@@ -104,19 +118,18 @@ jobs:
     - powershell: eng\scripts\KillProcesses.ps1
       displayName: Kill processes
       condition: always()
-  - ${{ if ne(parameters.agentOs, 'Windows') }}:
-    - script: ./build.sh -ci -p:Configuration=$(BuildConfiguration) $(BuildScriptArgs)
-      env:
-        PB_PackageVersionPropsUrl: $(PB_PackageVersionPropsUrl)
-        PB_AssetRootUrl: $(PB_AssetRootUrl)
-        PB_RestoreSource: $(PB_RestoreSource)
-      displayName: Run build.sh
-    - script: eng/scripts/KillProcesses.sh
-      displayName: Kill processes
+
+    - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      - task: CodeQL3000Finalize@0
+        displayName: CodeQL Finalize
+    - powershell: Move-Item build.binlog artifacts/logs/
+      displayName: Move binary log into artifacts/logs/
       condition: always()
+      continueOnError: true
   - task: PublishTestResults@2
     displayName: Publish test results
     condition: always()
+    continueOnError: true
     inputs:
       testRunTitle: $(AgentOsName)-$(BuildConfiguration)
       testRunner: vstest
@@ -125,9 +138,13 @@ jobs:
   - ${{ if eq(parameters.artifacts.publish, 'true') }}:
     - task: PublishBuildArtifacts@1
       displayName: Upload artifacts
-      condition: eq(variables['system.pullrequest.isfork'], false)
+      condition: always()
+      continueOnError: true
       inputs:
-        pathtoPublish: ${{ parameters.artifacts.path }}
+        ${{ if eq(variables['system.pullrequest.isfork'], false) }}:
+          pathtoPublish: ${{ parameters.artifacts.path }}
+        ${{ else }}:
+          pathtoPublish: ${{ format('{0}logs/', parameters.artifacts.path) }}
         ${{ if eq(parameters.artifacts.name, '') }}:
           artifactName: artifacts-$(AgentOsName)-$(BuildConfiguration)
         ${{ if ne(parameters.artifacts.name, '') }}:
@@ -138,6 +155,7 @@ jobs:
     - task: MicroBuildCleanup@1
       displayName: Cleanup MicroBuild tasks
       condition: always()
+      continueOnError: true
   - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
       - task: ComponentGovernanceComponentDetection@0
         continueOnError: true
