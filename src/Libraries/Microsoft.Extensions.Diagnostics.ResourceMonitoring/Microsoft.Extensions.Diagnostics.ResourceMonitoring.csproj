@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.ResourceMonitoring</RootNamespace>
+    <Description>Measures processor and memory usage.</Description>
+    <Workstream>Fundamentals</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <InjectSharedDataValidation>true</InjectSharedDataValidation>
+    <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>90</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">
+    <Compile Remove="Linux\*.cs" />
+    <Compile Remove="Linux\*\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
+    <ProjectReference Include="..\..\ToBeRemoved\Options.ValidateOnStart\Options.ValidateOnStart.csproj" />
+    <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.AutoActivation\DependencyInjection.AutoActivation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Condition="'$(TargetFramework)' != 'net462'" />
+    <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+</Project>

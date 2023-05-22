@@ -1,0 +1,33 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.EnumStrings</RootNamespace>
+    <Description>Code generator to support Microsoft.Extensions.EnumStrings.</Description>
+    <Workstream>Fundamentals</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AnalyzerLanguage>cs</AnalyzerLanguage>
+    <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\**\*.cs" />
+    <Compile Include="..\..\Shared\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Common\Resources.resx" Link="Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" CustomToolNamespace="Microsoft.Gen.EnumStrings" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="Microsoft.Gen.EnumStrings.Roslyn$(AnalyzerRoslynVersion).Unit.Tests" />
+    <InternalsVisibleToTest Include="Microsoft.Gen.EnumStrings.Roslyn$(AnalyzerRoslynVersion).Generated.Tests" />
+  </ItemGroup>
+</Project>

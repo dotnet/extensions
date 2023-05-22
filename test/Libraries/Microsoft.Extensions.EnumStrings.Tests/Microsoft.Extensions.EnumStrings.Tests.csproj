@@ -1,0 +1,10 @@
+  <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.EnumStrings.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.EnumStrings.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.EnumStrings\Microsoft.Extensions.EnumStrings.csproj" ProjectUnderTest="true" />
+  </ItemGroup>
+</Project>

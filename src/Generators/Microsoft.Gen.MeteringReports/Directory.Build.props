@@ -1,0 +1,42 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.MeteringReports</RootNamespace>
+    <Description>Generates reports about metric usage in the project being compiled.</Description>
+    <Workstream>Telemetry</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AnalyzerLanguage>cs</AnalyzerLanguage>
+    <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\**\*.cs" />
+    <Compile Include="..\..\Shared\DiagDescriptorsBase.cs" LinkBase="Shared" />
+    <Compile Include="..\..\Shared\StringBuilderPool.cs" LinkBase="Shared" />
+    <Compile Include="..\..\Shared\ClassDeclarationSyntaxReceiver.cs" LinkBase="Shared" />
+    <Compile Include="..\..\Shared\GeneratorUtilities.cs" LinkBase="Shared" />
+    <Compile Include="..\..\Shared\ParserUtilities.cs" LinkBase="Shared" />
+    <Compile Include="..\..\Microsoft.Gen.Metering\Common\Model\*.cs" LinkBase="Microsoft.Gen.Metering" />
+    <Compile Include="..\..\Microsoft.Gen.Metering\Common\Parser.cs" LinkBase="Microsoft.Gen.Metering" />
+    <Compile Include="..\..\Microsoft.Gen.Metering\Common\SymbolLoader.cs" LinkBase="Microsoft.Gen.Metering" />
+    <Compile Include="..\..\Microsoft.Gen.Metering\Common\SymbolHolder.cs" LinkBase="Microsoft.Gen.Metering" />
+    <Compile Include="..\..\Microsoft.Gen.Metering\Common\DiagDescriptors.cs" LinkBase="Microsoft.Gen.Metering" />
+    <Compile Include="..\..\Microsoft.Gen.Metering\Common\Resources.Designer.cs" LinkBase="Microsoft.Gen.Metering" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\Microsoft.Gen.Metering\Common\Resources.resx" Link="Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" CustomToolNamespace="Microsoft.Gen.Metering" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="Microsoft.Gen.MeteringReports.Roslyn$(AnalyzerRoslynVersion).Unit.Tests" />
+  </ItemGroup>
+</Project>

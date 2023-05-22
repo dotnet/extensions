@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup Condition="'$(ComplianceReportOutputPath)' == ''">
+    <ComplianceReportOutputPath>$(OutputPath)</ComplianceReportOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MeteringReportOutputPath)' == ''">
+    <MeteringReportOutputPath>$(OutputPath)</MeteringReportOutputPath>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)/MultiTargetRoslynComponent.targets" />
+</Project>

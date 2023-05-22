@@ -1,0 +1,16 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <Target Name="CopyGoldenFiles" AfterTargets="Build">
+    <PropertyGroup>
+      <_RestoreOutputPath>$(RestoreOutputPath.Replace('Unit', 'Generated'))</_RestoreOutputPath>
+      <_GeneratedFilesDir>$([MSBuild]::NormalizePath('$(_RestoreOutputPath)', '$(Configuration)', '$(TargetFramework)', 'generated'))</_GeneratedFilesDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <MySourceFiles Include="$(_GeneratedFilesDir)\**\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(MySourceFiles)" DestinationFiles="$(TargetDir)\GoldenFiles\%(RecursiveDir)%(Filename)%(Extension)" />
+  </Target>
+</Project>

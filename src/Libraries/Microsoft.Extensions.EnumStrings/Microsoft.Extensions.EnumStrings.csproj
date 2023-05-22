@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.EnumStrings</RootNamespace>
+    <Description>Abstractions to support the enum-to-string code generator.</Description>
+    <Workstream>Fundamentals</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BuildAnalyzerReferences>true</BuildAnalyzerReferences>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>100</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.EnumStrings\Roslyn3.8\Microsoft.Gen.EnumStrings.Roslyn3.8.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.EnumStrings\Roslyn4.0\Microsoft.Gen.EnumStrings.Roslyn4.0.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="buildTransitive\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive\" />
+  </ItemGroup>
+</Project>
+

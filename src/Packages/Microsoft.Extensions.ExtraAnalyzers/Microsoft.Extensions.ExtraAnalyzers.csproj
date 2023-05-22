@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Code analyzers and fixers</Description>
+    <Workstream>Fundamentals</Workstream>
+    <Category>Static Analysis</Category>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>n/a</GenerateDocumentationFile>
+    <BuildAnalyzerReferences>true</BuildAnalyzerReferences>
+    <EnableDefaultItems>true</EnableDefaultItems>
+    <DisableImplicitAssemblyReferences>false</DisableImplicitAssemblyReferences>
+    <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AnalyzerReference Include="..\..\Analyzers\Microsoft.Extensions.ExtraAnalyzers\Microsoft.Extensions.ExtraAnalyzers.Roslyn3.8\Microsoft.Extensions.ExtraAnalyzers.Roslyn3.8.csproj" />
+    <AnalyzerReference Include="..\..\Analyzers\Microsoft.Extensions.ExtraAnalyzers\Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0\Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="buildTransitive\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive" />
+  </ItemGroup>
+</Project>

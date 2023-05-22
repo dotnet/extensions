@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageVersion Include="Azure.Core" Version="1.25.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.7.0" />
+    <PackageVersion Include="Azure.Security.KeyVault.Certificates" Version="4.4.0" />
+    <PackageVersion Include="Azure.Security.KeyVault.Keys" Version="4.4.0" />
+    <PackageVersion Include="Azure.Security.KeyVault.Secrets" Version="4.4.0" />
+    <PackageVersion Include="Azure.Storage.Queues" Version="12.12.0" />
+    <PackageVersion Include="Google.Protobuf" Version="3.18.3" />
+    <PackageVersion Include="Grpc.AspNetCore" Version="2.41.0" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.41.0" />
+    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.28.0-preview"/>
+    <PackageVersion Include="Microsoft.Azure.KeyVault.AzureServiceDeploy" Version="3.0.0" />
+    <PackageVersion Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.0.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.0.1" />
+    <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
+    <PackageVersion Include="Microsoft.Net.Http.Headers" Version="2.2.8" />
+    <PackageVersion Include="Microsoft.ServiceFabric.Services" Version="4.2.434" />
+    <PackageVersion Include="Microsoft.ServiceFabric" Version="[7.2.434, )" />
+    <PackageVersion Include="Microsoft.WindowsAzure.ServiceRuntime" Version="3.0.1382.30" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageVersion Include="OpenTelemetry.Api" Version="1.4.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Geneva" Version="1.4.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.4.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc9.14" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9.14" />
+    <PackageVersion Include="OpenTelemetry" Version="1.4.0" />
+    <PackageVersion Include="Polly.Contrib.Simmy" Version="0.3.0" />
+    <PackageVersion Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
+    <PackageVersion Include="Polly" Version="7.2.3" />
+    <PackageVersion Include="protobuf-net" Version="3.0.101" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageVersion Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)\General-net462.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\General-netcoreapp3.1.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\General-net6.0.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\General-latest.props" />
+</Project>

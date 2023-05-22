@@ -1,0 +1,33 @@
+<Project>
+  <!-- Code analysis stuff -->
+  <PropertyGroup>
+    <RunAnalyzers>false</RunAnalyzers>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(SkipAnalyzers)' != 'true'">
+    <RunAnalyzers>true</RunAnalyzers>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <SkipGlobalAnalyzerConfigForPackage>true</SkipGlobalAnalyzerConfigForPackage>
+  </PropertyGroup>
+
+  <!-- The static analyzers we use  -->
+  <ItemGroup Condition="'$(SkipAnalyzers)' != 'true'">
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="SonarAnalyzer.CSharp" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <PackageReference Include="StyleCop.Analyzers.Unstable" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <AdditionalFiles Include="$(RepositoryEngineeringDir)\Stylecop.json" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SkipAnalyzers)' != 'true'">
+    <!-- We can't use $(RepoRoot) here as slngen tool is failing to resolve it... -->
+    <ProjectReference Condition="'$(SkipExtraAnalyzers)' != 'true'" Include="$(MSBuildThisFileDirectory)\..\..\src\Analyzers\Microsoft.Extensions.ExtraAnalyzers\Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0\Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <ProjectReference Condition="'$(SkipLocalAnalyzers)' != 'true'" Include="$(MSBuildThisFileDirectory)\..\..\src\Analyzers\Microsoft.Extensions.LocalAnalyzers\Microsoft.Extensions.LocalAnalyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+  </ItemGroup>
+
+</Project>

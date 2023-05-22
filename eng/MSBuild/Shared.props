@@ -1,0 +1,42 @@
+<Project>
+  <ItemGroup Condition="'$(InjectSharedThrow)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\Throw\*.cs" LinkBase="Shared\Throw" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectSharedEmptyCollections)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\EmptyCollections\*.cs" LinkBase="Shared\EmptyCollections" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectSharedRentedSpan)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\RentedSpan\*.cs" LinkBase="Shared\RentedSpan" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectSharedNumericExtensions)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\NumericExtensions\*.cs" LinkBase="Shared\NumericExtensions" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectSharedTextFormatting)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\Text.Formatting\*.cs" LinkBase="Shared\Text.Formatting" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectSharedDebugger)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\Debugger\*.cs" LinkBase="Shared\Debugger" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectSharedMemoization)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\Memoization\*.cs" LinkBase="Shared\Memoization" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectSharedDataValidation)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\Data.Validation\*.cs" LinkBase="Shared\Data.Validation" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectSharedPools)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\Pools\*.cs" LinkBase="Shared\Pools" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectSharedBufferWriterPool)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\BufferWriterPool\*.cs" LinkBase="Shared\Pools" />
+  </ItemGroup>
+</Project>

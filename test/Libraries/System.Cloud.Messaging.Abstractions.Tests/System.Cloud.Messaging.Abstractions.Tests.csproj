@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>System.Cloud.Messaging.Abstractions</RootNamespace>
+    <Description>Unit tests for System.Cloud.Messaging.Abstractions.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\System.Cloud.Messaging.Abstractions\System.Cloud.Messaging.Abstractions.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Testing\Microsoft.Extensions.Telemetry.Testing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Threading.Tasks.Extensions" />
+  </ItemGroup>
+</Project>

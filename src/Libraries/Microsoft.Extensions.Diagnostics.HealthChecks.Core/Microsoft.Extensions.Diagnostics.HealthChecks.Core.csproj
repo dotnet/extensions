@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</RootNamespace>
+    <Description>Health check implementations.</Description>
+    <Workstream>Resilience</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <UseMeteringGenerator>true</UseMeteringGenerator>
+    <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
+    <InjectSharedTextFormatting>true</InjectSharedTextFormatting>
+    <InjectSharedPools>true</InjectSharedPools>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>100</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.EnumStrings\Microsoft.Extensions.EnumStrings.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+</Project>

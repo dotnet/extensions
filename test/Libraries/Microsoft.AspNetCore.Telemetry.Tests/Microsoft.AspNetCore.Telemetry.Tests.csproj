@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.AspNetCore.Telemetry.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.AspNetCore.Telemetry.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.AspNetCore.Telemetry\Microsoft.AspNetCore.Telemetry.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Testing\Microsoft.Extensions.Telemetry.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Testing\Microsoft.Extensions.Compliance.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Redaction\Microsoft.Extensions.Compliance.Redaction.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions.Tests\Microsoft.Extensions.Telemetry.Abstractions.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
+    <PackageReference Include="System.Net.Http" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="Microsoft.AspNetCore.TestHost"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" />
+  </ItemGroup>
+</Project>

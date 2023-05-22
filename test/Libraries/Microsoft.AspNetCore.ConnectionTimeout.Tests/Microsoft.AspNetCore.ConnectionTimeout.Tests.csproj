@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.AspNetCore.Connections.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.AspNetCore.ConnectionTimeout.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.AspNetCore.ConnectionTimeout\Microsoft.AspNetCore.ConnectionTimeout.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.AspNetCore.Testing\Microsoft.AspNetCore.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.TimeProvider.Testing\Microsoft.Extensions.TimeProvider.Testing.csproj" />
+  </ItemGroup>
+</Project>

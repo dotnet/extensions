@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.Logging.Bench</RootNamespace>
+    <Description>Benchmarks for Gen.Logging.</Description>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <InjectSharedPools>true</InjectSharedPools>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj " />
+  </ItemGroup>
+</Project>

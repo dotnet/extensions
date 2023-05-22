@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup Condition="'$(GenerateMetricDefinitionReport)' == ''">
+    <GenerateMetricDefinitionReport>false</GenerateMetricDefinitionReport>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(GenerateMetricDefinitionReport)' == 'true'">
+    <CompilerVisibleProperty Include="GenerateMetricDefinitionReport" />
+    <CompilerVisibleProperty Include="OutputPath" />
+  </ItemGroup>
+</Project>

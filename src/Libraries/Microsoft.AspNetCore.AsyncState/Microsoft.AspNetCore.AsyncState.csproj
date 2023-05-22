@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.AspNetCore.AsyncState</RootNamespace>
+    <Description>ASP.NET initializer for async state.</Description>
+    <PackageTags>$(PackageTags);aspnetcore</PackageTags>
+    <Workstream>Fundamentals</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>100</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.AsyncState\Microsoft.Extensions.AsyncState.csproj" />
+  </ItemGroup>
+
+ <ItemGroup Condition="'$(TargetFramework)' != 'net462' and '$(TargetFramework)' != 'netstandard2.0'">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+</Project>

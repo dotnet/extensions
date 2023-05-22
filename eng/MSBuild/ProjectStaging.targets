@@ -1,0 +1,24 @@
+<Project>
+
+  <!-- Produce errors if we don't have all the right properties defined -->
+  <Target Name="_CheckPropsExist" Condition="'$(Stage)' != ''" BeforeTargets="Build">
+    <Error Condition="'$(Stage)' != 'dev' AND '$(Stage)' != 'normal' AND '$(Stage)' != 'obsolete'" Text="Stage property must be dev|normal|obsolete" />
+    <Error Condition="'$(Description)' == ''" Text="Missing Description property." />
+    <Error Condition="'$(Workstream)' == ''" Text="Missing Workstream property." />
+    <Error Condition="'$(MinCodeCoverage)' == ''" Text="Missing MinCodeCoverage property." />
+    <Error Condition="'$(MinMutationScore)' == ''" Text="Missing MinMutationScore property." />
+  </Target>
+
+  <!-- Produce errors if we don't have all the right property values for normal stage -->
+  <Target Name="_CheckNormalStageProps" Condition="'$(Stage)' == 'normal'" BeforeTargets="Build">
+    <Error Condition="'$(MinCodeCoverage)' != 'n/a' AND ('$(MinCodeCoverage)' &lt; 85)" Text="MinCodeCoverage property must be >= 85 for normal stage." />
+    <Error Condition="'$(MinMutationScore)' != 'n/a' AND ('$(MinMutationScore)' &lt; 50)" Text="MinMutationScore property must be >= 50 for normal stage." />
+  </Target>
+
+  <!-- Amend the description based on stage -->
+  <PropertyGroup>
+    <Description Condition="'$(Stage)' == 'dev'">DEVELOPMENT BUILD - DO NOT USE IN PRODUCTION - $(Description)</Description>
+    <Description Condition="'$(Stage)' == 'obsolete'">OBSOLETE PACKAGE - $(Description)</Description>
+  </PropertyGroup>
+
+</Project>

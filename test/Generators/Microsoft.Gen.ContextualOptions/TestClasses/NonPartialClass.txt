@@ -1,0 +1,12 @@
+﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
+
+using Microsoft.Extensions.Options.Contextual;
+
+namespace TestClasses
+{
+    [OptionsContext]
+    public class NonPartialClass
+    {
+        public string Foo { get; } = "FooValue";
+    }
+}

@@ -1,0 +1,12 @@
+﻿{
+  "ChaosPolicyConfigurations": {
+    "ReloadOnChange": true,
+    "ChaosPolicyOptionsGroups": {
+      "OptionsGroupTest": {
+        "LatencyPolicyOptions": {
+          "Enabled": true
+        }
+      }
+    }
+  }
+}

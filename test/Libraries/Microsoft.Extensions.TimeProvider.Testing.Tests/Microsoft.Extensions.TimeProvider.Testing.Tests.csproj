@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Time.Testing.Test</RootNamespace>
+    <Description>Tests for Microsoft.Extensions.TimeProvider.Testing.Testing</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.TimeProvider.Testing\Microsoft.Extensions.TimeProvider.Testing.csproj"/>
+  </ItemGroup>
+</Project>

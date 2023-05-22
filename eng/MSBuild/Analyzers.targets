@@ -1,0 +1,110 @@
+<Project>
+
+  <!--
+    ANALYZER SHIPPING AND MULTI-TARGETTING SUPPORT
+    Sections below add support for shipping and multi-targeting of C# analyzers.
+
+    Borrowed from .NET:
+    https://github.com/dotnet/runtime/blob/main/eng/packaging.targets
+  -->
+
+  <Target Name="IncludeAnalyzersInPackage" Condition="'@(AnalyzerReference)' != ''">
+    <!-- Call a target in the analyzer project to get all the files it would normally place in a package.
+         These will be returned as items with identity pointing to the built file, and PackagePath metadata
+         set to their location in the package.  IsSymbol metadata will be set to distinguish symbols. -->
+    <MSBuild Projects="@(AnalyzerReference)"
+             Targets="GetAnalyzerPackFiles">
+      <Output TaskParameter="TargetOutputs" ItemName="_AnalyzerFile" />
+    </MSBuild>
+
+    <ItemGroup>
+      <Content Include="@(_AnalyzerFile)" Pack="True" Condition="!%(_AnalyzerFile.IsSymbol)" />
+      <!-- Symbols don't honor PackagePath. By default they are placed in lib/%(TargetFramework).
+           Pack does honor TargetPath and does Path.Combine("lib/%(TargetFramework)", "%(TargetPath)"),
+           so a rooted path value for TargetPath will override lib.
+           https://github.com/NuGet/Home/issues/10860 -->
+      <_TargetPathsToSymbols Include="@(_AnalyzerFile)" TargetPath="/%(_AnalyzerFile.PackagePath)" Condition="%(_AnalyzerFile.IsSymbol)" />
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <_MultiTargetRoslynComponentTargetsTemplate>$(MSBuildThisFileDirectory)MultiTargetRoslynComponent.targets.template</_MultiTargetRoslynComponentTargetsTemplate>
+    <MultiTargetRoslynComponentTargetsFileIntermediatePath>$(IntermediateOutputPath)MultiTargetRoslynComponent.targets</MultiTargetRoslynComponentTargetsFileIntermediatePath>
+    <IncludeMultiTargetRoslynComponentTargets Condition="'$(IncludeMultiTargetRoslynComponentTargets)' == ''">true</IncludeMultiTargetRoslynComponentTargets>
+  </PropertyGroup>
+
+  <!-- In packages that contain Analyzers, include a .targets file that will select the correct analyzer. -->
+  <Target Name="IncludeMultiTargetRoslynComponentTargetsInPackage"
+          AfterTargets="IncludeAnalyzersInPackage"
+          Condition="'@(AnalyzerReference)' != '' AND '$(IncludeMultiTargetRoslynComponentTargets)' == 'true'"
+          DependsOnTargets="GenerateMultiTargetRoslynComponentTargetsFile">
+    <ItemGroup>
+      <Content Include="$(MultiTargetRoslynComponentTargetsFileIntermediatePath)"
+               PackagePath="buildTransitive\MultiTargetRoslynComponent.targets"
+               Pack="True" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateMultiTargetRoslynComponentTargetsFile"
+          Inputs="$(MSBuildProjectFullPath);_MultiTargetRoslynComponentTargetsTemplate"
+          Outputs="$(MultiTargetRoslynComponentTargetsFileIntermediatePath)">
+    <PropertyGroup>
+        <_MultiTargetRoslynComponentTargetPrefix>$(PackageId.Replace('.', '_'))</_MultiTargetRoslynComponentTargetPrefix>
+        <DisableSourceGeneratorPropertyName Condition="'$(DisableSourceGeneratorPropertyName)' == ''">Disable$(PackageId.Replace('.', ''))SourceGenerator</DisableSourceGeneratorPropertyName>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(MultiTargetRoslynComponentTargetsFileIntermediatePath)"
+                      Lines="$([System.IO.File]::ReadAllText('$(_MultiTargetRoslynComponentTargetsTemplate)')
+                                                 .Replace('{TargetPrefix}', '$(_MultiTargetRoslynComponentTargetPrefix)')
+                                                 .Replace('{NuGetPackageId}', '$(PackageId)')
+                                                 .Replace('{DisableSourceGeneratorPropertyName}', '$(DisableSourceGeneratorPropertyName)'))"
+                      Overwrite="true" />
+  </Target>
+
+  <PropertyGroup>
+    <BuildAnalyzerReferences>$(BuildProjectReferences)</BuildAnalyzerReferences>
+    <BuildAnalyzerReferences Condition="'$(BuildingInsideVisualStudio)' == 'true'">false</BuildAnalyzerReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Ensure AnalyzerReference items are restored and built
+         The target framework of Analyzers has no relationship to that of the referencing project,
+         so we don't apply TargetFramework filters nor do we pass in TargetFramework.
+         When BuildProjectReferences=false we make sure to set BuildReference=false to make
+         sure not to try to call GetTargetPath in the outerbuild of the analyzer project. -->
+    <ProjectReference Include="@(AnalyzerReference)"
+                      SkipGetTargetFrameworkProperties="true"
+                      UndefineProperties="TargetFramework"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all"
+                      Condition="'$(BuildingSlnForDocs)' != 'true'"
+                      BuildReference="$(BuildAnalyzerReferences)" />
+  </ItemGroup>
+
+  <Target Name="GetAnalyzerPackFiles"
+          DependsOnTargets="$(GenerateNuspecDependsOn)"
+          Returns="@(_AnalyzerPackFile)">
+    <PropertyGroup>
+      <_analyzerPath>analyzers/dotnet</_analyzerPath>
+      <_analyzerPath Condition="'$(AnalyzerRoslynVersion)' != ''">$(_analyzerPath)/roslyn$(AnalyzerRoslynVersion)</_analyzerPath>
+      <_analyzerPath Condition="'$(AnalyzerLanguage)' != ''">$(_analyzerPath)/$(AnalyzerLanguage)</_analyzerPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- Packs *.dll -->
+      <_AnalyzerPackFile IsSymbol="false"
+          Include="%(_BuildOutputInPackage.FinalOutputPath)"
+          TargetPath="%(_BuildOutputInPackage.TargetPath)"
+          TargetFramework="%(_BuildOutputInPackage.TargetFramework)" />
+
+      <!-- Packs *.pdb -->
+      <_AnalyzerPackFile IsSymbol="true"
+          Include="%(_TargetPathsToSymbols.FinalOutputPath)"
+          TargetPath="%(_TargetPathsToSymbols.TargetPath)"
+          TargetFramework="%(_TargetPathsToSymbols.TargetFramework)" />
+
+      <_AnalyzerPackFile PackagePath="$(_analyzerPath)/%(TargetPath)" />
+    </ItemGroup>
+    <Error Condition="'%(_AnalyzerPackFile.TargetFramework)' != 'netstandard2.0'"
+           Text="Analyzers must only target netstandard2.0 since they run in the compiler which targets netstandard2.0. The following files were found to target '%(_AnalyzerPackFile.TargetFramework)': @(_AnalyzerPackFile)" />
+  </Target>
+</Project>

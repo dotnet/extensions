@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "dotnet-coverage": {
+      "version": "17.6.9",
+      "commands": [
+        "dotnet-coverage"
+      ]
+    },
+    "dotnet-reportgenerator-globaltool": {
+      "version": "5.1.19",
+      "commands": [
+        "reportgenerator"
+      ]
+    },
+    "microsoft.visualstudio.slngen.tool": {
+      "version": "9.5.3",
+      "commands": [
+        "slngen"
+      ]
+    },
+    "PowerShell": {
+      "version": "7.3.3",
+      "commands": [
+        "pwsh"
+      ]
+    }
+  }
+}

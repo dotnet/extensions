@@ -1,0 +1,18 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(GenerateComplianceReport)' == ''">
+    <GenerateComplianceReport Condition="'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'">false</GenerateComplianceReport>
+    <GenerateComplianceReport Condition="'$(DesignTimeBuild)' != 'true' OR '$(BuildingProject)' == 'true'">true</GenerateComplianceReport>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GenerateMeteringReport)' == ''">
+    <GenerateMeteringReport Condition="'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'">false</GenerateMeteringReport>
+    <GenerateMeteringReport Condition="'$(DesignTimeBuild)' != 'true' OR '$(BuildingProject)' == 'true'">true</GenerateMeteringReport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompilerVisibleProperty Include="GenerateComplianceReport" />
+    <CompilerVisibleProperty Include="ComplianceReportOutputPath" />
+    <CompilerVisibleProperty Include="GenerateMeteringReport" />
+    <CompilerVisibleProperty Include="MeteringReportOutputPath" />
+  </ItemGroup>
+</Project>

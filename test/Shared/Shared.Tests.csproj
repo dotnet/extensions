@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Shared.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.Shared</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1716</NoWarn>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsWindowsBuild)' == 'true' ">$(NetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net472' ">
+    <!-- See https://github.com/dotnet/r9/issues/65 -->
+    <SkipTests>true</SkipTests>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Shared\Shared.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\src\Libraries\Microsoft.Extensions.TimeProvider.Testing\Microsoft.Extensions.TimeProvider.Testing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.AspNetCore.Telemetry</RootNamespace>
+    <Description>Provides canonical implementations of telemetry abstractions which depend on the ASP.NET pipeline</Description>
+    <PackageTags>$(PackageTags);aspnetcore</PackageTags>
+    <Workstream>Telemetry</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
+    <InjectExperimentalAttributeOnLegacy>false</InjectExperimentalAttributeOnLegacy>
+    <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
+    <InjectDiagnosticAttributesOnLegacy>false</InjectDiagnosticAttributesOnLegacy>
+    <InjectCallerAttributesOnLegacy>false</InjectCallerAttributesOnLegacy>
+    <InjectSharedThrow>false</InjectSharedThrow>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <TempMinCodeCoverage>79</TempMinCodeCoverage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>90</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
+  </ItemGroup>
+
+ <ItemGroup Condition="'$(TargetFramework)' != 'net462' and '$(TargetFramework)' != 'netstandard2.0'">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))" />
+    <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Routing" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageVersion Update="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc9.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Telemetry.Middleware"/>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Telemetry.Middleware.Tests"/>
+  </ItemGroup>
+</Project>

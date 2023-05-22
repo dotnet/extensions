@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)' == ''">true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  
+  <PropertyGroup Condition="'$(RunRoslynSdlAnalyzers)' == 'True'">
+    <ErrorLog>$(MSBuildProjectFullPath).$([System.Guid]::NewGuid().ToString().Substring(0,8)).sarif</ErrorLog>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(RunRoslynSdlAnalyzers)' == 'True'">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.M365.Internal.Security.SecurityTooling.SDLToolingConfig" />
+  </ItemGroup>
+</Project>

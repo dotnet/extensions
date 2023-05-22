@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.AspNetCore.HeaderParsing.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.AspNetCore.HeaderParsing.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.AspNetCore.HeaderParsing\Microsoft.AspNetCore.HeaderParsing.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Testing\Microsoft.Extensions.Telemetry.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.AspNetCore.Testing\Microsoft.AspNetCore.Testing.csproj" />
+  </ItemGroup>
+</Project>

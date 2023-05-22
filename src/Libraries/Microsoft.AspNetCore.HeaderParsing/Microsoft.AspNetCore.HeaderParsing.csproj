@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.AspNetCore.HeaderParsing</RootNamespace>
+    <Description>Strong type header parsing</Description>
+    <PackageTags>$(PackageTags);aspnetcore</PackageTags>
+    <Workstream>Fundamentals</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
+    <UseMeteringGenerator>true</UseMeteringGenerator>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>dev</Stage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>91</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
+    <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.Pools\DependencyInjection.Pools.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
+    <ProjectReference Include="..\..\ToBeRemoved\Options.ValidateOnStart\Options.ValidateOnStart.csproj" />
+  </ItemGroup>
+
+ <ItemGroup Condition="'$(TargetFramework)' != 'net462' and '$(TargetFramework)' != 'netstandard2.0'">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Primitives" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Http" />
+    <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Options.Contextual</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.Options.Contextual</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseContextualOptionsGenerator>true</UseContextualOptionsGenerator>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Options.Contextual\Microsoft.Extensions.Options.Contextual.csproj" ProjectUnderTest="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net472'" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+</Project>

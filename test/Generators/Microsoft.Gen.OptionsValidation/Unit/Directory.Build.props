@@ -1,0 +1,31 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.OptionsValidation.Test</RootNamespace>
+    <Description>Unit tests for Gen.OptionsValidation.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SkipR9Analyzers>true</SkipR9Analyzers>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+    <InjectSharedDataValidation>true</InjectSharedDataValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\**\*.cs" />
+    <Compile Include="..\..\..\Shared\*.cs" LinkBase="Shared" />
+    <Content Include="..\..\TestClasses\**\*.cs" Link="TestClasses\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\Generated\Common\TestResource.Designer.cs" Link="TestClasses\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\Libraries\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj"  />
+    <ProjectReference Include="..\..\..\..\..\src\Generators\Microsoft.Gen.OptionsValidation\Roslyn$(AnalyzerRoslynVersion)\Microsoft.Gen.OptionsValidation.Roslyn$(AnalyzerRoslynVersion).csproj" />
+    <ProjectReference Include="..\..\Generated\Roslyn$(AnalyzerRoslynVersion)\Microsoft.Gen.OptionsValidation.Roslyn$(AnalyzerRoslynVersion).Generated.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+  </ItemGroup>
+</Project>

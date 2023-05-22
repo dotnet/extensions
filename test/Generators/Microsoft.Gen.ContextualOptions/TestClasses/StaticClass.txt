@@ -1,0 +1,12 @@
+﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
+
+using Microsoft.Extensions.Options.Contextual;
+
+namespace TestClasses
+{
+    [OptionsContext]
+    public static partial class StaticClass
+    {
+        public static string Foo { get; } = "FooValue";
+    }
+}

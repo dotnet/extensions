@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.AspNetCore.Telemetry</RootNamespace>
+    <Description>ASP.NET Core middleware for collecting high-quality telemetry.</Description>
+    <PackageTags>$(PackageTags);aspnetcore</PackageTags>
+    <Workstream>Telemetry</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <UseMeteringGenerator>true</UseMeteringGenerator>
+    <InjectSharedThrow>false</InjectSharedThrow>
+    <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
+    <InjectSharedDebugger>true</InjectSharedDebugger>
+    <InjectSharedDataValidation>false</InjectSharedDataValidation>
+    <InjectSharedPools>false</InjectSharedPools>
+    <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
+    <InjectSharedNumericExtensions>false</InjectSharedNumericExtensions>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>85</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.AutoActivation\DependencyInjection.AutoActivation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Telemetry\Microsoft.AspNetCore.Telemetry.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" />
+    <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+</Project>

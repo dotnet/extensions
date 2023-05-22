@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AnalyzerRoslynVersion>3.8</AnalyzerRoslynVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Update="..\Common\TestResource.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>TestResource.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+</Project>

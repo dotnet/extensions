@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.AspNetCore.Testing</RootNamespace>
+    <Description>Unit tests for Microsoft.AspNetCore.Testing</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.AspNetCore.Testing\Microsoft.AspNetCore.Testing.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" />
+  </ItemGroup>
+</Project>

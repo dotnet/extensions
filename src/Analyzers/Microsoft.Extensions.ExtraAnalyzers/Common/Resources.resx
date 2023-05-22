@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="GenerateStronglyTypedLoggingMethod" xml:space="preserve">
+    <value>Generate a strongly-typed logging method</value>
+  </data>
+  <data name="LegacyLoggingDescription" xml:space="preserve">
+    <value>Identifies calls to legacy logging methods</value>
+  </data>
+  <data name="LegacyLoggingMessage" xml:space="preserve">
+    <value>Use source generated logging methods for improved performance</value>
+  </data>
+  <data name="LegacyLoggingTitle" xml:space="preserve">
+    <value>Use source generated logging methods for improved performance</value>
+  </data>
+  <data name="ThrowsExpressionDescription" xml:space="preserve">
+    <value>Recommends replacing explicit argument throwing with the more efficient 'Microsoft.R9.Extensions.Diagnostics.Throws' class</value>
+  </data>
+  <data name="ThrowsExpressionMessage" xml:space="preserve">
+    <value>Use '{0}' to throw the exception instead to improve performance</value>
+  </data>
+  <data name="ThrowsExpressionTitle" xml:space="preserve">
+    <value>Use the 'Microsoft.R9.Extensions.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance</value>
+  </data>
+  <data name="ThrowsStatementDescription" xml:space="preserve">
+    <value>Recommends replacing explicit argument throwing with the more efficient 'Microsoft.R9.Extensions.Diagnostics.Throws' class</value>
+  </data>
+  <data name="ThrowsStatementMessage" xml:space="preserve">
+    <value>Use '{0}' to throw the exception instead to improve performance</value>
+  </data>
+  <data name="ThrowsStatementTitle" xml:space="preserve">
+    <value>Use the 'Microsoft.R9.Extensions.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance</value>
+  </data>
+  <data name="ReplaceWithStaticNullCheckMethod" xml:space="preserve">
+    <value>Replace explicit null check with call to 'Throws.IfNull' (needs a 'PackageReference' to 'Microsoft.R9.Extensions.Essentials')</value>
+  </data>
+  <data name="ReplaceWithStaticThrowMethod" xml:space="preserve">
+    <value>Replace explicit throw with call to 'Throws' (needs a 'PackageReference' to 'Microsoft.R9.Extensions.Essentials')</value>
+  </data>
+  <data name="StringFormatDescription" xml:space="preserve">
+    <value>Identifies uses of 'String.Format' and 'StringBuilder.AppendFormat'</value>
+  </data>
+  <data name="StringFormatMessage" xml:space="preserve">
+    <value>Use 'Microsoft.R9.Extensions.Text.CompositeFormat' instead of 'string.Format' for improved performance</value>
+  </data>
+  <data name="StringFormatTitle" xml:space="preserve">
+    <value>Use 'Microsoft.R9.Extensions.Text.CompositeFormat' instead of 'string.Format' for improved performance</value>
+  </data>
+  <data name="UsingExcessiveDictionaryLookupDescription" xml:space="preserve">
+    <value>Encourages optimal use of dictionary lookup</value>
+  </data>
+  <data name="UsingExcessiveDictionaryLookupMessage" xml:space="preserve">
+    <value>Remove excessive dictionary lookups</value>
+  </data>
+  <data name="UsingExcessiveDictionaryLookupTitle" xml:space="preserve">
+    <value>Remove unnecessary dictionary lookups</value>
+  </data>
+  <data name="UsingExcessiveSetLookupDescription" xml:space="preserve">
+    <value>Encourages optimal use of set lookup</value>
+  </data>
+  <data name="UsingExcessiveSetLookupMessage" xml:space="preserve">
+    <value>Remove excessive set lookups</value>
+  </data>
+  <data name="UsingExcessiveSetLookupTitle" xml:space="preserve">
+    <value>Remove unnecessary set lookups</value>
+  </data>
+  <data name="UsingToStringInLoggersDescription" xml:space="preserve">
+    <value>Identifies calls to the 'ToString' method as arguments to an R9 logging method</value>
+  </data>
+  <data name="UsingToStringInLoggersMessage" xml:space="preserve">
+    <value>Provide a logging method that accepts an instance of the object instead of a string</value>
+  </data>
+  <data name="UsingToStringInLoggersTitle" xml:space="preserve">
+    <value>Perform message formatting in the body of the logging method</value>
+  </data>
+  <data name="StaticTimeDescription" xml:space="preserve">
+    <value>Identifies uses of time dependent APIs that can lead to flaky tests</value>
+  </data>
+  <data name="StaticTimeMessage" xml:space="preserve">
+    <value>Use 'System.TimeProvider' to make the code easier to test</value>
+  </data>
+  <data name="StaticTimeTitle" xml:space="preserve">
+    <value>Use 'System.TimeProvider' to make the code easier to test</value>
+  </data>
+  <data name="SequentialFixAllFormat" xml:space="preserve">
+    <value>Apply code fix for all issues in '{0}' '{1}'</value>
+  </data>
+  <data name="SequentialFixAllInSolution" xml:space="preserve">
+    <value>Apply code fix for all issues in current solution</value>
+  </data>
+  <data name="UsingExperimentalApiDescription" xml:space="preserve">
+    <value>Indicates that code is depending on an experimental API</value>
+  </data>
+  <data name="UsingExperimentalApiTitle" xml:space="preserve">
+    <value>Using experimental API</value>
+  </data>
+  <data name="UsingExperimentalApiMessage" xml:space="preserve">
+    <value>'{0}' is experimental and is subject to change without notice</value>
+  </data>
+  <data name="StartsEndsWithDescription" xml:space="preserve">
+    <value>When checking for a single character, prefer the character overloads of 'String.StartsWith' and 'String.EndsWith' for improved performance</value>
+  </data>
+  <data name="StartsEndsWithMessage" xml:space="preserve">
+    <value>Use the character-based overload of '{0}'</value>
+  </data>
+  <data name="StartsEndsWithTitle" xml:space="preserve">
+    <value>Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'</value>
+  </data>
+  <data name="MakeExeTypesInternalDescription" xml:space="preserve">
+    <value>Making an executable's types internal enables dead code analysis along with other potential optimizations</value>
+  </data>
+  <data name="MakeExeTypesInternalMessage" xml:space="preserve">
+    <value>Make type '{0}' internal since it is declared in an executable</value>
+  </data>
+  <data name="MakeExeTypesInternalTitle" xml:space="preserve">
+    <value>Make types declared in an executable internal</value>
+  </data>
+  <data name="ArraysDescription" xml:space="preserve">
+    <value>Dictionaries and sets which use enums and bytes as keys can often be replaced with simple arrays for improved performance</value>
+  </data>
+  <data name="ArraysMessage" xml:space="preserve">
+    <value>Consider using '{0}?[]' instead of '{1}'</value>
+  </data>
+  <data name="ArraysTitle" xml:space="preserve">
+    <value>Consider using an array instead of a collection</value>
+  </data>
+  <data name="EnumStringsDescription" xml:space="preserve">
+    <value>Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance</value>
+  </data>
+  <data name="EnumStringsTitle" xml:space="preserve">
+    <value>Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance</value>
+  </data>
+  <data name="EnumStringsMessage" xml:space="preserve">
+    <value>Use {0} instead of '{1}' for improved performance</value>
+  </data>
+  <data name="ToInvariantStringDescription" xml:space="preserve">
+    <value>'Microsoft.R9.Extensions.Text.NumericExtensions.ToInvariantString' provides caching for common numeric values, avoiding the need to allocate new strings in many situations</value>
+  </data>
+  <data name="ToInvariantStringMessage" xml:space="preserve">
+    <value>Use 'Microsoft.R9.Extensions.Text.NumericExtensions.ToInvariantString' for improved performance</value>
+  </data>
+  <data name="ToInvariantStringTitle" xml:space="preserve">
+    <value>Use 'Microsoft.R9.Extensions.Text.NumericExtensions.ToInvariantString' for improved performance</value>
+  </data>
+  <data name="ValueTupleDescription" xml:space="preserve">
+    <value>Using 'System.ValueTuple' avoids allocations and is generally more efficient than 'System.Tuple'</value>
+  </data>
+  <data name="ValueTupleMessage" xml:space="preserve">
+    <value>Use 'System.ValueTuple' instead of 'System.Tuple' for improved performance</value>
+  </data>
+  <data name="ValueTupleTitle" xml:space="preserve">
+    <value>Use 'System.ValueTuple' instead of 'System.Tuple' for improved performance</value>
+  </data>
+  <data name="NullCheckDescription" xml:space="preserve">
+    <value>When compiling in a nullable context, the C# compiler performs null analysis at compile time so there is no need to also perform null checking at runtime</value>
+  </data>
+  <data name="NullCheckMessage" xml:space="preserve">
+    <value>Remove superfluous null check when compiling in a nullable context</value>
+  </data>
+  <data name="NullCheckTitle" xml:space="preserve">
+    <value>Remove superfluous null checks when compiling in a nullable context</value>
+  </data>
+  <data name="MakeTypeInternal" xml:space="preserve">
+    <value>Make the type internal</value>
+  </data>
+  <data name="LegacyCollectionDescription" xml:space="preserve">
+    <value>Using generic collections can avoid boxing overhead and provides strong typing</value>
+  </data>
+  <data name="LegacyCollectionMessage" xml:space="preserve">
+    <value>Use generic collections instead of legacy collections for improved performance</value>
+  </data>
+  <data name="LegacyCollectionTitle" xml:space="preserve">
+    <value>Use generic collections instead of legacy collections for improved performance</value>
+  </data>
+  <data name="SplitDescription" xml:space="preserve">
+    <value>Use 'Microsoft.R9.Extensions.Text.StringSplitExtensions.TrySplit' for improved performance</value>
+  </data>
+  <data name="SplitMessage" xml:space="preserve">
+    <value>Use 'Microsoft.R9.Extensions.Text.StringSplitExtensions.TrySplit' for improved performance</value>
+  </data>
+  <data name="SplitTitle" xml:space="preserve">
+    <value>Use 'Microsoft.R9.Extensions.Text.StringSplitExtensions.TrySplit' for improved performance</value>
+  </data>
+  <data name="MakeArrayStaticDescription" xml:space="preserve">
+    <value>Arrays of literal values should generally be assigned to static fields in order to avoid creating them redundantly over time</value>
+  </data>
+  <data name="MakeArrayStaticMessage" xml:space="preserve">
+    <value>Assign array of literal values to a static field for improved performance</value>
+  </data>
+  <data name="MakeArrayStaticTitle" xml:space="preserve">
+    <value>Assign array of literal values to a static field for improved performance</value>
+  </data>
+  <data name="AnExperimentalApiWasMarkedAsObsoleteDescription" xml:space="preserve">
+    <value>You can change experimental APIs at any time without deprecation period</value>
+  </data>
+  <data name="AnExperimentalApiWasMarkedAsObsoleteMessage" xml:space="preserve">
+    <value>Remove obsolete annotation from experimental API</value>
+  </data>
+  <data name="AnExperimentalApiWasMarkedAsObsoleteTitle" xml:space="preserve">
+    <value>An experimental API was marked as obsolete</value>
+  </data>
+  <data name="AnExperimentalApiIsNotAnnotatedDescription" xml:space="preserve">
+    <value>Newly added externally visible API is not marked as experimental</value>
+  </data>
+  <data name="AnExperimentalApiIsNotAnnotatedMessage" xml:space="preserve">
+    <value>Newly added externally visible API must be annotated as experimental</value>
+  </data>
+  <data name="AnExperimentalApiIsNotAnnotatedTitle" xml:space="preserve">
+    <value>Newly added API must be annotated with experimental attribute</value>
+  </data>
+  <data name="AStableApiWasDeletedOutsideTheDeprecationPeriodDescription" xml:space="preserve">
+    <value>Stable APIs must follow deprecation policy and be marked as obsolete before it gets deleted.</value>
+  </data>
+  <data name="AStableApiWasDeletedOutsideTheDeprecationPeriodMessage" xml:space="preserve">
+    <value>Revert deletion of {0} API and mark it with obsolete attribute</value>
+  </data>
+  <data name="AStableApiWasDeletedOutsideTheDeprecationPeriodTitle" xml:space="preserve">
+    <value>A stable API was deleted outside the deprecation period</value>
+  </data>
+  <data name="AStableApiWasMarkedAsExperimentalDescription" xml:space="preserve">
+    <value>Stable APIs should not be annotated as experimental</value>
+  </data>
+  <data name="AStableApiWasMarkedAsExperimentalMessage" xml:space="preserve">
+    <value>Don't mark stable API as experimental</value>
+  </data>
+  <data name="AStableApiWasMarkedAsExperimentalTitle" xml:space="preserve">
+    <value>A stable API was marked as experimental</value>
+  </data>
+  <data name="ADeprecatedApiIsNotAnnotatedWithObsoleteAttributeDescription" xml:space="preserve">
+    <value>Deprecated API should have annotation that will guide customers regarding its replacement and the release in which it will be removed</value>
+  </data>
+  <data name="ADeprecatedApiIsNotAnnotatedWithObsoleteAttributeMessage" xml:space="preserve">
+    <value>Annotate deprecated API with obsolete attribute</value>
+  </data>
+  <data name="ADeprecatedApiIsNotAnnotatedWithObsoleteAttributeTitle" xml:space="preserve">
+    <value>A deprecated API is not annotated with the obsolete attribute</value>
+  </data>
+  <data name="AnnotateExperimentalApi" xml:space="preserve">
+    <value>Annotate experimental API</value>
+  </data>
+  <data name="ADeprecatedApiIsMarkedAsExperimentalDescription" xml:space="preserve">
+    <value>Deprecated API cannot be marked as experimental</value>
+  </data>
+  <data name="ADeprecatedApiIsMarkedAsExperimentalMessage" xml:space="preserve">
+    <value>Remove experimental attribute from deprecated API</value>
+  </data>
+  <data name="ADeprecatedApiIsMarkedAsExperimentalTitle" xml:space="preserve">
+    <value>A deprecated API is marked as experimental</value>
+  </data>
+  <data name="TheSignatureOfAStableApiHasChangedDescription" xml:space="preserve">
+    <value>Stable APIs cannot be changed in an incompatible way</value>
+  </data>
+  <data name="TheSignatureOfAStableApiHasChangedMessage" xml:space="preserve">
+    <value>The signature of a stable API misses '{1}'</value>
+  </data>
+  <data name="TheSignatureOfAStableApiHasChangedTitle" xml:space="preserve">
+    <value>The signature of a stable API has changed</value>
+  </data>
+  <data name="AsyncCallInsideUsingBlockDescription" xml:space="preserve">
+    <value>When skipping the await keyword for asynchronous operations inside a using block, then a disposable object could be disposed before the asynchronous invocation finishes. This might result in incorrect behavior and very often ends with a runtime exception notifying that the code is trying to operate on a disposed object.</value>
+  </data>
+  <data name="AsyncCallInsideUsingBlockMessage" xml:space="preserve">
+    <value>Async call should be awaited before leaving the 'using' block</value>
+  </data>
+  <data name="AsyncCallInsideUsingBlockTitle" xml:space="preserve">
+    <value>Fire-and-forget async call inside a 'using' block</value>
+  </data>
+  <data name="ConditionalAccessDescription" xml:space="preserve">
+    <value>Using the conditional access operator (?) to access values which are statically known not to be null causes superfluous null checks to be performed at runtime</value>
+  </data>
+  <data name="ConditionalAccessMessage" xml:space="preserve">
+    <value>Consider removing unnecessary conditional access operator (?) since the value is statically known not to be null</value>
+  </data>
+  <data name="ConditionalAccessTitle" xml:space="preserve">
+    <value>Consider removing unnecessary conditional access operator (?)</value>
+  </data>
+  <data name="CoalesceAssignmentDescription" xml:space="preserve">
+    <value>Using the null coalescing assignment operator (??=) with values which are statically known not to be null causes superfluous null checks to be performed at runtime</value>
+  </data>
+  <data name="CoalesceAssignmentMessage" xml:space="preserve">
+    <value>Consider removing unnecessary null coalescing assignment (??=) since the target value is statically known not to be null</value>
+  </data>
+  <data name="CoalesceAssignmentTitle" xml:space="preserve">
+    <value>Consider removing unnecessary null coalescing assignment (??=)</value>
+  </data>
+  <data name="CoalesceDescription" xml:space="preserve">
+    <value>Using the null coalescing operator (??) with values which are statically known to be null causes superfluous null checks to be performed at runtime</value>
+  </data>
+  <data name="CoalesceMessage" xml:space="preserve">
+    <value>Consider removing unnecessary null coalescing (??) since the left-hand value is statically known not to be null</value>
+  </data>
+  <data name="CoalesceTitle" xml:space="preserve">
+    <value>Consider removing unnecessary null coalescing operator (??)</value>
+  </data>
+  <data name="AsyncMethodWithoutCancellationDescription" xml:space="preserve">
+    <value>Accepting a CancellationToken as a parameter allows caller to express a loss of interest in the result enabling the method to save cycles by finishing early</value>
+  </data>
+  <data name="AsyncMethodWithoutCancellationMessage" xml:space="preserve">
+    <value>Add CancellationToken as the parameter of asynchronous method</value>
+  </data>
+  <data name="AsyncMethodWithoutCancellationTitle" xml:space="preserve">
+    <value>The async method doesn't support cancellation</value>
+  </data>
+</root>

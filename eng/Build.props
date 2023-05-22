@@ -1,0 +1,15 @@
+<!-- This file gets automatically imported by Arcade infrastructure when calling the build scripts -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <PropertyGroup>
+    <RestoreUseStaticGraphEvaluation Condition="'$(DotNetBuildFromSource)' != 'true'">true</RestoreUseStaticGraphEvaluation>
+
+    <!-- This is set to false as an optimization to use Arcade's restore. -->
+    <RestoreUsingNuGetTargets>false</RestoreUsingNuGetTargets>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Set the project to build as this repo doesn't have a solution file in the root of the repo -->
+    <ProjectToBuild Condition="'$(DirectoryToBuild)' == ''" Include="$(MSBuildThisFileDirectory)build.proj" />
+  </ItemGroup>
+</Project>

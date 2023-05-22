@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AnalyzerRoslynVersion>3.8</AnalyzerRoslynVersion>
+  </PropertyGroup>
+</Project>

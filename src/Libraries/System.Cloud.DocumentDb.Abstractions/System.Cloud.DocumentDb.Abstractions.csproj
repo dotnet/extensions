@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>System.Cloud.DocumentDb</RootNamespace>
+    <Description>Contracts for document-oriented database clients.</Description>
+    <PackageTags>$(PackageTags);Cloud</PackageTags>
+    <Workstream>Fundamentals</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+    <InjectSharedDataValidation>true</InjectSharedDataValidation>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>dev</Stage>
+    <MinCodeCoverage>94</MinCodeCoverage>
+    <MinMutationScore>100</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Condition="$(TargetFramework) != 'net6.0'" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+</Project>

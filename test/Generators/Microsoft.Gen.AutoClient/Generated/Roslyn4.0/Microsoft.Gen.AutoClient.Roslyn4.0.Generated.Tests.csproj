@@ -1,0 +1,6 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AnalyzerRoslynVersion>4.0</AnalyzerRoslynVersion>
+    <DefineConstants>$(DefineConstants);ROSLYN_4_0_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+</Project>

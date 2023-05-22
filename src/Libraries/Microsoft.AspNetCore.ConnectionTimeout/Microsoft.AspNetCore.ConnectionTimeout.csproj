@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.AspNetCore.Connections</RootNamespace>
+    <Description>Mechanism to trigger network connection timeouts to force clients to reestablisih fresh connections.</Description>
+    <PackageTags>$(PackageTags);aspnetcore</PackageTags>
+    <Workstream>Fundamentals</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDataValidation>true</InjectSharedDataValidation>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>dev</Stage>
+    <MinCodeCoverage>82</MinCodeCoverage>
+    <MinMutationScore>100</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
+    <ProjectReference Include="..\..\ToBeRemoved\Options.ValidateOnStart\Options.ValidateOnStart.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+</Project>

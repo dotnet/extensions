@@ -1,0 +1,31 @@
+<Project>
+
+  <PropertyGroup Condition="'$(InjectSharedThrow)' == 'true'">
+    <InjectCallerAttributesOnLegacy Condition="'$(InjectCallerAttributesOnLegacy)' == ''">true</InjectCallerAttributesOnLegacy>
+    <InjectDiagnosticAttributesOnLegacy Condition="'$(InjectDiagnosticAttributesOnLegacy)' == ''">true</InjectDiagnosticAttributesOnLegacy>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(InjectSharedTextFormatting)' == 'true'">
+    <InjectSkipLocalsInitAttributeOnLegacy Condition="'$(InjectSkipLocalsInitAttributeOnLegacy)' == ''">true</InjectSkipLocalsInitAttributeOnLegacy>
+    <InjectStringSyntaxAttributeOnLegacy Condition="'$(InjectStringSyntaxAttributeOnLegacy)' == ''">true</InjectStringSyntaxAttributeOnLegacy>
+    <InjectSharedStringBuilderExtensions Condition="'$(InjectSharedStringBuilderExtensions)' == ''">true</InjectSharedStringBuilderExtensions>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(InjectSharedDataValidation)' == 'true'">
+    <InjectCallerAttributesOnLegacy Condition="'$(InjectCallerAttributesOnLegacy)' == ''">true</InjectCallerAttributesOnLegacy>
+    <InjectTrimAttributesOnLegacy Condition="'$(InjectTrimAttributesOnLegacy)' == ''">true</InjectTrimAttributesOnLegacy>
+    <InjectDiagnosticAttributesOnLegacy Condition="'$(InjectDiagnosticAttributesOnLegacy)' == ''">true</InjectDiagnosticAttributesOnLegacy>
+    <InjectSharedThrow Condition="'$(InjectSharedThrow)' == ''">true</InjectSharedThrow>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(InjectSharedBufferWriterPool)' == 'true'">
+    <InjectSharedPools Condition="'$(InjectSharedPools)' == ''">true</InjectSharedPools>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(InjectSharedPools)' == 'true'">
+    <InjectCallerAttributesOnLegacy Condition="'$(InjectCallerAttributesOnLegacy)' == ''">true</InjectCallerAttributesOnLegacy>
+    <InjectSharedThrow Condition="'$(InjectSharedThrow)' == ''">true</InjectSharedThrow>
+    <InjectDiagnosticAttributesOnLegacy Condition="'$(InjectDiagnosticAttributesOnLegacy)' == ''">true</InjectDiagnosticAttributesOnLegacy>
+  </PropertyGroup>
+</Project>

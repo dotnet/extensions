@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.AspNetCore.Telemetry.Bench</RootNamespace>
+    <Description>Benchmarks for Microsoft.AspNetCore.Telemetry.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectSharedPools>true</InjectSharedPools>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.AspNetCore.Telemetry\Microsoft.AspNetCore.Telemetry.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Testing\Microsoft.Extensions.Compliance.Testing.csproj" />
+  </ItemGroup>
+</Project>

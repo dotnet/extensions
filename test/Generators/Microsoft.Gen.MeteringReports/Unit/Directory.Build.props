@@ -1,0 +1,26 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.MeteringReports.Test</RootNamespace>
+    <Description>Unit tests for Gen.MeteringReports.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SkipR9Analyzers>true</SkipR9Analyzers>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\**\*.cs" />
+    <Compile Include="..\..\..\Shared\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\Generators\Microsoft.Gen.MeteringReports\Roslyn$(AnalyzerRoslynVersion)\Microsoft.Gen.MeteringReports.Roslyn$(AnalyzerRoslynVersion).csproj" ProjectUnderTest="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+  </ItemGroup>
+</Project>

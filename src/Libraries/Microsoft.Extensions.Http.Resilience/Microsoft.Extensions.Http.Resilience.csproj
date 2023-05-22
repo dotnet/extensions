@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Http.Resilience</RootNamespace>
+    <Description>Resilience mechanisms for HTTP Client.</Description>
+    <Workstream>Resilience</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <UseMeteringGenerator>true</UseMeteringGenerator>
+    <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
+    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
+    <InjectxxH3OnLegacy>true</InjectxxH3OnLegacy>
+    <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
+    <InjectSharedThrow>false</InjectSharedThrow>
+    <InjectDiagnosticAttributesOnLegacy>false</InjectDiagnosticAttributesOnLegacy>
+    <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>100</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Resilience\Microsoft.Extensions.Resilience.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExceptionSummarization\Microsoft.Extensions.Diagnostics.ExceptionSummarization.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
+    <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.NamedService\DependencyInjection.NamedService.csproj" />
+    <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.Pools\DependencyInjection.Pools.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="System.IO.Hashing" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+    <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Resilience.Tests" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
+  </ItemGroup>
+</Project>

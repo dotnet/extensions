@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Telemetry</RootNamespace>
+    <Description>Common abstractions for high-level telemetry primitives.</Description>
+    <Workstream>Telemetry</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedPools>true</InjectSharedPools>
+    <DisableSourceGeneratorPropertyName>DisableMicrosoftExtensionsTelemetrySourceGeneration</DisableSourceGeneratorPropertyName>
+    <BuildAnalyzerReferences>true</BuildAnalyzerReferences>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>100</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="buildTransitive\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Logging\Roslyn3.8\Microsoft.Gen.Logging.Roslyn3.8.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Logging\Roslyn4.0\Microsoft.Gen.Logging.Roslyn4.0.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Metering\Roslyn3.8\Microsoft.Gen.Metering.Roslyn3.8.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Metering\Roslyn4.0\Microsoft.Gen.Metering.Roslyn4.0.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests"/>
+  </ItemGroup>
+</Project>

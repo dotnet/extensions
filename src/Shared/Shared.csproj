@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Shared</RootNamespace>
+    <Description>Reusable shared code.</Description>
+    <Workstream>Fundamentals</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <DefineConstants>$(DefineConstants);SHARED_PROJECT</DefineConstants>
+    <InjectDiagnosticAttributesOnLegacy>true</InjectDiagnosticAttributesOnLegacy>
+    <InjectCallerAttributesOnLegacy>true</InjectCallerAttributesOnLegacy>
+    <InjectBitOperationsOnLegacy>true</InjectBitOperationsOnLegacy>
+    <InjectIsExtenalInitOnLegacy>true</InjectIsExtenalInitOnLegacy>
+    <InjectSkipLocalsInitAttributeOnLegacy>true</InjectSkipLocalsInitAttributeOnLegacy>
+    <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
+    <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <TempMinCodeCoverage>89</TempMinCodeCoverage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>85</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" />
+    <PackageReference Include="System.ComponentModel.Annotations" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
+    <PackageReference Include="System.ValueTuple" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
+  </ItemGroup>
+</Project>

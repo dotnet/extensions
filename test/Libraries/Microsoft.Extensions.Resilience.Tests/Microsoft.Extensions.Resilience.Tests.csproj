@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Resilience.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.Resilience</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net462' ">
+    <!-- See https://github.com/dotnet/r9/issues/66 -->
+    <SkipTests>true</SkipTests>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="configs\appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="configs\optionsOnChangeTestOriginal.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="configs\optionsOnChangeTestNew.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.TimeProvider.Testing\Microsoft.Extensions.TimeProvider.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Resilience\Microsoft.Extensions.Resilience.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Testing\Microsoft.Extensions.Telemetry.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.ExceptionSummarization\Microsoft.Extensions.Diagnostics.ExceptionSummarization.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.ValueTuple" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
+    <PackageReference Include="System.Net.Http" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+</Project>

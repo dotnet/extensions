@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Hosting.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.Hosting.Testing.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.TimeProvider.Testing\Microsoft.Extensions.TimeProvider.Testing.csproj" />
+  </ItemGroup>
+
+</Project>

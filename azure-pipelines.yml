@@ -1,0 +1,286 @@
+# Setting batch to true, triggers one build at a time.
+# if there is a push while a build in progress, it will wait,
+# until the running build finishes, and produce a build with all the changes
+# that happened during the last build.
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+      - release/*
+  paths:
+    include:
+      - '*'
+    exclude:
+      - eng/Version.Details.xml
+      - .github/*
+      - docs/*
+      - CODE_OF_CONDUCT.md
+      - CONTRIBUTING.md
+      - README.md
+      - SECURITY.md
+      - LICENSE.TXT
+      - PATENTS.TXT
+      - THIRD-PARTY-NOTICES.TXT
+
+pr:
+  branches:
+    include:
+      - main
+      - release/*
+  paths:
+    include:
+      - '*'
+    exclude:
+      - eng/Version.Details.xml
+      - .github/*
+      - docs/*
+      - CODE_OF_CONDUCT.md
+      - CONTRIBUTING.md
+      - README.md
+      - SECURITY.md
+      - LICENSE.TXT
+      - PATENTS.TXT
+      - THIRD-PARTY-NOTICES.TXT
+
+variables:
+  - name: _TeamName
+    value: dotnet-r9
+  - name: NativeToolsOnMachine
+    value: true
+  - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
+    value: true
+
+  # TEMP until all the x-cutting refactoring is complete
+  - name: SkipCodeCoverage
+    value: true
+
+  - name: runAsPublic
+    value: ${{ eq(variables['System.TeamProject'], 'public') }}
+  - name: _BuildConfig
+    value: Release
+  - name: isOfficialBuild
+    value: ${{ and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest')) }}
+  - name: IsDeltaBuild
+    value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
+  - name: Build.Arcade.ArtifactsPath
+    value: $(Build.SourcesDirectory)/artifacts/
+  - name: Build.Arcade.LogsPath
+    value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
+  - name: Build.Arcade.TestResultsPath
+    value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
+
+  # For full build we can do a shallow build, for a delta build we need the full history.
+  - ${{ if eq(variables['IsDeltaBuild'], 'true') }}:
+    - name: _FetchDepth
+      value: 0
+  - ${{ else }}:
+    - name: _FetchDepth
+      value: 1
+
+  - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
+    - name: PostBuildSign
+      value: false
+  - ${{ else }}:
+    - name: PostBuildSign
+      value: true
+
+  # Produce test-signed build for PR and Public builds
+  - ${{ if or(eq(variables['runAsPublic'], 'true'), eq(variables['Build.Reason'], 'PullRequest')) }}:
+    # needed for darc (dependency flow) publishing
+    - name: _PublishArgs
+      value: ''
+    - name: _OfficialBuildIdArgs
+      value: ''
+    # needed for signing
+    - name: _SignType
+      value: test
+    - name: _SignArgs
+      value: ''
+    - name: _Sign
+      value: false
+
+  # Set up non-PR build from internal project
+  - ${{ if and(ne(variables['runAsPublic'], 'true'), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    # needed for darc (dependency flow) publishing
+    - name: _PublishArgs
+      value: >-
+            /p:DotNetPublishUsingPipelines=true
+    - name: _OfficialBuildIdArgs
+      value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+    # needed for signing
+    - name: _SignType
+      value: real
+    - name: _SignArgs
+      value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:Sign=$(_Sign) /p:DotNetPublishUsingPipelines=true
+    - name: _Sign
+      value: true
+
+stages:
+- stage: build
+  displayName: Build
+  variables:
+  - template: /eng/common/templates/variables/pool-providers.yml
+  jobs:
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enableMicrobuild: true
+      enableTelemetry: true
+      enableSourceIndex: false
+      runAsPublic: ${{ variables['runAsPublic'] }}
+      # Publish build logs
+      enablePublishBuildArtifacts: true
+      # Publish test logs
+      enablePublishTestResults: true
+      # Publish NuGet packages using v3
+      # https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Publishing.md#basic-onboarding-scenario-for-new-repositories-to-the-current-publishing-version-v3
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: true
+      workspace:
+        clean: all
+
+      jobs:
+      - job: Windows
+        timeoutInMinutes: 180
+        testResultsFormat: VSTest
+
+        pool:
+          ${{ if eq(variables['runAsPublic'], 'true') }}:
+            name: $(DncEngPublicBuildPool)
+            demands: ImageOverride -equals windows.vs2022preview.amd64.open
+          # Non-public (i.e., official builds)
+          ${{ else }}:
+            name: $(DncEngInternalBuildPool)
+            demands: ImageOverride -equals windows.vs2022preview.amd64
+
+        variables:
+          - _buildScript: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
+
+        preSteps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            fetchDepth: $(_FetchDepth)
+
+        steps:
+          - template: \eng\pipelines\templates\BuildAndTest.yml
+            parameters:
+              buildScript: $(_buildScript)
+              buildConfig: $(_BuildConfig)
+              repoLogPath: $(Build.Arcade.LogsPath)
+              repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+              skipCodeCoverage: ${{ eq(variables['SkipCodeCoverage'], 'true') }}
+              isDeltaBuild: $(IsDeltaBuild)
+              isWindows: true
+              warnAsError: 0
+
+      - job: Ubuntu
+        timeoutInMinutes: 180
+        testResultsFormat: VSTest
+
+        pool:
+          ${{ if eq(variables['runAsPublic'], 'true') }}:
+            name: $(DncEngPublicBuildPool)
+            demands: ImageOverride -equals build.ubuntu.2004.amd64.open
+          # Non-public (i.e., official builds)
+          ${{ else }}:
+            name: $(DncEngInternalBuildPool)
+            demands: ImageOverride -equals build.ubuntu.2004.amd64
+
+        variables:
+          - _buildScript: $(Build.SourcesDirectory)/build.sh --ci
+
+        preSteps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            fetchDepth: $(_FetchDepth)
+
+        steps:
+          - template: \eng\pipelines\templates\BuildAndTest.yml
+            parameters:
+              buildScript: $(_buildScript)
+              buildConfig: $(_BuildConfig)
+              repoLogPath: $(Build.Arcade.LogsPath)
+              repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+              skipCodeCoverage: true
+              isDeltaBuild: $(IsDeltaBuild)
+              isWindows: false
+              warnAsError: 0
+
+
+- stage: correctness
+  displayName: Correctness
+  dependsOn: []
+  variables:
+  - template: /eng/common/templates/variables/pool-providers.yml
+  jobs:
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enableMicrobuild: true
+      enableTelemetry: true
+      runAsPublic: ${{ variables['runAsPublic'] }}
+      workspace:
+        clean: all
+
+      jobs:
+      - job: WarningsCheck
+        timeoutInMinutes: 180
+
+        pool:
+          ${{ if eq(variables['runAsPublic'], 'true') }}:
+            name: $(DncEngPublicBuildPool)
+            demands: ImageOverride -equals build.ubuntu.2004.amd64.open
+          # Non-public (i.e., official builds)
+          ${{ else }}:
+            name: $(DncEngInternalBuildPool)
+            demands: ImageOverride -equals build.ubuntu.2004.amd64
+
+        variables:
+          - _buildScript: $(Build.SourcesDirectory)/build.sh --ci
+
+        preSteps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            fetchDepth: $(_FetchDepth)
+
+        steps:
+          - template: \eng\pipelines\templates\BuildAndTest.yml
+            parameters:
+              buildScript: $(_buildScript)
+              buildConfig: $(_BuildConfig)
+              repoLogPath: $(Build.Arcade.LogsPath)
+              repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+              skipCodeCoverage: true
+              skipTests: true
+              isDeltaBuild: $(IsDeltaBuild)
+              isWindows: false
+
+
+# Publish and validation steps. Only run in official builds
+- ${{ if and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - template: /eng/common/templates/post-build/post-build.yml
+    parameters:
+      validateDependsOn:
+        - build
+        - correctness
+      publishingInfraVersion: 3
+      enableSymbolValidation: false
+      enableSigningValidation: false
+      enableNugetValidation: false
+      enableSourceLinkValidation: false
+      # these param values come from the DotNet-Winforms-SDLValidation-Params azdo variable group
+      SDLValidationParameters:
+        enable: false
+        params: ' -SourceToolsList $(_TsaSourceToolsList)
+          -TsaInstanceURL $(_TsaInstanceURL)
+          -TsaProjectName $(_TsaProjectName)
+          -TsaNotificationEmail $(_TsaNotificationEmail)
+          -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+          -TsaBugAreaPath $(_TsaBugAreaPath)
+          -TsaIterationPath $(_TsaIterationPath)
+          -TsaRepositoryName $(_TsaRepositoryName)
+          -TsaCodebaseName $(_TsaCodebaseName)
+          -TsaOnboard $(_TsaOnboard)
+          -TsaPublish $(_TsaPublish)'

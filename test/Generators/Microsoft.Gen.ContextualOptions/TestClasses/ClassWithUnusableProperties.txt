@@ -1,0 +1,22 @@
+﻿using System;
+using System.Collections;
+using Microsoft.Extensions.Options.Contextual;
+
+namespace TestClasses
+{
+    [OptionsContext]
+    public partial class ClassWithUnusableProperties : IEnumerator
+    {
+        private static string PrivateProperty { get; set; }
+        public static string StaticProperty { get; set; }
+        public string SetOnlyProperty { set => throw new NotImplementedException(); }
+        public ReadOnlySpan<string> RefOnlyProperty => throw new NotImplementedException();
+        public string PrivateGetterProperty { private get; set; }
+        public string this[string x] => throw new NotImplementedException();
+        public unsafe int* PointerProperty { get; set; }
+        public unsafe delegate*<void> FunctionPointerProperty { get; set; }
+        object IEnumerator.Current => throw new NotImplementedException();
+        bool IEnumerator.MoveNext() => throw new NotImplementedException();
+        void IEnumerator.Reset() => throw new NotImplementedException();
+    }
+}

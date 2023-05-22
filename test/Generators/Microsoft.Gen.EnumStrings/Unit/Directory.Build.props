@@ -1,0 +1,30 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.EnumStrings.Test</RootNamespace>
+    <Description>Unit tests for Gen.EnumStrings.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SkipR9Analyzers>true</SkipR9Analyzers>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+    <InjectFrozenCollectionsOnLegacy>true</InjectFrozenCollectionsOnLegacy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\**\*.cs" />
+    <Compile Include="..\..\..\Shared\*.cs" LinkBase="Shared" />
+    <Content Include="..\..\TestClasses\**\*.cs" Link="TestClasses\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\Libraries\Microsoft.Extensions.EnumStrings\Microsoft.Extensions.EnumStrings.csproj"  />
+    <ProjectReference Include="..\..\..\..\..\src\Generators\Microsoft.Gen.EnumStrings\Roslyn$(AnalyzerRoslynVersion)\Microsoft.Gen.EnumStrings.Roslyn$(AnalyzerRoslynVersion).csproj" />
+    <ProjectReference Include="..\..\Generated\Roslyn$(AnalyzerRoslynVersion)\Microsoft.Gen.EnumStrings.Roslyn$(AnalyzerRoslynVersion).Generated.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+  </ItemGroup>
+</Project>

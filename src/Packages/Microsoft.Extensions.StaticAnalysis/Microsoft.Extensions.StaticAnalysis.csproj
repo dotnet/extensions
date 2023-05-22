@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Microsoft.Extensions.StaticAnalysis</PackageId>
+    <Description>Curated set of code analyzers and code analyzer settings.</Description>
+    <Workstream>Fundamentals</Workstream>
+    <Category>Static Analysis</Category>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <!-- Remove once https://github.com/NuGet/Home/issues/8583 is fixed -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" PrivateAssets="None" />
+    <PackageReference Include="SonarAnalyzer.CSharp" PrivateAssets="None" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Microsoft.Extensions.ExtraAnalyzers/Microsoft.Extensions.ExtraAnalyzers.csproj" PrivateAssets="None" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\*" PackagePath="build\" />
+    <Content Include="build\config\*" PackagePath="build\config" />
+  </ItemGroup>
+
+  <Target Name="CoreBuild" DependsOnTargets="ResolveProjectReferences">
+    <MakeDir Directories="$(IntermediateOutputPath)" ContinueOnError="True"/>
+  </Target>
+</Project>

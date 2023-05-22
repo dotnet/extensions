@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Telemetry</RootNamespace>
+    <Description>Provides canonical implementations of telemetry abstractions</Description>
+    <Workstream>Telemetry</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedText>true</InjectSharedText>
+    <InjectSharedDataValidation>true</InjectSharedDataValidation>
+    <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
+    <InjectSharedPools>true</InjectSharedPools>
+    <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
+    <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <TempMinCodeCoverage>79</TempMinCodeCoverage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>90</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.AutoActivation\DependencyInjection.AutoActivation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.AmbientMetadata.Application\Microsoft.Extensions.AmbientMetadata.Application.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="OpenTelemetry" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+    <InternalsVisibleToTest Include="Microsoft.AspNetCore.Telemetry.Tests" />
+    <InternalsVisibleToTest Include="Microsoft.AspNetCore.Telemetry.Middleware.Tests" />
+    <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Telemetry.Tests" />
+    <InternalsVisibleToTest Include="Microsoft.Azure.Extensions.Telemetry.Tests" />
+    <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Telemetry.PerformanceTests" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
+    <InternalsVisibleTo Include="Microsoft.Extensions.Http.Telemetry" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Telemetry" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Telemetry.Middleware" />
+  </ItemGroup>
+</Project>

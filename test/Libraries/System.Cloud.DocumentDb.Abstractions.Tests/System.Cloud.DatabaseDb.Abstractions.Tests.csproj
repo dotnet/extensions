@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>System.Cloud.DocumentDb</RootNamespace>
+    <Description>Unit tests for System.Cloud.DocumentDb.Abstractions.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\System.Cloud.DocumentDb.Abstractions\System.Cloud.DocumentDb.Abstractions.csproj" ProjectUnderTest="true" />
+  </ItemGroup>
+</Project>

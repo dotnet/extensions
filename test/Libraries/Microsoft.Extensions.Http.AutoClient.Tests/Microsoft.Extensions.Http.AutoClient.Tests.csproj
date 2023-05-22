@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Http.AutoClient.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.Http.AutoClient.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Http.AutoClient\Microsoft.Extensions.Http.AutoClient.csproj" ProjectUnderTest="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Net.Http" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
+  </ItemGroup>
+</Project>

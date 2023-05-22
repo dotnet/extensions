@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Http.AutoClient</RootNamespace>
+    <Description>Makes it easy to automatically create efficient and easy to use client code to invoke REST HTTP APIs.</Description>
+    <Workstream>Fundamentals</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>97</MinCodeCoverage>
+    <MinMutationScore>100</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="buildTransitive\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.AutoClient\Roslyn3.8\Microsoft.Gen.AutoClient.Roslyn3.8.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.AutoClient\Roslyn4.0\Microsoft.Gen.AutoClient.Roslyn4.0.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="System.Net.Http" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
+    <PackageReference Include="System.Net.Http.Json" Condition="$([MSBuild]::VersionLessThan('$([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)'))', '5.0'))" />
+ </ItemGroup>
+</Project>

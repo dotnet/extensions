@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Microsoft.Gen.ContextualOptions</AssemblyName>
+    <AnalyzerRoslynVersion>3.8</AnalyzerRoslynVersion>
+    <RoslynApiVersion>$(MicrosoftCodeAnalysisVersion_3_8)</RoslynApiVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>98</MinCodeCoverage>
+    <MinMutationScore>85</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Update="..\Common\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageVersion Update="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.8.0" />
+    <PackageVersion Update="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" />
+    <PackageVersion Update="Microsoft.CodeAnalysis" Version="3.8.0" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Compliance</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.Compliance.Abstactions.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" ProjectUnderTest="true" />
+  </ItemGroup>
+</Project>

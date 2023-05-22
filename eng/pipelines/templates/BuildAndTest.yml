@@ -1,0 +1,108 @@
+parameters:
+  - name: buildScript
+    type: string
+  - name: buildConfig
+    type: string
+  - name: repoLogPath
+    type: string
+  - name: repoTestResultsPath
+    type: string
+  - name: isDeltaBuild
+    type: string
+  - name: isWindows
+    type: string
+  - name: skipCodeCoverage
+    type: boolean
+    default: false
+  - name: skipTests
+    type: boolean
+    default: false
+  - name: warnAsError
+    type: number
+    default: 1
+
+steps:
+  # Debug
+  # - pwsh: |
+  #       Write-Host 'buildScript: ${{ parameters.buildScript }}'
+  #       Write-Host 'buildConfig: ${{ parameters.buildConfig }}'
+  #       Write-Host 'repoLogPath: ${{ parameters.repoLogPath }}'
+  #       Write-Host 'repoTestResultsPath: ${{ parameters.repoTestResultsPath }}'
+  #       Write-Host 'isDeltaBuild: ${{ parameters.isDeltaBuild }}'
+  #       Write-Host 'isWindows: ${{ parameters.isWindows }}'
+
+  #       Write-Host 'skipCodeCoverage: ${{ parameters.skipCodeCoverage }}'
+  #       Write-Host 'skipCodeCoverage == true: ${{ eq(parameters.skipCodeCoverage, true) }}'
+  #       Write-Host "skipCodeCoverage == 'true': ${{ eq(parameters.skipCodeCoverage, 'true') }}"
+  #       Write-Host 'skipCodeCoverage != true: ${{ ne(parameters.skipCodeCoverage, true) }}'
+  #       Write-Host "skipCodeCoverage != 'true': ${{ ne(parameters.skipCodeCoverage, 'true') }}"
+  #       Write-Host 'running: ${{ and(eq(parameters.isWindows, 'true'), ne(parameters.skipCodeCoverage, true)) }}'
+
+  #       Get-ChildItem env:* | Sort-Object Name  
+  #   displayName: Debug
+
+  - pwsh: |
+        function Export { param($i); Write-Host "$i"; Write-Host "##$i" }
+        Export "vso[task.setvariable variable=IsDeltaBuild]${{ parameters.isDeltaBuild }}"
+    displayName: Set flags
+
+  - script: ${{ parameters.buildScript }}
+            -restore
+            /bl:${{ parameters.repoLogPath }}/restore.binlog
+    displayName: Restore
+
+  - script: ${{ parameters.buildScript }}
+            -build
+            -configuration ${{ parameters.buildConfig }}
+            -warnAsError ${{ parameters.warnAsError }}
+            /bl:${{ parameters.repoLogPath }}/build.binlog
+            $(_OfficialBuildIdArgs)
+    displayName: Build
+
+  - ${{ if ne(parameters.skipTests, 'true') }}:
+    - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
+              --settings $(Build.SourcesDirectory)/eng/CodeCoverage.config
+              --output ${{ parameters.repoTestResultsPath }}
+              "${{ parameters.buildScript }} -test -configuration ${{ parameters.buildConfig }} /bl:${{ parameters.repoLogPath }}/tests.binlog $(_OfficialBuildIdArgs)"
+      displayName: Run tests
+
+    - pwsh: |
+        Get-ChildItem ${{ parameters.repoTestResultsPath }} -Include "*_hangdump.dmp","Sequence_*.xml" -Recurse | `
+            ForEach-Object {
+                $sourceFolder = $_.Directory.Name;
+                # The folder must be a GUID, see https://learn.microsoft.com/dotnet/core/tools/dotnet-test#options
+                $not_used = [System.Guid]::Empty;
+                if ([System.Guid]::TryParse($sourceFolder, [System.Management.Automation.PSReference]$not_used)) {
+                    $destinationFolder = $(New-Item -Path ${{ parameters.repoLogPath }} -Name $sourceFolder -ItemType "Directory" -Force).FullName;
+                    $destination = "$destinationFolder\$($_.Name)";
+                    Copy-Item -Path $_.FullName -Destination $destination -Force;
+                }
+            }
+
+      displayName: Copy crash results to logs
+      condition: always()
+      continueOnError: true
+
+  # Run code coverage reporting and validation on Windows
+  # a) we run a subset of tests on Linux
+  # b) we can only publish a single coverage report,
+  #    see https://learn.microsoft.com/azure/devops/pipelines/tasks/reference/publish-code-coverage-results-v2#is-code-coverage-data-merged-when-multiple-files-are-provided-as-input-to-the-task-or-multiple-tasks-are-used-in-the-pipeline
+  - ${{ if and(eq(parameters.isWindows, 'true'), ne(parameters.skipCodeCoverage, 'true')) }}:
+    - template: \eng\pipelines\templates\TestCoverageReport.yml
+      parameters:
+        isDeltaBuild: ${{ parameters.isDeltaBuild }}
+        repoLogPath: ${{ parameters.repoLogPath }}
+        testResultsPath: ${{ parameters.repoTestResultsPath }}
+        testResultsFile: ${{ parameters.repoTestResultsPath }}/.cobertura.xml
+
+  - ${{ if eq(parameters.isWindows, 'true') }}:
+    - script: ${{ parameters.buildScript }}
+              -pack
+              -sign $(_SignArgs)
+              -publish $(_PublishArgs)
+              -configuration ${{ parameters.buildConfig }}
+              -warnAsError 1
+              /bl:${{ parameters.repoLogPath }}/pack.binlog
+              /p:Restore=false /p:Build=false
+              $(_OfficialBuildIdArgs)
+      displayName: Pack, Sign, and Publish

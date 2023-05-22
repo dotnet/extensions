@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Analyzers.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Packaging.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\LegacySupport.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Shared.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Generators.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\ProjectStaging.targets" />
+
+  <!-- Warning stuff -->
+  <PropertyGroup>
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1138;MSB3270</MSBuildWarningsAsMessages>
+    <WarningLevel>5</WarningLevel>
+
+    <!-- This is false for local development, but set to true in the CI system -->
+    <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">false</TreatWarningsAsErrors>
+
+    <!-- TODO: to be reenabled and all warnings fixed (https://github.com/dotnet/r9/issues/177) -->
+    <NoWarn>$(NoWarn);IL2026;IL2087;IL2067;IL2075;IL2091;IL2072;IL2090;CA1825;IL2070;IL2098;IL2057</NoWarn>
+
+    <!-- Prevent analyzer crashes from stopping things -->
+    <NoWarn>$(NoWarn);AD0001</NoWarn>
+
+    <!-- R9A029 is for R9 customers, not for R9 itself -->
+    <NoWarn>$(NoWarn);R9A029</NoWarn>
+
+    <!-- Temporary -->
+    <NoWarn>$(NoWarn);R9A049</NoWarn>
+
+    <!-- NU5104: A stable release of a package should not have a prerelease dependency -->
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
+
+    <NoWarn Condition="'$(GenerateDocumentationFile)' != 'true'">$(NoWarn);SA1600;SA0001</NoWarn>
+
+    <!-- Legacy targets do not support attributes for a nullable context thus suppressing null check warnings -->
+    <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net472' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>
+  </PropertyGroup>
+
+  <!-- .NET 8 specific configurations (https://github.com/dotnet/r9/issues/177) -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <!-- Ignore ASP0019: Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate key  -->
+    <NoWarn>$(NoWarn);ASP0019</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Ignore RS1024: Compare symbols correctly (https://github.com/dotnet/r9/issues/177) -->
+    <NoWarn>$(NoWarn);RS1024</NoWarn>
+  </PropertyGroup>
+
+  <!-- Ignore SuppressTfmSupportBuildWarnings warning for .NET Core 3.1 due to System.Diagnostic.DiagnosticSource 7.0.0 version -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(Stage)' == 'dev' AND '$(OutputType)' != 'Exe' AND '$(Api)' != 'false'">
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExperimentalAttribute" />
+  </ItemGroup>
+
+  <Target Name="AddInternalsVisibleToDynamicProxyGenAssembly2" BeforeTargets="BeforeCompile">
+    <ItemGroup Condition="'@(InternalsVisibleToDynamicProxyGenAssembly2->Count())' &gt; 0">
+      <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+        <_Parameter1 Condition="'$(SignArtifacts)' == 'true' ">DynamicProxyGenAssembly2, PublicKey=0024000004800000940000000602000000240000525341310004000001000100c547cac37abd99c8db225ef2f6c8a3602f3b3606cc9891605d02baa56104f4cfc0734aa39b93bf7852f7d9266654753cc297e7d2edfe0bac1cdcf9f717241550e0a7b191195b7667bb4f64bcb8e2121380fd1d9d46ad2d92d2d15605093924cceaf74c4861eff62abf69b9291ed0a340e113be11e6a7d3113e92484cf7045cc7</_Parameter1>
+        <_Parameter1 Condition="'$(SignArtifacts)' != 'true' ">DynamicProxyGenAssembly2</_Parameter1>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddInternalsVisibleToTest" Condition="'$(BuildTests)'!='false'" BeforeTargets="BeforeCompile">
+    <ItemGroup Condition="'@(InternalsVisibleToTest->Count())' &gt; 0">
+      <InternalsVisibleTo Include="%(InternalsVisibleToTest.Identity)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ConfigureTestRunnerAdditionalArguments" BeforeTargets="_InnerGetTestsToRun">
+    <PropertyGroup>
+      <!-- See https://learn.microsoft.com/dotnet/core/tools/dotnet-test -->
+      <_BlameArgs>--blame --blame-crash --blame-crash-dump-type full --blame-hang --blame-hang-dump-type full --blame-hang-timeout 6m</_BlameArgs>
+
+      <!-- This property is used by the Arcade SDK while bootstrapping the VS Test runner -->
+      <TestRunnerAdditionalArguments>$(TestRunnerAdditionalArguments) $(_BlameArgs)</TestRunnerAdditionalArguments>
+    </PropertyGroup>
+  </Target>
+</Project>

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Produces reports about the code being compiled which are useful during privacy and telemetry audits.</Description>
+    <Workstream>Fundamentals</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BuildAnalyzerReferences>true</BuildAnalyzerReferences>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>n/a</MinCodeCoverage>
+    <MinMutationScore>n/a</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.ComplianceReports\Roslyn3.8\Microsoft.Gen.ComplianceReports.Roslyn3.8.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.ComplianceReports\Roslyn4.0\Microsoft.Gen.ComplianceReports.Roslyn4.0.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.MeteringReports\Roslyn3.8\Microsoft.Gen.MeteringReports.Roslyn3.8.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.MeteringReports\Roslyn4.0\Microsoft.Gen.MeteringReports.Roslyn4.0.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="buildTransitive\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive" />
+  </ItemGroup>
+
+</Project>

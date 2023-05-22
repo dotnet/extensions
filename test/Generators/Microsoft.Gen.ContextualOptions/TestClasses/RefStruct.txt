@@ -1,0 +1,12 @@
+﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
+
+using Microsoft.Extensions.Options.Contextual;
+
+namespace TestClasses
+{
+    [OptionsContext]
+    public ref partial struct RefStruct
+    {
+        public string Foo => "FooValue";
+    }
+}

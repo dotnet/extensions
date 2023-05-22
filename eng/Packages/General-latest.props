@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(LatestTargetFramework)'">
+    <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProviderVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfigurationBinderVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLineVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfigurationVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(MicrosoftExtensionsDiagnosticsHealthChecksVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Features" Version="$(MicrosoftExtensionsFeaturesVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="$(MicrosoftExtensionsHttpPollyVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfigurationVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="$(MicrosoftExtensionsOptionsDataAnnotationsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(MicrosoftExtensionsPrimitivesVersion)" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourceVersion)" />
+    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="$(SystemDiagnosticsPerformanceCounterVersion)" />
+    <PackageVersion Include="System.IO.Hashing" Version="$(SystemIOHashingVersion)" />
+    <PackageVersion Include="System.Net.Http.Json" Version="$(SystemNetHttpJsonVersion)" />
+    <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup Condition="'$(InjectxxH3OnLegacy)' == 'true'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InjectBitOperationsOnLegacy>true</InjectBitOperationsOnLegacy>
+  </PropertyGroup>
+</Project>

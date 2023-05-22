@@ -1,0 +1,69 @@
+<Project>
+  <Target Name="_{TargetPrefix}GatherAnalyzers">
+
+    <ItemGroup>
+      <_{TargetPrefix}Analyzer Include="@(Analyzer)" Condition="'%(Analyzer.NuGetPackageId)' == '{NuGetPackageId}'" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_{TargetPrefix}AnalyzerMultiTargeting"
+          Condition="'$(SupportsRoslynComponentVersioning)' != 'true'"
+          AfterTargets="ResolvePackageDependenciesForBuild;ResolveNuGetPackageAssets"
+          DependsOnTargets="_{TargetPrefix}GatherAnalyzers">
+
+    <ItemGroup>
+      <!-- Remove our analyzers targeting roslyn4.x -->
+      <Analyzer Remove="@(_{TargetPrefix}Analyzer)"
+                Condition="$([System.String]::Copy('%(_{TargetPrefix}Analyzer.Identity)').IndexOf('roslyn4')) >= 0"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_{TargetPrefix}RemoveAnalyzers"
+          Condition="'$({DisableSourceGeneratorPropertyName})' == 'true'"
+          AfterTargets="ResolvePackageDependenciesForBuild;ResolveNuGetPackageAssets"
+          DependsOnTargets="_{TargetPrefix}GatherAnalyzers">
+
+    <!-- Remove all our analyzers -->
+    <ItemGroup>
+      <Analyzer Remove="@(_{TargetPrefix}Analyzer)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+      Microsoft's mandatory guardian build analysis removes all analyzers, including code generators,
+      from a csproj then adds back only their own. But our projects need generators to build, so we
+      need a mechanism to add them back.
+
+      See: https://dev.azure.com/securitytools/SecurityIntegration/_git/Microsoft.Guardian?path=%2Fsrc%2FMicrosoft.Guardian.RoslynAnalyzers%2FRoslynEnvironment.cs
+
+      Workaround is done in two steps (targets):
+
+        1. We make a snapshot of set of analyzers BEFORE guardian build analysis removes them,
+           but AFTER we have evaluated which of them based on the .NET toolchain we should use
+           (Roslyn3.8 vs. Roslyn4.0 saga).
+
+        2. Re-add subset of analyzers back AFTER guardian build analysis runs but BEFORE core
+           compilation starts, effectively reverting the changes done. Note that this is only
+           done for analyzers that are shipped with this package only.
+    -->
+  <Target Name="_{TargetPrefix}CreateAnalyzerSnapshot"
+          Condition="'$(GdnRoslynAnalyzersRunId)' != ''"
+          AfterTargets="_{TargetPrefix}AnalyzerMultiTargeting;_{TargetPrefix}RemoveAnalyzers">
+
+    <CreateItem Include="@(Analyzer)">
+      <Output ItemName="_{TargetPrefix}AnalyzerSnapshot" TaskParameter="Include"/>
+    </CreateItem>
+  </Target>
+
+  <Target Name="_{TargetPrefix}ReAddCodeGenerators"
+          Condition="'$(GdnRoslynAnalyzersRunId)' != ''"
+          AfterTargets="ResolveCodeAnalysisRuleSet"
+          BeforeTargets="CoreCompile"
+          DependsOnTargets="_{TargetPrefix}CreateAnalyzerSnapshot">
+
+    <ItemGroup>
+      <Analyzer Include="@(_{TargetPrefix}AnalyzerSnapshot)"
+                Condition="'%(_{TargetPrefix}AnalyzerSnapshot.NuGetPackageId)' == '{NuGetPackageId}'"/>
+    </ItemGroup>
+  </Target>
+</Project>

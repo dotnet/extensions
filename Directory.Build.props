@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+
+  <!-- TFMs and their permutations -->
+  <PropertyGroup>
+    <TargetFrameworkName>net</TargetFrameworkName>
+    <TargetFrameworkMajorVersion>8</TargetFrameworkMajorVersion>
+    <TargetFrameworkMinorVersion>0</TargetFrameworkMinorVersion>
+    <TargetFrameworkVersion>$(TargetFrameworkMajorVersion).$(TargetFrameworkMinorVersion)</TargetFrameworkVersion>
+
+    <!-- The latest TFM we're targeting overall -->
+    <LatestTargetFramework>$(TargetFrameworkName)$(TargetFrameworkVersion)</LatestTargetFramework>
+    <!-- All the .NET TFMs we're building -->
+    <SupportedNetCoreTargetFrameworks>$(LatestTargetFramework);net6.0</SupportedNetCoreTargetFrameworks>
+    <NetCoreTargetFrameworks>$(SupportedNetCoreTargetFrameworks);netcoreapp3.1</NetCoreTargetFrameworks>
+
+    <!-- The minimum supported .NET version for external consumers. This is used for packaging control, see Packaging.targets -->
+    <MinimumSupportedTfmForPackaging>net6.0</MinimumSupportedTfmForPackaging>
+
+    <!-- Limit the .NET TFMs when .targetframeworks is defined -->
+    <!--
+      When .targetframeworks exists, only the TFMs listed in this file will be built unless for the projects
+      which have mandatory TFMs. Variables named $(Conditional[TFM]) will include this TFM only if it should
+      be built. In projects that can optionally target the TFM use this variable instead of the TFM.
+    -->
+    <CustomTargetFrameworks Condition="Exists('$(MSBuildThisFileDirectory)\.targetframeworks')">$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)\.targetframeworks').Trim())</CustomTargetFrameworks>
+    <SupportedNetCoreTargetFrameworks Condition="'$(CustomTargetFrameworks)' != ''">$(LatestTargetFramework)</SupportedNetCoreTargetFrameworks>
+    <SupportedNetCoreTargetFrameworks Condition="'$(CustomTargetFrameworks)' != '' AND $(CustomTargetFrameworks.Contains('net6.0'))">$(SupportedNetCoreTargetFrameworks);net6.0</SupportedNetCoreTargetFrameworks>
+    <NetCoreTargetFrameworks Condition="'$(CustomTargetFrameworks)' != ''">$(SupportedNetCoreTargetFrameworks)</NetCoreTargetFrameworks>
+    <NetCoreTargetFrameworks Condition="'$(CustomTargetFrameworks)' != '' AND $(CustomTargetFrameworks.Contains('netcoreapp3.1'))">$(NetCoreTargetFrameworks);netcoreapp3.1</NetCoreTargetFrameworks>
+    <ConditionalNet462 Condition="'$(CustomTargetFrameworks)' == '' OR $(CustomTargetFrameworks.Contains('net462'))">;net462</ConditionalNet462>
+
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory)\eng\Common.runsettings</RunSettingsFilePath>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <Deterministic>true</Deterministic>
+    <Features>debug-determinism</Features>
+
+    <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/overview -->
+    <EnablePackageValidation>true</EnablePackageValidation>
+
+    <EnableXlfLocalization>false</EnableXlfLocalization>
+    <UpdateXlfOnBuild>false</UpdateXlfOnBuild>
+
+    <!--
+      Opt Arcade-driven (restore.cmd, official build, and CI build) restores into using NuGet's static-graph restore
+      (https://learn.microsoft.com/nuget/reference/msbuild-targets#restoring-with-msbuild-static-graph-evaluation),
+      which uses MSBuild's static-graph-construction features to speed up the restore operation.
+     -->
+    <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
+
+    <!-- These are explicitly set in src/Analyzers and src/Generators -->
+    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
+
+    <!-- Allow SourceLink to work for strongly types resource files (SR) by embedding generated files into the PDBs -->
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+    <!-- Opt in to build acceleration in VS (from 17.5 onwards): https://github.com/dotnet/project-system/blob/main/docs/build-acceleration.md -->
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+    <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+  </PropertyGroup>
+
+  <!-- https://github.com/dotnet/aspnetcore/blob/72b0269372a/eng/Common.props#L3-L6 -->
+  <PropertyGroup>
+    <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win</TargetOsName>
+    <IsWindowsBuild>false</IsWindowsBuild>
+    <IsWindowsBuild Condition=" '$(TargetOsName)' == 'win' ">true</IsWindowsBuild>
+  </PropertyGroup>
+
+  <!-- TODO: workaround for https://github.com/dotnet/r9/issues/85 -->
+  <PropertyGroup>
+    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DotNetBuildOffline)' == 'true'">
+    <!--
+      Arcade has a special version prop for CodeAnalysis.CSharp in GenFacades
+      to try to match the version loaded by msbuild.  In the offline build, this
+      is simply the source-built version.
+    -->
+    <MsbuildTaskMicrosoftCodeAnalysisCSharpVersion>$(MicrosoftCodeAnalysisCSharpVersion)</MsbuildTaskMicrosoftCodeAnalysisCSharpVersion>
+  </PropertyGroup>
+
+  <Target Name="DisableBrokenAnalyzers" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="'%(Filename)' == 'Microsoft.Extensions.Configuration.Binder.SourceGeneration'"/>
+    </ItemGroup>
+  </Target>
+
+  <!-- R9 common properties -->
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Analyzers.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Packaging.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\LegacySupport.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Shared.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Generators.props" />
+</Project>

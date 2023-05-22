@@ -1,0 +1,20 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <ItemGroup>
+    <PackageReference Include="AutoFixture.AutoMoq" />
+    <PackageReference Include="autofixture" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Moq.AutoMock" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="StrongNamer" Condition="'$(SignArtifacts)' == 'true' " />
+    <PackageReference Include="Xunit.Combinatorial" />
+
+    <Content Include="$(MSBuildThisFileDirectory)\..\eng\xunit.runner.json" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsUnitTestProject)' == 'true'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\TestUtilities\TestUtilities.csproj" />
+  </ItemGroup>
+
+</Project>

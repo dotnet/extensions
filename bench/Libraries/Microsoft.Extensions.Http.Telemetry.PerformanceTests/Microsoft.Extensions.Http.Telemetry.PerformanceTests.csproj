@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Http.Telemetry.Logging.Bench</RootNamespace>
+    <Description>Benchmarks for Microsoft.Extensions.Http.Telemetry.PerformanceTests.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="HugeBody.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="MediumBody.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="SmallBody.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Http.Telemetry\Microsoft.Extensions.Http.Telemetry.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Testing\Microsoft.Extensions.Compliance.Testing.csproj" />
+  </ItemGroup>
+</Project>

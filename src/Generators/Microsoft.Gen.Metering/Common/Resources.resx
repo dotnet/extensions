@@ -1,0 +1,222 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ErrorDuplicateDimensionNameMessage" xml:space="preserve">
+    <value>Dimension {0} is defined more than once. Metric dimension names must be unique</value>
+  </data>
+  <data name="ErrorDuplicateDimensionNameTitle" xml:space="preserve">
+    <value>A strong type object contains duplicate dimension names</value>
+  </data>
+  <data name="ErrorInvalidAttributeGenericTypeMessage" xml:space="preserve">
+    <value>A type '{0}' cannot be used as a metering attribute type argument</value>
+  </data>
+  <data name="ErrorInvalidAttributeGenericTypeTitle" xml:space="preserve">
+    <value>A metering attribute type argument is invalid</value>
+  </data>
+  <data name="ErrorInvalidDimensionNamesMessage" xml:space="preserve">
+    <value>Dimension names should contain alphanumeric characters and only allowed symbols</value>
+  </data>
+  <data name="ErrorInvalidDimensionNamesTitle" xml:space="preserve">
+    <value>Dimension names should only contain alphanumeric characters and allowed symbols</value>
+  </data>
+  <data name="ErrorInvalidDimensionTypeMessage" xml:space="preserve">
+    <value>Invalid dimension type. Valid types are string and enum</value>
+  </data>
+  <data name="ErrorInvalidDimensionTypeTitle" xml:space="preserve">
+    <value>A metric class contains an invalid dimension type</value>
+  </data>
+  <data name="ErrorInvalidMethodNameMessage" xml:space="preserve">
+    <value>Metric method names cannot start with _</value>
+  </data>
+  <data name="ErrorInvalidMethodNameTitle" xml:space="preserve">
+    <value>Metric method names can't start with an underscore</value>
+  </data>
+  <data name="ErrorInvalidMethodReturnTypeArityMessage" xml:space="preserve">
+    <value>Metric method '{0}' has return type '{1}' that is generic</value>
+  </data>
+  <data name="ErrorInvalidMethodReturnTypeArityTitle" xml:space="preserve">
+    <value>Metric methods mustn't use any generic type as the return type</value>
+  </data>
+  <data name="ErrorInvalidMethodReturnTypeLocationMessage" xml:space="preserve">
+    <value>Metric method '{0}' has return type '{1}' that is defined in another namespace/class</value>
+  </data>
+  <data name="ErrorInvalidMethodReturnTypeLocationTitle" xml:space="preserve">
+    <value>Metric methods mustn't use any external type as the return type</value>
+  </data>
+  <data name="ErrorInvalidMethodReturnTypeMessage" xml:space="preserve">
+    <value>Metric methods must not return '{0}' type</value>
+  </data>
+  <data name="ErrorInvalidMethodReturnTypeTitle" xml:space="preserve">
+    <value>Metric methods mustn't use any existing type as the return type</value>
+  </data>
+  <data name="ErrorInvalidMetricNameMessage" xml:space="preserve">
+    <value>Metric name {0} is invalid. It must be non empty and start with an alphabetic character</value>
+  </data>
+  <data name="ErrorInvalidMetricNameTitle" xml:space="preserve">
+    <value>Metric names must start with an uppercase alphabetic character</value>
+  </data>
+  <data name="ErrorInvalidParameterNameMessage" xml:space="preserve">
+    <value>Metric method parameter names cannot start with _</value>
+  </data>
+  <data name="ErrorInvalidParameterNameTitle" xml:space="preserve">
+    <value>Metric method parameter names can't start with an underscore</value>
+  </data>
+  <data name="ErrorMethodHasBodyMessage" xml:space="preserve">
+    <value>Metric methods cannot have a body</value>
+  </data>
+  <data name="ErrorMethodHasBodyTitle" xml:space="preserve">
+    <value>Metric methods can't have a body</value>
+  </data>
+  <data name="ErrorMethodIsGenericMessage" xml:space="preserve">
+    <value>Metric methods cannot be generic</value>
+  </data>
+  <data name="ErrorMethodIsGenericTitle" xml:space="preserve">
+    <value>Metric methods can't be generic</value>
+  </data>
+  <data name="ErrorMetricNameReuseMessage" xml:space="preserve">
+    <value>Multiple metric methods are using metric name {0}</value>
+  </data>
+  <data name="ErrorMetricNameReuseTitle" xml:space="preserve">
+    <value>Multiple metric methods can't use the same metric name</value>
+  </data>
+  <data name="ErrorMissingMeterMessage" xml:space="preserve">
+    <value>First parameter should be of System.Diagnostics.Metrics.Meter type</value>
+  </data>
+  <data name="ErrorMissingMeterTitle" xml:space="preserve">
+    <value>The first parameter should be of type `System.Diagnostics.Metrics.Meter`</value>
+  </data>
+  <data name="ErrorNotPartialMethodMessage" xml:space="preserve">
+    <value>Metric methods must be partial</value>
+  </data>
+  <data name="ErrorNotPartialMethodTitle" xml:space="preserve">
+    <value>Metric methods must be partial</value>
+  </data>
+  <data name="ErrorNotStaticMethodMessage" xml:space="preserve">
+    <value>Metric methods must be static</value>
+  </data>
+  <data name="ErrorNotStaticMethodTitle" xml:space="preserve">
+    <value>Metric methods must be static</value>
+  </data>
+  <data name="ErrorTooManyDimensionsMessage" xml:space="preserve">
+    <value>The type {0} has too many dimensions</value>
+  </data>
+  <data name="ErrorTooManyDimensionsTitle" xml:space="preserve">
+    <value>A metric class contains too many dimensions</value>
+  </data>
+</root>

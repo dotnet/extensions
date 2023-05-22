@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Http.Telemetry</RootNamespace>
+    <Description>Telemetry support for HTTP Client.</Description>
+    <Workstream>Telemetry</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
+    <UseMeteringGenerator>true</UseMeteringGenerator>
+    <UseMeteringReportsGenerator>true</UseMeteringReportsGenerator>
+    <InjectGetOrAddOnLegacy>false</InjectGetOrAddOnLegacy>
+    <InjectTaskWaitAsyncOnLegacy>true</InjectTaskWaitAsyncOnLegacy>
+    <InjectExperimentalAttributeOnLegacy>false</InjectExperimentalAttributeOnLegacy>
+    <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
+    <InjectSharedDebugger>true</InjectSharedDebugger>
+    <InjectSharedDataValidation>false</InjectSharedDataValidation>
+    <InjectSharedPools>false</InjectSharedPools>
+    <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
+    <InjectSharedThrow>false</InjectSharedThrow>
+    <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <TempMinCodeCoverage>97</TempMinCodeCoverage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>78</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.AutoActivation\DependencyInjection.AutoActivation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+    <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Telemetry.PerformanceTests" />
+  </ItemGroup>
+</Project>

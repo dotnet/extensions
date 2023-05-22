@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)' == ''">false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <TargetFrameworks>$(LatestTargetFramework)</TargetFrameworks>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Options.Contextual</RootNamespace>
+    <Description>A common abstraction for contextual options.</Description>
+    <Workstream>Config and Experimentation</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BuildAnalyzerReferences>true</BuildAnalyzerReferences>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>dev</Stage>
+    <MinCodeCoverage>99</MinCodeCoverage>
+    <MinMutationScore>80</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="buildTransitive\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.ContextualOptions\Roslyn3.8\Microsoft.Gen.ContextualOptions.Roslyn3.8.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.ContextualOptions\Roslyn4.0\Microsoft.Gen.ContextualOptions.Roslyn4.0.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+</Project>

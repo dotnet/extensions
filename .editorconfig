@@ -1,0 +1,22 @@
+# Remove the line below if you want to inherit .editorconfig settings from higher directories
+root = true
+
+[*]
+
+indent_size = 4
+indent_style = space
+tab_width = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+spelling_languages = en-us
+spelling_checkable_types = strings,identifiers,comments
+spelling_error_severity = information
+spelling_exclusion_path = .\eng\spellchecking_exclusions.dic
+
+file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.
+
+[*.{appxmanifest,axml,build,config,csproj,dbml,discomap,dtd,json,jsproj,lsproj,njsproj,nuspec,proj,props,resjson,resw,resx,StyleCop,targets,tasks,vbproj,yml,xml,xsd}]
+indent_style = space
+indent_size = 2
+tab_width = 2

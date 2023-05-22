@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <PackageTags>$(PackageTags);$(Category)</PackageTags>
+  </PropertyGroup>
+
+  <Target Name="SetSdlAnalysisRuleSetPath" BeforeTargets="BeforeResolveCodeAnalysisRuleSet">
+    <PropertyGroup Condition="'$(RunRoslynSdlAnalyzers)' == 'True'">
+      <CodeAnalysisRuleset>$(PkgMicrosoft_M365_Internal_Security_SecurityTooling_SDLToolingConfig)\content\SDLToolingConfig\Sdl-ProdSec-Roslyn.ruleset</CodeAnalysisRuleset>
+    </PropertyGroup>
+  </Target>
+</Project>

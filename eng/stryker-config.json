@@ -1,0 +1,30 @@
+{
+  "stryker-config": {
+    "reporters": [
+      "json",
+      "html"
+    ],
+    "ignore-methods": [
+      "*Exception.ctor",
+      "AddError",
+      "ConfigureAwait",
+      "Dispose",
+      "LogError",
+      "LogInformation",
+      "Throws.*",
+      "Throw.*",
+      "ValidateOptionsResult.Fail",
+      "ValidationResult.ctor"
+    ],
+    "ignore-mutations": [
+      "block",
+      "statement"
+    ],
+    "additional-timeout": 7000,
+    "target-framework": "net7.0",
+    "thresholds": {
+      "high": 100,
+      "low": 100
+    }
+  }
+}

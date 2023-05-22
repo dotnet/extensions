@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="6.0.1" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.Build.Traversal">
+  <ItemGroup>
+      <!-- We recursively add all of the projects inside the src directory, except for the exclusions above -->
+      <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\src\**\*.csproj" Exclude="@(_ProjectsToExclude)" />
+      <!-- We recursively add all of the test projects -->
+      <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\test\**\*.csproj" />
+      <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\bench\**\*.csproj" />
+      
+      <!-- Add all the projects we want to build as project references, so the traversal SDK can build them -->
+      <ProjectReference Include="@(_ProjectsToBuild)" />
+  </ItemGroup>
+</Project>

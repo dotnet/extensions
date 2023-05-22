@@ -1,0 +1,32 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.Logging.Test</RootNamespace>
+    <Description>Unit tests for Gen.Logging.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SkipR9Analyzers>true</SkipR9Analyzers>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+    <InjectFrozenCollectionsOnLegacy>true</InjectFrozenCollectionsOnLegacy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Common\**\*.cs" />
+    <Compile Include="..\..\..\Shared\*.cs" LinkBase="Shared" />
+    <Content Include="..\..\TestClasses\**\*.cs" Link="TestClasses\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj " />
+    <ProjectReference Include="..\..\..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Testing\Microsoft.Extensions.Compliance.Testing.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\Generators\Microsoft.Gen.Logging\Roslyn$(AnalyzerRoslynVersion)\Microsoft.Gen.Logging.Roslyn$(AnalyzerRoslynVersion).csproj" />
+    <ProjectReference Include="..\..\Generated\Roslyn$(AnalyzerRoslynVersion)\Microsoft.Gen.Logging.Roslyn$(AnalyzerRoslynVersion).Generated.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+  </ItemGroup>
+</Project>

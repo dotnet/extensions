@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Disable building Integration Test projects in LUT. -->
+    <BuildForLiveUnitTesting Condition="'$(BuildForLiveUnitTesting)' == '' and '$(IsIntegrationTestProject)' == 'true'">false</BuildForLiveUnitTesting>
+
+    <!-- Redirect test logs into a subfolder -->
+    <TestResultsLogDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsLogDir)', 'TestLogs'))</TestResultsLogDir>
+
+    <!--
+      Run tests with the VS Test Runner (dotnet test) instead of the XUnit Test runner (dotnet exec).
+      This is needed to produce Cobertura code coverage. See the targets file to more information.
+    -->
+    <UseVSTestRunner>true</UseVSTestRunner>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="AutoFixture.AutoMoq" Version="4.17.0" />
+    <PackageVersion Include="autofixture" Version="4.17.0" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.13.2" />
+    <PackageVersion Include="FluentAssertions" Version="6.2.0" />
+    <PackageVersion Include="Grpc.Core.Testing" Version="2.41.0" />
+    <PackageVersion Include="K4os.Hash.xxHash" Version="1.0.7" />
+    <PackageVersion Include="MessagePack" Version="2.4.35" />
+    <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.18.0" />
+    <PackageVersion Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel" Version="2.18.0" />
+    <PackageVersion Include="Microsoft.Cloud.InstrumentationFramework" Version="3.3.4.1" />
+    <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="2.0.76" />
+    <PackageVersion Include="Microsoft.GenevaAgentChannel" Version="5.1.15580001" />
+    <PackageVersion Include="Microsoft.Skype.Seatbelt.Core.ClientHelpers" Version="8.6.0" />
+    <PackageVersion Include="Moq.AutoMock" Version="3.1.0" />
+    <PackageVersion Include="Moq" Version="4.16.1" />
+    <PackageVersion Include="ServiceFabric.Mocks" Version="4.2.6" />
+    <PackageVersion Include="StrongNamer" Version="0.2.5" />
+    <PackageVersion Include="System.Data.HashFunction.xxHash" Version="2.0.0" />
+    <PackageVersion Include="Unofficial.Microsoft.WindowsAzure.ServiceRuntime.Msshrtmi" Version="2.9.0" />
+    <PackageVersion Include="xunit.assert" Version="2.4.2" />
+    <PackageVersion Include="Xunit.Combinatorial" Version="1.5.25" />
+    <PackageVersion Include="xunit.extensibility.execution" Version="2.4.2" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)\TestOnly-net462.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\TestOnly-netcoreapp3.1.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\TestOnly-net6.0.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\TestOnly-latest.props" />
+</Project>
