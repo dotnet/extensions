@@ -1,0 +1,15 @@
+{
+    "Name": "WindowsCountersOptions",
+    "Types": [
+      {
+        "Type": "class Microsoft.Extensions.Diagnostics.WindowsCountersOptions2",
+        "Stage": "Experimental",
+        "Properties": [
+          {
+            "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Diagnostics.WindowsCountersOptions2.InstanceIpAddresses { get; set; }",
+            "Stage": "Experimental"
+          }
+        ]
+      }
+    ]
+  }

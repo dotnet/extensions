@@ -1,0 +1,4 @@
+﻿// Wrong json in purpose
+{
+  "Name": "AsyncState",
+  "Types": [

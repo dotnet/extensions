@@ -80,14 +80,18 @@ internal sealed class Arrays
         reg.RegisterConstructors(_collectionTypes, HandleConstructor);
         reg.RegisterMethods(_collectionFactories, HandleMethod);
 
-        var freezer = reg.Compilation.GetTypeByMetadataName("Microsoft.Extensions.Collections.Frozen.Freezer");
+        var freezer = reg.Compilation.GetTypeByMetadataName("System.Collections.Frozen.FrozenDictionary");
         if (freezer != null)
         {
             foreach (var method in freezer.GetMembers("ToFrozenDictionary").OfType<IMethodSymbol>().Where(m => m.TypeParameters.Length == 2))
             {
                 reg.RegisterMethod(method, HandleMethod);
             }
+        }
 
+        freezer = reg.Compilation.GetTypeByMetadataName("System.Collections.Frozen.FrozenSet");
+        if (freezer != null)
+        {
             foreach (var method in freezer.GetMembers("ToFrozenSet").OfType<IMethodSymbol>().Where(m => m.TypeParameters.Length == 1))
             {
                 reg.RegisterMethod(method, HandleMethod);

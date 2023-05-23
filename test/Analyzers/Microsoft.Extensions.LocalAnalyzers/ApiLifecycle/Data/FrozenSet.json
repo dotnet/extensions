@@ -1,0 +1,69 @@
+{
+    "Name": "FrozenSet",
+    "Types": [
+        {
+            "Type": "readonly struct Microsoft.Extensions.Collections.Frozen.FrozenSet2<T> : Microsoft.Extensions.Collections.Frozen.IFrozenSet<T>, System.Collections.Generic.IReadOnlySet<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.IEnumerable, System.Collections.Generic.IReadOnlyCollection<T>, Microsoft.Extensions.Collections.Frozen.IFindItem<T>, System.Collections.Generic.ISet<T>, System.Collections.Generic.ICollection<T> where T : notnull",
+            "Stage": "Stable",
+            "Methods": [
+                {
+                    "Member": "bool Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.Contains(T item);",
+                    "Stage": "Stable"
+                },
+                {
+                    "Member": "void Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.CopyTo(System.Span<T> destination);",
+                    "Stage": "Stable"
+                },
+                {
+                    "Member": "void Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.CopyTo(T[] array, int arrayIndex);",
+                    "Stage": "Stable"
+                },
+                {
+                    "Member": "Microsoft.Extensions.Collections.Frozen.FrozenEnumerator<T> Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.GetEnumerator();",
+                    "Stage": "Stable"
+                },
+                {
+                    "Member": "bool Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.IsProperSubsetOf(System.Collections.Generic.IEnumerable<T> other);",
+                    "Stage": "Stable"
+                },
+                {
+                    "Member": "bool Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.IsProperSupersetOf(System.Collections.Generic.IEnumerable<T> other);",
+                    "Stage": "Stable"
+                },
+                {
+                    "Member": "bool Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.IsSubsetOf(System.Collections.Generic.IEnumerable<T> other);",
+                    "Stage": "Stable"
+                },
+                {
+                    "Member": "bool Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.IsSupersetOf(System.Collections.Generic.IEnumerable<T> other);",
+                    "Stage": "Stable"
+                },
+                {
+                    "Member": "bool Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.Overlaps(System.Collections.Generic.IEnumerable<T> other);",
+                    "Stage": "Stable"
+                },
+                {
+                    "Member": "bool Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.SetEquals(System.Collections.Generic.IEnumerable<T> other);",
+                    "Stage": "Stable"
+                }
+            ],
+            "Properties": [
+                {
+                    "Member": "System.Collections.Generic.IEqualityComparer<T> Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.Comparer { get; }",
+                    "Stage": "Stable"
+                },
+                {
+                    "Member": "int Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.Count { get; }",
+                    "Stage": "Stable"
+                },
+                {
+                    "Member": "static Microsoft.Extensions.Collections.Frozen.FrozenSet2<T> Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.Empty { get; }",
+                    "Stage": "Stable"
+                },
+                {
+                    "Member": "Microsoft.Extensions.Collections.Frozen.FrozenList<T> Microsoft.Extensions.Collections.Frozen.FrozenSet2<T>.Items { get; }",
+                    "Stage": "Stable"
+                }
+            ]
+        }
+    ]
+}

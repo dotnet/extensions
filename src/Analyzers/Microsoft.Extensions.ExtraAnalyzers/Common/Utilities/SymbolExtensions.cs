@@ -119,4 +119,67 @@ internal static class SymbolExtensions
 
         return false;
     }
+
+    public static bool HasAttribute(this ISymbol sym, INamedTypeSymbol attribute)
+    {
+        foreach (var a in sym.GetAttributes())
+        {
+            if (SymbolEqualityComparer.Default.Equals(a.AttributeClass, attribute))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static bool IsContaminated(this ISymbol symbol, INamedTypeSymbol? contaminationAttribute)
+    {
+        return (contaminationAttribute != null) && IsContaminated(symbol);
+
+        bool IsContaminated(ISymbol symbol)
+        {
+            if (symbol.HasAttribute(contaminationAttribute))
+            {
+                // symbol is annotated
+                return true;
+            }
+
+            if (symbol.ContainingAssembly != null
+                && symbol.ContainingAssembly.HasAttribute(contaminationAttribute))
+            {
+                // symbol's assembly is annotated
+                return true;
+            }
+
+            var container = symbol.ContainingType;
+            while (container != null)
+            {
+                if (IsContaminated(container))
+                {
+                    // symbol's container is annotated
+                    return true;
+                }
+
+                container = container.ContainingType;
+            }
+
+            if (symbol is INamedTypeSymbol type)
+            {
+                var baseType = type.BaseType;
+                while (baseType != null)
+                {
+                    if (IsContaminated(baseType))
+                    {
+                        // symbol's base type is annotated
+                        return true;
+                    }
+
+                    baseType = baseType.BaseType;
+                }
+            }
+
+            return false;
+        }
+    }
 }

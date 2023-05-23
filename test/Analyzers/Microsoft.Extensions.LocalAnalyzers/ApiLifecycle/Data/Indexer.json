@@ -1,0 +1,21 @@
+﻿{
+  "Name": "Indexer",
+  "Types": [
+    {
+      "Type": "readonly struct Microsoft.Extensions.Collections.Frozen.FrozenOrdinalStringDictionary<TValue>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Collections.Frozen.FrozenOrdinalStringDictionary<TValue>.FrozenOrdinalStringDictionary();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "TValue Microsoft.Extensions.Collections.Frozen.FrozenOrdinalStringDictionary<TValue>.this[string key] { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

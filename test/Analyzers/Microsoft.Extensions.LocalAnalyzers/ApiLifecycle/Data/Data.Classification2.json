@@ -1,0 +1,15 @@
+﻿{
+  "Name": "Data.Classification2",
+  "Types": [
+    {
+      "Type": "interface Microsoft.Extensions.Data.Classification2.IClassifiedData",
+      "Stage": "Stable",
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Data.Classification2.DataClass Microsoft.Extensions.Data.Classification2.IClassifiedData.DataClass { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

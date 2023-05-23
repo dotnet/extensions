@@ -44,7 +44,7 @@ internal sealed class Throws
                     var diagnostic = Diagnostic.Create(
                         DiagDescriptors.ThrowsStatement,
                         op.Syntax.GetLocation(),
-                        $"Microsoft.Extensions.Diagnostics.Throws.{creationOp.Type.Name}");
+                        $"Microsoft.Shared.Diagnostics.Throws.{creationOp.Type.Name}");
 
                     context.ReportDiagnostic(diagnostic);
                 }
@@ -58,7 +58,7 @@ internal sealed class Throws
                             var diagnostic = Diagnostic.Create(
                                 DiagDescriptors.ThrowsExpression,
                                 binaryExpression.GetLocation(),
-                                "Microsoft.Extensions.Diagnostics.Throws.IfNull");
+                                "Microsoft.Shared.Diagnostics.Throws.IfNull");
 
                             context.ReportDiagnostic(diagnostic);
                         }
