@@ -1,0 +1,23 @@
+﻿{
+  "Name": "ImplicitOperator",
+  "Types": [
+    {
+      "Type": "readonly struct Microsoft.Extensions.Data.Classification.CustomerContentString2",
+      "Stage": "Obsolete",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Data.Classification.CustomerContentString2.CustomerContentString2();",
+          "Stage": "Obsolete"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Data.Classification.CustomerContentString2.implicit operator string(Microsoft.Extensions.Data.Classification.CustomerContentString2 value);",
+          "Stage": "Obsolete"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Data.Classification.CustomerContentString2.implicit operator Microsoft.Extensions.Data.Classification.CustomerContentString2(string value);",
+          "Stage": "Obsolete"
+        }
+      ]
+    }
+  ]
+}

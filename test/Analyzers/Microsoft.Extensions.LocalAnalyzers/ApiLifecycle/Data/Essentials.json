@@ -1,0 +1,31 @@
+﻿{
+  "Name": "Microsoft.Extensions.Essentials, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Types": [
+    {
+      "Type": "static class Microsoft.Extensions.Collections.Empty",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static System.Collections.Generic.IEnumerable<T> Microsoft.Extensions.Collections.Empty.Enumerable<T>();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyCollection<T> Microsoft.Extensions.Collections.Empty.ReadOnlyCollection<T>();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyDictionary<TKey,TValue> Microsoft.Extensions.Collections.Empty.ReadOnlyDictionary<TKey,TValue>();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyList<T> Microsoft.Extensions.Collections.Empty.ReadOnlyList<T>();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Collections.Generic.IReadOnlySet<TKey> Microsoft.Extensions.Collections.Empty.ReadOnlySet<TKey>();",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

@@ -223,7 +223,7 @@ namespace Microsoft.Extensions.LocalAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Replace explicit null check with call to &apos;Throws.IfNull&apos; (needs a &apos;PackageReference&apos; to &apos;Microsoft.R9.Extensions.Essentials&apos;).
+        ///   Looks up a localized string similar to Replace explicit null check with call to &apos;Throws.IfNull&apos; (needs a &apos;PackageReference&apos; to &apos;Microsoft.Extensions.Essentials&apos;).
         /// </summary>
         internal static string ReplaceWithStaticNullCheckMethod {
             get {
@@ -232,7 +232,7 @@ namespace Microsoft.Extensions.LocalAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Replace explicit throw with call to &apos;Throws&apos; (needs a &apos;PackageReference&apos; to &apos;Microsoft.R9.Extensions.Essentials&apos;).
+        ///   Looks up a localized string similar to Replace explicit throw with call to &apos;Throws&apos; (needs a &apos;PackageReference&apos; to &apos;Microsoft.Extensions.Essentials&apos;).
         /// </summary>
         internal static string ReplaceWithStaticThrowMethod {
             get {
@@ -241,7 +241,7 @@ namespace Microsoft.Extensions.LocalAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Recommends replacing explicit argument throwing with the more efficient &apos;Microsoft.R9.Extensions.Diagnostics.Throws&apos; class.
+        ///   Looks up a localized string similar to Recommends replacing explicit argument throwing with the more efficient &apos;Microsoft.Extensions.Diagnostics.Throws&apos; class.
         /// </summary>
         internal static string ThrowsExpressionDescription {
             get {
@@ -259,7 +259,7 @@ namespace Microsoft.Extensions.LocalAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use the &apos;Microsoft.R9.Extensions.Diagnostics.Throws&apos; class instead of explicitly throwing exception for improved performance.
+        ///   Looks up a localized string similar to Use the &apos;Microsoft.Shared.Diagnostics.Throws&apos; class instead of explicitly throwing exception for improved performance.
         /// </summary>
         internal static string ThrowsExpressionTitle {
             get {
@@ -268,7 +268,7 @@ namespace Microsoft.Extensions.LocalAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Recommends replacing explicit argument throwing with the more efficient &apos;Microsoft.R9.Extensions.Diagnostics.Throws&apos; class.
+        ///   Looks up a localized string similar to Recommends replacing explicit argument throwing with the more efficient &apos;Microsoft.Shared.Diagnostics.Throws&apos; class.
         /// </summary>
         internal static string ThrowsStatementDescription {
             get {
@@ -286,7 +286,7 @@ namespace Microsoft.Extensions.LocalAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use the &apos;Microsoft.R9.Extensions.Diagnostics.Throws&apos; class instead of explicitly throwing exception for improved performance.
+        ///   Looks up a localized string similar to Use the &apos;Microsoft.Shared.Diagnostics.Throws&apos; class instead of explicitly throwing exception for improved performance.
         /// </summary>
         internal static string ThrowsStatementTitle {
             get {
@@ -295,7 +295,7 @@ namespace Microsoft.Extensions.LocalAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;Microsoft.R9.Extensions.Text.NumericExtensions.ToInvariantString&apos; provides caching for common numeric values, avoiding the need to allocate new strings in many situations.
+        ///   Looks up a localized string similar to &apos;Microsoft.Shared.Text.NumericExtensions.ToInvariantString&apos; provides caching for common numeric values, avoiding the need to allocate new strings in many situations.
         /// </summary>
         internal static string ToInvariantStringDescription {
             get {
@@ -304,7 +304,7 @@ namespace Microsoft.Extensions.LocalAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use &apos;Microsoft.R9.Extensions.Text.NumericExtensions.ToInvariantString&apos; for improved performance.
+        ///   Looks up a localized string similar to Use &apos;Microsoft.Shared.Text.NumericExtensions.ToInvariantString&apos; for improved performance.
         /// </summary>
         internal static string ToInvariantStringMessage {
             get {
@@ -313,7 +313,7 @@ namespace Microsoft.Extensions.LocalAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use &apos;Microsoft.R9.Extensions.Text.NumericExtensions.ToInvariantString&apos; for improved performance.
+        ///   Looks up a localized string similar to Use &apos;Microsoft.Shared.Text.NumericExtensions.ToInvariantString&apos; for improved performance.
         /// </summary>
         internal static string ToInvariantStringTitle {
             get {

@@ -1,0 +1,15 @@
+﻿{
+  "Name": "SomePackage",
+  "Types": [
+    {
+      "Type": "static class SomePackage.Test",
+      "Stage": "Obsolete",
+      "Methods": [
+        {
+          "Member": "static void SomePackage.Test.Load();",
+          "Stage": "Obsolete"
+        }
+      ]
+    }
+  ]
+}

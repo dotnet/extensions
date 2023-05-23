@@ -1,0 +1,55 @@
+﻿{
+  "Name": "Freezer",
+  "Types": [
+    {
+      "Type": "static class Microsoft.Extensions.Collections.Frozen.Freezer2",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Collections.Frozen.FrozenDictionary2<TKey, TValue> Microsoft.Extensions.Collections.Frozen.Freezer2.ToFrozenDictionary<TKey, TValue>(this System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>? e, System.Collections.Generic.IEqualityComparer<TKey> c);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.Frozen.FrozenDictionary2<TKey, TValue> Microsoft.Extensions.Collections.Frozen.Freezer2.ToFrozenDictionary<TKey, TValue>(this System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>? pairs);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.Frozen.FrozenIntDictionary2<TValue> Microsoft.Extensions.Collections.Frozen.Freezer2.ToFrozenDictionary<TValue>(this System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<int, TValue>>? pairs);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.Frozen.FrozenOrdinalStringDictionary2<TValue> Microsoft.Extensions.Collections.Frozen.Freezer2.ToFrozenDictionary<TValue>(this System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, TValue>>? pairs, bool ignoreCase);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.Frozen.FrozenOrdinalStringDictionary2<TValue> Microsoft.Extensions.Collections.Frozen.Freezer2.ToFrozenDictionary<TValue>(this System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, TValue>>? pairs);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.Frozen.FrozenList2<T> Microsoft.Extensions.Collections.Frozen.Freezer2.ToFrozenList<T>(this System.Collections.Generic.IEnumerable<T>? items);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.Frozen.FrozenSet2<T> Microsoft.Extensions.Collections.Frozen.Freezer2.ToFrozenSet<T>(this System.Collections.Generic.IEnumerable<T>? items, System.Collections.Generic.IEqualityComparer<T> comparer);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.Frozen.FrozenSet2<T> Microsoft.Extensions.Collections.Frozen.Freezer2.ToFrozenSet<T>(this System.Collections.Generic.IEnumerable<T>? items);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.Frozen.FrozenIntSet2 Microsoft.Extensions.Collections.Frozen.Freezer2.ToFrozenSet(this System.Collections.Generic.IEnumerable<int>? items);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.Frozen.FrozenOrdinalStringSet2 Microsoft.Extensions.Collections.Frozen.Freezer2.ToFrozenSet(this System.Collections.Generic.IEnumerable<string>? items, bool ignoreCase);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.Frozen.FrozenOrdinalStringSet2 Microsoft.Extensions.Collections.Frozen.Freezer2.ToFrozenSet(this System.Collections.Generic.IEnumerable<string>? items);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

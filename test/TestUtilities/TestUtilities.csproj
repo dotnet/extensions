@@ -15,7 +15,6 @@
 
       See https://xunit.github.io/docs/nuget-packages and the special note in https://xunit.github.io/releases/2.3.
     -->
-    <PackageReference Include="xunit.assert" />
     <PackageReference Include="xunit.extensibility.execution" />
   </ItemGroup>
 

@@ -118,37 +118,37 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ThrowsExpressionDescription" xml:space="preserve">
-    <value>Recommends replacing explicit argument throwing with the more efficient 'Microsoft.R9.Extensions.Diagnostics.Throws' class</value>
+    <value>Recommends replacing explicit argument throwing with the more efficient 'Microsoft.Extensions.Diagnostics.Throws' class</value>
   </data>
   <data name="ThrowsExpressionMessage" xml:space="preserve">
     <value>Use '{0}' to throw the exception instead to improve performance</value>
   </data>
   <data name="ThrowsExpressionTitle" xml:space="preserve">
-    <value>Use the 'Microsoft.R9.Extensions.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance</value>
+    <value>Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance</value>
   </data>
   <data name="ThrowsStatementDescription" xml:space="preserve">
-    <value>Recommends replacing explicit argument throwing with the more efficient 'Microsoft.R9.Extensions.Diagnostics.Throws' class</value>
+    <value>Recommends replacing explicit argument throwing with the more efficient 'Microsoft.Shared.Diagnostics.Throws' class</value>
   </data>
   <data name="ThrowsStatementMessage" xml:space="preserve">
     <value>Use '{0}' to throw the exception instead to improve performance</value>
   </data>
   <data name="ThrowsStatementTitle" xml:space="preserve">
-    <value>Use the 'Microsoft.R9.Extensions.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance</value>
+    <value>Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance</value>
   </data>
   <data name="ReplaceWithStaticNullCheckMethod" xml:space="preserve">
-    <value>Replace explicit null check with call to 'Throws.IfNull' (needs a 'PackageReference' to 'Microsoft.R9.Extensions.Essentials')</value>
+    <value>Replace explicit null check with call to 'Throws.IfNull' (needs a 'PackageReference' to 'Microsoft.Extensions.Essentials')</value>
   </data>
   <data name="ReplaceWithStaticThrowMethod" xml:space="preserve">
-    <value>Replace explicit throw with call to 'Throws' (needs a 'PackageReference' to 'Microsoft.R9.Extensions.Essentials')</value>
+    <value>Replace explicit throw with call to 'Throws' (needs a 'PackageReference' to 'Microsoft.Extensions.Essentials')</value>
   </data>
   <data name="ToInvariantStringDescription" xml:space="preserve">
-    <value>'Microsoft.R9.Extensions.Text.NumericExtensions.ToInvariantString' provides caching for common numeric values, avoiding the need to allocate new strings in many situations</value>
+    <value>'Microsoft.Shared.Text.NumericExtensions.ToInvariantString' provides caching for common numeric values, avoiding the need to allocate new strings in many situations</value>
   </data>
   <data name="ToInvariantStringMessage" xml:space="preserve">
-    <value>Use 'Microsoft.R9.Extensions.Text.NumericExtensions.ToInvariantString' for improved performance</value>
+    <value>Use 'Microsoft.Shared.Text.NumericExtensions.ToInvariantString' for improved performance</value>
   </data>
   <data name="ToInvariantStringTitle" xml:space="preserve">
-    <value>Use 'Microsoft.R9.Extensions.Text.NumericExtensions.ToInvariantString' for improved performance</value>
+    <value>Use 'Microsoft.Shared.Text.NumericExtensions.ToInvariantString' for improved performance</value>
   </data>
   <data name="ExperimentalSymbolsCantBeMarkedObsoleteDescription" xml:space="preserve">
     <value>Symbols being added to the public API of an assembly cannot be marked as obsolete</value>

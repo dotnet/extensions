@@ -1,0 +1,28 @@
+{
+    "Name": "ExperimentalDeletedNoError",
+    "Types": [
+      {
+        "Type": "sealed class Microsoft.Extensions.Diagnostics.ExperimentalAttribute2 : System.Attribute",
+        "Stage": "Experimental",
+        "Methods": [
+          {
+            "Member": "Microsoft.Extensions.Diagnostics.ExperimentalAttribute2.ExperimentalAttribute2(string? message = null);",
+            "Stage": "Experimental"
+          }
+        ],
+        "Properties": [
+          {
+            "Member": "string? Microsoft.Extensions.Diagnostics.ExperimentalAttribute2.Message { get; }",
+            "Stage": "Experimental"
+          }
+        ],
+        "Fields": [
+          {
+            "Member": "string Microsoft.Extensions.Diagnostics.ExperimentalAttribute2.ConstantString",
+            "Stage": "Experimental"
+          }
+        ]
+      }
+    ]
+  }
+  

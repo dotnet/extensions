@@ -1,0 +1,87 @@
+﻿{
+  "Name": "Microsoft.Extensions.Buffers.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.Buffers.BufferWriter<T> : System.Buffers.IBufferWriter<T>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Buffers.BufferWriter<T>.BufferWriter();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Buffers.BufferWriter<T>.Advance(int);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Memory<T> Microsoft.Extensions.Buffers.BufferWriter<T>.GetMemory(int=0);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Span<T> Microsoft.Extensions.Buffers.BufferWriter<T>.GetSpan(int=0);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Buffers.BufferWriter<T>.Reset();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Buffers.BufferWriter<T>.Capacity { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Buffers.BufferWriter<T>.WrittenCount { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlyMemory<T> Microsoft.Extensions.Buffers.BufferWriter<T>.WrittenMemory { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlySpan<T> Microsoft.Extensions.Buffers.BufferWriter<T>.WrittenSpan { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Buffers.BufferWriterPooledObjectPolicy<T> : Microsoft.Extensions.ObjectPool.PooledObjectPolicy<Microsoft.Extensions.Buffers.BufferWriter<T>>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Buffers.BufferWriterPooledObjectPolicy<T>.BufferWriterPooledObjectPolicy(int=262144);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override Microsoft.Extensions.Buffers.BufferWriter<T> Microsoft.Extensions.Buffers.BufferWriterPooledObjectPolicy<T>.Create();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.Buffers.BufferWriterPooledObjectPolicy<T>.Return(Microsoft.Extensions.Buffers.BufferWriter<T>);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Buffers.BufferWriterPooledObjectPolicy<T>.MaximumRetainedCapacity { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Buffers.IBinarySerializer",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "T Microsoft.Extensions.Buffers.IBinarySerializer.Deserialize<T>(System.ReadOnlyMemory<byte>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Buffers.IBinarySerializer.Serialize<T>(T, System.Buffers.IBufferWriter<byte>);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

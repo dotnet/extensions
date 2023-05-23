@@ -1,0 +1,21 @@
+﻿{
+  "Name": "Experimental",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.Diagnostics.ExperimentalAttribute2 : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.ExperimentalAttribute2.ExperimentalAttribute2(string? message = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.Diagnostics.ExperimentalAttribute2.Message { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+﻿{
+  "Name": "Protected",
+  "Types": [
+    {
+      "Type": "class Microsoft.Extensions.Security.Identity.AdditionalContext2",
+      "Stage": "Experimental",
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, object> Microsoft.Extensions.Security.Identity.AdditionalContext2.Features { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}

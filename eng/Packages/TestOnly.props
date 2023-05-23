@@ -34,7 +34,6 @@
     <PackageVersion Include="StrongNamer" Version="0.2.5" />
     <PackageVersion Include="System.Data.HashFunction.xxHash" Version="2.0.0" />
     <PackageVersion Include="Unofficial.Microsoft.WindowsAzure.ServiceRuntime.Msshrtmi" Version="2.9.0" />
-    <PackageVersion Include="xunit.assert" Version="2.4.2" />
     <PackageVersion Include="Xunit.Combinatorial" Version="1.5.25" />
     <PackageVersion Include="xunit.extensibility.execution" Version="2.4.2" />
   </ItemGroup>

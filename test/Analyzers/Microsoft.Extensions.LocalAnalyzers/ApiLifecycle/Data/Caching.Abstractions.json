@@ -1,0 +1,35 @@
+﻿{
+  "Name": "Microsoft.Extensions.Caching.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Types": [
+    {
+      "Type": "interface Microsoft.Extensions.Caching.ICachePipelineBuilder",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Caching.ICachePipelineBuilder Microsoft.Extensions.Caching.ICachePipelineBuilder.AddCacheWrapper(System.Func<Microsoft.Extensions.Caching.Distributed.IDistributedCache, Microsoft.Extensions.Caching.Distributed.IDistributedCache> createCacheWrapper);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Caching.ICachePipelineBuilder Microsoft.Extensions.Caching.ICachePipelineBuilder.AddCacheWrapper(System.Func<System.IServiceProvider, Microsoft.Extensions.Caching.Distributed.IDistributedCache, Microsoft.Extensions.Caching.Distributed.IDistributedCache> createCacheWrapper, System.IServiceProvider serviceProvider);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Caching.Distributed.IDistributedCache Microsoft.Extensions.Caching.ICachePipelineBuilder.Build();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Caching.ICachePipelineBuilder Microsoft.Extensions.Caching.ICachePipelineBuilder.SetCache(System.Func<Microsoft.Extensions.Caching.Distributed.IDistributedCache> createCache);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Caching.ICachePipelineBuilder Microsoft.Extensions.Caching.ICachePipelineBuilder.SetCache(Microsoft.Extensions.Caching.Distributed.IDistributedCache cache);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Caching.ICachePipelineBuilder Microsoft.Extensions.Caching.ICachePipelineBuilder.SetCache(System.Func<System.IServiceProvider, Microsoft.Extensions.Caching.Distributed.IDistributedCache> createCache, System.IServiceProvider serviceProvider);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

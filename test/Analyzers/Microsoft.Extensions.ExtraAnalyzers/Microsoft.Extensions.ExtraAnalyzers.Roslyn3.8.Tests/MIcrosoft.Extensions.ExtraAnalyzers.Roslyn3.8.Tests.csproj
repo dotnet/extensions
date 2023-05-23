@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AnalyzerRoslynVersion>3.8</AnalyzerRoslynVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Analyzers\Microsoft.Extensions.ExtraAnalyzers\Microsoft.Extensions.ExtraAnalyzers.Roslyn3.8\Microsoft.Extensions.ExtraAnalyzers.Roslyn3.8.csproj" />
+  </ItemGroup>
+</Project>
