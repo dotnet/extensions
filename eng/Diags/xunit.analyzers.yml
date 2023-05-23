@@ -1,0 +1,666 @@
+Origin:
+  AssemblyName: xunit.analyzers
+  Version: 1.0.0
+Diagnostics:
+  xUnit1000:
+    Metadata:
+      Category: Usage
+      Title: Test classes must be public
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1000
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1001:
+    Metadata:
+      Category: Usage
+      Title: Fact methods cannot have parameters
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1001
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1002:
+    Metadata:
+      Category: Usage
+      Title: Test methods cannot have multiple Fact or Theory attributes
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1002
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1003:
+    Metadata:
+      Category: Usage
+      Title: Theory methods must have test data
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1003
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1004:
+    Metadata:
+      Category: Usage
+      Title: Test methods should not be skipped
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1004
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Suggestion
+  xUnit1005:
+    Metadata:
+      Category: Usage
+      Title: Fact methods should not have test data
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1005
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1006:
+    Metadata:
+      Category: Usage
+      Title: Theory methods should have parameters
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1006
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit1007:
+    Metadata:
+      Category: Usage
+      Title: ClassData must point at a valid class
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1007
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1008:
+    Metadata:
+      Category: Usage
+      Title: Test data attribute should only be used on a Theory
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1008
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1009:
+    Metadata:
+      Category: Usage
+      Title: InlineData values must match the number of method parameters
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1009
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1010:
+    Metadata:
+      Category: Usage
+      Title: The value is not convertible to the method parameter type
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1010
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1011:
+    Metadata:
+      Category: Usage
+      Title: There is no matching method parameter
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1011
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1012:
+    Metadata:
+      Category: Usage
+      Title: Null should not be used for value type parameters
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1012
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit1013:
+    Metadata:
+      Category: Usage
+      Title: Public method should be marked as test
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1013
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit1014:
+    Metadata:
+      Category: Usage
+      Title: MemberData should use nameof operator for member name
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1014
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit1015:
+    Metadata:
+      Category: Usage
+      Title: MemberData must reference an existing member
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1015
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1016:
+    Metadata:
+      Category: Usage
+      Title: MemberData must reference a public member
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1016
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1017:
+    Metadata:
+      Category: Usage
+      Title: MemberData must reference a static member
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1017
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1018:
+    Metadata:
+      Category: Usage
+      Title: MemberData must reference a valid member kind
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1018
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1019:
+    Metadata:
+      Category: Usage
+      Title: MemberData must reference a member providing a valid data type
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1019
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1020:
+    Metadata:
+      Category: Usage
+      Title: MemberData must reference a property with a public getter
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1020
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1021:
+    Metadata:
+      Category: Usage
+      Title: MemberData should not have parameters if the referenced member is not a method
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1021
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1022:
+    Metadata:
+      Category: Usage
+      Title: Theory methods cannot have a parameter array
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1022
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1023:
+    Metadata:
+      Category: Usage
+      Title: Theory methods cannot have default parameter values
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1023
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1024:
+    Metadata:
+      Category: Usage
+      Title: Test methods cannot have overloads
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1024
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1025:
+    Metadata:
+      Category: Usage
+      Title: InlineData should be unique within the Theory it belongs to
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1025
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit1026:
+    Metadata:
+      Category: Usage
+      Title: Theory methods should use all of their parameters
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1026
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2000:
+    Metadata:
+      Category: Assertions
+      Title: Constants and literals should be the expected argument
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2000
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2001:
+    Metadata:
+      Category: Assertions
+      Title: Do not use invalid equality check
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2001
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Silent
+  xUnit2002:
+    Metadata:
+      Category: Assertions
+      Title: Do not use null check on value type
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2002
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2003:
+    Metadata:
+      Category: Assertions
+      Title: Do not use equality check to test for null value
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2003
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2004:
+    Metadata:
+      Category: Assertions
+      Title: Do not use equality check to test for boolean conditions
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2004
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2005:
+    Metadata:
+      Category: Assertions
+      Title: Do not use identity check on value type
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2005
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2006:
+    Metadata:
+      Category: Assertions
+      Title: Do not use invalid string equality check
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2006
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2007:
+    Metadata:
+      Category: Assertions
+      Title: Do not use typeof expression to check the type
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2007
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2008:
+    Metadata:
+      Category: Assertions
+      Title: Do not use boolean check to match on regular expressions
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2008
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2009:
+    Metadata:
+      Category: Assertions
+      Title: Do not use boolean check to check for substrings
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2009
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2010:
+    Metadata:
+      Category: Assertions
+      Title: Do not use boolean check to check for string equality
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2010
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2011:
+    Metadata:
+      Category: Assertions
+      Title: Do not use empty collection check
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2011
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2012:
+    Metadata:
+      Category: Assertions
+      Title: Do not use boolean check to check if a value exists in a collection
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2012
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2013:
+    Metadata:
+      Category: Assertions
+      Title: Do not use equality check to check for collection size.
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2013
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2014:
+    Metadata:
+      Category: Assertions
+      Title: Do not use throws check to check for asynchronously thrown exception
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2014
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit2015:
+    Metadata:
+      Category: Assertions
+      Title: Do not use typeof expression to check the exception type
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2015
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2016:
+    Metadata:
+      Category: Assertions
+      Title: Keep precision in the allowed range when asserting equality of doubles or decimals.
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2016
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit2017:
+    Metadata:
+      Category: Assertions
+      Title: Do not use Contains() to check if a value exists in a collection
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2017
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2018:
+    Metadata:
+      Category: Assertions
+      Title: Do not compare an object's exact type to an abstract class or interface
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2018
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit2019:
+    Metadata:
+      Category: Assertions
+      Title: Do not use obsolete throws check to check for asynchronously thrown exception
+      Description: ''
+      HelpLinkUri: https://xunit.github.io/xunit.analyzers/rules/xUnit2019
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit3000:
+    Metadata:
+      Category: Extensibility
+      Title: Test case classes must derive directly or indirectly from Xunit.LongLivedMarshalByRefObject
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit3000
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit3001:
+    Metadata:
+      Category: Extensibility
+      Title: Classes that implement Xunit.Abstractions.IXunitSerializable must have a public parameterless constructor
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit3001
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1027:
+    Metadata:
+      Category: Usage
+      Title: Collection definition classes must be public
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1027
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1033:
+    Metadata:
+      Category: Usage
+      Title: Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1033
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Suggestion

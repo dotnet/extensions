@@ -10,6 +10,7 @@
     <PackageVersion Include="Google.Protobuf" Version="3.18.3" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.41.0" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.41.0" />
+    <PackageVersion Include="ICSharpCode.Decompiler" Version="8.0.0.7106-preview2" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.28.0-preview"/>
     <PackageVersion Include="Microsoft.Azure.KeyVault.AzureServiceDeploy" Version="3.0.0" />
     <PackageVersion Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.1" />
@@ -36,6 +37,7 @@
     <PackageVersion Include="protobuf-net" Version="3.0.101" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
+    <PackageVersion Include="YamlDotNet" Version="11.1.1" />
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)\General-net462.props" />

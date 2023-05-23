@@ -1,0 +1,118 @@
+Origin:
+  AssemblyName: Microsoft.Extensions.LocalAnalyzers
+  Version: 42.42.42.42424
+Diagnostics:
+  R9A014:
+    Metadata:
+      Category: Performance
+      Title: Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
+      Description: Recommends replacing explicit argument throwing with the more efficient 'Microsoft.Extensions.Diagnostics.Throws' class
+      HelpLinkUri: https://TODO/r9a014
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  R9A015:
+    Metadata:
+      Category: Performance
+      Title: Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
+      Description: Recommends replacing explicit argument throwing with the more efficient 'Microsoft.Shared.Diagnostics.Throws' class
+      HelpLinkUri: https://TODO/r9a015
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  R9A036:
+    Metadata:
+      Category: Performance
+      Title: Use 'Microsoft.Shared.Text.NumericExtensions.ToInvariantString' for improved performance
+      Description: "'Microsoft.Shared.Text.NumericExtensions.ToInvariantString' provides caching for common numeric values, avoiding the need to allocate new strings in many situations"
+      HelpLinkUri: https://TODO/r9a036
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  R9A049:
+    Metadata:
+      Category: Correctness
+      Title: Newly added symbols must be marked as experimental
+      Description: Symbols being added to the public API of an assembly must be marked as experimental until they have been appoved
+      HelpLinkUri: https://TODO/r9a049
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  R9A050:
+    Metadata:
+      Category: Correctness
+      Title: Experimental symbols cannot be marked as obsolete
+      Description: Symbols being added to the public API of an assembly cannot be marked as obsolete
+      HelpLinkUri: https://TODO/r9a050
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  R9A051:
+    Metadata:
+      Category: Correctness
+      Title: Published symbols cannot be marked experimental
+      Description: Previously published symbols in the public API of an assembly cannot be marked experimental
+      HelpLinkUri: https://TODO/r9a051
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  R9A052:
+    Metadata:
+      Category: Correctness
+      Title: Published symbols cannot be deleted to maintain compatibility
+      Description: Published symbols cannot be deleted to maintain compatibility
+      HelpLinkUri: https://TODO/r9a052
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  R9A053:
+    Metadata:
+      Category: Correctness
+      Title: A deprecated API is not annotated with the obsolete attribute
+      Description: Deprecated API should have annotation that will guide customers regarding its replacement and the release in which it will be removed
+      HelpLinkUri: https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a053
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  R9A054:
+    Metadata:
+      Category: Correctness
+      Title: A deprecated API is marked as experimental
+      Description: Deprecated API cannot be marked as experimental
+      HelpLinkUri: https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a054
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  R9A055:
+    Metadata:
+      Category: Correctness
+      Title: Published symbols cannot be changed to maintain compatibility
+      Description: Published symbols cannot change to maintain compatibility
+      HelpLinkUri: https://TODO/r9a055
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning

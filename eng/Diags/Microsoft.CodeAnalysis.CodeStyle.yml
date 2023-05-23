@@ -1,0 +1,49 @@
+Origin:
+  AssemblyName: Microsoft.CodeAnalysis.CodeStyle
+  Version: 4.7.8.26202
+Diagnostics:
+  IDE0033:
+    Metadata:
+      Category: Style
+      Title: Use explicitly provided tuple name
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0033
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_explicit_tuple_names = true
+  IDE0044:
+    Metadata:
+      Category: Style
+      Title: Add readonly modifier
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0044
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_readonly_field = true:warning
+  IDE0070:
+    Metadata:
+      Category: Style
+      Title: Use 'System.HashCode'
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0070
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning

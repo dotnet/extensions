@@ -1,0 +1,2285 @@
+Origin:
+  AssemblyName: StyleCop.Analyzers
+  Version: 1.2.0.435
+Diagnostics:
+  SA0001:
+    Metadata:
+      Category: StyleCop.CSharp.SpecialRules
+      Title: XML comment analysis disabled
+      Description: XML comment analysis can only be performed when the project is configured to parse documentation comments. To enable this functionality, update the project to produce an XML documentation file as part of the build.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA0001.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+  SA0002:
+    Metadata:
+      Category: StyleCop.CSharp.SpecialRules
+      Title: Invalid settings file
+      Description: >-
+        Various errors in the stylecop.json file can prevent the file from being loaded by the analyzers. In this case, the default settings are used instead.
+
+
+
+        {0}
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA0002.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1000:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Keywords should be spaced correctly
+      Description: The spacing around a C# keyword is incorrect.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1000.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1001:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Commas should be spaced correctly
+      Description: The spacing around a comma is incorrect, within a C# code file.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1001.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1002:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Semicolons should be spaced correctly
+      Description: The spacing around a semicolon is incorrect, within a C# code file.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1002.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1003:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Symbols should be spaced correctly
+      Description: The spacing around an operator symbol is incorrect, within a C# code file.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1003.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1004:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Documentation lines should begin with single space
+      Description: A line within a documentation header above a C# element does not begin with a single space.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1004.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1005:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Single line comments should begin with single space
+      Description: A single-line comment within a C# code file does not begin with a single space.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1005.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1006:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Preprocessor keywords should not be preceded by space
+      Description: A C# preprocessor-type keyword is preceded by space.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1006.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1007:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Operator keyword should be followed by space
+      Description: The operator keyword within a C# operator overload method is not followed by any whitespace.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1007.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1008:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Opening parenthesis should be spaced correctly
+      Description: An opening parenthesis within a C# statement is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1008.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1009:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Closing parenthesis should be spaced correctly
+      Description: A closing parenthesis within a C# statement is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1009.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1010:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Opening square brackets should be spaced correctly
+      Description: An opening square bracket within a C# statement is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1010.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1011:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Closing square brackets should be spaced correctly
+      Description: A closing square bracket within a C# statement is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1011.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1012:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Opening braces should be spaced correctly
+      Description: An opening brace within a C# element is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1012.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1013:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Closing braces should be spaced correctly
+      Description: A closing brace within a C# element is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1013.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1014:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Opening generic brackets should be spaced correctly
+      Description: An opening generic bracket within a C# element is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1014.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1015:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Closing generic brackets should be spaced correctly
+      Description: A closing generic bracket within a C# element is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1015.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1016:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Opening attribute brackets should be spaced correctly
+      Description: An opening attribute bracket within a C# element is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1016.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1017:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Closing attribute brackets should be spaced correctly
+      Description: A closing attribute bracket within a C# element is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1017.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1018:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Nullable type symbols should be spaced correctly
+      Description: A nullable type symbol within a C# element is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1018.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1019:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Member access symbols should be spaced correctly
+      Description: The spacing around a member access symbol is incorrect, within a C# code file.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1019.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1020:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Increment decrement symbols should be spaced correctly
+      Description: An increment or decrement symbol within a C# element is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1020.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1021:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Negative signs should be spaced correctly
+      Description: A negative sign within a C# element is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1021.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1022:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Positive signs should be spaced correctly
+      Description: A positive sign within a C# element is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1022.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1023:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Dereference and access of symbols should be spaced correctly
+      Description: A dereference symbol or an access-of symbol within a C# element is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1023.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1024:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Colons Should Be Spaced Correctly
+      Description: A colon within a C# element is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1024.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1025:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Code should not contain multiple whitespace in a row
+      Description: The code contains multiple whitespace characters in a row.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1025.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1026:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Code should not contain space after new or stackalloc keyword in implicitly typed array allocation
+      Description: An implicitly typed array allocation within a C# code file is not spaced correctly.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1026.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1027:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Use tabs correctly
+      Description: The code contains a tab or space character which is not consistent with the current project settings.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1027.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1028:
+    Metadata:
+      Category: StyleCop.CSharp.SpacingRules
+      Title: Code should not contain trailing whitespace
+      Description: There should not be any whitespace at the end of a line of code.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1028.md
+      CustomTags:
+      - Unnecessary
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1100:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Do not prefix calls with base unless local implementation exists
+      Description: A call to a member from an inherited class begins with 'base.', and the local class does not contain an override or implementation of the member.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1100.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1101:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Prefix local calls with this
+      Description: A call to an instance member of the local class or a base class is not prefixed with 'this.', within a C# code file.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1101.md
+      DefaultSeverity: Warning
+    Tier: 99
+    Attributes:
+      general:
+        Severity: None
+  SA1102:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Query clause should follow previous clause
+      Description: A C# query clause does not begin on the same line as the previous clause, or on the next line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1102.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1103:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Query clauses should be on separate lines or all on one line
+      Description: The clauses within a C# query expression are not all placed on the same line, and each clause is not placed on its own line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1103.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1104:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Query clause should begin on new line when previous clause spans multiple lines
+      Description: A clause within a C# query expression begins on the same line as the previous clause, when the previous clause spans across multiple lines.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1104.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1105:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Query clauses spanning multiple lines should begin on own line
+      Description: A clause within a C# query expression spans across multiple lines, and does not begin on its own line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1105.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1106:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Code should not contain empty statements
+      Description: The C# code contains an extra semicolon.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1106.md
+      CustomTags:
+      - Unnecessary
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1107:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Code should not contain multiple statements on one line
+      Description: The C# code contains more than one statement on a single line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1107.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE2001
+  SA1108:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Block statements should not contain embedded comments
+      Description: A C# statement contains a comment between the declaration of the statement and the opening brace of the statement.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1108.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1109:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Block statements should not contain embedded regions
+      Description: A C# statement contains a region tag between the declaration of the statement and the opening brace of the statement.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1109.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1110:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Opening parenthesis or bracket should be on declaration line
+      Description: The opening parenthesis or bracket is not placed on the same line as the method/indexer/attribute/array name.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1110.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1111:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Closing parenthesis should be on line of last parameter
+      Description: The closing parenthesis or bracket in a call to or declaration of a C# method/indexer/attribute/array/constructor/delegate is not placed on the same line as the last parameter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1111.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1112:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Closing parenthesis should be on line of opening parenthesis
+      Description: The closing parenthesis or bracket in a call to a C# method or indexer, or the declaration of a method or indexer, is not placed on the same line as the opening bracket when the element does not take any parameters.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1112.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1113:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Comma should be on the same line as previous parameter
+      Description: A comma between two parameters in a call to a C# method or indexer, or in the declaration of a method or indexer, is not placed on the same line as the previous parameter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1113.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1114:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Parameter list should follow declaration
+      Description: The start of the parameter list for a method/constructor/indexer/array/operator call or declaration does not begin on the same line as the opening bracket, or on the line after the opening bracket.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1114.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1115:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Parameter should follow comma
+      Description: A parameter within a C# method or indexer call or declaration does not begin on the same line as the previous parameter, or on the next line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1115.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  SA1116:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Split parameters should start on line after declaration
+      Description: The parameters to a C# method or indexer call or declaration span across multiple lines, but the first parameter does not start on the line after the opening bracket.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1116.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  SA1117:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Parameters should be on same line or separate lines
+      Description: The parameters to a C# method or indexer call or declaration are not all on the same line or each on a separate line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1117.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  SA1118:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Parameter should not span multiple lines
+      Description: A parameter to a C# method/indexer/attribute/array, other than the first parameter, spans across multiple lines. If the parameter is short, place the entire parameter on a single line. Otherwise, save the contents of the parameter in a temporary variable and pass the temporary variable as a parameter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1118.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1119:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Statement should not use unnecessary parenthesis
+      Description: A C# statement contains parenthesis which are unnecessary and should be removed.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1119.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1119_p:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Statement should not use unnecessary parenthesis
+      Description: A C# statement contains parenthesis which are unnecessary and should be removed.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1119.md
+      CustomTags:
+      - Unnecessary
+      - NotConfigurable
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+  SA1120:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Comments should contain text
+      Description: The C# comment does not contain any comment text.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1120.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1121:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Use built-in type alias
+      Description: The code uses one of the basic C# types, but does not use the built-in alias for the type.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1121.md
+      CustomTags:
+      - Unnecessary
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1122:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Use string.Empty for empty strings
+      Description: The C# code includes an empty string, written as "".
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1122.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  SA1123:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Do not place regions within elements
+      Description: The C# code contains a region within the body of a code element.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1123.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1124:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Do not use regions
+      Description: The C# code contains a region.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1124.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+  SA1125:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Use shorthand for nullable types
+      Description: The Nullable<T> type has been defined not using the C# shorthand. For example, Nullable<DateTime> has been used instead of the preferred DateTime?
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1125.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1126:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Prefix calls correctly
+      Description: A call to a member is not prefixed with the 'this.', 'base.', 'object.' or 'typename.' prefix to indicate the intended method call, within a C# code file.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1126.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  SA1127:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Generic type constraints should be on their own line
+      Description: Each type constraint clause for a generic type parameter should be listed on a line of code by itself.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1127.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1128:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Put constructor initializers on their own line
+      Description: A constructor initializer, including the colon character, should be on its own line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1128.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1129:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Do not use default value type constructor
+      Description: When creating a new instance of a value type T, the syntax 'default(T)' is functionally equivalent to the syntax 'new T()'. To avoid confusion regarding the behavior of the resulting instance, the first form is preferred.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1129.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1130:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Use lambda syntax
+      Description: Lambda expressions are more succinct and easier to read than anonymous methods, so they should are preferred whenever the two are functionally equivalent.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1130.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1131:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Use readable conditions
+      Description: When a comparison is made between a variable and a literal, the variable should be placed on the left-hand-side to maximize readability.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1131.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1132:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Do not combine fields
+      Description: Each field should be declared on its own line, in order to clearly see each field of a type and allow for proper documentation of the behavior of each field.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1132.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Comment: S1169 handles fields and variables
+        Redundant: S1169
+  SA1133:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Do not combine attributes
+      Description: Each attribute usage should be placed in its own set of square brackets for maximum readability.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1133.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1134:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Attributes should not share line
+      Description: Each attribute should be placed on its own line of code.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1134.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0055
+  SA1135:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Using directives should be qualified
+      Description: All using directives should be qualified.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1135.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1136:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Enum values should be on separate lines
+      Description: Enum values should be placed on their own lines for maximum readability.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1136.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1137:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Elements should have the same indentation
+      Description: Elements at the same level in the syntax tree should have the same indentation.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1137.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Comment: Doesn't work with file-scoped namespaces
+  SA1139:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Use literal suffix notation instead of casting
+      Description: Use literal suffix notation instead of casting, in order to improve readability, avoid bugs related to illegal casts and ensure that optimal IL is produced.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1139.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1200:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Using directives should be placed correctly
+      Description: A C# using directive is placed outside of a namespace element.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1200.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0065
+  SA1201:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Elements should appear in the correct order
+      Description: An element within a C# code file is out of order in relation to the other elements in the code.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1201.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+  SA1202:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Elements should be ordered by access
+      Description: An element within a C# code file is out of order in relation to other elements in the code.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1202.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  SA1203:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Constants should appear before fields
+      Description: A constant field is placed beneath a non-constant field.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1203.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1204:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Static elements should appear before instance elements
+      Description: A static element is positioned beneath an instance element.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1204.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1205:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Partial elements should declare access
+      Description: The partial element does not have an access modifier defined.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1205.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1206:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Declaration keywords should follow order
+      Description: The keywords within the declaration of an element do not follow a standard ordering scheme.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1206.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1207:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Protected should come before internal
+      Description: The keyword '{0}' is positioned after the keyword '{1}' within the declaration of a {0} {1} C# element.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1207.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1208:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: System using directives should be placed before other using directives
+      Description: A using directive which declares a member of the 'System' namespace appears after a using directive which declares a member of a different namespace, within a C# code file.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1208.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1209:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Using alias directives should be placed after other using directives
+      Description: A using-alias directive is positioned before a regular using directive.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1209.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1210:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Using directives should be ordered alphabetically by namespace
+      Description: The using directives within a C# code file are not sorted alphabetically by namespace.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1210.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1211:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Using alias directives should be ordered alphabetically by alias name
+      Description: The using-alias directives within a C# code file are not sorted alphabetically by alias name.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1211.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1212:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Property accessors should follow order
+      Description: A get accessor appears after a set accessor within a property or indexer.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1212.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1213:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Event accessors should follow order
+      Description: An add accessor appears after a remove accessor within an event.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1213.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1214:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Readonly fields should appear before non-readonly fields
+      Description: A readonly field is positioned beneath a non-readonly field.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1214.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1216:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Using static directives should be placed at the correct location
+      Description: A using static directive is positioned before a regular or after an alias using directive.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1216.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1217:
+    Metadata:
+      Category: StyleCop.CSharp.OrderingRules
+      Title: Using static directives should be ordered alphabetically
+      Description: All using static directives should be ordered alphabetically.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1217.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1300:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Element should begin with upper-case letter
+      Description: The name of a C# element does not begin with an upper-case letter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1300.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1301:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Element should begin with lower-case letter
+      Description: There are currently no situations in which this rule will fire.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1301.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1302:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Interface names should begin with I
+      Description: The name of a C# interface does not begin with the capital letter I.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1302.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1303:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Const field names should begin with upper-case letter
+      Description: The name of a constant C# field should begin with an upper-case letter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1303.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1304:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Non-private readonly fields should begin with upper-case letter
+      Description: The name of a non-private readonly C# field should being with an upper-case letter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1304.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1305:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Field names should not use Hungarian notation
+      Description: The name of a field or variable in C# uses Hungarian notation.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1305.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1306:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Field names should begin with lower-case letter
+      Description: The name of a field in C# does not begin with a lower-case letter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1306.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1307:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Accessible fields should begin with upper-case letter
+      Description: The name of a public or internal field in C# does not begin with an upper-case letter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1307.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1308:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Variable names should not be prefixed
+      Description: A field name in C# is prefixed with 'm_', 's_', or 't_'.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1308.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1309:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Field names should not begin with underscore
+      Description: A field name in C# begins with an underscore.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1309.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1310:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Field names should not contain underscore
+      Description: A field name in C# contains an underscore.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1310.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1311:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Static readonly fields should begin with upper-case letter
+      Description: The name of a static readonly field does not begin with an upper-case letter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1311.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1312:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Variable names should begin with lower-case letter
+      Description: The name of a variable in C# does not begin with a lower-case letter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1312.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1313:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Parameter names should begin with lower-case letter
+      Description: The name of a parameter in C# does not begin with a lower-case letter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1313.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1314:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Type parameter names should begin with T
+      Description: The name of a C# type parameter does not begin with the capital letter T.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1314.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1400:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Access modifier should be declared
+      Description: The access modifier for a C# element has not been explicitly defined.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1400.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1401:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Fields should be private
+      Description: A field within a C# class has an access modifier other than private.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1401.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: CA1051
+  SA1402:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: File may only contain a single type
+      Description: A C# code file contains more than one unique type.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1402.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1403:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: File may only contain a single namespace
+      Description: A C# code file contains more than one namespace.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1403.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1404:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Code analysis suppression should have justification
+      Description: A Code Analysis SuppressMessage attribute does not include a justification.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1404.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1405:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Debug.Assert should provide message text
+      Description: A call to Debug.Assert in C# code does not include a descriptive message.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1405.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1406:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Debug.Fail should provide message text
+      Description: A call to Debug.Fail in C# code does not include a descriptive message.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1406.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1407:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Arithmetic expressions should declare precedence
+      Description: A C# statement contains a complex arithmetic expression which omits parenthesis around operators.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1407.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1408:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Conditional expressions should declare precedence
+      Description: A C# statement contains a complex conditional expression which omits parenthesis around operators.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1408.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1409:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Remove unnecessary code
+      Description: A C# file contains code which is unnecessary and can be removed without changing the overall logic of the code.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1409.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1410:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Remove delegate parenthesis when possible
+      Description: A call to a C# anonymous method does not contain any method parameters, yet the statement still includes parenthesis.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1410.md
+      CustomTags:
+      - Unnecessary
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1411:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Attribute constructor should not use unnecessary parenthesis
+      Description: TODO.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1411.md
+      CustomTags:
+      - Unnecessary
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1412:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Store files as UTF-8 with byte order mark
+      Description: Source files should be saved using the UTF-8 encoding with a byte order mark.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1412.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Comment: Pedantic
+  SA1413:
+    Metadata:
+      Category: StyleCop.CSharp.MaintainabilityRules
+      Title: Use trailing comma in multi-line initializers
+      Description: A multi-line initializer in a C# code file should use a comma on the last line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1413.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  SA1500:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Braces for multi-line statements should not share line
+      Description: The opening or closing brace within a C# statement, element, or expression is not placed on its own line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1500.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1501:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Statement should not be on a single line
+      Description: A C# statement containing opening and closing braces is written completely on a single line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1501.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1502:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Element should not be on a single line
+      Description: A C# element containing opening and closing braces is written completely on a single line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1502.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1503:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Braces should not be omitted
+      Description: The opening and closing braces for a C# statement have been omitted.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1503.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0011
+  SA1504:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: All accessors should be single-line or multi-line
+      Description: Within a C# property, indexer or event, at least one of the child accessors is written on a single line, and at least one of the child accessors is written across multiple lines.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1504.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1505:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Opening braces should not be followed by blank line
+      Description: An opening brace within a C# element, statement, or expression is followed by a blank line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1505.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1506:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Element documentation headers should not be followed by blank line
+      Description: An element documentation header above a C# element is followed by a blank line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1506.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1507:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Code should not contain multiple blank lines in a row
+      Description: The C# code contains multiple blank lines in a row.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1507.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE2000
+  SA1508:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Closing braces should not be preceded by blank line
+      Description: A closing brace within a C# element, statement, or expression is preceded by a blank line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1508.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE2002
+  SA1509:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Opening braces should not be preceded by blank line
+      Description: An opening brace within a C# element, statement, or expression is preceded by a blank line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1509.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1510:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Chained statement blocks should not be preceded by blank line
+      Description: Chained C# statements are separated by a blank line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1510.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1511:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: While-do footer should not be preceded by blank line
+      Description: The while footer at the bottom of a do-while statement is separated from the statement by a blank line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1511.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1512:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Single-line comments should not be followed by blank line
+      Description: A single-line comment within C# code is followed by a blank line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1512.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+  SA1513:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Closing brace should be followed by blank line
+      Description: A closing brace within a C# element, statement, or expression is not followed by a blank line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1513.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1514:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Element documentation header should be preceded by blank line
+      Description: An element documentation header above a C# element is not preceded by a blank line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1514.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1515:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Single-line comment should be preceded by blank line
+      Description: A single-line comment within C# code is not preceded by a blank line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1515.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1516:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Elements should be separated by blank line
+      Description: Adjacent C# elements are not separated by a blank line.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1516.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  SA1517:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Code should not contain blank lines at start of file
+      Description: The code file has blank lines at the start.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1517.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1518:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Use line endings correctly at end of file
+      Description: Code should not contain blank lines at the end of the file.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1518.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  SA1519:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Braces should not be omitted from multi-line child statement
+      Description: The opening and closing braces for a multi-line C# statement have been omitted.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1519.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1520:
+    Metadata:
+      Category: StyleCop.CSharp.LayoutRules
+      Title: Use braces consistently
+      Description: The opening and closing braces of a chained if/else if/else construct were included for some clauses, but omitted for others.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1520.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1600:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Elements should be documented
+      Description: A C# code element is missing a documentation header.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1600.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  SA1601:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Partial elements should be documented
+      Description: A C# partial element is missing a documentation header.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1601.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  SA1602:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Enumeration items should be documented
+      Description: An item within a C# enumeration is missing an Xml documentation header.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1602.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  SA1603:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Documentation should contain valid XML
+      Description: The XML within a C# element’s document header is badly formed.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1603.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1604:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Element documentation should have summary
+      Description: The XML header documentation for a C# element is missing a <summary> tag.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1604.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1605:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Partial element documentation should have summary
+      Description: The <summary> or <content> tag within the documentation header for a C# code element is missing or empty.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1605.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1606:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Element documentation should have summary text
+      Description: The <summary> tag within the documentation header for a C# code element is empty.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1606.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1607:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Partial element documentation should have summary text
+      Description: The <summary> or <content> tag within the documentation header for a C# code element is empty.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1607.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1608:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Element documentation should not have default summary
+      Description: The <summary> tag within an element's XML header documentation contains the default text generated by Visual Studio during the creation of the element.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1608.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1609:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Property documentation should have value
+      Description: The XML header documentation for a C# property does not contain a <value> tag.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1609.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+  SA1610:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Property documentation should have value text
+      Description: The XML header documentation for a C# property contains an empty <value> tag.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1610.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+  SA1611:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Element parameters should be documented
+      Description: A C# method, constructor, delegate or indexer element is missing documentation for one or more of its parameters.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1611.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: CS1573
+  SA1612:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Element parameter documentation should match element parameters
+      Description: The documentation describing the parameters to a C# method, constructor, delegate or indexer element does not match the actual parameters on the element.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1612.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1613:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Element parameter documentation should declare parameter name
+      Description: A <param> tag within a C# element's documentation header is missing a name attribute containing the name of the parameter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1613.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1614:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Element parameter documentation should have text
+      Description: A <param> tag within a C# element's documentation header is empty.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1614.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1615:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Element return value should be documented
+      Description: A C# element is missing documentation for its return value.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1615.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  SA1616:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Element return value documentation should have text
+      Description: The <returns> tag within a C# element's documentation header is empty.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1616.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1617:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Void return value should not be documented
+      Description: A C# code element does not contain a return value, or returns void, but the documentation header for the element contains a <returns> tag.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1617.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1618:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Generic type parameters should be documented
+      Description: A generic C# element is missing documentation for one or more of its generic type parameters.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1618.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1619:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Generic type parameters should be documented partial class
+      Description: A generic, partial C# element is missing documentation for one or more of its generic type parameters, and the documentation for the element contains a <summary> tag.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1619.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1620:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Generic type parameter documentation should match type parameters
+      Description: The <typeparam> tags within the Xml header documentation for a generic C# element do not match the generic type parameters on the element.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1620.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1621:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Generic type parameter documentation should declare parameter name
+      Description: A <typeparam> tag within the XML header documentation for a generic C# element is missing a name attribute, or contains an empty name attribute.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1621.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1622:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Generic type parameter documentation should have text
+      Description: A <typeparam> tag within the Xml header documentation for a generic C# element is empty.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1622.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1623:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Property summary documentation should match accessors
+      Description: The documentation text within a C# property’s <summary> tag does not match the accessors within the property.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1623.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1624:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Property summary documentation should omit accessor with restricted access
+      Description: The documentation text within a C# property’s <summary> tag takes into account all of the accessors within the property, but one of the accessors has limited access.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1624.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1625:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Element documentation should not be copied and pasted
+      Description: The Xml documentation for a C# element contains two or more identical entries, indicating that the documentation has been copied and pasted. This can sometimes indicate invalid or poorly written documentation.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1625.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1626:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Single-line comments should not use documentation style slashes
+      Description: The C# code contains a single-line comment which begins with three forward slashes in a row.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1626.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1627:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Documentation text should not be empty
+      Description: The XML header documentation for a C# code element contains an empty tag.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1627.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1628:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Documentation text should begin with a capital letter
+      Description: A section of the XML header documentation for a C# element does not begin with a capital letter.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1628.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1629:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Documentation text should end with a period
+      Description: A section of the XML header documentation for a C# element does not end with a period.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1629.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1630:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Documentation text should contain whitespace
+      Description: A section of the XML header documentation for a C# element does not contain any whitespace between words.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1630.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1631:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Documentation should meet character percentage
+      Description: A section of the Xml header documentation for a C# element does not contain enough alphabetic characters.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1631.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1632:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Documentation text should meet minimum character length
+      Description: A section of the Xml header documentation for a C# element is too short.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1632.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SA1633:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: File should have header
+      Description: A C# code file is missing a standard file header.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1633.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0073
+  SA1634:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: File header should show copyright
+      Description: The file header at the top of a C# code file is missing a copyright tag.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1634.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  SA1635:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: File header should have copyright text
+      Description: The file header at the top of a C# code file is missing copyright text.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1635.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  SA1636:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: File header copyright text should match
+      Description: The file header at the top of a C# code file does not contain the appropriate copyright text.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1636.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  SA1637:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: File header should contain file name
+      Description: The file header at the top of a C# code file is missing the file name.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1637.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+  SA1638:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: File header file name documentation should match file name
+      Description: The file attribute within copyright tag of the file header at the top of a C# code file does not contain the name of the file.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1638.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+  SA1639:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: File header should have summary
+      Description: The file header at the top of a C# code file does not contain a filled-in summary tag.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1639.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+  SA1640:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: File header should have valid company text
+      Description: The file header at the top of a C# code file does not contain company name text.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1640.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+  SA1641:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: File header company name text should match
+      Description: The file header at the top of a C# code file does not contain the appropriate company name text.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1641.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+  SA1642:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Constructor summary documentation should begin with standard text
+      Description: The XML documentation header for a C# constructor does not contain the appropriate summary text.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1642.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1643:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Destructor summary documentation should begin with standard text
+      Description: The XML documentation header for a C# finalizer does not contain the appropriate summary text.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1643.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1644:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Documentation headers should not contain blank lines
+      Description: A section within the XML documentation header for a C# element contains blank lines.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1644.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1645:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Included documentation file does not exist
+      Description: An included XML documentation file does not exist.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1645.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1646:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Included documentation XPath does not exist
+      Description: An included XML documentation link contains an invalid path.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1646.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1647:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Include node does not contain valid file and path
+      Description: An include tag within an XML documentation header does not contain valid file and path attribute.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1647.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1648:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: inheritdoc should be used with inheriting class
+      Description: <inheritdoc> has been used on an element that doesn't inherit from a base class or implement an interface.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1648.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1649:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: File name should match first type name
+      Description: The file name of a C# code file does not match the first type declared in the file.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1649.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SA1650:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Element documentation should be spelled correctly
+      Description: The element documentation for the element contains one or more spelling mistakes or unrecognized words.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1650.md
+      CustomTags:
+      - NotConfigurable
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Comment: Deprecated
+  SA1651:
+    Metadata:
+      Category: StyleCop.CSharp.DocumentationRules
+      Title: Do not use placeholder elements
+      Description: The element documentation contains a <placeholder> element.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1651.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  SX1101:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Do not prefix local calls with 'this.'
+      Description: A call to an instance member of the local class or a base class is prefixed with `this.`.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SX1101.md
+      CustomTags:
+      - Unnecessary
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  SX1309:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Field names should begin with underscore
+      Description: A field name in C# does not begin with an underscore.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SX1309.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SX1309S:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Static field names should begin with underscore
+      Description: A static field name in C# does not begin with an underscore.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SX1309S.md
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  SA1141:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Use tuple syntax
+      Description: Use tuple syntax instead of the underlying ValueTuple implementation type.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1141.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1142:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Refer to tuple fields by name
+      Description: A field of a tuple was referenced by its metadata name when a field name is available.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1142.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0033
+  SA1316:
+    Metadata:
+      Category: StyleCop.CSharp.NamingRules
+      Title: Tuple element names should use correct casing
+      Description: Element names within a tuple type should have the correct casing.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1316.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  SA1414:
+    Metadata:
+      Category: StyleCop.CSharp.ReadabilityRules
+      Title: Tuple types in signatures should have element names
+      Description: Tuple types appearing in member declarations should have explicitly named tuple elements.
+      HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1414.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
