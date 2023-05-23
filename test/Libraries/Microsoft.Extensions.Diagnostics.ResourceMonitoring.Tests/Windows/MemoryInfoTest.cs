@@ -12,10 +12,10 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 /// </summary>
 /// <remarks>These tests are added for coverage reasons, but the code doesn't have
 /// the necessary environment predictability to really test it.</remarks>
+[OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
 public sealed class MemoryInfoTest
 {
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
     public void GetGlobalMemory()
     {
         var memoryStatus = new MemoryInfo().GetMemoryStatus();

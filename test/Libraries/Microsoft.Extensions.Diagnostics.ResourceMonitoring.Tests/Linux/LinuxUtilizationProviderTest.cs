@@ -3,13 +3,15 @@
 
 using System;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
+using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
+[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific package")]
 public sealed class LinuxUtilizationProviderTest
 {
-    [Fact]
+    [ConditionalFact]
     public void Null_Checks()
     {
         Assert.Throws<ArgumentException>(() => new LinuxUtilizationProvider(Microsoft.Extensions.Options.Options.Create<LinuxResourceUtilizationProviderOptions>(null!), null!, null!, null!, null!));

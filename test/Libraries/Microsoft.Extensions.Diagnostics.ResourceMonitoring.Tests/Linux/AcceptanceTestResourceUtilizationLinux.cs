@@ -53,7 +53,8 @@ public sealed class AcceptanceTestResourceUtilizationLinux
         Assert.IsAssignableFrom<NotSupportedException>(e);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific package.")]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_Can_Be_Configured_With_Section()
     {
@@ -83,7 +84,8 @@ public sealed class AcceptanceTestResourceUtilizationLinux
         Assert.Equal(memoryRefresh, options.Value.MemoryConsumptionRefreshInterval);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific package.")]
     public void Adding_Linux_Resource_Utilization_Can_Be_Configured_With_Action()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
@@ -105,7 +107,8 @@ public sealed class AcceptanceTestResourceUtilizationLinux
         Assert.Equal(memoryRefresh, options.Value.MemoryConsumptionRefreshInterval);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific package.")]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
     public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider()
     {
@@ -148,8 +151,8 @@ public sealed class AcceptanceTestResourceUtilizationLinux
         Assert.Equal(104_767_488UL, provider.Resources.MaximumMemoryInBytes); // meminfo * 1024
     }
 
-    [Fact(Skip = "Flaky test, see https://github.com/dotnet/r9/issues/406")]
-    [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
+    [ConditionalFact(Skip = "Flaky test, see https://github.com/dotnet/r9/issues/406")]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific package.")]
     public Task ResourceUtilizationTracker_Reports_The_Same_Values_As_One_Can_Observe_From_Gauges()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);

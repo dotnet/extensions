@@ -9,10 +9,10 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
+[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific package")]
 public sealed class LinuxUtilizationExtensionsTest
 {
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific package")]
     public void Throw_Null_When_Registration_Ingredients_Null()
     {
         var services = new ServiceCollection();
