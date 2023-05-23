@@ -1,0 +1,41 @@
+<Project>
+  <ItemGroup>
+    <!-- Reset Arcade's defaults. -->
+    <ItemsToSign Remove="@(ItemsToSign)" />
+    <ItemsToSignPostBuild Remove="@(ItemsToSignPostBuild)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Use the dotnet certificate for any remaining defaults (e.g. StrongNameSignInfo) -->
+    <UseDotNetCertificate>true</UseDotNetCertificate>
+  </PropertyGroup>
+
+  <!-- Files that should be always be signed between in-build and post-build signing -->
+  <ItemGroup Label="Common Files to Sign">
+    <CommonFilesToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
+  </ItemGroup>
+
+  <Choose>
+    <!--
+       When post build signing is false - Sign as normal.
+       When post build signing is true - Sign all of our signable artifacts that we would publish. Use a different ItemGroup name so that
+       the signing stage signs nothing. We then set ItemToSign during publishing to this ItemGroup.
+        -->
+    <When Condition="'$(PostBuildSign)' != 'true'">
+      <ItemGroup Label="Files To Sign">
+        <ItemsToSign Include="@(CommonFilesToSign)" />
+        <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*symbols.nupkg" />
+      </ItemGroup>
+    </When>
+    <When Condition="'$(PostBuildSign)' == 'true'">
+      <PropertyGroup>
+        <AllowEmptySignList>true</AllowEmptySignList>
+      </PropertyGroup>
+      <ItemGroup Label="Files To Sign">
+        <!-- Sign symbol nupkgs so that shared files between layouts and msis end up identical. -->
+        <ItemsToSignPostBuild Include="@(CommonFilesToSign)" />
+      </ItemGroup>
+    </When>
+  </Choose>
+
+</Project>
