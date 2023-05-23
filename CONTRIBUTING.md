@@ -35,13 +35,13 @@ The .NET codebase is distributed across multiple repositories in the [.NET organ
 
 ### Finding Existing Issues
 
-Before filing a new issue, please search our [open issues](https://github.com/dotnet/runtime/issues) to check if it already exists.
+Before filing a new issue, please search our [open issues](https://github.com/dotnet/extensions/issues) to check if it already exists.
 
 If you do find an existing issue, please include your own feedback in the discussion. Do consider upvoting (👍 reaction) the original post, as this helps us prioritize popular issues in our backlog.
 
 ### Writing a Good API Proposal
 
-Please review our [API review process](https://github.com/dotnet/runtime/blob/main/docs/project/api-review-process.md) documents for guidelines on how to submit an API review. When ready to submit a proposal, please use the [API Suggestion issue template](https://github.com/dotnet/runtime/issues/new?assignees=&labels=api-suggestion&template=02_api_proposal.yml&title=%5BAPI+Proposal%5D%3A+).
+Please review our [API review process](https://github.com/dotnet/runtime/blob/main/docs/project/api-review-process.md) documents for guidelines on how to submit an API review. When ready to submit a proposal, please use the [API Suggestion issue template](https://github.com/dotnet/extensions/issues/new?assignees=&labels=api-suggestion&template=02_api_proposal.yml&title=%5BAPI+Proposal%5D%3A+).
 
 ### Writing a Good Bug Report
 
@@ -53,7 +53,7 @@ Good bug reports make it easier for maintainers to verify and root cause the und
 * Information on the environment: OS/distro, CPU arch, SDK version, etc.
 * Additional information, e.g. is it a regression from previous versions? are there any known workarounds?
 
-When ready to submit a bug report, please use the [Bug Report issue template](https://github.com/dotnet/runtime/issues/new?assignees=&labels=&template=01_bug_report.yml).
+When ready to submit a bug report, please use the [Bug Report issue template](https://github.com/dotnet/extensions/issues/new?assignees=&labels=&template=01_bug_report.yml).
 
 #### Why are Minimal Reproductions Important?
 
@@ -129,7 +129,7 @@ We use and recommend the following workflow:
 6. Build the repository with your changes.
     - Make sure that the builds are clean.
     - Make sure that the tests are all passing, including your new tests.
-7. Create a pull request (PR) against the dotnet/runtime repository's **main** branch.
+7. Create a pull request (PR) against the dotnet/extensions repository's **main** branch.
     - State in the description what issue or improvement your change is addressing.
     - Check if all the Continuous Integration checks are passing.
 8. Wait for feedback or approval of your changes from the area owners.
@@ -186,6 +186,6 @@ You don't have to do this up-front. You can simply clone, fork, and submit your 
 [coding-style]: https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/coding-style.md
 [copyright-guide]: https://github.com/dotnet/runtime/blob/main/docs/project/copyright.md
 [github-keywords]: https://docs.github.com/get-started/writing-on-github/working-with-advanced-formatting/using-keywords-in-issues-and-pull-requests#linking-a-pull-request-to-an-issue
-[net-contributing]: https://github.com/dotnet/runtime/blob/main/CONTRIBUTING.md
+[net-contributing]: https://github.com/dotnet/extensions/blob/main/CONTRIBUTING.md
 [note-about-git-commit-messages]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [pr-guide]: https://github.com/dotnet/runtime/blob/main/docs/pr-guide.md
