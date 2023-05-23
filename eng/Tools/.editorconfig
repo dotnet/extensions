@@ -1,7 +1,7 @@
 # Created by DiagConfig, the diagnostic config generator
 # Generated : 2023-05-23 23:01:34Z
 # Max Tier  : 2147483647
-# Attributes: general, performance
+# Attributes: general
 # Analyzers : ILLink.RoslynAnalyzer, Microsoft.AspNetCore.App.Analyzers, Microsoft.AspNetCore.Components.Analyzers, Microsoft.CodeAnalysis.CodeStyle, Microsoft.CodeAnalysis.CSharp.CodeStyle, Microsoft.CodeAnalysis.CSharp.NetAnalyzers, Microsoft.CodeAnalysis.NetAnalyzers, Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0, Microsoft.Extensions.LocalAnalyzers, Microsoft.VisualStudio.Threading.Analyzers, Microsoft.VisualStudio.Threading.Analyzers.CSharp, SonarAnalyzer.CSharp, StyleCop.Analyzers
 
 [*.cs]
@@ -127,9 +127,7 @@ dotnet_diagnostic.CA1008.severity = none
 # Title    : Generic interface should also be implemented
 # Category : Design
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1010
-dotnet_diagnostic.CA1010.severity = warning
-dotnet_code_quality.CA1010.api_surface = all
-dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`2
+dotnet_diagnostic.CA1010.severity = none
 
 # Title    : Abstract types should not have public constructors
 # Category : Design
@@ -423,7 +421,7 @@ dotnet_diagnostic.CA1418.severity = warning
 # Title    : Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'
 # Category : Interoperability
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1419
-dotnet_diagnostic.CA1419.severity = warning
+dotnet_diagnostic.CA1419.severity = none
 
 # Title    : Property, type, or attribute requires runtime marshalling
 # Category : Interoperability
@@ -587,12 +585,12 @@ dotnet_diagnostic.CA1801.severity = none
 # Title    : Use literals where appropriate
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802
-dotnet_diagnostic.CA1802.severity = warning
+dotnet_diagnostic.CA1802.severity = none
 
 # Title    : Use literals where appropriate
 # Category : Performance
 # Help Link: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802
-dotnet_diagnostic.CA1802.severity = warning
+dotnet_diagnostic.CA1802.severity = none
 
 # Title    : Do not initialize unnecessarily
 # Category : Performance
@@ -612,7 +610,7 @@ dotnet_diagnostic.CA1806.severity = warning
 # Title    : Initialize reference type static fields inline
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1810
-dotnet_diagnostic.CA1810.severity = warning
+dotnet_diagnostic.CA1810.severity = none
 
 # Title    : Avoid uninstantiated internal classes
 # Category : Performance
@@ -624,17 +622,17 @@ dotnet_diagnostic.CA1812.severity = none
 # Title    : Avoid unsealed attributes
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1813
-dotnet_diagnostic.CA1813.severity = warning
+dotnet_diagnostic.CA1813.severity = none
 
 # Title    : Prefer jagged arrays over multidimensional
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1814
-dotnet_diagnostic.CA1814.severity = warning
+dotnet_diagnostic.CA1814.severity = none
 
 # Title    : Override equals and operator equals on value types
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1815
-dotnet_diagnostic.CA1815.severity = warning
+dotnet_diagnostic.CA1815.severity = none
 
 # Title    : Dispose methods should call SuppressFinalize
 # Category : Usage
@@ -644,17 +642,17 @@ dotnet_diagnostic.CA1816.severity = warning
 # Title    : Properties should not return arrays
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1819
-dotnet_diagnostic.CA1819.severity = warning
+dotnet_diagnostic.CA1819.severity = none
 
 # Title    : Test for empty strings using string length
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1820
-dotnet_diagnostic.CA1820.severity = warning
+dotnet_diagnostic.CA1820.severity = none
 
 # Title    : Remove empty Finalizers
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1821
-dotnet_diagnostic.CA1821.severity = warning
+dotnet_diagnostic.CA1821.severity = none
 
 # Title    : Mark members as static
 # Category : Performance
@@ -670,92 +668,92 @@ dotnet_diagnostic.CA1823.severity = none
 # Title    : Mark assemblies with NeutralResourcesLanguageAttribute
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1824
-dotnet_diagnostic.CA1824.severity = warning
+dotnet_diagnostic.CA1824.severity = suggestion
 
 # Title    : Avoid zero-length array allocations
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1825
-dotnet_diagnostic.CA1825.severity = warning
+dotnet_diagnostic.CA1825.severity = none
 
 # Title    : Do not use Enumerable methods on indexable collections
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1826
-dotnet_diagnostic.CA1826.severity = warning
+dotnet_diagnostic.CA1826.severity = none
 
 # Title    : Do not use Count() or LongCount() when Any() can be used
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1827
-dotnet_diagnostic.CA1827.severity = warning
+dotnet_diagnostic.CA1827.severity = none
 
 # Title    : Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1828
-dotnet_diagnostic.CA1828.severity = warning
+dotnet_diagnostic.CA1828.severity = none
 
 # Title    : Use Length/Count property instead of Count() when available
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1829
-dotnet_diagnostic.CA1829.severity = warning
+dotnet_diagnostic.CA1829.severity = none
 
 # Title    : Prefer strongly-typed Append and Insert method overloads on StringBuilder
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1830
-dotnet_diagnostic.CA1830.severity = warning
+dotnet_diagnostic.CA1830.severity = none
 
 # Title    : Use AsSpan or AsMemory instead of Range-based indexers when appropriate
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1831
-dotnet_diagnostic.CA1831.severity = warning
+dotnet_diagnostic.CA1831.severity = none
 
 # Title    : Use AsSpan or AsMemory instead of Range-based indexers when appropriate
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1832
-dotnet_diagnostic.CA1832.severity = warning
+dotnet_diagnostic.CA1832.severity = none
 
 # Title    : Use AsSpan or AsMemory instead of Range-based indexers when appropriate
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1833
-dotnet_diagnostic.CA1833.severity = warning
+dotnet_diagnostic.CA1833.severity = none
 
 # Title    : Consider using 'StringBuilder.Append(char)' when applicable
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1834
-dotnet_diagnostic.CA1834.severity = warning
+dotnet_diagnostic.CA1834.severity = none
 
 # Title    : Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1835
-dotnet_diagnostic.CA1835.severity = warning
+dotnet_diagnostic.CA1835.severity = none
 
 # Title    : Prefer IsEmpty over Count
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1836
-dotnet_diagnostic.CA1836.severity = warning
+dotnet_diagnostic.CA1836.severity = none
 
 # Title    : Use 'Environment.ProcessId'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1837
-dotnet_diagnostic.CA1837.severity = warning
+dotnet_diagnostic.CA1837.severity = none
 
 # Title    : Avoid 'StringBuilder' parameters for P/Invokes
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1838
-dotnet_diagnostic.CA1838.severity = warning
+dotnet_diagnostic.CA1838.severity = none
 
 # Title    : Use 'Environment.ProcessPath'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839
-dotnet_diagnostic.CA1839.severity = warning
+dotnet_diagnostic.CA1839.severity = none
 
 # Title    : Use 'Environment.CurrentManagedThreadId'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840
-dotnet_diagnostic.CA1840.severity = warning
+dotnet_diagnostic.CA1840.severity = none
 
 # Title    : Prefer Dictionary.Contains methods
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841
-dotnet_diagnostic.CA1841.severity = warning
+dotnet_diagnostic.CA1841.severity = none
 
 # Title    : Do not use 'WhenAll' with a single task
 # Category : Performance
@@ -765,27 +763,27 @@ dotnet_diagnostic.CA1842.severity = suggestion
 # Title    : Do not use 'WaitAll' with a single task
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843
-dotnet_diagnostic.CA1843.severity = warning
+dotnet_diagnostic.CA1843.severity = none
 
 # Title    : Provide memory-based overrides of async methods when subclassing 'Stream'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1844
-dotnet_diagnostic.CA1844.severity = warning
+dotnet_diagnostic.CA1844.severity = none
 
 # Title    : Use span-based 'string.Concat'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1845
-dotnet_diagnostic.CA1845.severity = warning
+dotnet_diagnostic.CA1845.severity = none
 
 # Title    : Prefer 'AsSpan' over 'Substring'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846
-dotnet_diagnostic.CA1846.severity = warning
+dotnet_diagnostic.CA1846.severity = none
 
 # Title    : Use char literal for a single character lookup
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1847
-dotnet_diagnostic.CA1847.severity = warning
+dotnet_diagnostic.CA1847.severity = none
 
 # Title    : Use the LoggerMessage delegates
 # Category : Performance
@@ -796,12 +794,12 @@ dotnet_diagnostic.CA1848.severity = none
 # Title    : Call async methods when in an async method
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1849
-dotnet_diagnostic.CA1849.severity = warning
+dotnet_diagnostic.CA1849.severity = none
 
 # Title    : Prefer static 'HashData' method over 'ComputeHash'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1850
-dotnet_diagnostic.CA1850.severity = suggestion
+dotnet_diagnostic.CA1850.severity = none
 
 # Title    : Possible multiple enumerations of 'IEnumerable' collection
 # Category : Performance
@@ -817,17 +815,17 @@ dotnet_diagnostic.CA1852.severity = none
 # Title    : Unnecessary call to 'Dictionary.ContainsKey(key)'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1853
-dotnet_diagnostic.CA1853.severity = suggestion
+dotnet_diagnostic.CA1853.severity = none
 
 # Title    : Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1854
-dotnet_diagnostic.CA1854.severity = warning
+dotnet_diagnostic.CA1854.severity = none
 
 # Title    : Prefer 'Clear' over 'Fill'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1855
-dotnet_diagnostic.CA1855.severity = warning
+dotnet_diagnostic.CA1855.severity = none
 
 # Title    : Incorrect usage of ConstantExpected attribute
 # Category : Performance
@@ -872,7 +870,7 @@ dotnet_diagnostic.CA2002.severity = warning
 # Title    : Consider calling ConfigureAwait on the awaited task
 # Category : Reliability
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007
-dotnet_diagnostic.CA2007.severity = warning
+dotnet_diagnostic.CA2007.severity = none
 
 # Title    : Do not create tasks without passing a TaskScheduler
 # Category : Reliability
@@ -987,7 +985,7 @@ dotnet_diagnostic.CA2201.severity = warning
 # Title    : Initialize value type static fields inline
 # Category : Usage
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2207
-dotnet_diagnostic.CA2207.severity = warning
+dotnet_diagnostic.CA2207.severity = none
 
 # Title    : Instantiate argument exceptions correctly
 # Category : Usage
@@ -2670,37 +2668,37 @@ dotnet_diagnostic.IL3056.severity = warning
 # Title    : Use source generated logging methods for improved performance
 # Category : Performance
 # Help Link: https://TODO/r9a000
-dotnet_diagnostic.R9A000.severity = warning
+dotnet_diagnostic.R9A000.severity = none
 
 # Title    : Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
 # Category : Performance
 # Help Link: https://TODO/r9a014
-dotnet_diagnostic.R9A014.severity = warning
+dotnet_diagnostic.R9A014.severity = none
 
 # Title    : Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
 # Category : Performance
 # Help Link: https://TODO/r9a015
-dotnet_diagnostic.R9A015.severity = warning
+dotnet_diagnostic.R9A015.severity = none
 
 # Title    : Use 'System.Text.CompositeFormat' instead of 'string.Format' for improved performance
 # Category : Performance
 # Help Link: https://TODO/r9a018
-dotnet_diagnostic.R9A018.severity = warning
+dotnet_diagnostic.R9A018.severity = none
 
 # Title    : Remove unnecessary dictionary lookups
 # Category : Performance
 # Help Link: https://TODO/r9a019
-dotnet_diagnostic.R9A019.severity = warning
+dotnet_diagnostic.R9A019.severity = none
 
 # Title    : Remove unnecessary set lookups
 # Category : Performance
 # Help Link: https://TODO/r9a020
-dotnet_diagnostic.R9A020.severity = warning
+dotnet_diagnostic.R9A020.severity = none
 
 # Title    : Perform message formatting in the body of the logging method
 # Category : Performance
 # Help Link: https://TODO/r9a021
-dotnet_diagnostic.R9A021.severity = warning
+dotnet_diagnostic.R9A021.severity = none
 
 # Title    : Use 'System.TimeProvider' to make the code easier to test
 # Category : Reliability
@@ -2715,12 +2713,12 @@ dotnet_diagnostic.R9A029.severity = none
 # Title    : Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
 # Category : Performance
 # Help Link: https://TODO/r9a030
-dotnet_diagnostic.R9A030.severity = warning
+dotnet_diagnostic.R9A030.severity = none
 
 # Title    : Make types declared in an executable internal
 # Category : Performance
 # Help Link: https://TODO/r9a031
-dotnet_diagnostic.R9A031.severity = warning
+dotnet_diagnostic.R9A031.severity = none
 
 # Title    : Consider using an array instead of a collection
 # Category : Performance
@@ -2730,32 +2728,32 @@ dotnet_diagnostic.R9A032.severity = none
 # Title    : Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance
 # Category : Performance
 # Help Link: https://TODO/r9a033
-dotnet_diagnostic.R9A033.severity = warning
+dotnet_diagnostic.R9A033.severity = none
 
 # Title    : Use 'Microsoft.Shared.Text.NumericExtensions.ToInvariantString' for improved performance
 # Category : Performance
 # Help Link: https://TODO/r9a036
-dotnet_diagnostic.R9A036.severity = warning
+dotnet_diagnostic.R9A036.severity = none
 
 # Title    : Use 'System.ValueTuple' instead of 'System.Tuple' for improved performance
 # Category : Performance
 # Help Link: https://TODO/r9a037
-dotnet_diagnostic.R9A037.severity = warning
+dotnet_diagnostic.R9A037.severity = none
 
 # Title    : Use generic collections instead of legacy collections for improved performance
 # Category : Performance
 # Help Link: https://TODO/r9a040
-dotnet_diagnostic.R9A040.severity = warning
+dotnet_diagnostic.R9A040.severity = none
 
 # Title    : Use 'System.MemoryExtensions.Split' for improved performance
 # Category : Performance
 # Help Link: https://TODO/r9a043
-dotnet_diagnostic.R9A043.severity = warning
+dotnet_diagnostic.R9A043.severity = none
 
 # Title    : Assign array of literal values to a static field for improved performance
 # Category : Performance
 # Help Link: https://TODO/r9a044
-dotnet_diagnostic.R9A044.severity = warning
+dotnet_diagnostic.R9A044.severity = none
 
 # Title    : Newly added symbols must be marked as experimental
 # Category : Correctness
@@ -3065,7 +3063,7 @@ dotnet_diagnostic.S1210.severity = none
 # Title    : "GC.Collect" should not be called
 # Category : Critical Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1215
-dotnet_diagnostic.S1215.severity = warning
+dotnet_diagnostic.S1215.severity = none
 
 # Title    : Statements should be on separate lines
 # Category : Major Code Smell
@@ -6045,7 +6043,7 @@ dotnet_diagnostic.VSTHRD102.severity = suggestion
 # Title    : Call async methods when in an async method
 # Category : Usage
 # Help Link: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD103.md
-dotnet_diagnostic.VSTHRD103.severity = warning
+dotnet_diagnostic.VSTHRD103.severity = none
 
 # Title    : Offer async methods
 # Category : Usage

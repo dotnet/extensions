@@ -1,0 +1,83 @@
+Origin:
+  AssemblyName: Microsoft.VisualStudio.Threading.Analyzers
+  Version: 17.5.22.27812
+Diagnostics:
+  VSTHRD100:
+    Metadata:
+      Category: Usage
+      Title: Avoid async void methods
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD100.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Error
+  VSTHRD101:
+    Metadata:
+      Category: Usage
+      Title: Avoid unsupported async delegates
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD101.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error
+  VSTHRD106:
+    Metadata:
+      Category: Usage
+      Title: Use InvokeAsync to raise async events
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD106.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  VSTHRD200:
+    Metadata:
+      Category: Style
+      Title: Use "Async" suffix for async methods
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD200.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  VSTHRD111:
+    Metadata:
+      Category: Usage
+      Title: Use ConfigureAwait(bool)
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD111.md
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: CA2007
+  VSTHRD113:
+    Metadata:
+      Category: Usage
+      Title: Check for System.IAsyncDisposable
+      Description: The System.IAsyncDisposable interface is defined in the Microsoft.Bcl.AsyncInterfaces NuGet package.
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD113.md
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Suggestion
+  VSTHRD114:
+    Metadata:
+      Category: Usage
+      Title: Avoid returning a null Task
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD114.md
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning

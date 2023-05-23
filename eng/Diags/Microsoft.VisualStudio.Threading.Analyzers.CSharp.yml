@@ -1,0 +1,198 @@
+Origin:
+  AssemblyName: Microsoft.VisualStudio.Threading.Analyzers.CSharp
+  Version: 17.5.22.27812
+Diagnostics:
+  VSTHRD001:
+    Metadata:
+      Category: Usage
+      Title: Avoid legacy thread switching APIs
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD001.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  VSTHRD002:
+    Metadata:
+      Category: Usage
+      Title: Avoid problematic synchronous waits
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD002.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  VSTHRD003:
+    Metadata:
+      Category: Usage
+      Title: Avoid awaiting foreign Tasks
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD003.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  VSTHRD004:
+    Metadata:
+      Category: Usage
+      Title: Await SwitchToMainThreadAsync
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD004.md
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error
+  VSTHRD010:
+    Metadata:
+      Category: Usage
+      Title: Invoke single-threaded types on Main thread
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD010.md
+      CustomTags:
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  VSTHRD011:
+    Metadata:
+      Category: Usage
+      Title: Use AsyncLazy<T>
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD011.md
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error
+  VSTHRD012:
+    Metadata:
+      Category: Usage
+      Title: Provide JoinableTaskFactory where allowed
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD012.md
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  VSTHRD102:
+    Metadata:
+      Category: Usage
+      Title: Implement internal logic asynchronously
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD102.md
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Suggestion
+  VSTHRD103:
+    Metadata:
+      Category: Usage
+      Title: Call async methods when in an async method
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD103.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  VSTHRD104:
+    Metadata:
+      Category: Usage
+      Title: Offer async methods
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD104.md
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  VSTHRD105:
+    Metadata:
+      Category: Usage
+      Title: Avoid method overloads that assume TaskScheduler.Current
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD105.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  VSTHRD107:
+    Metadata:
+      Category: Usage
+      Title: Await Task within using expression
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD107.md
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error
+  VSTHRD108:
+    Metadata:
+      Category: Usage
+      Title: Assert thread affinity unconditionally
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD108.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  VSTHRD109:
+    Metadata:
+      Category: Usage
+      Title: Switch instead of assert in async methods
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD109.md
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error
+  VSTHRD110:
+    Metadata:
+      Category: Usage
+      Title: Observe result of async calls
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD110.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: CS4014, IDE0058
+  VSTHRD112:
+    Metadata:
+      Category: Usage
+      Title: Implement System.IAsyncDisposable
+      Description: The System.IAsyncDisposable interface is defined in the Microsoft.Bcl.AsyncInterfaces NuGet package.
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD112.md
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Suggestion
+  VSTHRD114:
+    Metadata:
+      Category: Usage
+      Title: Avoid returning a null Task
+      Description: ''
+      HelpLinkUri: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD114.md
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error

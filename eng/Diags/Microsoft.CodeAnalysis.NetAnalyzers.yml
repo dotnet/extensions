@@ -1,0 +1,4460 @@
+Origin:
+  AssemblyName: Microsoft.CodeAnalysis.NetAnalyzers
+  Version: 8.0.8.26002
+Diagnostics:
+  CA1000:
+    Metadata:
+      Category: Design
+      Title: Do not declare static members on generic types
+      Description: When a static member of a generic type is called, the type argument must be specified for the type. When a generic instance member that does not support inference is called, the type argument must be specified for the member. In these two cases, the syntax for specifying the type argument is different and easily confused.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1000
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1002:
+    Metadata:
+      Category: Design
+      Title: Do not expose generic lists
+      Description: System.Collections.Generic.List<T> is a generic collection that's designed for performance and not inheritance. List<T> does not contain virtual members that make it easier to change the behavior of an inherited class.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1002
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1003:
+    Metadata:
+      Category: Design
+      Title: Use generic event handler instances
+      Description: A type contains an event that declares an EventHandler delegate that returns void, whose signature contains two parameters (the first an object and the second a type that is assignable to EventArgs), and the containing assembly targets Microsoft .NET Framework?2.0.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1003
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = all
+  CA1005:
+    Metadata:
+      Category: Design
+      Title: Avoid excessive parameters on generic types
+      Description: The more type parameters a generic type contains, the more difficult it is to know and remember what each type parameter represents.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1005
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1008:
+    Metadata:
+      Category: Design
+      Title: Enums should have zero value
+      Description: The default value of an uninitialized enumeration, just as other value types, is zero. A nonflags-attributed enumeration should define a member by using the value of zero so that the default value is a valid value of the enumeration. If an enumeration that has the FlagsAttribute attribute applied defines a zero-valued member, its name should be ""None"" to indicate that no values have been set in the enumeration.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1008
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - RuleNoZero
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1010:
+    Metadata:
+      Category: Design
+      Title: Generic interface should also be implemented
+      Description: To broaden the usability of a type, implement one of the generic interfaces. This is especially true for collections as they can then be used to populate generic collection types.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1010
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+        Options:
+        - api_surface = all
+        - additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`2
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+        - additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`2
+  CA1012:
+    Metadata:
+      Category: Design
+      Title: Abstract types should not have public constructors
+      Description: Constructors on abstract types can be called only by derived types. Because public constructors create instances of a type, and you cannot create instances of an abstract type, an abstract type that has a public constructor is incorrectly designed.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1012
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - api_surface = all
+  CA1014:
+    Metadata:
+      Category: Design
+      Title: Mark assemblies with CLSCompliant
+      Description: The Common Language Specification (CLS) defines naming restrictions, data types, and rules to which assemblies must conform if they will be used across programming languages. Good design dictates that all assemblies explicitly indicate CLS compliance by using CLSCompliantAttribute . If this attribute is not present on an assembly, the assembly is not compliant.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1014
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 99
+    Attributes:
+      general:
+        Severity: None
+  CA1016:
+    Metadata:
+      Category: Design
+      Title: Mark assemblies with assembly version
+      Description: The .NET Framework uses the version number to uniquely identify an assembly, and to bind to types in strongly named assemblies. The version number is used together with version and publisher policy. By default, applications run only with the assembly version with which they were built.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1016
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1017:
+    Metadata:
+      Category: Design
+      Title: Mark assemblies with ComVisible
+      Description: ComVisibleAttribute determines how COM clients access managed code. Good design dictates that assemblies explicitly indicate COM visibility. COM visibility can be set for the whole assembly and then overridden for individual types and type members. If this attribute is not present, the contents of the assembly are visible to COM clients.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1017
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 99
+    Attributes:
+      general:
+        Severity: None
+  CA1018:
+    Metadata:
+      Category: Design
+      Title: Mark attributes with AttributeUsageAttribute
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1018
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1021:
+    Metadata:
+      Category: Design
+      Title: Avoid out parameters
+      Description: Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1021
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+  CA1024:
+    Metadata:
+      Category: Design
+      Title: Use properties where appropriate
+      Description: A public or protected method has a name that starts with ""Get"", takes no parameters, and returns a value that is not an array. The method might be a good candidate to become a property.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1024
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1027:
+    Metadata:
+      Category: Design
+      Title: Mark enums with FlagsAttribute
+      Description: An enumeration is a value type that defines a set of related named constants. Apply FlagsAttribute to an enumeration when its named constants can be meaningfully combined.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1027
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - api_surface = all
+  CA1028:
+    Metadata:
+      Category: Design
+      Title: Enum Storage should be Int32
+      Description: An enumeration is a value type that defines a set of related named constants. By default, the System.Int32 data type is used to store the constant value. Although you can change this underlying type, it is not required or recommended for most scenarios.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1028
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+  CA1030:
+    Metadata:
+      Category: Design
+      Title: Use events where appropriate
+      Description: This rule detects methods that have names that ordinarily would be used for events. If a method is called in response to a clearly defined state change, the method should be invoked by an event handler. Objects that call the method should raise events instead of calling the method directly.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1030
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1031:
+    Metadata:
+      Category: Design
+      Title: Do not catch general exception types
+      Description: A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1031
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1033:
+    Metadata:
+      Category: Design
+      Title: Interface methods should be callable by child types
+      Description: An unsealed externally visible type provides an explicit method implementation of a public interface and does not provide an alternative externally visible method that has the same name.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1033
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1034:
+    Metadata:
+      Category: Design
+      Title: Nested types should not be visible
+      Description: A nested type is a type that is declared in the scope of another type. Nested types are useful to encapsulate private implementation details of the containing type. Used for this purpose, nested types should not be externally visible.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1034
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  CA1036:
+    Metadata:
+      Category: Design
+      Title: Override methods on comparable types
+      Description: A public or protected type implements the System.IComparable interface. It does not override Object.Equals nor does it overload the language-specific operator for equality, inequality, less than, less than or equal, greater than or greater than or equal.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1036
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  CA1040:
+    Metadata:
+      Category: Design
+      Title: Avoid empty interfaces
+      Description: Interfaces define members that provide a behavior or usage contract. The functionality that is described by the interface can be adopted by any type, regardless of where the type appears in the inheritance hierarchy. A type implements an interface by providing implementations for the members of the interface. An empty interface does not define any members; therefore, it does not define a contract that can be implemented.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1040
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Comment: Reasonably frequent in modern .NET programming
+  CA1041:
+    Metadata:
+      Category: Design
+      Title: Provide ObsoleteAttribute message
+      Description: A type or member is marked by using a System.ObsoleteAttribute attribute that does not have its ObsoleteAttribute.Message property specified. When a type or member that is marked by using ObsoleteAttribute is compiled, the Message property of the attribute is displayed. This gives the user information about the obsolete type or member.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1041
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - api_surface = all
+  CA1043:
+    Metadata:
+      Category: Design
+      Title: Use Integral Or String Argument For Indexers
+      Description: Indexers, that is, indexed properties, should use integer or string types for the index. These types are typically used for indexing data structures and increase the usability of the library. Use of the Object type should be restricted to those cases where the specific integer or string type cannot be specified at design time. If the design requires other types for the index, reconsider whether the type represents a logical data store. If it does not represent a logical data store, use a method.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1043
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public, protected
+  CA1044:
+    Metadata:
+      Category: Design
+      Title: Properties should not be write only
+      Description: Although it is acceptable and often necessary to have a read-only property, the design guidelines prohibit the use of write-only properties. This is because letting a user set a value, and then preventing the user from viewing that value, does not provide any security. Also, without read access, the state of shared objects cannot be viewed, which limits their usefulness.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1044
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1045:
+    Metadata:
+      Category: Design
+      Title: Do not pass types by reference
+      Description: Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1045
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Suggestion
+        Options:
+        - api_surface = public
+  CA1046:
+    Metadata:
+      Category: Design
+      Title: Do not overload equality operator on reference types
+      Description: For reference types, the default implementation of the equality operator is almost always correct. By default, two references are equal only if they point to the same object. If the operator is providing meaningful value equality, the type should implement the generic 'System.IEquatable' interface.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1046
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - api_surface = all
+  CA1047:
+    Metadata:
+      Category: Design
+      Title: Do not declare protected member in sealed type
+      Description: Types declare protected members so that inheriting types can access or override the member. By definition, you cannot inherit from a sealed type, which means that protected methods on sealed types cannot be called.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1047
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - api_surface = all
+  CA1050:
+    Metadata:
+      Category: Design
+      Title: Declare types in namespaces
+      Description: Types are declared in namespaces to prevent name collisions and as a way to organize related types in an object hierarchy.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1050
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1051:
+    Metadata:
+      Category: Design
+      Title: Do not declare visible instance fields
+      Description: The primary use of a field should be as an implementation detail. Fields should be private or internal and should be exposed by using properties.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1051
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1052:
+    Metadata:
+      Category: Design
+      Title: Static holder types should be Static or NotInheritable
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1052
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1054:
+    Metadata:
+      Category: Design
+      Title: URI-like parameters should not be strings
+      Description: This rule assumes that the parameter represents a Uniform Resource Identifier (URI). A string representation or a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. 'System.Uri' class provides these services in a safe and secure manner.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1054
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  CA1055:
+    Metadata:
+      Category: Design
+      Title: URI-like return values should not be strings
+      Description: This rule assumes that the method returns a URI. A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1055
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  CA1056:
+    Metadata:
+      Category: Design
+      Title: URI-like properties should not be strings
+      Description: This rule assumes that the property represents a Uniform Resource Identifier (URI). A string representation of a URI is prone to parsing and encoding errors, and can lead to security vulnerabilities. The System.Uri class provides these services in a safe and secure manner.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1056
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  CA1058:
+    Metadata:
+      Category: Design
+      Title: Types should not extend certain base types
+      Description: An externally visible type extends certain base types. Use one of the alternatives.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1058
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1060:
+    Metadata:
+      Category: Design
+      Title: Move pinvokes to native methods class
+      Description: Platform Invocation methods, such as those that are marked by using the System.Runtime.InteropServices.DllImportAttribute attribute, or methods that are defined by using the Declare keyword in Visual Basic, access unmanaged code. These methods should be of the NativeMethods, SafeNativeMethods, or UnsafeNativeMethods class.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1060
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1061:
+    Metadata:
+      Category: Design
+      Title: Do not hide base class methods
+      Description: A method in a base type is hidden by an identically named method in a derived type when the parameter signature of the derived method differs only by types that are more weakly derived than the corresponding types in the parameter signature of the base method.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1061
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - api_surface = all
+  CA1062:
+    Metadata:
+      Category: Design
+      Title: Validate arguments of public methods
+      Description: An externally visible method dereferences one of its reference arguments without verifying whether that argument is 'null' ('Nothing' in Visual Basic). All reference arguments that are passed to externally visible methods should be checked against 'null'. If appropriate, throw an 'ArgumentNullException' when the argument is 'null'. If the method is designed to be called only by known assemblies, you should make the method internal.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062
+      CustomTags:
+      - PortedFromFxCop
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public, protected
+        - exclude_extension_method_this_parameter = false
+        - null_check_validation_methods = IfNull|IfNullOrEmpty|IfNullOrWhitespace|IfNullOrMemberNull
+  CA1063:
+    Metadata:
+      Category: Design
+      Title: Implement IDisposable Correctly
+      Description: All IDisposable types should implement the Dispose pattern correctly.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1063
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA1064:
+    Metadata:
+      Category: Design
+      Title: Exceptions should be public
+      Description: An internal exception is visible only inside its own internal scope. After the exception falls outside the internal scope, only the base exception can be used to catch the exception. If the internal exception is inherited from T:System.Exception, T:System.SystemException, or T:System.ApplicationException, the external code will not have sufficient information to know what to do with the exception.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1064
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+      production:
+        Severity: Warning
+        Options:
+        - api_surface = all
+  CA1066:
+    Metadata:
+      Category: Design
+      Title: Implement IEquatable when overriding Object.Equals
+      Description: When a type T overrides Object.Equals(object), the implementation must cast the object argument to the correct type T before performing the comparison. If the type implements IEquatable<T>, and therefore offers the method T.Equals(T), and if the argument is known at compile time to be of type T, then the compiler can call IEquatable<T>.Equals(T) instead of Object.Equals(object), and no cast is necessary, improving performance.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1066
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1067:
+    Metadata:
+      Category: Design
+      Title: Override Object.Equals(object) when implementing IEquatable<T>
+      Description: When a type T implements the interface IEquatable<T>, it suggests to a user who sees a call to the Equals method in source code that an instance of the type can be equated with an instance of any other type. The user might be confused if their attempt to equate the type with an instance of another type fails to compile. This violates the "principle of least surprise".
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1067
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1068:
+    Metadata:
+      Category: Design
+      Title: CancellationToken parameters must come last
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1068
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public, protected
+  CA1069:
+    Metadata:
+      Category: Design
+      Title: Enums values should not be duplicated
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1069
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1070:
+    Metadata:
+      Category: Design
+      Title: Do not declare event fields as virtual
+      Description: Do not declare virtual events in a base class. Overridden events in a derived class have undefined behavior. The C# compiler does not handle this correctly and it is unpredictable whether a subscriber to the derived event will actually be subscribing to the base class event.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1070
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - api_surface = all
+  CA1303:
+    Metadata:
+      Category: Globalization
+      Title: Do not pass literals as localized parameters
+      Description: A method passes a string literal as a parameter to a constructor or method in the .NET Framework class library and that string should be localizable. To fix a violation of this rule, replace the string literal with a string retrieved through an instance of the ResourceManager class.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1303
+      CustomTags:
+      - PortedFromFxCop
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA1304:
+    Metadata:
+      Category: Globalization
+      Title: Specify CultureInfo
+      Description: A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'CultureInfo' parameter. Otherwise, if the result will be stored and accessed by software, such as when it is persisted to disk or to a database, specify 'CultureInfo.InvariantCulture'.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1304
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA1305:
+    Metadata:
+      Category: Globalization
+      Title: Specify IFormatProvider
+      Description: A method or constructor calls one or more members that have overloads that accept a System.IFormatProvider parameter, and the method or constructor does not call the overload that takes the IFormatProvider parameter. When a System.Globalization.CultureInfo or IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be based on the input from/output displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'IFormatProvider'. Otherwise, if the result will be stored and accessed by software, such as when it is loaded from disk/database and when it is persisted to disk/database, specify 'CultureInfo.InvariantCulture'.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1305
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA1307:
+    Metadata:
+      Category: Globalization
+      Title: Specify StringComparison for clarity
+      Description: A string comparison operation uses a method overload that does not set a StringComparison parameter. It is recommended to use the overload with StringComparison parameter for clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1307
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA1308:
+    Metadata:
+      Category: Globalization
+      Title: Normalize strings to uppercase
+      Description: Strings should be normalized to uppercase. A small group of characters cannot make a round trip when they are converted to lowercase. To make a round trip means to convert the characters from one locale to another locale that represents character data differently, and then to accurately retrieve the original characters from the converted characters.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1308
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA1310:
+    Metadata:
+      Category: Globalization
+      Title: Specify StringComparison for correctness
+      Description: A string comparison operation uses a method overload that does not set a StringComparison parameter, hence its behavior could vary based on the current user's locale settings. It is strongly recommended to use the overload with StringComparison parameter for correctness and clarity of intent. If the result will be displayed to the user, such as when sorting a list of items for display in a list box, specify 'StringComparison.CurrentCulture' or 'StringComparison.CurrentCultureIgnoreCase' as the 'StringComparison' parameter. If comparing case-insensitive identifiers, such as file paths, environment variables, or registry keys and values, specify 'StringComparison.OrdinalIgnoreCase'. Otherwise, if comparing case-sensitive identifiers, specify 'StringComparison.Ordinal'.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1310
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA1401:
+    Metadata:
+      Category: Interoperability
+      Title: P/Invokes should not be visible
+      Description: A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1401
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  CA1416:
+    Metadata:
+      Category: Interoperability
+      Title: Validate platform compatibility
+      Description: Using platform dependent API on a component makes the code no longer work across all platforms.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1416
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1417:
+    Metadata:
+      Category: Interoperability
+      Title: Do not use 'OutAttribute' on string parameters for P/Invokes
+      Description: String parameters passed by value with the 'OutAttribute' can destabilize the runtime if the string is an interned string.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1417
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1501:
+    Metadata:
+      Category: Maintainability
+      Title: Avoid excessive inheritance
+      Description: Deeply nested type hierarchies can be difficult to follow, understand, and maintain. This rule limits analysis to hierarchies in the same module. To fix a violation of this rule, derive the type from a base type that is less deep in the inheritance hierarchy or eliminate some of the intermediate base types.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1501
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1502:
+    Metadata:
+      Category: Maintainability
+      Title: Avoid excessive complexity
+      Description: 'Cyclomatic complexity measures the number of linearly independent paths through the method, which is determined by the number and complexity of conditional branches. A low cyclomatic complexity generally indicates a method that is easy to understand, test, and maintain. The cyclomatic complexity is calculated from a control flow graph of the method and is given as follows: `cyclomatic complexity = the number of edges - the number of nodes + 1`, where a node represents a logic branch point and an edge represents a line between nodes.'
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1502
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Comment: Code gets complicated
+  CA1505:
+    Metadata:
+      Category: Maintainability
+      Title: Avoid unmaintainable code
+      Description: 'The maintainability index is calculated by using the following metrics: lines of code, program volume, and cyclomatic complexity. Program volume is a measure of the difficulty of understanding of a symbol that is based on the number of operators and operands in the code. Cyclomatic complexity is a measure of the structural complexity of the type or method. A low maintainability index indicates that code is probably difficult to maintain and would be a good candidate to redesign.'
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1505
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1506:
+    Metadata:
+      Category: Maintainability
+      Title: Avoid excessive class coupling
+      Description: This rule measures class coupling by counting the number of unique type references that a symbol contains. Symbols that have a high degree of class coupling can be difficult to maintain. It is a good practice to have types and methods that exhibit low coupling and high cohesion. To fix this violation, try to redesign the code to reduce the number of types to which it is coupled.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1506
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Comment: Code gets complicated
+  CA1508:
+    Metadata:
+      Category: Maintainability
+      Title: Avoid dead conditional code
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1509:
+    Metadata:
+      Category: Maintainability
+      Title: Invalid entry in code metrics rule specification file
+      Description: Invalid entry in code metrics rule specification file.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1509
+      CustomTags:
+      - Telemetry
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1700:
+    Metadata:
+      Category: Naming
+      Title: Do not name enum values 'Reserved'
+      Description: This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1700
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1707:
+    Metadata:
+      Category: Naming
+      Title: Identifiers should not contain underscores
+      Description: By convention, identifier names do not contain the underscore (_) character. This rule checks namespaces, types, members, and parameters.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1707
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Comment: StyleCop handles this
+  CA1708:
+    Metadata:
+      Category: Naming
+      Title: Identifiers should differ by more than case
+      Description: Identifiers for namespaces, types, members, and parameters cannot differ only by case because languages that target the common language runtime are not required to be case-sensitive.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1708
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Silent
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1710:
+    Metadata:
+      Category: Naming
+      Title: Identifiers should have correct suffix
+      Description: By convention, the names of types that extend certain base types or that implement certain interfaces, or types that are derived from these types, have a suffix that is associated with the base type or interface.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1710
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Silent
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1711:
+    Metadata:
+      Category: Naming
+      Title: Identifiers should not have incorrect suffix
+      Description: By convention, only the names of types that extend certain base types or that implement certain interfaces, or types that are derived from these types, should end with specific reserved suffixes. Other type names should not use these reserved suffixes.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1711
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Silent
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1712:
+    Metadata:
+      Category: Naming
+      Title: Do not prefix enum values with type name
+      Description: An enumeration's values should not start with the type name of the enumeration.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1712
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1713:
+    Metadata:
+      Category: Naming
+      Title: Events should not have 'Before' or 'After' prefix
+      Description: Event names should describe the action that raises the event. To name related events that are raised in a specific sequence, use the present or past tense to indicate the relative position in the sequence of actions. For example, when naming a pair of events that is raised when closing a resource, you might name it 'Closing' and 'Closed', instead of 'BeforeClose' and 'AfterClose'.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1713
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1715:
+    Metadata:
+      Category: Naming
+      Title: Identifiers should have correct prefix
+      Description: The name of an externally visible interface does not start with an uppercase ""I"". The name of a generic type parameter on an externally visible type or method does not start with an uppercase ""T"".
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1715
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE1006
+  CA1716:
+    Metadata:
+      Category: Naming
+      Title: Identifiers should not match keywords
+      Description: A namespace name or a type name matches a reserved keyword in a programming language. Identifiers for namespaces and types should not match keywords that are defined by languages that target the common language runtime.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1716
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - api_surface = all
+        - analyzed_symbol_kinds = all
+  CA1720:
+    Metadata:
+      Category: Naming
+      Title: Identifier contains type name
+      Description: Names of parameters and members are better used to communicate their meaning than to describe their type, which is expected to be provided by development tools. For names of members, if a data type name must be used, use a language-independent name instead of a language-specific one.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1720
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Silent
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1721:
+    Metadata:
+      Category: Naming
+      Title: Property names should not match get methods
+      Description: The name of a public or protected member starts with ""Get"" and otherwise matches the name of a public or protected property. ""Get"" methods and properties should have names that clearly distinguish their function.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1721
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1724:
+    Metadata:
+      Category: Naming
+      Title: Type names should not match namespaces
+      Description: Type names should not match the names of namespaces that are defined in the .NET Framework class library. Violating this rule can reduce the usability of the library.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1724
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA1725:
+    Metadata:
+      Category: Naming
+      Title: Parameter names should match base declaration
+      Description: Consistent naming of parameters in an override hierarchy increases the usability of the method overrides. A parameter name in a derived method that differs from the name in the base declaration can cause confusion about whether the method is an override of the base method or a new overload of the method.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1725
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1801:
+    Metadata:
+      Category: Usage
+      Title: Review unused parameters
+      Description: Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1801
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0060
+  CA1802:
+    Metadata:
+      Category: Performance
+      Title: Use literals where appropriate
+      Description: A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1805:
+    Metadata:
+      Category: Performance
+      Title: Do not initialize unnecessarily
+      Description: The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1805
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1806:
+    Metadata:
+      Category: Performance
+      Title: Do not ignore method results
+      Description: A new object is created but never used; or a method that creates and returns a new string is called and the new string is never used; or a COM or P/Invoke method returns an HRESULT or error code that is never used.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1806
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1810:
+    Metadata:
+      Category: Performance
+      Title: Initialize reference type static fields inline
+      Description: A reference type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1810
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1813:
+    Metadata:
+      Category: Performance
+      Title: Avoid unsealed attributes
+      Description: The .NET Framework class library provides methods for retrieving custom attributes. By default, these methods search the attribute inheritance hierarchy. Sealing the attribute eliminates the search through the inheritance hierarchy and can improve performance.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1813
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1814:
+    Metadata:
+      Category: Performance
+      Title: Prefer jagged arrays over multidimensional
+      Description: A jagged array is an array whose elements are arrays. The arrays that make up the elements can be of different sizes, leading to less wasted space for some sets of data.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1814
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1815:
+    Metadata:
+      Category: Performance
+      Title: Override equals and operator equals on value types
+      Description: For value types, the inherited implementation of Equals uses the Reflection library and compares the contents of all fields. Reflection is computationally expensive, and comparing every field for equality might be unnecessary. If you expect users to compare or sort instances, or to use instances as hash table keys, your value type should implement Equals.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1815
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1816:
+    Metadata:
+      Category: Usage
+      Title: Dispose methods should call SuppressFinalize
+      Description: A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1816
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1819:
+    Metadata:
+      Category: Performance
+      Title: Properties should not return arrays
+      Description: Arrays that are returned by properties are not write-protected, even when the property is read-only. To keep the array tamper-proof, the property must return a copy of the array. Typically, users will not understand the adverse performance implications of calling such a property.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1819
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1820:
+    Metadata:
+      Category: Performance
+      Title: Test for empty strings using string length
+      Description: Comparing strings by using the String.Length property or the String.IsNullOrEmpty method is significantly faster than using Equals.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1820
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1821:
+    Metadata:
+      Category: Performance
+      Title: Remove empty Finalizers
+      Description: Finalizers should be avoided where possible, to avoid the additional performance overhead involved in tracking object lifetime.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1821
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1822:
+    Metadata:
+      Category: Performance
+      Title: Mark members as static
+      Description: Members that do not access instance data or call instance methods can be marked as static. After you mark the methods as static, the compiler will emit nonvirtual call sites to these members. This can give you a measurable performance gain for performance-sensitive code.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1822
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1823:
+    Metadata:
+      Category: Performance
+      Title: Avoid unused private fields
+      Description: Private fields were detected that do not appear to be accessed in the assembly.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1823
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 99
+    Attributes:
+      general:
+        Severity: None
+        Redundant: S1144
+  CA1826:
+    Metadata:
+      Category: Performance
+      Title: Do not use Enumerable methods on indexable collections
+      Description: This collection is directly indexable. Going through LINQ here causes unnecessary allocations and CPU work.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1826
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1827:
+    Metadata:
+      Category: Performance
+      Title: Do not use Count() or LongCount() when Any() can be used
+      Description: For non-empty collections, Count() and LongCount() enumerate the entire sequence, while Any() stops at the first item or the first item that satisfies a condition.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1827
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1828:
+    Metadata:
+      Category: Performance
+      Title: Do not use CountAsync() or LongCountAsync() when AnyAsync() can be used
+      Description: For non-empty collections, CountAsync() and LongCountAsync() enumerate the entire sequence, while AnyAsync() stops at the first item or the first item that satisfies a condition.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1828
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1829:
+    Metadata:
+      Category: Performance
+      Title: Use Length/Count property instead of Count() when available
+      Description: Enumerable.Count() potentially enumerates the sequence while a Length/Count property is a direct access.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1829
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1830:
+    Metadata:
+      Category: Performance
+      Title: Prefer strongly-typed Append and Insert method overloads on StringBuilder
+      Description: StringBuilder.Append and StringBuilder.Insert provide overloads for multiple types beyond System.String.  When possible, prefer the strongly-typed overloads over using ToString() and the string-based overload.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1830
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1831:
+    Metadata:
+      Category: Performance
+      Title: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
+      Description: The Range-based indexer on string values produces a copy of requested portion of the string. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1831
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1832:
+    Metadata:
+      Category: Performance
+      Title: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
+      Description: The Range-based indexer on array values produces a copy of requested portion of the array. This copy is usually unnecessary when it is implicitly used as a ReadOnlySpan or ReadOnlyMemory value. Use the AsSpan method to avoid the unnecessary copy.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1832
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1833:
+    Metadata:
+      Category: Performance
+      Title: Use AsSpan or AsMemory instead of Range-based indexers when appropriate
+      Description: The Range-based indexer on array values produces a copy of requested portion of the array. This copy is often unwanted when it is implicitly used as a Span or Memory value. Use the AsSpan method to avoid the copy.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1833
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1834:
+    Metadata:
+      Category: Performance
+      Title: Consider using 'StringBuilder.Append(char)' when applicable
+      Description: "'StringBuilder.Append(char)' is more efficient than 'StringBuilder.Append(string)' when the string is a single character. When calling 'Append' with a constant, prefer using a constant char rather than a constant string containing one character."
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1834
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1835:
+    Metadata:
+      Category: Performance
+      Title: Prefer the 'Memory'-based overloads for 'ReadAsync' and 'WriteAsync'
+      Description: "'Stream' has a 'ReadAsync' overload that takes a 'Memory<Byte>' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory<Byte>' as the first argument. Prefer calling the memory based overloads, which are more efficient."
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1835
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1836:
+    Metadata:
+      Category: Performance
+      Title: Prefer IsEmpty over Count
+      Description: For determining whether the object contains or not any items, prefer using 'IsEmpty' property rather than retrieving the number of items from the 'Count' property and comparing it to 0 or 1.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1836
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1837:
+    Metadata:
+      Category: Performance
+      Title: Use 'Environment.ProcessId'
+      Description: "'Environment.ProcessId' is simpler and faster than 'Process.GetCurrentProcess().Id'."
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1837
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1838:
+    Metadata:
+      Category: Performance
+      Title: Avoid 'StringBuilder' parameters for P/Invokes
+      Description: Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1838
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA2000:
+    Metadata:
+      Category: Reliability
+      Title: Dispose objects before losing scope
+      Description: If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000
+      CustomTags:
+      - PortedFromFxCop
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2002:
+    Metadata:
+      Category: Reliability
+      Title: Do not lock on objects with weak identity
+      Description: An object is said to have a weak identity when it can be directly accessed across application domain boundaries. A thread that tries to acquire a lock on an object that has a weak identity can be blocked by a second thread in a different application domain that has a lock on the same object.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2002
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2007:
+    Metadata:
+      Category: Reliability
+      Title: Consider calling ConfigureAwait on the awaited task
+      Description: When an asynchronous method awaits a Task directly, continuation occurs in the same thread that created the task. Consider calling Task.ConfigureAwait(Boolean) to signal your intention for continuation. Call ConfigureAwait(false) on the task to schedule continuations to the thread pool, thereby avoiding a deadlock on the UI thread. Passing false is a good option for app-independent libraries. Calling ConfigureAwait(true) on the task has the same behavior as not explicitly calling ConfigureAwait. By explicitly calling this method, you're letting readers know you intentionally want to perform the continuation on the original synchronization context.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA2008:
+    Metadata:
+      Category: Reliability
+      Title: Do not create tasks without passing a TaskScheduler
+      Description: Do not create tasks unless you are using one of the overloads that takes a TaskScheduler. The default is to schedule on TaskScheduler.Current, which would lead to deadlocks. Either use TaskScheduler.Default to schedule on the thread pool, or explicitly pass TaskScheduler.Current to make your intentions clear.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2008
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2009:
+    Metadata:
+      Category: Reliability
+      Title: Do not call ToImmutableCollection on an ImmutableCollection value
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2009
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA2011:
+    Metadata:
+      Category: Reliability
+      Title: Avoid infinite recursion
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2011
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Error
+  CA2012:
+    Metadata:
+      Category: Reliability
+      Title: Use ValueTasks correctly
+      Description: ValueTasks returned from member invocations are intended to be directly awaited.  Attempts to consume a ValueTask multiple times or to directly access one's result before it's known to be completed may result in an exception or corruption.  Ignoring such a ValueTask is likely an indication of a functional bug and may degrade performance.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2012
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA2013:
+    Metadata:
+      Category: Reliability
+      Title: Do not use ReferenceEquals with value types
+      Description: Value type typed arguments are uniquely boxed for each call to this method, therefore the result can be unexpected.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2013
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2014:
+    Metadata:
+      Category: Reliability
+      Title: Do not use stackalloc in loops
+      Description: Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2014
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2015:
+    Metadata:
+      Category: Reliability
+      Title: Do not define finalizers for types derived from MemoryManager<T>
+      Description: Adding a finalizer to a type derived from MemoryManager<T> may permit memory to be freed while it is still in use by a Span<T>.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2015
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2100:
+    Metadata:
+      Category: Security
+      Title: Review SQL queries for security vulnerabilities
+      Description: SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100
+      CustomTags:
+      - PortedFromFxCop
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2101:
+    Metadata:
+      Category: Globalization
+      Title: Specify marshaling for P/Invoke string arguments
+      Description: A platform invoke member allows partially trusted callers, has a string parameter, and does not explicitly marshal the string. This can cause a potential security vulnerability.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2101
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA2109:
+    Metadata:
+      Category: Security
+      Title: Review visible event handlers
+      Description: A public or protected event-handling method was detected. Event-handling methods should not be exposed unless absolutely necessary.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2109
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA2119:
+    Metadata:
+      Category: Security
+      Title: Seal methods that satisfy private interfaces
+      Description: An inheritable public type provides an overridable method implementation of an internal (Friend in Visual Basic) interface. To fix a violation of this rule, prevent the method from being overridden outside the assembly.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2119
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2153:
+    Metadata:
+      Category: Security
+      Title: Do Not Catch Corrupted State Exceptions
+      Description: Catching corrupted state exceptions could mask errors (such as access violations), resulting in inconsistent state of execution or making it easier for attackers to compromise system. Instead, catch and handle a more specific set of exception type(s) or re-throw the exception.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2153
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA2201:
+    Metadata:
+      Category: Usage
+      Title: Do not raise reserved exception types
+      Description: An exception of type that is not sufficiently specific or reserved by the runtime should never be raised by user code. This makes the original error difficult to detect and debug. If this exception instance might be thrown, use a different exception type.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2201
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2207:
+    Metadata:
+      Category: Usage
+      Title: Initialize value type static fields inline
+      Description: A value type declares an explicit static constructor. To fix a violation of this rule, initialize all static data when it is declared and remove the static constructor.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2207
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA2208:
+    Metadata:
+      Category: Usage
+      Title: Instantiate argument exceptions correctly
+      Description: A call is made to the default (parameterless) constructor of an exception type that is or derives from ArgumentException, or an incorrect string argument is passed to a parameterized constructor of an exception type that is or derives from ArgumentException.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2208
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2211:
+    Metadata:
+      Category: Usage
+      Title: Non-constant fields should not be visible
+      Description: Static fields that are neither constants nor read-only are not thread-safe. Access to such a field must be carefully controlled and requires advanced programming techniques to synchronize access to the class object.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2211
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  CA2213:
+    Metadata:
+      Category: Usage
+      Title: Disposable fields should be disposed
+      Description: A type that implements System.IDisposable declares fields that are of types that also implement IDisposable. The Dispose method of the field is not called by the Dispose method of the declaring type. To fix a violation of this rule, call Dispose on fields that are of types that implement IDisposable if you are responsible for allocating and releasing the unmanaged resources held by the field.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2213
+      CustomTags:
+      - PortedFromFxCop
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA2214:
+    Metadata:
+      Category: Usage
+      Title: Do not call overridable methods in constructors
+      Description: Virtual methods defined on the class should not be called from constructors. If a derived class has overridden the method, the derived class version will be called (before the derived class constructor is called).
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2214
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA2215:
+    Metadata:
+      Category: Usage
+      Title: Dispose methods should call base class dispose
+      Description: A type that implements System.IDisposable inherits from a type that also implements IDisposable. The Dispose method of the inheriting type does not call the Dispose method of the parent type. To fix a violation of this rule, call base.Dispose in your Dispose method.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2215
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2216:
+    Metadata:
+      Category: Usage
+      Title: Disposable types should declare finalizer
+      Description: A type that implements System.IDisposable and has fields that suggest the use of unmanaged resources does not implement a finalizer, as described by Object.Finalize.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2216
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA2217:
+    Metadata:
+      Category: Usage
+      Title: Do not mark enums with FlagsAttribute
+      Description: An externally visible enumeration is marked by using FlagsAttribute, and it has one or more values that are not powers of two or a combination of the other defined values on the enumeration.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2217
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - api_surface = all
+  CA2219:
+    Metadata:
+      Category: Usage
+      Title: Do not raise exceptions in finally clauses
+      Description: When an exception is raised in a finally clause, the new exception hides the active exception. This makes the original error difficult to detect and debug.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2219
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2225:
+    Metadata:
+      Category: Usage
+      Title: Operator overloads have named alternates
+      Description: An operator overload was detected, and the expected named alternative method was not found. The named alternative member provides access to the same functionality as the operator and is provided for developers who program in languages that do not support overloaded operators.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2225
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+        Options:
+        - api_surface = public
+  CA2226:
+    Metadata:
+      Category: Usage
+      Title: Operators should have symmetrical overloads
+      Description: A type implements the equality or inequality operator and does not implement the opposite operator.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2226
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: CS0216
+  CA2227:
+    Metadata:
+      Category: Usage
+      Title: Collection properties should be read only
+      Description: A writable collection property allows a user to replace the collection with a different collection. A read-only property stops the collection from being replaced but still allows the individual members to be set.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2227
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  CA2229:
+    Metadata:
+      Category: Usage
+      Title: Implement serialization constructors
+      Description: To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2229
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Comment: Obsolete
+  CA2231:
+    Metadata:
+      Category: Usage
+      Title: Overload operator equals on overriding value type Equals
+      Description: In most programming languages there is no default implementation of the equality operator (==) for value types. If your programming language supports operator overloads, you should consider implementing the equality operator. Its behavior should be identical to that of Equals.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2231
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Error
+  CA2235:
+    Metadata:
+      Category: Usage
+      Title: Mark all non-serializable fields
+      Description: An instance field of a type that is not serializable is declared in a type that is serializable.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2235
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Comment: Obsolete
+  CA2237:
+    Metadata:
+      Category: Usage
+      Title: Mark ISerializable types with serializable
+      Description: To be recognized by the common language runtime as serializable, types must be marked by using the SerializableAttribute attribute even when the type uses a custom serialization routine through implementation of the ISerializable interface.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2237
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+        Comment: Obsolete
+  CA2241:
+    Metadata:
+      Category: Usage
+      Title: Provide correct arguments to formatting methods
+      Description: The format argument that is passed to System.String.Format does not contain a format item that corresponds to each object argument, or vice versa.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2241
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA2242:
+    Metadata:
+      Category: Usage
+      Title: Test for NaN correctly
+      Description: This expression tests a value against Single.Nan or Double.Nan. Use Single.IsNan(Single) or Double.IsNan(Double) to test the value.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2242
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA2243:
+    Metadata:
+      Category: Usage
+      Title: Attribute string literals should parse correctly
+      Description: The string literal parameter of an attribute does not parse correctly for a URL, a GUID, or a version.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2243
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2244:
+    Metadata:
+      Category: Usage
+      Title: Do not duplicate indexed element initializations
+      Description: Indexed elements in objects initializers must initialize unique elements. A duplicate index might overwrite a previous element initialization.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2244
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2245:
+    Metadata:
+      Category: Usage
+      Title: Do not assign a property to itself
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2245
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2246:
+    Metadata:
+      Category: Usage
+      Title: Assigning symbol and its member in the same statement
+      Description: Assigning to a symbol and its member (field/property) in the same statement is not recommended. It is not clear if the member access was intended to use symbol's old value prior to the assignment or new value from the assignment in this statement. For clarity, consider splitting the assignments into separate statements.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2246
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA2247:
+    Metadata:
+      Category: Usage
+      Title: Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum
+      Description: TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2247
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2248:
+    Metadata:
+      Category: Usage
+      Title: Provide correct 'enum' argument to 'Enum.HasFlag'
+      Description: "'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime."
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2248
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA2249:
+    Metadata:
+      Category: Usage
+      Title: Consider using 'string.Contains' instead of 'string.IndexOf'
+      Description: Calls to 'string.IndexOf' where the result is used to check for the presence/absence of a substring can be replaced by 'string.Contains'.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2249
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2300:
+    Metadata:
+      Category: Security
+      Title: Do not use insecure deserializer BinaryFormatter
+      Description: The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect BinaryFormatter deserialization without a SerializationBinder set, then disable rule CA2300, and enable rules CA2301 and CA2302.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2300
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2301:
+    Metadata:
+      Category: Security
+      Title: Do not call BinaryFormatter.Deserialize without first setting BinaryFormatter.Binder
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2301
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2302:
+    Metadata:
+      Category: Security
+      Title: Ensure BinaryFormatter.Binder is set before calling BinaryFormatter.Deserialize
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2302
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2305:
+    Metadata:
+      Category: Security
+      Title: Do not use insecure deserializer LosFormatter
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2305
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2310:
+    Metadata:
+      Category: Security
+      Title: Do not use insecure deserializer NetDataContractSerializer
+      Description: The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect NetDataContractSerializer deserialization without a SerializationBinder set, then disable rule CA2310, and enable rules CA2311 and CA2312.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2310
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2311:
+    Metadata:
+      Category: Security
+      Title: Do not deserialize without first setting NetDataContractSerializer.Binder
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2311
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2312:
+    Metadata:
+      Category: Security
+      Title: Ensure NetDataContractSerializer.Binder is set before deserializing
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2312
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2315:
+    Metadata:
+      Category: Security
+      Title: Do not use insecure deserializer ObjectStateFormatter
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2315
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2321:
+    Metadata:
+      Category: Security
+      Title: Do not deserialize with JavaScriptSerializer using a SimpleTypeResolver
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2321
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2322:
+    Metadata:
+      Category: Security
+      Title: Ensure JavaScriptSerializer is not initialized with SimpleTypeResolver before deserializing
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2322
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2326:
+    Metadata:
+      Category: Security
+      Title: Do not use TypeNameHandling values other than None
+      Description: Deserializing JSON when using a TypeNameHandling value other than None can be insecure.  If you need to instead detect Json.NET deserialization when a SerializationBinder isn't specified, then disable rule CA2326, and enable rules CA2327, CA2328, CA2329, and CA2330.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2326
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2327:
+    Metadata:
+      Category: Security
+      Title: Do not use insecure JsonSerializerSettings
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2327
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2328:
+    Metadata:
+      Category: Security
+      Title: Ensure that JsonSerializerSettings are secure
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2328
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2329:
+    Metadata:
+      Category: Security
+      Title: Do not deserialize with JsonSerializer using an insecure configuration
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2329
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2330:
+    Metadata:
+      Category: Security
+      Title: Ensure that JsonSerializer has a secure configuration when deserializing
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2330
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2350:
+    Metadata:
+      Category: Security
+      Title: Do not use DataTable.ReadXml() with untrusted data
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2350
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2351:
+    Metadata:
+      Category: Security
+      Title: Do not use DataSet.ReadXml() with untrusted data
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2351
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2352:
+    Metadata:
+      Category: Security
+      Title: Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2352
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2353:
+    Metadata:
+      Category: Security
+      Title: Unsafe DataSet or DataTable in serializable type
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2353
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2354:
+    Metadata:
+      Category: Security
+      Title: Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2354
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2355:
+    Metadata:
+      Category: Security
+      Title: Unsafe DataSet or DataTable type found in deserializable object graph
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2355
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2356:
+    Metadata:
+      Category: Security
+      Title: Unsafe DataSet or DataTable type in web deserializable object graph
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2356
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2361:
+    Metadata:
+      Category: Security
+      Title: Ensure auto-generated class containing DataSet.ReadXml() is not used with untrusted data
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2361
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2362:
+    Metadata:
+      Category: Security
+      Title: Unsafe DataSet or DataTable in autogenerated serializable type can be vulnerable to remote code execution attacks
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2362
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3001:
+    Metadata:
+      Category: Security
+      Title: Review code for SQL injection vulnerabilities
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3001
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3002:
+    Metadata:
+      Category: Security
+      Title: Review code for XSS vulnerabilities
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3002
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3003:
+    Metadata:
+      Category: Security
+      Title: Review code for file path injection vulnerabilities
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3003
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3004:
+    Metadata:
+      Category: Security
+      Title: Review code for information disclosure vulnerabilities
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3004
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3005:
+    Metadata:
+      Category: Security
+      Title: Review code for LDAP injection vulnerabilities
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3005
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3006:
+    Metadata:
+      Category: Security
+      Title: Review code for process command injection vulnerabilities
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3006
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3007:
+    Metadata:
+      Category: Security
+      Title: Review code for open redirect vulnerabilities
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3007
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3008:
+    Metadata:
+      Category: Security
+      Title: Review code for XPath injection vulnerabilities
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3008
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3009:
+    Metadata:
+      Category: Security
+      Title: Review code for XML injection vulnerabilities
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3009
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3010:
+    Metadata:
+      Category: Security
+      Title: Review code for XAML injection vulnerabilities
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3010
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3011:
+    Metadata:
+      Category: Security
+      Title: Review code for DLL injection vulnerabilities
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3011
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3012:
+    Metadata:
+      Category: Security
+      Title: Review code for regex injection vulnerabilities
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3012
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3061:
+    Metadata:
+      Category: Security
+      Title: Do Not Add Schema By URL
+      Description: This overload of XmlSchemaCollection.Add method internally enables DTD processing on the XML reader instance used, and uses UrlResolver for resolving external XML entities. The outcome is information disclosure. Content from file system or network shares for the machine processing the XML can be exposed to attacker. In addition, an attacker can use this as a DoS vector.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3061
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Silent
+  CA3075:
+    Metadata:
+      Category: Security
+      Title: Insecure DTD processing in XML
+      Description: Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3075
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3147:
+    Metadata:
+      Category: Security
+      Title: Mark Verb Handlers With Validate Antiforgery Token
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3147
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5350:
+    Metadata:
+      Category: Security
+      Title: Do Not Use Weak Cryptographic Algorithms
+      Description: Cryptographic algorithms degrade over time as attacks become for advances to attacker get access to more computation. Depending on the type and application of this cryptographic algorithm, further degradation of the cryptographic strength of it may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA-2 512, SHA-2 384, or SHA-2 256.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5350
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Error
+  CA5351:
+    Metadata:
+      Category: Security
+      Title: Do Not Use Broken Cryptographic Algorithms
+      Description: An attack making it computationally feasible to break this algorithm exists. This allows attackers to break the cryptographic guarantees it is designed to provide. Depending on the type and application of this cryptographic algorithm, this may allow attackers to read enciphered messages, tamper with enciphered  messages, forge digital signatures, tamper with hashed content, or otherwise compromise any cryptosystem based on this algorithm. Replace encryption uses with the AES algorithm (AES-256, AES-192 and AES-128 are acceptable) with a key length greater than or equal to 128 bits. Replace hashing uses with a hashing function in the SHA-2 family, such as SHA512, SHA384, or SHA256. Replace digital signature uses with RSA with a key length greater than or equal to 2048-bits, or ECDSA with a key length greater than or equal to 256 bits.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5351
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Error
+  CA5358:
+    Metadata:
+      Category: Security
+      Title: Review cipher mode usage with cryptography experts
+      Description: These cipher modes might be vulnerable to attacks. Consider using recommended modes (CBC, CTS).
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5358
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5359:
+    Metadata:
+      Category: Security
+      Title: Do Not Disable Certificate Validation
+      Description: A certificate can help authenticate the identity of the server. Clients should validate the server certificate to ensure requests are sent to the intended server. If the ServerCertificateValidationCallback always returns 'true', any certificate will pass validation.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5359
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5360:
+    Metadata:
+      Category: Security
+      Title: Do Not Call Dangerous Methods In Deserialization
+      Description: Insecure Deserialization is a vulnerability which occurs when untrusted data is used to abuse the logic of an application, inflict a Denial-of-Service (DoS) attack, or even execute arbitrary code upon it being deserialized. It’s frequently possible for malicious users to abuse these deserialization features when the application is deserializing untrusted data which is under their control. Specifically, invoke dangerous methods in the process of deserialization. Successful insecure deserialization attacks could allow an attacker to carry out attacks such as DoS attacks, authentication bypasses, and remote code execution.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5360
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5361:
+    Metadata:
+      Category: Security
+      Title: Do Not Disable SChannel Use of Strong Crypto
+      Description: Starting with the .NET Framework 4.6, the System.Net.ServicePointManager and System.Net.Security.SslStream classes are recommended to use new protocols. The old ones have protocol weaknesses and are not supported. Setting Switch.System.Net.DontEnableSchUseStrongCrypto with true will use the old weak crypto check and opt out of the protocol migration.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5361
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5362:
+    Metadata:
+      Category: Security
+      Title: Potential reference cycle in deserialized object graph
+      Description: Review code that processes untrusted deserialized data for handling of unexpected reference cycles. An unexpected reference cycle should not cause the code to enter an infinite loop. Otherwise, an unexpected reference cycle can allow an attacker to DOS or exhaust the memory of the process when deserializing untrusted data.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5362
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5363:
+    Metadata:
+      Category: Security
+      Title: Do Not Disable Request Validation
+      Description: Request validation is a feature in ASP.NET that examines HTTP requests and determines whether they contain potentially dangerous content. This check adds protection from markup or code in the URL query string, cookies, or posted form values that might have been added for malicious purposes. So, it is generally desirable and should be left enabled for defense in depth.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5363
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5364:
+    Metadata:
+      Category: Security
+      Title: Do Not Use Deprecated Security Protocols
+      Description: Using a deprecated security protocol rather than the system default is risky.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5364
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5365:
+    Metadata:
+      Category: Security
+      Title: Do Not Disable HTTP Header Checking
+      Description: HTTP header checking enables encoding of the carriage return and newline characters, \r and \n, that are found in response headers. This encoding can help to avoid injection attacks that exploit an application that echoes untrusted data contained by the header.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5365
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5366:
+    Metadata:
+      Category: Security
+      Title: Use XmlReader for 'DataSet.ReadXml()'
+      Description: Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5366
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5367:
+    Metadata:
+      Category: Security
+      Title: Do Not Serialize Types With Pointer Fields
+      Description: Pointers are not "type safe" in the sense that you cannot guarantee the correctness of the memory they point at. So, serializing types with pointer fields is dangerous, as it may allow an attacker to control the pointer.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5367
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5368:
+    Metadata:
+      Category: Security
+      Title: Set ViewStateUserKey For Classes Derived From Page
+      Description: Setting the ViewStateUserKey property can help you prevent attacks on your application by allowing you to assign an identifier to the view-state variable for individual users so that they cannot use the variable to generate an attack. Otherwise, there will be cross-site request forgery vulnerabilities.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5368
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5369:
+    Metadata:
+      Category: Security
+      Title: Use XmlReader for 'XmlSerializer.Deserialize()'
+      Description: Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5369
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5370:
+    Metadata:
+      Category: Security
+      Title: Use XmlReader for XmlValidatingReader constructor
+      Description: Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5370
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5371:
+    Metadata:
+      Category: Security
+      Title: Use XmlReader for 'XmlSchema.Read()'
+      Description: Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5371
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5372:
+    Metadata:
+      Category: Security
+      Title: Use XmlReader for XPathDocument constructor
+      Description: Processing XML from untrusted data may load dangerous external references, which should be restricted by using an XmlReader with a secure resolver or with DTD processing disabled.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5372
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5373:
+    Metadata:
+      Category: Security
+      Title: Do not use obsolete key derivation function
+      Description: Password-based key derivation should use PBKDF2 with SHA-2. Avoid using PasswordDeriveBytes since it generates a PBKDF1 key. Avoid using Rfc2898DeriveBytes.CryptDeriveKey since it doesn't use the iteration count or salt.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5373
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5374:
+    Metadata:
+      Category: Security
+      Title: Do Not Use XslTransform
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5374
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5375:
+    Metadata:
+      Category: Security
+      Title: Do Not Use Account Shared Access Signature
+      Description: Shared Access Signatures(SAS) are a vital part of the security model for any application using Azure Storage, they should provide limited and safe permissions to your storage account to clients that don't have the account key. All of the operations available via a service SAS are also available via an account SAS, that is, account SAS is too powerful. So it is recommended to use Service SAS to delegate access more carefully.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5375
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5376:
+    Metadata:
+      Category: Security
+      Title: Use SharedAccessProtocol HttpsOnly
+      Description: HTTPS encrypts network traffic. Use HttpsOnly, rather than HttpOrHttps, to ensure network traffic is always encrypted to help prevent disclosure of sensitive data.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5376
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5377:
+    Metadata:
+      Category: Security
+      Title: Use Container Level Access Policy
+      Description: No access policy identifier is specified, making tokens non-revocable.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5377
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5378:
+    Metadata:
+      Category: Security
+      Title: Do not disable ServicePointManagerSecurityProtocols
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5378
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5379:
+    Metadata:
+      Category: Security
+      Title: Ensure Key Derivation Function algorithm is sufficiently strong
+      Description: Some implementations of the Rfc2898DeriveBytes class allow for a hash algorithm to be specified in a constructor parameter or overwritten in the HashAlgorithm property. If a hash algorithm is specified, then it should be SHA-256 or higher.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5379
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5380:
+    Metadata:
+      Category: Security
+      Title: Do Not Add Certificates To Root Store
+      Description: By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5380
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5381:
+    Metadata:
+      Category: Security
+      Title: Ensure Certificates Are Not Added To Root Store
+      Description: By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5381
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5382:
+    Metadata:
+      Category: Security
+      Title: Use Secure Cookies In ASP.NET Core
+      Description: Applications available over HTTPS must use secure cookies.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5382
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5383:
+    Metadata:
+      Category: Security
+      Title: Ensure Use Secure Cookies In ASP.NET Core
+      Description: Applications available over HTTPS must use secure cookies.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5383
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5384:
+    Metadata:
+      Category: Security
+      Title: Do Not Use Digital Signature Algorithm (DSA)
+      Description: DSA is too weak to use.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5384
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5385:
+    Metadata:
+      Category: Security
+      Title: Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size
+      Description: Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5385
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5386:
+    Metadata:
+      Category: Security
+      Title: Avoid hardcoding SecurityProtocolType value
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5386
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5387:
+    Metadata:
+      Category: Security
+      Title: Do Not Use Weak Key Derivation Function With Insufficient Iteration Count
+      Description: When deriving cryptographic keys from user-provided inputs such as password, use sufficient iteration count (at least 100k).
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5387
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5388:
+    Metadata:
+      Category: Security
+      Title: Ensure Sufficient Iteration Count When Using Weak Key Derivation Function
+      Description: When deriving cryptographic keys from user-provided inputs such as password, use sufficient iteration count (at least 100k).
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5388
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5389:
+    Metadata:
+      Category: Security
+      Title: Do Not Add Archive Item's Path To The Target File System Path
+      Description: When extracting files from an archive and using the archive item's path, check if the path is safe. Archive path can be relative and can lead to file system access outside of the expected file system target path, leading to malicious config changes and remote code execution via lay-and-wait technique.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5389
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5390:
+    Metadata:
+      Category: Security
+      Title: Do not hard-code encryption key
+      Description: SymmetricAlgorithm's .Key property, or a method's rgbKey parameter, should never be a hard-coded value.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5390
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5391:
+    Metadata:
+      Category: Security
+      Title: Use antiforgery tokens in ASP.NET Core MVC controllers
+      Description: Handling a POST, PUT, PATCH, or DELETE request without validating an antiforgery token may be vulnerable to cross-site request forgery attacks. A cross-site request forgery attack can send malicious requests from an authenticated user to your ASP.NET Core MVC controller.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5391
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5392:
+    Metadata:
+      Category: Security
+      Title: Use DefaultDllImportSearchPaths attribute for P/Invokes
+      Description: By default, P/Invokes using DllImportAttribute probe a number of directories, including the current working directory for the library to load. This can be a security issue for certain applications, leading to DLL hijacking.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5392
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5393:
+    Metadata:
+      Category: Security
+      Title: Do not use unsafe DllImportSearchPath value
+      Description: There could be a malicious DLL in the default DLL search directories. Or, depending on where your application is run from, there could be a malicious DLL in the application's directory. Use a DllImportSearchPath value that specifies an explicit search path instead. The DllImportSearchPath flags that this rule looks for can be configured in .editorconfig.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5393
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5394:
+    Metadata:
+      Category: Security
+      Title: Do not use insecure randomness
+      Description: Using a cryptographically weak pseudo-random number generator may allow an attacker to predict what security-sensitive value will be generated. Use a cryptographically strong random number generator if an unpredictable value is required, or ensure that weak pseudo-random numbers aren't used in a security-sensitive manner.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5394
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5395:
+    Metadata:
+      Category: Security
+      Title: Miss HttpVerb attribute for action methods
+      Description: All the methods that create, edit, delete, or otherwise modify data do so in the [HttpPost] overload of the method, which needs to be protected with the anti forgery attribute from request forgery. Performing a GET operation should be a safe operation that has no side effects and doesn't modify your persisted data.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5395
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5396:
+    Metadata:
+      Category: Security
+      Title: Set HttpOnly to true for HttpCookie
+      Description: As a defense in depth measure, ensure security sensitive HTTP cookies are marked as HttpOnly. This indicates web browsers should disallow scripts from accessing the cookies. Injected malicious scripts are a common way of stealing cookies.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5396
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5397:
+    Metadata:
+      Category: Security
+      Title: Do not use deprecated SslProtocols values
+      Description: Older protocol versions of Transport Layer Security (TLS) are less secure than TLS 1.2 and TLS 1.3, and are more likely to have new vulnerabilities. Avoid older protocol versions to minimize risk.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5397
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5398:
+    Metadata:
+      Category: Security
+      Title: Avoid hardcoded SslProtocols values
+      Description: Current Transport Layer Security protocol versions may become deprecated if vulnerabilities are found. Avoid hardcoding SslProtocols values to keep your application secure. Use 'None' to let the Operating System choose a version.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5398
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5399:
+    Metadata:
+      Category: Security
+      Title: HttpClients should enable certificate revocation list checks
+      Description: Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5399
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5400:
+    Metadata:
+      Category: Security
+      Title: Ensure HttpClient certificate revocation list check is not disabled
+      Description: Using HttpClient without providing a platform specific handler (WinHttpHandler or CurlHandler or HttpClientHandler) where the CheckCertificateRevocationList property is set to true, will allow revoked certificates to be accepted by the HttpClient as valid.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5400
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5401:
+    Metadata:
+      Category: Security
+      Title: Do not use CreateEncryptor with non-default IV
+      Description: Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5401
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5402:
+    Metadata:
+      Category: Security
+      Title: 'Use CreateEncryptor with the default IV '
+      Description: Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5402
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5403:
+    Metadata:
+      Category: Security
+      Title: Do not hard-code certificate
+      Description: Hard-coded certificates in source code are vulnerable to being exploited.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5403
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  IL3000:
+    Metadata:
+      Category: Publish
+      Title: Avoid using accessing Assembly file path when publishing as a single-file
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3000
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  IL3001:
+    Metadata:
+      Category: Publish
+      Title: Avoid using accessing Assembly file path when publishing as a single-file
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3001
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2200:
+    Metadata:
+      Category: Usage
+      Title: Rethrow to preserve stack details
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2200
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA3077:
+    Metadata:
+      Category: Security
+      Title: Insecure Processing in API Design, XmlDocument and XmlTextReader
+      Description: Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3076:
+    Metadata:
+      Category: Security
+      Title: Insecure XSLT script processing
+      Description: Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3076
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA1842:
+    Metadata:
+      Category: Performance
+      Title: Do not use 'WhenAll' with a single task
+      Description: Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1843:
+    Metadata:
+      Category: Performance
+      Title: Do not use 'WaitAll' with a single task
+      Description: Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA5405:
+    Metadata:
+      Category: Security
+      Title: Do not always skip token validation in delegates
+      Description: By setting critical TokenValidationParameter validation delegates to true, important authentication safeguards are disabled which can lead to tokens from any issuer or expired tokens being wrongly validated.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5405
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA5404:
+    Metadata:
+      Category: Security
+      Title: Do not disable token validation checks
+      Description: Token validation checks ensure that while validating tokens, all aspects are analyzed and verified. Turning off validation can lead to security holes by allowing untrusted tokens to make it through validation.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5404
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2018:
+    Metadata:
+      Category: Reliability
+      Title: "'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument"
+      Description: "'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied."
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2018
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA1727:
+    Metadata:
+      Category: Naming
+      Title: Use PascalCase for named placeholders
+      Description: Use PascalCase for named placeholders in the logging message template.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Silent
+  CA1848:
+    Metadata:
+      Category: Performance
+      Title: Use the LoggerMessage delegates
+      Description: For improved performance, use the LoggerMessage delegates.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Comment: Use R9 logging model instead
+  CA2253:
+    Metadata:
+      Category: Usage
+      Title: Named placeholders should not be numeric values
+      Description: Named placeholders in the logging message template should not be comprised of only numeric characters.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA2254:
+    Metadata:
+      Category: Usage
+      Title: Template should be a static expression
+      Description: The logging message template should not vary between calls.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Suggestion
+  CA2017:
+    Metadata:
+      Category: Reliability
+      Title: Parameter count mismatch
+      Description: Number of parameters supplied in the logging message template do not match the number of named placeholders.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA2255:
+    Metadata:
+      Category: Usage
+      Title: The 'ModuleInitializer' attribute should not be used in libraries
+      Description: Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1846:
+    Metadata:
+      Category: Performance
+      Title: Prefer 'AsSpan' over 'Substring'
+      Description: "'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost."
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1844:
+    Metadata:
+      Category: Performance
+      Title: Provide memory-based overrides of async methods when subclassing 'Stream'
+      Description: To improve performance, override the memory-based async methods when subclassing 'Stream'. Then implement the array-based methods in terms of the memory-based methods.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1844
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1849:
+    Metadata:
+      Category: Performance
+      Title: Call async methods when in an async method
+      Description: When inside a Task-returning method, use the async version of methods, if they exist.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1849
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA2250:
+    Metadata:
+      Category: Usage
+      Title: Use 'ThrowIfCancellationRequested'
+      Description: "'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has."
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1839:
+    Metadata:
+      Category: Performance
+      Title: Use 'Environment.ProcessPath'
+      Description: "'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'."
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1840:
+    Metadata:
+      Category: Performance
+      Title: Use 'Environment.CurrentManagedThreadId'
+      Description: "'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'."
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA2251:
+    Metadata:
+      Category: Usage
+      Title: Use 'string.Equals'
+      Description: It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1847:
+    Metadata:
+      Category: Performance
+      Title: Use char literal for a single character lookup
+      Description: "'string.Contains(char)' is available as a better performing overload for single char lookup."
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1847
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA2258:
+    Metadata:
+      Category: Usage
+      Title: Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported
+      Description: Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2258
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2256:
+    Metadata:
+      Category: Usage
+      Title: All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface
+      Description: Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2256
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Error
+  CA2257:
+    Metadata:
+      Category: Usage
+      Title: Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'
+      Description: Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2257
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1419:
+    Metadata:
+      Category: Interoperability
+      Title: Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'
+      Description: Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1419
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1418:
+    Metadata:
+      Category: Interoperability
+      Title: Use valid platform string
+      Description: Platform compatibility analyzer requires a valid platform name and version.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1418
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1019:
+    Metadata:
+      Category: Design
+      Title: Define accessors for attribute arguments
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1019
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1065:
+    Metadata:
+      Category: Design
+      Title: Do not raise exceptions in unexpected locations
+      Description: A method that is not expected to throw exceptions throws an exception.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1065
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1854:
+    Metadata:
+      Category: Performance
+      Title: Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method
+      Description: Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1854
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1852:
+    Metadata:
+      Category: Performance
+      Title: Seal internal types
+      Description: When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1852
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: R9A013
+  CA2259:
+    Metadata:
+      Category: Usage
+      Title: "'ThreadStatic' only affects static fields"
+      Description: "'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior."
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA2019:
+    Metadata:
+      Category: Reliability
+      Title: Improper 'ThreadStatic' field initialization
+      Description: "'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor."
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2019
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1853:
+    Metadata:
+      Category: Performance
+      Title: Unnecessary call to 'Dictionary.ContainsKey(key)'
+      Description: Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1853
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Suggestion
+  CA1850:
+    Metadata:
+      Category: Performance
+      Title: Prefer static 'HashData' method over 'ComputeHash'
+      Description: It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1850
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Suggestion
+  CA1420:
+    Metadata:
+      Category: Interoperability
+      Title: Property, type, or attribute requires runtime marshalling
+      Description: Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1420
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1421:
+    Metadata:
+      Category: Interoperability
+      Title: This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied
+      Description: This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1421
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1422:
+    Metadata:
+      Category: Interoperability
+      Title: Validate platform compatibility
+      Description: Using platform dependent API on a component makes the code no longer work across all platforms.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1422
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1861:
+    Metadata:
+      Category: Performance
+      Title: Avoid constant arrays as arguments
+      Description: Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA2021:
+    Metadata:
+      Category: Reliability
+      Title: Do not call Enumerable.Cast<T> or Enumerable.OfType<T> with incompatible types
+      Description: >-
+        Enumerable.Cast<T> and Enumerable.OfType<T> require compatible types to function expectedly.  
+
+        The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast<T> will throw InvalidCastException at runtime on elements of the types specified.  
+
+        The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType<T> will never succeed with elements of types specified, resulting in an empty sequence.  
+
+        Widening and user defined conversions are not supported with generic types.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA1510:
+    Metadata:
+      Category: Maintainability
+      Title: Use ArgumentNullException throw helper
+      Description: Throw helpers are simpler and more efficient than an if block constructing a new exception instance.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1510
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1511:
+    Metadata:
+      Category: Maintainability
+      Title: Use ArgumentException throw helper
+      Description: Throw helpers are simpler and more efficient than an if block constructing a new exception instance.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1511
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1512:
+    Metadata:
+      Category: Maintainability
+      Title: Use ArgumentOutOfRangeException throw helper
+      Description: Throw helpers are simpler and more efficient than an if block constructing a new exception instance.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1512
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1513:
+    Metadata:
+      Category: Maintainability
+      Title: Use ObjectDisposedException throw helper
+      Description: Throw helpers are simpler and more efficient than an if block constructing a new exception instance.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1513
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1860:
+    Metadata:
+      Category: Performance
+      Title: Avoid using 'Enumerable.Any()' extension method
+      Description: Prefer using 'IsEmpty', 'Count' or 'Length' properties whichever available, rather than calling 'Enumerable.Any()'. The intent is clearer and it is more performant than using 'Enumerable.Any()' extension method.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1859:
+    Metadata:
+      Category: Performance
+      Title: Use concrete types when possible for improved performance
+      Description: Using concrete types avoids virtual or interface call overhead and enables inlining.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1858:
+    Metadata:
+      Category: Performance
+      Title: Use 'StartsWith' instead of 'IndexOf'
+      Description: It is both clearer and faster to use 'StartsWith' instead of comparing the result of 'IndexOf' to zero.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1858
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion

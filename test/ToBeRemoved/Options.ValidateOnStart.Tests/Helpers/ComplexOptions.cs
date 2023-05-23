@@ -3,6 +3,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+#pragma warning disable IDE0051
+
 namespace Microsoft.Extensions.Options.Validation.Test;
 
 public class ComplexOptions
