@@ -1,0 +1,33 @@
+﻿{
+  "Name": "Microsoft.Extensions.Metering.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.Metering.CounterAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Metering.CounterAttribute.CounterAttribute(params string[] dimensions);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Metering.CounterAttribute.CounterAttribute(System.Type type);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string[]? Microsoft.Extensions.Metering.CounterAttribute.Dimensions { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Metering.CounterAttribute.Name { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Type? Microsoft.Extensions.Metering.CounterAttribute.Type { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

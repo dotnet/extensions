@@ -1,0 +1,503 @@
+﻿{
+  "Name": "Microsoft.Extensions.Collections.Frozen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Types": [
+    {
+      "Type": "static class Microsoft.Extensions.Collections.Freezer",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue> Microsoft.Extensions.Collections.Freezer.ToFrozenDictionary<TKey,TValue>(this System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey,TValue>>?, System.Collections.Generic.IEqualityComparer<TKey>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue> Microsoft.Extensions.Collections.Freezer.ToFrozenDictionary<TKey,TValue>(this System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey,TValue>>?);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenIntDictionary<TValue> Microsoft.Extensions.Collections.Freezer.ToFrozenDictionary<TValue>(this System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<int,TValue>>?);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue> Microsoft.Extensions.Collections.Freezer.ToFrozenDictionary<TValue>(this System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string,TValue>>?, bool);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue> Microsoft.Extensions.Collections.Freezer.ToFrozenDictionary<TValue>(this System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string,TValue>>?);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenList<T> Microsoft.Extensions.Collections.Freezer.ToFrozenList<T>(this System.Collections.Generic.IEnumerable<T>?);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenSet<T> Microsoft.Extensions.Collections.Freezer.ToFrozenSet<T>(this System.Collections.Generic.IEnumerable<T>?, System.Collections.Generic.IEqualityComparer<T>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenSet<T> Microsoft.Extensions.Collections.Freezer.ToFrozenSet<T>(this System.Collections.Generic.IEnumerable<T>?);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenIntSet Microsoft.Extensions.Collections.Freezer.ToFrozenSet(this System.Collections.Generic.IEnumerable<int>?);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenOrdinalStringSet Microsoft.Extensions.Collections.Freezer.ToFrozenSet(this System.Collections.Generic.IEnumerable<string>?, bool);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenOrdinalStringSet Microsoft.Extensions.Collections.Freezer.ToFrozenSet(this System.Collections.Generic.IEnumerable<string>?);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "public readonly struct Microsoft.Extensions.Collections.FrozenDictionary<TKey, TValue> : Microsoft.Extensions.Collections.IFrozenDictionary<TKey, TValue>, System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.IEnumerable where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue>.FrozenDictionary();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue>.ContainsKey(TKey);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "ref readonly TValue Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue>.GetByRef(TKey);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenPairEnumerator<TKey,TValue> Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue>.GetEnumerator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "ref readonly TValue Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue>.TryGetByRef(TKey);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue>.TryGetValue(TKey, out TValue);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IEqualityComparer<TKey> Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue>.Comparer { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue>.Count { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue> Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue>.Empty { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TValue Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue>.this[TKey] { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<TKey> Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue>.Keys { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<TValue> Microsoft.Extensions.Collections.FrozenDictionary<TKey,TValue>.Values { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "public struct Microsoft.Extensions.Collections.FrozenEnumerator<T> : System.Collections.Generic.IEnumerator<T>, System.IDisposable, System.Collections.IEnumerator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenEnumerator<T>.FrozenEnumerator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenEnumerator<T>.MoveNext();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "readonly T Microsoft.Extensions.Collections.FrozenEnumerator<T>.Current { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "public readonly struct Microsoft.Extensions.Collections.FrozenIntDictionary<TValue> : Microsoft.Extensions.Collections.IFrozenDictionary<int, TValue>, System.Collections.Generic.IReadOnlyDictionary<int, TValue>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<int, TValue>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<int, TValue>>, System.Collections.IEnumerable",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenIntDictionary<TValue>.FrozenIntDictionary();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenIntDictionary<TValue>.ContainsKey(int);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "ref readonly TValue Microsoft.Extensions.Collections.FrozenIntDictionary<TValue>.GetByRef(int);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenPairEnumerator<int,TValue> Microsoft.Extensions.Collections.FrozenIntDictionary<TValue>.GetEnumerator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "ref readonly TValue Microsoft.Extensions.Collections.FrozenIntDictionary<TValue>.TryGetByRef(int);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenIntDictionary<TValue>.TryGetValue(int, out TValue);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Collections.FrozenIntDictionary<TValue>.Count { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenIntDictionary<TValue> Microsoft.Extensions.Collections.FrozenIntDictionary<TValue>.Empty { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TValue Microsoft.Extensions.Collections.FrozenIntDictionary<TValue>.this[int] { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<int> Microsoft.Extensions.Collections.FrozenIntDictionary<TValue>.Keys { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<TValue> Microsoft.Extensions.Collections.FrozenIntDictionary<TValue>.Values { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "public readonly struct Microsoft.Extensions.Collections.FrozenIntSet : Microsoft.Extensions.Collections.IFrozenSet<int>, System.Collections.Generic.IReadOnlySet<int>, System.Collections.Generic.IReadOnlyCollection<int>, System.Collections.Generic.IEnumerable<int>, System.Collections.IEnumerable, Microsoft.Extensions.Collections.IFindItem<int>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenIntSet.FrozenIntSet();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenIntSet.Contains(int);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenEnumerator<int> Microsoft.Extensions.Collections.FrozenIntSet.GetEnumerator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenIntSet.IsProperSubsetOf(System.Collections.Generic.IEnumerable<int>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenIntSet.IsProperSupersetOf(System.Collections.Generic.IEnumerable<int>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenIntSet.IsSubsetOf(System.Collections.Generic.IEnumerable<int>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenIntSet.IsSupersetOf(System.Collections.Generic.IEnumerable<int>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenIntSet.Overlaps(System.Collections.Generic.IEnumerable<int>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenIntSet.SetEquals(System.Collections.Generic.IEnumerable<int>);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Collections.FrozenIntSet.Count { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenIntSet Microsoft.Extensions.Collections.FrozenIntSet.Empty { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<int> Microsoft.Extensions.Collections.FrozenIntSet.Items { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "public readonly struct Microsoft.Extensions.Collections.FrozenList<T> : System.Collections.Generic.IReadOnlyList<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.IEnumerable",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<T>.FrozenList();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlySpan<T> Microsoft.Extensions.Collections.FrozenList<T>.AsSpan();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenEnumerator<T> Microsoft.Extensions.Collections.FrozenList<T>.GetEnumerator();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Collections.FrozenList<T>.Count { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenList<T> Microsoft.Extensions.Collections.FrozenList<T>.Empty { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "T Microsoft.Extensions.Collections.FrozenList<T>.this[int] { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "public readonly struct Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue> : Microsoft.Extensions.Collections.IFrozenDictionary<string, TValue>, System.Collections.Generic.IReadOnlyDictionary<string, TValue>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, TValue>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, TValue>>, System.Collections.IEnumerable",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue>.FrozenOrdinalStringDictionary();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue>.ContainsKey(string);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "ref readonly TValue Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue>.GetByRef(string);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenPairEnumerator<string,TValue> Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue>.GetEnumerator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "ref readonly TValue Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue>.TryGetByRef(string);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue>.TryGetValue(string, out TValue);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue>.Count { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue> Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue>.Empty { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TValue Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue>.this[string] { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<string> Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue>.Keys { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<TValue> Microsoft.Extensions.Collections.FrozenOrdinalStringDictionary<TValue>.Values { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "public readonly struct Microsoft.Extensions.Collections.FrozenOrdinalStringSet : Microsoft.Extensions.Collections.IFrozenSet<string>, System.Collections.Generic.IReadOnlySet<string>, System.Collections.Generic.IReadOnlyCollection<string>, System.Collections.Generic.IEnumerable<string>, System.Collections.IEnumerable, Microsoft.Extensions.Collections.IFindItem<string>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenOrdinalStringSet.FrozenOrdinalStringSet();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenOrdinalStringSet.Contains(string);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenEnumerator<string> Microsoft.Extensions.Collections.FrozenOrdinalStringSet.GetEnumerator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenOrdinalStringSet.IsProperSubsetOf(System.Collections.Generic.IEnumerable<string>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenOrdinalStringSet.IsProperSupersetOf(System.Collections.Generic.IEnumerable<string>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenOrdinalStringSet.IsSubsetOf(System.Collections.Generic.IEnumerable<string>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenOrdinalStringSet.IsSupersetOf(System.Collections.Generic.IEnumerable<string>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenOrdinalStringSet.Overlaps(System.Collections.Generic.IEnumerable<string>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenOrdinalStringSet.SetEquals(System.Collections.Generic.IEnumerable<string>);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Collections.FrozenOrdinalStringSet.Count { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenOrdinalStringSet Microsoft.Extensions.Collections.FrozenOrdinalStringSet.Empty { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<string> Microsoft.Extensions.Collections.FrozenOrdinalStringSet.Items { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "public struct Microsoft.Extensions.Collections.FrozenPairEnumerator<TKey, TValue> : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.IDisposable, System.Collections.IEnumerator",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenPairEnumerator<TKey,TValue>.FrozenPairEnumerator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenPairEnumerator<TKey,TValue>.MoveNext();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "readonly System.Collections.Generic.KeyValuePair<TKey,TValue> Microsoft.Extensions.Collections.FrozenPairEnumerator<TKey,TValue>.Current { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "public readonly struct Microsoft.Extensions.Collections.FrozenSet<T> : Microsoft.Extensions.Collections.IFrozenSet<T>, System.Collections.Generic.IReadOnlySet<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.IEnumerable, Microsoft.Extensions.Collections.IFindItem<T> where T : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenSet<T>.FrozenSet();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenSet<T>.Contains(T);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenEnumerator<T> Microsoft.Extensions.Collections.FrozenSet<T>.GetEnumerator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenSet<T>.IsProperSubsetOf(System.Collections.Generic.IEnumerable<T>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenSet<T>.IsProperSupersetOf(System.Collections.Generic.IEnumerable<T>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenSet<T>.IsSubsetOf(System.Collections.Generic.IEnumerable<T>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenSet<T>.IsSupersetOf(System.Collections.Generic.IEnumerable<T>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenSet<T>.Overlaps(System.Collections.Generic.IEnumerable<T>);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Collections.FrozenSet<T>.SetEquals(System.Collections.Generic.IEnumerable<T>);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IEqualityComparer<T> Microsoft.Extensions.Collections.FrozenSet<T>.Comparer { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Collections.FrozenSet<T>.Count { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Collections.FrozenSet<T> Microsoft.Extensions.Collections.FrozenSet<T>.Empty { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<T> Microsoft.Extensions.Collections.FrozenSet<T>.Items { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "public interface Microsoft.Extensions.Collections.IFrozenDictionary<TKey, TValue> : System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.IEnumerable where TKey : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "ref readonly TValue Microsoft.Extensions.Collections.IFrozenDictionary<TKey,TValue>.GetByRef(TKey);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenPairEnumerator<TKey,TValue> Microsoft.Extensions.Collections.IFrozenDictionary<TKey,TValue>.GetEnumerator();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "ref readonly TValue Microsoft.Extensions.Collections.IFrozenDictionary<TKey,TValue>.TryGetByRef(TKey);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<TKey> Microsoft.Extensions.Collections.IFrozenDictionary<TKey,TValue>.Keys { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<TValue> Microsoft.Extensions.Collections.IFrozenDictionary<TKey,TValue>.Values { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "public interface Microsoft.Extensions.Collections.IFrozenSet<T> : System.Collections.Generic.IReadOnlySet<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.IEnumerable where T : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenEnumerator<T> Microsoft.Extensions.Collections.IFrozenSet<T>.GetEnumerator();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Collections.FrozenList<T> Microsoft.Extensions.Collections.IFrozenSet<T>.Items { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

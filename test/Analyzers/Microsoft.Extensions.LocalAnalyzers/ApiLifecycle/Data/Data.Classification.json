@@ -1,0 +1,65 @@
+﻿{
+  "Name": "Microsoft.Extensions.Data.Classification, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Types": [
+    {
+      "Type": "enum Microsoft.Extensions.Data.Classification.DataClass",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Data.Classification.DataClass.DataClass();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.Data.Classification.DataClass Microsoft.Extensions.Data.Classification.DataClass.AccessControlData",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Data.Classification.DataClass Microsoft.Extensions.Data.Classification.DataClass.AccountData",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Data.Classification.DataClass Microsoft.Extensions.Data.Classification.DataClass.CustomerContent",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Data.Classification.DataClass Microsoft.Extensions.Data.Classification.DataClass.EUII",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Data.Classification.DataClass Microsoft.Extensions.Data.Classification.DataClass.EUPI",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Data.Classification.DataClass Microsoft.Extensions.Data.Classification.DataClass.FeedbackData",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Data.Classification.DataClass Microsoft.Extensions.Data.Classification.DataClass.OII",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Data.Classification.DataClass Microsoft.Extensions.Data.Classification.DataClass.PublicNonPersonalData",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Data.Classification.DataClass Microsoft.Extensions.Data.Classification.DataClass.PublicPersonalData",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Data.Classification.DataClass Microsoft.Extensions.Data.Classification.DataClass.SupportData",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Data.Classification.DataClass Microsoft.Extensions.Data.Classification.DataClass.SystemMetadata",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Data.Classification.DataClass Microsoft.Extensions.Data.Classification.DataClass.Unknown",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

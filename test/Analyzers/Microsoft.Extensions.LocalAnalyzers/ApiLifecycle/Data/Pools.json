@@ -1,0 +1,23 @@
+﻿{
+  "Name": "Pools",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.Pools.ScaledObjectPool<T> : Microsoft.Extensions.ObjectPool.ObjectPool<T> where T : class",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Pools.ScaledObjectPool<T>.ScaledObjectPool();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override T Microsoft.Extensions.Pools.ScaledObjectPool<T>.Get();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.Pools.ScaledObjectPool<T>.Return(T obj);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+﻿{
+  "Name": "AsyncState",
+  "Types": [
+    {
+      "Type": "interface Microsoft.Extensions.AsyncState.IAsyncContext",
+      "Stage": "Obsolete",
+      "Methods": [
+        {
+          "Member": "T? Microsoft.Extensions.AsyncState.IAsyncContext.GetAsyncState<T>();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AsyncState.IAsyncContext.SetAsyncState<T>(T? instance);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

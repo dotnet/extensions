@@ -1,0 +1,9 @@
+{
+    "Name": "Delegates",
+    "Types": [
+      {
+        "Type": "delegate string Microsoft.Extensions.HttpClient.Resilience.PipelineKeySelector(System.Net.Http.HttpRequestMessage requestMessage)",
+        "Stage": "Stable"
+      }
+    ]
+}

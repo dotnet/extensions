@@ -1,0 +1,45 @@
+﻿{
+  "Name": "BufferWriter2",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.Buffers.BufferWriter2<T> : System.Buffers.IBufferWriter<T>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.Buffers.BufferWriter2<T>.Advance(int count);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Memory<T> Microsoft.Extensions.Buffers.BufferWriter2<T>.GetMemory(int sizeHint = 0);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Span<T> Microsoft.Extensions.Buffers.BufferWriter2<T>.GetSpan(int sizeHint = 0);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Buffers.BufferWriter2<T>.Reset();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Buffers.BufferWriter2<T>.Capacity { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Buffers.BufferWriter2<T>.WrittenCount { get; private set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlyMemory<T> Microsoft.Extensions.Buffers.BufferWriter2<T>.WrittenMemory { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlySpan<T> Microsoft.Extensions.Buffers.BufferWriter2<T>.WrittenSpan { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+    "Name": "StringSplit",
+    "Types": [
+        {
+            "Type": "static class System.Text.StringSplitExtensions",
+            "Stage": "Stable"
+        }
+    ]
+}

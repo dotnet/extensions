@@ -1,0 +1,15 @@
+{
+    "Name": "HttpClientResiliencePolly",
+    "Types": [
+        {
+            "Type": "static class Microsoft.Extensions.HttpClient.Resilience.HttpClientResilienceGenerators2",
+            "Stage": "Stable",
+            "Fields": [
+                {
+                    "Member": "static readonly System.Func<System.Collections.Generic.List<System.Net.Http.HttpResponseMessage>, System.TimeSpan> Microsoft.Extensions.HttpClient.Resilience.HttpClientResilienceGenerators2.HandleRetryAfterHeader",
+                    "Stage": "Stable"
+                }
+            ]
+        }
+    ]
+}

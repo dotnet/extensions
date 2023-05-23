@@ -1,0 +1,21 @@
+﻿{
+  "Name": "Time",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.Time.SystemClock2",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Time.SystemClock2.SystemClock2();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "static readonly Microsoft.Extensions.Time.SystemClock2 Microsoft.Extensions.Time.SystemClock2.Instance",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

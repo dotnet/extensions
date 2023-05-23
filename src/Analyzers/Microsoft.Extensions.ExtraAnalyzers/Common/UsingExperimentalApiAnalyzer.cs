@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.Extensions.ExtraAnalyzers.Utilities;
 
 namespace Microsoft.Extensions.ExtraAnalyzers;
 
@@ -22,6 +23,8 @@ internal sealed class UsingExperimentalApiAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(context =>
         {
+            var experimentalAttribute = context.Compilation.GetTypeByMetadataName("System.Diagnostics.CodeAnalysis.ExperimentalAttribute");
+
             context.RegisterSyntaxNodeAction(context =>
             {
                 var sn = (IdentifierNameSyntax)context.Node;
@@ -32,34 +35,16 @@ internal sealed class UsingExperimentalApiAnalyzer : DiagnosticAnalyzer
 
                 var sym = context.SemanticModel.GetSymbolInfo(sn).Symbol;
 
-                if (sym != null && HasExperimentalAttribute(sym))
+                if (sym != null
+                    && (sym.Kind is not SymbolKind.Namespace and not SymbolKind.Label and not SymbolKind.Discard)
+                    && sym.IsContaminated(experimentalAttribute))
                 {
-                    var diagnostic = Diagnostic.Create(DiagDescriptors.UsingExperimentalApi, sn.GetLocation(), sym.Name);
-                    context.ReportDiagnostic(diagnostic);
-                }
-                else if (sym is INamedTypeSymbol type && HasExperimentalAttribute(type.ContainingAssembly))
-                {
-                    var diagnostic = Diagnostic.Create(DiagDescriptors.UsingExperimentalApi, sn.GetLocation(), type.ContainingAssembly.Name);
-                    context.ReportDiagnostic(diagnostic);
-                }
-            }, SyntaxKind.IdentifierName);
-
-            static bool HasExperimentalAttribute(ISymbol sym)
-            {
-                foreach (var attributeData in sym.GetAttributes())
-                {
-                    if (attributeData.AttributeClass?.Name == "ExperimentalAttribute")
+                    if (sym.IsExternallyVisible())
                     {
-                        var ns = attributeData.AttributeClass.ContainingNamespace.ToString();
-                        if (ns is "System.Diagnostics.CodeAnalysis")
-                        {
-                            return true;
-                        }
+                        context.ReportDiagnostic(Diagnostic.Create(DiagDescriptors.UsingExperimentalApi, sn.GetLocation(), sym));
                     }
                 }
-
-                return false;
-            }
+            }, SyntaxKind.IdentifierName);
         });
     }
 }
