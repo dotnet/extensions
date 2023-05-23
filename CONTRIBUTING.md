@@ -19,7 +19,7 @@
   + [Help Wanted (Up for Grabs)](#help-wanted-up-for-grabs)
   + [Contributor License Agreement](#contributor-license-agreement)
 
-You can contribute to R9 with issues, pull-requests, and general reviews of both issues and pull-requests. Simply filing issues for problems you encounter is a great way to contribute. Contributing implementations is greatly appreciated.
+You can contribute with issues, pull-requests, and general reviews of both issues and pull-requests. Simply filing issues for problems you encounter is a great way to contribute. Contributing implementations is greatly appreciated.
 
 ## Reporting Issues
 
@@ -31,7 +31,7 @@ The .NET codebase is distributed across multiple repositories in the [.NET organ
 
 * [dotnet/runtime](https://github.com/dotnet/runtime) .NET runtime, libraries and shared host installers.
 * [dotnet/aspnetcore](https://github.com/dotnet/aspnetcore) ASP.NET Core.
-* [azure/r9](https://github.com/azure/r9) R9 extensions for Azure.
+* [azure/dotnet-extensions-experimental](https://github.com/azure/dotnet-extensions-experimental) Extensions for Azure.
 
 ### Finding Existing Issues
 
@@ -167,7 +167,7 @@ There are lots of thoughts and [approaches](https://github.com/antlr/antlr4-cpp/
 
 ### Help Wanted (Up for Grabs)
 
-The team marks the most straightforward issues as [help wanted](https://github.com/dotnet/r9/labels/help%20wanted). This set of issues is the place to start if you are interested in contributing but new to the codebase.
+The team marks the most straightforward issues as [help wanted](https://github.com/dotnet/extensions/labels/help%20wanted). This set of issues is the place to start if you are interested in contributing but new to the codebase.
 
 ### Contributor License Agreement
 
