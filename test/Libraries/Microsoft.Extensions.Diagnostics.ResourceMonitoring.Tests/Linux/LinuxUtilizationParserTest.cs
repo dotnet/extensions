@@ -243,7 +243,7 @@ public sealed class LinuxUtilizationParserTest
         Assert.Contains("/sys/fs/cgroup/cpuset/cpuset.cpus", r.Message);
     }
 
-    [Theory]
+    [ConditionalTheory]
     [InlineData("dd1d", "18")]
     [InlineData("-18", "18")]
     [InlineData("\r\r\r\r\r", "18")]
@@ -271,7 +271,7 @@ public sealed class LinuxUtilizationParserTest
         Assert.Contains("/sys/fs/cgroup/cpu/cpu.cfs_", r.Message);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void ReadingCpuUsage_Does_Not_Throw_For_Valid_Input()
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
@@ -285,7 +285,7 @@ public sealed class LinuxUtilizationParserTest
         Assert.Null(r);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void ReadingTotalMemory_Does_Not_Throw_For_Valid_Input()
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
@@ -300,7 +300,7 @@ public sealed class LinuxUtilizationParserTest
         Assert.Null(r);
     }
 
-    [Theory]
+    [ConditionalTheory]
     [InlineData("2569530367000")]
     [InlineData("  2569530 36700 245693 4860924 82283 0 4360 0dsa 0 0 asdasd @@@@")]
     [InlineData("asdasd  2569530 36700 245693 4860924 82283 0 4360 0 0 0")]

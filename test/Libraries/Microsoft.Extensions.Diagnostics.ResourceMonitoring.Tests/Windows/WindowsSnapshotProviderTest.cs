@@ -10,10 +10,10 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
+[OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
 public sealed class WindowsSnapshotProviderTest
 {
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
     public void BasicConstructor()
     {
         var loggerMock = new Mock<ILogger<WindowsSnapshotProvider>>();
@@ -27,7 +27,6 @@ public sealed class WindowsSnapshotProviderTest
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
     public void GetSnapshot_DoesNotThrowExceptions()
     {
         var loggerMock = new Mock<ILogger<WindowsSnapshotProvider>>();

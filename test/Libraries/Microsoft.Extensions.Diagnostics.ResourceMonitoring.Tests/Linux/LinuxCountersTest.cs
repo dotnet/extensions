@@ -7,13 +7,15 @@ using System.Diagnostics.Metrics;
 using System.IO;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
+[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific package")]
 public sealed class LinuxCountersTest
 {
-    [Fact]
+    [ConditionalFact]
     public void LinuxCounters_Registers_Instruments()
     {
         var meterName = Guid.NewGuid().ToString();
@@ -21,15 +23,15 @@ public sealed class LinuxCountersTest
         using var meter = new Meter<LinuxUtilizationProvider>();
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
-                { new FileInfo("/sys/fs/cgroup/memory/memory.limit_in_bytes"), "9223372036854771712" },
-                { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
-                { new FileInfo("/sys/fs/cgroup/cpuacct/cpuacct.usage"), "50"},
-                { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
-                { new FileInfo("/sys/fs/cgroup/cpuset/cpuset.cpus"), "0-19"},
-                { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "60"},
-                { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_period_us"), "6"},
-                { new FileInfo("/sys/fs/cgroup/memory/memory.stat"), "total_inactive_file 0"},
-                { new FileInfo("/sys/fs/cgroup/memory/memory.usage_in_bytes"), "524288"},
+            { new FileInfo("/sys/fs/cgroup/memory/memory.limit_in_bytes"), "9223372036854771712" },
+            { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
+            { new FileInfo("/sys/fs/cgroup/cpuacct/cpuacct.usage"), "50"},
+            { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
+            { new FileInfo("/sys/fs/cgroup/cpuset/cpuset.cpus"), "0-19"},
+            { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "60"},
+            { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_period_us"), "6"},
+            { new FileInfo("/sys/fs/cgroup/memory/memory.stat"), "total_inactive_file 0"},
+            { new FileInfo("/sys/fs/cgroup/memory/memory.usage_in_bytes"), "524288"},
         });
         var parser = new LinuxUtilizationParser(fileSystem: fileSystem, new FakeUserHz(100));
         var provider = new LinuxUtilizationProvider(options, parser, meter, new FakeOperatingSystem(isLinux: true), TimeProvider.System);

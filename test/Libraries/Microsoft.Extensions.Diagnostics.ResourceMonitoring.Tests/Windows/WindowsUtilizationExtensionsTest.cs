@@ -13,10 +13,10 @@ using Xunit;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
 [Collection("Tcp Connection Tests")]
+[OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
 public sealed class WindowsUtilizationExtensionsTest
 {
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
     public void AddWindowsProvider_Adds_WindowsResourceUtilizationProvider_To_ServiceCollection()
     {
         var builderMock = new Mock<IResourceUtilizationTrackerBuilder>();
@@ -33,7 +33,6 @@ public sealed class WindowsUtilizationExtensionsTest
     }
 
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
     public void AddWindowsPerfCounterPublisher_Adds_WindowsPerfCounterPublisher_To_ServiceCollection()
     {
         var builderMock = new Mock<IResourceUtilizationTrackerBuilder>(MockBehavior.Loose);

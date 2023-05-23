@@ -12,13 +12,13 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 /// </summary>
 /// <remarks>These tests are added for coverage reasons, but the code doesn't have
 /// the necessary environment predictability to really test it.</remarks>
+[OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
 public sealed class SystemInfoTest
 {
     /// <summary>
     /// Get basic system info.
     /// </summary>
     [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
     public void GetSystemInfo()
     {
         var sysInfo = new SystemInfo().GetSystemInfo();
