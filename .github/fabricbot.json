@@ -357,10 +357,6 @@
         ],
         "searchTerms": [
           {
-            "name": "isPr",
-            "parameters": {}
-          },
-          {
             "name": "isOpen",
             "parameters": {}
           },
@@ -381,10 +377,6 @@
             "parameters": {
               "days": 7
             }
-          },
-          {
-            "name": "isIssue",
-            "parameters": {}
           }
         ],
         "actions": [
@@ -548,33 +540,6 @@
     },
     {
       "taskType": "trigger",
-      "capabilityId": "AutoMerge",
-      "subCapability": "AutoMerge",
-      "version": "1.0",
-      "config": {
-        "taskName": "Automatically merge pull requests",
-        "label": "automerge :octocat:",
-        "silentMode": false,
-        "minMinutesOpen": "60",
-        "mergeType": "squash",
-        "deleteBranches": true,
-        "requireAllStatuses": false,
-        "removeLabelOnPush": true,
-        "allowAutoMergeInstructionsWithoutLabel": true,
-        "conditionalMergeTypes": [
-          {
-            "mergeType": "squash",
-            "condition": {
-              "placeholder": ""
-            }
-          }
-        ],
-        "usePrDescriptionAsCommitMessage": true
-      },
-      "disabled": false
-    },
-    {
-      "taskType": "trigger",
       "capabilityId": "ReleaseAnnouncement",
       "subCapability": "ReleaseAnnouncement",
       "version": "1.0",
@@ -654,99 +619,6 @@
           "respondToBotActions": true,
           "acceptRespondToBotActions": true
         }
-      },
-      "disabled": true
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isActivitySender",
-              "parameters": {
-                "user": "dotnet-maestro[bot]"
-              }
-            },
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "opened"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "Auto-approve maestro PRs",
-        "actions": [
-          {
-            "name": "approvePullRequest",
-            "parameters": {
-              "comment": "Go, you big red fire engine!"
-            }
-          }
-        ]
-      },
-      "disabled": true
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "labelAdded",
-              "parameters": {
-                "label": "automerge :octocat:"
-              }
-            },
-            {
-              "operator": "or",
-              "operands": [
-                {
-                  "name": "activitySenderHasPermissions",
-                  "parameters": {
-                    "permissions": "admin"
-                  }
-                },
-                {
-                  "name": "activitySenderHasPermissions",
-                  "parameters": {
-                    "permissions": "write"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "Auto-approve auto-merge PRs",
-        "actions": [
-          {
-            "name": "approvePullRequest",
-            "parameters": {
-              "comment": "Happy to oblige"
-            }
-          }
-        ]
       },
       "disabled": true
     },
@@ -900,37 +772,6 @@
             "parameters": {
               "label": "no-recent-activity :zzz:"
             }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "IssuesOnlyResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "closed"
-              }
-            }
-          ]
-        },
-        "eventType": "issue",
-        "eventNames": [
-          "issues",
-          "project_card"
-        ],
-        "taskName": "Remove closed issues from milestones",
-        "actions": [
-          {
-            "name": "removeMilestone",
-            "parameters": {}
           }
         ]
       }
