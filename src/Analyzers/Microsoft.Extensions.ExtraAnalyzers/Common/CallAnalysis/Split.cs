@@ -14,6 +14,13 @@ internal sealed class Split
 {
     public Split(CallAnalyzer.Registrar reg)
     {
+        var memExt = reg.Compilation.GetTypeByMetadataName("System.MemoryExtensions");
+        if (memExt == null || memExt.GetMembers("Split").IsEmpty)
+        {
+            // Split function not available, so punt
+            return;
+        }
+
         reg.RegisterMethods("System.String", "Split", Handle);
 
         static void Handle(OperationAnalysisContext context, IInvocationOperation op)

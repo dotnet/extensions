@@ -46,32 +46,10 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.LegacyLoggingDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a000",
+        helpLinkUri: "https://TODO/r9a000",
         isEnabledByDefault: true);
 
-    // R9A001..R9A013 are retired
-
-    public static DiagnosticDescriptor ThrowsExpression { get; } = new(
-        id: "R9A014",
-        messageFormat: Resources.ThrowsExpressionMessage,
-        title: Resources.ThrowsExpressionTitle,
-        category: Performance,
-        description: Resources.ThrowsExpressionDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a014",
-        isEnabledByDefault: true);
-
-    public static DiagnosticDescriptor ThrowsStatement { get; } = new(
-        id: "R9A015",
-        messageFormat: Resources.ThrowsStatementMessage,
-        title: Resources.ThrowsStatementTitle,
-        category: Performance,
-        description: Resources.ThrowsStatementDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a015",
-        isEnabledByDefault: true);
-
-    // R9A016..R9A017 has been retired
+    // R9A001..R9A017 are retired
 
     public static DiagnosticDescriptor StringFormat { get; } = new(
         id: "R9A018",
@@ -80,7 +58,7 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.StringFormatDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a018",
+        helpLinkUri: "https://TODO/r9a018",
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor UsingExcessiveDictionaryLookup { get; } = new(
@@ -90,7 +68,7 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.UsingExcessiveDictionaryLookupDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a019",
+        helpLinkUri: "https://TODO/r9a019",
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor UsingExcessiveSetLookup { get; } = new(
@@ -100,7 +78,7 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.UsingExcessiveSetLookupDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a020",
+        helpLinkUri: "https://TODO/r9a020",
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor UsingToStringInLoggers { get; } = new(
@@ -110,7 +88,7 @@ internal static class DiagDescriptors
         category: "Performance",
         description: Resources.UsingToStringInLoggersDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a021",
+        helpLinkUri: "https://TODO/r9a021",
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor StaticTime { get; } = new(
@@ -120,7 +98,7 @@ internal static class DiagDescriptors
         category: Reliability,
         description: Resources.StaticTimeDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a022",
+        helpLinkUri: "https://TODO/r9a022",
         isEnabledByDefault: true);
 
     // R9A023..R9A028 retired
@@ -132,7 +110,7 @@ internal static class DiagDescriptors
         category: Reliability,
         description: Resources.UsingExperimentalApiDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a029",
+        helpLinkUri: "https://TODO/r9a029",
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor StartsEndsWith { get; } = new(
@@ -142,7 +120,7 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.StartsEndsWithDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a030",
+        helpLinkUri: "https://TODO/r9a030",
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor MakeExeTypesInternal { get; } = new(
@@ -152,7 +130,7 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.MakeExeTypesInternalDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a031",
+        helpLinkUri: "https://TODO/r9a031",
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor Arrays { get; } = new(
@@ -162,7 +140,7 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.ArraysDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a032",
+        helpLinkUri: "https://TODO/r9a032",
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor EnumStrings { get; } = new(
@@ -172,21 +150,10 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.EnumStringsDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a033",
+        helpLinkUri: "https://TODO/r9a033",
         isEnabledByDefault: true);
 
-    // R9A034 deprecated
-    // R9A035 deprecated
-
-    public static DiagnosticDescriptor ToInvariantString { get; } = new(
-        id: "R9A036",
-        messageFormat: Resources.ToInvariantStringMessage,
-        title: Resources.ToInvariantStringTitle,
-        category: Performance,
-        description: Resources.ToInvariantStringDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a036",
-        isEnabledByDefault: true);
+    // R9A034..R9A036 retired
 
     public static DiagnosticDescriptor ValueTuple { get; } = new(
         id: "R9A037",
@@ -195,20 +162,10 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.ValueTupleDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a037",
+        helpLinkUri: "https://TODO/r9a037",
         isEnabledByDefault: true);
 
-    // R9A038 retired
-
-    public static DiagnosticDescriptor NullCheck { get; } = new(
-        id: "R9A039",
-        messageFormat: Resources.NullCheckMessage,
-        title: Resources.NullCheckTitle,
-        category: Performance,
-        description: Resources.NullCheckDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a039",
-        isEnabledByDefault: true);
+    // R9A038..R9A039 retired
 
     public static DiagnosticDescriptor LegacyCollection { get; } = new(
         id: "R9A040",
@@ -217,7 +174,7 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.LegacyCollectionDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a040",
+        helpLinkUri: "https://TODO/r9a040",
         isEnabledByDefault: true);
 
     // R9A041..R9A042 retired
@@ -229,7 +186,7 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.SplitDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a043",
+        helpLinkUri: "https://TODO/r9a043",
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor MakeArrayStatic { get; } = new(
@@ -239,80 +196,10 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.MakeArrayStaticDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a044",
+        helpLinkUri: "https://TODO/r9a044",
         isEnabledByDefault: true);
 
-    // R9A045..R9A048 retired
-
-    public static DiagnosticDescriptor AnExperimentalApiIsNotAnnotated { get; } = new(
-        id: "R9A049",
-        messageFormat: Resources.AnExperimentalApiIsNotAnnotatedMessage,
-        title: Resources.AnExperimentalApiIsNotAnnotatedTitle,
-        category: Correctness,
-        description: Resources.AnExperimentalApiIsNotAnnotatedDescription,
-        defaultSeverity: DiagnosticSeverity.Hidden,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a049",
-        isEnabledByDefault: true);
-
-    public static DiagnosticDescriptor AnExperimentalApiWasMarkedAsObsolete { get; } = new(
-        id: "R9A050",
-        messageFormat: Resources.AnExperimentalApiWasMarkedAsObsoleteMessage,
-        title: Resources.AnExperimentalApiWasMarkedAsObsoleteTitle,
-        category: Correctness,
-        description: Resources.AnExperimentalApiWasMarkedAsObsoleteDescription,
-        defaultSeverity: DiagnosticSeverity.Hidden,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a050",
-        isEnabledByDefault: true);
-
-    public static DiagnosticDescriptor AStableApiWasMarkedAsExperimental { get; } = new(
-        id: "R9A051",
-        messageFormat: Resources.AStableApiWasMarkedAsExperimentalMessage,
-        title: Resources.AStableApiWasMarkedAsExperimentalTitle,
-        category: Correctness,
-        description: Resources.AStableApiWasMarkedAsExperimentalDescription,
-        defaultSeverity: DiagnosticSeverity.Hidden,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a051",
-        isEnabledByDefault: true);
-
-    public static DiagnosticDescriptor AStableApiWasDeletedOutsideTheDeprecationPeriod { get; } = new(
-        id: "R9A052",
-        messageFormat: Resources.AStableApiWasDeletedOutsideTheDeprecationPeriodMessage,
-        title: Resources.AStableApiWasDeletedOutsideTheDeprecationPeriodTitle,
-        category: Correctness,
-        description: Resources.AStableApiWasDeletedOutsideTheDeprecationPeriodDescription,
-        defaultSeverity: DiagnosticSeverity.Hidden,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a052",
-        isEnabledByDefault: true);
-
-    public static DiagnosticDescriptor ADeprecatedApiIsNotAnnotatedWithObsoleteAttribute { get; } = new(
-        id: "R9A053",
-        messageFormat: Resources.ADeprecatedApiIsNotAnnotatedWithObsoleteAttributeMessage,
-        title: Resources.ADeprecatedApiIsNotAnnotatedWithObsoleteAttributeTitle,
-        category: Correctness,
-        description: Resources.ADeprecatedApiIsNotAnnotatedWithObsoleteAttributeDescription,
-        defaultSeverity: DiagnosticSeverity.Hidden,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a053",
-        isEnabledByDefault: true);
-
-    public static DiagnosticDescriptor ADeprecatedApiIsMarkedAsExperimental { get; } = new(
-         id: "R9A054",
-         messageFormat: Resources.ADeprecatedApiIsMarkedAsExperimentalMessage,
-         title: Resources.ADeprecatedApiIsMarkedAsExperimentalTitle,
-         category: Correctness,
-         description: Resources.ADeprecatedApiIsMarkedAsExperimentalDescription,
-         defaultSeverity: DiagnosticSeverity.Hidden,
-         helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a054",
-         isEnabledByDefault: true);
-
-    public static DiagnosticDescriptor TheSignatureOfAStableApiHasChanged { get; } = new(
-        id: "R9A055",
-        messageFormat: Resources.TheSignatureOfAStableApiHasChangedMessage,
-        title: Resources.TheSignatureOfAStableApiHasChangedTitle,
-        category: Correctness,
-        description: Resources.TheSignatureOfAStableApiHasChangedDescription,
-        defaultSeverity: DiagnosticSeverity.Hidden,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a055",
-        isEnabledByDefault: true);
+    // R9A045..R9A055 retired
 
     public static DiagnosticDescriptor AsyncCallInsideUsingBlock { get; } = new(
         id: "R9A056",
@@ -321,7 +208,7 @@ internal static class DiagDescriptors
         category: Correctness,
         description: Resources.AsyncCallInsideUsingBlockDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a056",
+        helpLinkUri: "https://TODO/r9a056",
         isEnabledByDefault: true);
 
     // R9A057 retired
@@ -333,7 +220,7 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.ConditionalAccessDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a058",
+        helpLinkUri: "https://TODO/r9a058",
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor CoalesceAssignment { get; } = new(
@@ -343,7 +230,7 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.CoalesceAssignmentDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a059",
+        helpLinkUri: "https://TODO/r9a059",
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor Coalesce { get; } = new(
@@ -353,7 +240,7 @@ internal static class DiagDescriptors
         category: Performance,
         description: Resources.CoalesceDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a060",
+        helpLinkUri: "https://TODO/r9a060",
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor AsyncMethodWithoutCancellation { get; } = new(
@@ -363,6 +250,6 @@ internal static class DiagDescriptors
         category: Resilience,
         description: Resources.AsyncMethodWithoutCancellationDescription,
         defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a061",
+        helpLinkUri: "https://TODO/r9a061",
         isEnabledByDefault: true);
 }

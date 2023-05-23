@@ -61,123 +61,6 @@ namespace Microsoft.Extensions.ExtraAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Deprecated API cannot be marked as experimental.
-        /// </summary>
-        internal static string ADeprecatedApiIsMarkedAsExperimentalDescription {
-            get {
-                return ResourceManager.GetString("ADeprecatedApiIsMarkedAsExperimentalDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Remove experimental attribute from deprecated API.
-        /// </summary>
-        internal static string ADeprecatedApiIsMarkedAsExperimentalMessage {
-            get {
-                return ResourceManager.GetString("ADeprecatedApiIsMarkedAsExperimentalMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A deprecated API is marked as experimental.
-        /// </summary>
-        internal static string ADeprecatedApiIsMarkedAsExperimentalTitle {
-            get {
-                return ResourceManager.GetString("ADeprecatedApiIsMarkedAsExperimentalTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Deprecated API should have annotation that will guide customers regarding its replacement and the release in which it will be removed.
-        /// </summary>
-        internal static string ADeprecatedApiIsNotAnnotatedWithObsoleteAttributeDescription {
-            get {
-                return ResourceManager.GetString("ADeprecatedApiIsNotAnnotatedWithObsoleteAttributeDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Annotate deprecated API with obsolete attribute.
-        /// </summary>
-        internal static string ADeprecatedApiIsNotAnnotatedWithObsoleteAttributeMessage {
-            get {
-                return ResourceManager.GetString("ADeprecatedApiIsNotAnnotatedWithObsoleteAttributeMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A deprecated API is not annotated with the obsolete attribute.
-        /// </summary>
-        internal static string ADeprecatedApiIsNotAnnotatedWithObsoleteAttributeTitle {
-            get {
-                return ResourceManager.GetString("ADeprecatedApiIsNotAnnotatedWithObsoleteAttributeTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Newly added externally visible API is not marked as experimental.
-        /// </summary>
-        internal static string AnExperimentalApiIsNotAnnotatedDescription {
-            get {
-                return ResourceManager.GetString("AnExperimentalApiIsNotAnnotatedDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Newly added externally visible API must be annotated as experimental.
-        /// </summary>
-        internal static string AnExperimentalApiIsNotAnnotatedMessage {
-            get {
-                return ResourceManager.GetString("AnExperimentalApiIsNotAnnotatedMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Newly added API must be annotated with experimental attribute.
-        /// </summary>
-        internal static string AnExperimentalApiIsNotAnnotatedTitle {
-            get {
-                return ResourceManager.GetString("AnExperimentalApiIsNotAnnotatedTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to You can change experimental APIs at any time without deprecation period.
-        /// </summary>
-        internal static string AnExperimentalApiWasMarkedAsObsoleteDescription {
-            get {
-                return ResourceManager.GetString("AnExperimentalApiWasMarkedAsObsoleteDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Remove obsolete annotation from experimental API.
-        /// </summary>
-        internal static string AnExperimentalApiWasMarkedAsObsoleteMessage {
-            get {
-                return ResourceManager.GetString("AnExperimentalApiWasMarkedAsObsoleteMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to An experimental API was marked as obsolete.
-        /// </summary>
-        internal static string AnExperimentalApiWasMarkedAsObsoleteTitle {
-            get {
-                return ResourceManager.GetString("AnExperimentalApiWasMarkedAsObsoleteTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Annotate experimental API.
-        /// </summary>
-        internal static string AnnotateExperimentalApi {
-            get {
-                return ResourceManager.GetString("AnnotateExperimentalApi", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Dictionaries and sets which use enums and bytes as keys can often be replaced with simple arrays for improved performance.
         /// </summary>
         internal static string ArraysDescription {
@@ -201,60 +84,6 @@ namespace Microsoft.Extensions.ExtraAnalyzers {
         internal static string ArraysTitle {
             get {
                 return ResourceManager.GetString("ArraysTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Stable APIs must follow deprecation policy and be marked as obsolete before it gets deleted..
-        /// </summary>
-        internal static string AStableApiWasDeletedOutsideTheDeprecationPeriodDescription {
-            get {
-                return ResourceManager.GetString("AStableApiWasDeletedOutsideTheDeprecationPeriodDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Revert deletion of {0} API and mark it with obsolete attribute.
-        /// </summary>
-        internal static string AStableApiWasDeletedOutsideTheDeprecationPeriodMessage {
-            get {
-                return ResourceManager.GetString("AStableApiWasDeletedOutsideTheDeprecationPeriodMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A stable API was deleted outside the deprecation period.
-        /// </summary>
-        internal static string AStableApiWasDeletedOutsideTheDeprecationPeriodTitle {
-            get {
-                return ResourceManager.GetString("AStableApiWasDeletedOutsideTheDeprecationPeriodTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Stable APIs should not be annotated as experimental.
-        /// </summary>
-        internal static string AStableApiWasMarkedAsExperimentalDescription {
-            get {
-                return ResourceManager.GetString("AStableApiWasMarkedAsExperimentalDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Don&apos;t mark stable API as experimental.
-        /// </summary>
-        internal static string AStableApiWasMarkedAsExperimentalMessage {
-            get {
-                return ResourceManager.GetString("AStableApiWasMarkedAsExperimentalMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A stable API was marked as experimental.
-        /// </summary>
-        internal static string AStableApiWasMarkedAsExperimentalTitle {
-            get {
-                return ResourceManager.GetString("AStableApiWasMarkedAsExperimentalTitle", resourceCulture);
             }
         }
         
@@ -547,51 +376,6 @@ namespace Microsoft.Extensions.ExtraAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to When compiling in a nullable context, the C# compiler performs null analysis at compile time so there is no need to also perform null checking at runtime.
-        /// </summary>
-        internal static string NullCheckDescription {
-            get {
-                return ResourceManager.GetString("NullCheckDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Remove superfluous null check when compiling in a nullable context.
-        /// </summary>
-        internal static string NullCheckMessage {
-            get {
-                return ResourceManager.GetString("NullCheckMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Remove superfluous null checks when compiling in a nullable context.
-        /// </summary>
-        internal static string NullCheckTitle {
-            get {
-                return ResourceManager.GetString("NullCheckTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Replace explicit null check with call to &apos;Throws.IfNull&apos; (needs a &apos;PackageReference&apos; to &apos;Microsoft.R9.Extensions.Essentials&apos;).
-        /// </summary>
-        internal static string ReplaceWithStaticNullCheckMethod {
-            get {
-                return ResourceManager.GetString("ReplaceWithStaticNullCheckMethod", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Replace explicit throw with call to &apos;Throws&apos; (needs a &apos;PackageReference&apos; to &apos;Microsoft.R9.Extensions.Essentials&apos;).
-        /// </summary>
-        internal static string ReplaceWithStaticThrowMethod {
-            get {
-                return ResourceManager.GetString("ReplaceWithStaticThrowMethod", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Apply code fix for all issues in &apos;{0}&apos; &apos;{1}&apos;.
         /// </summary>
         internal static string SequentialFixAllFormat {
@@ -610,7 +394,7 @@ namespace Microsoft.Extensions.ExtraAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use &apos;Microsoft.R9.Extensions.Text.StringSplitExtensions.TrySplit&apos; for improved performance.
+        ///   Looks up a localized string similar to Use &apos;System.MemoryExtensions.Split&apos; for improved performance.
         /// </summary>
         internal static string SplitDescription {
             get {
@@ -619,7 +403,7 @@ namespace Microsoft.Extensions.ExtraAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use &apos;Microsoft.R9.Extensions.Text.StringSplitExtensions.TrySplit&apos; for improved performance.
+        ///   Looks up a localized string similar to Use &apos;System.MemoryExtensions.Split&apos; for improved performance.
         /// </summary>
         internal static string SplitMessage {
             get {
@@ -628,7 +412,7 @@ namespace Microsoft.Extensions.ExtraAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use &apos;Microsoft.R9.Extensions.Text.StringSplitExtensions.TrySplit&apos; for improved performance.
+        ///   Looks up a localized string similar to Use &apos;System.MemoryExtensions.Split&apos; for improved performance.
         /// </summary>
         internal static string SplitTitle {
             get {
@@ -700,7 +484,7 @@ namespace Microsoft.Extensions.ExtraAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use &apos;Microsoft.R9.Extensions.Text.CompositeFormat&apos; instead of &apos;string.Format&apos; for improved performance.
+        ///   Looks up a localized string similar to Use &apos;System.Text.CompositeFormat&apos; instead of &apos;string.Format&apos; for improved performance.
         /// </summary>
         internal static string StringFormatMessage {
             get {
@@ -709,119 +493,11 @@ namespace Microsoft.Extensions.ExtraAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use &apos;Microsoft.R9.Extensions.Text.CompositeFormat&apos; instead of &apos;string.Format&apos; for improved performance.
+        ///   Looks up a localized string similar to Use &apos;System.Text.CompositeFormat&apos; instead of &apos;string.Format&apos; for improved performance.
         /// </summary>
         internal static string StringFormatTitle {
             get {
                 return ResourceManager.GetString("StringFormatTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Stable APIs cannot be changed in an incompatible way.
-        /// </summary>
-        internal static string TheSignatureOfAStableApiHasChangedDescription {
-            get {
-                return ResourceManager.GetString("TheSignatureOfAStableApiHasChangedDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The signature of a stable API misses &apos;{1}&apos;.
-        /// </summary>
-        internal static string TheSignatureOfAStableApiHasChangedMessage {
-            get {
-                return ResourceManager.GetString("TheSignatureOfAStableApiHasChangedMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The signature of a stable API has changed.
-        /// </summary>
-        internal static string TheSignatureOfAStableApiHasChangedTitle {
-            get {
-                return ResourceManager.GetString("TheSignatureOfAStableApiHasChangedTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Recommends replacing explicit argument throwing with the more efficient &apos;Microsoft.R9.Extensions.Diagnostics.Throws&apos; class.
-        /// </summary>
-        internal static string ThrowsExpressionDescription {
-            get {
-                return ResourceManager.GetString("ThrowsExpressionDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &apos;{0}&apos; to throw the exception instead to improve performance.
-        /// </summary>
-        internal static string ThrowsExpressionMessage {
-            get {
-                return ResourceManager.GetString("ThrowsExpressionMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use the &apos;Microsoft.R9.Extensions.Diagnostics.Throws&apos; class instead of explicitly throwing exception for improved performance.
-        /// </summary>
-        internal static string ThrowsExpressionTitle {
-            get {
-                return ResourceManager.GetString("ThrowsExpressionTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Recommends replacing explicit argument throwing with the more efficient &apos;Microsoft.R9.Extensions.Diagnostics.Throws&apos; class.
-        /// </summary>
-        internal static string ThrowsStatementDescription {
-            get {
-                return ResourceManager.GetString("ThrowsStatementDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &apos;{0}&apos; to throw the exception instead to improve performance.
-        /// </summary>
-        internal static string ThrowsStatementMessage {
-            get {
-                return ResourceManager.GetString("ThrowsStatementMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use the &apos;Microsoft.R9.Extensions.Diagnostics.Throws&apos; class instead of explicitly throwing exception for improved performance.
-        /// </summary>
-        internal static string ThrowsStatementTitle {
-            get {
-                return ResourceManager.GetString("ThrowsStatementTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;Microsoft.R9.Extensions.Text.NumericExtensions.ToInvariantString&apos; provides caching for common numeric values, avoiding the need to allocate new strings in many situations.
-        /// </summary>
-        internal static string ToInvariantStringDescription {
-            get {
-                return ResourceManager.GetString("ToInvariantStringDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &apos;Microsoft.R9.Extensions.Text.NumericExtensions.ToInvariantString&apos; for improved performance.
-        /// </summary>
-        internal static string ToInvariantStringMessage {
-            get {
-                return ResourceManager.GetString("ToInvariantStringMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use &apos;Microsoft.R9.Extensions.Text.NumericExtensions.ToInvariantString&apos; for improved performance.
-        /// </summary>
-        internal static string ToInvariantStringTitle {
-            get {
-                return ResourceManager.GetString("ToInvariantStringTitle", resourceCulture);
             }
         }
         
@@ -907,7 +583,7 @@ namespace Microsoft.Extensions.ExtraAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Identifies calls to the &apos;ToString&apos; method as arguments to an R9 logging method.
+        ///   Looks up a localized string similar to Identifies calls to the &apos;ToString&apos; method as arguments to a logging method.
         /// </summary>
         internal static string UsingToStringInLoggersDescription {
             get {

@@ -14,7 +14,7 @@ namespace Microsoft.Gen.Shared;
 internal class DiagDescriptorsBase
 {
 #pragma warning disable S1075 // URIs should not be hardcoded
-    public const string HelpLinkBase = "https://eng.ms/docs/experiences-devices/r9-sdk/docs/code-generation/generators/";
+    public const string HelpLinkBase = "https://TODO/";
 #pragma warning restore S1075 // URIs should not be hardcoded
 
     protected static DiagnosticDescriptor Make(
