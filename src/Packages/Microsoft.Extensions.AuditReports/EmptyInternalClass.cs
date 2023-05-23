@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Gen.AuditReports;
-
 internal sealed class EmptyInternalClass
 {
     // This class is a place

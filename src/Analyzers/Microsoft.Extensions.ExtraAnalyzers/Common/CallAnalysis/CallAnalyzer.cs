@@ -21,7 +21,6 @@ public sealed partial class CallAnalyzer : DiagnosticAnalyzer
         DiagDescriptors.EnumStrings,
         DiagDescriptors.ValueTuple,
         DiagDescriptors.Arrays,
-        DiagDescriptors.NullCheck,
         DiagDescriptors.LegacyCollection,
         DiagDescriptors.Split);
 
@@ -45,11 +44,6 @@ public sealed partial class CallAnalyzer : DiagnosticAnalyzer
             _ = new StringFormat(reg);
             _ = new LegacyCollection(reg);
             _ = new Split(reg);
-
-            if (compilationStartContext.Compilation.Options.NullableContextOptions.WarningsEnabled())
-            {
-                _ = new NullChecks(reg);
-            }
 
             var handlers = new Handlers(state);
             compilationStartContext.RegisterOperationAction(handlers.HandleInvocation, OperationKind.Invocation);

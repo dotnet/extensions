@@ -12,12 +12,18 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.Extensions.ExtraAnalyzers.CallAnalysis;
 
 /// <summary>
-/// Recommends using R9 composite text formatting functionality.
+/// Recommends using composite text formatting functionality.
 /// </summary>
 internal sealed class StringFormat
 {
     public StringFormat(CallAnalyzer.Registrar reg)
     {
+        if (reg.Compilation.GetTypeByMetadataName("System.Text.CompositeFormat") == null)
+        {
+            // composite formatting not available
+            return;
+        }
+
         foreach (var method in reg.Compilation.GetSpecialType(SpecialType.System_String).GetMembers("Format").OfType<IMethodSymbol>())
         {
             reg.RegisterMethod(method, Handle);

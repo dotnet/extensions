@@ -51,7 +51,7 @@ internal sealed class UsingExperimentalApiAnalyzer : DiagnosticAnalyzer
                     if (attributeData.AttributeClass?.Name == "ExperimentalAttribute")
                     {
                         var ns = attributeData.AttributeClass.ContainingNamespace.ToString();
-                        if (ns is "System.Diagnostics.CodeAnalysis" or "Microsoft.Extensions.Diagnostics")
+                        if (ns is "System.Diagnostics.CodeAnalysis")
                         {
                             return true;
                         }

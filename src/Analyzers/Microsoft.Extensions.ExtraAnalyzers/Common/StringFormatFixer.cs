@@ -18,7 +18,7 @@ using Microsoft.Extensions.ExtraAnalyzers.Utilities;
 namespace Microsoft.Extensions.ExtraAnalyzers;
 
 /// <summary>
-/// Replace string.Format usage with Microsoft.Extensions.Text.CompositeFormat.
+/// Replace string.Format usage with System.Text.CompositeFormat.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(StringFormatFixer))]
 [Shared]
@@ -28,7 +28,7 @@ public sealed class StringFormatFixer : CodeFixProvider
     private const string TargetMethod = "Format";
     private const string VariableName = "_sf";
     private const int ArgumentsToSkip = 2;
-    private static readonly IdentifierNameSyntax _textNamespace = SyntaxFactory.IdentifierName("Microsoft.Extensions.Text");
+    private static readonly IdentifierNameSyntax _textNamespace = SyntaxFactory.IdentifierName("System.Text");
 
     /// <inheritdoc/>
     public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DiagDescriptors.StringFormat.Id);
