@@ -1,0 +1,136 @@
+Origin:
+  AssemblyName: Microsoft.AspNetCore.App.Analyzers
+  Version: 7.0.423.11903
+Diagnostics:
+  ASP0003:
+    Metadata:
+      Category: Usage
+      Title: Do not use model binding attributes with route handlers
+      Description: ''
+      HelpLinkUri: https://aka.ms/aspnet/analyzers
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  ASP0004:
+    Metadata:
+      Category: Usage
+      Title: Do not use action results with route handlers
+      Description: ''
+      HelpLinkUri: https://aka.ms/aspnet/analyzers
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  ASP0005:
+    Metadata:
+      Category: Usage
+      Title: Do not place attribute on method called by route handler lambda
+      Description: ''
+      HelpLinkUri: https://aka.ms/aspnet/analyzers
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  ASP0006:
+    Metadata:
+      Category: Usage
+      Title: Do not use non-literal sequence numbers
+      Description: ''
+      HelpLinkUri: https://aka.ms/aspnet/analyzers
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  ASP0007:
+    Metadata:
+      Category: Usage
+      Title: Route parameter and argument optionality is mismatched
+      Description: ''
+      HelpLinkUri: https://aka.ms/aspnet/analyzers
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  ASP0008:
+    Metadata:
+      Category: Usage
+      Title: Do not use ConfigureWebHost with WebApplicationBuilder.Host
+      Description: ''
+      HelpLinkUri: https://aka.ms/aspnet/analyzers
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error
+  ASP0009:
+    Metadata:
+      Category: Usage
+      Title: Do not use Configure with WebApplicationBuilder.WebHost
+      Description: ''
+      HelpLinkUri: https://aka.ms/aspnet/analyzers
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error
+  ASP0010:
+    Metadata:
+      Category: Usage
+      Title: Do not use UseStartup with WebApplicationBuilder.WebHost
+      Description: ''
+      HelpLinkUri: https://aka.ms/aspnet/analyzers
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error
+  ASP0011:
+    Metadata:
+      Category: Usage
+      Title: Suggest using builder.Logging over Host.ConfigureLogging or WebHost.ConfigureLogging
+      Description: ''
+      HelpLinkUri: https://aka.ms/aspnet/analyzers
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  ASP0012:
+    Metadata:
+      Category: Usage
+      Title: Suggest using builder.Services over Host.ConfigureServices or WebHost.ConfigureServices
+      Description: ''
+      HelpLinkUri: https://aka.ms/aspnet/analyzers
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  ASP0013:
+    Metadata:
+      Category: Usage
+      Title: Suggest switching from using Configure methods to WebApplicationBuilder.Configuration
+      Description: ''
+      HelpLinkUri: https://aka.ms/aspnet/analyzers
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  ASP0014:
+    Metadata:
+      Category: Usage
+      Title: Suggest using top level route registrations
+      Description: ''
+      HelpLinkUri: https://aka.ms/aspnet/analyzers
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning

@@ -1,0 +1,542 @@
+Origin:
+  AssemblyName: Microsoft.CodeAnalysis.CSharp.NetAnalyzers
+  Version: 8.0.8.26002
+Diagnostics:
+  CA1001:
+    Metadata:
+      Category: Design
+      Title: Types that own disposable fields should be disposable
+      Description: A class declares and implements an instance field that is a System.IDisposable type, and the class does not implement IDisposable. A class that declares an IDisposable field indirectly owns an unmanaged resource and should implement the IDisposable interface.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1019:
+    Metadata:
+      Category: Design
+      Title: Define accessors for attribute arguments
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1019
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Suggestion
+      api:
+        Severity: Warning
+  CA1032:
+    Metadata:
+      Category: Design
+      Title: Implement standard exception constructors
+      Description: Failure to provide the full set of constructors can make it difficult to correctly handle exceptions.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1032
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      api:
+        Severity: Warning
+  CA1065:
+    Metadata:
+      Category: Design
+      Title: Do not raise exceptions in unexpected locations
+      Description: A method that is not expected to throw exceptions throws an exception.
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1065
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1200:
+    Metadata:
+      Category: Documentation
+      Title: Avoid using cref tags with a prefix
+      Description: Use of cref tags with prefixes should be avoided, since it prevents the compiler from verifying references and the IDE from updating references during refactorings. It is permissible to suppress this error at a single documentation site if the cref must use a prefix because the type being mentioned is not findable by the compiler. For example, if a cref is mentioning a special attribute in the full framework but you're in a file that compiles against the portable framework, or if you want to reference a type at higher layer of Roslyn, you should suppress the error. You should not suppress the error just because you want to take a shortcut and avoid using the full syntax.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1200
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1309:
+    Metadata:
+      Category: Globalization
+      Title: Use ordinal string comparison
+      Description: A string comparison operation that is nonlinguistic does not set the StringComparison parameter to either Ordinal or OrdinalIgnoreCase. By explicitly setting the parameter to either StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase, your code often gains speed, becomes more correct, and becomes more reliable.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1309
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Suggestion
+      production:
+        Severity: Warning
+  CA1507:
+    Metadata:
+      Category: Maintainability
+      Title: Use nameof to express symbol names
+      Description: Using nameof helps keep your code valid when refactoring.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1507
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Warning
+  CA1812:
+    Metadata:
+      Category: Performance
+      Title: Avoid uninstantiated internal classes
+      Description: An instance of an assembly-level type is not created by code in the assembly.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1812
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Comment: S1144 finds more cases and has no false positives
+        Redundant: S1144
+  CA1824:
+    Metadata:
+      Category: Performance
+      Title: Mark assemblies with NeutralResourcesLanguageAttribute
+      Description: The NeutralResourcesLanguage attribute informs the ResourceManager of the language that was used to display the resources of a neutral culture for an assembly. This improves lookup performance for the first resource that you load and can reduce your working set.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1824
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      - CompilationEnd
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Suggestion
+      performance:
+        Severity: Warning
+  CA1825:
+    Metadata:
+      Category: Performance
+      Title: Avoid zero-length array allocations
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1825
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA2016:
+    Metadata:
+      Category: Reliability
+      Title: Forward the 'CancellationToken' parameter to methods
+      Description: Forward the 'CancellationToken' parameter to methods to ensure the operation cancellation notifications gets properly propagated, or pass in 'CancellationToken.None' explicitly to indicate intentionally not propagating the token.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2016
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA2200:
+    Metadata:
+      Category: Usage
+      Title: Rethrow to preserve stack details
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2200
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA2234:
+    Metadata:
+      Category: Usage
+      Title: Pass system uri objects instead of strings
+      Description: A call is made to a method that has a string parameter whose name contains "uri", "URI", "urn", "URN", "url", or "URL". The declaring type of the method contains a corresponding method overload that has a System.Uri parameter.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2234
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3076:
+    Metadata:
+      Category: Security
+      Title: Insecure XSLT script processing.
+      Description: Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3076
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA3077:
+    Metadata:
+      Category: Security
+      Title: Insecure Processing in API Design, XmlDocument and XmlTextReader
+      Description: Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. 
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2354:
+    Metadata:
+      Category: Security
+      Title: Unsafe DataSet or DataTable in deserialized object graph can be vulnerable to remote code execution attacks
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2354
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2355:
+    Metadata:
+      Category: Security
+      Title: Unsafe DataSet or DataTable type found in deserializable object graph
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2355
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2352:
+    Metadata:
+      Category: Security
+      Title: Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2352
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2353:
+    Metadata:
+      Category: Security
+      Title: Unsafe DataSet or DataTable in serializable type
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2353
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2362:
+    Metadata:
+      Category: Security
+      Title: Unsafe DataSet or DataTable in auto-generated serializable type can be vulnerable to remote code execution attacks
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2362
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2356:
+    Metadata:
+      Category: Security
+      Title: Unsafe DataSet or DataTable type in web deserializable object graph
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2356
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  CA2014:
+    Metadata:
+      Category: Reliability
+      Title: Do not use stackalloc in loops
+      Description: Stack space allocated by a stackalloc is only released at the end of the current method's invocation.  Using it in a loop can result in unbounded stack growth and eventual stack overflow conditions.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2014
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1805:
+    Metadata:
+      Category: Performance
+      Title: Do not initialize unnecessarily
+      Description: The .NET runtime initializes all fields of reference types to their default values before running the constructor. In most cases, explicitly initializing a field to its default value in a constructor is redundant, adding maintenance costs and potentially degrading performance (such as with increased assembly size), and the explicit initialization can be removed.  In some cases, such as with static readonly fields that permanently retain their default value, consider instead changing them to be constants or properties.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1805
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1801:
+    Metadata:
+      Category: Usage
+      Title: Review unused parameters
+      Description: Avoid unused paramereters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1801
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+        Redundant: IDE0060
+  CA2252:
+    Metadata:
+      Category: Usage
+      Title: This API requires opting into preview features
+      Description: An assembly has to opt into preview features before using them.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error
+  CA1841:
+    Metadata:
+      Category: Performance
+      Title: Prefer Dictionary.Contains methods
+      Description: Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 3
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1845:
+    Metadata:
+      Category: Performance
+      Title: Use span-based 'string.Concat'
+      Description: It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1845
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1802:
+    Metadata:
+      Category: Performance
+      Title: Use literals where appropriate
+      Description: A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA2260:
+    Metadata:
+      Category: Usage
+      Title: Use correct type parameter
+      Description: Generic math interfaces require the derived type itself to be used for the self recurring type parameter.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2260
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1311:
+    Metadata:
+      Category: Globalization
+      Title: Specify a culture or use an invariant version
+      Description: Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1311
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  CA1855:
+    Metadata:
+      Category: Performance
+      Title: Prefer 'Clear' over 'Fill'
+      Description: It is more efficient to use 'Clear', instead of 'Fill' with default value.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1855
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1851:
+    Metadata:
+      Category: Performance
+      Title: Possible multiple enumerations of 'IEnumerable' collection
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1851
+      CustomTags:
+      - Dataflow
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA2020:
+    Metadata:
+      Category: Reliability
+      Title: Prevent behavioral change
+      Description: Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2020
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1856:
+    Metadata:
+      Category: Performance
+      Title: Incorrect usage of ConstantExpected attribute
+      Description: ConstantExpected attribute is not applied correctly on the parameter.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1856
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error
+  CA1857:
+    Metadata:
+      Category: Performance
+      Title: A constant is expected for the parameter
+      Description: The parameter expects a constant for optimal performance.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning

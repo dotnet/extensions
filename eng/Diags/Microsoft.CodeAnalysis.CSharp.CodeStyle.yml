@@ -1,0 +1,1745 @@
+Origin:
+  AssemblyName: Microsoft.CodeAnalysis.CSharp.CodeStyle
+  Version: 4.7.8.26202
+Diagnostics:
+  IDE0001:
+    Metadata:
+      Category: Style
+      Title: Simplify name
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0001
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Comment: This diagnostic only triggers in Visual Studio, not when building from the command-line. This metadata was entered manually, since it is not exposed in the normal way from the analyzer assembly.
+  IDE0002:
+    Metadata:
+      Category: Style
+      Title: Simplify name
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0002
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Comment: This diagnostic only triggers in Visual Studio, not when building from the command-line. This metadata was entered manually, since it is not exposed in the normal way from the analyzer assembly.
+  IDE0003:
+    Metadata:
+      Category: Style
+      Title: Remove this or Me qualification
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0003-ide0009
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Comment: This diagnostic only triggers in Visual Studio, not when building from the command-line. This metadata was entered manually, since it is not exposed in the normal way from the analyzer assembly.
+        Options:
+        - dotnet_style_qualification_for_event = false
+        - dotnet_style_qualification_for_field = false
+        - dotnet_style_qualification_for_method = false
+        - dotnet_style_qualification_for_property = false
+  IDE0049:
+    Metadata:
+      Category: Style
+      Title: Use language keywords instead of framework type names for type references
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0049
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Comment: This diagnostic only triggers in Visual Studio, not when building from the command-line. This metadata was entered manually, since it is not exposed in the normal way from the analyzer assembly.
+        Options:
+        - dotnet_style_predefined_type_for_locals_parameters_members = true
+        - dotnet_style_predefined_type_for_member_access = true
+  IDE0053:
+    Metadata:
+      Category: Style
+      Title: Use block body for lambda expression
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0053
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+        Comment: This metadata was entered manually, since it is not exposed in the normal way from the analyzer assembly.
+        Options:
+        - csharp_style_expression_bodied_lambdas = when_on_single_line
+  IDE0004:
+    Metadata:
+      Category: Style
+      Title: Remove Unnecessary Cast
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0004
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0005:
+    Metadata:
+      Category: Style
+      Title: Using directive is unnecessary.
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0005
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: S1128
+  IDE0005_gen:
+    Metadata:
+      Category: Style
+      Title: Using directive is unnecessary.
+      Description: ''
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Never
+      - NotConfigurable
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: S1128
+  IDE0007:
+    Metadata:
+      Category: Style
+      Title: Use implicit type
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0007
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_var_elsewhere = true
+        - csharp_style_var_for_built_in_types = false
+        - csharp_style_var_when_type_is_apparent = true
+  IDE0008:
+    Metadata:
+      Category: Style
+      Title: Use explicit type
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0008
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0009:
+    Metadata:
+      Category: Style
+      Title: Member access should be qualified.
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0009
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Never
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Comment: This diagnostic only triggers in Visual Studio, not when building from the command-line
+  IDE0010:
+    Metadata:
+      Category: Style
+      Title: Add missing cases
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0010
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0011:
+    Metadata:
+      Category: Style
+      Title: Add braces
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0011
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_prefer_braces = true
+  IDE0016:
+    Metadata:
+      Category: Style
+      Title: Use 'throw' expression
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0016
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_throw_expression = true
+  IDE0017:
+    Metadata:
+      Category: Style
+      Title: Simplify object initialization
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0017
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_object_initializer = true
+  IDE0018:
+    Metadata:
+      Category: Style
+      Title: Inline variable declaration
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0018
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_inlined_variable_declaration = true
+  IDE0019:
+    Metadata:
+      Category: Style
+      Title: Use pattern matching
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0019
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_pattern_matching_over_is_with_cast_check = true
+  IDE0020:
+    Metadata:
+      Category: Style
+      Title: Use pattern matching
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0020
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_pattern_matching_over_is_with_cast_check
+  IDE0021:
+    Metadata:
+      Category: Style
+      Title: Use expression body for constructor
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0021
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_expression_bodied_constructors = false
+  IDE0022:
+    Metadata:
+      Category: Style
+      Title: Use expression body for method
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0022
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_expression_bodied_methods = when_on_single_line
+  IDE0023:
+    Metadata:
+      Category: Style
+      Title: Use expression body for conversion operator
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0023
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_expression_bodied_operators = false
+  IDE0024:
+    Metadata:
+      Category: Style
+      Title: Use expression body for operator
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0024
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_expression_bodied_operators = false
+  IDE0025:
+    Metadata:
+      Category: Style
+      Title: Use expression body for property
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0025
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_expression_bodied_properties = true
+  IDE0026:
+    Metadata:
+      Category: Style
+      Title: Use expression body for indexer
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0026
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_expression_bodied_indexers = true
+  IDE0027:
+    Metadata:
+      Category: Style
+      Title: Use expression body for accessor
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0027
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_expression_bodied_accessors = true
+  IDE0028:
+    Metadata:
+      Category: Style
+      Title: Simplify collection initialization
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0028
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_collection_initializer = true
+  IDE0029:
+    Metadata:
+      Category: Style
+      Title: Use coalesce expression
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0029
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_coalesce_expression = true
+  IDE0030:
+    Metadata:
+      Category: Style
+      Title: Use coalesce expression
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0030
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_coalesce_expression = true
+  IDE0031:
+    Metadata:
+      Category: Style
+      Title: Use null propagation
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0031
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_null_propagation = true
+  IDE0032:
+    Metadata:
+      Category: Style
+      Title: Use auto property
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0032
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_prefer_auto_properties = true
+  IDE0034:
+    Metadata:
+      Category: Style
+      Title: Simplify 'default' expression
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0034
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_prefer_simple_default_expression = true
+  IDE0035:
+    Metadata:
+      Category: Style
+      Title: Unreachable code detected
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0035
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Never
+      - NotConfigurable
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Comment: This diagnostic only triggers in Visual Studio, not when building from the command-line
+  IDE0036:
+    Metadata:
+      Category: Style
+      Title: Order modifiers
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0036
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async
+  IDE0037:
+    Metadata:
+      Category: Style
+      Title: Use inferred member name
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0037
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - dotnet_style_prefer_inferred_anonymous_type_member_names = true
+        - dotnet_style_prefer_inferred_tuple_names = true
+  IDE0039:
+    Metadata:
+      Category: Style
+      Title: Use local function
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0039
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_prefer_local_over_anonymous_function = false
+  IDE0040:
+    Metadata:
+      Category: Style
+      Title: Add accessibility modifiers
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0040
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_require_accessibility_modifiers = for_non_interface_members
+  IDE0041:
+    Metadata:
+      Category: Style
+      Title: Use 'is null' check
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0041
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_prefer_is_null_check_over_reference_equality_method = true
+  IDE0042:
+    Metadata:
+      Category: Style
+      Title: Deconstruct variable declaration
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0042
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_deconstructed_variable_declaration = true
+  IDE0043:
+    Metadata:
+      Category: Compiler
+      Title: Invalid format string
+      Description: ''
+      CustomTags:
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0045:
+    Metadata:
+      Category: Style
+      Title: Convert to conditional expression
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0045
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - dotnet_style_prefer_conditional_expression_over_assignment = true
+  IDE0046:
+    Metadata:
+      Category: Style
+      Title: Convert to conditional expression
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0046
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - dotnet_style_prefer_conditional_expression_over_return = true
+  IDE0047:
+    Metadata:
+      Category: Style
+      Title: Remove unnecessary parentheses
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0047
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity
+        - dotnet_style_parentheses_in_other_binary_operators = always_for_clarity
+        - dotnet_style_parentheses_in_other_operators = never_if_unnecessary
+        - dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity
+  IDE0048:
+    Metadata:
+      Category: Style
+      Title: Add parentheses for clarity
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0048
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity
+        - dotnet_style_parentheses_in_other_binary_operators = always_for_clarity
+        - dotnet_style_parentheses_in_other_operators = never_if_unnecessary
+        - dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity
+        - dotnet_style_predefined_type_for_locals_parameters_members = true
+        - dotnet_style_predefined_type_for_member_access = true
+  IDE0050:
+    Metadata:
+      Category: Style
+      Title: Convert to tuple
+      Description: ''
+      CustomTags:
+      - Telemetry
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Comment: This diagnostic only triggers in Visual Studio, not when building from the command-line
+  IDE0051:
+    Metadata:
+      Category: CodeQuality
+      Title: Remove unused private members
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0051
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      - Unnecessary
+      DefaultSeverity: Suggestion
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0052:
+    Metadata:
+      Category: CodeQuality
+      Title: Remove unread private members
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0052
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      - Unnecessary
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0054:
+    Metadata:
+      Category: Style
+      Title: Use compound assignment
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0054
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_prefer_compound_assignment = true
+  IDE0055:
+    Metadata:
+      Category: Style
+      Title: Fix formatting
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0055
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_namespace_match_folder = true
+        - csharp_new_line_before_catch = true
+        - csharp_new_line_before_else = true
+        - csharp_new_line_before_finally = true
+        - csharp_new_line_before_members_in_anonymous_types = true
+        - csharp_new_line_before_members_in_object_initializers = true
+        - csharp_new_line_before_open_brace = all
+        - csharp_new_line_between_query_expression_clauses = true
+        - csharp_indent_block_contents = true
+        - csharp_indent_braces = false
+        - csharp_indent_case_contents = true
+        - csharp_indent_case_contents_when_block = false
+        - csharp_indent_labels = flush_left
+        - csharp_indent_switch_labels = true
+        - csharp_space_after_cast = false
+        - csharp_space_after_colon_in_inheritance_clause = true
+        - csharp_space_after_comma = true
+        - csharp_space_after_dot = false
+        - csharp_space_after_keywords_in_control_flow_statements = true
+        - csharp_space_after_semicolon_in_for_statement = true
+        - csharp_space_around_binary_operators = before_and_after
+        - csharp_space_around_declaration_statements = false
+        - csharp_space_before_colon_in_inheritance_clause = true
+        - csharp_space_before_comma = false
+        - csharp_space_before_dot = false
+        - csharp_space_before_open_square_brackets = false
+        - csharp_space_before_semicolon_in_for_statement = false
+        - csharp_space_between_empty_square_brackets = false
+        - csharp_space_between_method_call_empty_parameter_list_parentheses = false
+        - csharp_space_between_method_call_name_and_opening_parenthesis = false
+        - csharp_space_between_method_call_parameter_list_parentheses = false
+        - csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+        - csharp_space_between_method_declaration_name_and_open_parenthesis = false
+        - csharp_space_between_method_declaration_parameter_list_parentheses = false
+        - csharp_space_between_parentheses = false
+        - csharp_space_between_square_brackets = false
+        - csharp_preserve_single_line_blocks = true
+        - csharp_preserve_single_line_statements = false
+  IDE0056:
+    Metadata:
+      Category: Style
+      Title: Use index operator
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0056
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_prefer_index_operator = true
+  IDE0057:
+    Metadata:
+      Category: Style
+      Title: Use range operator
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0057
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_prefer_range_operator = true:warning
+  IDE0058:
+    Metadata:
+      Category: Style
+      Title: Expression value is never used
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0058
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+        Options:
+        - csharp_style_unused_value_expression_statement_preference = discard_variable
+  IDE0059:
+    Metadata:
+      Category: Style
+      Title: Unnecessary assignment of a value
+      Description: Avoid unnecessary value assignments in your code, as these likely indicate redundant value computations. If the value computation is not redundant and you intend to retain the assignment, then change the assignment target to a local variable whose name starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0059
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Redundant: CS0219
+        Options:
+        - csharp_style_unused_value_assignment_preference = discard_variable
+  IDE0060:
+    Metadata:
+      Category: Style
+      Title: Remove unused parameter
+      Description: Avoid unused parameters in your code. If the parameter cannot be removed, then change its name so it starts with an underscore and is optionally followed by an integer, such as '_', '_1', '_2', etc. These are treated as special discard symbol names.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0060
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_code_quality_unused_parameters = all
+  IDE0061:
+    Metadata:
+      Category: Style
+      Title: Use expression body for local function
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0061
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_expression_bodied_local_functions = true
+  IDE0062:
+    Metadata:
+      Category: Style
+      Title: Make local function 'static'
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0062
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_prefer_static_local_function = true
+  IDE0063:
+    Metadata:
+      Category: Style
+      Title: Use simple 'using' statement
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0063
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_prefer_simple_using_statement = true
+  IDE0064:
+    Metadata:
+      Category: CodeQuality
+      Title: Make readonly fields writable
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0064
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0065:
+    Metadata:
+      Category: Style
+      Title: Misplaced using directive
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0065
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_separate_import_directive_groups = false
+        - dotnet_sort_system_directives_first = true
+        - csharp_using_directive_placement = outside_namespace:suggestion
+  IDE0066:
+    Metadata:
+      Category: Style
+      Title: Convert switch statement to expression
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0066
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_prefer_switch_expression = true:warning
+  IDE0071:
+    Metadata:
+      Category: Style
+      Title: Simplify interpolation
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0071
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_prefer_simplified_interpolation = true
+  IDE0072:
+    Metadata:
+      Category: Style
+      Title: Add missing cases
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0072
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0073:
+    Metadata:
+      Category: Style
+      Title: The file header does not match the required text
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0073
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0074:
+    Metadata:
+      Category: Style
+      Title: Use compound assignment
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0074
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+        Comment: This diagnostic only triggers in Visual Studio, not when building from the command-line
+        Options:
+        - dotnet_style_prefer_compound_assignment = true
+  IDE0075:
+    Metadata:
+      Category: Style
+      Title: Simplify conditional expression
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0075
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_prefer_simplified_boolean_expressions = true
+  IDE0076:
+    Metadata:
+      Category: CodeQuality
+      Title: Invalid global 'SuppressMessageAttribute'
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0076
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      - Unnecessary
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0077:
+    Metadata:
+      Category: CodeQuality
+      Title: Avoid legacy format target in 'SuppressMessageAttribute'
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0077
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0078:
+    Metadata:
+      Category: Style
+      Title: Use pattern matching
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0078
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_prefer_pattern_matching = true
+  IDE0079:
+    Metadata:
+      Category: Style
+      Title: Remove unnecessary suppression
+      Description: ''
+      CustomTags:
+      - Telemetry
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+        Comment: This diagnostic only triggers in Visual Studio, not when building from the command-line
+        Options:
+        - dotnet_remove_unnecessary_suppression_exclusions = CS0618
+  IDE0080:
+    Metadata:
+      Category: Style
+      Title: Remove unnecessary suppression operator
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0080
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0082:
+    Metadata:
+      Category: Style
+      Title: "'typeof' can be converted  to 'nameof'"
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0082
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0083:
+    Metadata:
+      Category: Style
+      Title: Use pattern matching
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0083
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_prefer_not_pattern = true
+  IDE1005:
+    Metadata:
+      Category: Style
+      Title: Delegate invocation can be simplified.
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide1005
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_conditional_delegate_call = true
+  IDE1006:
+    Metadata:
+      Category: Style
+      Title: Naming Styles
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide1006
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_naming_rule.interface_should_be_ipascalcase.severity = warning
+        - dotnet_naming_rule.interface_should_be_ipascalcase.symbols = interface
+        - dotnet_naming_rule.interface_should_be_ipascalcase.style = ipascalcase
+        - dotnet_naming_rule.types_should_be_pascalcase.severity = warning
+        - dotnet_naming_rule.types_should_be_pascalcase.symbols = types
+        - dotnet_naming_rule.types_should_be_pascalcase.style = pascalcase
+        - dotnet_naming_rule.constant_should_be_pascalcase.severity = warning
+        - dotnet_naming_rule.constant_should_be_pascalcase.symbols = constant
+        - dotnet_naming_rule.constant_should_be_pascalcase.style = pascalcase
+        - dotnet_naming_rule.non_field_members_should_be_pascalcase.severity = warning
+        - dotnet_naming_rule.non_field_members_should_be_pascalcase.symbols = non_field_members
+        - dotnet_naming_rule.non_field_members_should_be_pascalcase.style = pascalcase
+        - dotnet_naming_rule.method_parameter_should_be_camelcase.severity = warning
+        - dotnet_naming_rule.method_parameter_should_be_camelcase.symbols = method_parameter
+        - dotnet_naming_rule.method_parameter_should_be_camelcase.style = camelcase
+        - dotnet_naming_rule.local_variable_should_be_camelcase.severity = warning
+        - dotnet_naming_rule.local_variable_should_be_camelcase.symbols = local_variable
+        - dotnet_naming_rule.local_variable_should_be_camelcase.style = camelcase
+        - dotnet_naming_rule.type_parameter_should_be_tpascalcase.severity = warning
+        - dotnet_naming_rule.type_parameter_should_be_tpascalcase.symbols = type_parameter
+        - dotnet_naming_rule.type_parameter_should_be_tpascalcase.style = tpascalcase
+        - dotnet_naming_rule.private_field_should_be__camelcase.severity = warning
+        - dotnet_naming_rule.private_field_should_be__camelcase.symbols = private_field
+        - dotnet_naming_rule.private_field_should_be__camelcase.style = _camelcase
+        - dotnet_naming_rule.field_should_be_pascalcase.severity = warning
+        - dotnet_naming_rule.field_should_be_pascalcase.symbols = field
+        - dotnet_naming_rule.field_should_be_pascalcase.style = pascalcase
+        - dotnet_naming_symbols.interface.applicable_kinds = interface
+        - dotnet_naming_symbols.interface.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+        - dotnet_naming_symbols.interface.required_modifiers =
+        - dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum
+        - dotnet_naming_symbols.types.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+        - dotnet_naming_symbols.types.required_modifiers =
+        - dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, method
+        - dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
+        - dotnet_naming_symbols.non_field_members.required_modifiers =
+        - dotnet_naming_symbols.method_parameter.applicable_kinds = parameter
+        - dotnet_naming_symbols.method_parameter.applicable_accessibilities = *
+        - dotnet_naming_symbols.method_parameter.required_modifiers =
+        - dotnet_naming_symbols.local_variable.applicable_kinds = local
+        - dotnet_naming_symbols.local_variable.applicable_accessibilities = local
+        - dotnet_naming_symbols.local_variable.required_modifiers =
+        - dotnet_naming_symbols.type_parameter.applicable_kinds = type_parameter
+        - dotnet_naming_symbols.type_parameter.applicable_accessibilities = *
+        - dotnet_naming_symbols.type_parameter.required_modifiers =
+        - dotnet_naming_symbols.constant.applicable_kinds = field, local
+        - dotnet_naming_symbols.constant.applicable_accessibilities = *
+        - dotnet_naming_symbols.constant.required_modifiers = const
+        - dotnet_naming_symbols.private_field.applicable_kinds = field
+        - dotnet_naming_symbols.private_field.applicable_accessibilities = private
+        - dotnet_naming_symbols.private_field.required_modifiers =
+        - dotnet_naming_symbols.field.applicable_kinds = field
+        - dotnet_naming_symbols.field.applicable_accessibilities = public, internal, protected, protected_internal, private_protected, local
+        - dotnet_naming_symbols.field.required_modifiers =
+        - dotnet_naming_style.pascalcase.required_prefix =
+        - dotnet_naming_style.pascalcase.required_suffix =
+        - dotnet_naming_style.pascalcase.word_separator =
+        - dotnet_naming_style.pascalcase.capitalization = pascal_case
+        - dotnet_naming_style.ipascalcase.required_prefix = I
+        - dotnet_naming_style.ipascalcase.required_suffix =
+        - dotnet_naming_style.ipascalcase.word_separator =
+        - dotnet_naming_style.ipascalcase.capitalization = pascal_case
+        - dotnet_naming_style.camelcase.required_prefix =
+        - dotnet_naming_style.camelcase.required_suffix =
+        - dotnet_naming_style.camelcase.word_separator =
+        - dotnet_naming_style.camelcase.capitalization = camel_case
+        - dotnet_naming_style._camelcase.required_prefix = _
+        - dotnet_naming_style._camelcase.required_suffix =
+        - dotnet_naming_style._camelcase.word_separator =
+        - dotnet_naming_style._camelcase.capitalization = camel_case
+        - dotnet_naming_style.tpascalcase.required_prefix = T
+        - dotnet_naming_style.tpascalcase.required_suffix =
+        - dotnet_naming_style.tpascalcase.word_separator =
+        - dotnet_naming_style.tpascalcase.capitalization = pascal_case
+  RemoveUnnecessaryImportsFixable:
+    Metadata:
+      Category: Style
+      Title: ''
+      Description: ''
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Never
+      - NotConfigurable
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0090:
+    Metadata:
+      Category: Style
+      Title: Use 'new(...)'
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0090
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_implicit_object_creation_when_type_is_apparent = true
+  IDE0110:
+    Metadata:
+      Category: Style
+      Title: Remove unnecessary discard
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0110
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0100:
+    Metadata:
+      Category: Style
+      Title: Remove redundant equality
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0100
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Comment: S1125 triggers in more cases
+        Redundant: S1125
+  IDE0150:
+    Metadata:
+      Category: Style
+      Title: Prefer 'null' check over type check
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0150
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_prefer_null_check_over_type_check = true
+  IDE0120:
+    Metadata:
+      Category: Style
+      Title: Simplify LINQ expression
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0120
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0130:
+    Metadata:
+      Category: Style
+      Title: Namespace does not match folder structure
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0130
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE2001:
+    Metadata:
+      Category: Style
+      Title: Embedded statements must be on their own line
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide2001
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE2000:
+    Metadata:
+      Category: Style
+      Title: Avoid multiple blank lines
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide2000
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - dotnet_style_allow_multiple_blank_lines_experimental = false
+  IDE2004:
+    Metadata:
+      Category: Style
+      Title: Blank line not allowed after constructor initializer colon
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide2004
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE2003:
+    Metadata:
+      Category: Style
+      Title: Blank line required between block and subsequent statement
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide2003
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE2002:
+    Metadata:
+      Category: Style
+      Title: Consecutive braces must not have blank line between them
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide2002
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0160:
+    Metadata:
+      Category: Style
+      Title: Convert to block scoped namespace
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0160
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_namespace_declarations = file_scoped
+  IDE0161:
+    Metadata:
+      Category: Style
+      Title: Convert to file-scoped namespace
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0161
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_namespace_declarations = file_scoped
+  IDE0180:
+    Metadata:
+      Category: Style
+      Title: Use tuple to swap values
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0180
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_prefer_tuple_swap = true
+  IDE0190:
+    Metadata:
+      Category: Style
+      Title: Null check can be simplified
+      Description: ''
+      HelpLinkUri: https://docs.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0190
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0170:
+    Metadata:
+      Category: Style
+      Title: Property pattern can be simplified
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0170
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+        Options:
+        - csharp_style_prefer_extended_property_pattern = true
+  IDE0200:
+    Metadata:
+      Category: Style
+      Title: Remove unnecessary lambda expression
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0200
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0230:
+    Metadata:
+      Category: Style
+      Title: Use UTF-8 string literal
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0230
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0210:
+    Metadata:
+      Category: Style
+      Title: Convert to top-level statements
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0210
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0211:
+    Metadata:
+      Category: Style
+      Title: Convert to 'Program.Main' style program
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0211
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0220:
+    Metadata:
+      Category: Style
+      Title: Add explicit cast
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0220
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0241:
+    Metadata:
+      Category: Style
+      Title: Remove unnecessary nullable directive
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0241
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0240:
+    Metadata:
+      Category: Style
+      Title: Remove redundant nullable directive
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0240
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      - Unnecessary
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0250:
+    Metadata:
+      Category: Style
+      Title: Make struct 'readonly'
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0250
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0260:
+    Metadata:
+      Category: Style
+      Title: Use pattern matching
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0260
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0280:
+    Metadata:
+      Category: Style
+      Title: Use 'nameof'
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0280
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE2005:
+    Metadata:
+      Category: Style
+      Title: Blank line not allowed after conditional expression token
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide2005
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE2006:
+    Metadata:
+      Category: Style
+      Title: Blank line not allowed after arrow expression clause token
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide2006
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_WhenExplicitlyEnabled
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0270:
+    Metadata:
+      Category: Style
+      Title: Use coalesce expression
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0270
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  IDE0044:
+    Metadata:
+      Category: Style
+      Title: Add readonly modifier
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0044
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_HighlyRecommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Silent
+  EnableGenerateDocumentationFile:
+    Metadata:
+      Category: Style
+      Title: Set MSBuild property 'GenerateDocumentationFile' to 'true'
+      Description: "Add the following PropertyGroup to your MSBuild project file to enable IDE0005 (Remove unnecessary usings/imports) on build:\r\n  <PropertyGroup>\r\n    <!--\r\n      Make sure any documentation comments which are included in code get checked for syntax during the build, but do\r\n      not report warnings for missing comments.\r\n      CS1573: Parameter 'parameter' has no matching param tag in the XML comment for 'parameter' (but other parameters do)\r\n      CS1591: Missing XML comment for publicly visible type or member 'Type_or_Member'\r\n      CS1712: Type parameter 'type_parameter' has no matching typeparam tag in the XML comment on 'type_or_member' (but other type parameters do)\r\n    -->\r\n    <GenerateDocumentationFile>True</GenerateDocumentationFile>\r\n    <NoWarn>$(NoWarn),1573,1591,1712</NoWarn>\r\n  </PropertyGroup>\r\n    "
+      HelpLinkUri: https://github.com/dotnet/roslyn/issues/41640
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Never
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  IDE0251:
+    Metadata:
+      Category: Style
+      Title: Make member 'readonly'
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0251
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None

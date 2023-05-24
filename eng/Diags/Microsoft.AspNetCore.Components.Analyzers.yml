@@ -1,0 +1,74 @@
+Origin:
+  AssemblyName: Microsoft.AspNetCore.Components.Analyzers
+  Version: 7.0.423.11903
+Diagnostics:
+  BL0001:
+    Metadata:
+      Category: Encapsulation
+      Title: Component parameter should have public setters.
+      Description: Component parameters should have public setters.
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error
+  BL0002:
+    Metadata:
+      Category: Usage
+      Title: Component has multiple CaptureUnmatchedValues parameters
+      Description: Components may only define a single parameter with CaptureUnmatchedValues.
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  BL0003:
+    Metadata:
+      Category: Usage
+      Title: Component parameter with CaptureUnmatchedValues has the wrong type
+      Description: Component parameters with CaptureUnmatchedValues must be a correct type.
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  BL0004:
+    Metadata:
+      Category: Encapsulation
+      Title: Component parameter should be public.
+      Description: Component parameters should be public.
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Error
+  BL0005:
+    Metadata:
+      Category: Usage
+      Title: Component parameter should not be set outside of its component.
+      Description: Component parameters should not be set outside of their declared component. Doing so may result in unexpected behavior at runtime.
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  BL0006:
+    Metadata:
+      Category: Usage
+      Title: Do not use RenderTree types
+      Description: The types in 'Microsoft.AspNetCore.Components.RenderTree' are not recommended for use outside of the Blazor framework. These  type definitions will change in future releases.
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  BL0007:
+    Metadata:
+      Category: Usage
+      Title: Component parameters should be auto properties
+      Description: ''
+      DefaultSeverity: Warning
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning
