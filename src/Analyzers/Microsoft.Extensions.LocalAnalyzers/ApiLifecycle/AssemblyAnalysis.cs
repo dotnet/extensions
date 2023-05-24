@@ -141,9 +141,21 @@ internal sealed class AssemblyAnalysis
         var baseTypes = new HashSet<string>(type.AllInterfaces.Select(x => x.ToDisplayString(_shortSymbolNameFormat)));
         var baseType = type.BaseType;
 
-        if (baseType != null && baseType.SpecialType != SpecialType.System_Object && baseType.SpecialType != SpecialType.System_ValueType)
+        if (type.EnumUnderlyingType != null)
         {
-            _ = baseTypes.Add(baseType.ToDisplayString(_shortSymbolNameFormat));
+            baseTypes.Clear();
+
+            if (type.EnumUnderlyingType.SpecialType != SpecialType.System_Int32)
+            {
+                _ = baseTypes.Add(type.EnumUnderlyingType.ToDisplayString(_format));
+            }
+        }
+        else
+        {
+            if (baseType != null && baseType.SpecialType != SpecialType.System_Object && baseType.SpecialType != SpecialType.System_ValueType)
+            {
+                _ = baseTypes.Add(baseType.ToDisplayString(_shortSymbolNameFormat));
+            }
         }
 
         foreach (var @base in typeDef.BaseTypes)

@@ -28,4 +28,6 @@ internal sealed class TypeDef
         Properties = value.GetValueArray<Prop>(nameof(Properties));
         Fields = value.GetValueArray<Field>(nameof(Fields));
     }
+
+    public override string ToString() => $"{ModifiersAndName}:{Stage}";
 }

@@ -1,0 +1,101 @@
+{
+  "Name": "Microsoft.Extensions.AsyncState, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "static class Microsoft.Extensions.AsyncState.AsyncStateExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.AsyncState.AsyncStateExtensions.AddAsyncStateCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.AsyncState.AsyncStateExtensions.TryRemoveAsyncStateCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.AsyncState.AsyncStateToken : System.IEquatable<Microsoft.Extensions.AsyncState.AsyncStateToken>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.AsyncState.AsyncStateToken.AsyncStateToken();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.AsyncState.AsyncStateToken.Equals(object? obj);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AsyncState.AsyncStateToken.Equals(Microsoft.Extensions.AsyncState.AsyncStateToken other);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.AsyncState.AsyncStateToken.GetHashCode();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AsyncState.AsyncStateToken.operator ==(Microsoft.Extensions.AsyncState.AsyncStateToken left, Microsoft.Extensions.AsyncState.AsyncStateToken right);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.AsyncState.AsyncStateToken.operator !=(Microsoft.Extensions.AsyncState.AsyncStateToken left, Microsoft.Extensions.AsyncState.AsyncStateToken right);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.AsyncState.IAsyncContext<T> where T : notnull",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "T? Microsoft.Extensions.AsyncState.IAsyncContext<T>.Get();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AsyncState.IAsyncContext<T>.Set(T? context);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AsyncState.IAsyncContext<T>.TryGet(out T? context);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.AsyncState.IAsyncLocalContext<T> : Microsoft.Extensions.AsyncState.IAsyncContext<T> where T : class",
+      "Stage": "Experimental"
+    },
+    {
+      "Type": "interface Microsoft.Extensions.AsyncState.IAsyncState",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "object? Microsoft.Extensions.AsyncState.IAsyncState.Get(Microsoft.Extensions.AsyncState.AsyncStateToken token);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AsyncState.IAsyncState.Initialize();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.AsyncState.AsyncStateToken Microsoft.Extensions.AsyncState.IAsyncState.RegisterAsyncContext();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AsyncState.IAsyncState.Reset();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.AsyncState.IAsyncState.Set(Microsoft.Extensions.AsyncState.AsyncStateToken token, object? value);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.AsyncState.IAsyncState.TryGet(Microsoft.Extensions.AsyncState.AsyncStateToken token, out object? value);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

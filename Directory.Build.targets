@@ -22,11 +22,9 @@
     <!-- Prevent analyzer crashes from stopping things -->
     <NoWarn>$(NoWarn);AD0001</NoWarn>
 
-    <!-- R9A029 is for R9 customers, not for R9 itself -->
+    <!-- R9A029 is for customers, not for this repo -->
     <NoWarn>$(NoWarn);R9A029</NoWarn>
 
-    <!-- Temporary -->
-    <NoWarn>$(NoWarn);R9A049</NoWarn>
 
     <!-- NU5104: A stable release of a package should not have a prerelease dependency -->
     <NoWarn>$(NoWarn);NU5104</NoWarn>
@@ -52,6 +50,20 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
+
+  <ItemGroup Condition="('$(Stage)' == 'normal' OR '$(Stage)' == 'obsolete') AND '$(OutputType)' != 'Exe' AND '$(IsPackable)' == 'true' AND '$(Api)' != 'false'">
+    <AdditionalFiles Include="$(MSBuildProjectName).json" Visible="False" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target
+    Name="AddApiBaselineFilesToRoot"
+    Condition="('$(Stage)' == 'normal' OR '$(Stage)'=='obsolete') AND '$(OutputType)' != 'Exe' AND '$(IsPackable)' == 'true' AND '$(Api)' != 'false'"
+    BeforeTargets="BeforeCompile">
+      <WriteLinesToFile
+        File="$(MSBuildProjectName).json"
+        Lines=""
+        Condition="!Exists('$(MSBuildProjectName).json')" />
+  </Target>
 
   <ItemGroup Condition="'$(Stage)' == 'dev' AND '$(OutputType)' != 'Exe' AND '$(Api)' != 'false'">
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExperimentalAttribute" />

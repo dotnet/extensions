@@ -21,4 +21,6 @@ internal sealed class Field
 
         Stage = stage;
     }
+
+    public override string ToString() => $"{Member}:{Stage}";
 }

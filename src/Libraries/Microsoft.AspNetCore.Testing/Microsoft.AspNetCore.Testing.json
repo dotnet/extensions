@@ -1,0 +1,31 @@
+{
+  "Name": "Microsoft.AspNetCore.Testing, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "static class Microsoft.AspNetCore.Testing.ServiceFakesExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static System.Net.Http.HttpClient Microsoft.AspNetCore.Testing.ServiceFakesExtensions.CreateClient(this Microsoft.Extensions.Hosting.IHost host, System.Net.Http.HttpMessageHandler? handler = null, System.Func<System.Uri, bool>? addressFilter = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Collections.Generic.IEnumerable<System.Uri> Microsoft.AspNetCore.Testing.ServiceFakesExtensions.GetListenUris(this Microsoft.Extensions.Hosting.IHost host);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.AspNetCore.Hosting.IWebHostBuilder Microsoft.AspNetCore.Testing.ServiceFakesExtensions.ListenHttpOnAnyPort(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.AspNetCore.Hosting.IWebHostBuilder Microsoft.AspNetCore.Testing.ServiceFakesExtensions.ListenHttpsOnAnyPort(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, System.Security.Cryptography.X509Certificates.X509Certificate2? sslCertificate = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.AspNetCore.Hosting.IWebHostBuilder Microsoft.AspNetCore.Testing.ServiceFakesExtensions.UseTestStartup(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder);",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}

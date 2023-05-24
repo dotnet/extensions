@@ -26,4 +26,6 @@ internal sealed class Method
             Stage = Stage.Experimental;
         }
     }
+
+    public override string ToString() => $"{Member}:{Stage}";
 }

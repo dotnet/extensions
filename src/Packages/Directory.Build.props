@@ -4,8 +4,8 @@
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <GenerateDocumentationFile>n/a</GenerateDocumentationFile>
     <SkipAnalyzers>true</SkipAnalyzers>
-    <SkipR9Analyzers>true</SkipR9Analyzers>
     <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
+    <Api>false</Api>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />

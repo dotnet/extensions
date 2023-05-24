@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.LocalAnalyzers.ApiLifecycle;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ApiLifecycleAnalyzer : DiagnosticAnalyzer
 {
-    private const string ExperimentalAttributeFullName = "System.Diagnostics.CodeAnalysis.ExperimentalAttribute";
+    private const string ExperimentalAttributeFullName = "global::System.Diagnostics.CodeAnalysis.ExperimentalAttribute";
     private const string ObsoleteAttributeFullName = "System.ObsoleteAttribute";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
@@ -66,12 +66,11 @@ public sealed class ApiLifecycleAnalyzer : DiagnosticAnalyzer
     {
         var compilation = context.Compilation;
         var obsoleteAttribute = compilation.GetTypeByMetadataName(ObsoleteAttributeFullName);
-        var experimentalAttribute = compilation.GetTypeByMetadataName(ExperimentalAttributeFullName);
 
         // flag symbols found in the code, but not in the model
         foreach (var symbol in assemblyAnalysis.NotFoundInBaseline)
         {
-            if (!symbol.IsContaminated(experimentalAttribute))
+            if (!symbol.IsContaminated(ExperimentalAttributeFullName))
             {
                 context.ReportDiagnostic(Diagnostic.Create(DiagDescriptors.NewSymbolsMustBeMarkedExperimental, symbol.Locations.FirstOrDefault(), symbol));
             }
@@ -102,7 +101,7 @@ public sealed class ApiLifecycleAnalyzer : DiagnosticAnalyzer
         // now make sure attributes are applied correctly
         foreach (var (symbol, stage) in assemblyAnalysis.FoundInBaseline)
         {
-            var isMarkedExperimental = symbol.IsContaminated(experimentalAttribute);
+            var isMarkedExperimental = symbol.IsContaminated(ExperimentalAttributeFullName);
             var isMarkedObsolete = symbol.IsContaminated(obsoleteAttribute);
 
             if (stage == Stage.Experimental)
@@ -151,12 +150,11 @@ public sealed class ApiLifecycleAnalyzer : DiagnosticAnalyzer
             .Where(symbol => symbol.IsExternallyVisible() && symbol.Kind == SymbolKind.NamedType)
             .Cast<INamedTypeSymbol>();
 
-        var experimentalAttribute = context.Compilation.GetTypeByMetadataName(ExperimentalAttributeFullName);
         var obsoleteAttribute = context.Compilation.GetTypeByMetadataName(ObsoleteAttributeFullName);
 
         foreach (var type in types)
         {
-            if (!type.IsContaminated(experimentalAttribute))
+            if (!type.IsContaminated(ExperimentalAttributeFullName))
             {
                 context.ReportDiagnostic(Diagnostic.Create(DiagDescriptors.NewSymbolsMustBeMarkedExperimental, type.Locations.FirstOrDefault(), type));
             }

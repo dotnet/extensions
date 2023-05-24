@@ -51,6 +51,8 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
+        Severity: None
+      api:
         Severity: Warning
   R9A050:
     Metadata:
@@ -62,6 +64,8 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
+        Severity: None
+      api:
         Severity: Warning
   R9A051:
     Metadata:
@@ -73,6 +77,8 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
+        Severity: None
+      api:
         Severity: Warning
   R9A052:
     Metadata:
@@ -84,6 +90,8 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
+        Severity: None
+      api:
         Severity: Warning
   R9A053:
     Metadata:
@@ -94,6 +102,9 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
+      general:
+        Severity: None
+      api:
         Severity: Warning
   R9A054:
     Metadata:
@@ -104,6 +115,8 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
+        Severity: None
+      api:
         Severity: Warning
   R9A055:
     Metadata:
@@ -115,4 +128,6 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
+        Severity: None
+      api:
         Severity: Warning

@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Analyzers\Microsoft.Extensions.LocalAnalyzers\Microsoft.Extensions.LocalAnalyzers.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

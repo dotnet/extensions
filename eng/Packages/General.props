@@ -10,7 +10,7 @@
     <PackageVersion Include="Google.Protobuf" Version="3.18.3" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.41.0" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.41.0" />
-    <PackageVersion Include="ICSharpCode.Decompiler" Version="8.0.0.7106-preview2" />
+    <PackageVersion Include="ICSharpCode.Decompiler" Version="8.0.0.7345" />
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.28.0-preview"/>
     <PackageVersion Include="Microsoft.Azure.KeyVault.AzureServiceDeploy" Version="3.0.0" />
     <PackageVersion Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.1" />

@@ -1,0 +1,41 @@
+{
+  "Name": "Microsoft.Extensions.EnumStrings, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.EnumStrings.EnumStringsAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.EnumStrings.EnumStringsAttribute.EnumStringsAttribute();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.EnumStrings.EnumStringsAttribute.EnumStringsAttribute(System.Type enumType);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Type? Microsoft.Extensions.EnumStrings.EnumStringsAttribute.EnumType { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.EnumStrings.EnumStringsAttribute.ExtensionClassModifiers { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.EnumStrings.EnumStringsAttribute.ExtensionClassName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.EnumStrings.EnumStringsAttribute.ExtensionMethodName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.EnumStrings.EnumStringsAttribute.ExtensionNamespace { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

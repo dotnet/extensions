@@ -1,0 +1,44 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <RunAnalyzers>true</RunAnalyzers>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'ProdExe'" Include="$(MSBuildThisFileDirectory)config/ProdExe.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'ProdLib'" Include="$(MSBuildThisFileDirectory)config/ProdLib.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'NonProdExe'" Include="$(MSBuildThisFileDirectory)config/NonProdExe.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'NonProdLib'" Include="$(MSBuildThisFileDirectory)config/NonProdLib.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'Benchmark'" Include="$(MSBuildThisFileDirectory)config/Benchmark.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'Test'" Include="$(MSBuildThisFileDirectory)config/Test.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'General'" Include="$(MSBuildThisFileDirectory)config/General.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == ''" Include="$(MSBuildThisFileDirectory)config/General.globalconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'ProdExe-Tier1'" Include="$(MSBuildThisFileDirectory)config/ProdExe-Tier1.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'ProdLib-Tier1'" Include="$(MSBuildThisFileDirectory)config/ProdLib-Tier1.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'NonProdExe-Tier1'" Include="$(MSBuildThisFileDirectory)config/NonProdExe-Tier1.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'NonProdLib-Tier1'" Include="$(MSBuildThisFileDirectory)config/NonProdLib-Tier1.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'Benchmark-Tier1'" Include="$(MSBuildThisFileDirectory)config/Benchmark-Tier1.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'Test-Tier1'" Include="$(MSBuildThisFileDirectory)config/Test-Tier1.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'General-Tier1'" Include="$(MSBuildThisFileDirectory)config/General-Tier1.globalconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'ProdExe-Tier2'" Include="$(MSBuildThisFileDirectory)config/ProdExe-Tier2.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'ProdLib-Tier2'" Include="$(MSBuildThisFileDirectory)config/ProdLib-Tier2.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'NonProdExe-Tier2'" Include="$(MSBuildThisFileDirectory)config/NonProdExe-Tier2.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'NonProdLib-Tier2'" Include="$(MSBuildThisFileDirectory)config/NonProdLib-Tier2.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'Benchmark-Tier2'" Include="$(MSBuildThisFileDirectory)config/Benchmark-Tier2.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'Test-Tier2'" Include="$(MSBuildThisFileDirectory)config/Test-Tier2.globalconfig" />
+    <EditorConfigFiles Condition="'$(StaticAnalysisCodeType)' == 'General-Tier2'" Include="$(MSBuildThisFileDirectory)config/General-Tier2.globalconfig" />
+  </ItemGroup>
+
+  <Target Name="_CheckForMissingCodeType" BeforeTargets="BeforeCompile" Condition="'$(StaticAnalysisCodeType)' == ''" >
+    <Warning Code="R9M000" Text="The StaticAnalysisCodeType property is not defined, assuming type 'General'" HelpLink="https://TODO" />
+  </Target>
+</Project>

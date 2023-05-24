@@ -1,0 +1,299 @@
+{
+  "Name": "Microsoft.Extensions.Compliance.Testing, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "class Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector.FakeRedactionCollector();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Compliance.Testing.RedactedData> Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector.AllRedactedData { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Compliance.Testing.RedactorRequested> Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector.AllRedactorRequests { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.RedactedData Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector.LastRedactedData { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.RedactorRequested Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector.LastRedactorRequested { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.AddFakeRedaction(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.AddFakeRedaction(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.GetFakeRedactionCollector(this System.IServiceProvider serviceProvider);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, System.Action<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions> configure, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Compliance.Testing.FakeRedactor : Microsoft.Extensions.Compliance.Redaction.Redactor",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.FakeRedactor.FakeRedactor(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions>? options = null, Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector? collector = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Testing.FakeRedactor Microsoft.Extensions.Compliance.Testing.FakeRedactor.Create(Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions? options = null, Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector? collector = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.Compliance.Testing.FakeRedactor.GetRedactedLength(System.ReadOnlySpan<char> input);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.Compliance.Testing.FakeRedactor.Redact(System.ReadOnlySpan<char> source, System.Span<char> destination);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector Microsoft.Extensions.Compliance.Testing.FakeRedactor.EventCollector { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions.FakeRedactorOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions.RedactionFormat { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Compliance.Testing.FakeRedactorProvider : Microsoft.Extensions.Compliance.Redaction.IRedactorProvider",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.FakeRedactorProvider.FakeRedactorProvider(Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions? options = null, Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector? eventCollector = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Compliance.Redaction.Redactor Microsoft.Extensions.Compliance.Testing.FakeRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector Microsoft.Extensions.Compliance.Testing.FakeRedactorProvider.Collector { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Compliance.Testing.PrivateDataAttribute : Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.PrivateDataAttribute.PrivateDataAttribute();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Compliance.Testing.PublicDataAttribute : Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.PublicDataAttribute.PublicDataAttribute();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.Compliance.Testing.RedactedData : System.IEquatable<Microsoft.Extensions.Compliance.Testing.RedactedData>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.RedactedData.RedactedData(string original, string redacted, int sequenceNumber);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.RedactedData.RedactedData();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.Compliance.Testing.RedactedData.Equals(object? obj);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Compliance.Testing.RedactedData.Equals(Microsoft.Extensions.Compliance.Testing.RedactedData other);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.Compliance.Testing.RedactedData.GetHashCode();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.Compliance.Testing.RedactedData.operator ==(Microsoft.Extensions.Compliance.Testing.RedactedData left, Microsoft.Extensions.Compliance.Testing.RedactedData right);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.Compliance.Testing.RedactedData.operator !=(Microsoft.Extensions.Compliance.Testing.RedactedData left, Microsoft.Extensions.Compliance.Testing.RedactedData right);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Compliance.Testing.RedactedData.Original { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Compliance.Testing.RedactedData.Redacted { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Compliance.Testing.RedactedData.SequenceNumber { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.Compliance.Testing.RedactorRequested : System.IEquatable<Microsoft.Extensions.Compliance.Testing.RedactorRequested>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.RedactorRequested.RedactorRequested(Microsoft.Extensions.Compliance.Classification.DataClassification classification, int sequenceNumber);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.RedactorRequested.RedactorRequested();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.Compliance.Testing.RedactorRequested.Equals(object? obj);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Compliance.Testing.RedactorRequested.Equals(Microsoft.Extensions.Compliance.Testing.RedactorRequested other);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.Compliance.Testing.RedactorRequested.GetHashCode();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.Compliance.Testing.RedactorRequested.operator ==(Microsoft.Extensions.Compliance.Testing.RedactorRequested left, Microsoft.Extensions.Compliance.Testing.RedactorRequested right);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.Compliance.Testing.RedactorRequested.operator !=(Microsoft.Extensions.Compliance.Testing.RedactorRequested left, Microsoft.Extensions.Compliance.Testing.RedactorRequested right);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.RedactorRequested.DataClassification { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Compliance.Testing.RedactorRequested.SequenceNumber { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Compliance.Testing.SimpleClassifications",
+      "Stage": "Stable",
+      "Properties": [
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.SimpleClassifications.PrivateData { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.SimpleClassifications.PublicData { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.Compliance.Testing.SimpleClassifications.TaxonomyName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy : ulong",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.SimpleTaxonomy();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.None",
+          "Stage": "Stable",
+          "Value": "0"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.PrivateData",
+          "Stage": "Stable",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.PublicData",
+          "Stage": "Stable",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.Unknown",
+          "Stage": "Stable",
+          "Value": "9223372036854775808"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Compliance.Testing.SimpleTaxonomyExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomyExtensions.AsSimpleTaxonomy(this Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}
