@@ -31,6 +31,7 @@ jobs:
         repository: 'Tratcher/dotnet-extensions-experimental'
         path: azure-extensions
         ref: main
+        token: ${{ secrets.GITHUB_TOKEN }}
     - name: Copy
       shell: cmd
       working-directory: .\azure-extensions\src\Shared\DotNetSync\
