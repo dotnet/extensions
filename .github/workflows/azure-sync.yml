@@ -11,7 +11,7 @@ permissions:
 jobs:
   compare_repos:
     # Comment out this line to test the scripts in a fork
-    # if: github.repository == 'dotnet/extensions'
+    if: github.repository == 'dotnet/extensions'
     name: Sync shared code between Azure and DotNet
     runs-on: windows-latest
     steps:
@@ -19,16 +19,14 @@ jobs:
       uses: actions/checkout@v3
       with:
         # Test this script using changes in a fork
-        # repository: 'dotnet/extensions'
-        repository: 'Tratcher/extensions'
+        repository: 'dotnet/extensions'
         path: dotnet-extensions
         ref: main
     - name: Checkout azure/dotnet-extensions-experimental
       uses: actions/checkout@v3
       with:
         # Test this script using changes in a fork
-        # repository: 'azure/dotnet-extensions-experimental'
-        repository: 'Tratcher/dotnet-extensions-experimental'
+        repository: 'azure/dotnet-extensions-experimental'
         path: azure-extensions
         ref: main
         token: ${{ secrets.GITHUB_TOKEN }}
