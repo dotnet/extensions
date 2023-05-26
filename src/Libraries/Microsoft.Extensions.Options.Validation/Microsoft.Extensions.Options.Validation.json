@@ -1,0 +1,55 @@
+{
+  "Name": "Microsoft.Extensions.Options.Validation, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.Options.Validation.OptionsValidatorAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Options.Validation.OptionsValidatorAttribute.OptionsValidatorAttribute();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Options.Validation.ValidateEnumeratedItemsAttribute : System.Attribute",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Options.Validation.ValidateEnumeratedItemsAttribute.ValidateEnumeratedItemsAttribute();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Options.Validation.ValidateEnumeratedItemsAttribute.ValidateEnumeratedItemsAttribute(System.Type validator);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Type? Microsoft.Extensions.Options.Validation.ValidateEnumeratedItemsAttribute.Validator { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Options.Validation.ValidateObjectMembersAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Options.Validation.ValidateObjectMembersAttribute.ValidateObjectMembersAttribute();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Options.Validation.ValidateObjectMembersAttribute.ValidateObjectMembersAttribute(System.Type validator);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Type? Microsoft.Extensions.Options.Validation.ValidateObjectMembersAttribute.Validator { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

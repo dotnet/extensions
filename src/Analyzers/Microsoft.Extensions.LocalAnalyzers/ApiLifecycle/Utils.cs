@@ -73,13 +73,7 @@ internal static class Utils
     private static void GetBaseTypesImpl(List<string> results, string baseTypesString)
     {
         var generic = 0;
-        var last = 1;
-
-        if (baseTypesString.IndexOf(',') == -1)
-        {
-            results.Add(baseTypesString.Trim());
-            return;
-        }
+        var start = 0;
 
         for (var i = 0; i < baseTypesString.Length; i++)
         {
@@ -87,19 +81,17 @@ internal static class Utils
             {
                 generic++;
             }
-
-            if (baseTypesString[i] == '>')
+            else if (baseTypesString[i] == '>')
             {
                 generic--;
             }
-
-            if (baseTypesString[i] == ',' && generic == 0)
+            else if (generic == 0 && baseTypesString[i] == ',')
             {
-                results.Add(baseTypesString.Substring(last, i - last));
-#pragma warning disable S109 // Magic numbers should not be used
-                last = i + 2; // ", "
-#pragma warning restore S109 // Magic numbers should not be used
+                results.Add(baseTypesString.Substring(start, i - start).Trim());
+                start = i + 1;
             }
         }
+
+        results.Add(baseTypesString.Substring(start, baseTypesString.Length - start).Trim());
     }
 }

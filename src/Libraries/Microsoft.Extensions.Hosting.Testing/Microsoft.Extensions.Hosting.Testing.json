@@ -1,0 +1,123 @@
+{
+  "Name": "Microsoft.Extensions.Hosting.Testing, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.Hosting.Testing.FakeHost : Microsoft.Extensions.Hosting.IHost, System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.FakeHost.CreateBuilder();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.FakeHost.CreateBuilder(System.Action<Microsoft.Extensions.Hosting.Testing.FakeHostOptions> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.FakeHost.CreateBuilder(Microsoft.Extensions.Hosting.Testing.FakeHostOptions options);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Hosting.Testing.FakeHost.Dispose();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.Hosting.Testing.FakeHost.StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.Hosting.Testing.FakeHost.StopAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.IServiceProvider Microsoft.Extensions.Hosting.Testing.FakeHost.Services { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Hosting.Testing.FakeHostOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Hosting.Testing.FakeHostOptions.FakeHostOptions();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Hosting.Testing.FakeHostOptions.FakeLogging { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Hosting.Testing.FakeHostOptions.FakeRedaction { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.Hosting.Testing.FakeHostOptions.ShutDownTimeout { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.Hosting.Testing.FakeHostOptions.StartUpTimeout { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.Hosting.Testing.FakeHostOptions.TimeToLive { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Hosting.Testing.FakeHostOptions.ValidateOnBuild { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Hosting.Testing.FakeHostOptions.ValidateScopes { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.AddFakeLoggingOutputSink(this Microsoft.Extensions.Hosting.IHostBuilder builder, System.Action<string> callback);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.Configure(this Microsoft.Extensions.Hosting.IHostBuilder builder, System.Action<Microsoft.Extensions.Hosting.IHostBuilder> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.ConfigureAppConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder builder, params (string key, string value)[] configurations);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.ConfigureAppConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder builder, string key, string value);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.ConfigureHostConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder builder, params (string key, string value)[] configurations);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.ConfigureHostConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder builder, string key, string value);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.GetFakeLogCollector(this Microsoft.Extensions.Hosting.IHost host);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.GetFakeRedactionCollector(this Microsoft.Extensions.Hosting.IHost host);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.StartAndStopAsync(this Microsoft.Extensions.Hosting.IHostedService service, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}

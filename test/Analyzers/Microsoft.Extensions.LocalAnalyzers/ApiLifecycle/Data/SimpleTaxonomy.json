@@ -1,0 +1,37 @@
+{
+  "Name": "SimpleTaxonomy",
+  "Types": [
+    {
+      "Type": "enum Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy : ulong",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.SimpleTaxonomy();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.None",
+          "Stage": "Stable",
+          "Value": "0"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.PrivateData",
+          "Stage": "Stable",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.PublicData",
+          "Stage": "Stable",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.Unknown",
+          "Stage": "Stable",
+          "Value": "9223372036854775808"
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 # Created by DiagConfig, the diagnostic config generator
-# Generated : 2023-05-23 23:01:34Z
+# Generated : 2023-05-24 21:09:52Z
 # Max Tier  : 2147483647
 # Attributes: general
 # Analyzers : ILLink.RoslynAnalyzer, Microsoft.AspNetCore.App.Analyzers, Microsoft.AspNetCore.Components.Analyzers, Microsoft.CodeAnalysis.CodeStyle, Microsoft.CodeAnalysis.CSharp.CodeStyle, Microsoft.CodeAnalysis.CSharp.NetAnalyzers, Microsoft.CodeAnalysis.NetAnalyzers, Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0, Microsoft.Extensions.LocalAnalyzers, Microsoft.VisualStudio.Threading.Analyzers, Microsoft.VisualStudio.Threading.Analyzers.CSharp, SonarAnalyzer.CSharp, StyleCop.Analyzers
@@ -2758,37 +2758,37 @@ dotnet_diagnostic.R9A044.severity = none
 # Title    : Newly added symbols must be marked as experimental
 # Category : Correctness
 # Help Link: https://TODO/r9a049
-dotnet_diagnostic.R9A049.severity = warning
+dotnet_diagnostic.R9A049.severity = none
 
 # Title    : Experimental symbols cannot be marked as obsolete
 # Category : Correctness
 # Help Link: https://TODO/r9a050
-dotnet_diagnostic.R9A050.severity = warning
+dotnet_diagnostic.R9A050.severity = none
 
 # Title    : Published symbols cannot be marked experimental
 # Category : Correctness
 # Help Link: https://TODO/r9a051
-dotnet_diagnostic.R9A051.severity = warning
+dotnet_diagnostic.R9A051.severity = none
 
 # Title    : Published symbols cannot be deleted to maintain compatibility
 # Category : Correctness
 # Help Link: https://TODO/r9a052
-dotnet_diagnostic.R9A052.severity = warning
+dotnet_diagnostic.R9A052.severity = none
 
 # Title    : A deprecated API is not annotated with the obsolete attribute
 # Category : Correctness
 # Help Link: https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a053
-dotnet_diagnostic.R9A053.severity = warning
+dotnet_diagnostic.R9A053.severity = none
 
 # Title    : A deprecated API is marked as experimental
 # Category : Correctness
 # Help Link: https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a054
-dotnet_diagnostic.R9A054.severity = warning
+dotnet_diagnostic.R9A054.severity = none
 
 # Title    : Published symbols cannot be changed to maintain compatibility
 # Category : Correctness
 # Help Link: https://TODO/r9a055
-dotnet_diagnostic.R9A055.severity = warning
+dotnet_diagnostic.R9A055.severity = none
 
 # Title    : Fire-and-forget async call inside a 'using' block
 # Category : Correctness

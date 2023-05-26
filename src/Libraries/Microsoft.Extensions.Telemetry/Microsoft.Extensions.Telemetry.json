@@ -1,0 +1,567 @@
+{
+  "Name": "Microsoft.Extensions.Telemetry, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.EventCountersCollectorOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IDictionary<string, System.Collections.Generic.ISet<string>> Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.Counters { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.EventListenerRecyclingInterval { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.SamplingInterval { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Metering.EventCountersExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Metering.EventCountersExtensions.AddEventCounterCollector(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Metering.EventCountersExtensions.AddEventCounterCollector(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Latency.LatencyContextExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Latency.LatencyContextExtensions.AddLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Latency.LatencyContextExtensions.AddLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Telemetry.Latency.LatencyContextOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Latency.LatencyContextExtensions.AddLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Latency.LatencyContextOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.LatencyContextOptions.LatencyContextOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Latency.LatencyContextOptions.ThrowOnUnregisteredNames { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Logging.LoggingExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddOpenTelemetryLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddOpenTelemetryLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Telemetry.Logging.LoggingOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddOpenTelemetryLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddProcessor(this Microsoft.Extensions.Logging.ILoggingBuilder builder, OpenTelemetry.BaseProcessor<OpenTelemetry.Logs.LogRecord> processor);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddProcessor<T>(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Logging.LoggingOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggingOptions.LoggingOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LoggingOptions.IncludeScopes { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LoggingOptions.IncludeStackTrace { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Telemetry.Logging.LoggingOptions.MaxStackTraceLength { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LoggingOptions.UseFormattedMessage { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Metering.MeteringOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MeteringOptions();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MaxMetricPointsPerStream { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MaxMetricStreams { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.MeteringState Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MeterState { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Telemetry.Metering.MeteringState> Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MeterStateOverrides { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.Telemetry.Metering.MeteringState",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.MeteringState.MeteringState();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.Telemetry.Metering.MeteringState Microsoft.Extensions.Telemetry.Metering.MeteringState.Disabled",
+          "Stage": "Stable",
+          "Value": "0"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Telemetry.Metering.MeteringState Microsoft.Extensions.Telemetry.Metering.MeteringState.Enabled",
+          "Stage": "Stable",
+          "Value": "1"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Metering.OTelMeteringExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static OpenTelemetry.Metrics.MeterProviderBuilder Microsoft.Extensions.Telemetry.Metering.OTelMeteringExtensions.AddMetering(this OpenTelemetry.Metrics.MeterProviderBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection configurationSection);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static OpenTelemetry.Metrics.MeterProviderBuilder Microsoft.Extensions.Telemetry.Metering.OTelMeteringExtensions.AddMetering(this OpenTelemetry.Metrics.MeterProviderBuilder builder, System.Action<Microsoft.Extensions.Telemetry.Metering.MeteringOptions>? configure = null);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions.ParentBasedSamplerOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions.RootSamplerType { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherDimensions",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherDimensions.ProcessId",
+          "Stage": "Stable",
+          "Value": "pid"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherDimensions.ThreadId",
+          "Stage": "Stable",
+          "Value": "tid"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherDimensions.DimensionNames { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherExtensions.AddProcessLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherExtensions.AddProcessLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherExtensions.AddProcessLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions.ProcessLogEnricherOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions.ProcessId { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions.ThreadId { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.Telemetry.Tracing.SamplerType",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Tracing.SamplerType.SamplerType();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplerType.AlwaysOff",
+          "Stage": "Stable",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplerType.AlwaysOn",
+          "Stage": "Stable",
+          "Value": "0"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplerType.ParentBased",
+          "Stage": "Stable",
+          "Value": "3"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplerType.TraceIdRatioBased",
+          "Stage": "Stable",
+          "Value": "2"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions.AddSampling(this OpenTelemetry.Trace.TracerProviderBuilder builder, System.Action<Microsoft.Extensions.Telemetry.Tracing.SamplingOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions.AddSampling(this OpenTelemetry.Trace.TracerProviderBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Tracing.SamplingOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SamplingOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions? Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.ParentBasedSamplerOptions { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SamplerType { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions? Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.TraceIdRatioBasedSamplerOptions { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.ApplicationName",
+          "Stage": "Stable",
+          "Value": "env_app_name"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.BuildVersion",
+          "Stage": "Stable",
+          "Value": "env_cloud_roleVer"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.DeploymentRing",
+          "Stage": "Stable",
+          "Value": "env_cloud_deploymentRing"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.EnvironmentName",
+          "Stage": "Stable",
+          "Value": "env_cloud_env"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.DimensionNames { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder builder);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder builder, System.Action<Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.ServiceLogEnricherOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.ApplicationName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.BuildVersion { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.DeploymentRing { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.EnvironmentName { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.ServiceMetricEnricherOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.ApplicationName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.BuildVersion { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.DeploymentRing { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.EnvironmentName { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.ServiceTraceEnricherOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.ApplicationName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.BuildVersion { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.DeploymentRing { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.EnvironmentName { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.TelemetryExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.TelemetryExtensions.AddDownstreamDependencyMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata downstreamDependencyMetadata);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.TelemetryExtensions.AddDownstreamDependencyMetadata<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Telemetry.TelemetryExtensions.GetRequestMetadata(this System.Net.HttpWebRequest request);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Telemetry.TelemetryExtensions.GetRequestMetadata(this System.Net.Http.HttpRequestMessage request);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.Telemetry.TelemetryExtensions.SetRequestMetadata(this System.Net.HttpWebRequest request, Microsoft.Extensions.Http.Telemetry.RequestMetadata metadata);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.Telemetry.TelemetryExtensions.SetRequestMetadata(this System.Net.Http.HttpRequestMessage request, Microsoft.Extensions.Http.Telemetry.RequestMetadata metadata);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions.TraceIdRatioBasedSamplerOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "double Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions.Probability { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions.AddTraceEnricher<T>(this OpenTelemetry.Trace.TracerProviderBuilder builder);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions.AddTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder builder, Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher enricher);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions.AddTraceEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions.AddTraceEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher enricher);",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}

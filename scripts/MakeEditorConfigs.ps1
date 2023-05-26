@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+    #!/usr/bin/env pwsh
 <#
 .DESCRIPTION
     Builds and invokes the DiagConfig tool to generate the .editorconfig files we use within the source base
@@ -15,10 +15,16 @@ Write-Output "Building DiagConfig tool"
 Write-Output "Creating .editorconfig files"
 
 # The files we use for this repo
-& $Command $Diags editorconfig save --exclude xunit.analyzers src/.editorconfig       general,api,performance,production
-& $Command $Diags editorconfig save --exclude xunit.analyzers bench/.editorconfig     general,performance
-& $Command $Diags editorconfig save --exclude xunit.analyzers eng/Tools/.editorconfig general
-& $Command $Diags editorconfig save                           test/.editorconfig      general,test
+& $Command $Diags editorconfig save --exclude xunit.analyzers src/Analyzers/.editorconfig       general,performance,production
+& $Command $Diags editorconfig save --exclude xunit.analyzers src/Generators/.editorconfig      general,performance,production
+& $Command $Diags editorconfig save --exclude xunit.analyzers src/Libraries/.editorconfig       general,api,performance,production
+& $Command $Diags editorconfig save --exclude xunit.analyzers src/ToBeMoved/.editorconfig       general,performance,production
+& $Command $Diags editorconfig save --exclude xunit.analyzers src/ToBeRemoved/.editorconfig     general,performance,production
+& $Command $Diags editorconfig save --exclude xunit.analyzers src/LegacySupport/.editorconfig  general,performance,production
+& $Command $Diags editorconfig save --exclude xunit.analyzers src/Shared/.editorconfig          general,performance,production
+& $Command $Diags editorconfig save --exclude xunit.analyzers bench/.editorconfig               general,performance
+& $Command $Diags editorconfig save --exclude xunit.analyzers eng/Tools/.editorconfig           general
+& $Command $Diags editorconfig save                           test/.editorconfig                general,test
 
 # The files we publish with the M.E.StaticAnalysis package
 

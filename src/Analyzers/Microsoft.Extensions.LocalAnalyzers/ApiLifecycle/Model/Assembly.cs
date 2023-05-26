@@ -24,4 +24,6 @@ internal sealed class Assembly
         Name = string.Empty;
         Types = Array.Empty<TypeDef>();
     }
+
+    public override string ToString() => Name;
 }

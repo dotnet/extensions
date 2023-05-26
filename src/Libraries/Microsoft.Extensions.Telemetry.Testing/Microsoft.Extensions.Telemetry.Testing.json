@@ -1,0 +1,433 @@
+{
+  "Name": "Microsoft.Extensions.Telemetry.Testing, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector.FakeLogCollector(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollectorOptions> options);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector.FakeLogCollector();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector.Clear();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector.Create(Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollectorOptions options);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord> Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector.GetSnapshot();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector.Count { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector.LatestRecord { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollectorOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollectorOptions.FakeLogCollectorOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollectorOptions.CollectRecordsForDisabledLogLevels { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollectorOptions.FilteredCategories { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.ISet<Microsoft.Extensions.Logging.LogLevel> Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollectorOptions.FilteredLevels { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord, string> Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollectorOptions.OutputFormatter { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Action<string>? Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollectorOptions.OutputSink { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.TimeProvider Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollectorOptions.TimeProvider { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger : Microsoft.Extensions.Logging.ILogger",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger.FakeLogger(Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector? collector = null, string? category = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger.FakeLogger(System.Action<string> outputSink, string? category = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.IDisposable? Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger.BeginScope<TState>(TState state);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger.ControlLevel(Microsoft.Extensions.Logging.LogLevel logLevel, bool enabled);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger.IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger.Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, System.Exception? exception, System.Func<TState, System.Exception?, string> formatter);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger.Category { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger.Collector { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger.LatestRecord { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger<T> : Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger, Microsoft.Extensions.Logging.ILogger<T>, Microsoft.Extensions.Logging.ILogger",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger<T>.FakeLogger(Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector? collector = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger<T>.FakeLogger(System.Action<string> outputSink);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerExtensions.AddFakeLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerExtensions.AddFakeLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollectorOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerExtensions.AddFakeLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerExtensions.AddFakeLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerExtensions.AddFakeLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollectorOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerExtensions.AddFakeLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerExtensions.GetFakeLogCollector(this System.IServiceProvider services);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerProvider : Microsoft.Extensions.Logging.ILoggerProvider, System.IDisposable, Microsoft.Extensions.Logging.ISupportExternalScope",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerProvider.FakeLoggerProvider(Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector? collector = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogger Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerProvider.CreateLogger(string? categoryName);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerProvider.Dispose();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerProvider.Dispose(bool disposing);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerProvider.~FakeLoggerProvider();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerProvider.SetScopeProvider(Microsoft.Extensions.Logging.IExternalScopeProvider scopeProvider);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector Microsoft.Extensions.Telemetry.Testing.Logging.FakeLoggerProvider.Collector { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord.FakeLogRecord(Microsoft.Extensions.Logging.LogLevel level, Microsoft.Extensions.Logging.EventId id, object? state, System.Exception? exception, string message, System.Collections.Generic.IReadOnlyList<object?> scopes, string? category, bool enabled, System.DateTimeOffset timestamp);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord.ToString();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord.Category { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Exception? Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord.Exception { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.EventId Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord.Id { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.LogLevel Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord.Level { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord.LevelEnabled { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord.Message { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<object?> Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord.Scopes { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord.State { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, string?>>? Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord.StructuredState { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.DateTimeOffset Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogRecord.Timestamp { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector : System.IDisposable",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.MetricCollector(System.Collections.Generic.IEnumerable<string> meterNames, System.TimeProvider? timeProvider = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.MetricCollector(System.TimeProvider? timeProvider = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.MetricCollector(System.Diagnostics.Metrics.Meter meter, System.TimeProvider? timeProvider = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.Clear();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.CollectObservableInstruments();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.Dispose();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetAllCounters<T>();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetAllHistograms<T>();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetAllObservableCounters<T>();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetAllObservableGauges<T>();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetAllObservableUpDownCounters<T>();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetAllUpDownCounters<T>();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "T? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetCounterValue<T>(string counterName, params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetCounterValues<T>(string counterName);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "T? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetHistogramValue<T>(string histogramName, params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetHistogramValues<T>(string histogramName);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "T? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetObservableCounterValue<T>(string observableCounterName, params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetObservableCounterValues<T>(string observableCounterName);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "T? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetObservableGaugeValue<T>(string observableGaugeName, params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetObservableGaugeValues<T>(string observableGaugeName);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "T? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetObservableUpDownCounterValue<T>(string observableUpDownCounterName, params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetObservableUpDownCounterValues<T>(string observableUpDownCounterName);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "T? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetUpDownCounterValue<T>(string updownCounterName, params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetUpDownCounterValues<T>(string updownCounterName);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<TMeterName> : Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<TMeterName>.MetricCollector();",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Testing.Metering.MetricValue<T> where T : struct",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "object? Microsoft.Extensions.Telemetry.Testing.Metering.MetricValue<T>.GetDimension(string dimensionName);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object?>> Microsoft.Extensions.Telemetry.Testing.Metering.MetricValue<T>.Tags { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.DateTimeOffset Microsoft.Extensions.Telemetry.Testing.Metering.MetricValue<T>.Timestamp { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "T Microsoft.Extensions.Telemetry.Testing.Metering.MetricValue<T>.Value { get; internal set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T> where T : struct",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>.Clear();",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "T? Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>.GetValue(params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyCollection<Microsoft.Extensions.Telemetry.Testing.Metering.MetricValue<T>> Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>.AllValues { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricValue<T>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>.LatestWritten { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "T? Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>.LatestWrittenValue { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>.MetricName { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    }
+  ]
+}

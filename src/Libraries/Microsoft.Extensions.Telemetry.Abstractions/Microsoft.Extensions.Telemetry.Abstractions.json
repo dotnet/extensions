@@ -1,0 +1,879 @@
+{
+  "Name": "Microsoft.Extensions.Telemetry.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "readonly struct Microsoft.Extensions.Telemetry.Latency.Checkpoint : System.IEquatable<Microsoft.Extensions.Telemetry.Latency.Checkpoint>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.Checkpoint.Checkpoint(string name, long elapsed, long frequency);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.Checkpoint.Checkpoint();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.Telemetry.Latency.Checkpoint.Equals(object? obj);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Latency.Checkpoint.Equals(Microsoft.Extensions.Telemetry.Latency.Checkpoint other);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.Telemetry.Latency.Checkpoint.GetHashCode();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.Telemetry.Latency.Checkpoint.operator ==(Microsoft.Extensions.Telemetry.Latency.Checkpoint left, Microsoft.Extensions.Telemetry.Latency.Checkpoint right);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.Telemetry.Latency.Checkpoint.operator !=(Microsoft.Extensions.Telemetry.Latency.Checkpoint left, Microsoft.Extensions.Telemetry.Latency.Checkpoint right);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "long Microsoft.Extensions.Telemetry.Latency.Checkpoint.Elapsed { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "long Microsoft.Extensions.Telemetry.Latency.Checkpoint.Frequency { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Latency.Checkpoint.Name { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.Telemetry.Latency.CheckpointToken",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.CheckpointToken.CheckpointToken(string name, int position);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.CheckpointToken.CheckpointToken();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Latency.CheckpointToken.Name { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Telemetry.Latency.CheckpointToken.Position { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.CounterAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.CounterAttribute.CounterAttribute(params string[] dimensions);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.CounterAttribute.CounterAttribute(System.Type type);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.CounterAttribute.Dimensions { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Telemetry.Metering.CounterAttribute.Name { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metering.CounterAttribute.Type { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T> : System.Attribute where T : struct",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.CounterAttribute(params string[] dimensions);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.CounterAttribute(System.Type type);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.Dimensions { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.Name { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.Type { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.DimensionAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.DimensionAttribute.DimensionAttribute(string name);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Metering.DimensionAttribute.Name { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher enricher);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddMetricEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher enricher);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.GaugeAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.GaugeAttribute(params string[] dimensions);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.GaugeAttribute(System.Type type);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.Dimensions { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.Name { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.Type { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.HistogramAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.HistogramAttribute(params string[] dimensions);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.HistogramAttribute(System.Type type);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.Dimensions { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.Name { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.Type { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T> : System.Attribute where T : struct",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.HistogramAttribute(params string[] dimensions);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.HistogramAttribute(System.Type type);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Dimensions { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Name { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Type { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.HttpRouteParameterRedactionMode();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.Loose",
+          "Stage": "Stable",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.None",
+          "Stage": "Stable",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.Strict",
+          "Stage": "Stable",
+          "Value": "0"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata",
+      "Stage": "Stable",
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata.DependencyName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.ISet<Microsoft.Extensions.Http.Telemetry.RequestMetadata> Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata.RequestMetadata { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata.UniqueHostNameSuffixes { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(string key, object value);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(string key, string value);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string, object>> properties);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string, string>> properties);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Telemetry.Latency.ILatencyContext : System.IDisposable",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Latency.ILatencyContext.AddCheckpoint(Microsoft.Extensions.Telemetry.Latency.CheckpointToken token);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Latency.ILatencyContext.AddMeasure(Microsoft.Extensions.Telemetry.Latency.MeasureToken token, long value);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Latency.ILatencyContext.Freeze();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Latency.ILatencyContext.RecordMeasure(Microsoft.Extensions.Telemetry.Latency.MeasureToken token, long value);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Latency.ILatencyContext.SetTag(Microsoft.Extensions.Telemetry.Latency.TagToken token, string value);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.LatencyData Microsoft.Extensions.Telemetry.Latency.ILatencyContext.LatencyData { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Telemetry.Latency.ILatencyContextProvider",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.ILatencyContext Microsoft.Extensions.Telemetry.Latency.ILatencyContextProvider.CreateContext();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Telemetry.Latency.ILatencyContextTokenIssuer",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.CheckpointToken Microsoft.Extensions.Telemetry.Latency.ILatencyContextTokenIssuer.GetCheckpointToken(string name);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.MeasureToken Microsoft.Extensions.Telemetry.Latency.ILatencyContextTokenIssuer.GetMeasureToken(string name);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.TagToken Microsoft.Extensions.Telemetry.Latency.ILatencyContextTokenIssuer.GetTagToken(string name);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Telemetry.Latency.ILatencyDataExporter",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.Telemetry.Latency.ILatencyDataExporter.ExportAsync(Microsoft.Extensions.Telemetry.Latency.LatencyData data, System.Threading.CancellationToken cancellationToken);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag bag);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector.Add(string propertyName, object? propertyValue);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag bag);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext",
+      "Stage": "Stable",
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext.RequestMetadata { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher.Enrich(System.Diagnostics.Activity activity);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher.EnrichOnActivityStart(System.Diagnostics.Activity activity);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions.LatencyContextRegistrationOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions.CheckpointNames { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions.MeasureNames { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions.TagNames { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.Telemetry.Latency.LatencyData",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.LatencyData.LatencyData(System.ArraySegment<Microsoft.Extensions.Telemetry.Latency.Tag> tags, System.ArraySegment<Microsoft.Extensions.Telemetry.Latency.Checkpoint> checkpoints, System.ArraySegment<Microsoft.Extensions.Telemetry.Latency.Measure> measures, long durationTimestamp, long durationTimestampFrequency);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.LatencyData.LatencyData();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.ReadOnlySpan<Microsoft.Extensions.Telemetry.Latency.Checkpoint> Microsoft.Extensions.Telemetry.Latency.LatencyData.Checkpoints { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "long Microsoft.Extensions.Telemetry.Latency.LatencyData.DurationTimestamp { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "long Microsoft.Extensions.Telemetry.Latency.LatencyData.DurationTimestampFrequency { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlySpan<Microsoft.Extensions.Telemetry.Latency.Measure> Microsoft.Extensions.Telemetry.Latency.LatencyData.Measures { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.ReadOnlySpan<Microsoft.Extensions.Telemetry.Latency.Tag> Microsoft.Extensions.Telemetry.Latency.LatencyData.Tags { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Latency.LatencyRegistryExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Latency.LatencyRegistryExtensions.RegisterCheckpointNames(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, params string[] names);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Latency.LatencyRegistryExtensions.RegisterMeasureNames(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, params string[] names);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Latency.LatencyRegistryExtensions.RegisterTagNames(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, params string[] names);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(int eventId, Microsoft.Extensions.Logging.LogLevel level, string message);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(int eventId, Microsoft.Extensions.Logging.LogLevel level);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(Microsoft.Extensions.Logging.LogLevel level, string message);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(Microsoft.Extensions.Logging.LogLevel level);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(string message);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(int eventId, string message);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(int eventId);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.EventId { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.EventName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.LogLevel? Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.Level { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.Message { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.SkipEnabledCheck { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LogMethodHelper : System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector, Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag, Microsoft.Extensions.ObjectPool.IResettable",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.LogMethodHelper();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Add(string propertyName, object? propertyValue);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Telemetry.Logging.LogMethodHelper Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.GetHelper();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.ReturnHelper(Microsoft.Extensions.Telemetry.Logging.LogMethodHelper helper);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Stringify(System.Collections.IEnumerable? enumerable);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Stringify<TKey, TValue>(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>? enumerable);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.TryReset();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.ParameterName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.LogDefineOptions Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.SkipEnabledCheckOptions { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.LogPropertiesAttribute();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.LogPropertiesAttribute(System.Type providerType, string providerMethod);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.OmitParameterName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.ProviderMethod { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Type? Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.ProviderType { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.SkipNullProperties { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LogPropertyIgnoreAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LogPropertyIgnoreAttribute.LogPropertyIgnoreAttribute();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.Telemetry.Latency.Measure : System.IEquatable<Microsoft.Extensions.Telemetry.Latency.Measure>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.Measure.Measure(string name, long value);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.Measure.Measure();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.Telemetry.Latency.Measure.Equals(object? obj);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Latency.Measure.Equals(Microsoft.Extensions.Telemetry.Latency.Measure other);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.Telemetry.Latency.Measure.GetHashCode();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.Telemetry.Latency.Measure.operator ==(Microsoft.Extensions.Telemetry.Latency.Measure left, Microsoft.Extensions.Telemetry.Latency.Measure right);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.Extensions.Telemetry.Latency.Measure.operator !=(Microsoft.Extensions.Telemetry.Latency.Measure left, Microsoft.Extensions.Telemetry.Latency.Measure right);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Latency.Measure.Name { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "long Microsoft.Extensions.Telemetry.Latency.Measure.Value { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.Telemetry.Latency.MeasureToken",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.MeasureToken.MeasureToken(string name, int position);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.MeasureToken.MeasureToken();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Latency.MeasureToken.Name { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Telemetry.Latency.MeasureToken.Position { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.Metering.Meter<TMeterName> : System.Diagnostics.Metrics.Meter",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.Meter<TMeterName>.Meter();",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Metering.MeteringExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Metering.MeteringExtensions.RegisterMetering(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Latency.NullLatencyContextExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Latency.NullLatencyContextExtensions.AddNullLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Http.Telemetry.RequestMetadata",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestMetadata();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestMetadata(string methodType, string requestRoute, string requestName = \"unknown\");",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Http.Telemetry.RequestMetadata.DependencyName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Http.Telemetry.RequestMetadata.MethodType { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestRoute { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.Telemetry.Latency.Tag",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.Tag.Tag(string name, string value);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.Tag.Tag();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Latency.Tag.Name { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Latency.Tag.Value { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.Telemetry.Latency.TagToken",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.TagToken.TagToken(string name, int position);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Latency.TagToken.TagToken();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Latency.TagToken.Name { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Telemetry.Latency.TagToken.Position { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Http.Telemetry.TelemetryConstants",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.TelemetryConstants.ClientApplicationNameHeader",
+          "Stage": "Experimental",
+          "Value": "X-ClientApplication"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.TelemetryConstants.Redacted",
+          "Stage": "Stable",
+          "Value": "REDACTED"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.TelemetryConstants.RequestMetadataKey",
+          "Stage": "Stable",
+          "Value": "R9-RequestMetadata"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.TelemetryConstants.ServerApplicationNameHeader",
+          "Stage": "Experimental",
+          "Value": "X-ServerApplication"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.TelemetryConstants.Unknown",
+          "Stage": "Stable",
+          "Value": "unknown"
+        }
+      ]
+    }
+  ]
+}

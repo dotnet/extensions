@@ -15,6 +15,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.LocalAnalyzers.Resource.Test;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Telemetry.Logging;
 using Xunit;
 
 namespace Microsoft.Extensions.LocalAnalyzers.ApiLifecycle.Test;
@@ -72,11 +73,6 @@ public class ApiLifecycleAnalyzerTest
                 testAssemblyName: testAssemblyName)
             .ConfigureAwait(false);
 
-        if (expectedDiagnostics != diagnostics.Count)
-        {
-            System.Diagnostics.Debugger.Break();
-        }
-
         Assert.Equal(expectedDiagnostics, diagnostics.Count);
 
         for (int i = 0; i < diagnostics.Count; i++)
@@ -102,10 +98,35 @@ public class ApiLifecycleAnalyzerTest
         Assembly.GetAssembly(typeof(IDistributedCache))!,
         Assembly.GetAssembly(typeof(Microsoft.Extensions.ObjectPool.ObjectPool))!,
         Assembly.GetAssembly(typeof(IBufferWriter<>))!,
+        Assembly.GetAssembly(typeof(ILogPropertyCollector))!,
+        Assembly.GetAssembly(typeof(Microsoft.Extensions.Logging.ILogger))!,
     };
 
     public static IEnumerable<object[]> CodeWithMissingMembers => new List<object[]>
     {
+        new object[]
+        {
+            0,
+            "ApiLifecycle/Data/SimpleTaxonomy.json",
+            "SimpleTaxonomy",
+            new [] { DiagDescriptors.NewSymbolsMustBeMarkedExperimental.Id },
+            @"
+            using System;
+
+            namespace Microsoft.Extensions.Compliance.Testing;
+
+            [Flags]
+            public enum SimpleTaxonomy : ulong
+            {
+                None = 0,
+                PublicData = 1 << 0,
+                PrivateData = 1 << 1,
+                Unknown = 1 << 2,
+            }
+
+            "
+        },
+#if false
         new object[]
         {
             1,
@@ -765,6 +786,7 @@ public class ApiLifecycleAnalyzerTest
                 }
             "
         }
+#endif
     };
 
     public static IEnumerable<object[]> CodeWithMissingApis => new List<object[]>

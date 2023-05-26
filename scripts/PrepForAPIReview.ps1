@@ -7,7 +7,7 @@
 #>
 
 param (
-    [Parameter(Mandatory = $true, HelpMessage="Path to the assemly to extract the API from.", Position = 0, ParameterSetName = "AssemblyPath")]
+    [Parameter(Mandatory = $true, HelpMessage="Path to the assembly to extract the API from.", Position = 0, ParameterSetName = "AssemblyPath")]
     [string]$AssemblyPath
 )
 

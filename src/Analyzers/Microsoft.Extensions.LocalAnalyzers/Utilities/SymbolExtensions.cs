@@ -47,6 +47,20 @@ internal static class SymbolExtensions
         return false;
     }
 
+    public static bool HasAttribute(this ISymbol sym, string attributeName)
+    {
+        foreach (var a in sym.GetAttributes())
+        {
+            var attrType = a.AttributeClass?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            if (attrType == attributeName)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static bool IsContaminated(this ISymbol symbol, INamedTypeSymbol? contaminationAttribute)
     {
         return (contaminationAttribute != null) && IsContaminated(symbol);
@@ -61,6 +75,56 @@ internal static class SymbolExtensions
 
             if (symbol.ContainingAssembly != null
                 && symbol.ContainingAssembly.HasAttribute(contaminationAttribute))
+            {
+                // symbol's assembly is annotated
+                return true;
+            }
+
+            var container = symbol.ContainingType;
+            while (container != null)
+            {
+                if (IsContaminated(container))
+                {
+                    // symbol's container is annotated
+                    return true;
+                }
+
+                container = container.ContainingType;
+            }
+
+            if (symbol is INamedTypeSymbol type)
+            {
+                var baseType = type.BaseType;
+                while (baseType != null)
+                {
+                    if (IsContaminated(baseType))
+                    {
+                        // symbol's base type is annotated
+                        return true;
+                    }
+
+                    baseType = baseType.BaseType;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    public static bool IsContaminated(this ISymbol symbol, string attributeName)
+    {
+        return IsContaminated(symbol);
+
+        bool IsContaminated(ISymbol symbol)
+        {
+            if (symbol.HasAttribute(attributeName))
+            {
+                // symbol is annotated
+                return true;
+            }
+
+            if (symbol.ContainingAssembly != null
+                && symbol.ContainingAssembly.HasAttribute(attributeName))
             {
                 // symbol's assembly is annotated
                 return true;

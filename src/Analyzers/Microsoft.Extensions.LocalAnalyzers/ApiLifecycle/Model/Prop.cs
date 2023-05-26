@@ -21,4 +21,6 @@ internal sealed class Prop
 
         Stage = stage;
     }
+
+    public override string ToString() => $"{Member}:{Stage}";
 }
