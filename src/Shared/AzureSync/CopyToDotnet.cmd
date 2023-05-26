@@ -18,4 +18,5 @@ IF %ERRORLEVEL% LSS 8 (robocopy ..\NumericExtensions\ %remote_repo%\src\Shared\N
 IF %ERRORLEVEL% LSS 8 (robocopy ..\Throw\ %remote_repo%\src\Shared\Throw\ /MIR)
 
 rem 0x0-4 mean everythings good, files may have been copied. 0x08-10 mean are actual errors.
-IF %ERRORLEVEL% LSS 8 (exit /b 0) ELSE (exit /b 1)
+echo ErrorLevel = %ERRORLEVEL%
+IF %ERRORLEVEL% LSS 8 (exit /b 0) ELSE (exit 1)
