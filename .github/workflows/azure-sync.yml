@@ -56,7 +56,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         $sendpr = .\dotnet-extensions\.github\workflows\azure-sync-checkdiff.ps1
-        echo "::set-output name=sendpr::$sendpr"
+        echo "sendpr=$sendpr" >> $env:GITHUB_OUTPUT
     - name: Send PR
       if: steps.check.outputs.sendpr == 'true'
       # https://github.com/marketplace/actions/create-pull-request
