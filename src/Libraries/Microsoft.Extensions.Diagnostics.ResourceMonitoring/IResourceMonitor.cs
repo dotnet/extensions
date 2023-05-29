@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// <summary>
 /// Provides the ability to sample the system for current resource utilization.
 /// </summary>
-public interface IResourceUtilizationTracker
+public interface IResourceMonitor
 {
     /// <summary>
     /// Gets utilization for the specified time window.

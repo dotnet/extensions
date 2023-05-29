@@ -14,10 +14,10 @@ public sealed class ResouceUtilizationAbstractionsExtensionsTest
     {
         var services = new ServiceCollection();
 
-        var builder = new Mock<IResourceUtilizationTrackerBuilder>(MockBehavior.Loose);
+        var builder = new Mock<IResourceMonitorBuilder>(MockBehavior.Loose);
         builder.Setup(builder => builder.Services).Returns(services);
 
-        using var servicesProvider = builder.Object.AddNullResourceUtilizationProvider()
+        using var servicesProvider = builder.Object.AddNullProvider()
             .Services.BuildServiceProvider();
 
         var snapshotProvider = servicesProvider.GetRequiredService<ISnapshotProvider>();
@@ -25,19 +25,5 @@ public sealed class ResouceUtilizationAbstractionsExtensionsTest
         Assert.NotNull(snapshotProvider);
         Assert.IsType<NullSnapshotProvider>(snapshotProvider);
         Assert.IsAssignableFrom<ISnapshotProvider>(snapshotProvider);
-    }
-
-    [Fact]
-    public void AddNullResourceUtilization_AddsNullResourceUtilizationTrackerService_ToServicesCollection()
-    {
-        var services = new ServiceCollection();
-
-        using var servicesProvider = services.AddNullResourceUtilization().BuildServiceProvider();
-
-        var tracker = servicesProvider.GetRequiredService<IResourceUtilizationTracker>();
-
-        Assert.NotNull(tracker);
-        Assert.IsType<NullResourceUtilizationTrackerService>(tracker);
-        Assert.IsAssignableFrom<IResourceUtilizationTracker>(tracker);
     }
 }

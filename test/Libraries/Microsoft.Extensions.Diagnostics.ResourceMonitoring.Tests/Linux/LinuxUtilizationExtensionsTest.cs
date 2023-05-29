@@ -17,10 +17,10 @@ public sealed class LinuxUtilizationExtensionsTest
     {
         var services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => ((IResourceUtilizationTrackerBuilder)null!).AddLinuxProvider());
-        Assert.Throws<ArgumentNullException>(() => ((IResourceUtilizationTrackerBuilder)null!).AddLinuxProvider((_) => { }));
-        Assert.Throws<ArgumentNullException>(() => ((IResourceUtilizationTrackerBuilder)null!).AddLinuxProvider((IConfigurationSection)null!));
-        Assert.Throws<ArgumentNullException>(() => services.AddResourceUtilization((b) => b.AddLinuxProvider((IConfigurationSection)null!)));
-        Assert.Throws<ArgumentNullException>(() => services.AddResourceUtilization((b) => b.AddLinuxProvider((Action<LinuxResourceUtilizationProviderOptions>)null!)));
+        Assert.Throws<ArgumentNullException>(() => ((IResourceMonitorBuilder)null!).AddLinuxProvider());
+        Assert.Throws<ArgumentNullException>(() => ((IResourceMonitorBuilder)null!).AddLinuxProvider((_) => { }));
+        Assert.Throws<ArgumentNullException>(() => ((IResourceMonitorBuilder)null!).AddLinuxProvider((IConfigurationSection)null!));
+        Assert.Throws<ArgumentNullException>(() => services.AddResourceMonitoring((b) => b.AddLinuxProvider((IConfigurationSection)null!)));
+        Assert.Throws<ArgumentNullException>(() => services.AddResourceMonitoring((b) => b.AddLinuxProvider((Action<LinuxResourceUtilizationProviderOptions>)null!)));
     }
 }

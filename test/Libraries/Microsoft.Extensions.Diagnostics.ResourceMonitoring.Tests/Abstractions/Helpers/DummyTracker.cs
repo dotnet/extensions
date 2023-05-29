@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 
-internal class DummyTracker : IResourceUtilizationTracker
+internal class DummyTracker : IResourceMonitor
 {
     public const double CpuPercentage = 50.0;
     public const double MemoryPercentage = 10.0;

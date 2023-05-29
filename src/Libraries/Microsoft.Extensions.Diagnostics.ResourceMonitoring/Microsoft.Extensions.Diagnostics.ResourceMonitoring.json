@@ -12,37 +12,37 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationPublisher",
+      "Type": "interface Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitor",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationPublisher.PublishAsync(Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization utilization, System.Threading.CancellationToken cancellationToken);",
+          "Member": "Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitor.GetUtilization(System.TimeSpan window);",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTracker",
+      "Type": "interface Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTracker.GetUtilization(System.TimeSpan window);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "interface Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder.AddPublisher<T>();",
+          "Member": "Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder.AddPublisher<T>();",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder.Services { get; }",
+          "Member": "Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder.Services { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationPublisher",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "System.Threading.Tasks.ValueTask Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationPublisher.PublishAsync(Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization utilization, System.Threading.CancellationToken cancellationToken);",
           "Stage": "Stable"
         }
       ]
@@ -86,15 +86,25 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxUtilizationExtensions.AddLinuxProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder builder);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxUtilizationExtensions.AddLinuxProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxUtilizationExtensions.AddLinuxProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxUtilizationExtensions.AddLinuxProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxUtilizationExtensions.AddLinuxProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxResourceUtilizationProviderOptions> configure);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxUtilizationExtensions.AddLinuxProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxResourceUtilizationProviderOptions> configure);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Diagnostics.ResourceMonitoring.NullUtilizationExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.NullUtilizationExtensions.AddNullProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder);",
           "Stage": "Stable"
         }
       ]
@@ -104,51 +114,43 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.AddNullResourceUtilization(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.AddResourceMonitoring(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder> configure);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.AddNullResourceUtilizationProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder builder);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.ConfigureMonitor(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions> configure);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.AddResourceUtilization(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder> configure);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.ConfigureMonitor(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.ConfigureResourceUtilization(this Microsoft.Extensions.Hosting.IHostBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.ConfigureTracker(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilizationTrackerOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.ConfigureTracker(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.ConfigureResourceMonitoring(this Microsoft.Extensions.Hosting.IHostBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder> configure);",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilizationTrackerOptions",
+      "Type": "class Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilizationTrackerOptions.ResourceUtilizationTrackerOptions();",
+          "Member": "Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.ResourceMonitoringOptions();",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilizationTrackerOptions.CalculationPeriod { get; set; }",
+          "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.CalculationPeriod { get; set; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilizationTrackerOptions.CollectionWindow { get; set; }",
+          "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.CollectionWindow { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilizationTrackerOptions.SamplingInterval { get; set; }",
+          "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.SamplingInterval { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -242,23 +244,23 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsCounters(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder builder);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsCounters(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsCounters(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsCounters(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsCounters(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsCountersOptions> configure);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsCounters(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsCountersOptions> configure);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsPerfCounterPublisher(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder builder);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsPerfCounterPublisher(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationTrackerBuilder builder);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder);",
           "Stage": "Stable"
         }
       ]

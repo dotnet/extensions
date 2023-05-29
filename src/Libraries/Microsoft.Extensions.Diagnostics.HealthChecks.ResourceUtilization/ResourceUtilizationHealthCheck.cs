@@ -16,7 +16,7 @@ internal sealed class ResourceUtilizationHealthCheck : IHealthCheck
 {
     private static readonly Task<HealthCheckResult> _healthy = Task.FromResult(HealthCheckResult.Healthy());
     private readonly ResourceUtilizationHealthCheckOptions _options;
-    private readonly IResourceUtilizationTracker _dataTracker;
+    private readonly IResourceMonitor _dataTracker;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ResourceUtilizationHealthCheck"/> class.
@@ -24,7 +24,7 @@ internal sealed class ResourceUtilizationHealthCheck : IHealthCheck
     /// <param name="options">The options.</param>
     /// <param name="dataTracker">The datatracker.</param>
     public ResourceUtilizationHealthCheck(IOptions<ResourceUtilizationHealthCheckOptions> options,
-        IResourceUtilizationTracker dataTracker)
+        IResourceMonitor dataTracker)
     {
         _options = Throw.IfMemberNull(options, options.Value);
         _dataTracker = Throw.IfNull(dataTracker);

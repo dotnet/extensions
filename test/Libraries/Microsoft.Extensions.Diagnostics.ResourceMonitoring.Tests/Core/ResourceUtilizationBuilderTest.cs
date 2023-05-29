@@ -14,7 +14,7 @@ public sealed class ResourceUtilizationBuilderTest
     public void AddPublisher_CalledOnce_AddsSinglePublisherToServiceCollection()
     {
         using var provider = new ServiceCollection()
-            .AddResourceUtilization(configureTracker =>
+            .AddResourceMonitoring(configureTracker =>
             {
                 configureTracker.AddPublisher<EmptyPublisher>();
             })
@@ -34,7 +34,7 @@ public sealed class ResourceUtilizationBuilderTest
     public void AddPublisher_CalledMultipleTimes_AddsMultiplePublishersToServiceCollection()
     {
         using var provider = new ServiceCollection()
-            .AddResourceUtilization(configureTracker =>
+            .AddResourceMonitoring(configureTracker =>
             {
                 configureTracker
                     .AddPublisher<EmptyPublisher>()

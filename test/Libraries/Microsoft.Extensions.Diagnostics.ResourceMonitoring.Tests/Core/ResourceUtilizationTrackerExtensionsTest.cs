@@ -24,18 +24,18 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
         using var provider = new ServiceCollection()
             .AddLogging()
             .AddSingleton<TimeProvider>(TimeProvider.System)
-            .AddResourceUtilization(builder =>
+            .AddResourceMonitoring(builder =>
             {
                 builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
                 builder.AddPublisher<EmptyPublisher>();
             })
             .BuildServiceProvider();
 
-        var trackerService = provider.GetRequiredService<IResourceUtilizationTracker>();
+        var trackerService = provider.GetRequiredService<IResourceMonitor>();
 
         Assert.NotNull(trackerService);
         Assert.IsType<ResourceUtilizationTrackerService>(trackerService);
-        Assert.IsAssignableFrom<IResourceUtilizationTracker>(trackerService);
+        Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
         using var provider = new ServiceCollection()
             .AddLogging()
             .AddSingleton<TimeProvider>(TimeProvider.System)
-            .AddResourceUtilization(builder =>
+            .AddResourceMonitoring(builder =>
             {
                 builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
                 builder.AddPublisher<EmptyPublisher>();
@@ -56,14 +56,14 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
 
         Assert.NotNull(trackerService);
         Assert.IsType<ResourceUtilizationTrackerService>(trackerService);
-        Assert.IsAssignableFrom<IResourceUtilizationTracker>(trackerService);
+        Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
     [Fact]
     public void ConfigureResourceUtilization_InitializeTrackerProperly()
     {
         using var host = FakeHost.CreateBuilder()
-            .ConfigureResourceUtilization(
+            .ConfigureResourceMonitoring(
             builder =>
             {
                 builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
@@ -72,8 +72,8 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
             })
             .Build();
 
-        var tracker = host.Services.GetService<IResourceUtilizationTracker>();
-        var options = host.Services.GetService<IOptions<ResourceUtilizationTrackerOptions>>();
+        var tracker = host.Services.GetService<IResourceMonitor>();
+        var options = host.Services.GetService<IOptions<ResourceMonitoringOptions>>();
         var provider = host.Services.GetService<ISnapshotProvider>();
         var publisher = host.Services.GetService<IResourceUtilizationPublisher>();
 
@@ -90,12 +90,12 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
         const int CalculationPeriodValue = 2;
 
         using var host = FakeHost.CreateBuilder()
-            .ConfigureResourceUtilization(
+            .ConfigureResourceMonitoring(
                 builder =>
                 {
                     builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
                     builder.AddPublisher<EmptyPublisher>();
-                    builder.ConfigureTracker(options =>
+                    builder.ConfigureMonitor(options =>
                     {
                         options.CollectionWindow = TimeSpan.FromSeconds(SamplingWindowValue);
                         options.CalculationPeriod = TimeSpan.FromSeconds(CalculationPeriodValue);
@@ -103,7 +103,7 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
                 })
             .Build();
 
-        var options = host.Services.GetService<IOptions<ResourceUtilizationTrackerOptions>>();
+        var options = host.Services.GetService<IOptions<ResourceMonitoringOptions>>();
 
         Assert.NotNull(options);
         Assert.Equal(TimeSpan.FromSeconds(SamplingWindowValue), options!.Value.CollectionWindow);
@@ -120,29 +120,29 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                [$"{nameof(ResourceUtilizationTrackerOptions)}:{nameof(ResourceUtilizationTrackerOptions.CollectionWindow)}"]
+                [$"{nameof(ResourceMonitoringOptions)}:{nameof(ResourceMonitoringOptions.CollectionWindow)}"]
                     = TimeSpan.FromSeconds(SamplingWindowValue).ToString(),
-                [$"{nameof(ResourceUtilizationTrackerOptions)}:{nameof(ResourceUtilizationTrackerOptions.SamplingInterval)}"]
+                [$"{nameof(ResourceMonitoringOptions)}:{nameof(ResourceMonitoringOptions.SamplingInterval)}"]
                     = TimeSpan.FromSeconds(SamplingPeriodValue).ToString(),
-                [$"{nameof(ResourceUtilizationTrackerOptions)}:{nameof(ResourceUtilizationTrackerOptions.CalculationPeriod)}"]
+                [$"{nameof(ResourceMonitoringOptions)}:{nameof(ResourceMonitoringOptions.CalculationPeriod)}"]
                         = TimeSpan.FromSeconds(CalculationPeriod).ToString()
             })
             .Build();
 
         var configurationSection = config
-            .GetSection(nameof(ResourceUtilizationTrackerOptions));
+            .GetSection(nameof(ResourceMonitoringOptions));
 
         using var host = FakeHost.CreateBuilder()
-            .ConfigureResourceUtilization(
+            .ConfigureResourceMonitoring(
                 builder =>
                 {
                     builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
                     builder.AddPublisher<EmptyPublisher>();
-                    builder.ConfigureTracker(configurationSection);
+                    builder.ConfigureMonitor(configurationSection);
                 })
             .Build();
 
-        var options = host.Services.GetService<IOptions<ResourceUtilizationTrackerOptions>>();
+        var options = host.Services.GetService<IOptions<ResourceMonitoringOptions>>();
 
         Assert.NotNull(options);
         Assert.Equal(TimeSpan.FromSeconds(SamplingWindowValue), options!.Value.CollectionWindow);
@@ -154,7 +154,7 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
     public void Registering_Resource_Utilization_Adds_Only_One_Object_Of_Type_ResourceUtilizationService_To_DI_Container()
     {
         using var host = FakeHost.CreateBuilder()
-            .ConfigureResourceUtilization(
+            .ConfigureResourceMonitoring(
                 builder =>
                 {
                     builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
@@ -162,7 +162,7 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
                 })
             .Build();
 
-        var trackers = host.Services.GetServices<IResourceUtilizationTracker>().ToArray();
+        var trackers = host.Services.GetServices<IResourceMonitor>().ToArray();
         var backgrounds = host.Services.GetServices<IHostedService>().Where(x => x is ResourceUtilizationTrackerService).ToArray();
 
         var tracker = Assert.Single(trackers);

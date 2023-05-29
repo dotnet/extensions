@@ -19,7 +19,7 @@ public sealed class WindowsUtilizationExtensionsTest
     [ConditionalFact]
     public void AddWindowsProvider_Adds_WindowsResourceUtilizationProvider_To_ServiceCollection()
     {
-        var builderMock = new Mock<IResourceUtilizationTrackerBuilder>();
+        var builderMock = new Mock<IResourceMonitorBuilder>();
         var services = new ServiceCollection()
             .AddLogging();
         builderMock.Setup(builder => builder.Services).Returns(services);
@@ -35,7 +35,7 @@ public sealed class WindowsUtilizationExtensionsTest
     [ConditionalFact]
     public void AddWindowsPerfCounterPublisher_Adds_WindowsPerfCounterPublisher_To_ServiceCollection()
     {
-        var builderMock = new Mock<IResourceUtilizationTrackerBuilder>(MockBehavior.Loose);
+        var builderMock = new Mock<IResourceMonitorBuilder>(MockBehavior.Loose);
         var services = new ServiceCollection()
             .AddLogging();
         builderMock.Setup(builder => builder.Services).Returns(services);
@@ -50,7 +50,7 @@ public sealed class WindowsUtilizationExtensionsTest
     [Fact]
     public void AddWindowsCounters_Adds_WindowsCounters_To_ServiceCollection()
     {
-        var builderMock = new Mock<IResourceUtilizationTrackerBuilder>(MockBehavior.Loose);
+        var builderMock = new Mock<IResourceMonitorBuilder>(MockBehavior.Loose);
         var services = new ServiceCollection()
             .AddLogging();
         builderMock.Setup(builder => builder.Services).Returns(services);
@@ -65,7 +65,7 @@ public sealed class WindowsUtilizationExtensionsTest
     [Fact]
     public void AddWindowsCounters_Adds_WindowsCounters_To_ServiceCollection_With_ConfigurationSection()
     {
-        var builderMock = new Mock<IResourceUtilizationTrackerBuilder>(MockBehavior.Loose);
+        var builderMock = new Mock<IResourceMonitorBuilder>(MockBehavior.Loose);
         var configurationMock = new Mock<IConfigurationSection>(MockBehavior.Loose);
         var services = new ServiceCollection()
             .AddLogging();
@@ -81,7 +81,7 @@ public sealed class WindowsUtilizationExtensionsTest
     [Fact]
     public void AddWindowsCounters_Adds_WindowsCounters_To_ServiceCollection_With_Action()
     {
-        var builderMock = new Mock<IResourceUtilizationTrackerBuilder>(MockBehavior.Loose);
+        var builderMock = new Mock<IResourceMonitorBuilder>(MockBehavior.Loose);
         var actionMock = new Mock<Action<WindowsCountersOptions>>(MockBehavior.Loose);
         var services = new ServiceCollection()
             .AddLogging();

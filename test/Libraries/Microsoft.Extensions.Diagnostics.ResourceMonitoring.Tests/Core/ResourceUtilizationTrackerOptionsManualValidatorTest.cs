@@ -17,7 +17,7 @@ public sealed class ResourceUtilizationTrackerOptionsManualValidatorTest
     [InlineData(6, 6)]
     public void Validator_GivenValidOptions_Succeeds(int collectionWindow, int calculationPeriod)
     {
-        var options = new ResourceUtilizationTrackerOptions
+        var options = new ResourceMonitoringOptions
         {
             CollectionWindow = TimeSpan.FromSeconds(collectionWindow),
             CalculationPeriod = TimeSpan.FromSeconds(calculationPeriod)
@@ -31,7 +31,7 @@ public sealed class ResourceUtilizationTrackerOptionsManualValidatorTest
     [Fact]
     public void Validator_CalculationPeriodBiggerThanCollectionWindow_Fails()
     {
-        var options = new ResourceUtilizationTrackerOptions
+        var options = new ResourceMonitoringOptions
         {
             CollectionWindow = TimeSpan.FromSeconds(1),
             CalculationPeriod = TimeSpan.FromSeconds(2)

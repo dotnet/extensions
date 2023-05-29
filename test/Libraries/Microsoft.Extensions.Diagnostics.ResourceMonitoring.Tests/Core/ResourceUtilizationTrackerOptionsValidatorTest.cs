@@ -12,7 +12,7 @@ public sealed class ResourceUtilizationTrackerOptionsValidatorTest
     [Fact]
     public void Validator_GivenValidOptions_Succeeds()
     {
-        var options = new ResourceUtilizationTrackerOptions
+        var options = new ResourceMonitoringOptions
         {
             CollectionWindow = TimeSpan.FromMilliseconds(100),
             SamplingInterval = TimeSpan.FromMilliseconds(10),
@@ -29,7 +29,7 @@ public sealed class ResourceUtilizationTrackerOptionsValidatorTest
     [Fact]
     public void Validator_GivenOptionsWithInvalidSamplingWindow_Fails()
     {
-        var options = new ResourceUtilizationTrackerOptions
+        var options = new ResourceMonitoringOptions
         {
             CollectionWindow = TimeSpan.FromTicks(1),
             SamplingInterval = TimeSpan.FromSeconds(1),
@@ -44,7 +44,7 @@ public sealed class ResourceUtilizationTrackerOptionsValidatorTest
     [Fact]
     public void Validator_GivenOptionsWithInvalidSamplingPeriod_Fails()
     {
-        var options = new ResourceUtilizationTrackerOptions
+        var options = new ResourceMonitoringOptions
         {
             CollectionWindow = TimeSpan.FromMilliseconds(100),
             SamplingInterval = TimeSpan.FromMilliseconds(0),
@@ -59,7 +59,7 @@ public sealed class ResourceUtilizationTrackerOptionsValidatorTest
     [Fact]
     public void Validator_GivenOptionsWithInvalidMinimalRetentionPeriod_Fails()
     {
-        var options = new ResourceUtilizationTrackerOptions
+        var options = new ResourceMonitoringOptions
         {
             CollectionWindow = TimeSpan.FromMilliseconds(100),
             SamplingInterval = TimeSpan.FromMilliseconds(1),
@@ -72,39 +72,39 @@ public sealed class ResourceUtilizationTrackerOptionsValidatorTest
     }
 
     [Theory]
-    [InlineData(-100, 1, ResourceUtilizationTrackerOptions.MinimumSamplingWindow, true)]
-    [InlineData(-1, 1, ResourceUtilizationTrackerOptions.MinimumSamplingWindow, true)]
-    [InlineData(0, -100, ResourceUtilizationTrackerOptions.MinimumSamplingWindow, true)]
-    [InlineData(0, -1, ResourceUtilizationTrackerOptions.MinimumSamplingWindow, true)]
-    [InlineData(0, 0, ResourceUtilizationTrackerOptions.MinimumSamplingWindow, true)]
-    [InlineData(0, ResourceUtilizationTrackerOptions.MinimumSamplingPeriod + 1, ResourceUtilizationTrackerOptions.MinimumSamplingWindow, true)]
-    [InlineData(0, 1, ResourceUtilizationTrackerOptions.MinimumSamplingWindow, true)]
-    [InlineData(1, 1, ResourceUtilizationTrackerOptions.MinimumSamplingWindow, true)]
-    [InlineData(ResourceUtilizationTrackerOptions.MinimumSamplingWindow, 1, ResourceUtilizationTrackerOptions.MinimumSamplingWindow, false)]
-    [InlineData(ResourceUtilizationTrackerOptions.MinimumSamplingWindow, 100, ResourceUtilizationTrackerOptions.MinimumSamplingWindow, false)]
+    [InlineData(-100, 1, ResourceMonitoringOptions.MinimumSamplingWindow, true)]
+    [InlineData(-1, 1, ResourceMonitoringOptions.MinimumSamplingWindow, true)]
+    [InlineData(0, -100, ResourceMonitoringOptions.MinimumSamplingWindow, true)]
+    [InlineData(0, -1, ResourceMonitoringOptions.MinimumSamplingWindow, true)]
+    [InlineData(0, 0, ResourceMonitoringOptions.MinimumSamplingWindow, true)]
+    [InlineData(0, ResourceMonitoringOptions.MinimumSamplingPeriod + 1, ResourceMonitoringOptions.MinimumSamplingWindow, true)]
+    [InlineData(0, 1, ResourceMonitoringOptions.MinimumSamplingWindow, true)]
+    [InlineData(1, 1, ResourceMonitoringOptions.MinimumSamplingWindow, true)]
+    [InlineData(ResourceMonitoringOptions.MinimumSamplingWindow, 1, ResourceMonitoringOptions.MinimumSamplingWindow, false)]
+    [InlineData(ResourceMonitoringOptions.MinimumSamplingWindow, 100, ResourceMonitoringOptions.MinimumSamplingWindow, false)]
     [InlineData(
-        ResourceUtilizationTrackerOptions.MaximumSamplingWindow - 1,
-        ResourceUtilizationTrackerOptions.MaximumSamplingPeriod - 1,
-        ResourceUtilizationTrackerOptions.MaximumSamplingPeriod - 1,
+        ResourceMonitoringOptions.MaximumSamplingWindow - 1,
+        ResourceMonitoringOptions.MaximumSamplingPeriod - 1,
+        ResourceMonitoringOptions.MaximumSamplingPeriod - 1,
         false)]
     [InlineData(
-        ResourceUtilizationTrackerOptions.MaximumSamplingWindow,
-        ResourceUtilizationTrackerOptions.MaximumSamplingPeriod,
-        ResourceUtilizationTrackerOptions.MaximumSamplingPeriod,
+        ResourceMonitoringOptions.MaximumSamplingWindow,
+        ResourceMonitoringOptions.MaximumSamplingPeriod,
+        ResourceMonitoringOptions.MaximumSamplingPeriod,
         false)]
     [InlineData(
-        ResourceUtilizationTrackerOptions.MinimumSamplingWindow,
-        ResourceUtilizationTrackerOptions.MinimumSamplingPeriod,
+        ResourceMonitoringOptions.MinimumSamplingWindow,
+        ResourceMonitoringOptions.MinimumSamplingPeriod,
         -1,
         true)]
     [InlineData(
-        ResourceUtilizationTrackerOptions.MinimumSamplingWindow,
-        ResourceUtilizationTrackerOptions.MinimumSamplingPeriod,
-        ResourceUtilizationTrackerOptions.MaximumSamplingWindow + 1,
+        ResourceMonitoringOptions.MinimumSamplingWindow,
+        ResourceMonitoringOptions.MinimumSamplingPeriod,
+        ResourceMonitoringOptions.MaximumSamplingWindow + 1,
         true)]
     public void Validator_With_Multiple_Options_Scenarios(int samplingWindow, int samplingPeriod, int calculationPeriod, bool isError)
     {
-        var options = new ResourceUtilizationTrackerOptions
+        var options = new ResourceMonitoringOptions
         {
             CollectionWindow = TimeSpan.FromMilliseconds(samplingWindow),
             SamplingInterval = TimeSpan.FromMilliseconds(samplingPeriod),

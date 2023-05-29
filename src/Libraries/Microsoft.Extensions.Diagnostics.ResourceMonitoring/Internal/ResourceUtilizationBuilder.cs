@@ -7,7 +7,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 
-internal sealed class ResourceUtilizationBuilder : IResourceUtilizationTrackerBuilder
+internal sealed class ResourceUtilizationBuilder : IResourceMonitorBuilder
 {
     public IServiceCollection Services { get; }
 
@@ -15,12 +15,12 @@ internal sealed class ResourceUtilizationBuilder : IResourceUtilizationTrackerBu
     {
         services.TryAddSingleton<ResourceUtilizationTrackerService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ResourceUtilizationTrackerService>(static sp => sp.GetRequiredService<ResourceUtilizationTrackerService>()));
-        services.TryAddSingleton<IResourceUtilizationTracker>(static sp => sp.GetRequiredService<ResourceUtilizationTrackerService>());
+        services.TryAddSingleton<IResourceMonitor>(static sp => sp.GetRequiredService<ResourceUtilizationTrackerService>());
 
         Services = services;
     }
 
-    public IResourceUtilizationTrackerBuilder AddPublisher<T>()
+    public IResourceMonitorBuilder AddPublisher<T>()
         where T : class, IResourceUtilizationPublisher
     {
         Services.TryAddEnumerable(ServiceDescriptor.Singleton<IResourceUtilizationPublisher, T>());

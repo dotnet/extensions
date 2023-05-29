@@ -27,7 +27,7 @@ public sealed class AcceptanceTestResourceUtilizationLinux
     public void Adding_Linux_Resource_Utilization_Allows_To_Query_Snapshot_Provider()
     {
         using var services = new ServiceCollection()
-            .AddResourceUtilization(x => x.AddLinuxProvider())
+            .AddResourceMonitoring(x => x.AddLinuxProvider())
             .BuildServiceProvider();
 
         var provider = services.GetRequiredService<ISnapshotProvider>();
@@ -42,7 +42,7 @@ public sealed class AcceptanceTestResourceUtilizationLinux
     {
         var e = await Record.ExceptionAsync(async () =>
         {
-            var h = FakeHost.CreateBuilder().ConfigureServices((_, s) => s.AddResourceUtilization(x => x.AddLinuxProvider())
+            var h = FakeHost.CreateBuilder().ConfigureServices((_, s) => s.AddResourceMonitoring(x => x.AddLinuxProvider())
                 .AddSingleton<IUserHz>(new FakeUserHz(100)))
             .Build();
 
@@ -74,7 +74,7 @@ public sealed class AcceptanceTestResourceUtilizationLinux
 
         using var services = new ServiceCollection()
             .AddSingleton<IOperatingSystem>(new FakeOperatingSystem(isLinux: true))
-            .AddResourceUtilization(x => x.AddLinuxProvider(section))
+            .AddResourceMonitoring(x => x.AddLinuxProvider(section))
             .BuildServiceProvider();
 
         var options = services.GetRequiredService<IOptions<LinuxResourceUtilizationProviderOptions>>();
@@ -93,7 +93,7 @@ public sealed class AcceptanceTestResourceUtilizationLinux
 
         using var services = new ServiceCollection()
             .AddSingleton<IOperatingSystem>(new FakeOperatingSystem(isLinux: true))
-            .AddResourceUtilization(x => x.AddLinuxProvider(options =>
+            .AddResourceMonitoring(x => x.AddLinuxProvider(options =>
             {
                 options.CpuConsumptionRefreshInterval = cpuRefresh;
                 options.MemoryConsumptionRefreshInterval = memoryRefresh;
@@ -139,7 +139,7 @@ public sealed class AcceptanceTestResourceUtilizationLinux
                 { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "12"},
                 { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_period_us"), "6"},
             }))
-            .AddResourceUtilization(x => x.AddLinuxProvider(section))
+            .AddResourceMonitoring(x => x.AddLinuxProvider(section))
             .BuildServiceProvider();
 
         var provider = services.GetService<ISnapshotProvider>();
@@ -206,10 +206,10 @@ public sealed class AcceptanceTestResourceUtilizationLinux
             .AddSingleton<IUserHz>(new FakeUserHz(100))
             .AddSingleton<IFileSystem>(fileSystem)
             .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
-            .AddResourceUtilization(x => x.AddLinuxProvider()))
+            .AddResourceMonitoring(x => x.AddLinuxProvider()))
             .Build();
 
-        var tracker = host.Services.GetService<IResourceUtilizationTracker>();
+        var tracker = host.Services.GetService<IResourceMonitor>();
         Assert.NotNull(tracker);
 
         _ = host.RunAsync();

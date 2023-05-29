@@ -7,6 +7,6 @@ using Microsoft.Extensions.Options.Validation;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 [OptionsValidator]
-internal sealed partial class ResourceUtilizationTrackerOptionsValidator : IValidateOptions<ResourceUtilizationTrackerOptions>
+internal sealed partial class ResourceUtilizationTrackerOptionsValidator : IValidateOptions<ResourceMonitoringOptions>
 {
 }
