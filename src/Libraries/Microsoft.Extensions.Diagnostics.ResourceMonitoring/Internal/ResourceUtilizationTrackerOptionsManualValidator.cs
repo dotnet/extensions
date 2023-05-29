@@ -6,9 +6,9 @@ using Validation = Microsoft.Extensions.Options.Validation;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 
-internal sealed class ResourceUtilizationTrackerOptionsManualValidator : IValidateOptions<ResourceUtilizationTrackerOptions>
+internal sealed class ResourceUtilizationTrackerOptionsManualValidator : IValidateOptions<ResourceMonitoringOptions>
 {
-    public ValidateOptionsResult Validate(string? name, ResourceUtilizationTrackerOptions options)
+    public ValidateOptionsResult Validate(string? name, ResourceMonitoringOptions options)
     {
         var builder = new ValidateOptionsResultBuilder();
 

@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
@@ -22,7 +23,17 @@ internal sealed class UserHz : IUserHz
 {
     private const int SystemConfigurationUserHz = 2;
 
-    public long Value { get; } = NativeMethods.sysconf(SystemConfigurationUserHz);
+    public UserHz(IOperatingSystem os)
+    {
+        if (!os.IsLinux)
+        {
+            throw new NotSupportedException($"Method 'AddLinuxProvider' was used on '{Environment.OSVersion.Platform}' while it was expected to run on Linux.");
+        }
+
+        Value = NativeMethods.sysconf(SystemConfigurationUserHz);
+    }
+
+    public long Value { get; }
 
 #if !NET7_0_OR_GREATER
     private static class NativeMethods

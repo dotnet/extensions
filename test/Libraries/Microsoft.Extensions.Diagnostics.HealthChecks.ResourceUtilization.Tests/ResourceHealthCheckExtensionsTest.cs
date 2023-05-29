@@ -17,7 +17,7 @@ public class ResourceHealthCheckExtensionsTest
     [Fact]
     public async Task Extensions_AddResourceUtilizationHealthCheck()
     {
-        var dataTracker = new Mock<IResourceUtilizationTracker>();
+        var dataTracker = new Mock<IResourceMonitor>();
         var samplingWindow = TimeSpan.FromSeconds(1);
 
         var serviceCollection = new ServiceCollection();
@@ -37,7 +37,7 @@ public class ResourceHealthCheckExtensionsTest
     [Fact]
     public async Task Extensions_AddResourceUtilizationHealthCheck_WithAction()
     {
-        var dataTracker = new Mock<IResourceUtilizationTracker>();
+        var dataTracker = new Mock<IResourceMonitor>();
         var samplingWindow = TimeSpan.FromSeconds(1);
 
         var serviceCollection = new ServiceCollection();
@@ -60,7 +60,7 @@ public class ResourceHealthCheckExtensionsTest
     [Fact]
     public async Task Extensions_AddResourceUtilizationHealthCheck_WithActionAndTags()
     {
-        var dataTracker = new Mock<IResourceUtilizationTracker>();
+        var dataTracker = new Mock<IResourceMonitor>();
         var samplingWindow = TimeSpan.FromSeconds(1);
 
         var serviceCollection = new ServiceCollection();
@@ -84,7 +84,7 @@ public class ResourceHealthCheckExtensionsTest
     [Fact]
     public async Task Extensions_AddResourceUtilizationHealthCheck_WithConfigurationSection()
     {
-        var dataTracker = new Mock<IResourceUtilizationTracker>();
+        var dataTracker = new Mock<IResourceMonitor>();
 
         var samplingWindow = TimeSpan.FromSeconds(5);
         var serviceCollection = new ServiceCollection();
@@ -103,7 +103,7 @@ public class ResourceHealthCheckExtensionsTest
     [Fact]
     public async Task Extensions_AddResourceUtilizationHealthCheck_WithConfigurationSectionAndTags()
     {
-        var dataTracker = new Mock<IResourceUtilizationTracker>();
+        var dataTracker = new Mock<IResourceMonitor>();
 
         var samplingWindow = TimeSpan.FromSeconds(5);
         var serviceCollection = new ServiceCollection();

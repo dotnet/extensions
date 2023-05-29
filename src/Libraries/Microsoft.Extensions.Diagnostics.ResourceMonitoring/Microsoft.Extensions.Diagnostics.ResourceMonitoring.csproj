@@ -44,6 +44,9 @@
 
   <ItemGroup>
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="IResourceMonitor.cs" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="IResourceMonitorBuilder.cs" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="ResourceMonitoringOptions.cs" />
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
   </ItemGroup>
 </Project>

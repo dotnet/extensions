@@ -13,17 +13,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
+namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 
 /// <summary>
-/// The implementation of <see cref="IResourceUtilizationTracker"/> that computes average resource utilization over a configured period of time.
+/// The implementation of <see cref="IResourceMonitor"/> that computes average resource utilization over a configured period of time.
 /// </summary>
 /// <remarks>
 /// The class also acts as a hosted singleton, intended to be used to manage the
 /// background process of periodically inspecting and monitoring the utilization
 /// of an enclosing system.
 /// </remarks>
-internal sealed class ResourceUtilizationTrackerService : BackgroundService, IResourceUtilizationTracker
+internal sealed class ResourceUtilizationTrackerService : BackgroundService, IResourceMonitor
 {
     /// <summary>
     /// The data source.
@@ -57,7 +57,7 @@ internal sealed class ResourceUtilizationTrackerService : BackgroundService, IRe
     public ResourceUtilizationTrackerService(
         ISnapshotProvider provider,
         ILogger<ResourceUtilizationTrackerService> logger,
-        IOptions<ResourceUtilizationTrackerOptions> options,
+        IOptions<ResourceMonitoringOptions> options,
         IEnumerable<IResourceUtilizationPublisher> publishers)
         : this(provider, logger, options, publishers, TimeProvider.System)
     {
@@ -66,7 +66,7 @@ internal sealed class ResourceUtilizationTrackerService : BackgroundService, IRe
     internal ResourceUtilizationTrackerService(
         ISnapshotProvider provider,
         ILogger<ResourceUtilizationTrackerService> logger,
-        IOptions<ResourceUtilizationTrackerOptions> options,
+        IOptions<ResourceMonitoringOptions> options,
         IEnumerable<IResourceUtilizationPublisher> publishers,
         TimeProvider timeProvider)
     {
@@ -103,9 +103,14 @@ internal sealed class ResourceUtilizationTrackerService : BackgroundService, IRe
         _ = Throw.IfGreaterThan(window.Ticks, _collectionWindow.Ticks);
 
         var samplesToRead = (int)(window.Ticks / _samplingInterval.Ticks) + 1;
-        var (firstElement, lastElement) = _snapshotsStore.GetFirstAndLastFromWindow(samplesToRead);
+        (ResourceUtilizationSnapshot first, ResourceUtilizationSnapshot last) t;
 
-        return Calculator.CalculateUtilization(firstElement, lastElement, _provider.Resources);
+        lock (_snapshotsStore)
+        {
+            t = _snapshotsStore.GetFirstAndLastFromWindow(samplesToRead);
+        }
+
+        return Calculator.CalculateUtilization(t.first, t.last, _provider.Resources);
     }
 
     /// <inheritdoc/>

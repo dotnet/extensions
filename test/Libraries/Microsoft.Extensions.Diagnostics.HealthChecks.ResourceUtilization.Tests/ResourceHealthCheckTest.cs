@@ -97,7 +97,7 @@ public class ResourceHealthCheckTest
 #pragma warning restore xUnit1026 // Theory methods should use all of their parameters
     {
         var systemResources = new SystemResources(1.0, 1.0, totalMemory, totalMemory);
-        var dataTracker = new Mock<IResourceUtilizationTracker>();
+        var dataTracker = new Mock<IResourceMonitor>();
         var samplingWindow = TimeSpan.FromSeconds(1);
         dataTracker
             .Setup(tracker => tracker.GetUtilization(samplingWindow))
@@ -127,7 +127,7 @@ public class ResourceHealthCheckTest
 #pragma warning restore xUnit1026 // Theory methods should use all of their parameters
     {
         var systemResources = new SystemResources(1.0, 1.0, totalMemory, totalMemory);
-        var dataTracker = new Mock<IResourceUtilizationTracker>();
+        var dataTracker = new Mock<IResourceMonitor>();
         var samplingWindow = TimeSpan.FromSeconds(1);
         dataTracker
             .Setup(tracker => tracker.GetUtilization(samplingWindow))

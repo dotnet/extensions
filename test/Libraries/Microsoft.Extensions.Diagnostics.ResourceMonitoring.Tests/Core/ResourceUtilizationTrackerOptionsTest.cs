@@ -11,7 +11,7 @@ public sealed class ResourceUtilizationTrackerOptionsTest
     [Fact]
     public void Basic()
     {
-        var options = new ResourceUtilizationTrackerOptions
+        var options = new ResourceMonitoringOptions
         {
             CollectionWindow = TimeSpan.FromMilliseconds(100),
             SamplingInterval = TimeSpan.FromMilliseconds(10),

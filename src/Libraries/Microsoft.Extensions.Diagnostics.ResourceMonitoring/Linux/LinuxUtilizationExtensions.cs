@@ -13,7 +13,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 /// <summary>
-/// Extensions for adding Linux Resource Utilization providers.
+/// Extensions for adding the Linux resource utilization provider.
 /// </summary>
 public static class LinuxUtilizationExtensions
 {
@@ -23,7 +23,7 @@ public static class LinuxUtilizationExtensions
     /// <param name="builder">The tracker builder instance used to add the provider.</param>
     /// <returns>Returns the input tracker builder for call chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
-    public static IResourceUtilizationTrackerBuilder AddLinuxProvider(this IResourceUtilizationTrackerBuilder builder)
+    public static IResourceMonitorBuilder AddLinuxProvider(this IResourceMonitorBuilder builder)
     {
         _ = Throw.IfNull(builder);
 
@@ -50,7 +50,7 @@ public static class LinuxUtilizationExtensions
     /// <remarks>
     /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>.
     /// </remarks>
-    public static IResourceUtilizationTrackerBuilder AddLinuxProvider(this IResourceUtilizationTrackerBuilder builder, IConfigurationSection section)
+    public static IResourceMonitorBuilder AddLinuxProvider(this IResourceMonitorBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
@@ -67,7 +67,7 @@ public static class LinuxUtilizationExtensions
     /// <param name="configure">The delegate for configuring of <see cref="LinuxResourceUtilizationProviderOptions"/>.</param>
     /// <returns>Returns the builder.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="configure"/> is <see langword="null" />.</exception>
-    public static IResourceUtilizationTrackerBuilder AddLinuxProvider(this IResourceUtilizationTrackerBuilder builder, Action<LinuxResourceUtilizationProviderOptions> configure)
+    public static IResourceMonitorBuilder AddLinuxProvider(this IResourceMonitorBuilder builder, Action<LinuxResourceUtilizationProviderOptions> configure)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);

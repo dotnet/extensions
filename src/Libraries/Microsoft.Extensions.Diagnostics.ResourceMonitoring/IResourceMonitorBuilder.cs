@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// <summary>
 /// Helps building resource monitoring infra.
 /// </summary>
-public interface IResourceUtilizationTrackerBuilder
+public interface IResourceMonitorBuilder
 {
     /// <summary>
     /// Gets the service collection being manipulated by the builder.
@@ -19,7 +19,7 @@ public interface IResourceUtilizationTrackerBuilder
     /// Adds implementation of the utilization data publisher.
     /// </summary>
     /// <typeparam name="T">An implementation of <see cref="IResourceUtilizationPublisher"/> that is used by the tracker to publish <see cref="Utilization"/> to 3rd parties.</typeparam>
-    /// <returns>Instance of <see cref="IResourceUtilizationTrackerBuilder"/> for further configurations.</returns>
-    IResourceUtilizationTrackerBuilder AddPublisher<T>()
+    /// <returns>Instance of <see cref="IResourceMonitorBuilder"/> for further configurations.</returns>
+    IResourceMonitorBuilder AddPublisher<T>()
         where T : class, IResourceUtilizationPublisher;
 }

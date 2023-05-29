@@ -21,7 +21,7 @@ public class ResourceUtilizationHealthCheckOptions
     /// </summary>
     /// <remarks>
     /// The thresholds are periodically compared against the utilization samples provided by
-    /// the registered <see cref="IResourceUtilizationTracker"/>.
+    /// the registered <see cref="IResourceMonitor"/>.
     /// </remarks>
     [ValidateObjectMembers]
     public ResourceUsageThresholds CpuThresholds { get; set; } = new ResourceUsageThresholds();
@@ -31,7 +31,7 @@ public class ResourceUtilizationHealthCheckOptions
     /// </summary>
     /// <remarks>
     /// The thresholds are periodically compared against the utilization samples provided by
-    /// the registered <see cref="IResourceUtilizationTracker"/>.
+    /// the registered <see cref="IResourceMonitor"/>.
     /// </remarks>
     [ValidateObjectMembers]
     public ResourceUsageThresholds MemoryThresholds { get; set; } = new ResourceUsageThresholds();

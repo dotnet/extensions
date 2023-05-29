@@ -15,7 +15,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 /// <summary>
-/// Lets you track memory and CPU usage of applications.
+/// Extensions for adding the Windows resource utilization provider.
 /// </summary>
 public static class WindowsUtilizationExtensions
 {
@@ -26,7 +26,7 @@ public static class WindowsUtilizationExtensions
     /// <returns>Returns the input tracker builder for call chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     [ExcludeFromCodeCoverage]
-    public static IResourceUtilizationTrackerBuilder AddWindowsProvider(this IResourceUtilizationTrackerBuilder builder)
+    public static IResourceMonitorBuilder AddWindowsProvider(this IResourceMonitorBuilder builder)
     {
         _ = Throw.IfNull(builder);
 
@@ -48,7 +48,7 @@ public static class WindowsUtilizationExtensions
     /// <param name="builder">The tracker builder instance used to add the publisher.</param>
     /// <returns>Returns the input tracker builder for call chaining.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
-    public static IResourceUtilizationTrackerBuilder AddWindowsPerfCounterPublisher(this IResourceUtilizationTrackerBuilder builder)
+    public static IResourceMonitorBuilder AddWindowsPerfCounterPublisher(this IResourceMonitorBuilder builder)
     {
         _ = Throw.IfNull(builder);
         _ = builder
@@ -68,7 +68,7 @@ public static class WindowsUtilizationExtensions
     /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>.
     /// </remarks>
     [Experimental]
-    public static IResourceUtilizationTrackerBuilder AddWindowsCounters(this IResourceUtilizationTrackerBuilder builder)
+    public static IResourceMonitorBuilder AddWindowsCounters(this IResourceMonitorBuilder builder)
     {
         _ = Throw.IfNull(builder);
 
@@ -98,7 +98,7 @@ public static class WindowsUtilizationExtensions
     /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>.
     /// </remarks>
     [Experimental]
-    public static IResourceUtilizationTrackerBuilder AddWindowsCounters(this IResourceUtilizationTrackerBuilder builder, IConfigurationSection section)
+    public static IResourceMonitorBuilder AddWindowsCounters(this IResourceMonitorBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
@@ -130,7 +130,7 @@ public static class WindowsUtilizationExtensions
     /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>.
     /// </remarks>
     [Experimental]
-    public static IResourceUtilizationTrackerBuilder AddWindowsCounters(this IResourceUtilizationTrackerBuilder builder, Action<WindowsCountersOptions> configure)
+    public static IResourceMonitorBuilder AddWindowsCounters(this IResourceMonitorBuilder builder, Action<WindowsCountersOptions> configure)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);

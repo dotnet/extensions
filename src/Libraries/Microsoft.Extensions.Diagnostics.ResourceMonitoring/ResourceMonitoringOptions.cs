@@ -8,9 +8,9 @@ using Microsoft.Shared.Data.Validation;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 /// <summary>
-/// Options for <see cref="IResourceUtilizationTracker"/>.
+/// Options for <see cref="IResourceMonitor"/>.
 /// </summary>
-public class ResourceUtilizationTrackerOptions
+public class ResourceMonitoringOptions
 {
     /// <remarks>
     /// Internal for testing.
@@ -23,7 +23,7 @@ public class ResourceUtilizationTrackerOptions
     internal static readonly TimeSpan DefaultSamplingInterval = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// Gets or sets the maximum time window of which utilization can be requested.
+    /// Gets or sets the maximum time window for which utilization can be requested.
     /// </summary>
     /// <remarks>
     /// Default set to 5 seconds.
@@ -32,7 +32,7 @@ public class ResourceUtilizationTrackerOptions
     public TimeSpan CollectionWindow { get; set; } = DefaultCollectionWindow;
 
     /// <summary>
-    /// Gets or sets the interval at which a new sample is captured.
+    /// Gets or sets the interval at which a new utilization sample is captured.
     /// </summary>
     /// <remarks>
     /// Default set to 1 second.

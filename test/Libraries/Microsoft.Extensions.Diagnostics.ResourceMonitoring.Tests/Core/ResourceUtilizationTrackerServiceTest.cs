@@ -48,7 +48,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         using var tracker = new ResourceUtilizationTrackerService(
             mockProvider.Object,
             mockLogger.Object,
-            Create(new ResourceUtilizationTrackerOptions()),
+            Create(new ResourceMonitoringOptions()),
             publishersList,
             _clock);
         var provider = GetDataTrackerField<ISnapshotProvider>(tracker, "_provider");
@@ -70,7 +70,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         var mockPublishers = new Mock<IEnumerable<IResourceUtilizationPublisher>>(MockBehavior.Loose);
 
         Assert.Throws<ArgumentException>(() =>
-            new ResourceUtilizationTrackerService(mockProvider.Object, mockLogger.Object, Create((ResourceUtilizationTrackerOptions)null!), mockPublishers.Object, _clock));
+            new ResourceUtilizationTrackerService(mockProvider.Object, mockLogger.Object, Create((ResourceMonitoringOptions)null!), mockPublishers.Object, _clock));
     }
 
     /// <summary>
@@ -84,12 +84,12 @@ public sealed class ResourceUtilizationTrackerServiceTest
         var mockLogger = new Mock<ILogger<ResourceUtilizationTrackerService>>(MockBehavior.Loose);
 
         Assert.Throws<ArgumentNullException>(() =>
-            new ResourceUtilizationTrackerService(mockProvider.Object, mockLogger.Object, Create(new ResourceUtilizationTrackerOptions()), null!, TimeProvider.System));
+            new ResourceUtilizationTrackerService(mockProvider.Object, mockLogger.Object, Create(new ResourceMonitoringOptions()), null!, TimeProvider.System));
     }
 
     /// <summary>
-    /// Construct the object configured with maximum allowed values of <see cref="ResourceUtilizationTrackerOptions.AveragingWindow"/> and
-    /// <see cref="ResourceUtilizationTrackerOptions.NumberOfSamples"/>.
+    /// Construct the object configured with maximum allowed values of <see cref="ResourceMonitoringOptions.AveragingWindow"/> and
+    /// <see cref="ResourceMonitoringOptions.NumberOfSamples"/>.
     /// </summary>
     [Fact]
     public void BasicConstructor_ConfiguredWithMaxValuesOfSamplingWindowAndSamplingPeriod_DoesNotThrow()
@@ -107,7 +107,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
             using var tracker = new ResourceUtilizationTrackerService(
                 mockProvider.Object,
                 mockLogger.Object,
-                Create(new ResourceUtilizationTrackerOptions
+                Create(new ResourceMonitoringOptions
                 {
                     CollectionWindow = TimeSpan.FromMilliseconds(int.MaxValue),
                     SamplingInterval = TimeSpan.FromMilliseconds(int.MaxValue)
@@ -137,7 +137,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         using var tracker = new ResourceUtilizationTrackerService(
             mockProvider.Object,
             mockLogger.Object,
-            Create(new ResourceUtilizationTrackerOptions()),
+            Create(new ResourceMonitoringOptions()),
             publishersList,
             _clock);
         Assert.NotNull(tracker);
@@ -165,7 +165,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         var mockProvider = new Mock<ISnapshotProvider>(MockBehavior.Loose);
         var mockLogger = new Mock<ILogger<ResourceUtilizationTrackerService>>(MockBehavior.Loose);
         using var tracker = new ResourceUtilizationTrackerService(mockProvider.Object, mockLogger.Object,
-            Create(new ResourceUtilizationTrackerOptions
+            Create(new ResourceMonitoringOptions
             {
                 CollectionWindow = TimeSpan.FromSeconds(1),
                 CalculationPeriod = TimeSpan.FromSeconds(1)
@@ -197,7 +197,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
 
             // Here we set the number of options to 1 so the internal timer
             // period will equal the AverageWindow.
-            Create(new ResourceUtilizationTrackerOptions
+            Create(new ResourceMonitoringOptions
             {
                 CollectionWindow = TimeSpan.FromMilliseconds(TimerPeriod),
                 SamplingInterval = TimeSpan.FromMilliseconds(TimerPeriod),
@@ -238,7 +238,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         using var tracker = new ResourceUtilizationTrackerService(
             provider,
             logger,
-            Create(new ResourceUtilizationTrackerOptions
+            Create(new ResourceMonitoringOptions
             {
                 CollectionWindow = TimeSpan.FromMilliseconds(100),
                 CalculationPeriod = TimeSpan.FromMilliseconds(100),
@@ -271,7 +271,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         using var tracker = new ResourceUtilizationTrackerService(
             new FakeProvider(),
             logger,
-            Create(new ResourceUtilizationTrackerOptions
+            Create(new ResourceMonitoringOptions
             {
                 CollectionWindow = TimeSpan.FromMilliseconds(100),
                 CalculationPeriod = TimeSpan.FromMilliseconds(100)
@@ -312,7 +312,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
 
             // Here we set the number of options to 1 so the internal timer
             // period will equal the AverageWindow.
-            Create(new ResourceUtilizationTrackerOptions
+            Create(new ResourceMonitoringOptions
             {
                 CollectionWindow = TimeSpan.FromMilliseconds(TimerPeriod),
                 CalculationPeriod = TimeSpan.FromMilliseconds(TimerPeriod),
@@ -403,7 +403,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         // to initialize the tracker's internal buffer with zero snapshots.
         provider.SetNextSnapshot(zerosSnapshot);
 
-        var options = new ResourceUtilizationTrackerOptions
+        var options = new ResourceMonitoringOptions
         {
             CollectionWindow = TimeSpan.FromMilliseconds(TimerPeriod * 2),
             CalculationPeriod = TimeSpan.FromMilliseconds(TimerPeriod * 2),
@@ -515,7 +515,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         // to initialize the tracker's internal buffer with zero snapshots.
         provider.SetNextSnapshot(properInitSnapshot);
 
-        var options = new ResourceUtilizationTrackerOptions
+        var options = new ResourceMonitoringOptions
         {
             CollectionWindow = TimeSpan.FromMilliseconds(TimerPeriod * 2),
             CalculationPeriod = TimeSpan.FromMilliseconds(TimerPeriod * 2),
@@ -568,7 +568,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         using var tracker = new ResourceUtilizationTrackerService(
             new FakeProvider(),
             new NullLogger<ResourceUtilizationTrackerService>(),
-            Create(new ResourceUtilizationTrackerOptions()),
+            Create(new ResourceMonitoringOptions()),
             new List<IResourceUtilizationPublisher>
             {
                 new EmptyPublisher()
@@ -590,7 +590,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         using var tracker = new ResourceUtilizationTrackerService(
             new FakeProvider(),
             new NullLogger<ResourceUtilizationTrackerService>(),
-            Create(new ResourceUtilizationTrackerOptions()),
+            Create(new ResourceMonitoringOptions()),
             new List<IResourceUtilizationPublisher>
             {
                 new EmptyPublisher()
@@ -625,7 +625,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         using var tracker = new ResourceUtilizationTrackerService(
             providerMock.Object,
             new NullLogger<ResourceUtilizationTrackerService>(),
-            Create(new ResourceUtilizationTrackerOptions
+            Create(new ResourceMonitoringOptions
             {
                 CollectionWindow = TimeSpan.FromSeconds(1),
                 SamplingInterval = TimeSpan.FromMilliseconds(100),
@@ -650,7 +650,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         using var tracker = new ResourceUtilizationTrackerService(
             providerMock.Object,
             new NullLogger<ResourceUtilizationTrackerService>(),
-            Create(new ResourceUtilizationTrackerOptions
+            Create(new ResourceMonitoringOptions
             {
                 CollectionWindow = TimeSpan.FromSeconds(6),
                 CalculationPeriod = TimeSpan.FromSeconds(5)
@@ -674,7 +674,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         using var tracker = new ResourceUtilizationTrackerService(
             providerMock.Object,
             new NullLogger<ResourceUtilizationTrackerService>(),
-            Create(new ResourceUtilizationTrackerOptions
+            Create(new ResourceMonitoringOptions
             {
                 CollectionWindow = TimeSpan.FromSeconds(5)
             }),
@@ -694,7 +694,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
     public async Task Disposing_Service_Twice_Does_Not_Throw()
     {
         using var s = new ResourceUtilizationTrackerService(new FakeProvider(), NullLogger<ResourceUtilizationTrackerService>.Instance,
-            Microsoft.Extensions.Options.Options.Create(new ResourceUtilizationTrackerOptions()), Array.Empty<IResourceUtilizationPublisher>(), TimeProvider.System);
+            Microsoft.Extensions.Options.Options.Create(new ResourceMonitoringOptions()), Array.Empty<IResourceUtilizationPublisher>(), TimeProvider.System);
 
         var r = await Record.ExceptionAsync(async () =>
         {
