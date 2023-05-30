@@ -80,6 +80,30 @@ public class OptionsValidationTests
     }
 
     [Fact]
+    public void ChaosPolicyOptionsValidator_CustomResultPolicyOptions_InjectionRateOutOfRange_ShouldReturnFailure()
+    {
+        var options = new FaultInjectionOptions();
+        _configurationWithPolicyOptions
+            .GetSection("ChaosPolicyOptionsGroupsNegativeTest6")
+            .Bind(options);
+
+        var exception = Assert.Throws<OptionsValidationException>(() => Validate(options));
+        Assert.Equal("The field FaultInjectionRate must be between 0 and 1.", string.Join("", exception!.Failures));
+    }
+
+    [Fact]
+    public void ChaosPolicyOptionsValidator_CustomResultPolicyOptions_CustomResultKeyNotProvided_ShouldReturnFailure()
+    {
+        var options = new FaultInjectionOptions();
+        _configurationWithPolicyOptions
+            .GetSection("ChaosPolicyOptionsGroupsNegativeTest7")
+            .Bind(options);
+
+        var exception = Assert.Throws<OptionsValidationException>(() => Validate(options));
+        Assert.Equal("The CustomResultKey field is required.", string.Join("", exception!.Failures));
+    }
+
+    [Fact]
     public void ChaosPolicyOptionsValidator_NoOptionsGroupField_ShouldBeAllowed()
     {
         var options = new FaultInjectionOptions();

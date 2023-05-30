@@ -113,4 +113,27 @@ public class FaultInjectionOptionsBuilder
 
         return this;
     }
+
+    /// <summary>
+    /// Add a custom result object instance to <see cref="FaultInjectionCustomResultOptions"/>.
+    /// </summary>
+    /// <param name="key">The identifier for the custom result object instance to be added.</param>
+    /// <param name="customResult">The custom result object instance to be added.</param>
+    /// <returns>The builder object itself so that additional calls can be chained.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// The exception cannot be null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The key must not be an empty string or null.
+    /// </exception>
+    [Experimental]
+    public FaultInjectionOptionsBuilder AddCustomResult(string key, object customResult)
+    {
+        _ = Throw.IfNull(customResult);
+        _ = Throw.IfNullOrWhitespace(key);
+
+        _ = _services.Configure<FaultInjectionCustomResultOptions>(key, o => o.CustomResult = customResult);
+
+        return this;
+    }
 }

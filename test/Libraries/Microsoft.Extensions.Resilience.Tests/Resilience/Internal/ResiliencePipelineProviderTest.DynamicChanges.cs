@@ -75,6 +75,35 @@ public sealed partial class ResiliencePipelineProviderTest : IDisposable
         Assert.Equal(_updateSuccessMessage, pipelineLogger.LatestRecord.Message);
     }
 
+    [Fact]
+    public async Task GetPipeline_ConfigurationUpdatedForTargetPipelineTwice_EnsureNewPolicyEachTime()
+    {
+        var config = new ReloadableConfiguration();
+        var pipelineLogger = new FakeLogger<AsyncDynamicPipeline<string>>();
+        var policyLogger = new FakeLogger<TimeoutPolicyOptions>();
+        using var provider = GetPipelineProvider(pipelineLogger, policyLogger, config);
+
+        var pipeline = GetCurrentValueOfPipeline(PipelineName, provider);
+        Assert.Equal(0, pipelineLogger.Collector.Count);
+
+        await config.UpdateTimeoutAndReloadAsync("00:15:00");
+        var pipelineAfterChange = GetCurrentValueOfPipeline(PipelineName, provider);
+        Assert.NotSame(pipeline, pipelineAfterChange);
+        Assert.Equal(1, policyLogger.Collector.Count);
+        Assert.Equal(1, pipelineLogger.Collector.Count);
+        Assert.Equal(_updateSuccessMessage, pipelineLogger.LatestRecord.Message);
+
+        var pipelineAfterNoChange = GetCurrentValueOfPipeline(PipelineName, provider);
+        Assert.Same(pipelineAfterChange, pipelineAfterNoChange);
+
+        await config.UpdateTimeoutAndReloadAsync("00:16:00");
+        var pipelineAfterSecondChange = GetCurrentValueOfPipeline(PipelineName, provider);
+        Assert.NotSame(pipelineAfterChange, pipelineAfterSecondChange);
+        Assert.Equal(2, policyLogger.Collector.Count);
+        Assert.Equal(2, pipelineLogger.Collector.Count);
+        Assert.Equal(_updateSuccessMessage, pipelineLogger.LatestRecord.Message);
+    }
+
     [Theory]
     [InlineData(OtherConfigurationKey)]
     [InlineData(NoNameConfigurationKey)]
