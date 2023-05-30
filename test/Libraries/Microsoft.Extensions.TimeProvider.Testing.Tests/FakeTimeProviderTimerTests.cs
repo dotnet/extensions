@@ -24,6 +24,7 @@ public class FakeTimeProviderTimerTests
         using var timer = timeProvider.CreateTimer(_ => { counter++; }, null, TimeSpan.FromMilliseconds(10), TimeSpan.Zero);
 
         var value1 = counter;
+
         timeProvider.Advance(TimeSpan.FromMilliseconds(20));
 
         var value2 = counter;
@@ -45,6 +46,7 @@ public class FakeTimeProviderTimerTests
         using var timer = timeProvider.CreateTimer(_ => { counter++; }, null, TimeSpan.FromMilliseconds(10), Timeout.InfiniteTimeSpan);
 
         var value1 = counter;
+
         timeProvider.Advance(TimeSpan.FromMilliseconds(20));
 
         var value2 = counter;
