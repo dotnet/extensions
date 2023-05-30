@@ -42,6 +42,11 @@ internal sealed class FaultInjectionOptionsValidator : IValidateOptions<FaultInj
             {
                 throw new OptionsValidationException(name!, typeof(FaultInjectionOptions), GenerateFailureMessages(exceptionOptionsResults));
             }
+
+            if (optionsGroup.CustomResultPolicyOptions != null && !ValidatePolicyOption(optionsGroup.CustomResultPolicyOptions, out var customResultOptionsResults))
+            {
+                throw new OptionsValidationException(name!, typeof(FaultInjectionOptions), GenerateFailureMessages(customResultOptionsResults));
+            }
         }
 
         return ValidateOptionsResult.Success;

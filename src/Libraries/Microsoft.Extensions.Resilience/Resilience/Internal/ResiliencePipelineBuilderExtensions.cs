@@ -82,15 +82,17 @@ internal static class ResiliencePipelineBuilderExtensions
         var optionsBuilder = services.AddValidatedOptions<TOptions, TOptionsValidator>(optionsName);
 
         configureOptions(optionsBuilder);
-        return builder.AddDynamicPolicy<TResult, TOptions>(optionsName, (policyBuilder, serviceProvider) =>
-        {
-            var optionsListenersHandler = serviceProvider.GetRequiredService<IOnChangeListenersHandler>();
-            var optionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<TOptions>>();
-            var options = optionsMonitor.Get(optionsName);
+        return builder
+            .ConfigureDynamicPolicy<TResult, TOptions>(optionsName)
+            .AddPolicy((policyBuilder, serviceProvider) =>
+            {
+                var optionsListenersHandler = serviceProvider.GetRequiredService<IOnChangeListenersHandler>();
+                var optionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<TOptions>>();
+                var options = optionsMonitor.Get(optionsName);
 
-            _ = optionsListenersHandler.TryCaptureOnChange<TOptions>(optionsName);
-            configurePipeline(policyBuilder, options, serviceProvider);
-        });
+                _ = optionsListenersHandler.TryCaptureOnChange<TOptions>(optionsName);
+                configurePipeline(policyBuilder, options, serviceProvider);
+            });
     }
 
     /// <summary>
@@ -118,24 +120,20 @@ internal static class ResiliencePipelineBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a policy.
+    /// Ensures the policy with options named <paramref name="policyOptionsName"/> will support dynamic configurations,
+    /// triggering pipeline reloads on changes.
     /// </summary>
     /// <typeparam name="TResult">The type of the result returned by the action executed by the policies.</typeparam>
     /// <typeparam name="TOptions">The type of policy options.</typeparam>
     /// <param name="builder">The policy pipeline builder.</param>
     /// <param name="policyOptionsName">The name of the options of the individual policy added.</param>
-    /// <param name="configure">The action that configures the pipeline builder instance.</param>
     /// <returns>Current instance.</returns>
-    private static IResiliencePipelineBuilder<TResult> AddDynamicPolicy<TResult,
+    private static IResiliencePipelineBuilder<TResult> ConfigureDynamicPolicy<TResult,
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TOptions>(
         this IResiliencePipelineBuilder<TResult> builder,
-        string policyOptionsName,
-        Action<IPolicyPipelineBuilder<TResult>, IServiceProvider> configure)
+        string policyOptionsName)
         where TOptions : class, new()
     {
-        _ = Throw.IfNull(builder);
-        _ = Throw.IfNull(configure);
-
         _ = builder.Services
             .AddOptions<ResiliencePipelineFactoryTokenSourceOptions<TResult>>(builder.PipelineName)
             .Configure<IServiceProvider>((options, sp) =>
@@ -149,6 +147,6 @@ internal static class ResiliencePipelineBuilderExtensions
                 }
             });
 
-        return builder.AddPolicy(configure);
+        return builder;
     }
 }

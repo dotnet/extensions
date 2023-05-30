@@ -17,6 +17,8 @@ public class ChaosPolicyFactoryTest
     private readonly IChaosPolicyFactory _testPolicyFactory;
     private readonly string _testExceptionKey = "TestExceptionKey";
     private readonly InjectedFaultException _testException;
+    private readonly string _testCustomResultKey = "TestCustomResult";
+    private readonly string _testCustomResultInstance;
 
     public ChaosPolicyFactoryTest()
     {
@@ -37,36 +39,51 @@ public class ChaosPolicyFactoryTest
                 Enabled = true,
                 FaultInjectionRate = 0.5,
                 ExceptionKey = _testExceptionKey
+            },
+            CustomResultPolicyOptions = new CustomResultPolicyOptions
+            {
+                Enabled = true,
+                FaultInjectionRate = 0.6,
+                CustomResultKey = _testCustomResultKey
             }
         };
         _testException = new InjectedFaultException();
+        _testCustomResultInstance = "Test custom result";
 
         var services = new ServiceCollection();
         services
             .AddLogging()
             .RegisterMetering()
             .AddFaultInjection(builder => builder.Configure(
-            options =>
-            {
-                options.ChaosPolicyOptionsGroups.Add(_testOptionsGroupName, _testChaosPolicyOptionsGroup);
-            })
-        .AddException(_testExceptionKey, _testException));
+                options =>
+                {
+                    options.ChaosPolicyOptionsGroups.Add(_testOptionsGroupName, _testChaosPolicyOptionsGroup);
+                })
+                .AddException(_testExceptionKey, _testException)
+                .AddCustomResult(_testCustomResultKey, _testCustomResultInstance));
 
         using var provider = services.BuildServiceProvider();
         _testPolicyFactory = provider.GetRequiredService<IChaosPolicyFactory>();
     }
 
     [Fact]
-    public void CreateInjectLatencyPolicy_WithDelegateFunctions_ShouldReturnInstance()
+    public void CreateInjectLatencyPolicy_ShouldReturnInstance()
     {
         var policy = _testPolicyFactory.CreateLatencyPolicy<string>();
         Assert.NotNull(policy);
     }
 
     [Fact]
-    public void CreateInjectExceptionPolicy_WithDelegateFunctions_ShouldReturnInstance()
+    public void CreateInjectExceptionPolicy_ShouldReturnInstance()
     {
         var policy = _testPolicyFactory.CreateExceptionPolicy();
+        Assert.NotNull(policy);
+    }
+
+    [Fact]
+    public void CreateCustomResultPolicy_ShouldReturnInstance()
+    {
+        var policy = _testPolicyFactory.CreateCustomResultPolicy<string>();
         Assert.NotNull(policy);
     }
 
@@ -160,6 +177,41 @@ public class ChaosPolicyFactoryTest
     }
 
     [Fact]
+    public async Task GetEnabledAsync_ForCustomResultPolicyOptions_ShouldReturnEnabled()
+    {
+        var context = new Context();
+        context.WithFaultInjection(_testOptionsGroupName);
+
+        var result = await ((ChaosPolicyFactory)_testPolicyFactory).GetEnabledAsync<CustomResultPolicyOptions>(context, CancellationToken.None);
+        Assert.Equal(_testChaosPolicyOptionsGroup!.CustomResultPolicyOptions!.Enabled, result);
+    }
+
+    [Fact]
+    public async Task GetEnabledAsync_ForCustomResultPolicyOptions_WhenNoCustomResultPolicyFoundInOptionsGroup_ShouldReturnFalse()
+    {
+        var testGroupName = "TestGroup";
+        var tesOptionsGroupNoPolicyOptions = new ChaosPolicyOptionsGroup();
+        var services = new ServiceCollection();
+        services
+            .AddLogging()
+            .RegisterMetering()
+            .AddFaultInjection(builder => builder.Configure(
+            options =>
+            {
+                options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions);
+            }));
+
+        using var provider = services.BuildServiceProvider();
+        var testPolicyFactory = provider.GetRequiredService<IChaosPolicyFactory>();
+
+        var context = new Context();
+        context.WithFaultInjection(testGroupName);
+
+        var result = await ((ChaosPolicyFactory)testPolicyFactory).GetEnabledAsync<CustomResultPolicyOptions>(context, CancellationToken.None);
+        Assert.False(result);
+    }
+
+    [Fact]
     public async Task GetInjectionRateAsync_WhenNoOptionsGroupNameFound_ShouldReturnZero()
     {
         var context = new Context();
@@ -249,6 +301,41 @@ public class ChaosPolicyFactoryTest
     }
 
     [Fact]
+    public async Task GetInjectionRateAsync_ForCustomResultPolicyOptions_ShouldReturnInjectionRate()
+    {
+        var context = new Context();
+        context.WithFaultInjection(_testOptionsGroupName);
+
+        var result = await ((ChaosPolicyFactory)_testPolicyFactory).GetInjectionRateAsync<CustomResultPolicyOptions>(context, CancellationToken.None);
+        Assert.Equal(_testChaosPolicyOptionsGroup!.CustomResultPolicyOptions!.FaultInjectionRate, result);
+    }
+
+    [Fact]
+    public async Task GetInjectionRateAsync_ForCustomResultPolicyOptions_WhenNoCustomResultPolicyFoundInOptionsGroup_ShouldReturnZero()
+    {
+        var testGroupName = "TestGroup";
+        var tesOptionsGroupNoPolicyOptions = new ChaosPolicyOptionsGroup();
+        var services = new ServiceCollection();
+        services
+            .AddLogging()
+            .RegisterMetering()
+            .AddFaultInjection(builder => builder.Configure(
+            options =>
+            {
+                options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions);
+            }));
+
+        using var provider = services.BuildServiceProvider();
+        var testPolicyFactory = provider.GetRequiredService<IChaosPolicyFactory>();
+
+        var context = new Context();
+        context.WithFaultInjection(testGroupName);
+
+        var result = await ((ChaosPolicyFactory)testPolicyFactory).GetInjectionRateAsync<CustomResultPolicyOptions>(context, CancellationToken.None);
+        Assert.Equal(0.0, result);
+    }
+
+    [Fact]
     public async Task GetLatencyAsync_ShouldReturnLatency()
     {
         var context = new Context();
@@ -266,5 +353,25 @@ public class ChaosPolicyFactoryTest
 
         var result = await ((ChaosPolicyFactory)_testPolicyFactory).GetExceptionAsync(context, CancellationToken.None);
         Assert.Equal(_testException, result);
+    }
+
+    [Fact]
+    public async Task GetCustomResultAsync_IfObjectIsTypeTResult_ShouldReturnInstance()
+    {
+        var context = new Context();
+        context.WithFaultInjection(_testOptionsGroupName);
+
+        var result = await ((ChaosPolicyFactory)_testPolicyFactory).GetCustomResultAsync<string>(context, CancellationToken.None);
+        Assert.Equal(_testCustomResultInstance, result);
+    }
+
+    [Fact]
+    public async Task GetCustomResultAsync_IfObjectIsNotTypeTResult_ShouldReturnDefault()
+    {
+        var context = new Context();
+        context.WithFaultInjection(_testOptionsGroupName);
+
+        var result = await ((ChaosPolicyFactory)_testPolicyFactory).GetCustomResultAsync<double>(context, CancellationToken.None);
+        Assert.Equal(default, result);
     }
 }

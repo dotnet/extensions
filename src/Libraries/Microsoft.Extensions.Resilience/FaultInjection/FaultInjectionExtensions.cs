@@ -85,6 +85,7 @@ public static class FaultInjectionExtensions
 
         services.TryAddSingleton<IFaultInjectionOptionsProvider, FaultInjectionOptionsProvider>();
         services.TryAddSingleton<IExceptionRegistry, ExceptionRegistry>();
+        services.TryAddSingleton<ICustomResultRegistry, CustomResultRegistry>();
         services.TryAddSingleton<IChaosPolicyFactory, ChaosPolicyFactory>();
 
         return services;

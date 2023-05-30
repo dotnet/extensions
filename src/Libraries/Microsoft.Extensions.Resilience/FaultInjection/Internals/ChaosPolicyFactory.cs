@@ -21,6 +21,7 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
 {
     private const string FaultTypeLatency = "Latency";
     private const string FaultTypeException = "Exception";
+    private const string FaultTypeCustomResult = "CustomResult";
 
     private readonly Task<bool> _enabled = Task.FromResult(true);
     private readonly Task<bool> _notEnabled = Task.FromResult(false);
@@ -30,6 +31,7 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
     private readonly FaultInjectionMetricCounter _counter;
     private readonly IFaultInjectionOptionsProvider _optionsProvider;
     private readonly IExceptionRegistry _exceptionRegistry;
+    private readonly ICustomResultRegistry _customResultRegistry;
 
     private readonly Func<Context, CancellationToken, Task<TimeSpan>> _getLatencyAsync;
     private readonly Func<Context, CancellationToken, Task<double>> _getInjectionRateAsync;
@@ -37,6 +39,8 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
     private readonly Func<Context, CancellationToken, Task<Exception>> _getExceptionAsync;
     private readonly Func<Context, CancellationToken, Task<double>> _getInjectionRateAsyncEx;
     private readonly Func<Context, CancellationToken, Task<bool>> _getEnabledAsyncEx;
+    private readonly Func<Context, CancellationToken, Task<bool>> _getEnabledAsyncCustom;
+    private readonly Func<Context, CancellationToken, Task<double>> _getInjectionRateAsyncCustom;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChaosPolicyFactory"/> class.
@@ -47,14 +51,18 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
     /// <param name="exceptionRegistry">
     /// The registry that contains registered exception instances for fault-injection.
     /// </param>
+    /// <param name="customResultRegistry">
+    /// The registry that contains registered custom result object instances for fault-injection.
+    /// </param>
     [ExcludeFromCodeCoverage]
     public ChaosPolicyFactory(ILogger<IChaosPolicyFactory> logger, Meter<IChaosPolicyFactory> meter,
-        IFaultInjectionOptionsProvider optionsProvider, IExceptionRegistry exceptionRegistry)
+        IFaultInjectionOptionsProvider optionsProvider, IExceptionRegistry exceptionRegistry, ICustomResultRegistry customResultRegistry)
     {
         _logger = logger;
         _counter = Metric.CreateFaultInjectionMetricCounter(meter);
         _optionsProvider = optionsProvider;
         _exceptionRegistry = exceptionRegistry;
+        _customResultRegistry = customResultRegistry;
 
         _getLatencyAsync = GetLatencyAsync;
         _getInjectionRateAsync = GetInjectionRateAsync<LatencyPolicyOptions>;
@@ -62,6 +70,8 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
         _getExceptionAsync = GetExceptionAsync;
         _getInjectionRateAsyncEx = GetInjectionRateAsync<ExceptionPolicyOptions>;
         _getEnabledAsyncEx = GetEnabledAsync<ExceptionPolicyOptions>;
+        _getEnabledAsyncCustom = GetEnabledAsync<CustomResultPolicyOptions>;
+        _getInjectionRateAsyncCustom = GetInjectionRateAsync<CustomResultPolicyOptions>;
     }
 
     /// <inheritdoc/>
@@ -77,6 +87,13 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
             with.Fault(_getExceptionAsync)
             .InjectionRate(_getInjectionRateAsyncEx)
             .EnabledWhen(_getEnabledAsyncEx));
+
+    /// <inheritdoc/>
+    public AsyncInjectOutcomePolicy<TResult> CreateCustomResultPolicy<TResult>() =>
+        MonkeyPolicy.InjectResultAsync<TResult>(with =>
+            with.Result(GetCustomResultAsync<TResult>)
+            .InjectionRate(_getInjectionRateAsyncCustom)
+            .EnabledWhen(_getEnabledAsyncCustom));
 
     /// <summary>
     /// Task for checking if fault-injection is enabled from the <see cref="Context"/>'s associated chaos policy options.
@@ -103,6 +120,10 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
         else if (typeof(TOptions) == typeof(ExceptionPolicyOptions))
         {
             options = optionsGroup.ExceptionPolicyOptions;
+        }
+        else if (typeof(TOptions) == typeof(CustomResultPolicyOptions))
+        {
+            options = optionsGroup.CustomResultPolicyOptions;
         }
 
         if (options == null || !options.Enabled)
@@ -138,6 +159,10 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
         else if (typeof(TOptions) == typeof(ExceptionPolicyOptions))
         {
             options = optionsGroup.ExceptionPolicyOptions;
+        }
+        else if (typeof(TOptions) == typeof(CustomResultPolicyOptions))
+        {
+            options = optionsGroup.CustomResultPolicyOptions;
         }
 
         if (options == null)
@@ -192,5 +217,33 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
             FaultTypeException, exception.GetType().FullName!);
 
         return Task.FromResult(exception);
+    }
+
+    /// <summary>
+    /// Fault provider task for <see cref="CreateCustomResultPolicy{TResult}"/>.
+    /// </summary>
+    /// <remarks>
+    /// This task only gets executed when CustomResultPolicyOptions is defined at the options group and is enabled,
+    /// as defined in <see cref="GetEnabledAsync"/>.
+    /// If the result is null, the result will simply be ignored by Simmy's AsyncMonkeyEngine.
+    /// See how faults are injected at <see href="https://github.com/Polly-Contrib/Simmy/blob/master/src/Polly.Contrib.Simmy/AsyncMonkeyEngine.cs"/>.
+    /// </remarks>
+    internal Task<TResult> GetCustomResultAsync<TResult>(Context context, CancellationToken _0)
+    {
+        var groupName = context.GetFaultInjectionGroupName()!;
+        _ = _optionsProvider.TryGetChaosPolicyOptionsGroup(groupName, out var optionsGroup);
+
+        var customResultObj = _customResultRegistry.GetCustomResult(optionsGroup!.CustomResultPolicyOptions!.CustomResultKey);
+
+        FaultInjectionTelemetryHandler.LogAndMeter(
+            _logger, _counter, groupName,
+            FaultTypeCustomResult, optionsGroup!.CustomResultPolicyOptions!.CustomResultKey);
+
+        if (customResultObj is TResult customResult)
+        {
+            return Task.FromResult(customResult);
+        }
+
+        return Task.FromResult(default(TResult)!);
     }
 }
