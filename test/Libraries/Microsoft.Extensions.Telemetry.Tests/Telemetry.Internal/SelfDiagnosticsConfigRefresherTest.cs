@@ -137,7 +137,7 @@ public class SelfDiagnosticsConfigRefresherTest
     public async Task SelfDiagnosticsConfigRefresher_WhenConfigDisappearsAndAppearsBack_CaptureAsConfigured()
     {
         const string LogFileName = "withUnreliableConfig.log";
-        var timeProvider = new FakeTimeProvider(startTime: DateTime.UtcNow);
+        var timeProvider = new FakeTimeProvider(epoch: DateTime.UtcNow);
         var parserMock = new Mock<SelfDiagnosticsConfigParser>();
         var configFileContentInitial = @"{""LogDirectory"": ""."", ""FileSize"": 1024, ""LogLevel"": ""Verbose""}";
         var configFileContentNew = @"{""LogDirectory"": ""."", ""FileSize"": 1025, ""LogLevel"": ""Verbose""}";
@@ -174,7 +174,7 @@ public class SelfDiagnosticsConfigRefresherTest
     public async Task SelfDiagnosticsConfigRefresher_WhenLogLevelUpdated_CaptureAsConfigured()
     {
         const string LogFileName = "withNewLogLevel.log";
-        var timeProvider = new FakeTimeProvider(startTime: DateTime.UtcNow);
+        var timeProvider = new FakeTimeProvider(epoch: DateTime.UtcNow);
         var parserMock = new Mock<SelfDiagnosticsConfigParser>();
         var configFileContentInitial = @"{""LogDirectory"": ""."", ""FileSize"": 1024, ""LogLevel"": ""Error""}";
         var configFileContentNew = @"{""LogDirectory"": ""."", ""FileSize"": 1024, ""LogLevel"": ""Verbose""}";

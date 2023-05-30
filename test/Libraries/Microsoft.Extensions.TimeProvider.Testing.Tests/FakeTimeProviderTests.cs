@@ -20,6 +20,7 @@ public class FakeTimeProviderTests
         var timestamp = timeProvider.GetTimestamp();
         var frequency = timeProvider.TimestampFrequency;
 
+        Assert.Equal(timeProvider.Epoch, now);
         Assert.Equal(2000, now.Year);
         Assert.Equal(1, now.Month);
         Assert.Equal(1, now.Day);
@@ -34,6 +35,7 @@ public class FakeTimeProviderTests
         var frequency2 = timeProvider.TimestampFrequency;
         var now2 = timeProvider.GetUtcNow();
 
+        Assert.Equal(timeProvider.Epoch, now2);
         Assert.Equal(now, now2);
         Assert.Equal(frequency, frequency2);
         Assert.Equal(timestamp, timestamp2);
@@ -49,6 +51,7 @@ public class FakeTimeProviderTests
         var frequency = timeProvider.TimestampFrequency;
         var now = timeProvider.GetUtcNow();
 
+        Assert.Equal(timeProvider.Epoch + TimeSpan.FromMilliseconds(8), now);
         Assert.Equal(2001, now.Year);
         Assert.Equal(2, now.Month);
         Assert.Equal(3, now.Day);
@@ -64,6 +67,7 @@ public class FakeTimeProviderTests
         var frequency2 = timeProvider.TimestampFrequency;
         now = timeProvider.GetUtcNow();
 
+        Assert.Equal(timeProvider.Epoch + TimeSpan.FromMilliseconds(16), now);
         Assert.Equal(2001, now.Year);
         Assert.Equal(2, now.Month);
         Assert.Equal(3, now.Day);
@@ -72,7 +76,7 @@ public class FakeTimeProviderTests
         Assert.Equal(6, now.Second);
         Assert.Equal(16, now.Millisecond);
         Assert.Equal(frequency, frequency2);
-        Assert.True(pnow2 > pnow);
+        Assert.True(pnow2 > pnow);        
     }
 
     [Fact]

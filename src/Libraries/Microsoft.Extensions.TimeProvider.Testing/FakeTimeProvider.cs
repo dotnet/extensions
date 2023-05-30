@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 
@@ -14,12 +15,21 @@ namespace Microsoft.Extensions.Time.Testing;
 /// </summary>
 public class FakeTimeProvider : TimeProvider
 {
-    internal static readonly DateTimeOffset Epoch = new(2000, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
-
     internal readonly List<FakeTimeProviderTimer.Waiter> Waiters = new();
 
-    private DateTimeOffset _now = Epoch;
+    private DateTimeOffset _now;
     private TimeZoneInfo _localTimeZone;
+
+    /// <summary>
+    /// Gets the time which was used as the starting point for the clock in this <see cref="FakeTimeProvider"/>.
+    /// </summary>
+    /// <remarks>
+    /// This can be set by passing in a <see cref="DateTimeOffset"/> to the constructor
+    /// which takes the <c>epoch</c> argument. If the default constructor is used,
+    /// the clocks start time defaults to midnight January 1st 2000.
+    /// </remarks>
+    [Experimental]
+    public DateTimeOffset Epoch { get; } = new DateTimeOffset(2000, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FakeTimeProvider"/> class.
@@ -31,16 +41,19 @@ public class FakeTimeProvider : TimeProvider
     public FakeTimeProvider()
     {
         _localTimeZone = TimeZoneInfo.Utc;
+        _now = Epoch;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FakeTimeProvider"/> class.
     /// </summary>
-    /// <param name="startTime">The initial time reported by the clock.</param>
-    public FakeTimeProvider(DateTimeOffset startTime)
+    /// <param name="epoch">The starting point for the clock used by this <see cref="FakeTimeProvider"/>.</param>
+    [Experimental]
+    public FakeTimeProvider(DateTimeOffset epoch)
         : this()
     {
-        _now = startTime;
+        Epoch = epoch;
+        _now = epoch;
     }
 
     /// <inheritdoc />

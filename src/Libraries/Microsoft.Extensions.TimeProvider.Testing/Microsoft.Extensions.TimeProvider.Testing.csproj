@@ -5,6 +5,7 @@
     <Workstream>Fundamentals</Workstream>
     <Category>Testing</Category>
     <PackageTags>$(PackageTags);Testing</PackageTags>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
   </PropertyGroup>
 
   <PropertyGroup>

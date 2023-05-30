@@ -102,13 +102,13 @@ internal sealed class FakeTimeProviderTimer : ITimer
 
                 if (_dueTimeMs == 0)
                 {
-                    // If dueTime is zero, callback is invoked immediately
+                    // If dueTime is zero, callback is invoked immediately.
 
                     _callback(_state);
                 }
                 else if (_dueTimeMs == Timeout.Infinite)
                 {
-                    // If dueTime is Timeout.Infinite, callback is not invoked; the timer is disabled
+                    // If dueTime is Timeout.Infinite, callback is not invoked; the timer is disabled.
 
                     return;
                 }
