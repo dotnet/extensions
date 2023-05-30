@@ -22,6 +22,48 @@
       ]
     },
     {
+      "Type": "static class Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, params string[] tags);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Collections.Generic.IEnumerable<string> tags);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params string[] tags);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, System.Collections.Generic.IEnumerable<string> tags);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions> configure, params string[] tags);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions> configure, System.Collections.Generic.IEnumerable<string> tags);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions",
       "Stage": "Stable",
       "Methods": [
@@ -41,36 +83,6 @@
         },
         {
           "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions.SamplingWindow { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthChecksExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthChecksExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthChecksExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Collections.Generic.IEnumerable<string> tags);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthChecksExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthChecksExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, System.Collections.Generic.IEnumerable<string> tags);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthChecksExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthChecksExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions> configure, System.Collections.Generic.IEnumerable<string> tags);",
           "Stage": "Stable"
         }
       ]

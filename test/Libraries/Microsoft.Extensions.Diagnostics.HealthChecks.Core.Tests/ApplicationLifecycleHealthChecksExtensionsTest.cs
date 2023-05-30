@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -27,7 +28,17 @@ public class ApplicationLifecycleHealthChecksExtensionsTest
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddSingleton<IHostApplicationLifetime>(new Mock<IHostApplicationLifetime>().Object);
-        serviceCollection.AddHealthChecks().AddApplicationLifecycleHealthCheck(new[] { "test1", "test2" });
+        serviceCollection.AddHealthChecks().AddApplicationLifecycleHealthCheck("test1", "test2");
+
+        AssertAddedHealthCheck<ApplicationLifecycleHealthCheck>(serviceCollection);
+    }
+
+    [Fact]
+    public void AddApplicationLifecycleHealthCheck_WithTagsEnumerable_DependenciesAreRegistered()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IHostApplicationLifetime>(new Mock<IHostApplicationLifetime>().Object);
+        serviceCollection.AddHealthChecks().AddApplicationLifecycleHealthCheck(new List<string> { "test1", "test2" });
 
         AssertAddedHealthCheck<ApplicationLifecycleHealthCheck>(serviceCollection);
     }

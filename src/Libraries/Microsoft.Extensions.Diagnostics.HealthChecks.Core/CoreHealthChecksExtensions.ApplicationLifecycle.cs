@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -20,13 +20,20 @@ public static partial class CoreHealthChecksExtensions
     /// <param name="builder">The builder to add the provider to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException">If <paramref name="builder" /> is <see langword="null" />.</exception>
-    /// <remarks>The application's lifecycle is tracked through <see cref="IHostApplicationLifetime"/>.</remarks>
     public static IHealthChecksBuilder AddApplicationLifecycleHealthCheck(this IHealthChecksBuilder builder)
-    {
-        _ = Throw.IfNull(builder);
+        => Throw.IfNull(builder)
+            .AddCheck<ApplicationLifecycleHealthCheck>("ApplicationLifecycleHealthCheck");
 
-        return builder.AddCheck<ApplicationLifecycleHealthCheck>("ApplicationLifecycleHealthCheck");
-    }
+    /// <summary>
+    /// Registers a health check provider that's tied to the application's lifecycle.
+    /// </summary>
+    /// <param name="builder">The builder to add the provider to.</param>
+    /// <param name="tags">A list of tags that can be used to filter health checks.</param>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
+    [Experimental]
+    public static IHealthChecksBuilder AddApplicationLifecycleHealthCheck(this IHealthChecksBuilder builder, params string[] tags)
+        => Throw.IfNull(builder)
+            .AddCheck<ApplicationLifecycleHealthCheck>("ApplicationLifecycleHealthCheck", tags: Throw.IfNull(tags));
 
     /// <summary>
     /// Registers a health check provider that's tied to the application's lifecycle.
@@ -35,12 +42,7 @@ public static partial class CoreHealthChecksExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException">If <paramref name="builder" /> or <paramref name="tags"/> are <see langword="null" />.</exception>
-    /// <remarks>The application's lifecycle is tracked through <see cref="IHostApplicationLifetime"/>.</remarks>
     public static IHealthChecksBuilder AddApplicationLifecycleHealthCheck(this IHealthChecksBuilder builder, IEnumerable<string> tags)
-    {
-        _ = Throw.IfNull(builder);
-        _ = Throw.IfNull(tags);
-
-        return builder.AddCheck<ApplicationLifecycleHealthCheck>("ApplicationLifecycleHealthCheck", tags: tags);
-    }
+        => Throw.IfNull(builder)
+            .AddCheck<ApplicationLifecycleHealthCheck>("ApplicationLifecycleHealthCheck", tags: Throw.IfNull(tags));
 }

@@ -4,6 +4,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Metering;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
@@ -18,14 +19,19 @@ internal sealed class TelemetryHealthCheckPublisher : IHealthCheckPublisher
     private readonly HealthCheckReportCounter _healthCheckReportCounter;
     private readonly UnhealthyHealthCheckCounter _unhealthyHealthCheckCounter;
     private readonly ILogger _logger;
+    private readonly bool _logOnlyUnhealthy;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TelemetryHealthCheckPublisher"/> class.
     /// </summary>
     /// <param name="meter">The meter.</param>
     /// <param name="logger">The logger.</param>
-    public TelemetryHealthCheckPublisher(Meter<TelemetryHealthCheckPublisher> meter, ILogger<TelemetryHealthCheckPublisher> logger)
+    /// <param name="options">Creation options.</param>
+    public TelemetryHealthCheckPublisher(Meter<TelemetryHealthCheckPublisher> meter, ILogger<TelemetryHealthCheckPublisher> logger, IOptions<TelemetryHealthCheckPublisherOptions> options)
     {
+        var value = Throw.IfMemberNull(options, options.Value);
+        _logOnlyUnhealthy = Throw.IfMemberNull(options, options.Value.LogOnlyUnhealthy);
+
         _logger = logger;
         _healthCheckReportCounter = Metric.CreateHealthCheckReportCounter(meter);
         _unhealthyHealthCheckCounter = Metric.CreateUnhealthyHealthCheckCounter(meter);
@@ -43,7 +49,11 @@ internal sealed class TelemetryHealthCheckPublisher : IHealthCheckPublisher
 
         if (report.Status == HealthStatus.Healthy)
         {
-            Log.Healthy(_logger, report.Status);
+            if (!_logOnlyUnhealthy)
+            {
+                Log.Healthy(_logger, report.Status);
+            }
+
             _healthCheckReportCounter.RecordMetric(true, report.Status);
         }
         else

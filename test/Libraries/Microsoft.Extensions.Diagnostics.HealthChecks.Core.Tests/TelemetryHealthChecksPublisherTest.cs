@@ -19,10 +19,12 @@ public class TelemetryHealthChecksPublisherTest
     private const string HealthReportMetricName = @"R9\HealthCheck\Report";
     private const string UnhealthyHealthCheckMetricName = @"R9\HealthCheck\UnhealthyHealthCheck";
 
-    public static TheoryData<List<HealthStatus>, string, LogLevel, string, string> PublishAsyncArgs => new()
+    public static TheoryData<List<HealthStatus>, bool, int, string, LogLevel, string, string> PublishAsyncArgs => new()
     {
         {
             new List<HealthStatus> { HealthStatus.Healthy },
+            false,
+            1,
             "Process reporting healthy: Healthy.",
             LogLevel.Debug,
             bool.TrueString,
@@ -30,6 +32,8 @@ public class TelemetryHealthChecksPublisherTest
         },
         {
             new List<HealthStatus> { HealthStatus.Degraded },
+            true,
+            1,
             "Process reporting unhealthy: Degraded. Health check entries are id0: {status: Degraded, description: desc0}",
             LogLevel.Warning,
             bool.FalseString,
@@ -37,6 +41,8 @@ public class TelemetryHealthChecksPublisherTest
         },
         {
             new List<HealthStatus> { HealthStatus.Unhealthy },
+            false,
+            1,
             "Process reporting unhealthy: Unhealthy. Health check entries are id0: {status: Unhealthy, description: desc0}",
             LogLevel.Warning,
             bool.FalseString,
@@ -44,6 +50,8 @@ public class TelemetryHealthChecksPublisherTest
         },
         {
             new List<HealthStatus> { HealthStatus.Healthy, HealthStatus.Healthy },
+            true,
+            0,
             "Process reporting healthy: Healthy.",
             LogLevel.Debug,
             bool.TrueString,
@@ -51,6 +59,8 @@ public class TelemetryHealthChecksPublisherTest
         },
         {
             new List<HealthStatus> { HealthStatus.Healthy, HealthStatus.Unhealthy },
+            true,
+            1,
             "Process reporting unhealthy: Unhealthy. Health check entries are id0: {status: Healthy, description: desc0}, id1: {status: Unhealthy, description: desc1}",
             LogLevel.Warning,
             bool.FalseString,
@@ -58,6 +68,8 @@ public class TelemetryHealthChecksPublisherTest
         },
         {
             new List<HealthStatus> { HealthStatus.Healthy, HealthStatus.Degraded, HealthStatus.Unhealthy },
+            false,
+            1,
             "Process reporting unhealthy: Unhealthy. Health check entries are " +
             "id0: {status: Healthy, description: desc0}, id1: {status: Degraded, description: desc1}, id2: {status: Unhealthy, description: desc2}",
             LogLevel.Warning,
@@ -70,6 +82,8 @@ public class TelemetryHealthChecksPublisherTest
     [MemberData(nameof(PublishAsyncArgs))]
     public async Task PublishAsync(
         IList<HealthStatus> healthStatuses,
+        bool logOnlyUnhealthy,
+        int expectedLogCount,
         string expectedLogMessage,
         LogLevel expectedLogLevel,
         string expectedMetricHealthy,
@@ -81,12 +95,20 @@ public class TelemetryHealthChecksPublisherTest
         var logger = new FakeLogger<TelemetryHealthCheckPublisher>();
         var collector = logger.Collector;
 
-        var publisher = new TelemetryHealthCheckPublisher(meter, logger);
+        var options = Microsoft.Extensions.Options.Options.Create(new TelemetryHealthCheckPublisherOptions
+        {
+            LogOnlyUnhealthy = logOnlyUnhealthy,
+        });
+
+        var publisher = new TelemetryHealthCheckPublisher(meter, logger, options);
 
         await publisher.PublishAsync(CreateHealthReport(healthStatuses), CancellationToken.None);
-        Assert.Equal(1, collector.Count);
-        Assert.Equal(expectedLogMessage, collector.LatestRecord.Message);
-        Assert.Equal(expectedLogLevel, collector.LatestRecord.Level);
+        Assert.Equal(expectedLogCount, collector.Count);
+        if (expectedLogCount > 0)
+        {
+            Assert.Equal(expectedLogMessage, collector.LatestRecord.Message);
+            Assert.Equal(expectedLogLevel, collector.LatestRecord.Level);
+        }
 
         var latest = metricCollector.GetCounterValues<long>(HealthReportMetricName)!.LatestWritten!;
 
@@ -104,6 +126,14 @@ public class TelemetryHealthChecksPublisherTest
                 Assert.Equal(1, GetValue(unhealthyCounters, GetKey(i), healthStatuses[i].ToString()));
             }
         }
+    }
+
+    [Fact]
+    public void Ctor_ThrowsWhenOptionsValueNull()
+    {
+        using var meter = new Meter<TelemetryHealthCheckPublisher>();
+        var logger = new FakeLogger<TelemetryHealthCheckPublisher>();
+        Assert.Throws<ArgumentException>(() => new TelemetryHealthCheckPublisher(meter, logger, Microsoft.Extensions.Options.Options.Create<TelemetryHealthCheckPublisherOptions>(null!)));
     }
 
     private static long GetValue(IReadOnlyCollection<MetricValue<long>> counters, string healthy, string status)

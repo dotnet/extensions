@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -23,7 +24,16 @@ public class ManualHealthCheckExtensionsTest
     public void AddManualHealthCheck_WithTags_DependenciesAreRegistered()
     {
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddHealthChecks().AddManualHealthCheck(new[] { "test1", "test2" });
+        serviceCollection.AddHealthChecks().AddManualHealthCheck("test1", "test2");
+
+        AssertAddedHealthCheck<ManualHealthCheckService>(serviceCollection, "ManualHealthCheck");
+    }
+
+    [Fact]
+    public void AddManualHealthCheck_WithTagsEnumerable_DependenciesAreRegistered()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddHealthChecks().AddManualHealthCheck(new List<string> { "test1", "test2" });
 
         AssertAddedHealthCheck<ManualHealthCheckService>(serviceCollection, "ManualHealthCheck");
     }
