@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Time.Testing;
@@ -132,23 +133,6 @@ public class FakeTimeProviderTimerTests
     }
 
     [Fact]
-    public void LongPausesTriggerSingleCallback()
-    {
-        var counter = 0;
-        var timeProvider = new FakeTimeProvider();
-        var timer = timeProvider.CreateTimer(_ => { counter++; }, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(10));
-
-        var value1 = counter;
-
-        timeProvider.Advance(TimeSpan.FromMilliseconds(100));
-
-        var value2 = counter;
-
-        Assert.Equal(1, value1);
-        Assert.Equal(2, value2);
-    }
-
-    [Fact]
     public async Task TaskDelayWithFakeTimeProviderAdvanced()
     {
         var fakeTimeProvider = new FakeTimeProvider();
@@ -273,4 +257,77 @@ public class FakeTimeProviderTimerTests
         Assert.Equal(1, waitersCountAfter);
     }
 #endif
+
+    [Fact]
+    public void UtcNowUpdatedBeforeTimerCallback()
+    {
+        var timeProvider = new FakeTimeProvider();
+        var callbackTime = DateTimeOffset.MinValue;
+        using var timer = timeProvider.CreateTimer(_ => { callbackTime = timeProvider.GetUtcNow(); }, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(10));
+
+        var value1 = callbackTime;
+
+        timeProvider.SetUtcNow(timeProvider.Epoch + TimeSpan.FromMilliseconds(20));
+
+        var value2 = callbackTime;
+
+        timeProvider.SetUtcNow(timeProvider.Epoch + TimeSpan.FromMilliseconds(1000));
+
+        var value3 = callbackTime;
+
+        Assert.Equal(timeProvider.Epoch, value1);
+        Assert.Equal(timeProvider.Epoch + TimeSpan.FromMilliseconds(20), value2);
+        Assert.Equal(timeProvider.Epoch + TimeSpan.FromMilliseconds(1000), value3);
+    }
+
+    [Fact]
+    public void LongPausesTriggerMultipleCallbacks()
+    {
+        var callbackTimes = new List<DateTimeOffset>();
+        var timeProvider = new FakeTimeProvider();
+        var period = TimeSpan.FromMilliseconds(10);
+        var timer = timeProvider.CreateTimer(_ => { callbackTimes.Add(timeProvider.GetUtcNow()); }, null, TimeSpan.Zero, period);
+
+        var value1 = callbackTimes.ToArray();
+
+        timeProvider.Advance(period + period + period);
+
+        var value2 = callbackTimes.ToArray();
+
+        Assert.Equal(new[] { timeProvider.Epoch }, value1);
+        Assert.Equal(new[]
+        {
+            timeProvider.Epoch,
+            timeProvider.Epoch + period,
+            timeProvider.Epoch + period + period,
+            timeProvider.Epoch + period + period + period,
+        },
+        value2);
+    }
+
+    [Fact]
+    public void MultipleTimersCallbackInvokedInScheduledOrder()
+    {
+        var callbacks = new List<(int timerId, TimeSpan callbackTime)>();
+        var timeProvider = new FakeTimeProvider();
+        var startTime = timeProvider.GetTimestamp();
+        using var timer1 = timeProvider.CreateTimer(_ => callbacks.Add((1, timeProvider.GetElapsedTime(startTime))), null, TimeSpan.FromMilliseconds(3), TimeSpan.FromMilliseconds(3));
+        using var timer2 = timeProvider.CreateTimer(_ => callbacks.Add((2, timeProvider.GetElapsedTime(startTime))), null, TimeSpan.FromMilliseconds(3), TimeSpan.FromMilliseconds(3));
+        using var timer3 = timeProvider.CreateTimer(_ => callbacks.Add((3, timeProvider.GetElapsedTime(startTime))), null, TimeSpan.FromMilliseconds(6), TimeSpan.FromMilliseconds(5));
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(11));
+
+        Assert.Equal(new[]
+        {
+            (1, TimeSpan.FromMilliseconds(3)),
+            (2, TimeSpan.FromMilliseconds(3)),
+            (3, TimeSpan.FromMilliseconds(6)),
+            (1, TimeSpan.FromMilliseconds(6)),
+            (2, TimeSpan.FromMilliseconds(6)),
+            (1, TimeSpan.FromMilliseconds(9)),
+            (2, TimeSpan.FromMilliseconds(9)),
+            (3, TimeSpan.FromMilliseconds(11)),
+        },
+        callbacks);
+    }
 }

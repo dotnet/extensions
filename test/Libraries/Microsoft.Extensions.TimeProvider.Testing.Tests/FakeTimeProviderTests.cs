@@ -76,7 +76,7 @@ public class FakeTimeProviderTests
         Assert.Equal(6, now.Second);
         Assert.Equal(16, now.Millisecond);
         Assert.Equal(frequency, frequency2);
-        Assert.True(pnow2 > pnow);        
+        Assert.True(pnow2 > pnow);
     }
 
     [Fact]

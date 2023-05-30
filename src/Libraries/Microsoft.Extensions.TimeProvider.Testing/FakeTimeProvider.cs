@@ -68,14 +68,13 @@ public class FakeTimeProvider : TimeProvider
     /// <param name="value">The date and time in the UTC timezone.</param>
     public void SetUtcNow(DateTimeOffset value)
     {
-        List<FakeTimeProviderTimer.Waiter> waiters;
-        lock (Waiters)
+        while (_now <= value && TryGetWaiterToWake(value) is FakeTimeProviderTimer.Waiter waiter)
         {
-            _now = value;
-            waiters = GetWaitersToWake();
+            _now = waiter.WakeupTime;
+            waiter.TriggerAndSchedule(false);
         }
 
-        WakeWaiters(waiters);
+        _now = value;
     }
 
     /// <summary>
@@ -83,16 +82,7 @@ public class FakeTimeProvider : TimeProvider
     /// </summary>
     /// <param name="delta">The amount of time to advance the clock by.</param>
     public void Advance(TimeSpan delta)
-    {
-        List<FakeTimeProviderTimer.Waiter> waiters;
-        lock (Waiters)
-        {
-            _now += delta;
-            waiters = GetWaitersToWake();
-        }
-
-        WakeWaiters(waiters);
-    }
+        => SetUtcNow(_now + delta);
 
     /// <summary>
     /// Advances the clock's time by one millisecond.
@@ -171,28 +161,39 @@ public class FakeTimeProvider : TimeProvider
         }
     }
 
-    private List<FakeTimeProviderTimer.Waiter> GetWaitersToWake()
+    private FakeTimeProviderTimer.Waiter? TryGetWaiterToWake(DateTimeOffset targetNow)
     {
-        var l = new List<FakeTimeProviderTimer.Waiter>(Waiters.Count);
-        foreach (var w in Waiters)
+        var candidate = default(FakeTimeProviderTimer.Waiter);
+
+        lock (Waiters)
         {
-            if (_now >= w.WakeupTime)
+            if (Waiters.Count == 0)
             {
-                l.Add(w);
+                return null;
+            }
+
+            foreach (var waiter in Waiters)
+            {
+                if (waiter.WakeupTime > targetNow)
+                {
+                    continue;
+                }
+
+                if (candidate is null)
+                {
+                    candidate = waiter;
+                    continue;
+                }
+
+                // This finds the waiter with the minimum WakeupTime and also ensures that if multiple waiters have the same
+                // the one that is picked is also the one that was scheduled first.
+                candidate = candidate.WakeupTime > waiter.WakeupTime
+                        || (candidate.WakeupTime == waiter.WakeupTime && candidate.ScheduledOn > waiter.ScheduledOn)
+                    ? waiter
+                    : candidate;
             }
         }
 
-        return l;
-    }
-
-    private void WakeWaiters(List<FakeTimeProviderTimer.Waiter> waiters)
-    {
-        foreach (var w in waiters)
-        {
-            if (_now >= w.WakeupTime)
-            {
-                w.TriggerAndSchedule(false);
-            }
-        }
+        return candidate;
     }
 }

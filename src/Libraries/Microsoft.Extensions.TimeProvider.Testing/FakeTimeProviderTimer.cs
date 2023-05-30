@@ -72,7 +72,16 @@ internal sealed class FakeTimeProviderTimer : ITimer
 
         private long _periodMs;
         private long _dueTimeMs;
-        public DateTimeOffset WakeupTime { get; set; }
+
+        /// <summary>
+        /// Gets the timestamp for when the <see cref="Waiter.WakeupTime"/> was last set.
+        /// </summary>
+        /// <remarks>
+        /// This property ensures timer callbacks are invoked in the order they were scheduled.
+        /// </remarks>
+        public long ScheduledOn { get; private set; }
+
+        public DateTimeOffset WakeupTime { get; private set; }
 
         public Waiter(FakeTimeProvider fakeTimeProvider, TimeSpan dueTime, TimeSpan period, TimerCallback callback, object? state)
         {
@@ -91,14 +100,13 @@ internal sealed class FakeTimeProviderTimer : ITimer
             _ = Throw.IfOutOfRange(_dueTimeMs, -1, MaxSupportedTimeout, nameof(dueTime));
             _ = Throw.IfOutOfRange(_periodMs, -1, MaxSupportedTimeout, nameof(period));
 #pragma warning restore S3236 // Caller information arguments should not be provided explicitly
-
         }
 
         public void TriggerAndSchedule(bool restart)
         {
             if (restart)
             {
-                WakeupTime = DateTimeOffset.MaxValue;
+                DisableTimer();
 
                 if (_dueTimeMs == 0)
                 {
@@ -114,10 +122,7 @@ internal sealed class FakeTimeProviderTimer : ITimer
                 }
                 else
                 {
-                    // Schedule next event on dueTime
-
-                    WakeupTime = _fakeTimeProvider.GetUtcNow() + TimeSpan.FromMilliseconds(_dueTimeMs);
-
+                    ScheduleTimer(_dueTimeMs);
                     return;
                 }
             }
@@ -130,17 +135,29 @@ internal sealed class FakeTimeProviderTimer : ITimer
 
             if (_periodMs == 0 || _periodMs == Timeout.Infinite)
             {
-                WakeupTime = DateTimeOffset.MaxValue;
+                DisableTimer();
             }
             else
             {
-                WakeupTime = _fakeTimeProvider.GetUtcNow() + TimeSpan.FromMilliseconds(_periodMs);
+                ScheduleTimer(_periodMs);
             }
         }
 
         public void Dispose()
         {
             _fakeTimeProvider.RemoveWaiter(this);
+        }
+
+        private void DisableTimer()
+        {
+            ScheduledOn = long.MaxValue;
+            WakeupTime = DateTimeOffset.MaxValue;
+        }
+
+        private void ScheduleTimer(long delayMilliseconds)
+        {
+            ScheduledOn = _fakeTimeProvider.GetTimestamp();
+            WakeupTime = _fakeTimeProvider.GetUtcNow() + TimeSpan.FromMilliseconds(delayMilliseconds);
         }
     }
 }
