@@ -48,7 +48,7 @@ namespace TestClasses
         [LogMethod(11, LogLevel.Error, "M11{p1}")]
         public static partial void M11(ILogger logger, IEnumerable<int>? p1);
 
-        [LogMethod(12, LogLevel.Error, "M12{@class}")]
+        [LogMethod(12, LogLevel.Error, "M12{class}")]
         public static partial void M12(ILogger logger, IEnumerable<int>? @class);
 
         [LogMethod(13, LogLevel.Error, "M13{p1}")]

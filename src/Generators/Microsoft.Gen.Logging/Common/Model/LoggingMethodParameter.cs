@@ -33,7 +33,11 @@ internal sealed class LoggingMethodParameter
     public LoggingPropertyProvider? LogPropertiesProvider;
 
     public string NameWithAt => NeedsAtSign ? "@" + Name : Name;
-    public string PotentiallyNullableType => (IsReference && !IsNullable) ? Type + "?" : Type;
+
+    public string PotentiallyNullableType
+        => (IsReference && !IsNullable)
+            ? Type + "?"
+            : Type;
 
     // A parameter flagged as 'normal' is not going to be taken care of specially as an argument to ILogger.Log
     // but instead is supposed to be taken as a normal parameter.

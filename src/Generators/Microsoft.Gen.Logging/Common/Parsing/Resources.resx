@@ -339,4 +339,10 @@
   <data name="LogPropertiesProviderMethodInvalidSignatureMessage" xml:space="preserve">
     <value>Property provider method "{0}" in type "{1}" doesn't have a signature compatible with "{2}"</value>
   </data>
+  <data name="TemplateStartsWithAtSymbolMessage" xml:space="preserve">
+    <value>Logging method "{0}" has template(s) that start with "@": {1}</value>
+  </data>
+  <data name="TemplateStartsWithAtSymbolTitle" xml:space="preserve">
+    <value>A logging message template starts with "@"</value>
+  </data>
 </root>

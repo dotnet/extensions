@@ -18,6 +18,12 @@ namespace TestClasses
             public string StringPropertyBase { get; set; } = "StringPropertyBase";
         }
 
+        internal class ClassWithPrivateData
+        {
+            [PrivateData]
+            public string UserId { get; set; } = "UserId";
+        }
+
         internal class MyInterimClassToRedact : MyBaseClassToRedact
         {
             public string NoRedactionProp { get; set; } = "No redaction";
@@ -61,5 +67,12 @@ namespace TestClasses
         public static partial void LogTwoParamsDefaultCtor(
             ILogger logger, IRedactorProvider redactionProvider, LogLevel level,
             [PrivateData] string stringProperty, [LogProperties] MyTransitiveClass? complexParam);
+
+        [LogMethod(LogLevel.Debug, "User {userId} has now different status")]
+        public static partial void UserAvailabilityChanged(
+            this ILogger logger,
+            IRedactorProvider redactorProvider,
+            [PrivateData] string userId,
+            [LogProperties] ClassWithPrivateData param);
     }
 }

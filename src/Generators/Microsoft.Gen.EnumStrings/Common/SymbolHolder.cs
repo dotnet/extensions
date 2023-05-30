@@ -5,9 +5,6 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.Gen.EnumStrings;
 
-/// <summary>
-/// Holds required symbols for the <see cref="Generator"/>.
-/// </summary>
 internal sealed record class SymbolHolder(
     INamedTypeSymbol FlagsAttributeSymbol,
     INamedTypeSymbol EnumStringsAttributeSymbol,

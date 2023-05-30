@@ -57,7 +57,7 @@ public class UsingToStringInLoggersTests
             }";
 
         var generated = await RoslynTestUtils.RunGenerator(
-            new Generator(),
+            new LoggingGenerator(),
             References,
             new[] { Source }).ConfigureAwait(false);
 

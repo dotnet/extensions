@@ -29,7 +29,7 @@ public class EmitterTests
 
         // try it without the frozen collections
         var (d, r) = await RoslynTestUtils.RunGenerator(
-            new Generator(),
+            new EnumStringsGenerator(),
             new[]
             {
                 Assembly.GetAssembly(typeof(EnumStringsAttribute))!,
@@ -41,7 +41,7 @@ public class EmitterTests
 
         // try it again with the frozen collections, this is what we need to compare with the golden files
         (d, r) = await RoslynTestUtils.RunGenerator(
-            new Generator(),
+            new EnumStringsGenerator(),
             new[]
             {
                 Assembly.GetAssembly(typeof(EnumStringsAttribute))!,
@@ -52,7 +52,7 @@ public class EmitterTests
         Assert.Empty(d);
         _ = Assert.Single(r);
 
-        var golden = File.ReadAllText($"GoldenFiles/Microsoft.Gen.EnumStrings/Microsoft.Gen.EnumStrings.Generator/EnumStrings.g.cs");
+        var golden = File.ReadAllText($"GoldenFiles/Microsoft.Gen.EnumStrings/Microsoft.Gen.EnumStrings.EnumStringsGenerator/EnumStrings.g.cs");
         var result = r[0].SourceText.ToString();
         Assert.Equal(golden, result);
     }

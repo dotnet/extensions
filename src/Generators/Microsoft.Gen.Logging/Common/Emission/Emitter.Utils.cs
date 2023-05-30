@@ -24,7 +24,7 @@ internal sealed partial class Emitter : EmitterBase
             return s;
         }
 
-        var sb = new StringBuilder(s.Length);
+        var sb = new StringBuilder(s.Length + 1); // we use +1 because we will add at least one symbol
         _ = sb.Append(s, 0, index);
 
         while (index < s.Length)
@@ -54,7 +54,7 @@ internal sealed partial class Emitter : EmitterBase
             return s;
         }
 
-        var sb = new StringBuilder(s.Length);
+        var sb = new StringBuilder(s.Length + 1); // we use +1 because we will add at least one symbol
         _ = sb.Append(s, 0, index);
 
         while (index < s.Length)

@@ -725,5 +725,23 @@ namespace Microsoft.Gen.Logging {
                 return ResourceManager.GetString("TemplateHasNoCorrespondingArgumentTitle", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Logging method &quot;{0}&quot; has template(s) that start with &quot;@&quot;: {1}.
+        /// </summary>
+        internal static string TemplateStartsWithAtSymbolMessage {
+            get {
+                return ResourceManager.GetString("TemplateStartsWithAtSymbolMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A logging message template starts with &quot;@&quot;.
+        /// </summary>
+        internal static string TemplateStartsWithAtSymbolTitle {
+            get {
+                return ResourceManager.GetString("TemplateStartsWithAtSymbolTitle", resourceCulture);
+            }
+        }
     }
 }

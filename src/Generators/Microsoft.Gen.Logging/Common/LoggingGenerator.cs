@@ -16,7 +16,7 @@ namespace Microsoft.Gen.Logging;
 
 [Generator]
 [ExcludeFromCodeCoverage]
-public class Generator : IIncrementalGenerator
+public class LoggingGenerator : IIncrementalGenerator
 {
     private static readonly HashSet<string> _attributeNames = new()
     {
@@ -55,7 +55,7 @@ namespace Microsoft.Gen.Logging;
 
 [Generator]
 [ExcludeFromCodeCoverage]
-public class Generator : ISourceGenerator
+public class LoggingGenerator : ISourceGenerator
 {
     public void Initialize(GeneratorInitializationContext context)
     {

@@ -216,6 +216,17 @@ internal static class LogParserUtilities
             .Select(static x => x!)
             .ToList();
 
+    internal static string GetPropertyIdentifier(IPropertySymbol property, CancellationToken token)
+    {
+        var syntax = property.DeclaringSyntaxReferences[0].GetSyntax(token);
+        return syntax switch
+        {
+            PropertyDeclarationSyntax propertySyntax => propertySyntax.Identifier.Text, // a regular property
+            ParameterSyntax paramSyntax => paramSyntax.Identifier.Text, // a property of a "record"
+            _ => property.Name
+        };
+    }
+
     private static bool IsSpecialType(ITypeSymbol typeSymbol, SymbolHolder symbols)
         => typeSymbol.SpecialType != SpecialType.None ||
         typeSymbol.OriginalDefinition.SpecialType != SpecialType.None ||
@@ -355,10 +366,11 @@ internal static class LogParserUtilities
                     var needsAtSign = false;
                     if (!property.DeclaringSyntaxReferences.IsDefaultOrEmpty)
                     {
-                        var propertySyntax = property.DeclaringSyntaxReferences[0].GetSyntax(token) as PropertyDeclarationSyntax;
-                        if (!string.IsNullOrEmpty(propertySyntax!.Identifier.Text))
+                        var propertyIdentifier = GetPropertyIdentifier(property, token);
+
+                        if (!string.IsNullOrEmpty(propertyIdentifier))
                         {
-                            needsAtSign = propertySyntax!.Identifier.Text[0] == '@';
+                            needsAtSign = propertyIdentifier[0] == '@';
                         }
                     }
 

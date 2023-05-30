@@ -43,7 +43,7 @@ public class EmitterTests
 #endif
 
         var (d, r) = await RoslynTestUtils.RunGenerator(
-            new Generator(),
+            new LoggingGenerator(),
             new[]
             {
                 Assembly.GetAssembly(typeof(ILogger))!,
@@ -65,7 +65,7 @@ public class EmitterTests
 
         _ = Assert.Single(r);
 
-        var golden = File.ReadAllText($"GoldenFiles/Microsoft.Gen.Logging/Microsoft.Gen.Logging.Generator/Logging.g.cs");
+        var golden = File.ReadAllText($"GoldenFiles/Microsoft.Gen.Logging/Microsoft.Gen.Logging.LoggingGenerator/Logging.g.cs");
         var result = r[0].SourceText.ToString();
         Assert.Equal(golden, result);
     }

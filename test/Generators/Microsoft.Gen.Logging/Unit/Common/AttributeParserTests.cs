@@ -301,7 +301,7 @@ public class AttributeParserTests
         var refs = new[] { loggerAssembly!, logMethodAssembly!, enrichmentAssembly!, dataClassificationAssembly!, simpleDataClassificationAssembly!, redactorProviderAssembly! };
 
         var (d, _) = await RoslynTestUtils.RunGenerator(
-            new Generator(),
+            new LoggingGenerator(),
             refs,
             new[] { text }).ConfigureAwait(false);
 

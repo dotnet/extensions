@@ -117,4 +117,19 @@ public class LogParserUtilitiesTests
         var result = LogParserUtilities.GetDataClassificationAttributes(symbolMock.Object, null!);
         Assert.Empty(result);
     }
+
+    [Fact]
+    public void ShouldGet_PropertyIdentifier_ForUnknownSyntaxTypes()
+    {
+        const string PropertyName = "prop name";
+        var properySymbol = new Mock<IPropertySymbol>();
+        properySymbol.SetupGet(x => x.Name)
+            .Returns(PropertyName);
+
+        properySymbol.SetupGet(x => x.DeclaringSyntaxReferences)
+            .Returns(new[] { Mock.Of<SyntaxReference>() }.ToImmutableArray());
+
+        var identifier = LogParserUtilities.GetPropertyIdentifier(properySymbol.Object, CancellationToken.None);
+        Assert.Equal(PropertyName, identifier);
+    }
 }
