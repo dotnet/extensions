@@ -43,7 +43,7 @@ public static class ParserTests
             ";
 
             var (d, _) = await RoslynTestUtils.RunGenerator(
-                new Generator(),
+                new EnumStringsGenerator(),
                 new[] { Assembly.GetAssembly(typeof(EnumStringsAttribute))! },
                 new[] { source }).ConfigureAwait(false);
 
@@ -51,7 +51,7 @@ public static class ParserTests
             source.AssertDiagnostic(0, diag, d[0]);
 
             (d, _) = await RoslynTestUtils.RunGenerator(
-                new Generator(),
+                new EnumStringsGenerator(),
                 new[]
                 {
                     Assembly.GetAssembly(typeof(EnumStringsAttribute))!,
@@ -100,7 +100,7 @@ public static class ParserTests
             ";
 
             var (d, _) = await RoslynTestUtils.RunGenerator(
-                new Generator(),
+                new EnumStringsGenerator(),
                 new[] { Assembly.GetAssembly(typeof(EnumStringsAttribute))! },
                 new[] { source }).ConfigureAwait(false);
 

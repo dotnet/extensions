@@ -14,7 +14,7 @@ namespace Microsoft.Gen.EnumStrings;
 
 [Generator]
 [ExcludeFromCodeCoverage]
-public class Generator : IIncrementalGenerator
+public class EnumStringsGenerator : IIncrementalGenerator
 {
     private static readonly HashSet<string> _attributeNames = new()
     {
@@ -60,7 +60,7 @@ namespace Microsoft.Gen.EnumStrings;
 
 [Generator]
 [ExcludeFromCodeCoverage]
-public class Generator : ISourceGenerator
+public class EnumStringsGenerator : ISourceGenerator
 {
     public void Initialize(GeneratorInitializationContext context)
     {

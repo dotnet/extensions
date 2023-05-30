@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 using Microsoft.Gen.Logging.Model;
 using Microsoft.Gen.Shared;
 
@@ -14,17 +14,16 @@ namespace Microsoft.Gen.Logging.Emission;
 
 internal sealed partial class Emitter : EmitterBase
 {
-    [SuppressMessage("Major Code Smell", "S103:Lines should not be too long", Justification = "Long strings are easier to read in this function")]
+    private const string NullExceptionArgComment = " // Refer to our docs to learn how to pass exception here";
+
     private void GenLogMethod(LoggingMethod lm)
     {
         var logPropsDataClasses = GetLogPropertiesAttributes(lm);
         string level = GetLoggerMethodLogLevel(lm);
         string extension = lm.IsExtensionMethod ? "this " : string.Empty;
         string eventName = string.IsNullOrWhiteSpace(lm.EventName) ? $"nameof({lm.Name})" : $"\"{lm.EventName}\"";
-        string exceptionArg = GetException(lm);
+        (string exceptionArg, string exceptionArgComment) = GetException(lm);
         (string logger, bool isNullableLogger) = GetLogger(lm);
-
-        OutLn();
 
         if (!lm.HasXmlDocumentation)
         {
@@ -39,7 +38,7 @@ internal sealed partial class Emitter : EmitterBase
 
             if (!string.IsNullOrEmpty(lm.Message))
             {
-                OutLn($"/// Logs \"{EscapeMessageStringForXmlDocumentation(lm.Message)}\" {lvl}.");
+                OutLn($"/// Logs \"{EscapeMessageStringForXmlDocumentation(lm.Message)}\"{lvl}.");
             }
             else
             {
@@ -76,11 +75,15 @@ internal sealed partial class Emitter : EmitterBase
             OutLn();
         }
 
-        var parametersToRedact = lm.AllParameters.Where(lp => lp.ClassificationAttributeType != null).ToArray();
-
-        if (parametersToRedact.Length > 0 || logPropsDataClasses.Count > 0)
+        var redactorProviderAccess = string.Empty;
+        var parametersToRedact = lm.AllParameters.Where(lp => lp.ClassificationAttributeType != null);
+        if (parametersToRedact.Any() || logPropsDataClasses.Count > 0)
         {
             (string redactorProvider, bool isNullableRedactorProvider) = GetRedactorProvider(lm);
+            if (isNullableRedactorProvider)
+            {
+                redactorProviderAccess = "?";
+            }
 
             var classifications = parametersToRedact
                 .Select(static p => p.ClassificationAttributeType)
@@ -101,7 +104,7 @@ internal sealed partial class Emitter : EmitterBase
         {
             if (!p.HasPropsProvider && !p.HasProperties && p.IsNormalParameter)
             {
-                GenHelperAdd(lm, holderMap, p);
+                GenHelperAdd(lm, holderMap, p, redactorProviderAccess);
             }
         }
 
@@ -109,7 +112,7 @@ internal sealed partial class Emitter : EmitterBase
         {
             if (!holderMap.ContainsKey(p))
             {
-                GenHelperAdd(lm, holderMap, p);
+                GenHelperAdd(lm, holderMap, p, redactorProviderAccess);
             }
         }
 
@@ -137,7 +140,6 @@ internal sealed partial class Emitter : EmitterBase
             {
                 OutLn($"_helper.ParameterName = string.Empty;");
 
-#pragma warning disable S1067 // Expressions should not be too complex
                 p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
                 {
                     var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
@@ -149,7 +151,8 @@ internal sealed partial class Emitter : EmitterBase
 
                     if (member.ClassificationAttributeType != null)
                     {
-                        var value = $"_{EncodeTypeName(member.ClassificationAttributeType)}Redactor?.Redact(global::System.MemoryExtensions.AsSpan({ConvertPropertyToString(member, accessExpression)}))";
+                        var stringifiedProperty = ConvertPropertyToString(member, accessExpression);
+                        var value = $"_{EncodeTypeName(member.ClassificationAttributeType)}Redactor{redactorProviderAccess}.Redact(global::System.MemoryExtensions.AsSpan({stringifiedProperty}))";
 
                         if (member.PotentiallyNull)
                         {
@@ -169,7 +172,9 @@ internal sealed partial class Emitter : EmitterBase
                     }
                     else
                     {
-                        var ts = ShouldStringify(member.Type) ? ConvertPropertyToString(member, accessExpression) : accessExpression;
+                        var ts = ShouldStringify(member.Type)
+                            ? ConvertPropertyToString(member, accessExpression)
+                            : accessExpression;
 
                         var value = member.IsEnumerable
                             ? $"global::Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Stringify({accessExpression})"
@@ -178,7 +183,6 @@ internal sealed partial class Emitter : EmitterBase
                         OutLn($"{skipNull}_helper.Add(\"{propName}\", {value});");
                     }
                 });
-#pragma warning restore S1067 // Expressions should not be too complex
             }
         }
 
@@ -199,7 +203,7 @@ internal sealed partial class Emitter : EmitterBase
         }
 
         OutLn($"_helper,");
-        OutLn($"{exceptionArg},");
+        OutLn($"{exceptionArg},{exceptionArgComment}");
         OutLn($"__FUNC_{_memberCounter}_{lm.Name});");
         Unindent();
 
@@ -215,7 +219,9 @@ internal sealed partial class Emitter : EmitterBase
 
         if (GenVariableAssignments(lm, holderMap))
         {
-            OutLn($@"return global::System.FormattableString.Invariant($""{EscapeMessageString(lm.Message)}"");");
+            var template = EscapeMessageString(lm.Message);
+            template = AddAtSymbolsToTemplates(template, lm.TemplateParameters);
+            OutLn($@"return global::System.FormattableString.Invariant($""{template}"");");
         }
         else if (string.IsNullOrEmpty(lm.Message))
         {
@@ -275,19 +281,21 @@ internal sealed partial class Emitter : EmitterBase
             return $"{arg}{question}.ToString()";
         }
 
-        static string GetException(LoggingMethod lm)
+        static (string exceptionArg, string exceptionArgComment) GetException(LoggingMethod lm)
         {
             string exceptionArg = "null";
+            string exceptionArgComment = NullExceptionArgComment;
             foreach (var p in lm.AllParameters)
             {
                 if (p.IsException)
                 {
                     exceptionArg = p.Name;
+                    exceptionArgComment = string.Empty;
                     break;
                 }
             }
 
-            return exceptionArg;
+            return (exceptionArg, exceptionArgComment);
         }
 
         bool GenVariableAssignments(LoggingMethod lm, Dictionary<LoggingMethodParameter, int> holderMap)
@@ -365,7 +373,7 @@ internal sealed partial class Emitter : EmitterBase
             return (redactorProvider, isNullable);
         }
 
-        void GenHelperAdd(LoggingMethod lm, Dictionary<LoggingMethodParameter, int> holderMap, LoggingMethodParameter p)
+        void GenHelperAdd(LoggingMethod lm, Dictionary<LoggingMethodParameter, int> holderMap, LoggingMethodParameter p, string redactorProviderAccess)
         {
             string key = $"\"{lm.GetParameterNameInTemplate(p)}\"";
 
@@ -375,7 +383,7 @@ internal sealed partial class Emitter : EmitterBase
 
                 OutOpenBrace();
                 OutLn($"var _v = {ConvertToString(p, p.NameWithAt)};");
-                var value = $"_v != null ? _{dataClassVariableName}Redactor?.Redact(global::System.MemoryExtensions.AsSpan(_v)) : null";
+                var value = $"_v != null ? _{dataClassVariableName}Redactor{redactorProviderAccess}.Redact(global::System.MemoryExtensions.AsSpan(_v)) : null";
                 OutLn($"_helper.Add({key}, {value});");
                 OutCloseBrace();
             }
@@ -401,6 +409,37 @@ internal sealed partial class Emitter : EmitterBase
 
             holderMap.Add(p, holderMap.Count);
         }
+    }
+
+    private string AddAtSymbolsToTemplates(string template, List<LoggingMethodParameter> templateParameters)
+    {
+        StringBuilder? stringBuilder = null;
+        foreach (var item in templateParameters)
+        {
+            if (!item.NeedsAtSign)
+            {
+                continue;
+            }
+
+            if (stringBuilder is null)
+            {
+                stringBuilder = _sbPool.GetStringBuilder();
+                _ = stringBuilder.Append(template);
+            }
+
+            _ = stringBuilder.Replace(item.Name, item.NameWithAt);
+        }
+
+        var result = stringBuilder is null
+            ? template
+            : stringBuilder.ToString();
+
+        if (stringBuilder != null)
+        {
+            _sbPool.ReturnStringBuilder(stringBuilder);
+        }
+
+        return result;
     }
 
     private void GenParameters(LoggingMethod lm)

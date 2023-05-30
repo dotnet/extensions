@@ -717,7 +717,11 @@ public class LogMethodTests
         var logger = new FakeLogger();
 
         AtSymbolsTestExtensions.M0(logger, "Test");
-        Assert.Equal(1, logger.Collector.Count);
+        var record = Assert.Single(logger.Collector.GetSnapshot());
+        Assert.Equal("M0 Test", record.Message);
+        Assert.NotNull(record.StructuredState);
+        Assert.Contains(record.StructuredState, x => x.Key == "event");
+        Assert.DoesNotContain(record.StructuredState, x => x.Key == "@event");
 
         AtSymbolsTestExtensions.M1(logger, new StarRedactorProvider(), "Test");
         Assert.Equal(2, logger.Collector.Count);

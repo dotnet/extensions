@@ -218,6 +218,33 @@ public partial class ParserTests
         await RunGenerator(Source, DiagDescriptors.TemplateHasNoCorrespondingArgument);
     }
 
+    [Theory]
+    [InlineData("{@param}")]
+    [InlineData("{@param,10}")]
+    [InlineData("{@param,10:5}")]
+    [InlineData("{@param:5}")]
+    [InlineData("{@param }")]
+    [InlineData("{ @param}")]
+    [InlineData("{ @param }")]
+    [InlineData("{ @param:10 }")]
+    [InlineData("{ @param : 10 }")]
+    [InlineData("{ @param, 10 }")]
+    [InlineData("{ @param , 10 }")]
+    [InlineData("{ @param , 10 : 5 }")]
+    [InlineData(" Beginning ... {  @param  } ending ")]
+    [InlineData(" Beginning ... {  @param , 10 : 5 } ending ")]
+    public async Task AtSymbolInTemplate(string template)
+    {
+        string source = @$"
+            partial class C
+            {{
+                [/*0+*/LogMethod(LogLevel.Debug, ""{template}"")/*-0*/]
+                static partial void M1(ILogger logger, int param);
+            }}";
+
+        await RunGenerator(source, DiagDescriptors.TemplateStartsWithAtSymbol);
+    }
+
     [Fact]
     public async Task NeedlessQualifierInMessage()
     {
@@ -763,7 +790,7 @@ public partial class ParserTests
         }
 
         var (d, _) = await RoslynTestUtils.RunGenerator(
-            new Generator(),
+            new LoggingGenerator(),
             refs,
             new[] { text },
             includeBaseReferences: includeBaseReferences,

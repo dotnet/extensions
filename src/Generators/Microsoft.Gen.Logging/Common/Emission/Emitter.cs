@@ -92,8 +92,18 @@ internal sealed partial class Emitter : EmitterBase
             GenAttributeClassifications(lt);
         }
 
-        foreach (LoggingMethod lm in lt.Methods.OrderBy(static x => x.Name))
+        var first = true;
+        foreach (LoggingMethod lm in lt.Methods)
         {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                OutLn();
+            }
+
             GenLogMethod(lm);
             _memberCounter++;
         }
@@ -152,10 +162,20 @@ internal sealed partial class Emitter : EmitterBase
             .Distinct()
             .Single();
 
+        var first = true;
         foreach (var classificationAttributeType in classificationAttributeTypes.OrderBy(static x => x))
         {
             var classificationVariableName = EncodeTypeName(classificationAttributeType);
             var attrClassificationFieldName = GetAttributeClassification(classificationAttributeType);
+
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                OutLn();
+            }
 
             OutGeneratedCodeAttribute();
             OutLn($"private {RedactorType}? ___{classificationVariableName}Redactor;");

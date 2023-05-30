@@ -257,4 +257,10 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         title: Resources.EmptyLoggingMethodTitle,
         messageFormat: Resources.EmptyLoggingMethodMessage,
         category: Category);
+
+    public static DiagnosticDescriptor TemplateStartsWithAtSymbol { get; } = Make(
+        id: "R9G045",
+        title: Resources.TemplateStartsWithAtSymbolTitle,
+        messageFormat: Resources.TemplateStartsWithAtSymbolMessage,
+        category: Category);
 }

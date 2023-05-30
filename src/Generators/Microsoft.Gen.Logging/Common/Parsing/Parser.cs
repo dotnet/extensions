@@ -85,17 +85,12 @@ internal sealed class Parser
 
                     var (lm, keepMethod) = ProcessMethod(method, methodSymbol, attrLoc);
 
-                    bool foundLogger = false;
-                    bool foundRedactorProvider = false;
-                    bool foundException = false;
-                    bool foundLogLevel = false;
-                    bool foundDataClassificationAnnotation = false;
-                    bool foundCustomLogPropertiesProvider = false;
                     parameterSymbols.Clear();
+                    MethodParsingState parsingState = default;
 
                     foreach (var paramSymbol in methodSymbol.Parameters)
                     {
-                        var lp = ProcessParameter(paramSymbol, ref foundLogger, ref foundRedactorProvider, ref foundException, ref foundLogLevel, ref foundDataClassificationAnnotation);
+                        var lp = ProcessParameter(paramSymbol, symbols, ref parsingState);
                         if (lp == null)
                         {
                             keepMethod = false;
@@ -124,10 +119,10 @@ internal sealed class Parser
                             }
                             else
                             {
-                                foundCustomLogPropertiesProvider |= lp.HasPropsProvider;
+                                parsingState.FoundCustomLogPropertiesProvider |= lp.HasPropsProvider;
                                 if (processingResult == LogPropertiesProcessingResult.SucceededWithRedaction)
                                 {
-                                    foundDataClassificationAnnotation = true;
+                                    parsingState.FoundDataClassificationAnnotation = true;
                                 }
                             }
                         }
@@ -148,12 +143,14 @@ internal sealed class Parser
                             Diag(DiagDescriptors.ShouldntMentionLogLevelInMessage, attrLoc, lp.Name);
                             forceAsTemplateParam = true;
                         }
-                        else if (lp.IsNormalParameter && !lm.TemplateMap.ContainsKey(lp.Name) && logPropertiesAttribute == null && !string.IsNullOrEmpty(lm.Message))
+                        else if (lp.IsNormalParameter && !lm.TemplateMap.ContainsKey(lp.Name) &&
+                                 logPropertiesAttribute == null && !string.IsNullOrEmpty(lm.Message))
                         {
                             Diag(DiagDescriptors.ArgumentHasNoCorrespondingTemplate, paramSymbol.GetLocation(), lp.Name);
                         }
 
-                        if (lp.Name[0] == '_' || (lp.NeedsAtSign && lp.Name.Length > 1 && lp.Name[1] == '_'))
+                        // "Name" property doesn't contain '@' even if there was one in the source.
+                        if (lp.Name[0] == '_')
                         {
                             // can't have logging method parameter names that start with _ since that can lead to conflicting symbol names
                             // because all generated symbols start with _
@@ -174,21 +171,21 @@ internal sealed class Parser
                     {
                         if (lm.IsStatic)
                         {
-                            if (!foundLogger)
+                            if (!parsingState.FoundLogger)
                             {
                                 Diag(DiagDescriptors.MissingLoggerArgument, method.ParameterList.GetLocation(), lm.Name);
                                 keepMethod = false;
                             }
-                            else if (foundRedactorProvider && !foundDataClassificationAnnotation)
+                            else if (parsingState.FoundRedactorProvider && !parsingState.FoundDataClassificationAnnotation)
                             {
                                 Diag(DiagDescriptors.MissingDataClassificationArgument, method.ParameterList.GetLocation(), lm.Name);
                             }
-                            else if (foundDataClassificationAnnotation && !foundRedactorProvider)
+                            else if (parsingState.FoundDataClassificationAnnotation && !parsingState.FoundRedactorProvider)
                             {
                                 Diag(DiagDescriptors.MissingRedactorProviderArgument, method.ParameterList.GetLocation());
                                 keepMethod = false;
                             }
-                            else if (foundRedactorProvider && foundCustomLogPropertiesProvider)
+                            else if (parsingState.FoundRedactorProvider && parsingState.FoundCustomLogPropertiesProvider)
                             {
                                 foreach (var lp in lm.AllParameters)
                                 {
@@ -201,7 +198,7 @@ internal sealed class Parser
                         }
                         else
                         {
-                            if (!foundLogger)
+                            if (!parsingState.FoundLogger)
                             {
                                 if (loggerField == null)
                                 {
@@ -225,7 +222,7 @@ internal sealed class Parser
                                 }
                             }
 
-                            if (!foundRedactorProvider && foundDataClassificationAnnotation)
+                            if (!parsingState.FoundRedactorProvider && parsingState.FoundDataClassificationAnnotation)
                             {
                                 if (symbols.RedactorProviderSymbol == null)
                                 {
@@ -255,21 +252,21 @@ internal sealed class Parser
                                     lm.RedactorProviderFieldNullable = redactorProviderFieldNullable;
                                 }
                             }
-                            else if (foundRedactorProvider && !foundDataClassificationAnnotation)
+                            else if (parsingState.FoundRedactorProvider && !parsingState.FoundDataClassificationAnnotation)
                             {
                                 Diag(DiagDescriptors.MissingDataClassificationArgument, method.GetLocation(), lm.Name);
                             }
 
                             // Show this warning only if other checks passed
                             if (keepMethod &&
-                                foundLogger &&
-                                (!foundDataClassificationAnnotation || foundRedactorProvider))
+                                parsingState.FoundLogger &&
+                                (!parsingState.FoundDataClassificationAnnotation || parsingState.FoundRedactorProvider))
                             {
                                 Diag(DiagDescriptors.LoggingMethodShouldBeStatic, method.Identifier.GetLocation());
                             }
                         }
 
-                        if (lm.Level == null && !foundLogLevel)
+                        if (lm.Level == null && !parsingState.FoundLogLevel)
                         {
                             Diag(DiagDescriptors.MissingLogLevel, method.GetLocation());
                             keepMethod = false;
@@ -409,7 +406,8 @@ internal sealed class Parser
                 Modifiers = method.Modifiers.ToString(),
                 HasXmlDocumentation = HasXmlDocumentation(method),
             };
-            TemplateExtractor.ExtractTemplates(message, lm.TemplateMap, lm.TemplateList);
+
+            TemplateExtractor.ExtractTemplates(message, lm.TemplateMap, out var templatesWithAtSymbol);
 
             var keepMethod = true;
             if (lm.Name[0] == '_')
@@ -423,6 +421,13 @@ internal sealed class Parser
             {
                 // logging methods must return void
                 Diag(DiagDescriptors.LoggingMethodMustReturnVoid, method.ReturnType.GetLocation());
+                keepMethod = false;
+            }
+
+            if (templatesWithAtSymbol.Count > 0)
+            {
+                // there is/are template(s) that start with @, which is not allowed
+                Diag(DiagDescriptors.TemplateStartsWithAtSymbol, attrLoc, method.Identifier.Text, string.Join("; ", templatesWithAtSymbol));
                 keepMethod = false;
             }
 
@@ -483,109 +488,6 @@ internal sealed class Parser
 
             return (lm, keepMethod);
         }
-
-        LoggingMethodParameter? ProcessParameter(
-            IParameterSymbol paramSymbol,
-            ref bool foundLogger,
-            ref bool foundRedactorProvider,
-            ref bool foundException,
-            ref bool foundLogLevel,
-            ref bool foundDataClassificationAnnotation)
-        {
-            var paramName = paramSymbol.Name;
-
-            var needsAtSign = false;
-            if (!paramSymbol.DeclaringSyntaxReferences.IsDefaultOrEmpty)
-            {
-                var paramSyntax = paramSymbol.DeclaringSyntaxReferences[0].GetSyntax(_cancellationToken) as ParameterSyntax;
-                if (!string.IsNullOrEmpty(paramSyntax!.Identifier.Text))
-                {
-                    needsAtSign = paramSyntax!.Identifier.Text[0] == '@';
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(paramName))
-            {
-                // semantic problem, just bail quietly
-                return null;
-            }
-
-            var paramTypeSymbol = paramSymbol.Type;
-            if (paramTypeSymbol is IErrorTypeSymbol)
-            {
-                // semantic problem, just bail quietly
-                return null;
-            }
-
-            string? qualifier = null;
-            if (paramSymbol.RefKind == RefKind.In)
-            {
-                qualifier = "in";
-            }
-            else if (paramSymbol.RefKind != RefKind.None)
-            {
-                // Parameter has "ref", "out" modifier, no can do
-                Diag(DiagDescriptors.LoggingMethodParameterRefKind, paramSymbol.GetLocation(), paramSymbol.ContainingSymbol.Name, paramName);
-                return null;
-            }
-
-            string typeName = paramTypeSymbol.ToDisplayString(
-                SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
-                    SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier | SymbolDisplayMiscellaneousOptions.UseSpecialTypes));
-
-            INamedTypeSymbol? classificationAttributeType = null;
-
-            var paramDataClassAttributes = paramSymbol.GetDataClassificationAttributes(symbols);
-            if (paramDataClassAttributes.Count > 1)
-            {
-                Diag(DiagDescriptors.MultipleDataClassificationAttributes, paramSymbol.GetLocation());
-            }
-            else
-            {
-                bool isAnnotatedWithDataClassAttr = paramDataClassAttributes.Count == 1;
-                if (isAnnotatedWithDataClassAttr)
-                {
-                    classificationAttributeType = paramDataClassAttributes[0];
-
-                    foundDataClassificationAnnotation = true;
-                }
-            }
-
-            var extractedType = paramTypeSymbol;
-            if (paramTypeSymbol.IsNullableOfT())
-            {
-                // extract the T from a Nullable<T>
-                extractedType = ((INamedTypeSymbol)paramTypeSymbol).TypeArguments[0];
-            }
-
-            var lp = new LoggingMethodParameter
-            {
-                Name = paramName,
-                Type = typeName,
-                Qualifier = qualifier,
-                NeedsAtSign = needsAtSign,
-                ClassificationAttributeType = classificationAttributeType?.ToDisplayString(),
-                IsNullable = paramTypeSymbol.NullableAnnotation == NullableAnnotation.Annotated,
-                IsReference = paramTypeSymbol.IsReferenceType,
-                IsLogger = !foundLogger && ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.ILoggerSymbol, _compilation),
-                IsException = !foundException && ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.ExceptionSymbol, _compilation),
-                IsLogLevel = !foundLogLevel && SymbolEqualityComparer.Default.Equals(paramTypeSymbol, symbols.LogLevelSymbol),
-                IsEnumerable = LogParserUtilities.IsEnumerable(extractedType, symbols),
-                ImplementsIConvertible = LogParserUtilities.ImplementsIConvertible(paramTypeSymbol, symbols),
-                ImplementsIFormatable = LogParserUtilities.ImplementsIFormatable(paramTypeSymbol, symbols),
-
-                IsRedactorProvider = !foundRedactorProvider &&
-                    symbols.RedactorProviderSymbol is not null &&
-                    ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.RedactorProviderSymbol!, _compilation)
-            };
-
-            foundLogger |= lp.IsLogger;
-            foundRedactorProvider |= lp.IsRedactorProvider;
-            foundException |= lp.IsException;
-            foundLogLevel |= lp.IsLogLevel;
-
-            return lp;
-        }
     }
 
     private static bool HasXmlDocumentation(MethodDeclarationSyntax method)
@@ -600,6 +502,105 @@ internal sealed class Parser
         }
 
         return false;
+    }
+
+    private LoggingMethodParameter? ProcessParameter(
+        IParameterSymbol paramSymbol,
+        SymbolHolder symbols,
+        ref MethodParsingState parsingState)
+    {
+        var paramName = paramSymbol.Name;
+
+        var needsAtSign = false;
+        if (!paramSymbol.DeclaringSyntaxReferences.IsDefaultOrEmpty)
+        {
+            var paramSyntax = paramSymbol.DeclaringSyntaxReferences[0].GetSyntax(_cancellationToken) as ParameterSyntax;
+            if (!string.IsNullOrEmpty(paramSyntax!.Identifier.Text))
+            {
+                needsAtSign = paramSyntax.Identifier.Text[0] == '@';
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(paramName))
+        {
+            // semantic problem, just bail quietly
+            return null;
+        }
+
+        var paramTypeSymbol = paramSymbol.Type;
+        if (paramTypeSymbol is IErrorTypeSymbol)
+        {
+            // semantic problem, just bail quietly
+            return null;
+        }
+
+        string? qualifier = null;
+        if (paramSymbol.RefKind == RefKind.In)
+        {
+            qualifier = "in";
+        }
+        else if (paramSymbol.RefKind != RefKind.None)
+        {
+            // Parameter has "ref", "out" modifier, no can do
+            Diag(DiagDescriptors.LoggingMethodParameterRefKind, paramSymbol.GetLocation(), paramSymbol.ContainingSymbol.Name, paramName);
+            return null;
+        }
+
+        string typeName = paramTypeSymbol.ToDisplayString(
+            SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
+                SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier | SymbolDisplayMiscellaneousOptions.UseSpecialTypes));
+
+        INamedTypeSymbol? classificationAttributeType = null;
+
+        var paramDataClassAttributes = paramSymbol.GetDataClassificationAttributes(symbols);
+        if (paramDataClassAttributes.Count > 1)
+        {
+            Diag(DiagDescriptors.MultipleDataClassificationAttributes, paramSymbol.GetLocation());
+        }
+        else
+        {
+            bool isAnnotatedWithDataClassAttr = paramDataClassAttributes.Count == 1;
+            if (isAnnotatedWithDataClassAttr)
+            {
+                classificationAttributeType = paramDataClassAttributes[0];
+                parsingState.FoundDataClassificationAnnotation = true;
+            }
+        }
+
+        var extractedType = paramTypeSymbol;
+        if (paramTypeSymbol.IsNullableOfT())
+        {
+            // extract the T from a Nullable<T>
+            extractedType = ((INamedTypeSymbol)paramTypeSymbol).TypeArguments[0];
+        }
+
+        var lp = new LoggingMethodParameter
+        {
+            Name = paramName,
+            Type = typeName,
+            Qualifier = qualifier,
+            NeedsAtSign = needsAtSign,
+            ClassificationAttributeType = classificationAttributeType?.ToDisplayString(),
+            IsNullable = paramTypeSymbol.NullableAnnotation == NullableAnnotation.Annotated,
+            IsReference = paramTypeSymbol.IsReferenceType,
+            IsLogger = !parsingState.FoundLogger && ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.ILoggerSymbol, _compilation),
+            IsException = !parsingState.FoundException && ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.ExceptionSymbol, _compilation),
+            IsLogLevel = !parsingState.FoundLogLevel && SymbolEqualityComparer.Default.Equals(paramTypeSymbol, symbols.LogLevelSymbol),
+            IsEnumerable = LogParserUtilities.IsEnumerable(extractedType, symbols),
+            ImplementsIConvertible = LogParserUtilities.ImplementsIConvertible(paramTypeSymbol, symbols),
+            ImplementsIFormatable = LogParserUtilities.ImplementsIFormatable(paramTypeSymbol, symbols),
+
+            IsRedactorProvider = !parsingState.FoundRedactorProvider &&
+                symbols.RedactorProviderSymbol is not null &&
+                ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.RedactorProviderSymbol!, _compilation)
+        };
+
+        parsingState.FoundLogger |= lp.IsLogger;
+        parsingState.FoundRedactorProvider |= lp.IsRedactorProvider;
+        parsingState.FoundException |= lp.IsException;
+        parsingState.FoundLogLevel |= lp.IsLogLevel;
+
+        return lp;
     }
 
     private Location? GetLogMethodAttribute(MethodDeclarationSyntax methodSyntax, SemanticModel sm, SymbolHolder symbols)
@@ -654,4 +655,12 @@ internal sealed class Parser
     {
         _reportDiagnostic(Diagnostic.Create(desc, location, messageArgs));
     }
+
+    private record struct MethodParsingState(
+        bool FoundLogger,
+        bool FoundRedactorProvider,
+        bool FoundException,
+        bool FoundLogLevel,
+        bool FoundDataClassificationAnnotation,
+        bool FoundCustomLogPropertiesProvider);
 }

@@ -13,8 +13,8 @@ using Microsoft.Extensions.Telemetry.Testing.Logging;
 using Microsoft.Shared.Text;
 using TestClasses;
 using Xunit;
-
 using static TestClasses.LogPropertiesExtensions;
+using static TestClasses.LogPropertiesRecordExtensions;
 
 namespace Microsoft.Gen.Logging.Test;
 
@@ -480,6 +480,83 @@ public class LogPropertiesTests
             ["complexParam_IntProperty"] = classToLog.IntProperty.ToInvariantString(),
             ["complexParam_TransitiveProp_IntegerProperty"] = classToLog.TransitiveProp.IntegerProperty.ToInvariantString(),
             ["{OriginalFormat}"] = "Testing interface-typed argument here..."
+        };
+
+        latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+    }
+
+    [Fact]
+    public void LogPropertiesRecordClassArgument()
+    {
+        var recordToLog = new MyRecordClass(100_500, "string_with_at_symbol - @");
+
+        LogRecordClass(_logger, recordToLog);
+
+        Assert.Equal(1, _logger.Collector.Count);
+        var latestRecord = _logger.Collector.LatestRecord;
+        Assert.Null(latestRecord.Exception);
+        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.Equal(LogLevel.Debug, latestRecord.Level);
+        Assert.Empty(latestRecord.Message);
+
+        var expectedState = new Dictionary<string, string?>
+        {
+            ["p0_Value"] = recordToLog.Value.ToInvariantString(),
+            ["p0_class"] = recordToLog.@class,
+            ["p0_GetOnlyValue"] = recordToLog.GetOnlyValue.ToInvariantString(),
+            ["p0_event"] = recordToLog.@event.ToString(CultureInfo.InvariantCulture)
+        };
+
+        latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+    }
+
+    [Fact]
+    public void LogPropertiesRecordStructArgument()
+    {
+        var recordToLog = new MyRecordStruct(100_500, "string value");
+
+        LogRecordStruct(_logger, recordToLog);
+
+        Assert.Equal(1, _logger.Collector.Count);
+        var latestRecord = _logger.Collector.LatestRecord;
+        Assert.Null(latestRecord.Exception);
+        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.Equal(LogLevel.Debug, latestRecord.Level);
+        Assert.Equal($"Struct is: {recordToLog}", latestRecord.Message);
+
+        var expectedState = new Dictionary<string, string?>
+        {
+            ["p0"] = recordToLog.ToString(),
+            ["p0_IntValue"] = recordToLog.IntValue.ToInvariantString(),
+            ["p0_StringValue"] = recordToLog.StringValue,
+            ["p0_GetOnlyValue"] = recordToLog.GetOnlyValue.ToInvariantString(),
+            ["{OriginalFormat}"] = "Struct is: {p0}"
+        };
+
+        latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+    }
+
+    [Fact]
+    public void LogPropertiesReadonlyRecordStructArgument()
+    {
+        var recordToLog = new MyReadonlyRecordStruct(int.MaxValue, Guid.NewGuid().ToString());
+
+        LogReadonlyRecordStruct(_logger, recordToLog);
+
+        Assert.Equal(1, _logger.Collector.Count);
+        var latestRecord = _logger.Collector.LatestRecord;
+        Assert.Null(latestRecord.Exception);
+        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.Equal(LogLevel.Debug, latestRecord.Level);
+        Assert.Equal($"Readonly struct is: {recordToLog}", latestRecord.Message);
+
+        var expectedState = new Dictionary<string, string?>
+        {
+            ["p0"] = recordToLog.ToString(),
+            ["p0_IntValue"] = recordToLog.IntValue.ToInvariantString(),
+            ["p0_StringValue"] = recordToLog.StringValue,
+            ["p0_GetOnlyValue"] = recordToLog.GetOnlyValue.ToInvariantString(),
+            ["{OriginalFormat}"] = "Readonly struct is: {p0}"
         };
 
         latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
