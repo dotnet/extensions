@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net.Http;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Internal.Routing;
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Resilience.Internal;
 using Microsoft.Shared.Diagnostics;
 
@@ -68,41 +67,32 @@ public static partial class HedgingHttpClientBuilderExtensions
 
         var optionsName = builder.Name;
         var routingBuilder = new RoutingStrategyBuilder(builder.Name, builder.Services);
-
-        _ = builder.Services.AddValidatedOptions<HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsValidator>(optionsName);
-        _ = builder.Services.AddValidatedOptions<HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsCustomValidator>(optionsName);
         _ = builder.Services.AddRequestCloner();
 
         // configure outer handler
         var outerHandler = builder.AddResilienceHandler(StandardHandlerPostfix);
-        _ = outerHandler.AddRoutingPolicy(serviceProvider => serviceProvider.GetRoutingFactory(routingBuilder.Name));
-        _ = outerHandler.AddRequestMessageSnapshotPolicy();
-        _ = outerHandler.AddPolicy((builder, serviceProvider) =>
-        {
-            var options = GetOptions(serviceProvider);
-            var hedgedTaskProvider = CreateHedgedTaskProvider(outerHandler.PipelineName);
-
-            _ = builder
-                .AddTimeoutPolicy(StandardHedgingPolicyNames.TotalRequestTimeout, options.TotalRequestTimeoutOptions)
-                .AddHedgingPolicy(StandardHedgingPolicyNames.Hedging, hedgedTaskProvider, options.HedgingOptions);
-        });
+        _ = outerHandler
+            .AddRoutingPolicy(serviceProvider => serviceProvider.GetRoutingFactory(routingBuilder.Name))
+            .AddRequestMessageSnapshotPolicy()
+            .AddPolicy<HttpResponseMessage, HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsCustomValidator>(
+                optionsName,
+                options => { },
+                (builder, options, _) => builder
+                    .AddTimeoutPolicy(StandardHedgingPolicyNames.TotalRequestTimeout, options.TotalRequestTimeoutOptions)
+                    .AddHedgingPolicy(StandardHedgingPolicyNames.Hedging, CreateHedgedTaskProvider(outerHandler.PipelineName), options.HedgingOptions));
 
         // configure inner handler
         var innerBuilder = builder.AddResilienceHandler(StandardInnerHandlerPostfix);
-        _ = innerBuilder.SelectPipelineByAuthority(new DataClassification("FIXME", 1));
-        _ = innerBuilder.AddPolicy((builder, serviceProvider) =>
-        {
-            var options = GetOptions(serviceProvider).EndpointOptions;
-
-            _ = builder
-                .AddBulkheadPolicy(StandardHedgingPolicyNames.Bulkhead, options.BulkheadOptions)
-                .AddCircuitBreakerPolicy(StandardHedgingPolicyNames.CircuitBreaker, options.CircuitBreakerOptions)
-                .AddTimeoutPolicy(StandardHedgingPolicyNames.AttemptTimeout, options.TimeoutOptions);
-        });
+        _ = innerBuilder
+            .SelectPipelineByAuthority(new DataClassification("FIXME", 1))
+            .AddPolicy<HttpResponseMessage, HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsValidator>(
+                optionsName,
+                options => { },
+                (builder, options, _) => builder
+                    .AddBulkheadPolicy(StandardHedgingPolicyNames.Bulkhead, options.EndpointOptions.BulkheadOptions)
+                    .AddCircuitBreakerPolicy(StandardHedgingPolicyNames.CircuitBreaker, options.EndpointOptions.CircuitBreakerOptions)
+                    .AddTimeoutPolicy(StandardHedgingPolicyNames.AttemptTimeout, options.EndpointOptions.TimeoutOptions));
 
         return new StandardHedgingHandlerBuilder(builder.Name, builder.Services, routingBuilder, innerBuilder);
-
-        HttpStandardHedgingResilienceOptions GetOptions(IServiceProvider serviceProvider)
-            => serviceProvider.GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(optionsName);
     }
 }
