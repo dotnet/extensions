@@ -10,6 +10,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.CoreHealthChecksExtensions.AddApplicationLifecycleHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, params string[] tags);",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.CoreHealthChecksExtensions.AddApplicationLifecycleHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Collections.Generic.IEnumerable<string> tags);",
           "Stage": "Stable"
         },
@@ -30,12 +34,24 @@
           "Stage": "Stable"
         },
         {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.CoreHealthChecksExtensions.AddManualHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, params string[] tags);",
+          "Stage": "Stable"
+        },
+        {
           "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.CoreHealthChecksExtensions.AddManualHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Collections.Generic.IEnumerable<string> tags);",
           "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.HealthChecks.CoreHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.HealthChecks.CoreHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.HealthChecks.CoreHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions> configure);",
+          "Stage": "Experimental"
         },
         {
           "Member": "static void Microsoft.Extensions.Diagnostics.HealthChecks.CoreHealthChecksExtensions.ReportHealthy(this Microsoft.Extensions.Diagnostics.HealthChecks.IManualHealthCheck manualHealthCheck);",
@@ -78,6 +94,22 @@
         {
           "Member": "int Microsoft.Extensions.Diagnostics.HealthChecks.KubernetesHealthCheckPublisherOptions.TcpPort { get; set; }",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions.TelemetryHealthCheckPublisherOptions();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions.LogOnlyUnhealthy { get; set; }",
+          "Stage": "Experimental"
         }
       ]
     }
