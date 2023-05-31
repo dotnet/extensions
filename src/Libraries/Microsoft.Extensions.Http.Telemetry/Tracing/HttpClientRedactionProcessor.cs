@@ -5,7 +5,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Diagnostics;
+#if NETCOREAPP3_1_OR_GREATER
 using System.Net.Http;
+#else
+using System.Net;
+#endif
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Http.Telemetry.Tracing.Internal;
@@ -15,10 +19,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
+using OpenTelemetry;
 
 namespace Microsoft.Extensions.Http.Telemetry.Tracing;
 
-internal sealed class HttpClientRedactionProcessor
+internal sealed class HttpClientRedactionProcessor : BaseProcessor<Activity>
 {
     private readonly ILogger<HttpClientRedactionProcessor> _logger;
     private readonly IHttpPathRedactor _httpPathRedactor;
@@ -47,7 +52,36 @@ internal sealed class HttpClientRedactionProcessor
         _logger.ConfiguredHttpClientTracingOptions(_options);
     }
 
-    public void Process(Activity activity, HttpRequestMessage request)
+    public override void OnEnd(Activity activity)
+    {
+        var request = activity.GetRequest();
+
+        if (request != null)
+        {
+            activity.ClearRequest();
+            ProcessRequest(activity, request);
+        }
+    }
+
+#pragma warning disable S3995 // URI return values should not be strings
+    private static string GetFormattedUrl(Uri requestUri, string path)
+    {
+        if (path.Length > 0 && path[0] == '/')
+        {
+            return $"{requestUri.Scheme}{Uri.SchemeDelimiter}{requestUri.Authority}{path}";
+        }
+        else
+        {
+            return $"{requestUri.Scheme}{Uri.SchemeDelimiter}{requestUri.Authority}/{path}";
+        }
+    }
+#pragma warning restore S3995 // URI return values should not be strings
+
+#if NETCOREAPP3_1_OR_GREATER
+    private void ProcessRequest(Activity activity, HttpRequestMessage request)
+#else
+    private void ProcessRequest(Activity activity, HttpWebRequest request)
+#endif
     {
         // Remove tags that shouldn't be exported as they may contain sensitive information.
         _ = activity.SetTag(Constants.AttributeUserAgent, null);
@@ -70,7 +104,6 @@ internal sealed class HttpClientRedactionProcessor
         {
             var path = request.RequestUri.AbsolutePath;
             _ = activity.DisplayName = path;
-            _ = activity.SetTag(Constants.AttributeHttpRoute, path);
             _ = activity.SetTag(Constants.AttributeHttpUrl, GetFormattedUrl(request.RequestUri, path));
             return;
         }
@@ -85,7 +118,6 @@ internal sealed class HttpClientRedactionProcessor
             _logger.RequestMetadataIsNotSetForTheRequest(request.RequestUri.AbsoluteUri);
 
             _ = activity.DisplayName = TelemetryConstants.Unknown;
-            _ = activity.SetTag(Constants.AttributeHttpRoute, TelemetryConstants.Unknown);
             _ = activity.SetTag(Constants.AttributeHttpUrl, GetFormattedUrl(request.RequestUri, TelemetryConstants.Unknown));
             return;
         }
@@ -94,7 +126,6 @@ internal sealed class HttpClientRedactionProcessor
         if (requestRoute == TelemetryConstants.Unknown)
         {
             _ = activity.DisplayName = requestMetadata.RequestName;
-            _ = activity.SetTag(Constants.AttributeHttpRoute, requestMetadata.RequestName);
             _ = activity.SetTag(Constants.AttributeHttpUrl, GetFormattedUrl(request.RequestUri, requestMetadata.RequestName));
         }
         else
@@ -105,7 +136,7 @@ internal sealed class HttpClientRedactionProcessor
             if (routeParameterCount == 0)
             {
                 // Route is either empty or has no parameters.
-                redactedUrl = _urlCache.GetOrAdd(requestRoute, (_) => GetFormattedUrl(request.RequestUri, redactedPath));
+                redactedUrl = _urlCache.GetOrAdd(requestRoute, _ => GetFormattedUrl(request.RequestUri, redactedPath));
             }
             else
             {
@@ -115,22 +146,7 @@ internal sealed class HttpClientRedactionProcessor
             activity.DisplayName = requestMetadata.RequestName == TelemetryConstants.Unknown
                 ? redactedPath : requestMetadata.RequestName;
 
-            _ = activity.SetTag(Constants.AttributeHttpRoute, requestRoute);
             _ = activity.SetTag(Constants.AttributeHttpUrl, redactedUrl);
         }
     }
-
-#pragma warning disable S3995 // URI return values should not be strings
-    private static string GetFormattedUrl(Uri requestUri, string path)
-    {
-        if (path.Length > 0 && path[0] == '/')
-        {
-            return $"{requestUri.Scheme}{Uri.SchemeDelimiter}{requestUri.Authority}{path}";
-        }
-        else
-        {
-            return $"{requestUri.Scheme}{Uri.SchemeDelimiter}{requestUri.Authority}/{path}";
-        }
-    }
-#pragma warning restore S3995 // URI return values should not be strings
 }

@@ -171,6 +171,10 @@
       ],
       "Properties": [
         {
+          "Member": "Microsoft.Extensions.Resilience.FaultInjection.CustomResultPolicyOptions? Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup.CustomResultPolicyOptions { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "Microsoft.Extensions.Resilience.FaultInjection.ExceptionPolicyOptions? Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup.ExceptionPolicyOptions { get; set; }",
           "Stage": "Stable"
         },
@@ -241,6 +245,22 @@
         {
           "Member": "System.Predicate<TResult> Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions<TResult>.ShouldHandleResultAsError { get; set; }",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Resilience.FaultInjection.CustomResultPolicyOptions : Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsBase",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Resilience.FaultInjection.CustomResultPolicyOptions.CustomResultPolicyOptions();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Resilience.FaultInjection.CustomResultPolicyOptions.CustomResultKey { get; set; }",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -469,6 +489,10 @@
         {
           "Member": "Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder.FaultInjectionOptionsBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder.AddCustomResult(string key, object customResult);",
+          "Stage": "Experimental"
         },
         {
           "Member": "Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder.AddException(string key, System.Exception exception);",
@@ -714,6 +738,10 @@
       "Type": "interface Microsoft.Extensions.Resilience.FaultInjection.IChaosPolicyFactory",
       "Stage": "Stable",
       "Methods": [
+        {
+          "Member": "Polly.Contrib.Simmy.Outcomes.AsyncInjectOutcomePolicy<TResult> Microsoft.Extensions.Resilience.FaultInjection.IChaosPolicyFactory.CreateCustomResultPolicy<TResult>();",
+          "Stage": "Experimental"
+        },
         {
           "Member": "Polly.Contrib.Simmy.Outcomes.AsyncInjectOutcomePolicy Microsoft.Extensions.Resilience.FaultInjection.IChaosPolicyFactory.CreateExceptionPolicy();",
           "Stage": "Stable"

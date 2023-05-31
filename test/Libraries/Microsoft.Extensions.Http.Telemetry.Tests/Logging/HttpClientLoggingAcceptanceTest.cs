@@ -22,6 +22,7 @@ public class HttpClientLoggingAcceptanceTest
     [InlineData(4_096)]
     [InlineData(8_192)]
     [InlineData(16_384)]
+    [InlineData(32_768)]
     [InlineData(315_883)]
     public async Task HttpClientLoggingHandler_LogsBodyDataUpToSpecifiedLimit(int limit)
     {

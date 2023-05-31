@@ -1,23 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NETCOREAPP3_1_OR_GREATER
-
 using System;
 using System.Diagnostics;
+#if NETCOREAPP3_1_OR_GREATER
 using System.Diagnostics.Tracing;
 using System.Net.Http;
+using Microsoft.Extensions.Http.Telemetry.Tracing.Test.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Telemetry.Testing.Logging;
+#else
+using System.Net;
+#endif
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Http.Telemetry.Tracing.Internal;
-using Microsoft.Extensions.Http.Telemetry.Tracing.Test.Internal;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry;
 using Microsoft.Extensions.Telemetry.Internal;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
 using Moq;
 using Xunit;
 using MSOptions = Microsoft.Extensions.Options;
@@ -35,6 +36,7 @@ public class HttpClientRedactionProcessorTests
             MSOptions.Options.Create<HttpClientTracingOptions>(null!), redactor, requestMetadataContext));
     }
 
+#if NETCOREAPP3_1_OR_GREATER
     [Theory]
     [CombinatorialData]
     public void HttpClientRedactionProcessor_GivenNullRequestUri_DoesNotSetHttpTargetAndLogsError(bool isLoggerPresent)
@@ -48,7 +50,7 @@ public class HttpClientRedactionProcessorTests
         var logger = isLoggerPresent ? new FakeLogger<HttpClientRedactionProcessor>() : null;
 
         var options = MSOptions.Options.Create(new HttpClientTracingOptions());
-        var processor = new HttpClientRedactionProcessor(options, redactor, requestMetadataContext, logger: logger);
+        using var processor = new HttpClientRedactionProcessor(options, redactor, requestMetadataContext, logger: logger);
 
         using Activity activity = new Activity(ActivityName);
 
@@ -58,9 +60,11 @@ public class HttpClientRedactionProcessorTests
             RequestRoute = "/api/routes/{routeId}/chats/{chatId}"
         });
 
-        processor.Process(activity, httpRequestMessage);
+        activity.SetRequest(httpRequestMessage);
+        processor.OnEnd(activity);
 
         Assert.Null(activity.GetTagItem(Constants.AttributeHttpTarget));
+        Assert.Null(activity.GetRequest());
 
         ValidateEventSourceRecord(listener, EventId, EventLevel.Error, ActivityName);
 
@@ -69,7 +73,7 @@ public class HttpClientRedactionProcessorTests
             ValidateLoggerRecord(logger!, EventId, LogLevel.Error, ActivityName);
         }
     }
-
+#endif
     [Fact]
     public void HttpClientRedactionProcessor_UrlContains_ParametersInTagsToRedactList_RedactsInExportedUrl()
     {
@@ -85,26 +89,32 @@ public class HttpClientRedactionProcessorTests
         var httPathRedactor = builder.GetRequiredService<IHttpPathRedactor>();
         var requestMetadataContext = new Mock<IOutgoingRequestContext>().Object;
         options.RouteParameterDataClasses.Add("routeId", SimpleClassifications.PrivateData);
-        var processor = new HttpClientRedactionProcessor(
+        using var processor = new HttpClientRedactionProcessor(
             MSOptions.Options.Create(options),
             httPathRedactor,
             requestMetadataContext);
 
         using Activity activity = new Activity("test");
+#if NETCOREAPP3_1_OR_GREATER
         using HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
         httpRequestMessage.RequestUri = new Uri(UriString);
+#else
+        var httpRequestMessage = WebRequest.CreateHttp(UriString);
+#endif
         httpRequestMessage.SetRequestMetadata(new RequestMetadata
         {
             RequestRoute = "/api/routes/{routeId}/chats/{chatId}",
             RequestName = "TestRequestName"
         });
 
-        processor.Process(activity, httpRequestMessage);
+        activity.SetRequest(httpRequestMessage);
+        processor.OnEnd(activity);
 
         Assert.Equal("TestRequestName", activity.DisplayName);
         Assert.Equal(SimpleClassifications.PrivateData, redactorProvider.Collector.LastRedactorRequested.DataClassification);
         Assert.Equal("routeId123", redactorProvider.Collector.LastRedactedData.Original);
         Assert.Equal($"http://test.com/api/routes/Redacted:routeId123/chats/{TelemetryConstants.Redacted}", activity.GetTagItem(Constants.AttributeHttpUrl));
+        Assert.Null(activity.GetRequest());
     }
 
     [Theory]
@@ -135,23 +145,29 @@ public class HttpClientRedactionProcessorTests
         var options = builder.GetRequiredService<IOptions<HttpClientTracingOptions>>().Value;
         var requestMetadataContext = new Mock<IOutgoingRequestContext>().Object;
         options.RouteParameterDataClasses.Add("routeId", SimpleClassifications.PrivateData);
-        var processor = new HttpClientRedactionProcessor(
+        using var processor = new HttpClientRedactionProcessor(
             MSOptions.Options.Create(options),
             httPathRedactor,
             requestMetadataContext);
 
         using Activity activity = new Activity("test");
+#if NETCOREAPP3_1_OR_GREATER
         using HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
         httpRequestMessage.RequestUri = new Uri(UriString);
+#else
+        var httpRequestMessage = WebRequest.CreateHttp(UriString);
+#endif
         httpRequestMessage.SetRequestMetadata(new RequestMetadata
         {
             RequestRoute = "/api/routes/{routeId}/chats/{chatId}"
         });
 
-        processor.Process(activity, httpRequestMessage);
+        activity.SetRequest(httpRequestMessage);
+        processor.OnEnd(activity);
 
         Assert.Equal(exptectedActivityName, activity.DisplayName);
         Assert.Equal(exptectedUrl, activity.GetTagItem(Constants.AttributeHttpUrl));
+        Assert.Null(activity.GetRequest());
 
         if (httpPathParameterRedactionMode != HttpRouteParameterRedactionMode.None)
         {
@@ -184,19 +200,25 @@ public class HttpClientRedactionProcessorTests
         var httpRouteParser = builder.GetService<IHttpRouteParser>();
         var httpRouteFormatter = builder.GetService<IHttpRouteFormatter>();
         var requestMetadataContext = new Mock<IOutgoingRequestContext>().Object;
-        var processor = new HttpClientRedactionProcessor(
+        using var processor = new HttpClientRedactionProcessor(
             MSOptions.Options.Create(options),
             httPathRedactor,
             requestMetadataContext);
 
         using Activity activity = new Activity("test");
+#if NETCOREAPP3_1_OR_GREATER
         using HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
         httpRequestMessage.RequestUri = new Uri(UriString);
+#else
+        var httpRequestMessage = WebRequest.CreateHttp(UriString);
+#endif
 
-        processor.Process(activity, httpRequestMessage);
+        activity.SetRequest(httpRequestMessage);
+        processor.OnEnd(activity);
 
         Assert.Equal(TelemetryConstants.Unknown, activity.DisplayName);
         Assert.Equal($"http://test.com/{TelemetryConstants.Unknown}", activity.GetTagItem(Constants.AttributeHttpUrl));
+        Assert.Null(activity.GetRequest());
     }
 
     [Theory]
@@ -220,24 +242,30 @@ public class HttpClientRedactionProcessorTests
         options.RouteParameterDataClasses.Add("chatId", SimpleClassifications.PrivateData);
         options.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
         var requestMetadataContext = new Mock<IOutgoingRequestContext>().Object;
-        var processor = new HttpClientRedactionProcessor(
+        using var processor = new HttpClientRedactionProcessor(
             MSOptions.Options.Create(options),
             httPathRedactor,
             requestMetadataContext);
 
         using Activity activity = new Activity("test");
+#if NETCOREAPP3_1_OR_GREATER
         using HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
         httpRequestMessage.RequestUri = new Uri(UriString);
+#else
+        var httpRequestMessage = WebRequest.CreateHttp(UriString);
+#endif
         httpRequestMessage.SetRequestMetadata(new RequestMetadata
         {
             RequestRoute = "/api/routes/{routeId}/chats/{chatId}"
         });
 
-        processor.Process(activity, httpRequestMessage);
+        activity.SetRequest(httpRequestMessage);
+        processor.OnEnd(activity);
 
         Assert.Equal("api/routes/Redacted:routeId123/chats/Redacted:chatId123", activity.DisplayName);
         Assert.Equal(2, redactorProvider.Collector.AllRedactedData.Count);
         Assert.Equal("http://test.com/api/routes/Redacted:routeId123/chats/Redacted:chatId123", activity.GetTagItem(Constants.AttributeHttpUrl));
+        Assert.Null(activity.GetRequest());
     }
 
     [Theory]
@@ -266,25 +294,31 @@ public class HttpClientRedactionProcessorTests
         options.RouteParameterDataClasses.Add("routes", SimpleClassifications.PrivateData);
         options.RouteParameterDataClasses.Add("chats", SimpleClassifications.PrivateData);
         var requestMetadataContext = new Mock<IOutgoingRequestContext>().Object;
-        var processor = new HttpClientRedactionProcessor(
+        using var processor = new HttpClientRedactionProcessor(
             MSOptions.Options.Create(options),
             httPathRedactor,
             requestMetadataContext);
 
         using Activity activity = new Activity("test");
+#if NETCOREAPP3_1_OR_GREATER
         using HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
         httpRequestMessage.RequestUri = new Uri(UriString);
+#else
+        var httpRequestMessage = WebRequest.CreateHttp(UriString);
+#endif
         httpRequestMessage.SetRequestMetadata(new RequestMetadata
         {
             RequestRoute = "/api/routes/{routeId}/chats/{chatId}/messages"
         });
 
-        processor.Process(activity, httpRequestMessage);
+        activity.SetRequest(httpRequestMessage);
+        processor.OnEnd(activity);
 
         Assert.Equal(exptectedActivityName, activity.DisplayName);
         Assert.Equal(0, redactorProvider.Collector.AllRedactorRequests.Count);
         Assert.Equal(0, redactorProvider.Collector.AllRedactedData.Count);
         Assert.Equal(exptectedUrl, activity.GetTagItem(Constants.AttributeHttpUrl));
+        Assert.Null(activity.GetRequest());
     }
 
     [Fact]
@@ -302,26 +336,31 @@ public class HttpClientRedactionProcessorTests
         var options = new HttpClientTracingOptions();
         options.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
         var requestMetadataContext = new Mock<IOutgoingRequestContext>().Object;
-        var processor = new HttpClientRedactionProcessor(
+        using var processor = new HttpClientRedactionProcessor(
             MSOptions.Options.Create(options),
             httPathRedactor,
             requestMetadataContext);
 
         using Activity activity = new Activity("test");
+#if NETCOREAPP3_1_OR_GREATER
         using HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
         httpRequestMessage.RequestUri = new Uri(UriString);
-
+#else
+        var httpRequestMessage = WebRequest.CreateHttp(UriString);
+#endif
         httpRequestMessage.SetRequestMetadata(new RequestMetadata
         {
             RequestRoute = "/api/routes/{routeId}/chats/{chatId}"
         });
 
-        processor.Process(activity, httpRequestMessage);
+        activity.SetRequest(httpRequestMessage);
+        processor.OnEnd(activity);
 
         Assert.Equal($"api/routes/{TelemetryConstants.Redacted}/chats/{TelemetryConstants.Redacted}", activity.DisplayName);
         Assert.Equal(0, redactorProvider.Collector.AllRedactorRequests.Count);
         Assert.Equal(0, redactorProvider.Collector.AllRedactedData.Count);
         Assert.Equal($"http://test.com/api/routes/{TelemetryConstants.Redacted}/chats/{TelemetryConstants.Redacted}", activity.GetTagItem(Constants.AttributeHttpUrl));
+        Assert.Null(activity.GetRequest());
     }
 
     [Fact]
@@ -338,19 +377,25 @@ public class HttpClientRedactionProcessorTests
         var options = new HttpClientTracingOptions();
         options.RouteParameterDataClasses.Add("routeId", SimpleClassifications.PrivateData);
         var requestMetadataContext = new Mock<IOutgoingRequestContext>().Object;
-        var processor = new HttpClientRedactionProcessor(
+        using var processor = new HttpClientRedactionProcessor(
             MSOptions.Options.Create(options),
             httPathRedactor,
             requestMetadataContext);
 
         using Activity activity = new Activity("test1");
+#if NETCOREAPP3_1_OR_GREATER
         using HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
         httpRequestMessage.RequestUri = new Uri(UriString);
+#else
+        var httpRequestMessage = WebRequest.CreateHttp(UriString);
+#endif
 
-        processor.Process(activity, httpRequestMessage);
+        activity.SetRequest(httpRequestMessage);
+        processor.OnEnd(activity);
 
         Assert.Equal(TelemetryConstants.Unknown, activity.DisplayName);
         Assert.Equal($"http://test.com/{TelemetryConstants.Unknown}", activity.GetTagItem(Constants.AttributeHttpUrl));
+        Assert.Null(activity.GetRequest());
     }
 
     [Fact]
@@ -367,24 +412,29 @@ public class HttpClientRedactionProcessorTests
         var options = new HttpClientTracingOptions();
         options.RouteParameterDataClasses.Add("routeId", SimpleClassifications.PrivateData);
         var requestMetadataContext = new Mock<IOutgoingRequestContext>().Object;
-        var processor = new HttpClientRedactionProcessor(
+        using var processor = new HttpClientRedactionProcessor(
             MSOptions.Options.Create(options),
             httPathRedactor,
             requestMetadataContext);
 
         using Activity activity = new Activity("test1");
+#if NETCOREAPP3_1_OR_GREATER
         using HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
         httpRequestMessage.RequestUri = new Uri(UriString);
-
+#else
+        var httpRequestMessage = WebRequest.CreateHttp(UriString);
+#endif
         httpRequestMessage.SetRequestMetadata(new RequestMetadata
         {
             RequestName = "TestRequest"
         });
 
-        processor.Process(activity, httpRequestMessage);
+        activity.SetRequest(httpRequestMessage);
+        processor.OnEnd(activity);
 
         Assert.Equal("TestRequest", activity.DisplayName);
         Assert.Equal($"http://test.com/TestRequest", activity.GetTagItem(Constants.AttributeHttpUrl));
+        Assert.Null(activity.GetRequest());
     }
 
     [Fact]
@@ -401,24 +451,29 @@ public class HttpClientRedactionProcessorTests
         var options = new HttpClientTracingOptions();
         options.RouteParameterDataClasses.Add("routeId", SimpleClassifications.PrivateData);
         var requestMetadataContext = new Mock<IOutgoingRequestContext>().Object;
-        var processor = new HttpClientRedactionProcessor(
+        using var processor = new HttpClientRedactionProcessor(
             MSOptions.Options.Create(options),
             httPathRedactor,
             requestMetadataContext);
 
         using Activity activity = new Activity("test1");
+#if NETCOREAPP3_1_OR_GREATER
         using HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
         httpRequestMessage.RequestUri = new Uri(UriString);
-
+#else
+        var httpRequestMessage = WebRequest.CreateHttp(UriString);
+#endif
         httpRequestMessage.SetRequestMetadata(new RequestMetadata
         {
             RequestRoute = string.Empty
         });
 
-        processor.Process(activity, httpRequestMessage);
+        activity.SetRequest(httpRequestMessage);
+        processor.OnEnd(activity);
 
         Assert.Equal(TelemetryConstants.Redacted, activity.DisplayName);
         Assert.Equal($"http://test.com/{TelemetryConstants.Redacted}", activity.GetTagItem(Constants.AttributeHttpUrl));
+        Assert.Null(activity.GetRequest());
     }
 
     [Theory]
@@ -428,7 +483,7 @@ public class HttpClientRedactionProcessorTests
     [InlineData(HttpRouteParameterRedactionMode.Loose,
         "http://test.com/api/routes/routeId123/chats/chatId123",
         "api/routes/routeId123/chats/chatId123")]
-    public void HttpClientRedactorProcessor_Given_Zero_Tags_To_Redact_Returns_Quickly(
+    public void HttpClientRedactionProcessor_GivenZeroTagsToRedact_ReturnsQuickly(
         HttpRouteParameterRedactionMode httpPathParameterRedactionMode,
         string exptectedUrl,
         string exptectedActivityName)
@@ -445,28 +500,34 @@ public class HttpClientRedactionProcessorTests
         var redactorProvider = new FakeRedactorProvider();
         var options = new HttpClientTracingOptions();
         var requestMetadataContext = new Mock<IOutgoingRequestContext>().Object;
-        var processor = new HttpClientRedactionProcessor(
+        using var processor = new HttpClientRedactionProcessor(
             MSOptions.Options.Create(options),
             httPathRedactor,
             requestMetadataContext);
 
         using Activity activity = new Activity("test");
+#if NETCOREAPP3_1_OR_GREATER
         using HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
         httpRequestMessage.RequestUri = new Uri(UriString);
-
+#else
+        var httpRequestMessage = WebRequest.CreateHttp(UriString);
+#endif
         httpRequestMessage.SetRequestMetadata(new RequestMetadata
         {
             RequestRoute = "/api/routes/{routeId}/chats/{chatId}"
         });
 
-        processor.Process(activity, httpRequestMessage);
+        activity.SetRequest(httpRequestMessage);
+        processor.OnEnd(activity);
 
         Assert.Equal(exptectedActivityName, activity.DisplayName);
         Assert.Equal(0, redactorProvider.Collector.AllRedactorRequests.Count);
         Assert.Equal(0, redactorProvider.Collector.AllRedactedData.Count);
         Assert.Equal(exptectedUrl, activity.GetTagItem(Constants.AttributeHttpUrl));
+        Assert.Null(activity.GetRequest());
     }
 
+#if NETCOREAPP3_1_OR_GREATER
     private static void ValidateEventSourceRecord(
         TestEventListener listener, int eventId, EventLevel level, string activityName)
     {
@@ -500,6 +561,5 @@ public class HttpClientRedactionProcessorTests
 
         return builder.GetRequiredService<IHttpPathRedactor>();
     }
-}
-
 #endif
+}

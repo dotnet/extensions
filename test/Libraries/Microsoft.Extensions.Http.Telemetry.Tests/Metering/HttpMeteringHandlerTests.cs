@@ -664,10 +664,7 @@ public sealed class HttpMeteringHandlerTests : IDisposable
             RequestRoute = "/foo"
         };
 
-        if (requestMetadataContext != null)
-        {
-            requestMetadataContext.RequestMetadata = requestMetadata;
-        }
+        requestMetadataContext?.SetRequestMetadata(requestMetadata);
 
         Assert.NotNull(requestMetadataContext);
     }

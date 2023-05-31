@@ -155,6 +155,8 @@ public static class HttpClientTracingExtensions
                 services.TryAddActivatedSingleton<HttpClientTraceEnrichmentProcessor>();
                 services.TryAddActivatedSingleton<HttpClientRedactionProcessor>();
             })
-            .AddHttpClientInstrumentation();
+            .AddHttpClientInstrumentation()
+            .AddProcessor<HttpClientTraceEnrichmentProcessor>()
+            .AddProcessor<HttpClientRedactionProcessor>();
     }
 }

@@ -4,12 +4,19 @@
 namespace Microsoft.Extensions.Http.Telemetry;
 
 /// <summary>
-/// Interface that holds outgoing request metadata.
+/// Interface to represent outgoing request context.
 /// </summary>
 public interface IOutgoingRequestContext
 {
     /// <summary>
-    /// Gets or sets the metadata for outgoing requests.
+    /// Sets metadata for outgoing requests to be used for telemetry purposes.
     /// </summary>
-    RequestMetadata? RequestMetadata { get; set; }
+    /// <param name="metadata">Metadata for the request.</param>
+    void SetRequestMetadata(RequestMetadata metadata);
+
+    /// <summary>
+    /// Gets metadata for outgoing requests to be used for telemetry purposes.
+    /// </summary>
+    /// <returns>request metadata.</returns>
+    RequestMetadata? RequestMetadata { get; }
 }

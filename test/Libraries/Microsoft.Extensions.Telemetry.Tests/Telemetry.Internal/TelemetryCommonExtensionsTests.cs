@@ -109,10 +109,7 @@ public class TelemetryCommonExtensionsTests
             RequestRoute = "/v1/users/{userId}/chats"
         };
 
-        if (requestMetadataContext != null)
-        {
-            requestMetadataContext.RequestMetadata = metadata;
-        }
+        requestMetadataContext?.SetRequestMetadata(metadata);
 
         var extractedMetadata = requestMetadataContext?.RequestMetadata;
         Assert.NotNull(extractedMetadata);
@@ -130,7 +127,7 @@ public class TelemetryCommonExtensionsTests
         var requestMetadataContext = sp.GetService<IOutgoingRequestContext>()!;
         var metadata = new RequestMetadata();
 
-        requestMetadataContext.RequestMetadata = metadata;
+        requestMetadataContext.SetRequestMetadata(metadata);
 
         var extractedMetadata = requestMetadataContext.RequestMetadata;
         Assert.NotNull(extractedMetadata);

@@ -101,7 +101,7 @@ internal class TestHttpServer
             try
             {
                 _listener.Close();
-                _httpListenerTask.Wait();
+                _httpListenerTask.GetAwaiter().GetResult();
                 _initialized.Dispose();
             }
             catch (ObjectDisposedException)
