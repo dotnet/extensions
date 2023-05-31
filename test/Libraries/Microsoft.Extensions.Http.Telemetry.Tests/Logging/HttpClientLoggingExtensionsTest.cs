@@ -620,10 +620,10 @@ public class HttpClientLoggingExtensionsTest
         };
 
         var requestContext = sp.GetRequiredService<IOutgoingRequestContext>();
-        requestContext.RequestMetadata = new RequestMetadata
+        requestContext.SetRequestMetadata(new RequestMetadata
         {
             RequestRoute = "/v1/unit/{unitId}/users/{userId}"
-        };
+        });
 
         _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
 
@@ -661,10 +661,10 @@ public class HttpClientLoggingExtensionsTest
         };
 
         var requestContext = sp.GetRequiredService<IOutgoingRequestContext>();
-        requestContext.RequestMetadata = new RequestMetadata
+        requestContext.SetRequestMetadata(new RequestMetadata
         {
             RequestRoute = "/v1/unit/{unitId}/users/{userId}"
-        };
+        });
 
         _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
 

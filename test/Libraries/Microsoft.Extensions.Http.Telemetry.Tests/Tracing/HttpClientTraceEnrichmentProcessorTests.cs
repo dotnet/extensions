@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Http.Telemetry;
+using Microsoft.Extensions.Http.Telemetry.Tracing.Internal;
 using Microsoft.Extensions.Http.Telemetry.Tracing.Test.Internal;
 using Microsoft.Extensions.Telemetry;
 using Moq;
@@ -67,10 +68,13 @@ public class HttpClientTraceEnrichmentProcessorTests
             RequestRoute = "/api/routes/{routeId}/chats/{chatId}"
         });
 
-        traceEnrichmentProcessor.Enrich(activity, httpRequestMessage, null);
+        activity.SetRequest(httpRequestMessage);
+        traceEnrichmentProcessor.OnEnd(activity);
 
         mockTraceEnricher1.Verify(m => m.Enrich(activity, httpRequestMessage, null), Times.Once);
         mockTraceEnricher2.Verify(m => m.Enrich(activity, httpRequestMessage, null), Times.Once);
+
+        Assert.NotNull(activity.GetRequest());
     }
 
     [Fact]
@@ -94,8 +98,12 @@ public class HttpClientTraceEnrichmentProcessorTests
         using Activity activity = new Activity("test");
         using var httpResponseMessage = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
 
-        traceEnrichmentProcessor.Enrich(activity, httpResponseMessage.RequestMessage!, httpResponseMessage);
-        mockTraceEnricher1.Verify(m => m.Enrich(activity, httpResponseMessage.RequestMessage, httpResponseMessage), Times.Once);
+        activity.SetResponse(httpResponseMessage);
+        traceEnrichmentProcessor.OnEnd(activity);
+
+        mockTraceEnricher1.Verify(m => m.Enrich(activity, null, httpResponseMessage), Times.Once);
+
+        Assert.Null(activity.GetResponse());
     }
 
     [Fact]

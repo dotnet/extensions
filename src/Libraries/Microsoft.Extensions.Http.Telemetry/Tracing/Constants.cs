@@ -15,6 +15,8 @@ internal static class Constants
     public const string AttributeNetPeerName = "net.peer.name";
     public const string AttributeNetPeerPort = "net.peer.port";
     public const string AttributeUserAgent = "http.user_agent";
+    public const string AttributeExceptionType = "env_ex_type";
+    public const string AttributeExceptionMessage = "env_ex_msg";
     public const string CustomPropertyHttpRequestMessage = "Tracing.CustomProperty.HttpRequestMessage";
     public const string CustomPropertyHttpResponseMessage = "Tracing.CustomProperty.HttpResponseMessage";
     public const string ActivityStartEvent = "OnStartActivity";

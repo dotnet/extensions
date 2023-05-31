@@ -6,7 +6,6 @@
 using System.Diagnostics;
 using System.Net.Http;
 using Microsoft.Extensions.Options;
-using Xunit;
 
 namespace Microsoft.Extensions.Http.Telemetry.Tracing.Test.Internal;
 
@@ -16,9 +15,13 @@ internal sealed class TestHttpClientTraceEnricher : IHttpClientTraceEnricher
 {
     public TestHttpClientTraceEnricher(IOptions<HttpClientTracingOptions> _)
     {
+        // nop
     }
 
-    public void Enrich(Activity activity, HttpRequestMessage? request, HttpResponseMessage? response) => Assert.NotNull(request);
+    public void Enrich(Activity activity, HttpRequestMessage? request, HttpResponseMessage? response)
+    {
+        // nop
+    }
 }
 
 internal sealed class TestHttpClientResponseTraceEnricher : IHttpClientTraceEnricher
@@ -38,6 +41,7 @@ internal sealed class TestHttpClientResponseTraceEnricher2 : IHttpClientTraceEnr
 {
     public TestHttpClientResponseTraceEnricher2(IOptions<HttpClientTracingOptions> _)
     {
+        // nop
     }
 
     public void Enrich(Activity activity, HttpRequestMessage? request, HttpResponseMessage? response)

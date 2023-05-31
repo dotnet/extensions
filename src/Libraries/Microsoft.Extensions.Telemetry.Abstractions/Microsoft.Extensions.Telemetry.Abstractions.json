@@ -421,9 +421,15 @@
     {
       "Type": "interface Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext",
       "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext.SetRequestMetadata(Microsoft.Extensions.Http.Telemetry.RequestMetadata metadata);",
+          "Stage": "Stable"
+        }
+      ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext.RequestMetadata { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext.RequestMetadata { get; }",
           "Stage": "Stable"
         }
       ]

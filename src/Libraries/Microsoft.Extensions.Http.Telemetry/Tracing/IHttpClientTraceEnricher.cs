@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NETCOREAPP3_1_OR_GREATER
+
 using System.Diagnostics;
 using System.Net.Http;
 
@@ -23,3 +25,5 @@ public interface IHttpClientTraceEnricher
     /// </remarks>
     void Enrich(Activity activity, HttpRequestMessage? request, HttpResponseMessage? response);
 }
+
+#endif

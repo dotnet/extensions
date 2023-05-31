@@ -8,11 +8,12 @@ namespace Microsoft.Extensions.Telemetry.Internal;
 
 internal sealed class OutgoingRequestContext : IOutgoingRequestContext
 {
-    private static readonly AsyncLocal<RequestMetadata?> _asyncLocal = new();
+    private static readonly AsyncLocal<RequestMetadata> _asyncLocal = new();
 
-    public RequestMetadata? RequestMetadata
+    public void SetRequestMetadata(RequestMetadata metadata)
     {
-        get => _asyncLocal.Value;
-        set => _asyncLocal.Value = value;
+        _asyncLocal.Value = metadata;
     }
+
+    public RequestMetadata? RequestMetadata => _asyncLocal.Value;
 }
