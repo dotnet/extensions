@@ -137,6 +137,15 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
+    public void TimeCannotGoBackwards()
+    {
+        var timeProvider = new FakeTimeProvider();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => timeProvider.Advance(TimeSpan.FromTicks(-1)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => timeProvider.SetUtcNow(timeProvider.Epoch - TimeSpan.FromTicks(1)));
+    }
+
+    [Fact]
     public void ToStr()
     {
         var dto = new DateTimeOffset(new DateTime(2022, 1, 2, 3, 4, 5, 6), TimeSpan.Zero);

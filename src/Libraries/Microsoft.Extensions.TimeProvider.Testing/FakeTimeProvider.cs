@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Time.Testing;
 
@@ -68,7 +69,12 @@ public class FakeTimeProvider : TimeProvider
     /// <param name="value">The date and time in the UTC timezone.</param>
     public void SetUtcNow(DateTimeOffset value)
     {
-        while (_now <= value && TryGetWaiterToWake(value) is FakeTimeProviderTimer.Waiter waiter)
+        if (value < _now)
+        {
+            Throw.ArgumentOutOfRangeException(nameof(value), $"Cannot go back in time. Current time is {GetUtcNow()}.");
+        }
+
+        while (value >= _now && TryGetWaiterToWake(value) is FakeTimeProviderTimer.Waiter waiter)
         {
             _now = waiter.WakeupTime;
             waiter.TriggerAndSchedule(false);
