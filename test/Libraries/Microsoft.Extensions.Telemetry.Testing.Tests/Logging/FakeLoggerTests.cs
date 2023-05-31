@@ -250,7 +250,7 @@ public class FakeLoggerTests
         logger.LogDebug("M1");
         logger.LogDebug("M2");
 
-        timeProvider.Advance();
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
         logger.LogDebug("M3");
         logger.LogDebug("M4");
 

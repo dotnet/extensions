@@ -32,7 +32,7 @@ public class FakeLogCollectorTests
         var output = new Output();
 
         var timeProvider = new FakeTimeProvider();
-        timeProvider.Advance();
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
 
         var options = new FakeLogCollectorOptions
         {
@@ -74,7 +74,7 @@ public class FakeLogCollectorTests
         var output = new Output();
 
         var timeProvider = new FakeTimeProvider();
-        timeProvider.Advance();
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
 
         var options = new FakeLogCollectorOptions
         {

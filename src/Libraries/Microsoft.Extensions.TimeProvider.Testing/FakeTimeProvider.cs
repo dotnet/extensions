@@ -81,11 +81,6 @@ public class FakeTimeProvider : TimeProvider
         WakeWaiters(waiters);
     }
 
-    /// <summary>
-    /// Advances the clock's time by one millisecond.
-    /// </summary>
-    public void Advance() => Advance(TimeSpan.FromMilliseconds(1));
-
     /// <inheritdoc />
     public override long GetTimestamp()
     {

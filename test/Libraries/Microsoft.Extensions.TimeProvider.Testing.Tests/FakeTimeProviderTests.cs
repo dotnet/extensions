@@ -173,7 +173,7 @@ public class FakeTimeProviderTests
         var timeProvider = new FakeTimeProvider();
 
         var delay = timeProvider.Delay(TimeSpan.FromMilliseconds(1), CancellationToken.None);
-        timeProvider.Advance();
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
         await delay;
 
         Assert.True(delay.IsCompleted);
@@ -203,7 +203,7 @@ public class FakeTimeProviderTests
         var timeProvider = new FakeTimeProvider();
 
         using var cts = timeProvider.CreateCancellationTokenSource(TimeSpan.FromMilliseconds(1));
-        timeProvider.Advance();
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
 
         await Assert.ThrowsAsync<TaskCanceledException>(() => timeProvider.Delay(TimeSpan.FromTicks(1), cts.Token));
     }
@@ -224,7 +224,7 @@ public class FakeTimeProviderTests
         var t = source.Task.WaitAsync(TimeSpan.FromSeconds(100000), timeProvider, CancellationToken.None);
         while (!t.IsCompleted)
         {
-            timeProvider.Advance();
+            timeProvider.Advance(TimeSpan.FromMilliseconds(1));
             await Task.Delay(1);
             _ = source.TrySetResult(true);
         }
@@ -243,7 +243,7 @@ public class FakeTimeProviderTests
         var t = source.Task.WaitAsync(_infiniteTimeout, timeProvider, CancellationToken.None);
         while (!t.IsCompleted)
         {
-            timeProvider.Advance();
+            timeProvider.Advance(TimeSpan.FromMilliseconds(1));
             await Task.Delay(1);
             _ = source.TrySetResult(true);
         }
@@ -262,7 +262,7 @@ public class FakeTimeProviderTests
         var t = source.Task.WaitAsync(TimeSpan.FromMilliseconds(1), timeProvider, CancellationToken.None);
         while (!t.IsCompleted)
         {
-            timeProvider.Advance();
+            timeProvider.Advance(TimeSpan.FromMilliseconds(1));
             await Task.Delay(1);
         }
 
