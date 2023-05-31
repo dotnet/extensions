@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <Compile Include="..\Common\**\*.cs" />
-    <Compile Include="..\..\..\Shared\*.cs" />
+    <Compile Include="..\..\..\Shared\*.cs" LinkBase="Shared" />
 
     <Content Include="..\..\TestClasses\**\*.cs">
       <Link>TestClasses\%(RecursiveDir)%(Filename)%(Extension)</Link>

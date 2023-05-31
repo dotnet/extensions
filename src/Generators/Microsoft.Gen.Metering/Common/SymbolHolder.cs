@@ -11,6 +11,7 @@ internal sealed record class SymbolHolder(
     INamedTypeSymbol? CounterOfTAttribute,
     INamedTypeSymbol HistogramAttribute,
     INamedTypeSymbol? HistogramOfTAttribute,
+    INamedTypeSymbol? GaugeAttribute,
     INamedTypeSymbol LongTypeSymbol,
     INamedTypeSymbol? DimensionAttribute,
     INamedTypeSymbol? IMeterInterface);

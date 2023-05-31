@@ -113,4 +113,16 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         title: Resources.ErrorInvalidMethodReturnTypeArityTitle,
         messageFormat: Resources.ErrorInvalidMethodReturnTypeArityMessage,
         category: Category);
+
+    public static DiagnosticDescriptor ErrorGaugeNotSupported { get; } = Make(
+        id: "R9G069",
+        title: Resources.ErrorGaugeNotSupportedTitle,
+        messageFormat: Resources.ErrorGaugeNotSupportedMessage,
+        category: Category);
+
+    public static DiagnosticDescriptor ErrorXmlNotLoadedCorrectly { get; } = Make(
+        id: "R9G070",
+        title: Resources.ErrorXmlNotLoadedCorrectlyTitle,
+        messageFormat: Resources.ErrorXmlNotLoadedCorrectlyMessage,
+        category: Category);
 }

@@ -33,7 +33,7 @@ public class EmitterTests
         }
 
         var (d, r) = await RoslynTestUtils.RunGenerator(
-            new Generator(),
+            new MeteringGenerator(),
             new[]
             {
                 Assembly.GetAssembly(typeof(Meter))!,
@@ -48,7 +48,7 @@ public class EmitterTests
         Assert.Empty(d);
         Assert.Equal(2, r.Length);
 
-        string generatedContentPath = "GoldenFiles/Microsoft.Gen.Metering/Microsoft.Gen.Metering.Generator";
+        string generatedContentPath = "GoldenFiles/Microsoft.Gen.Metering/Microsoft.Gen.Metering.MeteringGenerator";
         var goldenCache = File.ReadAllText($"{generatedContentPath}/Factory.g.cs");
         var goldenMetrics = File.ReadAllText($"{generatedContentPath}/Metering.g.cs");
 

@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 namespace Microsoft.Gen.ComplianceReports;
 
 /// <summary>
-/// Holds required symbols for the <see cref="Generator"/>.
+/// Holds required symbols for the <see cref="ComplianceReportsGenerator"/>.
 /// </summary>
 internal sealed record class SymbolHolder(
     INamedTypeSymbol DataClassificationAttributeSymbol,

@@ -125,7 +125,7 @@ internal static class GeneratorUtilities
 
     /// <summary>
     /// Reports will not be generated during design time to prevent file being written on every keystroke in VS.
-    /// Refererences:
+    /// References:
     ///   1. <see href=
     ///   "https://github.com/dotnet/project-system/blob/c872b4d46e3f308d4b859e684896e1122bdf03c2/docs/design-time-builds.md#determining-whether-a-target-is-running-in-a-design-time-build">
     /// Design-time build</see>.

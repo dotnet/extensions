@@ -10,5 +10,10 @@ namespace TestClasses
         public const string D2 = "Dim_2"; // dots are not supported in dimension names
 
         public const string D3 = "Dim_3"; // dashes are not supported in dimension names
+
+        /// <summary>
+        /// Dim4 description.
+        /// </summary>
+        public const string DimWithXmlComment = "Dim4";
     }
 }

@@ -17,7 +17,7 @@ namespace Microsoft.Gen.MeteringReports;
 
 [Generator]
 [ExcludeFromCodeCoverage]
-public class MetricDefinitionGenerator : ISourceGenerator
+public class MeteringReportsGenerator : ISourceGenerator
 {
     private const string GenerateMetricDefinitionReport = "build_property.GenerateMeteringReport";
     private const string RootNamespace = "build_property.rootnamespace";
@@ -25,8 +25,6 @@ public class MetricDefinitionGenerator : ISourceGenerator
     private const string CompilationOutputPath = "build_property.outputpath";
     private const string CurrentProjectPath = "build_property.projectdir";
     private const string FileName = "MeteringReport.json";
-
-    private static readonly Dictionary<string, string> _empty = new();
 
     private string? _compilationOutputPath;
     private string? _currentProjectPath;
@@ -70,8 +68,9 @@ public class MetricDefinitionGenerator : ISourceGenerator
 
         _ = options.TryGetValue(RootNamespace, out var rootNamespace);
 
+        var emitter = new MetricDefinitionEmitter();
         var reportedMetrics = MapToCommonModel(meteringClasses, rootNamespace);
-        var report = MetricDefinitionEmitter.GenerateReport(reportedMetrics, context.CancellationToken);
+        var report = emitter.GenerateReport(reportedMetrics, context.CancellationToken);
 
 #pragma warning disable R9A017 // Switch to an asynchronous metricMethod for increased performance; Cannot because it is void metricMethod, and generators dont support tasks.
         File.WriteAllText(Path.Combine(path, FileName), report, Encoding.UTF8);
@@ -88,10 +87,10 @@ public class MetricDefinitionGenerator : ISourceGenerator
                 Modifiers: meteringClass.Modifiers,
                 Methods: meteringClass.Methods.Select(meteringMethod => new ReportedMetricMethod(
                     MetricName: meteringMethod.MetricName ?? "(Missing Name)",
-                    Summary: "(Missing Summary)" /* Missing feature in .NET metering generator. */,
+                    Summary: meteringMethod.XmlDefinition ?? "(Missing Summary)",
                     Kind: meteringMethod.InstrumentKind,
                     Dimensions: meteringMethod.DimensionsKeys,
-                    DimensionsDescriptions: _empty /* Missing feature in .NET metering generator. */))
+                    DimensionsDescriptions: meteringMethod.DimensionDescriptionDictionary))
                 .ToArray()));
 
         return reportedMetrics.ToArray();

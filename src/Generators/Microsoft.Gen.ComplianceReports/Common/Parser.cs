@@ -47,6 +47,12 @@ internal sealed class Parser
                 {
                     Dictionary<string, ClassifiedItem>? classifiedMembers = null;
 
+                    // include the annotations provided in record constructor parameters
+                    if (typeSyntax is RecordDeclarationSyntax recordSyntax)
+                    {
+                        classifiedMembers = GetClassifiedMembers(recordSyntax, classifiedMembers, sm);
+                    }
+
                     // grab the annotated members
                     classifiedMembers = GetClassifiedMembers(typeSymbol, classifiedMembers);
 
@@ -94,6 +100,43 @@ internal sealed class Parser
         return result;
     }
 
+    private Dictionary<string, ClassifiedItem>? GetClassifiedMembers(RecordDeclarationSyntax recordSyntax,
+                                                                     Dictionary<string, ClassifiedItem>? classifiedMembers,
+                                                                     SemanticModel sm)
+    {
+        var parameters = recordSyntax.ParameterList?.Parameters;
+        if (parameters != null)
+        {
+            foreach (var parameter in parameters)
+            {
+                var ps = sm.GetDeclaredSymbol(parameter);
+                if (ps == null)
+                {
+                    continue;
+                }
+
+                foreach (var attribute in ps!.GetAttributes())
+                {
+                    ClassifiedItem? ci = null;
+                    ci = AppendAttributeClassifications(ci, attribute);
+                    if (ci != null)
+                    {
+                        FileLinePositionSpan fileLine = ps.Locations[0].GetLineSpan();
+                        ci.SourceFilePath = fileLine.Path;
+                        ci.SourceLine = fileLine.StartLinePosition.Line + 1;
+                        ci.Name = ps.Name;
+                        ci.TypeName = FormatType(ps.Type);
+
+                        classifiedMembers ??= new();
+                        classifiedMembers[ci.Name] = ci;
+                    }
+                }
+            }
+        }
+
+        return classifiedMembers;
+    }
+
     private Dictionary<string, ClassifiedItem>? GetClassifiedMembers(ITypeSymbol typeSymbol, Dictionary<string, ClassifiedItem>? classifiedMembers)
     {
         foreach (var property in typeSymbol.GetMembers().OfType<IPropertySymbol>())
@@ -131,7 +174,7 @@ internal sealed class Parser
                 ci = AppendAttributeClassifications(ci, attribute);
             }
 
-            // classificaiton coming from the member's attributes
+            // classification coming from the member's attributes
             foreach (AttributeData attribute in member.GetAttributes())
             {
                 ci = AppendAttributeClassifications(ci, attribute);
@@ -188,7 +231,7 @@ internal sealed class Parser
                                 ci = AppendAttributeClassifications(ci, attribute);
                             }
 
-                            // classificaiton coming from the parameter's attributes
+                            // classification coming from the parameter's attributes
                             foreach (AttributeData attribute in p.GetAttributes())
                             {
                                 ci = AppendAttributeClassifications(ci, attribute);
