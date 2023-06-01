@@ -134,7 +134,7 @@ public class EmitterTests
         }
 
         var (d, r) = await RoslynTestUtils.RunGenerator(
-            new Generator(),
+            new ContextualOptionsGenerator(),
             new[]
             {
                 typeof(OptionsContextAttribute).Assembly,
@@ -146,7 +146,7 @@ public class EmitterTests
         Assert.Empty(d);
         _ = Assert.Single(r);
 
-        var golden = File.ReadAllText($"GoldenFiles/Microsoft.Gen.ContextualOptions/Microsoft.Gen.ContextualOptions.Generator/ContextualOptions.g.cs");
+        var golden = File.ReadAllText($"GoldenFiles/Microsoft.Gen.ContextualOptions/Microsoft.Gen.ContextualOptions.ContextualOptionsGenerator/ContextualOptions.g.cs");
         var result = r[0].SourceText.ToString();
         Assert.Equal(golden, result);
     }

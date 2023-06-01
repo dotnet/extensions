@@ -79,6 +79,24 @@ namespace Microsoft.Gen.Metering {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Gauge is not supported yet by metering generator.
+        /// </summary>
+        internal static string ErrorGaugeNotSupportedMessage {
+            get {
+                return ResourceManager.GetString("ErrorGaugeNotSupportedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Gauge is not supported yet.
+        /// </summary>
+        internal static string ErrorGaugeNotSupportedTitle {
+            get {
+                return ResourceManager.GetString("ErrorGaugeNotSupportedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A type &apos;{0}&apos; cannot be used as a metering attribute type argument.
         /// </summary>
         internal static string ErrorInvalidAttributeGenericTypeMessage {
@@ -363,6 +381,24 @@ namespace Microsoft.Gen.Metering {
         internal static string ErrorTooManyDimensionsTitle {
             get {
                 return ResourceManager.GetString("ErrorTooManyDimensionsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Xml comment was not parsed correctly, exception {0} was thrown.
+        /// </summary>
+        internal static string ErrorXmlNotLoadedCorrectlyMessage {
+            get {
+                return ResourceManager.GetString("ErrorXmlNotLoadedCorrectlyMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Xml comment was not parsed correctly.
+        /// </summary>
+        internal static string ErrorXmlNotLoadedCorrectlyTitle {
+            get {
+                return ResourceManager.GetString("ErrorXmlNotLoadedCorrectlyTitle", resourceCulture);
             }
         }
     }

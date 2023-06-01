@@ -123,6 +123,12 @@
   <data name="ErrorDuplicateDimensionNameTitle" xml:space="preserve">
     <value>A strong type object contains duplicate dimension names</value>
   </data>
+  <data name="ErrorGaugeNotSupportedMessage" xml:space="preserve">
+    <value>Gauge is not supported yet by metering generator</value>
+  </data>
+  <data name="ErrorGaugeNotSupportedTitle" xml:space="preserve">
+    <value>Gauge is not supported yet</value>
+  </data>
   <data name="ErrorInvalidAttributeGenericTypeMessage" xml:space="preserve">
     <value>A type '{0}' cannot be used as a metering attribute type argument</value>
   </data>
@@ -218,5 +224,11 @@
   </data>
   <data name="ErrorTooManyDimensionsTitle" xml:space="preserve">
     <value>A metric class contains too many dimensions</value>
+  </data>
+  <data name="ErrorXmlNotLoadedCorrectlyTitle" xml:space="preserve">
+    <value>Xml comment was not parsed correctly</value>
+  </data>
+  <data name="ErrorXmlNotLoadedCorrectlyMessage" xml:space="preserve">
+    <value>Xml comment was not parsed correctly, exception {0} was thrown</value>
   </data>
 </root>

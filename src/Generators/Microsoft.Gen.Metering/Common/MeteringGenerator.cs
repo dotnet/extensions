@@ -16,14 +16,15 @@ namespace Microsoft.Gen.Metering;
 
 [Generator]
 [ExcludeFromCodeCoverage]
-public class Generator : IIncrementalGenerator
+public class MeteringGenerator : IIncrementalGenerator
 {
     private static readonly HashSet<string> _attributeNames = new()
     {
         SymbolLoader.CounterAttribute,
         SymbolLoader.CounterTAttribute.Replace("`1", "<T>"),
         SymbolLoader.HistogramAttribute,
-        SymbolLoader.HistogramTAttribute.Replace("`1", "<T>")
+        SymbolLoader.HistogramTAttribute.Replace("`1", "<T>"),
+        SymbolLoader.GaugeAttribute
     };
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -55,13 +56,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Gen.Metering;
 using Microsoft.Gen.Shared;
 
 namespace Microsoft.Gen.Metering;
 
 [Generator]
 [ExcludeFromCodeCoverage]
-public class Generator : ISourceGenerator
+public class MeteringGenerator : ISourceGenerator
 {
     public void Initialize(GeneratorInitializationContext context)
     {

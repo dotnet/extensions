@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -94,7 +95,7 @@ internal sealed class Parser
                             continue;
                         }
 
-                        var (metricMethod, keepMethod) = ProcessMethodAttribute(typeDeclaration, methodSyntax, methodSymbol, methodAttribute, symbols, metricNames);
+                        var (metricMethod, keepMethod) = ProcessMethodAttribute(typeDeclaration, methodSyntax, methodSymbol, methodAttribute, symbols, metricNames, semanticModel);
                         if (metricMethod == null)
                         {
                             continue;
@@ -225,8 +226,8 @@ internal sealed class Parser
             : symbol.TypeArguments[0];
 
     private static (InstrumentKind instrumentKind, ITypeSymbol? genericType) GetInstrumentType(
-        INamedTypeSymbol? methodAttributeSymbol,
-        SymbolHolder symbols)
+    INamedTypeSymbol? methodAttributeSymbol,
+    SymbolHolder symbols)
     {
         if (methodAttributeSymbol == null)
         {
@@ -244,6 +245,10 @@ internal sealed class Parser
         }
 
         // Gauge is not supported yet
+        if (methodAttributeSymbol.Equals(symbols.GaugeAttribute, SymbolEqualityComparer.Default))
+        {
+            return (InstrumentKind.Gauge, symbols.LongTypeSymbol);
+        }
 
         if (methodAttributeSymbol.OriginalDefinition.Equals(symbols.CounterOfTAttribute, SymbolEqualityComparer.Default))
         {
@@ -279,9 +284,12 @@ internal sealed class Parser
         return false;
     }
 
-    private static (string metricName, HashSet<string> dimensions) ExtractAttributeParameters(AttributeData attribute)
+    private (string metricName, HashSet<string> dimensions, Dictionary<string, string> dimensionDescriptions) ExtractAttributeParameters(
+        AttributeData attribute,
+        SemanticModel semanticModel)
     {
         var dimensionHashSet = new HashSet<string>();
+        var dimensionDescriptionMap = new Dictionary<string, string>();
         string metricNameFromAttribute = string.Empty;
         if (!attribute.NamedArguments.IsDefaultOrEmpty)
         {
@@ -323,7 +331,72 @@ internal sealed class Parser
             }
         }
 
-        return (metricNameFromAttribute, dimensionHashSet);
+        if (attribute.ApplicationSyntaxReference != null &&
+            attribute.ApplicationSyntaxReference.GetSyntax(_cancellationToken) is AttributeSyntax syntax &&
+            syntax.ArgumentList != null)
+        {
+            foreach (var arg in syntax.ArgumentList.Arguments)
+            {
+                GetDimensionDescription(arg, semanticModel, dimensionDescriptionMap);
+            }
+        }
+
+        return (metricNameFromAttribute, dimensionHashSet, dimensionDescriptionMap);
+    }
+
+    private string GetSymbolXmlCommentSummary(ISymbol symbol)
+    {
+        var xmlComment = symbol.GetDocumentationCommentXml();
+        if (string.IsNullOrEmpty(xmlComment))
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            var xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(xmlComment);
+            var summaryNode = xmlDoc.SelectSingleNode("//summary");
+            if (summaryNode != null)
+            {
+                var summaryString = summaryNode.InnerXml.Trim();
+                return summaryString;
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+        catch (XmlException ex)
+        {
+            Diag(DiagDescriptors.ErrorXmlNotLoadedCorrectly, symbol.GetLocation(), ex.Message);
+            return string.Empty;
+        }
+    }
+
+    private void GetDimensionDescription(
+        AttributeArgumentSyntax arg,
+        SemanticModel semanticModel,
+        Dictionary<string, string> dimensionDescriptionDictionary)
+    {
+        if (arg.NameEquals != null)
+        {
+            return;
+        }
+
+        var symbol = semanticModel.GetSymbolInfo(arg.Expression, _cancellationToken).Symbol;
+        if (symbol is not IFieldSymbol fieldSymbol ||
+            !fieldSymbol.HasConstantValue ||
+            fieldSymbol.ConstantValue == null)
+        {
+            return;
+        }
+
+        var xmlDefinition = GetSymbolXmlCommentSummary(symbol);
+        if (!string.IsNullOrEmpty(xmlDefinition))
+        {
+            dimensionDescriptionDictionary.Add(fieldSymbol.ConstantValue.ToString(), xmlDefinition);
+        }
     }
 
     private (MetricMethod? metricMethod, bool keepMethod) ProcessMethodAttribute(
@@ -332,12 +405,27 @@ internal sealed class Parser
         IMethodSymbol methodSymbol,
         AttributeData methodAttribute,
         SymbolHolder symbols,
-        HashSet<string> metricNames)
+        HashSet<string> metricNames,
+        SemanticModel semanticModel)
     {
         var (instrumentKind, genericType) = GetInstrumentType(methodAttribute.AttributeClass, symbols);
         if (instrumentKind == InstrumentKind.None ||
             genericType == null)
         {
+            return (null, false);
+        }
+
+        // check if any of methodSymbol parameters is of IMeter type
+        if (symbols.IMeterInterface != null &&
+            methodSymbol.Parameters.Any(p => ParserUtilities.IsBaseOrIdentity(p.Type, symbols.IMeterInterface, _compilation)))
+        {
+            // The method uses old IMeter, no need to parse it
+            return (null, false);
+        }
+
+        if (instrumentKind == InstrumentKind.Gauge)
+        {
+            Diag(DiagDescriptors.ErrorGaugeNotSupported, methodSymbol.GetLocation());
             return (null, false);
         }
 
@@ -348,11 +436,7 @@ internal sealed class Parser
             keepMethod = false;
         }
 
-        string metricNameFromAttribute;
-        HashSet<string> dimensions;
-        var strongTypeDimensionConfigs = new List<StrongTypeConfig>();
-        var strongTypeObjectName = string.Empty;
-        var isClass = false;
+        var strongTypeAttrParams = new StrongTypeAttributeParameters();
 
         if (!methodAttribute.ConstructorArguments.IsDefaultOrEmpty
             && methodAttribute.ConstructorArguments[0].Kind == TypedConstantKind.Type)
@@ -365,14 +449,12 @@ internal sealed class Parser
                 namedArg = methodAttribute.NamedArguments[0];
             }
 
-            (metricNameFromAttribute, dimensions, strongTypeDimensionConfigs, strongTypeObjectName, isClass) = ExtractStrongTypeAttributeParameters(
-                ctorArg,
-                namedArg,
-                symbols);
+            strongTypeAttrParams = ExtractStrongTypeAttributeParameters(ctorArg, namedArg, symbols);
         }
         else
         {
-            (metricNameFromAttribute, dimensions) = ExtractAttributeParameters(methodAttribute);
+            var parameters = ExtractAttributeParameters(methodAttribute, semanticModel);
+            (strongTypeAttrParams.MetricNameFromAttribute, strongTypeAttrParams.DimensionHashSet, strongTypeAttrParams.DimensionDescriptionDictionary) = parameters;
         }
 
         string metricNameFromMethod = methodSymbol.ReturnType.Name;
@@ -380,18 +462,25 @@ internal sealed class Parser
         var metricMethod = new MetricMethod
         {
             Name = methodSymbol.Name,
-            MetricName = string.IsNullOrWhiteSpace(metricNameFromAttribute) ? metricNameFromMethod : metricNameFromAttribute,
+            MetricName = string.IsNullOrWhiteSpace(strongTypeAttrParams.MetricNameFromAttribute) ? metricNameFromMethod : strongTypeAttrParams.MetricNameFromAttribute,
             InstrumentKind = instrumentKind,
             GenericType = genericType.ToDisplayString(_genericTypeSymbolFormat),
-            DimensionsKeys = dimensions,
+            DimensionsKeys = strongTypeAttrParams.DimensionHashSet,
             IsExtensionMethod = methodSymbol.IsExtensionMethod,
             Modifiers = methodSyntax.Modifiers.ToString(),
             MetricTypeName = methodSymbol.ReturnType.ToDisplayString(), // Roslyn doesn't know this type yet, no need to use a format here
-            StrongTypeConfigs = strongTypeDimensionConfigs,
-            StrongTypeObjectName = strongTypeObjectName,
-            IsDimensionTypeClass = isClass,
-            MetricTypeModifiers = typeDeclaration.Modifiers.ToString()
+            StrongTypeConfigs = strongTypeAttrParams.StrongTypeConfigs,
+            StrongTypeObjectName = strongTypeAttrParams.StrongTypeObjectName,
+            IsDimensionTypeClass = strongTypeAttrParams.IsClass,
+            MetricTypeModifiers = typeDeclaration.Modifiers.ToString(),
+            DimensionDescriptionDictionary = strongTypeAttrParams.DimensionDescriptionDictionary
         };
+
+        var xmlDefinition = GetSymbolXmlCommentSummary(methodSymbol);
+        if (!string.IsNullOrEmpty(xmlDefinition))
+        {
+            metricMethod.XmlDefinition = xmlDefinition;
+        }
 
         if (metricMethod.Name[0] == '_')
         {
@@ -472,14 +561,6 @@ internal sealed class Parser
                 break;
             }
 
-            if (isFirstParam &&
-                symbols.IMeterInterface != null &&
-                ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.IMeterInterface, _compilation))
-            {
-                // The method uses old IMeter, no need to parse it
-                return (null, false);
-            }
-
             var meterParameter = new MetricParameter
             {
                 Name = paramName,
@@ -547,49 +628,50 @@ internal sealed class Parser
         _reportDiagnostic(Diagnostic.Create(desc, location, messageArgs));
     }
 
-    private (string metricName, HashSet<string> dimensions, List<StrongTypeConfig> strongTypeConfigs, string strongTypeObjectName, bool isClass)
-        ExtractStrongTypeAttributeParameters(
-            TypedConstant constructorArg,
-            KeyValuePair<string, TypedConstant> namedArgument,
-            SymbolHolder symbols)
+    private StrongTypeAttributeParameters ExtractStrongTypeAttributeParameters(
+        TypedConstant constructorArg,
+        KeyValuePair<string, TypedConstant> namedArgument,
+        SymbolHolder symbols)
     {
-        var dimensionHashSet = new HashSet<string>();
-        string metricNameFromAttribute = string.Empty;
-        var strongTypeConfigs = new List<StrongTypeConfig>();
-        bool isClass = false;
+        var strongTypeAttributeParameters = new StrongTypeAttributeParameters();
 
         if (namedArgument is { Key: "Name", Value.Value: { } })
         {
-            metricNameFromAttribute = namedArgument.Value.Value.ToString();
+            strongTypeAttributeParameters.MetricNameFromAttribute = namedArgument.Value.Value.ToString();
         }
 
         if (constructorArg.IsNull ||
             constructorArg.Value is not INamedTypeSymbol strongTypeSymbol)
         {
-            return (metricNameFromAttribute, dimensionHashSet, strongTypeConfigs, string.Empty, isClass);
+            return strongTypeAttributeParameters;
         }
 
         // Need to check if the strongType is a class or struct, classes need a null check whereas structs do not.
         if (strongTypeSymbol.TypeKind == TypeKind.Class)
         {
-            isClass = true;
+            strongTypeAttributeParameters.IsClass = true;
         }
 
         // Loop through all of the members of the object level and below
         foreach (var member in strongTypeSymbol.GetMembers())
         {
-            strongTypeConfigs.AddRange(BuildDimensionConfigs(member, dimensionHashSet, symbols, _builders.GetStringBuilder()));
+            var dimConfigs = BuildDimensionConfigs(member, strongTypeAttributeParameters.DimensionHashSet,
+                strongTypeAttributeParameters.DimensionDescriptionDictionary, symbols, _builders.GetStringBuilder());
+
+            strongTypeAttributeParameters.StrongTypeConfigs.AddRange(dimConfigs);
         }
 
         // Now that all of the current level and below dimensions are extracted, let's get any parent ones
-        strongTypeConfigs.AddRange(GetParentDimensionConfigs(strongTypeSymbol, dimensionHashSet, symbols));
+        strongTypeAttributeParameters.StrongTypeConfigs.AddRange(GetParentDimensionConfigs(strongTypeSymbol,
+            strongTypeAttributeParameters.DimensionHashSet, strongTypeAttributeParameters.DimensionDescriptionDictionary, symbols));
 
-        if (strongTypeConfigs.Count > MaxDimensions)
+        if (strongTypeAttributeParameters.StrongTypeConfigs.Count > MaxDimensions)
         {
             Diag(DiagDescriptors.ErrorTooManyDimensions, strongTypeSymbol.Locations[0]);
         }
 
-        return (metricNameFromAttribute, dimensionHashSet, strongTypeConfigs, constructorArg.Value.ToString(), isClass);
+        strongTypeAttributeParameters.StrongTypeObjectName = constructorArg.Value.ToString();
+        return strongTypeAttributeParameters;
     }
 
     /// <summary>
@@ -603,6 +685,7 @@ internal sealed class Parser
     private List<StrongTypeConfig> BuildDimensionConfigs(
         ISymbol symbol,
         HashSet<string> dimensionHashSet,
+        Dictionary<string, string> dimensionDescriptionDictionary,
         SymbolHolder symbols,
         StringBuilder stringBuilder)
     {
@@ -667,6 +750,12 @@ internal sealed class Parser
                         DimensionName = name,
                         StrongTypeMetricObjectType = StrongTypeMetricObjectType.Enum
                     });
+
+                    var xmlDefinition = GetSymbolXmlCommentSummary(symbol);
+                    if (!string.IsNullOrEmpty(xmlDefinition))
+                    {
+                        dimensionDescriptionDictionary.Add(string.IsNullOrEmpty(dimensionName) ? symbol.Name : dimensionName, xmlDefinition);
+                    }
                 }
 
                 return dimensionConfigs;
@@ -693,6 +782,12 @@ internal sealed class Parser
                             DimensionName = name,
                             StrongTypeMetricObjectType = StrongTypeMetricObjectType.String
                         });
+
+                        var xmlDefinition = GetSymbolXmlCommentSummary(symbol);
+                        if (!string.IsNullOrEmpty(xmlDefinition))
+                        {
+                            dimensionDescriptionDictionary.Add(string.IsNullOrEmpty(dimensionName) ? symbol.Name : dimensionName, xmlDefinition);
+                        }
                     }
 
                     return dimensionConfigs;
@@ -716,6 +811,7 @@ internal sealed class Parser
                                 namedTypeSymbol,
                                 stringBuilder,
                                 dimensionHashSet,
+                                dimensionDescriptionDictionary,
                                 symbols,
                                 true));
 
@@ -751,6 +847,7 @@ internal sealed class Parser
                             namedTypeSymbol,
                             stringBuilder,
                             dimensionHashSet,
+                            dimensionDescriptionDictionary,
                             symbols,
                             false));
                 }
@@ -774,6 +871,7 @@ internal sealed class Parser
         INamedTypeSymbol namedTypeSymbol,
         StringBuilder stringBuilder,
         HashSet<string> dimensionHashSet,
+        Dictionary<string, string> dimensionDescriptionDictionary,
         SymbolHolder symbols,
         bool isClass)
     {
@@ -793,7 +891,7 @@ internal sealed class Parser
 
         foreach (var member in namedTypeSymbol.GetMembers())
         {
-            dimensionConfigs.AddRange(BuildDimensionConfigs(member, dimensionHashSet, symbols, stringBuilder));
+            dimensionConfigs.AddRange(BuildDimensionConfigs(member, dimensionHashSet, dimensionDescriptionDictionary, symbols, stringBuilder));
         }
 
         return dimensionConfigs;
@@ -802,6 +900,7 @@ internal sealed class Parser
     private List<StrongTypeConfig> GetParentDimensionConfigs(
         ITypeSymbol symbol,
         HashSet<string> dimensionHashSet,
+        Dictionary<string, string> dimensionDescriptionDictionary,
         SymbolHolder symbols)
     {
         var dimensionConfigs = new List<StrongTypeConfig>();
@@ -816,7 +915,7 @@ internal sealed class Parser
 
             foreach (var member in parentObjectBase.GetMembers())
             {
-                dimensionConfigs.AddRange(BuildDimensionConfigs(member, dimensionHashSet, symbols, _builders.GetStringBuilder()));
+                dimensionConfigs.AddRange(BuildDimensionConfigs(member, dimensionHashSet, dimensionDescriptionDictionary, symbols, _builders.GetStringBuilder()));
             }
 
             parentObjectBase = parentObjectBase.BaseType;

@@ -91,7 +91,7 @@ public class GeneratorTests
         static async Task<IReadOnlyList<Diagnostic>> RunGenerator(string code, string outputFile)
         {
             var (d, _) = await RoslynTestUtils.RunGenerator(
-                new Generator(outputFile),
+                new ComplianceReportsGenerator(outputFile),
                     new[]
                     {
                         Assembly.GetAssembly(typeof(ILogger))!,
@@ -115,7 +115,7 @@ public class GeneratorTests
         const string Source = "class Nothing {}";
 
         var (d, _) = await RoslynTestUtils.RunGenerator(
-                new Generator("Foo"),
+                new ComplianceReportsGenerator("Foo"),
                 null,
                 new[]
                 {

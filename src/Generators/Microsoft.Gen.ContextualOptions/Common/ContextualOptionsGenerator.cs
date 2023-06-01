@@ -15,7 +15,7 @@ namespace Microsoft.Gen.ContextualOptions;
 
 [Generator]
 [ExcludeFromCodeCoverage]
-public class Generator : IIncrementalGenerator
+public class ContextualOptionsGenerator : IIncrementalGenerator
 {
     private static readonly HashSet<string> _attributeNames = new()
     {
@@ -78,7 +78,7 @@ namespace Microsoft.Gen.ContextualOptions;
 /// </summary>
 [Generator]
 [ExcludeFromCodeCoverage]
-public class Generator : ISourceGenerator
+public class ContextualOptionsGenerator : ISourceGenerator
 {
     public void Initialize(GeneratorInitializationContext context) =>
         context.RegisterForSyntaxNotifications(() => new ContextReceiver(context.CancellationToken));

@@ -606,6 +606,146 @@ public partial class ParserTests
         Assert.Empty(d);
     }
 
+    [Fact]
+    public async Task GaugeNotSupported()
+    {
+        var d = await RunGenerator(@"
+            partial class C
+            {
+                [Gauge(""d1"")]
+                static partial NotSupportedGauge CreateGauge(Meter meter);
+            }");
+
+        _ = Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorGaugeNotSupported.Id, d[0].Id);
+    }
+
+    [Fact]
+    public async Task DimensionIsDocumentedCounter()
+    {
+        var d = await RunGenerator(@"
+            partial class C
+            {
+                /// <summary>
+                /// InClassDim description.
+                /// </summary>
+                private const string InClassDimensionName = ""InClassDim"";
+                [Counter(InClassDimensionName)]
+                static partial TestCounter CreateTestCounter(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task DimensionIsDocumentedHistogram()
+    {
+        var d = await RunGenerator(@"
+            partial class C
+            {
+                /// <summary>
+                /// InClassDim description.
+                /// </summary>
+                private const string InClassDimensionName = ""InClassDim"";
+                [Histogram(InClassDimensionName)]
+                static partial TestHistogram CreateTestHistogram(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task CounterIsDocumented()
+    {
+        var d = await RunGenerator(@"
+            partial class C
+            {
+                /// <summary>
+                /// TestCounter description.
+                /// </summary>
+                [Counter]
+                static partial TestCounter CreateTestCounter(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task HistogramIsDocumented()
+    {
+        var d = await RunGenerator(@"
+            partial class C
+            {
+                /// <summary>
+                /// TestHistogram description.
+                /// </summary>
+                [Histogram]
+                static partial TestHistogram CreateTestHistogram(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task CounterIsNotProperlyDocumented()
+    {
+        var d = await RunGenerator(@"
+            partial class C
+            {
+                /// <summary>
+                /// TestCounter description.
+                /// < /summary>
+                [Counter]
+                static partial TestCounter CreateTestCounter(Meter meter);
+            }");
+
+        Assert.Single(d);
+        Assert.Equal(DiagDescriptors.ErrorXmlNotLoadedCorrectly.Id, d[0].Id);
+    }
+
+    [Fact]
+    public async Task HistogramIsNotXmlDocumented()
+    {
+        var d = await RunGenerator(@"
+            partial class C
+            {
+                /// no xml tags.
+                [Histogram]
+                static partial TestHistogram CreateTestHistogram(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task HistogramHasNoSummaryInXmlComment()
+    {
+        var d = await RunGenerator(@"
+            partial class C
+            {
+                /// <remarks>
+                /// TestHistogram remarks.
+                /// </remarks>
+                [Histogram]
+                static partial TestHistogram CreateTestHistogram(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task IMeterTypeParameter()
+    {
+        var d = await RunGenerator(@"
+            partial class C
+            {
+                [Histogram]
+                static partial TestHistogram CreateTestHistogram(IMeter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
     private static async Task<IReadOnlyList<Diagnostic>> RunGenerator(
         string code,
         bool wrap = true,
@@ -647,7 +787,7 @@ public partial class ParserTests
         }
 
         var (d, _) = await RoslynTestUtils.RunGenerator(
-            new Generator(),
+            new MeteringGenerator(),
             refs,
             new[] { text },
             includeBaseReferences: includeBaseReferences,

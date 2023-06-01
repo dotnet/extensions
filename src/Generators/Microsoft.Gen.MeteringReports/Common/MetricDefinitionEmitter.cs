@@ -11,169 +11,139 @@ namespace Microsoft.Gen.MeteringReports;
 
 // Stryker disable all
 
-internal static class MetricDefinitionEmitter
+internal sealed class MetricDefinitionEmitter : EmitterBase
 {
-    private static readonly StringBuilderPool _builders = new();
+    internal MetricDefinitionEmitter()
+        : base(false)
+    {
+    }
 
-    public static string GenerateReport(IReadOnlyList<ReportedMetricClass> metricClasses, CancellationToken cancellationToken)
+    public string GenerateReport(IReadOnlyList<ReportedMetricClass> metricClasses, CancellationToken cancellationToken)
     {
         if (metricClasses == null || metricClasses.Count == 0)
         {
             return string.Empty;
         }
 
-        var sb = _builders.GetStringBuilder();
-        try
-        {
-            _ = sb.Append('[')
-                  .Append('\n');
+        OutLn("[");
 
-            for (int i = 0; i < metricClasses.Count; i++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                var metricClass = metricClasses[i];
-                _ = sb.Append(GenMetricClassDefinition(metricClass, cancellationToken));
-
-                if (i < metricClasses.Count - 1)
-                {
-                    _ = sb.Append(',');
-                }
-
-                _ = sb.Append('\n');
-            }
-
-            _ = sb.Append(']');
-
-            return sb.ToString();
-        }
-        finally
-        {
-            _builders.ReturnStringBuilder(sb);
-        }
-    }
-
-    private static string GenMetricClassDefinition(ReportedMetricClass metricClass, CancellationToken cancellationToken)
-    {
-        var sb = _builders.GetStringBuilder();
-        try
+        for (int i = 0; i < metricClasses.Count; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _ = sb.Append(" {")
-                  .Append('\n');
+            var metricClass = metricClasses[i];
+            GenMetricClassDefinition(metricClass, cancellationToken);
 
-            _ = sb.Append($"  \"{metricClass.RootNamespace}\":");
-            _ = sb.Append('\n');
-
-            if (metricClass.Methods.Length > 0)
+            if (i < metricClasses.Count - 1)
             {
-                _ = sb.Append("  [")
-                      .Append('\n');
-
-                for (int j = 0; j < metricClass.Methods.Length; j++)
-                {
-                    var metricMethod = metricClass.Methods[j];
-
-                    _ = sb.Append(GenMetricMethodDefinition(metricMethod, cancellationToken));
-
-                    if (j < metricClass.Methods.Length - 1)
-                    {
-                        _ = sb.Append(',');
-                    }
-
-                    _ = sb.Append('\n');
-                }
-
-                _ = sb.Append("  ]")
-                      .Append('\n');
+                Out(",");
             }
 
-            _ = sb.Append(" }");
+            OutLn();
+        }
 
-            return sb.ToString();
-        }
-        finally
-        {
-            _builders.ReturnStringBuilder(sb);
-        }
+        Out("]");
+        return Capture();
     }
 
-    private static string GenMetricMethodDefinition(ReportedMetricMethod metricMethod, CancellationToken cancellationToken)
+    private void GenMetricClassDefinition(ReportedMetricClass metricClass, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        OutLn(" {");
+
+        OutLn($"  \"{metricClass.RootNamespace}\":");
+
+        if (metricClass.Methods.Length > 0)
+        {
+            OutLn("  [");
+
+            for (int j = 0; j < metricClass.Methods.Length; j++)
+            {
+                var metricMethod = metricClass.Methods[j];
+
+                GenMetricMethodDefinition(metricMethod, cancellationToken);
+
+                if (j < metricClass.Methods.Length - 1)
+                {
+                    Out(",");
+                }
+
+                OutLn();
+            }
+
+            OutLn("  ]");
+        }
+
+        Out(" }");
+    }
+
+    private void GenMetricMethodDefinition(ReportedMetricMethod metricMethod, CancellationToken cancellationToken)
     {
         switch (metricMethod.Kind)
         {
             case InstrumentKind.Counter:
             case InstrumentKind.Histogram:
             case InstrumentKind.Gauge:
-                var sb = _builders.GetStringBuilder();
                 try
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    _ = sb.Append("    {")
-                          .Append('\n');
+                    OutLn("    {");
 
-                    _ = sb.Append($"     \"MetricName\": \"{metricMethod.MetricName.Replace("\\", "\\\\").Replace("\"", "\\\"")}\",")
-                          .Append('\n');
+                    OutLn($"     \"MetricName\": \"{metricMethod.MetricName.Replace("\\", "\\\\").Replace("\"", "\\\"")}\",");
 
                     if (!string.IsNullOrEmpty(metricMethod.Summary))
                     {
-                        _ = sb.Append($"     \"MetricDescription\": \"{metricMethod.Summary.Replace("\\", "\\\\").Replace("\"", "\\\"")}\",");
-                        _ = sb.Append('\n');
+                        OutLn($"     \"MetricDescription\": \"{metricMethod.Summary.Replace("\\", "\\\\").Replace("\"", "\\\"")}\",");
                     }
 
-                    _ = sb.Append($"     \"InstrumentName\": \"{metricMethod.Kind}\"");
+                    Out($"     \"InstrumentName\": \"{metricMethod.Kind}\"");
 
                     if (metricMethod.Dimensions.Count > 0)
                     {
-                        _ = sb.Append(',');
-                        _ = sb.Append('\n');
-                        _ = sb.Append("     \"Dimensions\": {");
+                        OutLn(",");
+
+                        Out("     \"Dimensions\": {");
 
                         int k = 0;
 
                         foreach (var dimension in metricMethod.Dimensions)
                         {
-                            _ = sb.Append('\n');
+                            OutLn();
                             if (metricMethod.DimensionsDescriptions.TryGetValue(dimension, out var description))
                             {
-                                _ = sb.Append($"      \"{dimension}\": \"{description.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"");
+                                Out($"      \"{dimension}\": \"{description.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"");
                             }
                             else
                             {
-                                _ = sb.Append($"      \"{dimension}\": \"\"");
+                                Out($"      \"{dimension}\": \"\"");
                             }
 
                             if (k < metricMethod.Dimensions.Count - 1)
                             {
-                                _ = sb.Append(',');
+                                Out(",");
                             }
 
                             k++;
                         }
 
-                        _ = sb.Append('\n');
-                        _ = sb.Append("      }");
-                        _ = sb.Append('\n');
+                        OutLn();
+                        Out("      }");
+                        OutLn();
                     }
                     else
                     {
-                        _ = sb.Append('\n');
+                        OutLn();
                     }
 
-                    _ = sb.Append("    }");
-
-                    return sb.ToString();
+                    Out("    }");
                 }
                 catch (Exception e)
                 {
                     // This should report diagnostic.
                     throw new InvalidOperationException($"An exception occurred during metric report generation {e.GetType()}:{e.Message}.");
                 }
-                finally
-                {
-                    _builders.ReturnStringBuilder(sb);
-                }
 
+                break;
             case InstrumentKind.None:
             case InstrumentKind.CounterT:
             case InstrumentKind.HistogramT:

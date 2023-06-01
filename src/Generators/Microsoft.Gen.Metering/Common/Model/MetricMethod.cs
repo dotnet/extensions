@@ -9,8 +9,10 @@ internal sealed class MetricMethod
 {
     public readonly List<MetricParameter> AllParameters = new();
     public HashSet<string> DimensionsKeys = new();
+    public Dictionary<string, string> DimensionDescriptionDictionary = new();
     public string? Name;
     public string? MetricName;
+    public string? XmlDefinition;
     public bool IsExtensionMethod;
     public string Modifiers = string.Empty;
     public string MetricTypeModifiers = string.Empty;

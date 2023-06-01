@@ -12,6 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="..\Common\Generator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="..\Common\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

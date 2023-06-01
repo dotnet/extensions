@@ -9,6 +9,7 @@ internal static class SymbolLoader
 {
     internal const string CounterTAttribute = "Microsoft.Extensions.Telemetry.Metering.CounterAttribute`1";
     internal const string HistogramTAttribute = "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute`1";
+    internal const string GaugeAttribute = "Microsoft.Extensions.Telemetry.Metering.GaugeAttribute";
     internal const string CounterAttribute = "Microsoft.Extensions.Telemetry.Metering.CounterAttribute";
     internal const string HistogramAttribute = "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute";
     internal const string DimensionAttribute = "Microsoft.Extensions.Telemetry.Metering.DimensionAttribute";
@@ -20,6 +21,7 @@ internal static class SymbolLoader
         var meterClassSymbol = compilation.GetTypeByMetadataName(MeterClass);
         var counterAttribute = compilation.GetTypeByMetadataName(CounterAttribute);
         var histogramAttribute = compilation.GetTypeByMetadataName(HistogramAttribute);
+
         if (meterClassSymbol == null ||
             counterAttribute == null ||
             histogramAttribute == null)
@@ -30,6 +32,7 @@ internal static class SymbolLoader
 
         var counterTAttribute = compilation.GetTypeByMetadataName(CounterTAttribute);
         var histogramTAttribute = compilation.GetTypeByMetadataName(HistogramTAttribute);
+        var gaugeAttribute = compilation.GetTypeByMetadataName(GaugeAttribute);
         var dimensionAttribute = compilation.GetTypeByMetadataName(DimensionAttribute);
         var longType = compilation.GetSpecialType(SpecialType.System_Int64);
         var meterInterface = compilation.GetTypeByMetadataName(MeterInterface);
@@ -40,6 +43,7 @@ internal static class SymbolLoader
             counterTAttribute,
             histogramAttribute,
             histogramTAttribute,
+            gaugeAttribute,
             longType,
             dimensionAttribute,
             meterInterface);

@@ -14,21 +14,32 @@ namespace Microsoft.Gen.ComplianceReports;
 /// </summary>
 [Generator]
 [ExcludeFromCodeCoverage]
-public sealed class Generator : ISourceGenerator
+public sealed class ComplianceReportsGenerator : ISourceGenerator
 {
     private const string GenerateComplianceReportsMSBuildProperty = "build_property.GenerateComplianceReport";
     private const string ComplianceReportOutputPathMSBuildProperty = "build_property.ComplianceReportOutputPath";
 
-    private string? _reportOutputPath;
+    private const string FallbackFileName = "ComplianceReport.json";
 
-    public Generator()
+    private string? _directory;
+    private string _fileName;
+
+    public ComplianceReportsGenerator()
         : this(null)
     {
     }
 
-    public Generator(string? reportOutputPath)
+    public ComplianceReportsGenerator(string? filePath)
     {
-        _reportOutputPath = reportOutputPath;
+        if (filePath is not null)
+        {
+            _directory = Path.GetDirectoryName(filePath);
+            _fileName = Path.GetFileName(filePath);
+        }
+        else
+        {
+            _fileName = FallbackFileName;
+        }
     }
 
     public void Initialize(GeneratorInitializationContext context)
@@ -70,10 +81,10 @@ public sealed class Generator : ISourceGenerator
 
         context.CancellationToken.ThrowIfCancellationRequested();
 
-        if (_reportOutputPath == null)
+        if (_directory == null)
         {
-            _ = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(ComplianceReportOutputPathMSBuildProperty, out _reportOutputPath);
-            if (string.IsNullOrWhiteSpace(_reportOutputPath))
+            _ = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(ComplianceReportOutputPathMSBuildProperty, out _directory);
+            if (string.IsNullOrWhiteSpace(_directory))
             {
                 // no valid output path
                 return;
@@ -81,10 +92,10 @@ public sealed class Generator : ISourceGenerator
         }
 
 #pragma warning disable R9A017 // Switch to an asynchronous method for increased performance.
-        _ = Directory.CreateDirectory(Path.GetDirectoryName(_reportOutputPath));
+        _ = Directory.CreateDirectory(_directory);
 
-        // Write properties to CSV file.
-        File.WriteAllText(_reportOutputPath, report);
+        // Write report as JSON file.
+        File.WriteAllText(Path.Combine(_directory, _fileName), report);
 #pragma warning restore R9A017 // Switch to an asynchronous method for increased performance.
     }
 }
