@@ -2,9 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+#if !NETFRAMEWORK
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http.Telemetry.Metering.Internal;
+#endif
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Extensions.Telemetry.Metering;
 using Microsoft.Shared.Collections;
@@ -18,11 +22,50 @@ namespace Microsoft.Extensions.Http.Telemetry.Metering;
 /// <seealso cref="DelegatingHandler" />
 public static class HttpClientMeteringExtensions
 {
+#if !NETFRAMEWORK
     /// <summary>
-    /// Adds a <see cref="DelegatingHandler" /> to collect and emit metrics for outgoing requests from all http clients.
+    /// Adds Http client diagnostics listener to capture metrics for requests from all http clients.
     /// </summary>
     /// <remarks>
-    /// This extension configures outgoing request metrics auto collection globally for all http clients.
+    /// This extension configures outgoing request metrics auto collection
+    /// globally for all http clients regardless of how the http client is created.
+    /// </remarks>
+    /// <param name="services">The <see cref="IServiceCollection" />.</param>
+    /// <returns>
+    /// <see cref="IServiceCollection" /> instance for chaining.
+    /// </returns>
+    [Experimental]
+    public static IServiceCollection AddHttpClientMeteringForAllHttpClients(this IServiceCollection services)
+    {
+        _ = Throw.IfNull(services);
+
+        _ = services
+            .RegisterMetering()
+            .AddOutgoingRequestContext();
+
+        services.TryAddSingleton(sp =>
+        {
+            var meter = sp.GetRequiredService<Meter<HttpMeteringHandler>>();
+            var outgoingRequestMetricEnrichers = sp.GetService<IEnumerable<IOutgoingRequestMetricEnricher>>().EmptyIfNull();
+            var requestMetadataContext = sp.GetService<IOutgoingRequestContext>();
+            var downstreamDependencyMetadataManager = sp.GetService<IDownstreamDependencyMetadataManager>();
+            return new HttpMeteringHandler(meter, outgoingRequestMetricEnrichers, requestMetadataContext, downstreamDependencyMetadataManager);
+        });
+
+        services.TryAddSingleton<HttpClientRequestAdapter>();
+        services.TryAddSingleton<HttpClientDiagnosticObserver>();
+        services.TryAddActivatedSingleton<HttpClientMeteringListener>();
+
+        return services;
+    }
+#endif
+
+    /// <summary>
+    /// Adds a <see cref="DelegatingHandler" /> to collect and emit metrics for outgoing requests from all http clients created using IHttpClientFactory.
+    /// </summary>
+    /// <remarks>
+    /// This extension configures outgoing request metrics auto collection
+    /// for all http clients created using IHttpClientFactory.
     /// </remarks>
     /// <param name="services">The <see cref="IServiceCollection" />.</param>
     /// <returns>
