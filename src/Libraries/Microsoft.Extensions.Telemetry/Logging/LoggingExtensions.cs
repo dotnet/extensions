@@ -6,7 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Options.Validation;
+using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Shared.Diagnostics;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
@@ -29,7 +31,7 @@ public static class LoggingExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, LoggerProvider>());
+        builder.Services.TryAddLoggerProvider();
         _ = builder.Services.AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>().Bind(section);
 
         return builder;
@@ -46,7 +48,8 @@ public static class LoggingExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, LoggerProvider>());
+        builder.Services.TryAddLoggerProvider();
+
         _ = builder.Services.AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>().Configure(configure);
 
         return builder;
@@ -89,5 +92,14 @@ public static class LoggingExtensions
         _ = builder.Services.AddSingleton<BaseProcessor<LogRecord>, T>();
 
         return builder;
+    }
+
+    private static void TryAddLoggerProvider(this IServiceCollection services)
+    {
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, LoggerProvider>(
+            sp => new LoggerProvider(
+                sp.GetRequiredService<IOptions<LoggingOptions>>(),
+                sp.GetServices<ILogEnricher>(),
+                sp.GetServices<BaseProcessor<LogRecord>>())));
     }
 }

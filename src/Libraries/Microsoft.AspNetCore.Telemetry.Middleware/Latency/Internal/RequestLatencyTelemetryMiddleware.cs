@@ -8,7 +8,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.AmbientMetadata;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Latency;
@@ -25,18 +27,22 @@ internal sealed class RequestLatencyTelemetryMiddleware : IMiddleware
     private static readonly ObjectPool<CancellationTokenSource> _cancellationTokenSourcePool = PoolFactory.CreateCancellationTokenSourcePool();
 
     private readonly TimeSpan _exportTimeout;
-
+    private readonly string _applicationName;
     private readonly ILatencyDataExporter[] _latencyDataExporters;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RequestLatencyTelemetryMiddleware"/> class.
-    /// </summary>
-    /// <param name="options">An instance of <see cref="RequestLatencyTelemetryOptions"/>.</param>
-    /// <param name="latencyDataExporters">The list of exporters for latency data.</param>
-    public RequestLatencyTelemetryMiddleware(IOptions<RequestLatencyTelemetryOptions> options, IEnumerable<ILatencyDataExporter> latencyDataExporters)
+    public RequestLatencyTelemetryMiddleware(
+        IOptions<RequestLatencyTelemetryOptions> options,
+        IEnumerable<ILatencyDataExporter> latencyDataExporters,
+        IOptions<ApplicationMetadata>? appMetdata = null)
     {
         _exportTimeout = options.Value.LatencyDataExportTimeout;
         _latencyDataExporters = latencyDataExporters.ToArray();
+        _applicationName = string.Empty;
+
+        if (appMetdata != null)
+        {
+            _applicationName = appMetdata.Value.ApplicationName;
+        }
     }
 
     /// <summary>
@@ -48,6 +54,16 @@ internal sealed class RequestLatencyTelemetryMiddleware : IMiddleware
     public Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
         var latencyContext = context.RequestServices.GetRequiredService<ILatencyContext>();
+
+        if (!string.IsNullOrEmpty(_applicationName))
+        {
+            context.Response.OnStarting(ctx =>
+            {
+                var httpContext = (HttpContext)ctx;
+                httpContext.Response.Headers.Add(TelemetryConstants.ServerApplicationNameHeader, _applicationName);
+                return Task.CompletedTask;
+            }, context);
+        }
 
         context.Response.OnCompleted(async l =>
         {

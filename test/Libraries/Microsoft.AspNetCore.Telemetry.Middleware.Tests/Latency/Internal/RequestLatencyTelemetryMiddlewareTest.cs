@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Telemetry.Internal;
+using Microsoft.Extensions.AmbientMetadata;
+using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Latency;
 using Moq;
@@ -22,10 +24,14 @@ public class RequestLatencyTelemetryMiddlewareTest
     {
         var ex1 = new TestExporter();
         var ex2 = new TestExporter();
-        var m = new RequestLatencyTelemetryMiddleware(Options.Create(new RequestLatencyTelemetryOptions()), new List<ILatencyDataExporter> { ex1, ex2 });
+        string serverName = "AppServer";
+        var m = new RequestLatencyTelemetryMiddleware(Options.Create(new RequestLatencyTelemetryOptions()), new List<ILatencyDataExporter> { ex1, ex2 },
+            Options.Create(new ApplicationMetadata { ApplicationName = serverName }));
 
         var lc = GetMockLatencyContext();
         var httpContextMock = GetHttpContext(lc.Object);
+        var fakeHttpResponseFeature = new FakeHttpResponseFeature();
+        httpContextMock.Features.Set<IHttpResponseFeature>(fakeHttpResponseFeature);
 
         var nextInvoked = false;
         await m.InvokeAsync(httpContextMock, (_) =>
@@ -33,8 +39,63 @@ public class RequestLatencyTelemetryMiddlewareTest
             nextInvoked = true;
             return Task.CompletedTask;
         });
-
+        await fakeHttpResponseFeature.StartAsync();
         lc.Verify(c => c.Freeze());
+        var header = httpContextMock.Response.Headers[TelemetryConstants.ServerApplicationNameHeader];
+        Assert.NotEmpty(header);
+        Assert.Equal(serverName, header[0]);
+        Assert.True(nextInvoked);
+        Assert.True(ex1.Invoked == 1);
+        Assert.True(ex2.Invoked == 1);
+    }
+
+    [Fact]
+    public async Task RequestLatency_WithoutServiceMetadata_InvokesOperations()
+    {
+        var ex1 = new TestExporter();
+        var ex2 = new TestExporter();
+        var m = new RequestLatencyTelemetryMiddleware(Options.Create(new RequestLatencyTelemetryOptions()), new List<ILatencyDataExporter> { ex1, ex2 });
+
+        var lc = GetMockLatencyContext();
+        var httpContextMock = GetHttpContext(lc.Object);
+        var fakeHttpResponseFeature = new FakeHttpResponseFeature();
+        httpContextMock.Features.Set<IHttpResponseFeature>(fakeHttpResponseFeature);
+
+        var nextInvoked = false;
+        await m.InvokeAsync(httpContextMock, (_) =>
+        {
+            nextInvoked = true;
+            return Task.CompletedTask;
+        });
+        await fakeHttpResponseFeature.StartAsync();
+        lc.Verify(c => c.Freeze());
+        Assert.False(httpContextMock.Response.Headers.TryGetValue(TelemetryConstants.ServerApplicationNameHeader, out var val));
+        Assert.True(nextInvoked);
+        Assert.True(ex1.Invoked == 1);
+        Assert.True(ex2.Invoked == 1);
+    }
+
+    [Fact]
+    public async Task RequestLatency_NoServiceData_DoesNotAddHeader()
+    {
+        var ex1 = new TestExporter();
+        var ex2 = new TestExporter();
+        var m = new RequestLatencyTelemetryMiddleware(Options.Create(new RequestLatencyTelemetryOptions()), new List<ILatencyDataExporter> { ex1, ex2 }, Options.Create(new ApplicationMetadata()));
+
+        var lc = GetMockLatencyContext();
+        var httpContextMock = GetHttpContext(lc.Object);
+        var fakeHttpResponseFeature = new FakeHttpResponseFeature();
+        httpContextMock.Features.Set<IHttpResponseFeature>(fakeHttpResponseFeature);
+
+        var nextInvoked = false;
+        await m.InvokeAsync(httpContextMock, (_) =>
+        {
+            nextInvoked = true;
+            return Task.CompletedTask;
+        });
+        await fakeHttpResponseFeature.StartAsync();
+        lc.Verify(c => c.Freeze());
+        Assert.False(httpContextMock.Response.Headers.TryGetValue(TelemetryConstants.ServerApplicationNameHeader, out var val));
         Assert.True(nextInvoked);
         Assert.True(ex1.Invoked == 1);
         Assert.True(ex2.Invoked == 1);
@@ -45,7 +106,7 @@ public class RequestLatencyTelemetryMiddlewareTest
     {
         var lc = GetMockLatencyContext();
         var httpContextMock = GetHttpContext(lc.Object);
-        var m = new RequestLatencyTelemetryMiddleware(Options.Create(new RequestLatencyTelemetryOptions()), Array.Empty<ILatencyDataExporter>());
+        var m = new RequestLatencyTelemetryMiddleware(Options.Create(new RequestLatencyTelemetryOptions()), Array.Empty<ILatencyDataExporter>(), Options.Create(new ApplicationMetadata()));
 
         var nextInvoked = false;
         await m.InvokeAsync(httpContextMock, (_) =>
@@ -66,7 +127,8 @@ public class RequestLatencyTelemetryMiddlewareTest
 
         var m = new RequestLatencyTelemetryMiddleware(
             Options.Create(new RequestLatencyTelemetryOptions { LatencyDataExportTimeout = exportTimeout }),
-            new List<ILatencyDataExporter> { ex1 });
+            new List<ILatencyDataExporter> { ex1 },
+            Options.Create(new ApplicationMetadata()));
 
         var lc = GetMockLatencyContext();
         var httpContextMock = GetHttpContext(lc.Object);
@@ -81,6 +143,34 @@ public class RequestLatencyTelemetryMiddlewareTest
 
         lc.Verify(c => c.Freeze());
         Assert.True(nextInvoked);
+    }
+
+    private sealed class FakeHttpResponseFeature : HttpResponseFeature
+    {
+        private Func<Task> _responseStartingAsync =
+            static () => Task.CompletedTask;
+
+        public override void OnStarting(Func<object, Task> callback, object state)
+        {
+            ChainCallback(callback, state);
+        }
+
+        public override void OnCompleted(Func<object, Task> callback, object state)
+        {
+            ChainCallback(callback, state);
+        }
+
+        private void ChainCallback(Func<object, Task> callback, object state)
+        {
+            var prior = _responseStartingAsync;
+            _responseStartingAsync = async () =>
+            {
+                await prior();
+                await callback(state);
+            };
+        }
+
+        public async Task StartAsync() => await _responseStartingAsync();
     }
 
     private static HttpContext GetHttpContext(ILatencyContext latencyContext)

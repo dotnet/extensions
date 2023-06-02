@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,7 +19,8 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 /// OpenTelemetry Logger provider class.
 /// </summary>
 [ProviderAlias("R9")]
-internal sealed class LoggerProvider : BaseProvider, ILoggerProvider, ISupportExternalScope
+[Experimental]
+public sealed class LoggerProvider : BaseProvider, ILoggerProvider, ISupportExternalScope
 {
     private const int ProcessorShutdownGracePeriodInMs = 5000;
     private readonly ConcurrentDictionary<string, Logger> _loggers = new();
@@ -31,7 +33,7 @@ internal sealed class LoggerProvider : BaseProvider, ILoggerProvider, ISupportEx
     /// <param name="loggingOptions">Logger options.</param>
     /// <param name="enrichers">Collection of enrichers.</param>
     /// <param name="processors">Collection of processors.</param>
-    public LoggerProvider(
+    internal LoggerProvider(
         IOptions<LoggingOptions> loggingOptions,
         IEnumerable<ILogEnricher> enrichers,
         IEnumerable<BaseProcessor<LogRecord>> processors)
