@@ -41,22 +41,10 @@ internal sealed class LogFormatter : IDisposable
         _theme = Throw.IfMemberNull(theme, theme.Value);
     }
 
-    public void Write(LogEntry<LogEntryCompositeState> logEntry,
-        IExternalScopeProvider? scopeProvider,
-        TextWriter textWriter)
+    public void Write(LogEntry<LogEntryCompositeState> logEntry, TextWriter textWriter)
     {
-        _ = Throw.IfNull(scopeProvider);
-
         var writer = Throw.IfNull(textWriter);
         var message = logEntry.Formatter?.Invoke(logEntry.State, logEntry.Exception);
-
-        if (_options.IncludeScopes)
-        {
-            if (WriteScopes(writer, scopeProvider))
-            {
-                writer.WriteLine();
-            }
-        }
 
         if (_options.IncludeTimestamp)
         {
@@ -99,39 +87,23 @@ internal sealed class LogFormatter : IDisposable
             WriteException(writer, logEntry.Exception);
             writer.WriteLine();
         }
+
+        if (_options.IncludeDimensions && logEntry.State.State != null)
+        {
+            foreach (var kvp in logEntry.State.State)
+            {
+                if (kvp.Key != LoggingConsoleExporter.OriginalFormat)
+                {
+                    writer.Colorize("  {0}={1}", _theme.Dimensions, kvp.Key, kvp.Value?.ToString());
+                    writer.WriteLine();
+                }
+            }
+        }
     }
 
     public void Dispose()
     {
         // Nothing to dispose.
-    }
-
-    internal bool WriteScopes(TextWriter writer, IExternalScopeProvider scopeProvider)
-    {
-        var isOneOrMultipleScopes = false;
-        var writeScope = WriteScope;
-
-        void WriteScope(object? scope, TextWriter state)
-        {
-            if (!isOneOrMultipleScopes)
-            {
-                // Unfortunately there is no way how to know upfront if there
-                // is any scope to iterate over, so formatting has to be done
-                // from within the for each loop..
-                state.WriteLine();
-                isOneOrMultipleScopes = true;
-            }
-            else
-            {
-                writer.WriteSpace();
-            }
-
-            writer.Colorize("{{0}}", _theme.Dimmed, scope);
-        }
-
-        scopeProvider.ForEachScope(writeScope, writer);
-
-        return isOneOrMultipleScopes;
     }
 
     internal void WriteTimestamp(TextWriter writer)

@@ -38,16 +38,14 @@ public class AcceptanceTest
     [Fact]
     public void UnstructuredLogExportedCorrectly()
     {
-        CaptureAndRecoverConsoleOut(() =>
+        CaptureAndRecoverConsoleOut(consoleOut =>
         {
-            using var writer = new StringWriter();
-            System.Console.SetOut(writer);
             var logger = GetLogger();
             var logMessage = "Refrigerator is broken.";
 
             logger.LogInformation(logMessage);
 
-            var logs = RemoveColors(writer.ToString());
+            var logs = RemoveColors(consoleOut.ToString());
             Assert.EndsWith(GetExpectedMessage(logMessage), logs);
         });
     }
@@ -55,27 +53,23 @@ public class AcceptanceTest
     [Fact]
     public void StructuredLogExportedCorrectly()
     {
-        CaptureAndRecoverConsoleOut(() =>
+        CaptureAndRecoverConsoleOut(consoleOut =>
         {
-            using var writer = new StringWriter();
-            System.Console.SetOut(writer);
             var logger = GetLogger();
             var logMessage = "{name} is broken.";
 
             logger.LogInformation(logMessage, "Refrigerator");
 
-            var logs = RemoveColors(writer.ToString());
-            Assert.EndsWith(GetExpectedMessage(logMessage), logs);
+            var logs = RemoveColors(consoleOut.ToString());
+            Assert.Contains(GetExpectedMessage(logMessage), logs);
         });
     }
 
     [Fact]
     public void StructuredLogWithUseFormattedMessageExportedCorrectly()
     {
-        CaptureAndRecoverConsoleOut(() =>
+        CaptureAndRecoverConsoleOut(consoleOut =>
         {
-            using var writer = new StringWriter();
-            System.Console.SetOut(writer);
             var logger = GetLogger(useFormattedMessage: true);
             var logMessage = "{name} is broken.";
             var name = "Refrigerator";
@@ -83,50 +77,105 @@ public class AcceptanceTest
 
             logger.LogInformation(logMessage, name);
 
-            var logs = RemoveColors(writer.ToString());
-            Assert.EndsWith(GetExpectedMessage(formattedMessage), logs);
+            var logs = RemoveColors(consoleOut.ToString());
+            Assert.Contains(GetExpectedMessage(formattedMessage), logs);
         });
     }
 
     [Theory]
     [CombinatorialData]
-    public void LogWithScopesExportedCorrectly(bool useFormattedMessage, bool useEnricher)
+    public void LogWithScopesExportedCorrectly(bool includeLoggingScopes, bool includeExporterScopes)
     {
-        CaptureAndRecoverConsoleOut(() =>
+        CaptureAndRecoverConsoleOut(consoleOut =>
         {
-            using var writer = new StringWriter();
-            System.Console.SetOut(writer);
-            ILogEnricher? enricher = useEnricher ? new TestLogEnricher() : null;
-            var logger = GetLogger(includeScopes: true, useFormattedMessage, enricher);
-            var logMessage = "{name} is broken.";
-            var name = "Refrigerator";
-            var formattedMessage = $"{name} is broken.";
-            var scope1 = "operation";
+            var logger = GetLogger(
+                includeLoggingScopes: includeLoggingScopes,
+                includeExporterScopes: includeExporterScopes);
+
+            var logMessage = "Refrigerator is broken.";
+            var scope1 = new KeyValuePair<string, object>("operation_name", "operation");
             var scope2 = "hardware";
 
-            using (logger.BeginScope(scope1))
+            using (logger.BeginScope(new[] { scope1 }))
             using (logger.BeginScope(scope2))
             {
-                logger.LogInformation(logMessage, name);
+                logger.LogInformation(logMessage);
             }
 
-            var logs = RemoveColors(writer.ToString());
+            var logs = RemoveColors(consoleOut.ToString());
+            var expectedMessage = GetExpectedMessage(logMessage);
 
-            var enricherScope = useEnricher ? $" {TestLogEnricher.Key}:{TestLogEnricher.Value}" : string.Empty;
-            Assert.StartsWith($"Scope: {scope1} {scope2} name:{name}{enricherScope}{Environment.NewLine}", logs);
+            if (includeLoggingScopes)
+            {
+#if NET5_0_OR_GREATER
+                if (includeExporterScopes)
+                {
+                    Assert.StartsWith($"Scope: {scope1.Key}:{scope1.Value} {scope2}{Environment.NewLine}", logs);
+                }
+                else
+                {
+                    Assert.DoesNotContain("Scope:", logs);
+                }
+#else
+                Assert.StartsWith($"Scope: {scope1.Key}:{scope1.Value} {scope2}{Environment.NewLine}", logs);
+#endif
+            }
+            else
+            {
+                Assert.DoesNotContain("Scope:", logs);
+            }
 
-            string message = useFormattedMessage ? formattedMessage : logMessage;
-            Assert.EndsWith(GetExpectedMessage(message), logs);
+            Assert.EndsWith(expectedMessage, logs);
+        });
+    }
+
+    [Theory]
+    [CombinatorialData]
+    public void LogsWithDimensionsExportedCorrectly(bool includeDimensions)
+    {
+        CaptureAndRecoverConsoleOut(consoleOut =>
+        {
+            var logger = GetLogger(
+                includeDimensions: includeDimensions,
+                useFormattedMessage: false,
+                enricher: new TestLogEnricher());
+
+            var logMessage = "{name} is broken.";
+            var name = "Refrigerator";
+            var nameParameter = $"name={name}";
+            var enrichmentProperty = $"{TestLogEnricher.Key}={TestLogEnricher.Value}";
+
+            logger.LogInformation(logMessage, name);
+
+            var logs = RemoveColors(consoleOut.ToString());
+            var expectedMessage = GetExpectedMessage(logMessage);
+
+#if NET5_0_OR_GREATER
+            if (includeDimensions)
+            {
+                Assert.Contains(nameParameter, logs);
+                Assert.Contains(enrichmentProperty, logs);
+                Assert.Contains(expectedMessage, logs);
+            }
+            else
+            {
+                Assert.DoesNotContain(nameParameter, logs);
+                Assert.DoesNotContain(enrichmentProperty, logs);
+                Assert.EndsWith(expectedMessage, logs);
+            }
+#else
+            Assert.Contains(nameParameter, logs);
+            Assert.Contains(enrichmentProperty, logs);
+            Assert.Contains(expectedMessage, logs);
+#endif
         });
     }
 
     [Fact]
     public void ExceptionLogExportedCorrectly()
     {
-        CaptureAndRecoverConsoleOut(() =>
+        CaptureAndRecoverConsoleOut(consoleOut =>
         {
-            using var writer = new StringWriter();
-            System.Console.SetOut(writer);
             var logger = GetLogger();
             var logMessage = "Logging message for {reason}.";
             try
@@ -140,7 +189,7 @@ public class AcceptanceTest
                 logger.LogInformation(ex, logMessage, "testing");
             }
 
-            var logs = RemoveColors(writer.ToString());
+            var logs = RemoveColors(consoleOut.ToString());
             Assert.Contains(GetExpectedMessage(logMessage), logs);
         });
     }
@@ -148,16 +197,14 @@ public class AcceptanceTest
     [Fact]
     public void LogWithTraceIdExportedCorrectly()
     {
-        CaptureAndRecoverConsoleOut(() =>
+        CaptureAndRecoverConsoleOut(consoleOut =>
         {
-            using var writer = new StringWriter();
-            System.Console.SetOut(writer);
             var logger = GetLogger();
             var logMessage = "Refrigerator is broken.";
 
             logger.LogInformation(logMessage);
 
-            var logs = RemoveColors(writer.ToString());
+            var logs = RemoveColors(consoleOut.ToString());
             Assert.EndsWith(GetExpectedMessage(logMessage), logs);
         });
     }
@@ -167,20 +214,20 @@ public class AcceptanceTest
     {
         var methodInfo = typeof(LoggingConsoleExporter).GetMethod("GetOriginalFormat", BindingFlags.NonPublic | BindingFlags.Static);
 #if NET5_0_OR_GREATER
-        using var consoleLogExporter = new LoggingConsoleExporter(MSOptions.Create(new LoggingConsoleOptions()));
+        using var loggingConsoleExporter = new LoggingConsoleExporter(MSOptions.Create(new LoggingConsoleOptions()));
 #else
-        using var consoleLogExporter = new LoggingConsoleExporter();
+        using var loggingConsoleExporter = new LoggingConsoleExporter();
 #endif
 
         ReadOnlyCollection<KeyValuePair<string, object>> state = new(new List<KeyValuePair<string, object>> { new("{OriginalFormat}", null!) });
         object[] parameters = { state };
-        var result = methodInfo?.Invoke(consoleLogExporter, parameters);
+        var result = methodInfo?.Invoke(loggingConsoleExporter, parameters);
         Assert.IsType<string>(result);
         Assert.Equal(string.Empty, result);
 
         state = new(new List<KeyValuePair<string, object>>());
         parameters[0] = state;
-        result = methodInfo?.Invoke(consoleLogExporter, parameters);
+        result = methodInfo?.Invoke(loggingConsoleExporter, parameters);
         Assert.IsType<string>(result);
         Assert.Equal(string.Empty, result);
     }
@@ -190,29 +237,42 @@ public class AcceptanceTest
     {
         var methodInfo = typeof(LoggingConsoleExporter).GetMethod("GetOriginalFormat", BindingFlags.NonPublic | BindingFlags.Static);
 #if NET5_0_OR_GREATER
-        using var consoleLogExporter = new LoggingConsoleExporter(MSOptions.Create(new LoggingConsoleOptions()));
+        using var loggingConsoleExporter = new LoggingConsoleExporter(MSOptions.Create(new LoggingConsoleOptions()));
 #else
-        using var consoleLogExporter = new LoggingConsoleExporter();
+        using var loggingConsoleExporter = new LoggingConsoleExporter();
 #endif
 
         ReadOnlyCollection<KeyValuePair<string, object>>? state = null;
         object?[] parameters = { state };
-        var result = methodInfo?.Invoke(consoleLogExporter, parameters);
+        var result = methodInfo?.Invoke(loggingConsoleExporter, parameters);
         Assert.IsType<string>(result);
         Assert.Equal(string.Empty, result);
     }
 
-    private static ILogger GetLogger(bool includeScopes = false, bool useFormattedMessage = false, ILogEnricher? enricher = null)
+    private static ILogger GetLogger(
+        bool includeLoggingScopes = false,
+        bool includeExporterScopes = false,
+        bool includeDimensions = false,
+        bool useFormattedMessage = false,
+        ILogEnricher? enricher = null)
     {
         using var loggerFactory = LoggerFactory.Create(builder =>
         {
             _ = builder
                 .AddOpenTelemetryLogging(options =>
                 {
-                    options.IncludeScopes = includeScopes;
+                    options.IncludeScopes = includeLoggingScopes;
                     options.UseFormattedMessage = useFormattedMessage;
                 })
+#if NET5_0_OR_GREATER
+                .AddConsoleExporter(options =>
+                {
+                    options.IncludeScopes = includeExporterScopes;
+                    options.IncludeDimensions = includeDimensions;
+                });
+#else
                 .AddConsoleExporter();
+#endif
 
             if (enricher is not null)
             {
@@ -223,13 +283,15 @@ public class AcceptanceTest
         return loggerFactory.CreateLogger<AcceptanceTest>();
     }
 
-    private static void CaptureAndRecoverConsoleOut(Action test)
+    private static void CaptureAndRecoverConsoleOut(Action<StringWriter> test)
     {
         var consoleOut = System.Console.Out;
+        using var newConsoleOut = new StringWriter();
+        System.Console.SetOut(newConsoleOut);
 
         try
         {
-            test();
+            test(newConsoleOut);
         }
         finally
         {

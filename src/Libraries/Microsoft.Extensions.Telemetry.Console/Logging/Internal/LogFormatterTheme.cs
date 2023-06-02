@@ -33,6 +33,12 @@ internal sealed class LogFormatterTheme
     /// </summary>
     /// <remarks>Default is <see cref="Colors.DarkRedOnNone"/>.</remarks>
     public ColorSet ExceptionStackTrace { get; set; } = Colors.DarkRedOnNone;
+
+    /// <summary>
+    /// Gets or sets a value indicating what color to use for dimensions.
+    /// </summary>
+    /// <remarks>Default is <see cref="Colors.DarkGreenOnNone"/>.</remarks>
+    public ColorSet Dimensions { get; set; } = Colors.DarkGreenOnNone;
 }
 
 #endif

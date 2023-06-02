@@ -69,5 +69,13 @@ internal sealed class LogFormatterOptions : ConsoleFormatterOptions
     /// Default set to <see langword="true"/>.
     /// </remarks>
     public bool IncludeExceptionStacktrace { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to display dimensions.
+    /// </summary>
+    /// <remarks>
+    /// Default set to <see langword="false"/>.
+    /// </remarks>
+    public bool IncludeDimensions { get; set; }
 }
 #endif

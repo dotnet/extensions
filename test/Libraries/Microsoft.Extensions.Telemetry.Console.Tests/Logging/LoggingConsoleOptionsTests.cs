@@ -13,6 +13,7 @@ public class LoggingConsoleOptionsTests
     private const ConsoleColor DefaultDimmedTextColor = ConsoleColor.DarkGray;
     private const ConsoleColor DefaultExceptionTextColor = ConsoleColor.Red;
     private const ConsoleColor DefaultExceptionStackTraceTextColor = ConsoleColor.DarkRed;
+    private const ConsoleColor DefaultDimensionsTextColor = ConsoleColor.DarkGreen;
 
     [Fact]
     public void TestDefaultOptions()
@@ -27,6 +28,7 @@ public class LoggingConsoleOptionsTests
         Assert.True(defaultOptions.IncludeTraceId);
         Assert.True(defaultOptions.IncludeSpanId);
         Assert.False(defaultOptions.UseUtcTimestamp);
+        Assert.False(defaultOptions.IncludeDimensions);
 
         Assert.True(defaultOptions.ColorsEnabled);
 
@@ -38,6 +40,9 @@ public class LoggingConsoleOptionsTests
 
         Assert.Equal(DefaultExceptionTextColor, defaultOptions.ExceptionColor);
         Assert.Null(defaultOptions.ExceptionBackgroundColor);
+
+        Assert.Equal(DefaultDimensionsTextColor, defaultOptions.DimensionsColor);
+        Assert.Null(defaultOptions.DimensionsBackgroundColor);
 
         Assert.Equal(DefaultTimestampFormat, defaultOptions.TimestampFormat);
     }

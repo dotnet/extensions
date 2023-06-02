@@ -41,74 +41,6 @@ public class LogFormatterTests
     }
 
     [Fact]
-    public void Write_WhenScopeIsNullThrows()
-    {
-        var theme = CreateNoneColorfulLogFormatterTheme();
-        var options = CreateAllLightUpOptions();
-
-        using var formatter = new LogFormatter(options, theme);
-        using var writer = new StringWriter();
-
-        Assert.Throws<ArgumentNullException>(() =>
-            formatter.Write(default, null!, writer));
-    }
-
-    [Fact]
-    public void WriteScopes_WhenEmpty_ProducesEmptyString()
-    {
-        var theme = CreateNoneColorfulLogFormatterTheme();
-        var options = CreateAllLightUpOptions();
-
-        using var formatter = new LogFormatter(options, theme);
-
-        using var writer = new StringWriter();
-        var scopes = new LoggerExternalScopeProvider();
-
-        formatter.WriteScopes(writer, scopes);
-
-        Assert.Equal(string.Empty, writer.ToString());
-    }
-
-    [Fact]
-    public void WriteScopes_WhenSingleScope_ProducesCorrectOutput()
-    {
-        var theme = CreateNoneColorfulLogFormatterTheme();
-        var options = CreateAllLightUpOptions();
-
-        using var formatter = new LogFormatter(options, theme);
-
-        using var writer = new StringWriter();
-        var scopes = new LoggerExternalScopeProvider();
-
-        scopes.Push("key1=value1");
-
-        formatter.WriteScopes(writer, scopes);
-
-        var m = _newLine + "key1=value1";
-        Assert.Equal(m, writer.ToString());
-    }
-
-    [Fact]
-    public void WriteScopes_WhenMultipleScopes_ProducesCorrectOutput()
-    {
-        var theme = CreateNoneColorfulLogFormatterTheme();
-        var options = CreateAllLightUpOptions();
-
-        using var formatter = new LogFormatter(options, theme);
-
-        using var writer = new StringWriter();
-        var scopes = new LoggerExternalScopeProvider();
-
-        scopes.Push("key1=value1");
-        scopes.Push("key2=value2");
-
-        formatter.WriteScopes(writer, scopes);
-
-        var text = _newLine + "key1=value1 key2=value2";
-        Assert.Equal(text, writer.ToString());
-    }
-
-    [Fact]
     public void WriteException_WhenNull_DoesNothing()
     {
         var theme = CreateNoneColorfulLogFormatterTheme();
@@ -244,11 +176,10 @@ public class LogFormatterTests
         using var formatter = new LogFormatter(options, theme);
         MockClock(formatter);
 
-        var scopes = new LoggerExternalScopeProvider();
         using var writer = new StringWriter();
         var entry = CreateLogEntry();
 
-        formatter.Write(entry, scopes, writer);
+        formatter.Write(entry, writer);
 
         Assert.Matches(_regexToDetectTimestamp, $"{writer}");
     }
@@ -262,10 +193,9 @@ public class LogFormatterTests
         using var formatter = new LogFormatter(options, theme);
         MockClock(formatter);
 
-        var scopes = new LoggerExternalScopeProvider();
         using var writer = new StringWriter();
 
-        formatter.Write(default, scopes, writer);
+        formatter.Write(default, writer);
         Assert.Matches(_regexToDetectTimestamp, $"{writer}");
     }
 
@@ -280,11 +210,10 @@ public class LogFormatterTests
 
         using var formatter = new LogFormatter(options, theme);
 
-        var scopes = new LoggerExternalScopeProvider();
         using var writer = new StringWriter();
         var entry = CreateLogEntry();
 
-        formatter.Write(entry, scopes, writer);
+        formatter.Write(entry, writer);
 
         var text = $"(info) {entry.State.TraceId} {entry.State.SpanId} Message (Category/0)" + _newLine;
 
@@ -302,11 +231,10 @@ public class LogFormatterTests
 
         using var formatter = new LogFormatter(options, theme);
 
-        var scopes = new LoggerExternalScopeProvider();
         using var writer = new StringWriter();
         var entry = CreateLogEntry();
 
-        formatter.Write(entry, scopes, writer);
+        formatter.Write(entry, writer);
 
         var text = $"(info) {entry.State.TraceId} Message (Category/0)" + _newLine;
 
@@ -324,11 +252,10 @@ public class LogFormatterTests
 
         using var formatter = new LogFormatter(options, theme);
 
-        var scopes = new LoggerExternalScopeProvider();
         using var writer = new StringWriter();
         var entry = CreateLogEntry();
 
-        formatter.Write(entry, scopes, writer);
+        formatter.Write(entry, writer);
 
         var text = $"(info) {entry.State.SpanId} Message (Category/0)" + _newLine;
 
@@ -347,11 +274,10 @@ public class LogFormatterTests
         using var formatter = new LogFormatter(options, theme);
         MockClock(formatter);
 
-        var scopes = new LoggerExternalScopeProvider();
         using var writer = new StringWriter();
         var entry = CreateLogEntry();
 
-        formatter.Write(entry, scopes, writer);
+        formatter.Write(entry, writer);
 
         Assert.DoesNotContain("[info]", writer.ToString(), StringComparison.CurrentCulture);
         Assert.EndsWith(_newLine, writer.ToString(), StringComparison.CurrentCulture);
@@ -369,38 +295,36 @@ public class LogFormatterTests
         using var formatter = new LogFormatter(options, theme);
         MockClock(formatter);
 
-        var scopes = new LoggerExternalScopeProvider();
         using var writer = new StringWriter();
         var entry = CreateLogEntry();
 
-        formatter.Write(entry, scopes, writer);
+        formatter.Write(entry, writer);
 
         Assert.DoesNotContain("(Category/0)", writer.ToString(), StringComparison.CurrentCulture);
         Assert.EndsWith(_newLine, writer.ToString(), StringComparison.CurrentCulture);
     }
 
     [Fact]
-    public void Write_WhenScopeExists_ProducesCorrectOutput()
+    public void Write_Dimensions()
     {
         var theme = CreateNoneColorfulLogFormatterTheme();
-        var options = CreateAllLightUpOptions();
+        var options = Microsoft.Extensions.Options.Options.Create(new LogFormatterOptions
+        {
+            IncludeDimensions = true,
+        });
 
         using var formatter = new LogFormatter(options, theme);
         MockClock(formatter);
 
-        var scopes = new LoggerExternalScopeProvider();
-
-        scopes.Push("Key1=Value1");
-        scopes.Push("Key2=Value2");
-
         using var writer = new StringWriter();
         var entry = CreateLogEntry();
 
-        formatter.Write(entry, scopes, writer);
+        formatter.Write(entry, writer);
 
-        var text = _newLine + "Key1=Value1 Key2=Value2" + _newLine;
+        var expected = _newLine + "  K1=V1" + _newLine + "  K2=V2" + _newLine + "  K3=" + _newLine;
+        var actual = writer.ToString();
 
-        Assert.StartsWith(text, writer.ToString(), StringComparison.CurrentCulture);
+        Assert.EndsWith(expected, actual, StringComparison.CurrentCulture);
     }
 
     [Fact]
@@ -412,11 +336,10 @@ public class LogFormatterTests
         using var formatter = new LogFormatter(options, theme);
         MockClock(formatter);
 
-        var scopes = new LoggerExternalScopeProvider();
         using var writer = new StringWriter();
         var entry = CreateLogEntry(e: new Exception("Test"));
 
-        formatter.Write(entry, scopes, writer);
+        formatter.Write(entry, writer);
 
         var text = $"(info) {entry.State.TraceId} {entry.State.SpanId} Message (Category/0)" + _newLine
                                                  + _newLine +
@@ -496,7 +419,7 @@ public class LogFormatterTests
             IncludeScopes = true,
             IncludeTimestamp = true,
             TimestampFormat = "yyyy-MM-dd HH:mm:ss.fff",
-            UseUtcTimestamp = true
+            UseUtcTimestamp = true,
         });
     }
 
@@ -514,7 +437,12 @@ public class LogFormatterTests
     private static LogEntry<LogEntryCompositeState> CreateLogEntry(Action<LogEntry<LogEntryCompositeState>>? amend = null, Exception? e = null)
     {
         static string Formatter(LogEntryCompositeState s, Exception? exception) => "Message";
-        LogEntryCompositeState state = new LogEntryCompositeState(null, ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom());
+        LogEntryCompositeState state = new LogEntryCompositeState(new[]
+        {
+            new KeyValuePair<string, object?>("K1", "V1"),
+            new KeyValuePair<string, object?>("K2", "V2"),
+            new KeyValuePair<string, object?>("K3", null),
+        }, ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom());
 
         var logEntry = new LogEntry<LogEntryCompositeState>(LogLevel.Information, "Category", 0, state, e, Formatter);
 
