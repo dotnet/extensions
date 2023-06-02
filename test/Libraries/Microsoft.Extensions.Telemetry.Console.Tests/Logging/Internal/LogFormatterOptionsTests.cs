@@ -55,6 +55,14 @@ public class LogFormatterOptionsTests
     }
 
     [Fact]
+    public void CanSetAndGetIncludeDimensions()
+    {
+        const bool TestValue = true;
+        _testClass.IncludeDimensions = TestValue;
+        Assert.Equal(TestValue, _testClass.IncludeDimensions);
+    }
+
+    [Fact]
     public void CheckDefaultLogFormatterOptions()
     {
         var options = new LogFormatterOptions();
@@ -65,6 +73,7 @@ public class LogFormatterOptionsTests
         Assert.True(options.IncludeLogLevel);
         Assert.True(options.IncludeCategory);
         Assert.True(options.IncludeExceptionStacktrace);
+        Assert.False(options.IncludeDimensions);
     }
 
     [Fact]

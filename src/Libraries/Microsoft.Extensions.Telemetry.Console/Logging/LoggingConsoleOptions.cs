@@ -123,5 +123,22 @@ public class LoggingConsoleOptions
     /// Gets or sets a value indicating what color to use for exception stack trace text background.
     /// </summary>
     public ConsoleColor? ExceptionStackTraceBackgroundColor { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to include dimension name/value pairs with each log record.
+    /// </summary>
+    /// <remarks>Defaults to <see langword="false"/>.</remarks>
+    public bool IncludeDimensions { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating what color to use for dimension text.
+    /// </summary>
+    /// <remarks>Defaults to <see cref="ConsoleColor.DarkGreen"/>.</remarks>
+    public ConsoleColor DimensionsColor { get; set; } = ConsoleColor.DarkGreen;
+
+    /// <summary>
+    /// Gets or sets a value indicating what color to use for dimension text background.
+    /// </summary>
+    public ConsoleColor? DimensionsBackgroundColor { get; set; }
 }
 #endif

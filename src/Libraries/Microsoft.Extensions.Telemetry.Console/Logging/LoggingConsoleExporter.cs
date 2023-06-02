@@ -10,15 +10,13 @@ using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Pools;
 #endif
 
+using System.IO;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
 
 #if NET5_0_OR_GREATER
-using System.IO;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Telemetry.Console.Internal;
-using Microsoft.Shared.Diagnostics;
 using MSOptions = Microsoft.Extensions.Options;
 #endif
 
@@ -30,36 +28,39 @@ namespace Microsoft.Extensions.Telemetry.Console;
 [SuppressMessage("Major Code Smell", "S106:Standard outputs should not be used directly to log anything", Justification = "We need to use here console logging.")]
 internal sealed class LoggingConsoleExporter : BaseExporter<LogRecord>
 {
-    private const string OriginalFormat = "{OriginalFormat}";
+    internal const string OriginalFormat = "{OriginalFormat}";
 
 #if NET5_0_OR_GREATER
     private readonly LogFormatter _consoleFormatter;
+    private readonly LoggingConsoleOptions _formatterOptions;
 
-    public LoggingConsoleExporter(MSOptions.IOptions<LoggingConsoleOptions> consoleLogFormatterOptions)
+    public LoggingConsoleExporter(MSOptions.IOptions<LoggingConsoleOptions> loggingConsoleOptions)
     {
-        var formatterOptions = Throw.IfNullOrMemberNull(consoleLogFormatterOptions, consoleLogFormatterOptions?.Value);
+        _formatterOptions = loggingConsoleOptions.Value;
 
         _consoleFormatter = new LogFormatter(
             MSOptions.Options.Create(
                 new LogFormatterOptions
                 {
-                    IncludeScopes = formatterOptions.IncludeScopes,
-                    IncludeCategory = formatterOptions.IncludeCategory,
-                    IncludeExceptionStacktrace = formatterOptions.IncludeExceptionStacktrace,
-                    IncludeLogLevel = formatterOptions.IncludeLogLevel,
-                    IncludeTimestamp = formatterOptions.IncludeTimestamp,
-                    IncludeSpanId = formatterOptions.IncludeSpanId,
-                    IncludeTraceId = formatterOptions.IncludeTraceId,
-                    TimestampFormat = formatterOptions.TimestampFormat!,
-                    UseUtcTimestamp = formatterOptions.UseUtcTimestamp
+                    IncludeScopes = _formatterOptions.IncludeScopes,
+                    IncludeCategory = _formatterOptions.IncludeCategory,
+                    IncludeExceptionStacktrace = _formatterOptions.IncludeExceptionStacktrace,
+                    IncludeLogLevel = _formatterOptions.IncludeLogLevel,
+                    IncludeTimestamp = _formatterOptions.IncludeTimestamp,
+                    IncludeSpanId = _formatterOptions.IncludeSpanId,
+                    IncludeTraceId = _formatterOptions.IncludeTraceId,
+                    TimestampFormat = _formatterOptions.TimestampFormat!,
+                    UseUtcTimestamp = _formatterOptions.UseUtcTimestamp,
+                    IncludeDimensions = _formatterOptions.IncludeDimensions,
                 }),
             MSOptions.Options.Create(
                 new LogFormatterTheme
                 {
-                    ColorsEnabled = formatterOptions.ColorsEnabled,
-                    Dimmed = new ColorSet(formatterOptions.DimmedColor, formatterOptions.DimmedBackgroundColor),
-                    Exception = new ColorSet(formatterOptions.ExceptionColor, formatterOptions.ExceptionBackgroundColor),
-                    ExceptionStackTrace = new ColorSet(formatterOptions.ExceptionStackTraceColor, formatterOptions.ExceptionStackTraceBackgroundColor)
+                    ColorsEnabled = _formatterOptions.ColorsEnabled,
+                    Dimmed = new ColorSet(_formatterOptions.DimmedColor, _formatterOptions.DimmedBackgroundColor),
+                    Exception = new ColorSet(_formatterOptions.ExceptionColor, _formatterOptions.ExceptionBackgroundColor),
+                    ExceptionStackTrace = new ColorSet(_formatterOptions.ExceptionStackTraceColor, _formatterOptions.ExceptionStackTraceBackgroundColor),
+                    Dimensions = new ColorSet(_formatterOptions.DimensionsColor, _formatterOptions.DimensionsBackgroundColor),
                 }));
     }
 #endif
@@ -77,6 +78,11 @@ internal sealed class LoggingConsoleExporter : BaseExporter<LogRecord>
         using var textWriter = new StringWriter();
         foreach (var logRecord in batch)
         {
+            if (_formatterOptions.IncludeScopes)
+            {
+                WriteScopesLine(logRecord, textWriter);
+            }
+
             formattedMessage = logRecord.FormattedMessage;
             var logEntry = new LogEntry<LogEntryCompositeState>(
                 logRecord.LogLevel,
@@ -86,15 +92,12 @@ internal sealed class LoggingConsoleExporter : BaseExporter<LogRecord>
                 logRecord.Exception,
                 FormatLog);
 
-            var scopedProvider = new LoggerExternalScopeProvider();
-            _consoleFormatter.Write(logEntry, scopedProvider, textWriter);
-
-            WriteScopesLine(logRecord);
+            _consoleFormatter.Write(logEntry, textWriter);
 
             var text = textWriter.ToString();
             if (!string.IsNullOrWhiteSpace(text))
             {
-                Write(text);
+                System.Console.Write(text);
             }
         }
 
@@ -135,12 +138,60 @@ internal sealed class LoggingConsoleExporter : BaseExporter<LogRecord>
         return string.Empty;
     }
 
+    private static void WriteScopesLine(
+        LogRecord logRecord,
+#if NET5_0_OR_GREATER
+        StringWriter writer)
+#else
+        TextWriter writer)
+#endif
+    {
+        var hasScopes = false;
+
+        logRecord.ForEachScope((scope, _) =>
+        {
+            foreach (var subScope in scope)
+            {
+                if (!hasScopes)
+                {
+                    hasScopes = true;
+                    writer.Write("Scope:");
+                }
+
+                var scopeText = string.IsNullOrEmpty(subScope.Key)
+                    ? $"{subScope.Value}"
+                    : $"{subScope.Key}:{subScope.Value}";
+
+                writer.Write($" {scopeText}");
+            }
+        }, default(object));
+
+        if (hasScopes)
+        {
+            writer.WriteLine();
+        }
+    }
+
 #if !NET5_0_OR_GREATER
+    private static void WriteDimensions(LogRecord logRecord)
+    {
+        if (logRecord.StateValues != null)
+        {
+            foreach (var kvp in logRecord.StateValues)
+            {
+                if (kvp.Key != LoggingConsoleExporter.OriginalFormat)
+                {
+                    System.Console.WriteLine($"  {kvp.Key}={kvp.Value}");
+                }
+            }
+        }
+    }
+
     private void WriteBatchOfLogRecords(Batch<LogRecord> batch)
     {
         foreach (var logRecord in batch)
         {
-            WriteScopesLine(logRecord);
+            WriteScopesLine(logRecord, System.Console.Out);
 
             var message = logRecord.FormattedMessage;
             if (string.IsNullOrEmpty(message))
@@ -148,13 +199,16 @@ internal sealed class LoggingConsoleExporter : BaseExporter<LogRecord>
                 message = GetOriginalFormat(logRecord.StateValues);
             }
 
-            WriteLine($"{logRecord.Timestamp:yyyy-MM-dd HH:mm:ss.fff} {logRecord.LogLevel} {logRecord.TraceId} {logRecord.SpanId} {message} {logRecord.CategoryName}/{logRecord.EventId}");
+            System.Console.WriteLine(
+                $"{logRecord.Timestamp:yyyy-MM-dd HH:mm:ss.fff} {logRecord.LogLevel} {logRecord.TraceId} {logRecord.SpanId} {message} {logRecord.CategoryName}/{logRecord.EventId}");
 
             if (logRecord.Exception is not null)
             {
                 var exceptionMessage = GetExceptionMessage(logRecord.Exception);
-                Write(exceptionMessage);
+                System.Console.Write(exceptionMessage);
             }
+
+            WriteDimensions(logRecord);
         }
     }
 
@@ -194,50 +248,4 @@ internal sealed class LoggingConsoleExporter : BaseExporter<LogRecord>
         }
     }
 #endif
-
-    private void WriteScopesLine(LogRecord logRecord)
-    {
-        var isMultipleScopes = false;
-
-        void WriteScope(KeyValuePair<string, object?> scope)
-        {
-            var text = string.IsNullOrEmpty(scope.Key)
-                ? $" {scope.Value}"
-                : $" {scope.Key}:{scope.Value}";
-
-            if (!isMultipleScopes)
-            {
-                isMultipleScopes = true;
-                Write($"Scope:{text}");
-            }
-            else
-            {
-                Write(text);
-            }
-        }
-
-        logRecord.ForEachScope((scope, _) =>
-        {
-            foreach (var subScope in scope)
-            {
-                WriteScope(subScope);
-            }
-        }, this);
-
-        if (logRecord.StateValues is not null)
-        {
-            foreach (var stateValue in logRecord.StateValues)
-            {
-                if (stateValue.Key != OriginalFormat)
-                {
-                    WriteScope(stateValue);
-                }
-            }
-        }
-
-        if (isMultipleScopes)
-        {
-            WriteLine();
-        }
-    }
 }
