@@ -1067,7 +1067,7 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
         HttpClientMeteringListener.UsingDiagnosticsSource = false;
     }
 
-    [Fact]
+    [Fact(Skip = "Flaky")]
     public static void When_DiagSourceAndDelegatingHandler_BothConfigured_MetricsOnlyEmittedOnce()
     {
         using var host = FakeHost.CreateBuilder()

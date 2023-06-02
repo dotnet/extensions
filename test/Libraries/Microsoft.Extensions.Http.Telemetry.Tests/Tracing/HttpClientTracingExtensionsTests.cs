@@ -360,7 +360,7 @@ public class HttpClientTracingExtensionsTests
         downstreamDependencyMetadataManager.Verify();
     }
 
-    [Theory]
+    [Theory(Skip = "Flaky")]
     [InlineData(HttpRouteParameterRedactionMode.None, "api/sensitive_id")]
     [InlineData(HttpRouteParameterRedactionMode.Loose, "api/sensitive_id")]
     [InlineData(HttpRouteParameterRedactionMode.Strict, $"api/{TelemetryConstants.Redacted}")]

@@ -225,29 +225,29 @@
     },
     {
       "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T> : System.Attribute where T : struct",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.HistogramAttribute(params string[] dimensions);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.HistogramAttribute(System.Type type);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Dimensions { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Name { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Type? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Type { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },

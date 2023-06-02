@@ -139,6 +139,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions.AddHttpClientMeteringForAllHttpClients(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions.AddOutgoingRequestMetricEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
@@ -213,6 +217,33 @@
         {
           "Member": "override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> Microsoft.Extensions.Http.Telemetry.Metering.HttpMeteringHandler.SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken);",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType.HttpRequestResultType();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType.ExpectedFailure",
+          "Stage": "Experimental",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType.Failure",
+          "Stage": "Experimental",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType.Success",
+          "Stage": "Experimental",
+          "Value": "0"
         }
       ]
     },

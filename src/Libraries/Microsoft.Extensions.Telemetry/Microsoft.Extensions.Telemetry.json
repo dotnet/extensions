@@ -20,6 +20,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "bool Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.IncludeRecommendedDefault { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "System.TimeSpan Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.SamplingInterval { get; set; }",
           "Stage": "Stable"
         }
@@ -182,11 +186,15 @@
       "Stage": "Experimental",
       "Methods": [
         {
+          "Member": "static OpenTelemetry.Metrics.MeterProviderBuilder Microsoft.Extensions.Telemetry.Metering.OTelMeteringExtensions.AddMetering(this OpenTelemetry.Metrics.MeterProviderBuilder builder);",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "static OpenTelemetry.Metrics.MeterProviderBuilder Microsoft.Extensions.Telemetry.Metering.OTelMeteringExtensions.AddMetering(this OpenTelemetry.Metrics.MeterProviderBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection configurationSection);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static OpenTelemetry.Metrics.MeterProviderBuilder Microsoft.Extensions.Telemetry.Metering.OTelMeteringExtensions.AddMetering(this OpenTelemetry.Metrics.MeterProviderBuilder builder, System.Action<Microsoft.Extensions.Telemetry.Metering.MeteringOptions>? configure = null);",
+          "Member": "static OpenTelemetry.Metrics.MeterProviderBuilder Microsoft.Extensions.Telemetry.Metering.OTelMeteringExtensions.AddMetering(this OpenTelemetry.Metrics.MeterProviderBuilder builder, System.Action<Microsoft.Extensions.Telemetry.Metering.MeteringOptions> configure);",
           "Stage": "Experimental"
         }
       ]

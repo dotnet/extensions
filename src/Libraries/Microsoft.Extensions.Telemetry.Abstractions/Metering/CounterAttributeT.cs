@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry.Metering;
 
@@ -34,6 +35,7 @@ namespace Microsoft.Extensions.Telemetry.Metering;
 /// </code>
 /// </example>
 [AttributeUsage(AttributeTargets.Method)]
+[Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class CounterAttribute<T> : Attribute
     where T : struct
 {

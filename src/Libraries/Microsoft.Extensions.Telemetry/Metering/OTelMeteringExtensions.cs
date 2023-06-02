@@ -21,9 +21,20 @@ public static class OTelMeteringExtensions
     /// Extension to configure metering.
     /// </summary>
     /// <param name="builder"><see cref="MeterProviderBuilder"/> instance.</param>
+    /// <returns>Returns <see cref="MeterProviderBuilder"/> for chaining.</returns>
+    [Experimental]
+    public static MeterProviderBuilder AddMetering(
+        this MeterProviderBuilder builder)
+    {
+        return builder.AddMetering(_ => { });
+    }
+
+    /// <summary>
+    /// Extension to configure metering.
+    /// </summary>
+    /// <param name="builder"><see cref="MeterProviderBuilder"/> instance.</param>
     /// <param name="configurationSection">Configuration section that contains <see cref="MeteringOptions"/>.</param>
     /// <returns>Returns <see cref="MeterProviderBuilder"/> for chaining.</returns>
-    /// <exception cref="InvalidOperationException">When the extension is called without hosting package.</exception>
     [Experimental]
     public static MeterProviderBuilder AddMetering(
         this MeterProviderBuilder builder,
@@ -41,22 +52,23 @@ public static class OTelMeteringExtensions
     /// <param name="builder"><see cref="MeterProviderBuilder"/> instance.</param>
     /// <param name="configure">The <see cref="MeteringOptions"/> configuration delegate.</param>
     /// <returns>Returns <see cref="MeterProviderBuilder"/> for chaining.</returns>
-    /// <exception cref="InvalidOperationException">When the extension is called without hosting package.</exception>
     [Experimental]
     public static MeterProviderBuilder AddMetering(
         this MeterProviderBuilder builder,
-        Action<MeteringOptions>? configure = null)
+        Action<MeteringOptions> configure)
     {
         _ = Throw.IfNull(builder);
 
         return builder.ConfigureServices(services =>
-            services.ConfigureOpenTelemetryMeterProvider((sp, meterProviderBuilder) =>
+            services
+                .RegisterMetering()
+                .ConfigureOpenTelemetryMeterProvider((sp, meterProviderBuilder) =>
             {
-                _ = meterProviderBuilder.AddMetering(sp.GetOptions<MeteringOptions>(), configure);
+                _ = meterProviderBuilder.AddMeteringInternal(sp.GetOptions<MeteringOptions>(), configure);
             }));
     }
 
-    private static MeterProviderBuilder AddMetering(
+    private static MeterProviderBuilder AddMeteringInternal(
         this MeterProviderBuilder builder,
         MeteringOptions options,
         Action<MeteringOptions>? configure = null)
@@ -96,10 +108,8 @@ public static class OTelMeteringExtensions
     private static T GetOptions<T>(this IServiceProvider serviceProvider)
         where T : class, new()
     {
-        IOptions<T>? options = (IOptions<T>?)serviceProvider.GetService(typeof(IOptions<T>));
-
-        // Note: options could be null if user never invoked services.AddOptions().
-        return options?.Value ?? new T();
+        IOptions<T> options = (IOptions<T>?)serviceProvider.GetService(typeof(IOptions<T>))!;
+        return options.Value;
     }
 
     private static bool IsBetterCategoryMatch(string newCategory, string currentCategory, string typeName)
