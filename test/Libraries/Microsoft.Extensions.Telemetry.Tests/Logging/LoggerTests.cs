@@ -12,7 +12,6 @@ using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Enrichment;
-using Microsoft.Extensions.Telemetry.Logging;
 using Microsoft.Extensions.Telemetry.Logging.Test.Internals;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
@@ -756,6 +755,41 @@ public sealed class LoggerTests
         bool stackTraceReturned = exporter.FirstState!.TryGetStackTrace(out string? stackTrace);
         Assert.NotEmpty(stackTrace!);
         Assert.Equal(32768, stackTrace!.Length);
+    }
+
+    [Fact]
+    public void LoggerProvider_AddFilter_ShouldApplyFilter()
+    {
+        using var exporter = new TestExporter();
+        var logMessage = "This is testing {user}";
+
+        var hostBuilder = FakeHost.CreateBuilder(options => options.FakeLogging = false)
+            .ConfigureLogging(builder =>
+            {
+                _ = builder.AddOpenTelemetryLogging().AddProcessor(new SimpleLogRecordExportProcessor(exporter));
+                _ = builder.AddFilter<LoggerProvider>(level => level == LogLevel.Warning);
+            });
+
+        var host = hostBuilder.Build();
+        var logger = host.Services.GetRequiredService<ILogger<LogEnrichmentTests>>();
+
+        var dictExpected = new Dictionary<string, object>
+            {
+                { "{OriginalFormat}", logMessage },
+                { "user", "userWarning" }
+            };
+
+        logger.LogError(logMessage, "userError");
+        Assert.Null(exporter.FirstState);
+
+        logger.LogInformation(logMessage, "userInfo");
+        Assert.Null(exporter.FirstState);
+
+        logger.LogDebug(logMessage, "userDebug");
+        Assert.Null(exporter.FirstState);
+
+        logger.LogWarning(logMessage, "userWarning");
+        Assert.True(Helpers.CompareStateValues(exporter.FirstState!, dictExpected));
     }
 
     private static void ThrowExceptionAndLogError(Action action, ILogger logger)

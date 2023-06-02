@@ -49,8 +49,8 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
                 return null;
             }
 
-            string dependencyName = GetHostDependencyName(requestMessage.RequestUri.Host);
-            return GetRequestMetadataInternal(requestMessage.Method.Method, requestMessage.RequestUri.AbsolutePath, dependencyName);
+            var hostMetadata = GetHostMetadata(requestMessage.RequestUri.Host);
+            return GetRequestMetadataInternal(requestMessage.Method.Method, requestMessage.RequestUri.AbsolutePath, hostMetadata);
         }
         catch (Exception)
         {
@@ -65,8 +65,8 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            string dependencyName = GetHostDependencyName(requestMessage.RequestUri.Host);
-            return GetRequestMetadataInternal(requestMessage.Method, requestMessage.RequestUri.AbsolutePath, dependencyName);
+            var hostMetadata = GetHostMetadata(requestMessage.RequestUri.Host);
+            return GetRequestMetadataInternal(requestMessage.Method, requestMessage.RequestUri.AbsolutePath, hostMetadata);
         }
         catch (Exception)
         {
@@ -290,10 +290,13 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
         }
 
         trieCurrent.DependencyName = dependencyName;
+        trieCurrent.RequestMetadata.DependencyName = dependencyName;
+        trieCurrent.RequestMetadata.MethodType = string.Empty;
     }
 
-    private string GetHostDependencyName(string host)
+    private HostSuffixTrieNode? GetHostMetadata(string host)
     {
+        HostSuffixTrieNode? hostMetadataNode = null;
         string dependencyName = string.Empty;
         var trieCurrent = _hostSuffixTrieRoot;
         for (int i = host.Length - 1; i >= 0; i--)
@@ -301,7 +304,7 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
             char ch = host[i];
             if (ch >= Constants.ASCIICharCount)
             {
-                return string.Empty;
+                return null;
             }
 
             ch = _toUpper[ch];
@@ -313,18 +316,23 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
             trieCurrent = trieCurrent.Nodes[ch];
             if (!string.IsNullOrEmpty(trieCurrent.DependencyName))
             {
-                dependencyName = trieCurrent.DependencyName;
+                hostMetadataNode = trieCurrent;
             }
         }
 
-        return dependencyName;
+        return hostMetadataNode;
     }
 
-    private RequestMetadata? GetRequestMetadataInternal(string httpMethod, string requestPath, string dependencyName)
+    private RequestMetadata? GetRequestMetadataInternal(string httpMethod, string requestPath, HostSuffixTrieNode? hostMetadata)
     {
-        if (!_frozenProcessedMetadataMap.TryGetValue(dependencyName, out var routeMetadataTrieRoot))
+        if (hostMetadata == null)
         {
             return null;
+        }
+
+        if (!_frozenProcessedMetadataMap.TryGetValue(hostMetadata.DependencyName, out var routeMetadataTrieRoot))
+        {
+            return hostMetadata.RequestMetadata;
         }
 
         var trieCurrent = routeMetadataTrieRoot.Nodes[0];
@@ -387,12 +395,16 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
             var childNode = GetChildNode(ch, trieCurrent, routeMetadataTrieRoot);
             if (childNode == null)
             {
-                return null;
+                // Return the default request metadata for the host which
+                // contains only the dependency name, but no other route/request info.
+                return hostMetadata.RequestMetadata;
             }
 
             trieCurrent = childNode;
         }
 
-        return trieCurrent.RequestMetadataEntryIndex == -1 ? null : routeMetadataTrieRoot.RequestMetadatas[trieCurrent.RequestMetadataEntryIndex];
+        return trieCurrent.RequestMetadataEntryIndex == -1 ?
+            hostMetadata.RequestMetadata : // Return the default request metadata for this host if no matching route is found.
+            routeMetadataTrieRoot.RequestMetadatas[trieCurrent.RequestMetadataEntryIndex];
     }
 }
