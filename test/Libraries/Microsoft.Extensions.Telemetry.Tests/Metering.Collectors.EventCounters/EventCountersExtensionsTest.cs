@@ -61,17 +61,6 @@ public class EventCountersExtensionsTest
     }
 
     [Fact]
-    public async Task AddEventCounterCollector_ValidatesEmptyCountersInOptions()
-    {
-        using var host = FakeHost.CreateBuilder()
-            .ConfigureServices(static services => services
-                .AddEventCounterCollector(static _ => { }))
-            .Build();
-
-        await Assert.ThrowsAsync<OptionsValidationException>(() => host.RunAsync());
-    }
-
-    [Fact]
     public async Task AddEventCounterCollector_ValidatesCountersNullValueInOptions()
     {
         using var host = FakeHost.CreateBuilder()

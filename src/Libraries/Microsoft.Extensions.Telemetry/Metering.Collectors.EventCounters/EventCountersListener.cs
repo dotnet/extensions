@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
@@ -22,10 +23,13 @@ namespace Microsoft.Extensions.Telemetry.Metering;
 /// </summary>
 internal sealed class EventCountersListener : EventListener
 {
+    internal readonly ConcurrentDictionary<string, Counter<long>> CounterInstruments = new();
+    internal readonly ConcurrentDictionary<string, Histogram<long>> HistogramInstruments = new();
+    internal readonly FrozenDictionary<string, FrozenSet<string>> Counters;
+
     private readonly bool _isInitialized;
     private readonly Dictionary<string, string?> _eventSourceSettings;
     private readonly Meter _meter;
-    private readonly FrozenDictionary<string, FrozenSet<string>> _counters;
     private readonly ILogger<EventCountersListener> _logger;
 
     /// <summary>
@@ -40,7 +44,7 @@ internal sealed class EventCountersListener : EventListener
         ILogger<EventCountersListener>? logger = null)
     {
         var value = Throw.IfMemberNull(options, options.Value);
-        _counters = CreateCountersDictionary(value.Counters);
+        Counters = CreateCountersDictionary(value);
         _meter = meter;
         _logger = logger ?? NullLoggerFactory.Instance.CreateLogger<EventCountersListener>();
         _eventSourceSettings = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
@@ -110,7 +114,7 @@ internal sealed class EventCountersListener : EventListener
             return;
         }
 
-        if (_counters.TryGetValue(eventData.EventSource.Name, out var counters))
+        if (Counters.TryGetValue(eventData.EventSource.Name, out var counters))
         {
             for (var i = 0; i < eventData.Payload.Count; ++i)
             {
@@ -139,7 +143,7 @@ internal sealed class EventCountersListener : EventListener
                     continue;
                 }
 
-                if (!counters.Contains(name))
+                if (!counters.Contains("*") && !counters.Contains(name))
                 {
                     _logger.CounterNotEnabled(name, eventData.EventSource.Name, eventData.EventName);
                     continue;
@@ -162,11 +166,11 @@ internal sealed class EventCountersListener : EventListener
         }
     }
 
-    private static FrozenDictionary<string, FrozenSet<string>> CreateCountersDictionary(IDictionary<string, ISet<string>> counters)
+    private static FrozenDictionary<string, FrozenSet<string>> CreateCountersDictionary(EventCountersCollectorOptions options)
     {
         var d = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var kvp in counters)
+        foreach (var kvp in options.Counters)
         {
             if (kvp.Value == null || kvp.Value.Count == 0)
             {
@@ -176,8 +180,25 @@ internal sealed class EventCountersListener : EventListener
             d.Add(kvp.Key, new HashSet<string>(kvp.Value, StringComparer.OrdinalIgnoreCase));
         }
 
-        return d.Select(x => new KeyValuePair<string, FrozenSet<string>>(x.Key,
-            x.Value.ToFrozenSet(StringComparer.Ordinal, optimizeForReading: true))).ToFrozenDictionary(StringComparer.OrdinalIgnoreCase, optimizeForReading: true);
+        if (options.IncludeRecommendedDefault)
+        {
+            foreach (var kvp in Internal.Constants.DefaultCounters)
+            {
+                if (d.TryGetValue(kvp.Key, out var valueSet) && valueSet != null)
+                {
+                    foreach (var kv in kvp.Value)
+                    {
+                        _ = valueSet.Add(kv);
+                    }
+                }
+                else
+                {
+                    d.Add(kvp.Key, new HashSet<string>(kvp.Value, StringComparer.OrdinalIgnoreCase));
+                }
+            }
+        }
+
+        return d.Select(x => new KeyValuePair<string, FrozenSet<string>>(x.Key, x.Value.ToFrozenSet(StringComparer.Ordinal))).ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
     }
 
     private bool TryConvertToLong(object? value, out long convertedValue)
@@ -204,7 +225,7 @@ internal sealed class EventCountersListener : EventListener
 
     private void EnableIfNeeded(EventSource eventSource)
     {
-        if (!_counters.ContainsKey(eventSource.Name))
+        if (!Counters.ContainsKey(eventSource.Name))
         {
             return;
         }
@@ -222,8 +243,8 @@ internal sealed class EventCountersListener : EventListener
 
         if (TryConvertToLong(payloadValue, out long metricValue))
         {
-            var metric = _meter.CreateCounter<long>(counterName);
-            metric.Add(metricValue);
+            var counter = CounterInstruments.GetOrAdd(counterName, name => _meter.CreateCounter<long>(name));
+            counter.Add(metricValue);
         }
     }
 
@@ -236,8 +257,8 @@ internal sealed class EventCountersListener : EventListener
 
         if (TryConvertToLong(payloadValue, out long metricValue))
         {
-            var metric = _meter.CreateHistogram<long>(counterName);
-            metric.Record(metricValue);
+            var histogram = HistogramInstruments.GetOrAdd(counterName, name => _meter.CreateHistogram<long>(name));
+            histogram.Record(metricValue);
         }
     }
 }

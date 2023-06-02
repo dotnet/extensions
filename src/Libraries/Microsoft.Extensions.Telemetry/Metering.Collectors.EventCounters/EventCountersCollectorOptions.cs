@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Data.Validation;
 
 namespace Microsoft.Extensions.Telemetry.Metering;
@@ -34,7 +35,6 @@ public class EventCountersCollectorOptions
     /// Default set to an empty dictionary.
     /// </remarks>
     [Required]
-    [Microsoft.Shared.Data.Validation.Length(1)]
 #pragma warning disable CA2227 // Collection properties should be read only
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
     public IDictionary<string, ISet<string>> Counters { get; set; }
@@ -50,6 +50,23 @@ public class EventCountersCollectorOptions
     /// </remarks>
     [TimeSpan("00:00:01", "00:10:00")]
     public TimeSpan SamplingInterval { get; set; } = _defaultSamplingInterval;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to include recommended default counters.
+    /// </summary>
+    /// <remarks>
+    /// Includes the recommended default event counters in addition to the counters specified in <see cref="Counters"/>.
+    /// Default set to false. However, if <see cref="Counters"/> is empty, it is set to true so
+    /// default recommended counters are included when the listener is created.
+    /// Please see the list of recommended default counters in <see href="https://eng.ms/docs/experiences-devices/r9-sdk/docs/telemetry/metering/event-counters"/>.
+    /// EventSource: "System.Runtime", Counters:
+    ///   - "cpu-usage", "working-set", "time-in-gc", "alloc-rate", "exception-count", "gen-2-gc-count", "gen-2-size",
+    ///   - "monitor-lock-contention-count", "active-timer-count", "threadpool-queue-length", "threadpool-thread-count",
+    /// EventSource: "Microsoft-AspNetCore-Server-Kestrel", Counters:
+    ///   - "connection-queue-length", "request-queue-length".
+    /// </remarks>
+    [Experimental]
+    public bool IncludeRecommendedDefault { get; set; }
 
 #if NET5_0_OR_GREATER
     /// <summary>

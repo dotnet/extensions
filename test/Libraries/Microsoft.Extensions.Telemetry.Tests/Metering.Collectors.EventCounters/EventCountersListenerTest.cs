@@ -468,6 +468,72 @@ public class EventCountersListenerTest
     }
 
     [Fact]
+    public void EventCountersListener_MultipleEventsForSameMetricShouldUseCachedHistogram()
+    {
+        using var meter = new Meter<EventCountersListener>();
+        using var metricCollector = new MetricCollector(meter);
+
+        using var eventSource = new EventSource(_eventSourceName);
+        using var listener = new EventCountersListener(_options, meter);
+
+        eventSource.Write(EventName,
+            new EventSourceOptions { Level = EventLevel.LogAlways },
+            new
+            {
+                payload = new { CounterType = "Mean", Name = _counterName, Mean = 1 }
+            });
+
+        var latest = metricCollector.GetHistogramValues<long>($"{_eventSourceName}|{_counterName}")!.LatestWritten!;
+        Assert.NotNull(latest);
+        Assert.Equal(1, latest.Value);
+        Assert.Single(listener.HistogramInstruments);
+
+        eventSource.Write(EventName,
+            new EventSourceOptions { Level = EventLevel.LogAlways },
+            new
+            {
+                payload = new { CounterType = "Mean", Name = _counterName, Mean = 1 }
+            });
+
+        latest = metricCollector.GetHistogramValues<long>($"{_eventSourceName}|{_counterName}")!.LatestWritten!;
+        Assert.NotNull(latest);
+        Assert.Single(listener.HistogramInstruments);
+    }
+
+    [Fact]
+    public void EventCountersListener_MultipleEventsForSameMetricShouldUseCachedCounter()
+    {
+        using var meter = new Meter<EventCountersListener>();
+        using var metricCollector = new MetricCollector(meter);
+
+        using var eventSource = new EventSource(_eventSourceName);
+        using var listener = new EventCountersListener(_options, meter);
+
+        eventSource.Write(EventName,
+            new EventSourceOptions { Level = EventLevel.LogAlways },
+            new
+            {
+                payload = new { CounterType = "Sum", Name = _counterName, Increment = 1 }
+            });
+
+        var latest = metricCollector.GetCounterValues<long>($"{_eventSourceName}|{_counterName}")!.LatestWritten!;
+        Assert.NotNull(latest);
+        Assert.Equal(1, latest.Value);
+        Assert.Single(listener.CounterInstruments);
+
+        eventSource.Write(EventName,
+            new EventSourceOptions { Level = EventLevel.LogAlways },
+            new
+            {
+                payload = new { CounterType = "Sum", Name = _counterName, Increment = 1 }
+            });
+
+        latest = metricCollector.GetCounterValues<long>($"{_eventSourceName}|{_counterName}")!.LatestWritten!;
+        Assert.NotNull(latest);
+        Assert.Single(listener.CounterInstruments);
+    }
+
+    [Fact]
     public void EventCountersListener_Ignores_WhenMeanCounterMatches_MeanValueDoubleNan()
     {
         using var meter = new Meter<EventCountersListener>();
@@ -518,6 +584,135 @@ public class EventCountersListenerTest
 
         Assert.Empty(metricCollector.GetAllCounters<long>()!);
         Assert.Empty(metricCollector.GetAllHistograms<long>()!);
+    }
+
+    [Fact]
+    public void EventCountersListener_IncludeRecommendedDefault_AddsDefaultCountersToCounterList()
+    {
+        using var meter = new Meter<EventCountersListener>();
+        using var metricCollector = new MetricCollector(meter);
+        using var listener = new EventCountersListener(Create(new EventCountersCollectorOptions { IncludeRecommendedDefault = true }), meter);
+
+        Assert.NotEmpty(listener.Counters);
+
+        foreach (var counterSet in listener.Counters)
+        {
+            if (counterSet.Key == "System.Runtime")
+            {
+                Assert.Equal(11, counterSet.Value.Count);
+                Assert.Contains("cpu-usage", counterSet.Value);
+                Assert.Contains("working-set", counterSet.Value);
+                Assert.Contains("time-in-gc", counterSet.Value);
+                Assert.Contains("alloc-rate", counterSet.Value);
+                Assert.Contains("exception-count", counterSet.Value);
+                Assert.Contains("gen-2-gc-count", counterSet.Value);
+                Assert.Contains("gen-2-size", counterSet.Value);
+                Assert.Contains("monitor-lock-contention-count", counterSet.Value);
+                Assert.Contains("active-timer-count", counterSet.Value);
+                Assert.Contains("threadpool-queue-length", counterSet.Value);
+                Assert.Contains("threadpool-thread-count", counterSet.Value);
+            }
+            else if (counterSet.Key == "Microsoft-AspNetCore-Server-Kestrel")
+            {
+                Assert.Equal(2, counterSet.Value.Count);
+                Assert.Contains("connection-queue-length", counterSet.Value);
+                Assert.Contains("request-queue-length", counterSet.Value);
+            }
+            else
+            {
+                Assert.Fail($"Unexpected counter set {counterSet.Key}");
+            }
+        }
+    }
+
+    [Fact]
+    public void EventCountersListener_DuplicateEntriesAreIgnored()
+    {
+        using var meter = new Meter<EventCountersListener>();
+        using var metricCollector = new MetricCollector(meter);
+        IDictionary<string, ISet<string>> counters = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { _eventSourceName, new HashSet<string> { _counterName } },
+                { TestUtils.SystemRuntime, new HashSet<string> { "active-timer-count", "cpu-usage" } }
+            };
+        using var listener = new EventCountersListener(Create(new EventCountersCollectorOptions { IncludeRecommendedDefault = true, Counters = counters }), meter);
+
+        Assert.NotEmpty(listener.Counters);
+
+        foreach (var counterSet in listener.Counters)
+        {
+            if (counterSet.Key == "System.Runtime")
+            {
+                Assert.Equal(11, counterSet.Value.Count);
+                Assert.Contains("cpu-usage", counterSet.Value);
+                Assert.Contains("working-set", counterSet.Value);
+                Assert.Contains("time-in-gc", counterSet.Value);
+                Assert.Contains("alloc-rate", counterSet.Value);
+                Assert.Contains("exception-count", counterSet.Value);
+                Assert.Contains("gen-2-gc-count", counterSet.Value);
+                Assert.Contains("gen-2-size", counterSet.Value);
+                Assert.Contains("monitor-lock-contention-count", counterSet.Value);
+                Assert.Contains("active-timer-count", counterSet.Value);
+                Assert.Contains("threadpool-queue-length", counterSet.Value);
+                Assert.Contains("threadpool-thread-count", counterSet.Value);
+            }
+            else if (counterSet.Key == "Microsoft-AspNetCore-Server-Kestrel")
+            {
+                Assert.Equal(2, counterSet.Value.Count);
+                Assert.Contains("connection-queue-length", counterSet.Value);
+                Assert.Contains("request-queue-length", counterSet.Value);
+            }
+            else if (counterSet.Key == _eventSourceName)
+            {
+                Assert.Single(counterSet.Value);
+                Assert.Contains(_counterName, counterSet.Value);
+            }
+            else
+            {
+                Assert.Fail($"Unexpected counter set {counterSet.Key}");
+            }
+        }
+    }
+
+    [Fact]
+    public void EventCountersListener_UsingWildcard_EnablesAllCountersForSource()
+    {
+        using var meter = new Meter<EventCountersListener>();
+        using var metricCollector = new MetricCollector(meter);
+        IDictionary<string, ISet<string>> counters = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { _eventSourceName, new HashSet<string> { "*" } }
+            };
+
+        using var eventSource = new EventSource(_eventSourceName);
+        using var listener = new EventCountersListener(Create(new EventCountersCollectorOptions { Counters = counters }), meter);
+
+        var firstCounterName = "randomCounterName";
+        var secondCounterName = "randomCounterName2";
+
+        eventSource.Write(EventName,
+            new EventSourceOptions { Level = EventLevel.LogAlways },
+            new
+            {
+                payload = new { CounterType = "Mean", Name = firstCounterName, Mean = 1 }
+            });
+
+        var latest = metricCollector.GetHistogramValues<long>($"{_eventSourceName}|{firstCounterName}")!.LatestWritten!;
+        Assert.NotNull(latest);
+        Assert.Equal(1, latest.Value);
+        Assert.Single(listener.HistogramInstruments);
+
+        eventSource.Write(EventName,
+            new EventSourceOptions { Level = EventLevel.LogAlways },
+            new
+            {
+                payload = new { CounterType = "Mean", Name = secondCounterName, Mean = 1 }
+            });
+
+        latest = metricCollector.GetHistogramValues<long>($"{_eventSourceName}|{secondCounterName}")!.LatestWritten!;
+        Assert.NotNull(latest);
+        Assert.Equal(1, latest.Value);
+        Assert.Equal(2, listener.HistogramInstruments.Count);
     }
 
     [Flags]
@@ -621,6 +816,132 @@ public class EventCountersListenerTest
         RunListener(options, meter, eventWaitHandle);
 
         var latest = metricCollector.GetCounterValues<long>(metricName)!.LatestWritten!;
+        Assert.NotNull(latest);
+        Assert.True(latest.Value >= 0);
+    }
+
+    [Fact]
+    public void EventCountersListener_IncludeRecommendedDefault_AddsDefaultCounters()
+    {
+        string counterName = "alloc-rate";
+        string metricName = $"{TestUtils.SystemRuntime}|{counterName}";
+
+        using var meter = new Meter<EventCountersListener>();
+        using var metricCollector = new MetricCollector(meter);
+
+        IDictionary<string, ISet<string>> counters = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { _eventSourceName, new HashSet<string> { _counterName } },
+            };
+
+        IOptions<EventCountersCollectorOptions> options = Create(new EventCountersCollectorOptions
+        {
+            IncludeRecommendedDefault = true,
+            Counters = counters,
+            SamplingInterval = TimeSpan.FromMilliseconds(10)
+        });
+
+        using var eventWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
+        RunListener(options, meter, eventWaitHandle);
+
+        var latest = metricCollector.GetCounterValues<long>(metricName)!.LatestWritten!;
+        Assert.NotNull(latest);
+        Assert.True(latest.Value >= 0);
+
+        using var eventSource = new TestEventSource(_eventSourceName);
+        using var listener = new EventCountersListener(options, meter);
+
+        eventSource.Write(EventName,
+            new EventSourceOptions { Level = EventLevel.LogAlways },
+            new
+            {
+                payload = new { CounterType = "Sum", Name = _counterName, Increment = 1 }
+            });
+
+        latest = metricCollector.GetCounterValues<long>($"{_eventSourceName}|{_counterName}")!.LatestWritten!;
+        Assert.NotNull(latest);
+        Assert.Equal(1, latest.Value);
+    }
+
+    [Fact]
+    public void EventCountersListener_IncludeRecommendedDefault_AndDuplicateEntryInProvidedCounters()
+    {
+        string counterName = "alloc-rate";
+        string metricName = $"{TestUtils.SystemRuntime}|{counterName}";
+
+        using var meter = new Meter<EventCountersListener>();
+        using var metricCollector = new MetricCollector(meter);
+
+        IDictionary<string, ISet<string>> counters = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { TestUtils.SystemRuntime, new HashSet<string> { "active-timer-count" } }
+            };
+
+        IOptions<EventCountersCollectorOptions> options = Create(new EventCountersCollectorOptions
+        {
+            IncludeRecommendedDefault = true,
+            Counters = counters,
+            SamplingInterval = TimeSpan.FromMilliseconds(10)
+        });
+
+        using var eventWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
+        RunListener(options, meter, eventWaitHandle);
+
+        var latest = metricCollector.GetCounterValues<long>(metricName)!.LatestWritten!;
+        Assert.NotNull(latest);
+        Assert.True(latest.Value >= 0);
+
+        latest = metricCollector.GetHistogramValues<long>($"{TestUtils.SystemRuntime}|active-timer-count")!.LatestWritten!;
+        Assert.NotNull(latest);
+        Assert.True(latest.Value >= 0);
+    }
+
+    [Fact]
+    public void EventCountersListener_IncludeRecommendedDefault_SetToFalse_DoesNot_IncludesDefaultCounters()
+    {
+        string counterName = "alloc-rate";
+        string metricName = $"{TestUtils.SystemRuntime}|{counterName}";
+
+        using var meter = new Meter<EventCountersListener>();
+        using var metricCollector = new MetricCollector(meter);
+
+        IOptions<EventCountersCollectorOptions> options = Create(new EventCountersCollectorOptions());
+
+        using var eventWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
+        RunListener(options, meter, eventWaitHandle);
+
+        var counterRecords = metricCollector.GetCounterValues<long>(metricName);
+        Assert.Null(counterRecords);
+    }
+
+    [Fact]
+    public void EventCountersListener_UsingWildcard_IncludesAllCountersFromSource()
+    {
+        string counterName = "alloc-rate";
+        string metricName = $"{TestUtils.SystemRuntime}|{counterName}";
+
+        using var meter = new Meter<EventCountersListener>();
+        using var metricCollector = new MetricCollector(meter);
+
+        IDictionary<string, ISet<string>> counters = new Dictionary<string, ISet<string>>(StringComparer.OrdinalIgnoreCase)
+            {
+                { TestUtils.SystemRuntime, new HashSet<string> { "*" } }
+            };
+
+        IOptions<EventCountersCollectorOptions> options = Create(new EventCountersCollectorOptions
+        {
+            Counters = counters,
+            SamplingInterval = TimeSpan.FromMilliseconds(10)
+        });
+
+        using var eventWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
+        RunListener(options, meter, eventWaitHandle);
+
+        var latest = metricCollector.GetCounterValues<long>(metricName)!.LatestWritten!;
+        Assert.NotNull(latest);
+        Assert.True(latest.Value >= 0);
+
+        latest = metricCollector.GetHistogramValues<long>($"{TestUtils.SystemRuntime}|active-timer-count")!.LatestWritten!;
         Assert.NotNull(latest);
         Assert.True(latest.Value >= 0);
     }
