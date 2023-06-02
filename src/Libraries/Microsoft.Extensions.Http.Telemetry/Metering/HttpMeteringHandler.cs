@@ -27,9 +27,12 @@ namespace Microsoft.Extensions.Http.Telemetry.Metering;
 /// <seealso cref="DelegatingHandler" />
 public class HttpMeteringHandler : DelegatingHandler
 {
+#pragma warning disable CA2213 // Disposable fields should be disposed
+    internal readonly Meter<HttpMeteringHandler> Meter;
+#pragma warning restore CA2213 // Disposable fields should be disposed
     internal TimeProvider TimeProvider = TimeProvider.System;
 
-    private const int StandardDimensionsCount = 4;
+    private const int StandardDimensionsCount = 5;
     private const int MaxCustomDimensionsCount = 14;
 
     private static readonly RequestMetadata _fallbackMetadata = new();
@@ -60,7 +63,7 @@ public class HttpMeteringHandler : DelegatingHandler
         IOutgoingRequestContext? requestMetadataContext,
         IDownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null)
     {
-        _ = Throw.IfNull(meter);
+        Meter = Throw.IfNull(meter);
         _ = Throw.IfNull(enrichers);
 
         _requestEnrichers = enrichers.ToArray();
@@ -84,7 +87,8 @@ public class HttpMeteringHandler : DelegatingHandler
             Metric.ReqHost,
             Metric.DependencyName,
             Metric.ReqName,
-            Metric.RspResultCode
+            Metric.RspResultCode,
+            Metric.RspResultCategory
         };
 
         for (int i = 0; i < _requestEnrichers.Length; i++)
@@ -104,39 +108,12 @@ public class HttpMeteringHandler : DelegatingHandler
         _downstreamDependencyMetadataManager = downstreamDependencyMetadataManager;
     }
 
-    internal static string GetHostName(HttpRequestMessage request) => string.IsNullOrWhiteSpace(request.RequestUri?.Host) ? TelemetryConstants.Unknown : request.RequestUri!.Host;
+    internal static string GetHostName(HttpRequestMessage request)
+        => string.IsNullOrWhiteSpace(request.RequestUri?.Host)
+            ? TelemetryConstants.Unknown
+            : request.RequestUri!.Host;
 
-    /// <summary>
-    /// Sends an HTTP request to the inner handler to send to the server as an asynchronous operation.
-    /// </summary>
-    /// <param name="request">The HTTP request message to send to the server.</param>
-    /// <param name="cancellationToken">A cancellation token to cancel operation.</param>
-    /// <returns>
-    /// The task object representing the asynchronous operation.
-    /// </returns>
-    protected override async Task<HttpResponseMessage> SendAsync(
-        HttpRequestMessage request,
-        CancellationToken cancellationToken)
-    {
-        _ = Throw.IfNull(request);
-
-        var timestamp = TimeProvider.GetTimestamp();
-
-        try
-        {
-            var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            OnRequestEnd(request, timestamp, response.StatusCode);
-            return response;
-        }
-        catch
-        {
-            // This will not catch a response that returns 4xx, 5xx, etc. but will only catch when base.SendAsync() fails.
-            OnRequestEnd(request, timestamp, HttpStatusCode.InternalServerError);
-            throw;
-        }
-    }
-
-    private void OnRequestEnd(HttpRequestMessage request, long timestamp, HttpStatusCode statusCode)
+    internal void OnRequestEnd(HttpRequestMessage request, long elapsedMilliseconds, HttpStatusCode statusCode)
     {
         var requestMetadata = request.GetRequestMetadata() ??
             _requestMetadataContext?.RequestMetadata ??
@@ -145,15 +122,16 @@ public class HttpMeteringHandler : DelegatingHandler
         var dependencyName = requestMetadata.DependencyName;
         var requestName = $"{request.Method} {requestMetadata.GetRequestName()}";
         var hostName = GetHostName(request);
-        var duration = (long)TimeProvider.GetElapsedTime(timestamp, TimeProvider.GetTimestamp()).TotalMilliseconds;
-
+        var duration = elapsedMilliseconds;
+        var result = statusCode.GetResultCategory();
         var tagList = new TagList
         {
             new(Metric.ReqHost, hostName),
             new(Metric.DependencyName, dependencyName),
             new(Metric.ReqName, requestName),
-            new(Metric.RspResultCode, (int)statusCode)
-        };
+            new(Metric.RspResultCode, (int)statusCode),
+            new(Metric.RspResultCategory, result.ToInvariantString())
+    };
 
         // keep default case fast by avoiding allocations
         if (_enrichersCount == 0)
@@ -181,6 +159,46 @@ public class HttpMeteringHandler : DelegatingHandler
             {
                 _propertyBagPool.Return(propertyBag);
             }
+        }
+    }
+
+    /// <summary>
+    /// Sends an HTTP request to the inner handler to send to the server as an asynchronous operation.
+    /// </summary>
+    /// <param name="request">The HTTP request message to send to the server.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel operation.</param>
+    /// <returns>
+    /// The task object representing the asynchronous operation.
+    /// </returns>
+    protected override async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request,
+        CancellationToken cancellationToken)
+    {
+        _ = Throw.IfNull(request);
+
+#if !NETFRAMEWORK
+        if (HttpClientMeteringListener.UsingDiagnosticsSource)
+        {
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+#endif
+
+        var start = TimeProvider.GetTimestamp();
+
+        try
+        {
+            var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            var elapsed = TimeProvider.GetTimestamp() - start;
+            long ms = (long)Math.Round(((double)elapsed / TimeProvider.System.TimestampFrequency) * 1000);
+            OnRequestEnd(request, ms, response.StatusCode);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            var elapsed = TimeProvider.GetTimestamp() - start;
+            long ms = (long)Math.Round(((double)elapsed / TimeProvider.System.TimestampFrequency) * 1000);
+            OnRequestEnd(request, ms, ex.GetStatusCode());
+            throw;
         }
     }
 }
