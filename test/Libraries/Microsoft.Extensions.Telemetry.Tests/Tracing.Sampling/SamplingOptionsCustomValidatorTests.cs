@@ -118,11 +118,11 @@ public class SamplingOptionsCustomValidatorTests
             SamplerType = SamplerType.ParentBased,
             ParentBasedSamplerOptions = new ParentBasedSamplerOptions
             {
-                RootSamplerType = SamplerType.TraceIdRatioBased
-            },
-            TraceIdRatioBasedSamplerOptions = new TraceIdRatioBasedSamplerOptions
-            {
-                Probability = 0.42
+                RootSamplerType = SamplerType.TraceIdRatioBased,
+                TraceIdRatioBasedSamplerOptions = new TraceIdRatioBasedSamplerOptions
+                {
+                    Probability = 0.42
+                }
             }
         };
 
@@ -190,5 +190,28 @@ public class SamplingOptionsCustomValidatorTests
         };
 
         _validator.Validate("test", options).Succeeded.Should().Be(false);
+    }
+
+    [Fact]
+    public void IncorrectOptions_ParentBased_TraceIdRatioBasedRootSampler_OptionsInWrongLocation()
+    {
+        var options = new SamplingOptions
+        {
+            SamplerType = SamplerType.ParentBased,
+            ParentBasedSamplerOptions = new ParentBasedSamplerOptions
+            {
+                RootSamplerType = SamplerType.TraceIdRatioBased
+            },
+            TraceIdRatioBasedSamplerOptions = new TraceIdRatioBasedSamplerOptions
+            {
+                Probability = 0.42
+            }
+        };
+
+        var validationResult = _validator.Validate("test", options);
+        validationResult.Succeeded
+            .Should().Be(false);
+        validationResult.Failures
+            .Should().Contain(str => str.Contains("Trace Id Ratio Based options should be set in Parent Based options"));
     }
 }

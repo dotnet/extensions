@@ -24,6 +24,7 @@ public class SamplingOptions
     /// <remarks>
     /// Defaults to <see langword="null"/>.
     /// </remarks>
+    [ValidateObjectMembers]
     public ParentBasedSamplerOptions? ParentBasedSamplerOptions { get; set; }
 
     /// <summary>

@@ -3,9 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-#if !NETCOREAPP3_1_OR_GREATER
-using Microsoft.AspNetCore.Http;
-#endif
 using Microsoft.AspNetCore.Telemetry.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -145,8 +142,7 @@ public static class HttpTracingExtensions
 
     private static TracerProviderBuilder AddHttpTracingInternal(this TracerProviderBuilder builder)
     {
-        return builder
-#if NETCOREAPP3_1_OR_GREATER
+        _ = builder
             .ConfigureServices(services =>
             {
                 _ = services.AddHttpRouteProcessor();
@@ -157,27 +153,10 @@ public static class HttpTracingExtensions
                 services.TryAddActivatedSingleton<HttpUrlRedactionProcessor>();
             })
             .AddAspNetCoreInstrumentation();
-#else
-            .ConfigureServices(services =>
-            {
-                _ = services.AddHttpRouteProcessor();
-                _ = services.AddHttpRouteUtilities();
 
-                services.TryAddActivatedSingleton<HttpTraceEnrichmentProcessor>();
-                services.TryAddActivatedSingleton<HttpUrlRedactionProcessor>();
-            })
-            .AddAspNetCoreInstrumentation(options => options.Enrich
-                = (activity, eventName, rawObject) =>
-                {
-                    if (eventName.Equals(Constants.ActivityStartEvent, StringComparison.Ordinal))
-                    {
-                        if (rawObject is HttpRequest request)
-                        {
-                            activity.SetCustomProperty(Constants.CustomPropertyHttpRequest, request);
-                        }
-                    }
-                })
-            .AddProcessor<HttpTraceEnrichmentProcessor>();
+#if !NETCOREAPP3_1_OR_GREATER
+        _ = builder.AddProcessor<HttpTraceEnrichmentProcessor>();
 #endif
+        return builder;
     }
 }

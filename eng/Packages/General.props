@@ -27,7 +27,7 @@
     <PackageVersion Include="Microsoft.WindowsAzure.ServiceRuntime" Version="3.0.1382.30" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageVersion Include="OpenTelemetry.Api" Version="1.4.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.Geneva" Version="1.4.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Geneva" Version="1.4.1" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.4.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc9.14" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9.14" />
