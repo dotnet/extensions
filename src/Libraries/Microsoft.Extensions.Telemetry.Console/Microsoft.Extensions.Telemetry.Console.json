@@ -76,6 +76,14 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "System.ConsoleColor? Microsoft.Extensions.Telemetry.Console.LoggingConsoleOptions.DimensionsBackgroundColor { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.ConsoleColor Microsoft.Extensions.Telemetry.Console.LoggingConsoleOptions.DimensionsColor { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "System.ConsoleColor? Microsoft.Extensions.Telemetry.Console.LoggingConsoleOptions.DimmedBackgroundColor { get; set; }",
           "Stage": "Experimental"
         },
@@ -101,6 +109,10 @@
         },
         {
           "Member": "bool Microsoft.Extensions.Telemetry.Console.LoggingConsoleOptions.IncludeCategory { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Console.LoggingConsoleOptions.IncludeDimensions { get; set; }",
           "Stage": "Experimental"
         },
         {

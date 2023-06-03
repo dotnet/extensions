@@ -24,25 +24,23 @@ internal sealed class ConfigureAspNetCoreInstrumentationOptions : IConfigureOpti
 
     public void Configure(AspNetCoreInstrumentationOptions options)
     {
-        options.EnrichWithHttpRequest = (activity, request)
-            => activity.SetCustomProperty(Constants.CustomPropertyHttpRequest, request);
+        options.EnrichWithHttpRequest = EnrichAndRedact;
+        options.EnrichWithHttpResponse = (activity, response) => _redactionProcessor.ProcessResponse(activity, response.HttpContext.Request);
+        options.EnrichWithException = static (activity, exception) =>
+        {
+            _ = activity.SetTag(Constants.AttributeExceptionType, exception.GetType().FullName);
 
-        options.EnrichWithHttpResponse = (activity, response)
-            => EnrichAndRedact(activity, response.HttpContext.Request);
-
-        options.EnrichWithException = (activity, _)
-            => EnrichAndRedact(activity, (HttpRequest?)activity.GetCustomProperty(Constants.CustomPropertyHttpRequest));
+            if (!string.IsNullOrWhiteSpace(exception.Message))
+            {
+                _ = activity.SetTag(Constants.AttributeExceptionMessage, exception.Message);
+            }
+        };
     }
 
-    private void EnrichAndRedact(Activity activity, HttpRequest? request)
+    private void EnrichAndRedact(Activity activity, HttpRequest request)
     {
-        if (request != null)
-        {
-            activity.SetCustomProperty(Constants.CustomPropertyHttpRequest, null);
-
-            _enrichmentProcessor.Enrich(activity, request);
-            _redactionProcessor.Process(activity, request);
-        }
+        _enrichmentProcessor.Enrich(activity, request);
+        _redactionProcessor.ProcessRequest(activity, request);
     }
 }
 

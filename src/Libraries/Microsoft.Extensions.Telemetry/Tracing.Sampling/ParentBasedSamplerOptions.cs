@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Options.Validation;
+
 namespace Microsoft.Extensions.Telemetry.Tracing;
 
 /// <summary>
@@ -15,4 +17,13 @@ public class ParentBasedSamplerOptions
     /// Defaults to the <see cref="SamplerType.AlwaysOn"/> sampler.
     /// </remarks>
     public SamplerType RootSamplerType { get; set; } = SamplerType.AlwaysOn;
+
+    /// <summary>
+    /// Gets or sets options for the trace Id ratio based sampler.
+    /// </summary>
+    /// <remarks>
+    /// Defaults to <see langword="null"/>.
+    /// </remarks>
+    [ValidateObjectMembers]
+    public TraceIdRatioBasedSamplerOptions? TraceIdRatioBasedSamplerOptions { get; set; }
 }

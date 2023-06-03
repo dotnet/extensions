@@ -20,11 +20,24 @@ public static class SamplingExtensions
     /// <summary>
     /// Adds sampling for traces.
     /// </summary>
-    /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add enricher.</param>
+    /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add sampling to.</param>
+    /// <returns>The <see cref="TracerProviderBuilder"/> so that additional calls can be chained.</returns>
+    /// <exception cref="ArgumentNullException">The argument <paramref name="builder"/> is <see langword="null" />.</exception>
+    public static TracerProviderBuilder AddSampling(this TracerProviderBuilder builder)
+    {
+        _ = Throw.IfNull(builder);
+
+        return builder
+            .AddSamplingInternal();
+    }
+
+    /// <summary>
+    /// Adds sampling for traces.
+    /// </summary>
+    /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add sampling to.</param>
     /// <param name="configure">The <see cref="SamplingOptions"/> configuration delegate.</param>
     /// <returns>The <see cref="TracerProviderBuilder"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">The argument is <see langword="null"/>.</exception>
-    /// <exception cref="InvalidOperationException">Provided <paramref name="builder"/> is not bound to a <see cref="IServiceCollection"/>.</exception>
+    /// <exception cref="ArgumentNullException">The argument <paramref name="builder"/> or <paramref name="configure"/> is <see langword="null" />.</exception>
     public static TracerProviderBuilder AddSampling(
         this TracerProviderBuilder builder,
         Action<SamplingOptions> configure)
@@ -40,11 +53,10 @@ public static class SamplingExtensions
     /// <summary>
     /// Adds sampling for traces.
     /// </summary>
-    /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add enricher.</param>
+    /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add sampling to.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="SamplingOptions"/>.</param>
     /// <returns>The <see cref="TracerProviderBuilder"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">The argument is <see langword="null"/>.</exception>
-    /// <exception cref="InvalidOperationException">Provided <paramref name="builder"/> is not bound to a <see cref="IServiceCollection"/>.</exception>
+    /// <exception cref="ArgumentNullException">The argument <paramref name="builder"/> or <paramref name="section"/> is <see langword="null" />.</exception>
     public static TracerProviderBuilder AddSampling(
         this TracerProviderBuilder builder,
         IConfigurationSection section)
@@ -66,7 +78,7 @@ public static class SamplingExtensions
 
             _ = services.ConfigureOpenTelemetryTracerProvider((serviceProvider, builder) =>
             {
-                var o = serviceProvider.GetRequiredService<IOptions<SamplingOptions>>().Value;
+                SamplingOptions o = serviceProvider.GetRequiredService<IOptions<SamplingOptions>>().Value;
 
                 Sampler sampler = o.SamplerType switch
                 {
@@ -78,18 +90,18 @@ public static class SamplingExtensions
                         new TraceIdRatioBasedSampler(
                             o.TraceIdRatioBasedSamplerOptions!.Probability),
                     SamplerType.ParentBased
-                        when o!.ParentBasedSamplerOptions!.RootSamplerType == SamplerType.AlwaysOn =>
+                        when o.ParentBasedSamplerOptions!.RootSamplerType == SamplerType.AlwaysOn =>
                         new ParentBasedSampler(
                             new AlwaysOnSampler()),
                     SamplerType.ParentBased
-                        when o!.ParentBasedSamplerOptions!.RootSamplerType == SamplerType.AlwaysOff =>
+                        when o.ParentBasedSamplerOptions!.RootSamplerType == SamplerType.AlwaysOff =>
                         new ParentBasedSampler(
                             new AlwaysOffSampler()),
                     SamplerType.ParentBased
-                        when o!.ParentBasedSamplerOptions!.RootSamplerType == SamplerType.TraceIdRatioBased =>
+                        when o.ParentBasedSamplerOptions!.RootSamplerType == SamplerType.TraceIdRatioBased =>
                         new ParentBasedSampler(
                             new TraceIdRatioBasedSampler(
-                                o!.TraceIdRatioBasedSamplerOptions!.Probability)),
+                                o.ParentBasedSamplerOptions.TraceIdRatioBasedSamplerOptions!.Probability)),
                     SamplerType st =>
                         throw new InvalidOperationException($"Invalid sampling configuration for '{st}'.")
                 };

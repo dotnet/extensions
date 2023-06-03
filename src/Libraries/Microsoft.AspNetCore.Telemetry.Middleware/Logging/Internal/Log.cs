@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Logging;
 
@@ -15,12 +16,17 @@ internal static partial class Log
 {
     internal const LogLevel DefaultLogLevel = LogLevel.Information;
     internal const LogLevel ErrorLogLevel = LogLevel.Error;
-    internal const string OriginalFormatValue = "";
+    internal const string OriginalFormat = "{OriginalFormat}";
+    internal const string OriginalFormatValue = "{httpMethod} {httpHost}/{httpPath}";
     internal const string ReadingRequestBodyError = "Error on reading HTTP request body.";
     internal const string ReadingResponseBodyError = "Error on reading HTTP response body.";
 
     private const int IncomingRequestEventId = 1;
     private const int RequestProcessingErrorEventId = 2;
+
+#pragma warning disable S3257 // Declarations and initializations should be as concise as possible
+    private static readonly Func<IncomingRequestStruct, Exception?, string> _originalFormatValueFMTFunc = new(OriginalFormatValueFMT);
+#pragma warning restore S3257 // Declarations and initializations should be as concise as possible
 
     #region Non-generated logging
 
@@ -35,12 +41,13 @@ internal static partial class Log
                 collector.ParameterName = string.Empty;
                 HttpLogPropertiesProvider.GetProperties(collector, req);
 
+                collector.Add(OriginalFormat, OriginalFormatValue);
                 logger.Log(
                     DefaultLogLevel,
                     new(IncomingRequestEventId, nameof(IncomingRequest)),
                     new IncomingRequestStruct(collector),
                     null,
-                    static (_, _) => OriginalFormatValue);
+                    _originalFormatValueFMTFunc);
             }
             finally
             {
@@ -64,12 +71,13 @@ internal static partial class Log
                 collector.ParameterName = string.Empty;
                 HttpLogPropertiesProvider.GetProperties(collector, req);
 
+                collector.Add(OriginalFormat, OriginalFormatValue);
                 logger.Log(
                     ErrorLogLevel,
                     new(RequestProcessingErrorEventId, nameof(RequestProcessingError)),
                     new IncomingRequestStruct(collector),
                     ex,
-                    static (_, _) => OriginalFormatValue);
+                    _originalFormatValueFMTFunc);
             }
             finally
             {
@@ -123,5 +131,32 @@ internal static partial class Log
         "Remove {methodName}() call from pipeline configuration in that case.")]
     public static partial void MiddlewareIsMisused(this ILogger logger, LogLevel logLevel, string methodName);
 #pragma warning restore R9G001
+
+    private static string OriginalFormatValueFMT(IncomingRequestStruct request, Exception? _)
+    {
+        int startIndex = FindStartIndex(request);
+        var httpMethod = request[startIndex].Value;
+        var httpHost = request[startIndex + 1].Value;
+        var httpPath = request[startIndex + 2].Value;
+        return FormattableString.Invariant($"{httpMethod} {httpHost}/{httpPath}");
+    }
+
+    [ExcludeFromCodeCoverage]
+    private static int FindStartIndex(in IncomingRequestStruct request)
+    {
+        int startIndex = 0;
+
+        foreach (var kvp in request)
+        {
+            if (kvp.Key == HttpLoggingDimensions.Method)
+            {
+                break;
+            }
+
+            startIndex++;
+        }
+
+        return startIndex;
+    }
 }
 
