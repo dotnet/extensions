@@ -1,0 +1,70 @@
+name: Azure->Dotnet Extensions Code Sync
+on:
+  # Manual run
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  compare_repos:
+    # Comment out this line to test the scripts in a fork
+    if: github.repository == 'dotnet/extensions'
+    name: Sync shared code between Azure and DotNet
+    runs-on: windows-latest
+    steps:
+    - name: Checkout dotnet/extensions
+      uses: actions/checkout@v3
+      with:
+        # Test this script using changes in a fork
+        repository: 'dotnet/extensions'
+        path: dotnet-extensions
+        ref: main
+    - name: Checkout azure/dotnet-extensions-experimental
+      uses: actions/checkout@v3
+      with:
+        # Test this script using changes in a fork
+        repository: 'azure/dotnet-extensions-experimental'
+        path: azure-extensions
+        ref: main
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Copy
+      shell: cmd
+      working-directory: .\azure-extensions\src\Shared\DotNetSync\
+      env:
+        DOTNETEXTENSIONS_REPO: d:\a\extensions\extensions\dotnet-extensions\
+      run: CopyToDotNet.cmd
+    - name: Diff
+      shell: cmd
+      working-directory: .\dotnet-extensions\
+      run: |
+        mkdir ..\artifacts
+        git status > ..\artifacts\status.txt
+        git diff > ..\artifacts\diff.txt
+    - uses: actions/upload-artifact@v3
+      with:
+        name: results
+        path: artifacts
+    - name: Check
+      id: check
+      shell: pwsh
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        $sendpr = .\dotnet-extensions\.github\workflows\azure-sync-checkdiff.ps1
+        echo "sendpr=$sendpr" >> $env:GITHUB_OUTPUT
+    - name: Send PR
+      if: steps.check.outputs.sendpr == 'true'
+      # https://github.com/marketplace/actions/create-pull-request
+      uses: dotnet/actions-create-pull-request@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        path: .\dotnet-extensions
+        commit-message: 'Sync shared code from azure/dotnet-extensions-experimental'
+        title: 'Sync shared code from azure/dotnet-extensions-experimental'
+        body: 'This PR was automatically generated to sync shared code changes from azure/dotnet-extensions-experimental. Fixes https://github.com/azure/dotnet-extensions-experimental/issues/1.'
+        base: main
+        branch: github-action/sync-azure
+        branch-suffix: timestamp
