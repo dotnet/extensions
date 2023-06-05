@@ -50,7 +50,6 @@
     <SystemConfigurationConfigurationManagerVersion>8.0.0-preview.5.23272.1</SystemConfigurationConfigurationManagerVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>8.0.0-preview.5.23272.1</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsPerformanceCounterVersion>8.0.0-preview.5.23272.1</SystemDiagnosticsPerformanceCounterVersion>
-    <SystemDrawingCommonVersion>8.0.0-preview.3.23164.10</SystemDrawingCommonVersion>
     <SystemIOHashingVersion>8.0.0-preview.5.23272.1</SystemIOHashingVersion>
     <SystemNetHttpJsonVersion>8.0.0-preview.5.23272.1</SystemNetHttpJsonVersion>
     <SystemSecurityCryptographyPkcsVersion>8.0.0-preview.5.23272.1</SystemSecurityCryptographyPkcsVersion>
@@ -59,6 +58,7 @@
     <SystemTextJsonVersion>8.0.0-preview.5.23272.1</SystemTextJsonVersion>
     <SystemRuntimeCachingVersion>8.0.0-preview.5.23272.1</SystemRuntimeCachingVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>8.0.0-preview.5.23273.2</MicrosoftAspNetCoreAppRuntimewinx64Version>
     <MicrosoftAspNetCoreMvcTestingVersion>8.0.0-preview.5.23273.2</MicrosoftAspNetCoreMvcTestingVersion>
     <MicrosoftAspNetCoreTestHostVersion>8.0.0-preview.5.23273.2</MicrosoftAspNetCoreTestHostVersion>
     <MicrosoftExtensionsCachingStackExchangeRedisVersion>8.0.0-preview.5.23273.2</MicrosoftExtensionsCachingStackExchangeRedisVersion>

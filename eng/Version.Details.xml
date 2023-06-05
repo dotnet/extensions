@@ -1,136 +1,136 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Bcl.TimeProvider" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Bcl.TimeProvider" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Configuration" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Hosting" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Http" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Http" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Options" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="System.Collections.Immutable" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="System.Collections.Immutable" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="System.Configuration.ConfigurationManager" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="System.Configuration.ConfigurationManager" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.PerformanceCounter" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="System.Diagnostics.PerformanceCounter" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="System.Drawing.Common" Version="8.0.0-preview.3.23164.10">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>367a360a9fedc8c3c59ac7f6b4b5d92790ace993</Sha>
-    </Dependency>
-    <Dependency Name="System.IO.Hashing" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="System.IO.Hashing" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="System.Net.Http.Json" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="System.Net.Http.Json" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Pkcs" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="System.Security.Cryptography.Pkcs" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Xml" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="System.Security.Cryptography.Xml" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encodings.Web" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="System.Text.Encodings.Web" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Json" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="System.Text.Json" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.Caching" Version="8.0.0-preview.5.23272.1">
+    <Dependency Name="System.Runtime.Caching" Version="8.0.0-preview.5.23272.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9e49620aeee78c0d37dd741f88aff89850a6f5fb</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="8.0.0-preview.5.23273.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>c760054e1fbc8749bc0c6f2116b22532424ff60f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0-preview.5.23273.2">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
