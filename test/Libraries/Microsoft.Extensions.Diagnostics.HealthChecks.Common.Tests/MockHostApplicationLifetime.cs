@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.Extensions.Diagnostics.HealthChecks.Core.Tests;
+namespace Microsoft.Extensions.Diagnostics.HealthChecks.Common.Tests;
 
 internal class MockHostApplicationLifetime : IHostApplicationLifetime, IDisposable
 {

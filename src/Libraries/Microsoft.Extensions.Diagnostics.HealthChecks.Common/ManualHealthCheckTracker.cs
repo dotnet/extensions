@@ -8,13 +8,12 @@ using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
-internal sealed class ManualHealthCheckTracker : IManualHealthCheckTracker
+internal sealed class ManualHealthCheckTracker
 {
     private static readonly HealthCheckResult _healthy = HealthCheckResult.Healthy();
 
     private readonly ConcurrentDictionary<IManualHealthCheck, bool> _checks = new();
 
-    /// <inheritdoc />
     public void Register(IManualHealthCheck check)
     {
         _ = _checks.AddOrUpdate(check, true, (_, _) => true);
@@ -25,7 +24,6 @@ internal sealed class ManualHealthCheckTracker : IManualHealthCheckTracker
         _ = _checks.TryRemove(checkToRemove, out _);
     }
 
-    /// <inheritdoc />
     public HealthCheckResult GetHealthCheckResult()
     {
         // Construct string showing all reasons for unhealthy manual health checks

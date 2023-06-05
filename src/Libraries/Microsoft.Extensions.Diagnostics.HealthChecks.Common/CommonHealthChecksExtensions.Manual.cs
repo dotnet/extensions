@@ -8,19 +8,8 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
-public static partial class CoreHealthChecksExtensions
+public static partial class CommonHealthChecksExtensions
 {
-    /// <summary>
-    /// Registers a health check provider that enables manual control of the application's health.
-    /// </summary>
-    /// <param name="builder">The builder to add the provider to.</param>
-    /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" /> is <see langword="null" />.</exception>
-    public static IHealthChecksBuilder AddManualHealthCheck(this IHealthChecksBuilder builder)
-        => Throw.IfNull(builder)
-            .AddManualHealthCheckDependencies()
-            .AddCheck<ManualHealthCheckService>("ManualHealthCheck");
-
     /// <summary>
     /// Registers a health check provider that enables manual control of the application's health.
     /// </summary>
@@ -31,7 +20,7 @@ public static partial class CoreHealthChecksExtensions
     public static IHealthChecksBuilder AddManualHealthCheck(this IHealthChecksBuilder builder, params string[] tags)
         => Throw.IfNull(builder)
             .AddManualHealthCheckDependencies()
-            .AddCheck<ManualHealthCheckService>("ManualHealthCheck", tags: Throw.IfNull(tags));
+            .AddCheck<ManualHealthCheckService>("Manual", tags: Throw.IfNull(tags));
 
     /// <summary>
     /// Registers a health check provider that enables manual control of the application's health.
@@ -43,7 +32,7 @@ public static partial class CoreHealthChecksExtensions
     public static IHealthChecksBuilder AddManualHealthCheck(this IHealthChecksBuilder builder, IEnumerable<string> tags)
         => Throw.IfNull(builder)
             .AddManualHealthCheckDependencies()
-            .AddCheck<ManualHealthCheckService>("ManualHealthCheck", tags: Throw.IfNull(tags));
+            .AddCheck<ManualHealthCheckService>("Manual", tags: Throw.IfNull(tags));
 
     /// <summary>
     /// Sets the manual health check to the healthy state.
@@ -63,8 +52,8 @@ public static partial class CoreHealthChecksExtensions
         => Throw.IfNull(manualHealthCheck).Result = HealthCheckResult.Unhealthy(Throw.IfNullOrWhitespace(reason));
 
     private static IHealthChecksBuilder AddManualHealthCheckDependencies(this IHealthChecksBuilder builder)
-        => builder
-            .Services.AddSingleton<IManualHealthCheckTracker, ManualHealthCheckTracker>()
+        => builder.Services
+            .AddSingleton<ManualHealthCheckTracker>()
             .AddTransient(typeof(IManualHealthCheck<>), typeof(ManualHealthCheck<>))
             .AddHealthChecks();
 }

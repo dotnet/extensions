@@ -30,10 +30,10 @@ internal sealed class ManualHealthCheck<T> : IManualHealthCheck<T>
         }
     }
 
-    private readonly IManualHealthCheckTracker _tracker;
+    private readonly ManualHealthCheckTracker _tracker;
 
     [SuppressMessage("Major Code Smell", "S3366:\"this\" should not be exposed from constructors", Justification = "It's OK, just registering into a list")]
-    public ManualHealthCheck(IManualHealthCheckTracker tracker)
+    public ManualHealthCheck(ManualHealthCheckTracker tracker)
     {
         Result = HealthCheckResult.Unhealthy("Initial state");
 

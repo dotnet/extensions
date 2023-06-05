@@ -1,0 +1,72 @@
+{
+  "Name": "Microsoft.Extensions.Diagnostics.Probes, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.EndpointOptions();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Func<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration, bool> Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.FilterChecks { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.MaxPendingConnections { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.Period { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.TcpPort { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesExtensions.AddKubernetesProbes(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesExtensions.AddKubernetesProbes(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesExtensions.AddKubernetesProbes(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions> configure);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Diagnostics.Probes.ProbeTags",
+      "Stage": "Experimental",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Probes.ProbeTags.Liveness",
+          "Stage": "Experimental",
+          "Value": "_probe_liveness"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Probes.ProbeTags.Readiness",
+          "Stage": "Experimental",
+          "Value": "_probe_readiness"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Probes.ProbeTags.Startup",
+          "Stage": "Experimental",
+          "Value": "_probe_startup"
+        }
+      ]
+    }
+  ]
+}

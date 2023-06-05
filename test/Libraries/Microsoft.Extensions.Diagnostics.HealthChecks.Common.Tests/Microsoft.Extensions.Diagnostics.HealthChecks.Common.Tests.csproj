@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.HealthChecks.Core.Tests</RootNamespace>
-    <Description>Unit tests for Microsoft.Extensions.Diagnostics.HealthChecks.Core</Description>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.HealthChecks.Common.Tests</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.Diagnostics.HealthChecks.Common</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.HealthChecks.Core\Microsoft.Extensions.Diagnostics.HealthChecks.Core.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.HealthChecks.Common\Microsoft.Extensions.Diagnostics.HealthChecks.Common.csproj" ProjectUnderTest="true" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Testing\Microsoft.Extensions.Telemetry.Testing.csproj" />
   </ItemGroup>
 

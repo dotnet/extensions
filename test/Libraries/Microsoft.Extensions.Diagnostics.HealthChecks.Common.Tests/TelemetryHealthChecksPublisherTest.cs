@@ -12,7 +12,7 @@ using Microsoft.Extensions.Telemetry.Testing.Logging;
 using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Xunit;
 
-namespace Microsoft.Extensions.Diagnostics.HealthChecks.Core.Tests;
+namespace Microsoft.Extensions.Diagnostics.HealthChecks.Common.Tests;
 
 public class TelemetryHealthChecksPublisherTest
 {

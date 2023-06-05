@@ -14,7 +14,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 internal sealed class ApplicationLifecycleHealthCheck : IHealthCheck
 {
     private static readonly Task<HealthCheckResult> _healthy = Task.FromResult(HealthCheckResult.Healthy());
-    private static readonly Task<HealthCheckResult> _unhealthy = Task.FromResult(HealthCheckResult.Unhealthy());
+    private static readonly Task<HealthCheckResult> _unhealthyNotStarted = Task.FromResult(HealthCheckResult.Unhealthy("Not Started"));
+    private static readonly Task<HealthCheckResult> _unhealthyStopping = Task.FromResult(HealthCheckResult.Unhealthy("Stopping"));
+    private static readonly Task<HealthCheckResult> _unhealthyStopped = Task.FromResult(HealthCheckResult.Unhealthy("Stopped"));
     private readonly IHostApplicationLifetime _appLifetime;
 
     /// <summary>
@@ -42,9 +44,23 @@ internal sealed class ApplicationLifecycleHealthCheck : IHealthCheck
     public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         bool isStarted = _appLifetime.ApplicationStarted.IsCancellationRequested;
+        if (!isStarted)
+        {
+            return _unhealthyNotStarted;
+        }
+
         bool isStopping = _appLifetime.ApplicationStopping.IsCancellationRequested;
+        if (isStopping)
+        {
+            return _unhealthyStopping;
+        }
+
         bool isStopped = _appLifetime.ApplicationStopped.IsCancellationRequested;
-        bool isHealthy = isStarted && !isStopping && !isStopped;
-        return isHealthy ? _healthy : _unhealthy;
+        if (isStopped)
+        {
+            return _unhealthyStopped;
+        }
+
+        return _healthy;
     }
 }

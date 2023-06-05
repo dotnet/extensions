@@ -17,6 +17,5 @@ public class TelemetryHealthCheckPublisherOptions
     /// <remarks>
     /// Default set to false.
     /// </remarks>
-    [Experimental]
     public bool LogOnlyUnhealthy { get; set; }
 }

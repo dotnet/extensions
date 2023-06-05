@@ -22,20 +22,6 @@ public static class ResourceUtilizationHealthCheckExtensions
     /// Registers a health check provider that monitors resource utilization to assess the application's health.
     /// </summary>
     /// <param name="builder">The builder to add the provider to.</param>
-    /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" /> is <see langword="null" />.</exception>
-    public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(this IHealthChecksBuilder builder)
-    {
-        _ = Throw.IfNull(builder);
-
-        _ = builder.Services.AddValidatedOptions<ResourceUtilizationHealthCheckOptions, ResourceUtilizationHealthCheckOptionsValidator>();
-        return builder.AddCheck<ResourceUtilizationHealthCheck>(HealthCheckName);
-    }
-
-    /// <summary>
-    /// Registers a health check provider that monitors resource utilization to assess the application's health.
-    /// </summary>
-    /// <param name="builder">The builder to add the provider to.</param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException">If <paramref name="builder" /> is <see langword="null" />.</exception>
