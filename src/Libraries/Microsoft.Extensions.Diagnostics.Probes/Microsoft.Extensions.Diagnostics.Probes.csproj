@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.Probes</RootNamespace>
+    <Description>Provides basic support for environmental probes.</Description>
+    <Workstream>Resilience</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDataValidation>true</InjectSharedDataValidation>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>dev</Stage>
+    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinMutationScore>75</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.HealthChecks.Core\Microsoft.Extensions.Diagnostics.HealthChecks.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization\Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+</Project>
