@@ -57,7 +57,7 @@ public partial class AcceptanceTest
         return RunAsync<TStartup>(
             LogLevel.Information,
             configureHttpLogging,
-            async (logCollector, client) =>
+            async (logCollector, client, _) =>
             {
                 using var response = await client.GetAsync(httpPath).ConfigureAwait(false);
                 Assert.True(response.IsSuccessStatusCode);

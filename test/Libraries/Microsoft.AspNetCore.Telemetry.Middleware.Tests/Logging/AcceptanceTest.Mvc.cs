@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Telemetry.Http.Logging.Test;
 public partial class AcceptanceTest
 {
     private const string RedactedFormat = "<redacted:{0}>";
-
     private const string UserIdParamName = "userId";
     private const string NoDataClassParamName = "noDataClassification";
     private const string QueryParamName = "noRedaction";
@@ -47,7 +46,7 @@ public partial class AcceptanceTest
     }
 
     private static Task RunControllerAsync(LogLevel level, Action<IServiceCollection> configure, Func<FakeLogCollector, HttpClient, Task> func)
-        => RunAsync<TestStartupWithControllers>(level, configure, func);
+        => RunAsync<TestStartupWithControllers>(level, configure, (collector, client, _) => func(collector, client));
 
     [Theory]
     [InlineData(HttpRouteParameterRedactionMode.Strict, $"api/users/<redacted:testUserId>/{TelemetryConstants.Redacted}")]

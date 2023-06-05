@@ -29,7 +29,8 @@ internal sealed class HttpTraceEnrichmentProcessor : BaseProcessor<Activity>
             enricher.Enrich(activity, request);
         }
 
-        _redactionProcessor.Process(activity, request);
+        _redactionProcessor.ProcessRequest(activity, request);
+        _redactionProcessor.ProcessResponse(activity, request);
     }
 
     public override void OnEnd(Activity activity)

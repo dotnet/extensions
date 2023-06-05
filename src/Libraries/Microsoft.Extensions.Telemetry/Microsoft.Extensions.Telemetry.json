@@ -78,6 +78,24 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LoggerProvider : OpenTelemetry.BaseProvider, Microsoft.Extensions.Logging.ILoggerProvider, System.IDisposable, Microsoft.Extensions.Logging.ISupportExternalScope",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.ILogger Microsoft.Extensions.Telemetry.Logging.LoggerProvider.CreateLogger(string categoryName);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "override void Microsoft.Extensions.Telemetry.Logging.LoggerProvider.Dispose(bool disposing);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Logging.LoggerProvider.SetScopeProvider(Microsoft.Extensions.Logging.IExternalScopeProvider scopeProvider);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "static class Microsoft.Extensions.Telemetry.Logging.LoggingExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -212,6 +230,10 @@
         {
           "Member": "Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions.RootSamplerType { get; set; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions? Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions.TraceIdRatioBasedSamplerOptions { get; set; }",
+          "Stage": "Stable"
         }
       ]
     },
@@ -311,6 +333,10 @@
       "Type": "static class Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions",
       "Stage": "Stable",
       "Methods": [
+        {
+          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions.AddSampling(this OpenTelemetry.Trace.TracerProviderBuilder builder);",
+          "Stage": "Stable"
+        },
         {
           "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions.AddSampling(this OpenTelemetry.Trace.TracerProviderBuilder builder, System.Action<Microsoft.Extensions.Telemetry.Tracing.SamplingOptions> configure);",
           "Stage": "Stable"
