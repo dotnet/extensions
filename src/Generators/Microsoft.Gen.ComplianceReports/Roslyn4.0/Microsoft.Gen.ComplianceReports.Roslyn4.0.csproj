@@ -11,10 +11,4 @@
     <MinCodeCoverage>99</MinCodeCoverage>
     <MinMutationScore>85</MinMutationScore>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageVersion Update="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.1" />
-    <PackageVersion Update="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
-    <PackageVersion Update="Microsoft.CodeAnalysis" Version="4.0.1" />
-  </ItemGroup>
 </Project>

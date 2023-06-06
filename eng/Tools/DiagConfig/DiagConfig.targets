@@ -5,11 +5,14 @@
       <_OutputLogPath>$([MSBuild]::NormalizePath('$(ArtifactsLogDir)', 'DiagConfig.log'))</_OutputLogPath>
 
       <_RestoreCommand>restore.cmd</_RestoreCommand>
-      <_RestoreCommand Condition=" !$([MSBuild]::IsOSPlatform('Windows'))">restore.sh</_RestoreCommand>
+      <_RestoreCommand Condition=" !$([MSBuild]::IsOSPlatform('Windows'))">./restore.sh</_RestoreCommand>
     </PropertyGroup>
 
     <Message Text="Restoring the solution..." Importance="High" />
-    <Delete Files="$(RepoRoot)/*.sln" />
+    <ItemGroup>
+      <FilesToDelete Include="$(RepoRoot)/*.sln"/>
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)" />
     <Exec Command='$(_RestoreCommand)' WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true" IgnoreExitCode="true" StandardOutputImportance="low">
       <Output TaskParameter="ConsoleOutput" PropertyName="_RestoreCommandOutput" />
       <Output TaskParameter="ExitCode" PropertyName="_CommandErrorCode" />
@@ -54,7 +57,7 @@
       <_CopySdkAnalyzers Include="$(MSBuildBinPath)\Sdks\Microsoft.NET.Sdk\codestyle\cs\Microsoft.CodeAnalysis.CSharp.CodeStyle.dll" />
       <_CopySdkAnalyzers Include="$(MSBuildBinPath)\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll" />
       <_CopySdkAnalyzers Include="$(MSBuildBinPath)\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll" />
-      <_CopySdkAnalyzers Include="$(MSBuildBinPath)\Sdks\Microsoft.NET.Sdk\analyzers\ILlink.RoslynAnalyzer.dll" />
+      <_CopySdkAnalyzers Include="$(MSBuildBinPath)\Sdks\Microsoft.NET.Sdk\analyzers\ILLink.RoslynAnalyzer.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopySdkAnalyzers)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
     <ItemGroup>
