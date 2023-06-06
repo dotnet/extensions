@@ -65,7 +65,9 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="RunDiag" AfterTargets="Build" DependsOnTargets="_RestoreSolution;_ResolveAnalysers">
+  <Target Name="RunDiag" AfterTargets="Build"
+          DependsOnTargets="_RestoreSolution;_ResolveAnalysers"
+          Condition="'$(BuildingInsideVisualStudio)' != 'true'">
     <PropertyGroup>
       <_OutputLogPath>$([MSBuild]::NormalizePath('$(ArtifactsLogDir)', 'DiagConfig.log'))</_OutputLogPath>
 

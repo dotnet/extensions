@@ -23,7 +23,11 @@ if not exist "%DOTNET_ROOT%\dotnet.exe" (
 :: Prefer the VS in the developer command prompt if we're in one, followed by whatever shows up in the current search path.
 set "DEVENV=%DevEnvDir%devenv.exe"
 
-set SLN=SDK.sln
+SET sln=%~1
+
+IF "%sln%"=="" (
+    set SLN=%~dp0SDK.sln
+)
 
 if exist "%DEVENV%" (
     :: Fully qualified works
@@ -35,7 +39,7 @@ if exist "%DEVENV%" (
         set "COMMAND=start "" /B "%ComSpec%" /S /C "devenv.exe "%~dp0%SLN%"""
     ) else (
         :: Can't find devenv.exe, let file associations take care of it
-        set "COMMAND=start /B .\%SLN%"
+        set "COMMAND=start /B %SLN%"
     )
 )
 
