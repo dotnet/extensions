@@ -208,10 +208,7 @@ public sealed class AsyncCallInsideUsingBlockAnalyzer : DiagnosticAnalyzer
     {
         foreach (var argument in invocation.Arguments)
         {
-            if (argument
-                .Value
-                .Children
-                .Any(operation => ReferencesSymbol(operation, symbol)))
+            if (argument.Value.ChildOperations.Any(operation => ReferencesSymbol(operation, symbol)))
             {
                 return true;
             }

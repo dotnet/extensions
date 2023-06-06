@@ -367,9 +367,9 @@ namespace {details.TargetNamespace}
             loggerParam
         };
 
-        if (details.ExceptionParamIndex >= 0)
+        if (details.ExceptionParamIndex >= 0 && invocationOp.Arguments[details.ExceptionParamIndex].Value.Type is ITypeSymbol symbol)
         {
-            parameters.Add(gen.ParameterDeclaration("exception", gen.TypeExpression(invocationOp.Arguments[details.ExceptionParamIndex].Value.Type)));
+            parameters.Add(gen.ParameterDeclaration("exception", gen.TypeExpression(symbol)));
         }
 
         var index = 0;
@@ -377,6 +377,11 @@ namespace {details.TargetNamespace}
         {
             foreach (var o in details.InterpolationArgs)
             {
+                if (o.Type is null)
+                {
+                    continue;
+                }
+
                 parameters.Add(gen.ParameterDeclaration(details.MessageArgs[index++], gen.TypeExpression(o.Type)));
             }
         }
@@ -387,7 +392,11 @@ namespace {details.TargetNamespace}
             var arrayCreation = (IArrayCreationOperation)paramsArg.Value;
             foreach (var e in arrayCreation.Initializer!.ElementValues)
             {
-                var type = e.SemanticModel?.GetTypeInfo(e.Syntax).Type;
+                ITypeSymbol? type = e.SemanticModel?.GetTypeInfo(e.Syntax).Type;
+                if (type is null)
+                {
+                    continue;
+                }
 
                 string name;
                 if (index < details.MessageArgs.Count)
@@ -578,7 +587,7 @@ namespace {details.TargetNamespace}
         var attrArgs = new[]
         {
             gen.LiteralExpression(CalcEventId(comp, targetClass, cancellationToken)),
-            gen.MemberAccessExpression(gen.TypeExpression(comp.GetTypeByMetadataName("Microsoft.Extensions.Logging.LogLevel")), details.Level),
+            gen.MemberAccessExpression(gen.TypeExpression(comp.GetTypeByMetadataName("Microsoft.Extensions.Logging.LogLevel")!), details.Level),
             gen.LiteralExpression(details.Message),
         };
 
