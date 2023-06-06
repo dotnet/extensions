@@ -31,12 +31,12 @@ IF "%sln%"=="" (
 
 if exist "%DEVENV%" (
     :: Fully qualified works
-    set "COMMAND=start "" /B "%ComSpec%" /S /C ""%DEVENV%" "%~dp0%SLN%"""
+    set "COMMAND=start "" /B "%ComSpec%" /S /C ""%DEVENV%" "%SLN%"""
 ) else (
     where devenv.exe /Q
     if !errorlevel! equ 0 (
         :: On the PATH, use that.
-        set "COMMAND=start "" /B "%ComSpec%" /S /C "devenv.exe "%~dp0%SLN%"""
+        set "COMMAND=start "" /B "%ComSpec%" /S /C "devenv.exe "%SLN%"""
     ) else (
         :: Can't find devenv.exe, let file associations take care of it
         set "COMMAND=start /B %SLN%"
