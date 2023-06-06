@@ -9,13 +9,15 @@
     <PackageVersion Include="Grpc.Tools" Version="2.45.0" />
     <PackageVersion Include="LibGit2Sharp" Version="0.27.0-preview-0175" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="17.4.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" Version="4.4.0-6.23101.13" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="4.4.0-6.23101.13" />
     <PackageVersion Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0" />
     <PackageVersion Include="Microsoft.M365.Internal.Security.SecurityTooling.SDLToolingConfig" Version="0.8.0" GeneratePathProperty="true" />
-    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.5.22" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.5.22" GeneratePathProperty="true" />
     <PackageVersion Include="MSBuild.StructuredLogger" Version="2.1.790" />
-    <PackageVersion Include="SonarAnalyzer.CSharp" Version="8.52.0.60960" />
-    <PackageVersion Include="StyleCop.Analyzers.Unstable" Version="1.2.0.435" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="8.52.0.60960" GeneratePathProperty="true" />
+    <PackageVersion Include="StyleCop.Analyzers.Unstable" Version="1.2.0.435" GeneratePathProperty="true" />
   </ItemGroup>
 
 </Project>

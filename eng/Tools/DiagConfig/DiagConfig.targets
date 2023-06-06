@@ -1,0 +1,84 @@
+﻿<Project>
+
+  <Target Name="_RestoreSolution">
+    <PropertyGroup>
+      <_OutputLogPath>$([MSBuild]::NormalizePath('$(ArtifactsLogDir)', 'DiagConfig.log'))</_OutputLogPath>
+
+      <_RestoreCommand>restore.cmd</_RestoreCommand>
+      <_RestoreCommand Condition=" !$([MSBuild]::IsOSPlatform('Windows'))">restore.sh</_RestoreCommand>
+    </PropertyGroup>
+
+    <Message Text="Restoring the solution..." Importance="High" />
+    <Delete Files="$(RepoRoot)/*.sln" />
+    <Exec Command='$(_RestoreCommand)' WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true" IgnoreExitCode="true" StandardOutputImportance="low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_RestoreCommandOutput" />
+      <Output TaskParameter="ExitCode" PropertyName="_CommandErrorCode" />
+    </Exec>
+
+    <WriteLinesToFile File="$(_OutputLogPath)" Lines="$(_RestoreCommandOutput)" Overwrite="true" />
+    <Error Text="Failed to restore the solution. Check $(_OutputLogPath) for more details." Condition="'$(_CommandErrorCode)' != '0'" />
+  </Target>
+
+  <Target Name="_ResolveAnalysers">
+    <!-- Determine the version of Microsoft.AspNetCore.App.Ref pack so that we can reference the analysers from it -->
+    <ItemGroup>
+      <_AspNetCoreApp Include="@(KnownFrameworkReference)" Condition="'%(Identity)' == 'Microsoft.AspNetCore.App' and '%(TargetFramework)' == '$(TargetFramework)'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_TargetingPackVersiony>@(_AspNetCoreApp->'%(TargetingPackVersion)')</_TargetingPackVersiony>
+    </PropertyGroup>
+
+    <!--
+      These analysers can be invoked in-situ
+      -->
+    <ItemGroup>
+      <!-- Locally built -->
+      <_ReferencedAnalyzers Include="$(ArtifactsBinDir)\Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0\Debug\netstandard2.0\Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0.dll" />
+      <_ReferencedAnalyzers Include="$(ArtifactsBinDir)\Microsoft.Extensions.LocalAnalyzers\Debug\netstandard2.0\Microsoft.Extensions.LocalAnalyzers.dll" />
+      <!-- NuGet packages -->
+      <_ReferencedAnalyzers Include="$(PkgStyleCop_Analyzers_Unstable)\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+      <_ReferencedAnalyzers Include="$(PkgSonarAnalyzer_CSharp)\analyzers\SonarAnalyzer.CSharp.dll" />
+      <_ReferencedAnalyzers Include="$(PkgMicrosoft_VisualStudio_Threading_Analyzers)\analyzers\cs\Microsoft.VisualStudio.Threading.Analyzers.dll" />
+      <_ReferencedAnalyzers Include="$(PkgMicrosoft_VisualStudio_Threading_Analyzers)\analyzers\cs\Microsoft.VisualStudio.Threading.Analyzers.CSharp.dll" />
+      <_ReferencedAnalyzers Include="$(NuGetPackageRoot)\xunit.analyzers\1.0.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
+      <!-- Microsoft.AspNetCore.App.Ref -->
+      <_ReferencedAnalyzers Include="$(NetCoreTargetingPackRoot)\Microsoft.AspNetCore.App.Ref\$(_TargetingPackVersiony)\analyzers\dotnet\cs\Microsoft.AspNetCore.App.Analyzers.dll" />
+      <_ReferencedAnalyzers Include="$(NetCoreTargetingPackRoot)\Microsoft.AspNetCore.App.Ref\$(_TargetingPackVersiony)\analyzers\dotnet\cs\Microsoft.AspNetCore.Components.Analyzers.dll" />
+    </ItemGroup>
+
+    <!--
+      These analysers can't be invoked in-situ and must be copied to the DiagConfig tool folder
+      -->
+    <ItemGroup>
+      <_CopySdkAnalyzers Include="$(MSBuildBinPath)\Sdks\Microsoft.NET.Sdk\codestyle\cs\Microsoft.CodeAnalysis.CodeStyle.dll" />
+      <_CopySdkAnalyzers Include="$(MSBuildBinPath)\Sdks\Microsoft.NET.Sdk\codestyle\cs\Microsoft.CodeAnalysis.CSharp.CodeStyle.dll" />
+      <_CopySdkAnalyzers Include="$(MSBuildBinPath)\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll" />
+      <_CopySdkAnalyzers Include="$(MSBuildBinPath)\Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll" />
+      <_CopySdkAnalyzers Include="$(MSBuildBinPath)\Sdks\Microsoft.NET.Sdk\analyzers\ILlink.RoslynAnalyzer.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_CopySdkAnalyzers)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+    <ItemGroup>
+      <_SdkAnalyzers Include="@(_CopySdkAnalyzers->'$(OutputPath)%(Filename)%(Extension)')" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="RunDiag" AfterTargets="Build" DependsOnTargets="_RestoreSolution;_ResolveAnalysers">
+    <PropertyGroup>
+      <_OutputLogPath>$([MSBuild]::NormalizePath('$(ArtifactsLogDir)', 'DiagConfig.log'))</_OutputLogPath>
+
+      <_DiagDefinitionsPath>$([MSBuild]::NormalizePath('$(RepositoryEngineeringDir)', 'Diags'))</_DiagDefinitionsPath>
+      <_ReferencedAnalyzers>$(PkgStyleCop_Analyzers_Unstable);$(PkgSonarAnalyzer_CSharp);$(PkgMicrosoft_VisualStudio_Threading_Analyzers)</_ReferencedAnalyzers>
+      <_ScriptPath>$([MSBuild]::NormalizePath('$(ProjectDir)', 'MergeAnalyze.ps1'))</_ScriptPath>
+      <_MergeAnalyzeCommand>$(_ScriptPath) -DotnetToolPath "$(DotNetTool)" -DiagConfigTool "$(TargetPath)" -DiagDefinitionsPath "$(_DiagDefinitionsPath)" -ReferenedAnalyzers "@(_ReferencedAnalyzers, ',')" -SdkAnalyzers "@(_SdkAnalyzers, ',')"</_MergeAnalyzeCommand>
+    </PropertyGroup>
+
+    <Exec Command='dotnet pwsh $(_MergeAnalyzeCommand)' WorkingDirectory="$(RepoRoot)" ConsoleToMSBuild="true" IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_MergeAnalyzeCommandOutput" />
+      <Output TaskParameter="ExitCode" PropertyName="_CommandErrorCode" />
+    </Exec>
+
+    <WriteLinesToFile File="$(_OutputLogPath)" Lines="$(_MergeAnalyzeCommandOutput)" Overwrite="true" />
+    <Error Text="Failed to execute script. Check $(_OutputLogPath) for more details." Condition="'$(_CommandErrorCode)' != '0'" />
+  </Target>
+
+</Project>

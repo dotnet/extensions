@@ -15,10 +15,10 @@
     <PackageVersion Include="Microsoft.Azure.KeyVault.AzureServiceDeploy" Version="3.0.0" />
     <PackageVersion Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.0.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.0.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.4.0-6.23101.13" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.4.0-6.23101.13" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0-6.23101.13" />
+    <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.4.0-6.23101.13" />
     <PackageVersion Include="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.32" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Net.Http.Headers" Version="2.2.8" />

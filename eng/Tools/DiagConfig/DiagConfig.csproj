@@ -14,8 +14,13 @@
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.CommandLine.NamingConventionBinder" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <PackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Features" />
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
+
+  <Import Project="DiagConfig.targets" />
+
 </Project>
