@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-#if NET6_0_OR_GREATER
+#if NET8_0_OR_GREATER
 using System.Linq;
 #endif
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
@@ -24,7 +24,9 @@ public class HttpStandardResilienceOptionsCustomValidatorTests
 
         Assert.True(validationResult.Failed);
 
-#if NET6_0_OR_GREATER
+#if NET8_0_OR_GREATER
+        // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
+        // and as such the API is available in .NET 8 onwards.
         Assert.Equal(3, validationResult.Failures.Count());
 #endif
     }

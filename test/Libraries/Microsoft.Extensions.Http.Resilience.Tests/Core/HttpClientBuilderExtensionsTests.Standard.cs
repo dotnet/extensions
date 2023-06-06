@@ -115,7 +115,9 @@ public sealed partial class HttpClientBuilderExtensionsTests
         AddStandardResilienceHandler(mode, builder, _invalidConfigurationSection, options => { });
 
         var provider = builder.Services.BuildServiceProvider().GetRequiredService<IResiliencePipelineProvider>();
-#if NET6_0_OR_GREATER
+#if NET8_0_OR_GREATER
+        // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
+        // and as such the API is available in .NET 8 onwards.
         Assert.Throws<InvalidOperationException>(() => provider.GetPipeline<HttpResponseMessage>($"test-standard"));
 #else
         var pipeline = provider.GetPipeline<HttpResponseMessage>($"test-standard");

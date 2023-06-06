@@ -379,7 +379,9 @@ public class MakerTests
         sm.Dispose();
     }
 
-#if NET6_0_OR_GREATER
+#if NET8_0_OR_GREATER
+    // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
+    // and as such the API is available in .NET 8 onwards.
     private struct LegacySpanFormattable : System.ISpanFormattable
     {
         public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)

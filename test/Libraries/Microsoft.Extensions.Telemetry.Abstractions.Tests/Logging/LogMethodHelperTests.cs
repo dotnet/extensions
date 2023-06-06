@@ -128,7 +128,9 @@ public static class LogMethodHelperTests
         LogMethodHelper.ReturnHelper(list);
     }
 
-#if NET6_0_OR_GREATER
+#if NET8_0_OR_GREATER
+    // Whilst LogMethodHelper.SkipEnabledCheckOptions is marked as NET6_0_OR_GREATER we don't build .NET 6.0,
+    // and as such the API is available in .NET 8 onwards.
     [Fact]
     public static void Options()
     {
