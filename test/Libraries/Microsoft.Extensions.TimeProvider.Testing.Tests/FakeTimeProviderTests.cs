@@ -20,6 +20,7 @@ public class FakeTimeProviderTests
         var timestamp = timeProvider.GetTimestamp();
         var frequency = timeProvider.TimestampFrequency;
 
+        Assert.Equal(timeProvider.Epoch, now);
         Assert.Equal(2000, now.Year);
         Assert.Equal(1, now.Month);
         Assert.Equal(1, now.Day);
@@ -32,17 +33,12 @@ public class FakeTimeProviderTests
 
         var timestamp2 = timeProvider.GetTimestamp();
         var frequency2 = timeProvider.TimestampFrequency;
-        now = timeProvider.GetUtcNow();
+        var now2 = timeProvider.GetUtcNow();
 
-        Assert.Equal(2000, now.Year);
-        Assert.Equal(1, now.Month);
-        Assert.Equal(1, now.Day);
-        Assert.Equal(0, now.Hour);
-        Assert.Equal(0, now.Minute);
-        Assert.Equal(0, now.Second);
-        Assert.Equal(0, now.Millisecond);
-        Assert.Equal(10_000_000, frequency2);
-        Assert.Equal(timestamp2, timestamp);
+        Assert.Equal(timeProvider.Epoch, now2);
+        Assert.Equal(now, now2);
+        Assert.Equal(frequency, frequency2);
+        Assert.Equal(timestamp, timestamp2);
     }
 
     [Fact]
@@ -55,6 +51,7 @@ public class FakeTimeProviderTests
         var frequency = timeProvider.TimestampFrequency;
         var now = timeProvider.GetUtcNow();
 
+        Assert.Equal(timeProvider.Epoch + TimeSpan.FromMilliseconds(8), now);
         Assert.Equal(2001, now.Year);
         Assert.Equal(2, now.Month);
         Assert.Equal(3, now.Day);
@@ -70,6 +67,7 @@ public class FakeTimeProviderTests
         var frequency2 = timeProvider.TimestampFrequency;
         now = timeProvider.GetUtcNow();
 
+        Assert.Equal(timeProvider.Epoch + TimeSpan.FromMilliseconds(16), now);
         Assert.Equal(2001, now.Year);
         Assert.Equal(2, now.Month);
         Assert.Equal(3, now.Day);
@@ -77,7 +75,7 @@ public class FakeTimeProviderTests
         Assert.Equal(5, now.Minute);
         Assert.Equal(6, now.Second);
         Assert.Equal(16, now.Millisecond);
-        Assert.Equal(10_000_000, frequency2);
+        Assert.Equal(frequency, frequency2);
         Assert.True(pnow2 > pnow);
     }
 
@@ -139,6 +137,15 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
+    public void TimeCannotGoBackwards()
+    {
+        var timeProvider = new FakeTimeProvider();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => timeProvider.Advance(TimeSpan.FromTicks(-1)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => timeProvider.SetUtcNow(timeProvider.Epoch - TimeSpan.FromTicks(1)));
+    }
+
+    [Fact]
     public void ToStr()
     {
         var dto = new DateTimeOffset(new DateTime(2022, 1, 2, 3, 4, 5, 6), TimeSpan.Zero);
@@ -173,7 +180,7 @@ public class FakeTimeProviderTests
         var timeProvider = new FakeTimeProvider();
 
         var delay = timeProvider.Delay(TimeSpan.FromMilliseconds(1), CancellationToken.None);
-        timeProvider.Advance();
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
         await delay;
 
         Assert.True(delay.IsCompleted);
@@ -203,7 +210,7 @@ public class FakeTimeProviderTests
         var timeProvider = new FakeTimeProvider();
 
         using var cts = timeProvider.CreateCancellationTokenSource(TimeSpan.FromMilliseconds(1));
-        timeProvider.Advance();
+        timeProvider.Advance(TimeSpan.FromMilliseconds(1));
 
         await Assert.ThrowsAsync<TaskCanceledException>(() => timeProvider.Delay(TimeSpan.FromTicks(1), cts.Token));
     }
@@ -224,7 +231,7 @@ public class FakeTimeProviderTests
         var t = source.Task.WaitAsync(TimeSpan.FromSeconds(100000), timeProvider, CancellationToken.None);
         while (!t.IsCompleted)
         {
-            timeProvider.Advance();
+            timeProvider.Advance(TimeSpan.FromMilliseconds(1));
             await Task.Delay(1);
             _ = source.TrySetResult(true);
         }
