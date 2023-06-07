@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+#if NET8_0_OR_GREATER
+using Microsoft.AspNetCore.HttpLogging;
+#endif
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 
@@ -46,4 +49,23 @@ internal sealed class HeaderReader
             }
         }
     }
+#if NET8_0_OR_GREATER
+    public void Read(IHeaderDictionary headers, HttpLoggingContext logContext)
+    {
+        if (headers.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var header in _headers)
+        {
+            if (headers.TryGetValue(header.Key, out var headerValue))
+            {
+                var provider = _redactorProvider.GetRedactor(header.Value);
+                var redacted = provider.Redact(headerValue.ToString());
+                logContext.Add(header.Key, redacted);
+            }
+        }
+    }
+#endif
 }

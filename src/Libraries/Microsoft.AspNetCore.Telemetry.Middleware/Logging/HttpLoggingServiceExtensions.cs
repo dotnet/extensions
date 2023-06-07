@@ -4,6 +4,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
+#if NET8_0_OR_GREATER
+using Microsoft.AspNetCore.HttpLogging;
+#endif
 using Microsoft.AspNetCore.Telemetry.Http.Logging;
 using Microsoft.AspNetCore.Telemetry.Internal;
 using Microsoft.Extensions.Configuration;
@@ -22,6 +25,19 @@ namespace Microsoft.AspNetCore.Telemetry;
 /// </summary>
 public static class HttpLoggingServiceExtensions
 {
+#if NET8_0_OR_GREATER
+    public static IServiceCollection AddHttpLoggingRedaction(IServiceCollection services, Action<LoggingRedactionOptions> configureRedaction)
+    {
+        _ = Throw.IfNull(services);
+        _ = Throw.IfNull(configureRedaction);
+
+        _ = services.Configure(configureRedaction)
+            .AddSingleton<IHttpLoggingInterceptor, HttpRedactionHandler>();
+
+        return services;
+    }
+#endif
+
     /// <summary>
     /// Adds components for incoming HTTP requests logging into <see cref="IServiceCollection"/>.
     /// </summary>
