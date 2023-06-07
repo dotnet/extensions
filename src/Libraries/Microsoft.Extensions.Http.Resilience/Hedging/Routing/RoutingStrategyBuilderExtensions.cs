@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.DependencyInjection.Pools;
+
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Internal.Routing;
 using Microsoft.Extensions.Options;
@@ -36,7 +36,7 @@ public static class RoutingStrategyBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        _ = builder.Services.AddPool<OrderedGroupsRoutingStrategy>();
+        _ = builder.Services.AddPooled<OrderedGroupsRoutingStrategy>();
 
         return builder.ConfigureRoutingStrategy<OrderedGroupsRoutingStrategyFactory, OrderedGroupsRoutingOptions, OrderedGroupsRoutingOptionsValidator>(options => options.Bind(section));
     }
@@ -71,7 +71,7 @@ public static class RoutingStrategyBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        _ = builder.Services.AddPool<OrderedGroupsRoutingStrategy>();
+        _ = builder.Services.AddPooled<OrderedGroupsRoutingStrategy>();
 
         return builder.ConfigureRoutingStrategy<OrderedGroupsRoutingStrategyFactory, OrderedGroupsRoutingOptions, OrderedGroupsRoutingOptionsValidator>(options => options.Configure(configure));
     }
@@ -90,7 +90,7 @@ public static class RoutingStrategyBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        _ = builder.Services.AddPool<WeightedGroupsRoutingStrategy>();
+        _ = builder.Services.AddPooled<WeightedGroupsRoutingStrategy>();
 
         return builder.ConfigureRoutingStrategy<WeightedGroupsRoutingStrategyFactory, WeightedGroupsRoutingOptions, WeightedGroupsRoutingOptionsValidator>(options => options.Bind(section));
     }
@@ -125,7 +125,7 @@ public static class RoutingStrategyBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        _ = builder.Services.AddPool<WeightedGroupsRoutingStrategy>();
+        _ = builder.Services.AddPooled<WeightedGroupsRoutingStrategy>();
 
         return builder.ConfigureRoutingStrategy<WeightedGroupsRoutingStrategyFactory, WeightedGroupsRoutingOptions, WeightedGroupsRoutingOptionsValidator>(options => options.Configure(configure));
     }

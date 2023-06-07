@@ -1,30 +1,30 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.Extensions.DependencyInjection.Pools;
+namespace Microsoft.Extensions.ObjectPool;
 
-internal sealed class DependencyInjectedPolicy<TDefinition, TImplementation> : IPooledObjectPolicy<TDefinition>
-    where TDefinition : class
-    where TImplementation : class, TDefinition
+internal sealed class DependencyInjectionPooledObjectPolicy<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation> : IPooledObjectPolicy<TService>
+    where TService : class
+    where TImplementation : class, TService
 {
     private readonly IServiceProvider _provider;
     private readonly ObjectFactory _factory;
     private readonly bool _isResettable;
 
-    public DependencyInjectedPolicy(IServiceProvider provider)
+    public DependencyInjectionPooledObjectPolicy(IServiceProvider provider)
     {
         _provider = provider;
         _factory = ActivatorUtilities.CreateFactory(typeof(TImplementation), Type.EmptyTypes);
         _isResettable = typeof(IResettable).IsAssignableFrom(typeof(TImplementation));
     }
 
-    public TDefinition Create() => (TDefinition)_factory(_provider, Array.Empty<object?>());
+    public TService Create() => (TService)_factory(_provider, Array.Empty<object?>());
 
-    public bool Return(TDefinition obj)
+    public bool Return(TService obj)
     {
         if (_isResettable)
         {
