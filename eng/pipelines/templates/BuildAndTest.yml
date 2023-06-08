@@ -11,10 +11,10 @@ parameters:
     type: string
   - name: isWindows
     type: string
-  - name: skipCodeCoverage
+  - name: skipTests
     type: boolean
     default: false
-  - name: skipTests
+  - name: skipQualityGates
     type: boolean
     default: false
   - name: warnAsError
@@ -30,14 +30,8 @@ steps:
   #       Write-Host 'repoTestResultsPath: ${{ parameters.repoTestResultsPath }}'
   #       Write-Host 'isDeltaBuild: ${{ parameters.isDeltaBuild }}'
   #       Write-Host 'isWindows: ${{ parameters.isWindows }}'
-
-  #       Write-Host 'skipCodeCoverage: ${{ parameters.skipCodeCoverage }}'
-  #       Write-Host 'skipCodeCoverage == true: ${{ eq(parameters.skipCodeCoverage, true) }}'
-  #       Write-Host "skipCodeCoverage == 'true': ${{ eq(parameters.skipCodeCoverage, 'true') }}"
-  #       Write-Host 'skipCodeCoverage != true: ${{ ne(parameters.skipCodeCoverage, true) }}'
-  #       Write-Host "skipCodeCoverage != 'true': ${{ ne(parameters.skipCodeCoverage, 'true') }}"
-  #       Write-Host 'running: ${{ and(eq(parameters.isWindows, 'true'), ne(parameters.skipCodeCoverage, true)) }}'
-
+  #       Write-Host 'skipTests: ${{ parameters.skipTests }}'
+  #       Write-Host 'skipQualityGates: ${{ parameters.skipQualityGates }}'
   #       Get-ChildItem env:* | Sort-Object Name  
   #   displayName: Debug
 
@@ -62,7 +56,7 @@ steps:
   - ${{ if ne(parameters.skipTests, 'true') }}:
     - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
               --settings $(Build.SourcesDirectory)/eng/CodeCoverage.config
-              --output ${{ parameters.repoTestResultsPath }}
+              --output ${{ parameters.repoTestResultsPath }}/$(Agent.Os)_$(Agent.JobName).cobertura.xml
               "${{ parameters.buildScript }} -test -configuration ${{ parameters.buildConfig }} /bl:${{ parameters.repoLogPath }}/tests.binlog $(_OfficialBuildIdArgs)"
       displayName: Run tests
 
@@ -78,22 +72,17 @@ steps:
                     Copy-Item -Path $_.FullName -Destination $destination -Force;
                 }
             }
-
       displayName: Copy crash results to logs
       condition: always()
       continueOnError: true
 
-  # Run code coverage reporting and validation on Windows
-  # a) we run a subset of tests on Linux
-  # b) we can only publish a single coverage report,
-  #    see https://learn.microsoft.com/azure/devops/pipelines/tasks/reference/publish-code-coverage-results-v2#is-code-coverage-data-merged-when-multiple-files-are-provided-as-input-to-the-task-or-multiple-tasks-are-used-in-the-pipeline
-  - ${{ if and(eq(parameters.isWindows, 'true'), ne(parameters.skipCodeCoverage, 'true')) }}:
-    - template: \eng\pipelines\templates\TestCoverageReport.yml
-      parameters:
-        isDeltaBuild: ${{ parameters.isDeltaBuild }}
-        repoLogPath: ${{ parameters.repoLogPath }}
-        testResultsPath: ${{ parameters.repoTestResultsPath }}
-        testResultsFile: ${{ parameters.repoTestResultsPath }}/.cobertura.xml
+    - ${{ if ne(parameters.skipQualityGates, 'true') }}:
+      - task: PublishBuildArtifacts@1
+        displayName: Publish coverage results (cobertura.xml)
+        inputs:
+          PathtoPublish: '${{ parameters.repoTestResultsPath }}/$(Agent.Os)_$(Agent.JobName).cobertura.xml'
+          PublishLocation: Container
+          ArtifactName: CodeCoverageResults
 
   - ${{ if eq(parameters.isWindows, 'true') }}:
     - script: ${{ parameters.buildScript }}

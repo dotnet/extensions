@@ -44,7 +44,6 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
-    <RunSettingsFilePath>$(MSBuildThisFileDirectory)\eng\Common.runsettings</RunSettingsFilePath>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <Deterministic>true</Deterministic>
     <Features>debug-determinism</Features>

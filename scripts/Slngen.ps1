@@ -115,7 +115,7 @@ function Invoke-SlngenExe
         $MSBuild
     )
 
-    dotnet tool restore --verbosity minimal
+    dotnet tool restore --verbosity minimal | Out-Null
     $process = Start-Process `
         -FilePath 'dotnet' `
         -ArgumentList @("slngen", "--folders $Folders", "--collapsefolders $Folders", "--ignoreMainProject", "--nologo", "-o $OutSln", "$Globs", "--launch $(!$NoLaunch) $Exclude $ConsoleOutput $MSBuild") `
