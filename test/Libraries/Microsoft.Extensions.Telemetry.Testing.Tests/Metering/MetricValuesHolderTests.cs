@@ -22,19 +22,41 @@ public class MetricValuesHolderTests
         var counterValuesHolder = metricCollector.GetCounterValues<int>(counter.Name);
 
         Assert.NotNull(counterValuesHolder);
-        Assert.Equal(counterValuesHolder.MetricName, counter.Name);
+        Assert.Equal(counterValuesHolder.Instrument.Name, counter.Name);
 
         var histogram = meter.CreateHistogram<int>(Guid.NewGuid().ToString());
         var histgramValuesHolder = metricCollector.GetHistogramValues<int>(histogram.Name);
 
         Assert.NotNull(histgramValuesHolder);
-        Assert.Equal(histgramValuesHolder.MetricName, histogram.Name);
+        Assert.Equal(histgramValuesHolder.Instrument.Name, histogram.Name);
 
         var updownCounter = meter.CreateUpDownCounter<int>(Guid.NewGuid().ToString());
         var updownCounterValuesHolder = metricCollector.GetUpDownCounterValues<int>(updownCounter.Name);
 
         Assert.NotNull(updownCounterValuesHolder);
-        Assert.Equal(updownCounterValuesHolder.MetricName, updownCounter.Name);
+        Assert.Equal(updownCounterValuesHolder.Instrument.Name, updownCounter.Name);
+    }
+
+    [Fact]
+    public void Count()
+    {
+        using var meter = new Meter(Guid.NewGuid().ToString());
+        using var metricCollector = new MetricCollector(meter);
+
+        var counter = meter.CreateCounter<int>(Guid.NewGuid().ToString());
+        var counterValuesHolder = metricCollector.GetCounterValues<int>(counter.Name);
+        counter.Add(1);
+        Assert.Equal(1, counterValuesHolder!.Count);
+
+        var histogram = meter.CreateHistogram<int>(Guid.NewGuid().ToString());
+        var histgramValuesHolder = metricCollector.GetHistogramValues<int>(histogram.Name);
+        histogram.Record(1);
+        histogram.Record(1);
+        Assert.Equal(2, histgramValuesHolder!.Count);
+
+        var updownCounter = meter.CreateUpDownCounter<int>(Guid.NewGuid().ToString());
+        var updownCounterValuesHolder = metricCollector.GetUpDownCounterValues<int>(updownCounter.Name);
+        Assert.Equal(0, updownCounterValuesHolder!.Count);
     }
 
     [Fact]
@@ -134,7 +156,9 @@ public class MetricValuesHolderTests
     [Fact]
     public void ReceiveValue_ThrowsWhenInvalidDimensionValue()
     {
-        var metricValuesHolder = new MetricValuesHolder<int>(TimeProvider.System, AggregationType.Save, Guid.NewGuid().ToString());
+        using var meter = new Meter(Guid.NewGuid().ToString());
+        var instrument = meter.CreateCounter<int>(Guid.NewGuid().ToString());
+        var metricValuesHolder = new MetricValuesHolder<int>(TimeProvider.System, AggregationType.Save, instrument);
 
         var ex = Assert.Throws<InvalidOperationException>(() => metricValuesHolder.ReceiveValue(int.MaxValue, new[] { new KeyValuePair<string, object?>("Dimension1", new object()) }));
         Assert.Equal($"The type {typeof(object).FullName} is not supported as a dimension value type.", ex.Message);
@@ -146,7 +170,9 @@ public class MetricValuesHolderTests
     [Fact]
     public void GetValue_ReturnsCapturedMeasurementValue()
     {
-        var metricValuesHolder = new MetricValuesHolder<int>(System.TimeProvider.System, AggregationType.Save, Guid.NewGuid().ToString());
+        using var meter = new Meter(Guid.NewGuid().ToString());
+        var instrument = meter.CreateCounter<int>(Guid.NewGuid().ToString());
+        var metricValuesHolder = new MetricValuesHolder<int>(System.TimeProvider.System, AggregationType.Save, instrument);
 
         const int Value1 = 1;
         metricValuesHolder.ReceiveValue(Value1, null);
@@ -164,7 +190,9 @@ public class MetricValuesHolderTests
     {
         var recordTime = DateTimeOffset.UtcNow.AddDays(-1);
         var timeProvider = new FakeTimeProvider(recordTime);
-        var metricValuesHolder = new MetricValuesHolder<int>(timeProvider, AggregationType.Save, Guid.NewGuid().ToString());
+        using var meter = new Meter(Guid.NewGuid().ToString());
+        var instrument = meter.CreateCounter<int>(Guid.NewGuid().ToString());
+        var metricValuesHolder = new MetricValuesHolder<int>(timeProvider, AggregationType.Save, instrument);
 
         metricValuesHolder.ReceiveValue(50, null);
 
@@ -175,7 +203,9 @@ public class MetricValuesHolderTests
     [Fact]
     public void GetDimension_RetursDimensionValue()
     {
-        var metricValuesHolder = new MetricValuesHolder<int>(TimeProvider.System, AggregationType.Save, Guid.NewGuid().ToString());
+        using var meter = new Meter(Guid.NewGuid().ToString());
+        var instrument = meter.CreateCounter<int>(Guid.NewGuid().ToString());
+        var metricValuesHolder = new MetricValuesHolder<int>(TimeProvider.System, AggregationType.Save, instrument);
 
         var intDimension = "int_dimension";
         int intVal = 11111;
@@ -206,8 +236,10 @@ public class MetricValuesHolderTests
     [Fact]
     public void ReceiveValue_ThrowsWhenInvalidAggregationTypeIsUsed()
     {
+        using var meter = new Meter(Guid.NewGuid().ToString());
+        var instrument = meter.CreateCounter<int>(Guid.NewGuid().ToString());
         AggregationType invalidAggregationType = (AggregationType)111;
-        var metricValuesHolder = new MetricValuesHolder<int>(System.TimeProvider.System, invalidAggregationType, Guid.NewGuid().ToString());
+        var metricValuesHolder = new MetricValuesHolder<int>(System.TimeProvider.System, invalidAggregationType, instrument);
 
         var ex = Assert.Throws<InvalidOperationException>(() => metricValuesHolder.ReceiveValue(50, new KeyValuePair<string, object?>[0].AsSpan()));
         Assert.Equal($"Aggregation type {invalidAggregationType} is not supported.", ex.Message);

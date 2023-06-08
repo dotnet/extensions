@@ -79,37 +79,37 @@ public partial class MetricCollector
         if (measurementValueType == typeof(int))
         {
             var metricsValuesDictionary = (ConcurrentDictionary<string, MetricValuesHolder<int>>)allValuesDictionary[typeof(int)];
-            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<int>(_timeProvider, aggregationType, instrument.Name));
+            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<int>(_timeProvider, aggregationType, instrument));
         }
         else if (measurementValueType == typeof(byte))
         {
             var metricsValuesDictionary = (ConcurrentDictionary<string, MetricValuesHolder<byte>>)allValuesDictionary[typeof(byte)];
-            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<byte>(_timeProvider, aggregationType, instrument.Name));
+            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<byte>(_timeProvider, aggregationType, instrument));
         }
         else if (measurementValueType == typeof(short))
         {
             var metricsValuesDictionary = (ConcurrentDictionary<string, MetricValuesHolder<short>>)allValuesDictionary[typeof(short)];
-            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<short>(_timeProvider, aggregationType, instrument.Name));
+            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<short>(_timeProvider, aggregationType, instrument));
         }
         else if (measurementValueType == typeof(long))
         {
             var metricsValuesDictionary = (ConcurrentDictionary<string, MetricValuesHolder<long>>)allValuesDictionary[typeof(long)];
-            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<long>(_timeProvider, aggregationType, instrument.Name));
+            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<long>(_timeProvider, aggregationType, instrument));
         }
         else if (measurementValueType == typeof(double))
         {
             var metricsValuesDictionary = (ConcurrentDictionary<string, MetricValuesHolder<double>>)allValuesDictionary[typeof(double)];
-            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<double>(_timeProvider, aggregationType, instrument.Name));
+            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<double>(_timeProvider, aggregationType, instrument));
         }
         else if (measurementValueType == typeof(float))
         {
             var metricsValuesDictionary = (ConcurrentDictionary<string, MetricValuesHolder<float>>)allValuesDictionary[typeof(float)];
-            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<float>(_timeProvider, aggregationType, instrument.Name));
+            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<float>(_timeProvider, aggregationType, instrument));
         }
         else if (measurementValueType == typeof(decimal))
         {
             var metricsValuesDictionary = (ConcurrentDictionary<string, MetricValuesHolder<decimal>>)allValuesDictionary[typeof(decimal)];
-            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<decimal>(_timeProvider, aggregationType, instrument.Name));
+            _ = metricsValuesDictionary.GetOrAdd(instrument.Name, new MetricValuesHolder<decimal>(_timeProvider, aggregationType, instrument));
         }
     }
 
