@@ -8,6 +8,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -135,14 +136,15 @@ public static class HttpClientLoggingExtensions
         _ = builder.Services
             .AddHttpRouteProcessor()
             .AddHttpHeadersRedactor()
-            .AddOutgoingRequestContext()
-            .RemoveAll<IHttpMessageHandlerBuilderFilter>();
+            .AddOutgoingRequestContext();
 
         builder.Services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
         builder.Services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
 
         _ = builder.ConfigureHttpMessageHandlerBuilder(b =>
         {
+            RemoveDefaultLogging(b);
+
             if (b.AdditionalHandlers.Any(handler => handler is HttpLoggingHandler))
             {
                 Throw.InvalidOperationException(HandlerAddedTwiceExceptionMessage);
@@ -177,13 +179,14 @@ public static class HttpClientLoggingExtensions
         _ = builder.Services
             .AddHttpRouteProcessor()
             .AddHttpHeadersRedactor()
-            .AddOutgoingRequestContext()
-            .RemoveAll<IHttpMessageHandlerBuilderFilter>();
+            .AddOutgoingRequestContext();
 
         builder.Services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
         builder.Services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
 
-        return builder.AddHttpMessageHandler(ConfigureHandler(builder));
+        return builder
+            .ConfigureHttpMessageHandlerBuilder(RemoveDefaultLogging)
+            .AddHttpMessageHandler(ConfigureHandler(builder));
     }
 
     /// <summary>
@@ -211,13 +214,14 @@ public static class HttpClientLoggingExtensions
         _ = builder.Services
             .AddHttpRouteProcessor()
             .AddHttpHeadersRedactor()
-            .AddOutgoingRequestContext()
-            .RemoveAll<IHttpMessageHandlerBuilderFilter>();
+            .AddOutgoingRequestContext();
 
         builder.Services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
         builder.Services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
 
-        return builder.AddHttpMessageHandler(ConfigureHandler(builder));
+        return builder
+            .ConfigureHttpMessageHandlerBuilder(RemoveDefaultLogging)
+            .AddHttpMessageHandler(ConfigureHandler(builder));
     }
 
     /// <summary>
@@ -234,6 +238,19 @@ public static class HttpClientLoggingExtensions
         _ = services.AddActivatedSingleton<IHttpClientLogEnricher, T>();
 
         return services;
+    }
+
+    private static void RemoveDefaultLogging(HttpMessageHandlerBuilder b)
+    {
+        // Remove the logger handlers added by the filter. Fortunately, they're both public, so it is a simple test on the type.
+        for (var i = b.AdditionalHandlers.Count - 1; i >= 0; i--)
+        {
+            var handlerType = b.AdditionalHandlers[i].GetType();
+            if (handlerType == typeof(LoggingScopeHttpMessageHandler) || handlerType == typeof(LoggingHttpMessageHandler))
+            {
+                b.AdditionalHandlers.RemoveAt(i);
+            }
+        }
     }
 
     /// <summary>
