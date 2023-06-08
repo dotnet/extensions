@@ -16,63 +16,80 @@ public static class KubernetesProbesExtensions
     /// <summary>
     /// Registers liveness, startup and readiness probes using the default options.
     /// </summary>
-    /// <param name="builder">The health checks builder.</param>
-    /// <returns>The same builder, for chaining.</returns>
-    public static IHealthChecksBuilder AddKubernetesProbes(this IHealthChecksBuilder builder)
-    {
-        return builder.AddKubernetesProbes((_) => { });
-    }
+    /// <param name="services">The dependency injection container to add the probe to.</param>
+    /// <returns>The value of <paramref name="services"/>.</returns>
+    public static IServiceCollection AddKubernetesProbes(this IServiceCollection services)
+        => services.AddKubernetesProbes((_) => { });
 
     /// <summary>
     /// Registers liveness, startup and readiness probes using the configured options.
     /// </summary>
-    /// <param name="builder">The health checks builder.</param>
+    /// <param name="services">The dependency injection container to add the probe to.</param>
     /// <param name="section">Configuration for <see cref="KubernetesProbesOptions"/>.</param>
-    /// <returns>The same builder, for chaining.</returns>
-    public static IHealthChecksBuilder AddKubernetesProbes(this IHealthChecksBuilder builder, IConfigurationSection section)
+    /// <returns>The value of <paramref name="services"/>.</returns>
+    public static IServiceCollection AddKubernetesProbes(this IServiceCollection services, IConfigurationSection section)
     {
-        _ = Throw.IfNull(builder);
+        _ = Throw.IfNull(services);
         _ = Throw.IfNull(section);
 
-        return builder.AddKubernetesProbes(section.Bind);
+        return services.AddKubernetesProbes(section.Bind);
     }
 
     /// <summary>
     /// Registers liveness, startup and readiness probes using the configured options.
     /// </summary>
-    /// <param name="builder">The health checks builder.</param>
+    /// <param name="services">The dependency injection container to add the probe to.</param>
     /// <param name="configure">Configure action for <see cref="KubernetesProbesOptions"/>.</param>
-    /// <returns>The same builder, for chaining.</returns>
-    public static IHealthChecksBuilder AddKubernetesProbes(this IHealthChecksBuilder builder, Action<KubernetesProbesOptions> configure)
+    /// <returns>The value of <paramref name="services"/>.</returns>
+    public static IServiceCollection AddKubernetesProbes(this IServiceCollection services, Action<KubernetesProbesOptions> configure)
     {
-        _ = Throw.IfNull(builder);
+        _ = Throw.IfNull(services);
         _ = Throw.IfNull(configure);
 
         var wrapperOptions = new KubernetesProbesOptions();
 
-        _ = builder.Services
-            .AddTcpEndpointHealthCheck(ProbeTags.Liveness, (options) =>
+        return services
+            .AddTcpEndpointHealthCheck(ProbeTags.Liveness, options =>
             {
                 wrapperOptions.LivenessProbe = options;
                 configure(wrapperOptions);
-                var originalPredicate = options.PublishingPredicate;
-                options.PublishingPredicate = (check) => check.Tags.Contains(ProbeTags.Liveness) && originalPredicate(check);
+                var originalPredicate = options.FilterChecks;
+                if (originalPredicate == null)
+                {
+                    options.FilterChecks = (check) => check.Tags.Contains(ProbeTags.Liveness);
+                }
+                else
+                {
+                    options.FilterChecks = (check) => check.Tags.Contains(ProbeTags.Liveness) && originalPredicate(check);
+                }
             })
-            .AddTcpEndpointHealthCheck(ProbeTags.Startup, (options) =>
+            .AddTcpEndpointHealthCheck(ProbeTags.Startup, options =>
             {
                 wrapperOptions.StartupProbe = options;
                 configure(wrapperOptions);
-                var originalPredicate = options.PublishingPredicate;
-                options.PublishingPredicate = (check) => check.Tags.Contains(ProbeTags.Startup) && originalPredicate(check);
+                var originalPredicate = options.FilterChecks;
+                if (originalPredicate == null)
+                {
+                    options.FilterChecks = (check) => check.Tags.Contains(ProbeTags.Startup);
+                }
+                else
+                {
+                    options.FilterChecks = (check) => check.Tags.Contains(ProbeTags.Startup) && originalPredicate(check);
+                }
             })
             .AddTcpEndpointHealthCheck(ProbeTags.Readiness, (options) =>
             {
                 wrapperOptions.ReadinessProbe = options;
                 configure(wrapperOptions);
-                var originalPredicate = options.PublishingPredicate;
-                options.PublishingPredicate = (check) => check.Tags.Contains(ProbeTags.Readiness) && originalPredicate(check);
+                var originalPredicate = options.FilterChecks;
+                if (originalPredicate == null)
+                {
+                    options.FilterChecks = (check) => check.Tags.Contains(ProbeTags.Readiness);
+                }
+                else
+                {
+                    options.FilterChecks = (check) => check.Tags.Contains(ProbeTags.Readiness) && originalPredicate(check);
+                }
             });
-
-        return builder;
     }
 }

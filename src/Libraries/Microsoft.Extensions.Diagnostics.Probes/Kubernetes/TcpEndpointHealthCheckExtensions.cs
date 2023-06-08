@@ -44,11 +44,11 @@ internal static class TcpEndpointHealthCheckExtensions
         _ = services.AddHealthChecks();
 
         _ = services
-            .AddValidatedOptions<TcpEndpointHealthCheckOptions, TcpEndpointHealthCheckOptionsValidator>(name);
+            .AddValidatedOptions<KubernetesProbesOptions.EndpointOptions, EndpointOptionsValidator>(name);
 
         _ = services.AddSingleton<IHostedService>(provider =>
         {
-            var options = provider.GetRequiredService<IOptionsMonitor<TcpEndpointHealthCheckOptions>>().Get(name);
+            var options = provider.GetRequiredService<IOptionsMonitor<KubernetesProbesOptions.EndpointOptions>>().Get(name);
             return ActivatorUtilities.CreateInstance<TcpEndpointHealthCheckService>(provider, options);
         });
 
@@ -60,11 +60,11 @@ internal static class TcpEndpointHealthCheckExtensions
     /// if service is considered as healthy <see cref="IHealthCheck"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add the services to.</param>
-    /// <param name="configure">Configuration for <see cref="TcpEndpointHealthCheckOptions"/>.</param>
+    /// <param name="configure">Configuration for <see cref="KubernetesProbesOptions.EndpointOptions"/>.</param>
     /// <returns>The same instance of the <see cref="IServiceCollection"/> for chaining.</returns>
     internal static IServiceCollection AddTcpEndpointHealthCheck(
         this IServiceCollection services,
-        Action<TcpEndpointHealthCheckOptions> configure)
+        Action<KubernetesProbesOptions.EndpointOptions> configure)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configure);
@@ -80,12 +80,12 @@ internal static class TcpEndpointHealthCheckExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add the services to.</param>
     /// <param name="name">Name for the options.</param>
-    /// <param name="configure">Configuration for <see cref="TcpEndpointHealthCheckOptions"/>.</param>
+    /// <param name="configure">Configuration for <see cref="KubernetesProbesOptions.EndpointOptions"/>.</param>
     /// <returns>The same instance of the <see cref="IServiceCollection"/> for chaining.</returns>
     internal static IServiceCollection AddTcpEndpointHealthCheck(
         this IServiceCollection services,
         string name,
-        Action<TcpEndpointHealthCheckOptions> configure)
+        Action<KubernetesProbesOptions.EndpointOptions> configure)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configure);
@@ -100,7 +100,7 @@ internal static class TcpEndpointHealthCheckExtensions
     /// if service is considered as healthy <see cref="IHealthCheck"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add the services to.</param>
-    /// <param name="configurationSection">Configuration for <see cref="TcpEndpointHealthCheckOptions"/>.</param>
+    /// <param name="configurationSection">Configuration for <see cref="KubernetesProbesOptions.EndpointOptions"/>.</param>
     /// <returns>The same instance of the <see cref="IServiceCollection"/> for chaining.</returns>
     internal static IServiceCollection AddTcpEndpointHealthCheck(
         this IServiceCollection services,
@@ -109,7 +109,7 @@ internal static class TcpEndpointHealthCheckExtensions
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configurationSection);
 
-        _ = services.Configure<TcpEndpointHealthCheckOptions>(configurationSection);
+        _ = services.Configure<KubernetesProbesOptions.EndpointOptions>(configurationSection);
 
         return services.AddTcpEndpointHealthCheck();
     }
@@ -120,7 +120,7 @@ internal static class TcpEndpointHealthCheckExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add the services to.</param>
     /// <param name="name">Name for the options.</param>
-    /// <param name="configurationSection">Configuration for <see cref="TcpEndpointHealthCheckOptions"/>.</param>
+    /// <param name="configurationSection">Configuration for <see cref="KubernetesProbesOptions.EndpointOptions"/>.</param>
     /// <returns>The same instance of the <see cref="IServiceCollection"/> for chaining.</returns>
     internal static IServiceCollection AddTcpEndpointHealthCheck(
         this IServiceCollection services,
@@ -130,7 +130,7 @@ internal static class TcpEndpointHealthCheckExtensions
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configurationSection);
 
-        _ = services.Configure<TcpEndpointHealthCheckOptions>(name, configurationSection);
+        _ = services.Configure<KubernetesProbesOptions.EndpointOptions>(name, configurationSection);
 
         return services.AddTcpEndpointHealthCheck(name);
     }

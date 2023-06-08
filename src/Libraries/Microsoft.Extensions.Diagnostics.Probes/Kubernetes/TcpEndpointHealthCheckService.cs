@@ -18,14 +18,14 @@ namespace Microsoft.Extensions.Diagnostics.Probes;
 /// </summary>
 internal sealed class TcpEndpointHealthCheckService : BackgroundService
 {
-    internal TimeProvider TimeProvider = TimeProvider.System;
+    internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
     private readonly ILogger<TcpEndpointHealthCheckService> _logger;
     private readonly HealthCheckService _healthCheckService;
-    private readonly TcpEndpointHealthCheckOptions _options;
+    private readonly KubernetesProbesOptions.EndpointOptions _options;
     private readonly TcpListener _listener;
 
-    public TcpEndpointHealthCheckService(ILogger<TcpEndpointHealthCheckService> logger, HealthCheckService healthCheckService, TcpEndpointHealthCheckOptions options)
+    public TcpEndpointHealthCheckService(ILogger<TcpEndpointHealthCheckService> logger, HealthCheckService healthCheckService, KubernetesProbesOptions.EndpointOptions options)
     {
         _logger = logger;
         _healthCheckService = healthCheckService;
@@ -38,7 +38,7 @@ internal sealed class TcpEndpointHealthCheckService : BackgroundService
     {
         try
         {
-            var report = await _healthCheckService.CheckHealthAsync(_options.PublishingPredicate, cancellationToken).ConfigureAwait(false);
+            var report = await _healthCheckService.CheckHealthAsync(_options.FilterChecks, cancellationToken).ConfigureAwait(false);
             if (report.Status == HealthStatus.Healthy)
             {
                 if (!_listener.Server.IsBound)
