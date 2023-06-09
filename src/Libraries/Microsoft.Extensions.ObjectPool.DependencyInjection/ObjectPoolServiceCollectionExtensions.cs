@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -76,10 +77,11 @@ public static class ObjectPoolServiceCollectionExtensions
         where TService : class
         where TImplementation : class, TService
     {
-        // Register a PoolOption instance specific to the type
+        _ = Throw.IfNull(services);
 
         if (configureOptions != null)
         {
+            // Register a PoolOption instance specific to the type
             _ = services.ConfigurePool<TService>(configureOptions);
         }
 

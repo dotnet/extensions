@@ -12,6 +12,13 @@ namespace Microsoft.Extensions.ObjectPool.Test;
 public class DependencyInjectionExtensionsTest
 {
     [Fact]
+    public void AddPooled_Throws_WhenNullService()
+    {
+        Assert.Throws<ArgumentNullException>(() => ObjectPoolServiceCollectionExtensions.AddPooled<TestClass>(null!));
+        Assert.Throws<ArgumentNullException>(() => ObjectPoolServiceCollectionExtensions.AddPooled<ITestClass, TestClass>(null!));
+    }
+
+    [Fact]
     public void ConfiguresPoolOptions()
     {
         var services = new ServiceCollection()
