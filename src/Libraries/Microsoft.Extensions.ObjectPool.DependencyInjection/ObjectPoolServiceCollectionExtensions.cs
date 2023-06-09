@@ -20,7 +20,7 @@ public static class ObjectPoolServiceCollectionExtensions
     /// Adds an <see cref="ObjectPool{TService}"/> and lets DI return scoped instances of TService.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
-    /// <param name="configureOptions">The action used to configure the options of the pool.</param>
+    /// <param name="configure">The action used to configure the options of the pool.</param>
     /// <typeparam name="TService">The type of objects to pool.</typeparam>
     /// <returns>Provided service collection.</returns>
     /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
@@ -30,17 +30,17 @@ public static class ObjectPoolServiceCollectionExtensions
     /// </remarks>
     public static IServiceCollection AddPooled<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(
         this IServiceCollection services,
-        Action<PoolOptions>? configureOptions = null)
+        Action<PoolOptions>? configure = null)
         where TService : class
     {
-        return services.AddPooledInternal<TService, TService>(configureOptions);
+        return services.AddPooledInternal<TService, TService>(configure);
     }
 
     /// <summary>
     /// Adds an <see cref="ObjectPool{TService}"/> and let DI return scoped instances of TService.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
-    /// <param name="configureOptions">Configuration of the pool.</param>
+    /// <param name="configure">Configuration of the pool.</param>
     /// <typeparam name="TService">The type of objects to pool.</typeparam>
     /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
     /// <returns>Provided service collection.</returns>
@@ -51,11 +51,11 @@ public static class ObjectPoolServiceCollectionExtensions
     /// </remarks>
     public static IServiceCollection AddPooled<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
         this IServiceCollection services,
-        Action<PoolOptions>? configureOptions = null)
+        Action<PoolOptions>? configure = null)
         where TService : class
         where TImplementation : class, TService
     {
-        return services.AddPooledInternal<TService, TImplementation>(configureOptions);
+        return services.AddPooledInternal<TService, TImplementation>(configure);
     }
 
     /// <summary>
@@ -63,26 +63,26 @@ public static class ObjectPoolServiceCollectionExtensions
     /// </summary>
     /// <typeparam name="TService">The type of objects to pool.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="configureOptions">The action used to configure the options.</param>
+    /// <param name="configure">The action used to configure the options.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection ConfigurePool<TService>(this IServiceCollection services, Action<PoolOptions> configureOptions)
+    public static IServiceCollection ConfigurePool<TService>(this IServiceCollection services, Action<PoolOptions> configure)
         where TService : class
     {
-        return services.Configure<PoolOptions>(typeof(TService).FullName, configureOptions);
+        return services.Configure<PoolOptions>(typeof(TService).FullName, configure);
     }
 
     private static IServiceCollection AddPooledInternal<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
         this IServiceCollection services,
-        Action<PoolOptions>? configureOptions)
+        Action<PoolOptions>? configure)
         where TService : class
         where TImplementation : class, TService
     {
         _ = Throw.IfNull(services);
 
-        if (configureOptions != null)
+        if (configure != null)
         {
             // Register a PoolOption instance specific to the type
-            _ = services.ConfigurePool<TService>(configureOptions);
+            _ = services.ConfigurePool<TService>(configure);
         }
 
         return services
