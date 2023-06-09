@@ -22,14 +22,17 @@ using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.AspNetCore.Telemetry.Http.Logging;
 
-internal sealed class HttpRedactionHandler : IHttpLoggingInterceptor
+internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
 {
+    private const string RequestStartTimestamp = "RequestStartTimestamp";
+    private const string Durration = "duration";
+
     // These three fields are "internal" solely for testing purposes:
     internal TimeProvider TimeProvider = TimeProvider.System;
 
     private readonly IncomingPathLoggingMode _requestPathLogMode;
     private readonly HttpRouteParameterRedactionMode _parameterRedactionMode;
-    private readonly ILogger<HttpRedactionHandler> _logger;
+    private readonly ILogger<HttpLoggingRedactionInterceptor> _logger;
     private readonly IHttpRouteParser _httpRouteParser;
     private readonly IHttpRouteFormatter _httpRouteFormatter;
     private readonly IIncomingHttpRouteUtility _httpRouteUtility;
@@ -39,9 +42,9 @@ internal sealed class HttpRedactionHandler : IHttpLoggingInterceptor
     private readonly IHttpLogEnricher[] _enrichers;
     private readonly FrozenDictionary<string, DataClassification> _parametersToRedactMap;
 
-    public HttpRedactionHandler(
+    public HttpLoggingRedactionInterceptor(
         IOptions<LoggingRedactionOptions> options,
-        ILogger<HttpRedactionHandler> logger,
+        ILogger<HttpLoggingRedactionInterceptor> logger,
         IEnumerable<IHttpLogEnricher> httpLogEnrichers,
         IHttpRouteParser httpRouteParser,
         IHttpRouteFormatter httpRouteFormatter,
@@ -75,17 +78,20 @@ internal sealed class HttpRedactionHandler : IHttpLoggingInterceptor
         {
             logContext.LoggingFields = HttpLoggingFields.None;
         }
+        else if (logContext.IsAnyEnabled(HttpLoggingFields.Response))
+        {
+            // We'll need this for the response.
+            // TODO: Should we put a state filed on logContext?
+            context.Items[RequestStartTimestamp] = TimeProvider.GetTimestamp();
+        }
 
         // Don't enrich if we're not going to log any part of the request
-        if ((HttpLoggingFields.Request & logContext.LoggingFields) == HttpLoggingFields.None)
+        if (!logContext.IsAnyEnabled(HttpLoggingFields.Request))
         {
             return;
         }
 
-        // TODO: Should we put a state filed on logContext?
-        context.Items["RequestStartTimestamp"] = TimeProvider.GetTimestamp();
-
-        if (logContext.LoggingFields.HasFlag(HttpLoggingFields.RequestPath))
+        if (logContext.TryOverride(HttpLoggingFields.RequestPath))
         {
             string path = TelemetryConstants.Unknown;
 
@@ -126,42 +132,33 @@ internal sealed class HttpRedactionHandler : IHttpLoggingInterceptor
                 path = request.Path.Value!;
             }
 
-            logContext.Add("path", path);
-
-            // We've handled the path, turn off the default logging
-            logContext.LoggingFields &= ~HttpLoggingFields.RequestPath;
+            logContext.Add(nameof(request.Path), path);
         }
 
-        if (logContext.LoggingFields.HasFlag(HttpLoggingFields.RequestHeaders))
+        if (logContext.TryOverride(HttpLoggingFields.RequestHeaders))
         {
             // TODO: HttpLoggingOptions.Request/ResponseHeaders are ignored which could be confusing.
             // Do we try to reconcile that with LoggingRedactionOptions.RequestHeadersDataClasses?
             _requestHeadersReader.Read(context.Request.Headers, logContext);
-
-            // We've handled the request headers, turn off the default logging
-            logContext.LoggingFields &= ~HttpLoggingFields.RequestHeaders;
         }
     }
 
     public void OnResponse(HttpLoggingContext logContext)
     {
         // Don't enrich if we're not going to log any part of the response
-        if ((HttpLoggingFields.Response & logContext.LoggingFields) == HttpLoggingFields.None)
+        if (!logContext.IsAnyEnabled(HttpLoggingFields.Response))
         {
             return;
         }
 
         var context = logContext.HttpContext;
 
-        if (logContext.LoggingFields.HasFlag(HttpLoggingFields.ResponseHeaders))
+        if (logContext.TryOverride(HttpLoggingFields.ResponseHeaders))
         {
             _responseHeadersReader.Read(context.Response.Headers, logContext);
-
-            // We've handled the response headers, turn off the default logging
-            logContext.LoggingFields &= ~HttpLoggingFields.ResponseHeaders;
         }
 
-        if (_enrichers.Length == 0)
+        if (_enrichers.Length > 0)
         {
             var enrichmentBag =  LogMethodHelper.GetHelper();
             foreach (var enricher in _enrichers)
@@ -169,16 +166,18 @@ internal sealed class HttpRedactionHandler : IHttpLoggingInterceptor
                 enricher.Enrich(enrichmentBag, context.Request, context.Response);
             }
 
-            foreach (var (key, value) in enrichmentBag)
+            foreach (var pair in enrichmentBag)
             {
-                logContext.Add(key, value);
+                logContext.Parameters.Add(pair);
             }
+            LogMethodHelper.ReturnHelper(enrichmentBag);
         }
 
         // Catching duration at the end:
-        var startTime = (long)context.Items["RequestStartTimestamp"]!;
+        // Note this does not include the time spent writing the response body.
+        var startTime = (long)context.Items[RequestStartTimestamp]!;
         var duration = (long)TimeProvider.GetElapsedTime(startTime, TimeProvider.GetTimestamp()).TotalMilliseconds;
-        logContext.Add("duration", duration);
+        logContext.Add(Durration, duration);
 
         // TODO: What about the exception case?
     }
