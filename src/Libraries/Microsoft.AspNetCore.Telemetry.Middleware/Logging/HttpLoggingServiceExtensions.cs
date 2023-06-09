@@ -26,13 +26,19 @@ namespace Microsoft.AspNetCore.Telemetry;
 public static class HttpLoggingServiceExtensions
 {
 #if NET8_0_OR_GREATER
+    /// <summary>
+    /// Enables redaction of HTTP logging. See <see cref="AddHttpLogging(IServiceCollection)"/>.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configureRedaction">Configures the redaction options.</param>
+    /// <returns>The original service collection.</returns>
     public static IServiceCollection AddHttpLoggingRedaction(IServiceCollection services, Action<LoggingRedactionOptions> configureRedaction)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configureRedaction);
 
         _ = services.Configure(configureRedaction)
-            .AddSingleton<IHttpLoggingInterceptor, HttpRedactionHandler>();
+            .AddSingleton<IHttpLoggingInterceptor, HttpLoggingRedactionInterceptor>();
 
         return services;
     }
