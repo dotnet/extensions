@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.Extensions.Diagnostics.HealthChecks.Core.Tests;
+namespace Microsoft.Extensions.Diagnostics.HealthChecks.Common.Tests;
 
 public class ApplicationLifecycleHealthCheckTest
 {

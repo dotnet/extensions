@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.Extensions.Diagnostics.HealthChecks.Core.Tests;
+namespace Microsoft.Extensions.Diagnostics.HealthChecks.Common.Tests;
 
 public class ManualHealthCheckExtensionsTest
 {
@@ -17,7 +17,7 @@ public class ManualHealthCheckExtensionsTest
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddHealthChecks().AddManualHealthCheck();
 
-        AssertAddedHealthCheck<ManualHealthCheckService>(serviceCollection, "ManualHealthCheck");
+        AssertAddedHealthCheck<ManualHealthCheckService>(serviceCollection, "Manual");
     }
 
     [Fact]
@@ -26,7 +26,7 @@ public class ManualHealthCheckExtensionsTest
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddHealthChecks().AddManualHealthCheck("test1", "test2");
 
-        AssertAddedHealthCheck<ManualHealthCheckService>(serviceCollection, "ManualHealthCheck");
+        AssertAddedHealthCheck<ManualHealthCheckService>(serviceCollection, "Manual");
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class ManualHealthCheckExtensionsTest
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddHealthChecks().AddManualHealthCheck(new List<string> { "test1", "test2" });
 
-        AssertAddedHealthCheck<ManualHealthCheckService>(serviceCollection, "ManualHealthCheck");
+        AssertAddedHealthCheck<ManualHealthCheckService>(serviceCollection, "Manual");
     }
 
     [Fact]

@@ -10,7 +10,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
-public static partial class CoreHealthChecksExtensions
+public static partial class CommonHealthChecksExtensions
 {
     /// <summary>
     /// Registers a health check publisher which emits telemetry representing the application's health.

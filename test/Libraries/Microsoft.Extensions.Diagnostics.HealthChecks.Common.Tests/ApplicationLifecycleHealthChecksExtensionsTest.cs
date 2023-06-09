@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Diagnostics.HealthChecks.Core.Tests;
+namespace Microsoft.Extensions.Diagnostics.HealthChecks.Common.Tests;
 
 public class ApplicationLifecycleHealthChecksExtensionsTest
 {
@@ -59,7 +59,7 @@ public class ApplicationLifecycleHealthChecksExtensionsTest
         foreach (var r in registrations)
         {
             Assert.True(r.Factory(serviceProvider) is T);
-            Assert.Equal("ApplicationLifecycleHealthCheck", r.Name);
+            Assert.Equal("ApplicationLifecycle", r.Name);
         }
     }
 }

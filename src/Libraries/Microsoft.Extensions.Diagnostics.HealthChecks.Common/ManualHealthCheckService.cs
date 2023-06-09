@@ -14,9 +14,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 /// </remarks>
 internal sealed class ManualHealthCheckService : IHealthCheck
 {
-    private readonly IManualHealthCheckTracker _tracker;
+    private readonly ManualHealthCheckTracker _tracker;
 
-    public ManualHealthCheckService(IManualHealthCheckTracker tracker)
+    public ManualHealthCheckService(ManualHealthCheckTracker tracker)
     {
         _tracker = tracker;
     }
