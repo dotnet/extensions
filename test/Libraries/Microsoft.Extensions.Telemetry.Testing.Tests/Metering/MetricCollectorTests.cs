@@ -16,10 +16,11 @@ public partial class MetricCollectorTests
     {
         Assert.Throws<ArgumentNullException>(() => new MetricCollector((Meter)null!));
         Assert.Throws<ArgumentNullException>(() => new MetricCollector((IEnumerable<string>)null!));
+        Assert.Throws<ArgumentNullException>(() => new MetricCollector((Instrument)null!));
     }
 
     [Fact]
-    public void Mesuarements_AreFilteredOut_WithMeterNameFilter()
+    public void Measurements_AreFilteredOut_WithMeterNameFilter()
     {
         using var meter1 = new Meter(Guid.NewGuid().ToString());
         using var meter2 = new Meter(Guid.NewGuid().ToString());
@@ -53,7 +54,32 @@ public partial class MetricCollectorTests
     }
 
     [Fact]
-    public void Mesuarements_AreFilteredOut_WithMeterFilter()
+    public void Measurements_SingleInstrument()
+    {
+        var meterName = Guid.NewGuid().ToString();
+        using var meter1 = new Meter(meterName);
+        using var meter2 = new Meter(meterName);
+
+        const int IntValue1 = 123459;
+        const int IntValue2 = 987654;
+
+        var ctr1 = meter1.CreateCounter<int>("int_counter1");
+        var ctr2 = meter2.CreateCounter<int>("int_counter2");
+
+        using var metricCollector = new MetricCollector(ctr2);
+
+        ctr1.Add(IntValue1);
+        ctr2.Add(IntValue2);
+
+        var x = metricCollector.GetAllCounters<int>();
+
+        // Single measurement is captured
+        Assert.Equal(1, metricCollector.Count);
+        Assert.Equal(IntValue2, metricCollector.GetCounterValue<int>("int_counter2"));
+    }
+
+    [Fact]
+    public void Measurements_AreFilteredOut_WithMeterFilter()
     {
         var meterName = Guid.NewGuid().ToString();
         using var meter1 = new Meter(meterName);
