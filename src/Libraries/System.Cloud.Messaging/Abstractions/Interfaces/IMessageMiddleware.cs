@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 namespace System.Cloud.Messaging;
 
 /// <summary>
-/// Interface for a middleware which uses <see cref="MessageContext"/> and the next <see cref="MessageDelegate"/> in the pipeline to process the message.
+/// Interface for a middleware that uses <see cref="MessageContext"/> and the next <see cref="MessageDelegate"/> in the pipeline to process the message.
 /// </summary>
 /// <remarks>
-/// Inspired from <see href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware">ASP.NET Core Middleware</see> which uses HttpContext and the next RequestDelegate in the pipeline.
+/// Inspired from <see href="https://learn.microsoft.com/aspnet/core/fundamentals/middleware">ASP.NET Core Middleware</see>, which uses HttpContext and the next RequestDelegate in the pipeline.
 /// </remarks>
 public interface IMessageMiddleware
 {

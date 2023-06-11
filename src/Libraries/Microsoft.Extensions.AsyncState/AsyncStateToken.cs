@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.Extensions.AsyncState;
 
 /// <summary>
-/// Async state token representing a registered context wihtin the asynchornous state.
+/// Async state token representing a registered context within the asynchronous state.
 /// </summary>
 public readonly struct AsyncStateToken : IEquatable<AsyncStateToken>
 {
@@ -21,7 +21,7 @@ public readonly struct AsyncStateToken : IEquatable<AsyncStateToken>
     /// Determines whether the specified object is equal to the current async state token.
     /// </summary>
     /// <param name="obj">The object to compare.</param>
-    /// <returns><see langword="true"/> If the specified object is identical to the current async state token; otherwise, <see langword="false" />.</returns>
+    /// <returns><see langword="true"/> if the specified object is identical to the current async state token; otherwise, <see langword="false" />.</returns>
     public override bool Equals(object? obj)
     {
         return obj is AsyncStateToken token && Equals(token);
@@ -31,7 +31,7 @@ public readonly struct AsyncStateToken : IEquatable<AsyncStateToken>
     /// Determines whether this async state token and a specified async state token are identical.
     /// </summary>
     /// <param name="other">The other async state token.</param>
-    /// <returns><see langword="true"/> If the two async state tokens are identical; otherwise, <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the two async state tokens are identical; otherwise, <see langword="false"/>.</returns>
     public bool Equals(AsyncStateToken other)
     {
         return Index == other.Index;

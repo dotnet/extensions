@@ -16,11 +16,11 @@ namespace Microsoft.Extensions.ExtraAnalyzers.Utilities;
 internal static class SyntaxNodeExtensions
 {
     /// <summary>
-    /// Finds closest ancestor by syntax kind.
+    /// Finds the closest ancestor by syntax kind.
     /// </summary>
-    /// <param name="node">Start node.</param>
-    /// <param name="kind">Kind to search by.</param>
-    /// <returns>Found node or null.</returns>
+    /// <param name="node">The start node.</param>
+    /// <param name="kind">The kind to search by.</param>
+    /// <returns>The found node or <see langword="null" />.</returns>
     public static SyntaxNode? GetFirstAncestorOfSyntaxKind(this SyntaxNode node, SyntaxKind kind)
     {
         var n = node.Parent;
@@ -98,7 +98,7 @@ internal static class SyntaxNodeExtensions
     /// <param name="semanticModel">The semantic model.</param>
     /// <param name="expectedFullMethodNames">Expected full method names.</param>
     /// <param name="typesToStopTraversing">Root node types.</param>
-    /// <returns>Found invocation node or null.</returns>
+    /// <returns>Found invocation node or <see langword="null" />.</returns>
     public static SyntaxNode? FindNodeInTreeUpToSpecifiedParentByMethodName(
         this SyntaxNode nodeToStart,
         SemanticModel semanticModel,

@@ -48,7 +48,7 @@ internal sealed class JsonObject : IEnumerable<KeyValuePair<string, JsonValue>>,
     }
 
     /// <summary>
-    /// Adds a key with a null value to this collection.
+    /// Adds a key with a <see langword="null" /> value to this collection.
     /// </summary>
     /// <param name="key">The key of the property to be added.</param>
     /// <remarks><para>Returns this JsonObject.</para></remarks>

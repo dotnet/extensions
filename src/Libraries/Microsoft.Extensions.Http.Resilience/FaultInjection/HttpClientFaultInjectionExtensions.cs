@@ -29,7 +29,7 @@ public static class HttpClientFaultInjectionExtensions
     /// The <see cref="IServiceCollection"/> so that additional calls can be chained.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters cannot be null.
+    /// Any parameter is <see langword="null"/>.
     /// </exception>
     public static IServiceCollection AddHttpClientFaultInjection(this IServiceCollection services)
     {
@@ -50,7 +50,7 @@ public static class HttpClientFaultInjectionExtensions
     /// The <see cref="IServiceCollection"/> so that additional calls can be chained.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters cannot be null.
+    /// Any parameter is <see langword="null"/>.
     /// </exception>
     public static IServiceCollection AddHttpClientFaultInjection(this IServiceCollection services,
         IConfiguration section)
@@ -73,7 +73,7 @@ public static class HttpClientFaultInjectionExtensions
     /// The <see cref="IServiceCollection"/> so that additional calls can be chained.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters cannot be null.
+    /// Any parameter is <see langword="null"/>.
     /// </exception>
     /// <remarks>
     /// If the default instance of <see cref="IHttpClientFactory"/> is used, this method also adds a

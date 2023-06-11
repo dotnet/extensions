@@ -30,13 +30,13 @@ public enum FetchMode
     /// </summary>
     /// <remarks>
     /// This parameter should only being served on cross partition query.
-    /// For instance, if you set the <see cref="QueryRequestOptions{TDodument}.MaxResults"/> to 50.
+    /// For instance, if you set the <see cref="QueryRequestOptions{TDocument}.MaxResults"/> to 50.
     /// On in partition query, it will return you exactly 50 items if there is that much.
     /// But for cross partition query, it might return you only 30 items on a single fetch.
     /// In a case of <see cref="FetchSinglePage"/> only 30 items will be returned with a continuation token to
     /// let you fetch forward.
     /// In a case of <see cref="FetchMaxResults"/>, another round of single fetch query will be requested with same
-    /// <see cref="QueryRequestOptions{TDodument}.MaxResults"/>, which means 80 items at maximum can be returned.
+    /// <see cref="QueryRequestOptions{TDocument}.MaxResults"/>, which means 80 items at maximum can be returned.
     /// </remarks>
     FetchMaxResults,
 }

@@ -18,9 +18,11 @@ public class LinuxResourceUtilizationProviderOptions
     /// <summary>
     /// Gets or sets the default interval used for refreshing values reported by <see cref="LinuxResourceUtilizationCounters.CpuConsumptionPercentage"/>.
     /// </summary>
+    /// <value>
+    /// The default value is 5 seconds.
+    /// </value>
     /// <remarks>
     /// This is the time interval for a metric value to fetch resource utilization data from the operating system.
-    /// Default set to 5 seconds.
     /// </remarks>
     [TimeSpan(MinimumCachingInterval, MaximumCachingInterval)]
     public TimeSpan CpuConsumptionRefreshInterval { get; set; } = DefaultRefreshInterval;
@@ -28,9 +30,11 @@ public class LinuxResourceUtilizationProviderOptions
     /// <summary>
     /// Gets or sets the default interval used for refreshing values reported by <see cref="LinuxResourceUtilizationCounters.MemoryConsumptionPercentage"/>.
     /// </summary>
+    /// <value>
+    /// The default value is 5 seconds.
+    /// </value>
     /// <remarks>
     /// This is the time interval for a metric value to fetch resource utilization data from the operating system.
-    /// Default set to 5 seconds.
     /// </remarks>
     [TimeSpan(MinimumCachingInterval, MaximumCachingInterval)]
     public TimeSpan MemoryConsumptionRefreshInterval { get; set; } = DefaultRefreshInterval;

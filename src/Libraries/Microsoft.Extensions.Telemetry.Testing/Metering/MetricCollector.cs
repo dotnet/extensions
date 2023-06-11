@@ -319,7 +319,7 @@ public partial class MetricCollector : IDisposable
     }
 
     /// <summary>
-    /// Disponse the el.
+    /// Dispose the el.
     /// </summary>
     /// <param name="disposing">Disposing.</param>
     protected virtual void Dispose(bool disposing)

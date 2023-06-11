@@ -14,12 +14,14 @@ public class HttpRetryPolicyOptions : RetryPolicyOptions<HttpResponseMessage>
     private bool _shouldRetryAfterHeader;
 
     /// <summary>
-    /// Gets or sets a value indicating whether should retry after header.
+    /// Gets or sets a value indicating whether to retry after header.
     /// </summary>
+    /// <value>
+    /// The default value is <c>false</c>.
+    /// </value>
     /// <remarks>
-    /// By default the property is set to <c>false</c>.
     /// If the property is set to <c>true</c>, then the DelayGenerator will maximize
-    /// based on the RetryAfter header rules, otherwise it will remain null.
+    /// based on the RetryAfter header rules, otherwise it will remain <see langword="null"/>.
     /// </remarks>
     public bool ShouldRetryAfterHeader
     {
@@ -35,8 +37,8 @@ public class HttpRetryPolicyOptions : RetryPolicyOptions<HttpResponseMessage>
     /// Initializes a new instance of the <see cref="HttpRetryPolicyOptions"/> class.
     /// </summary>
     /// <remarks>
-    /// By default the options is set to handle only transient failures,
-    /// i.e. timeouts, 5xx responses and <see cref="HttpRequestException"/> exceptions.
+    /// By default, the options are set to handle only transient failures,
+    /// that is, timeouts, 5xx responses, and <see cref="HttpRequestException"/> exceptions.
     /// </remarks>
     public HttpRetryPolicyOptions()
     {

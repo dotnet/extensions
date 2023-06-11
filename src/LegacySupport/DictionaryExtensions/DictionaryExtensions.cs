@@ -17,9 +17,9 @@ internal static class DictionaryExtensions
     /// <typeparam name="TValue">The type of the values in the dictionary.</typeparam>
     /// <param name="dictionary">The dictionary to operate on.</param>
     /// <param name="key">The key of the value to query or add.</param>
-    /// <param name="value">When this method returns true, the removed value; when this method returns false, the default value for TValue.</param>
+    /// <param name="value">When this method returns true, the removed value; when this method returns false, the default value for <typeparamref name="TValue" />.</param>
     /// <returns>true when a value is found in the dictionary with the specified key; false when the dictionary cannot find a value associated with the specified key.</returns>
-    /// <exception cref="ArgumentNullException">If the dictionary or key are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">The dictionary or key is <see langword="null"/>.</exception>
     [ExcludeFromCodeCoverage]
     public static bool Remove<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, [MaybeNullWhen(false)] out TValue value)
     {

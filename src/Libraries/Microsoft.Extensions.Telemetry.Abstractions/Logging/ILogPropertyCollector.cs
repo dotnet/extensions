@@ -18,8 +18,8 @@ public interface ILogPropertyCollector
     /// </summary>
     /// <param name="propertyName">The name of the property to add.</param>
     /// <param name="propertyValue">The value of the property to add.</param>
-    /// <exception cref="ArgumentNullException">When <paramref name="propertyName"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException">When <paramref name="propertyName" /> is empty or contains exclusively whitespace,
+    /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="propertyName" /> is empty or contains exclusively whitespace,
     /// or when a property of the same name has already been added.
     /// </exception>
     void Add(string propertyName, object? propertyValue);

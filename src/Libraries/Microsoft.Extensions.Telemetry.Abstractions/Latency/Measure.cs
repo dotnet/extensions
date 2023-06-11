@@ -61,7 +61,7 @@ public readonly struct Measure : IEquatable<Measure>
     /// </summary>
     /// <param name="left">First value.</param>
     /// <param name="right">Second value.</param>
-    /// <returns><see langword="true" /> if its operands are equal, <see langword="false" /> otherwise.</returns>
+    /// <returns><see langword="true" /> if the operands are equal, <see langword="false" /> otherwise.</returns>
     public static bool operator ==(Measure left, Measure right)
     {
         return left.Equals(right);
@@ -72,7 +72,7 @@ public readonly struct Measure : IEquatable<Measure>
     /// </summary>
     /// <param name="left">First value.</param>
     /// <param name="right">Second value.</param>
-    /// <returns><see langword="true" /> if its operands are inequal, <see langword="false" /> otherwise.</returns>
+    /// <returns><see langword="true" /> if the operands are unequal, <see langword="false" /> otherwise.</returns>
     public static bool operator !=(Measure left, Measure right)
     {
         return !(left == right);

@@ -20,7 +20,7 @@ public static class ProcessEnricherExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the process enricher to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     public static IServiceCollection AddProcessLogEnricher(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
@@ -35,7 +35,7 @@ public static class ProcessEnricherExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the process enricher to.</param>
     /// <param name="configure">The <see cref="ProcessLogEnricherOptions"/> configuration delegate.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static IServiceCollection AddProcessLogEnricher(this IServiceCollection services, Action<ProcessLogEnricherOptions> configure)
     {
         _ = Throw.IfNull(services);
@@ -52,7 +52,7 @@ public static class ProcessEnricherExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the process enricher to.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ProcessLogEnricherOptions"/> in the process enricher.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static IServiceCollection AddProcessLogEnricher(this IServiceCollection services, IConfigurationSection section)
     {
         _ = Throw.IfNull(services);

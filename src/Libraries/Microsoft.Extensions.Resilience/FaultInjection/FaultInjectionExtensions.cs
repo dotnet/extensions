@@ -29,7 +29,7 @@ public static class FaultInjectionExtensions
     /// The <see cref="IServiceCollection"/> so that additional calls can be chained.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters cannot be null.
+    /// Any parameter is <see langword="null"/>.
     /// </exception>
     public static IServiceCollection AddFaultInjection(this IServiceCollection services)
     {
@@ -50,7 +50,7 @@ public static class FaultInjectionExtensions
     /// The <see cref="IServiceCollection"/> so that additional calls can be chained.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters cannot be null.
+    /// Any parameter is <see langword="null"/>.
     /// </exception>
     public static IServiceCollection AddFaultInjection(this IServiceCollection services, IConfiguration section)
     {
@@ -71,7 +71,7 @@ public static class FaultInjectionExtensions
     /// The <see cref="IServiceCollection"/> so that additional calls can be chained.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters cannot be null.
+    /// Any parameter is <see langword="null"/>.
     /// </exception>
     public static IServiceCollection AddFaultInjection(this IServiceCollection services, Action<FaultInjectionOptionsBuilder> configure)
     {
@@ -101,7 +101,7 @@ public static class FaultInjectionExtensions
     /// The <see cref="Context"/> so that additional calls can be chained.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters must not be null.
+    /// Any of the parameters are <see langword="null"/>.
     /// </exception>
     public static Context WithFaultInjection(this Context context, string groupName)
     {
@@ -123,7 +123,7 @@ public static class FaultInjectionExtensions
     /// The <see cref="Context"/> so that additional calls can be chained.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters must not be null.
+    /// Any of the parameters are <see langword="null"/>.
     /// </exception>
     [Experimental]
     public static Context WithFaultInjection(this Context context, FaultPolicyWeightAssignmentsOptions weightAssignments)
@@ -143,10 +143,10 @@ public static class FaultInjectionExtensions
     /// </summary>
     /// <param name="context">The context instance.</param>
     /// <returns>
-    /// The <see cref="ChaosPolicyOptionsGroup"/> if registered; null if it isn't.
+    /// The <see cref="ChaosPolicyOptionsGroup"/> if registered; <see langword="null"/> if it isn't.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters must not be null.
+    /// Any of the parameters are <see langword="null"/>.
     /// </exception>
     public static string? GetFaultInjectionGroupName(this Context context)
     {

@@ -62,7 +62,7 @@ internal sealed class ExclusiveRangeAttribute : ValidationAttribute
         var comparableMin = Minimum as IComparable;
         var comparableMax = Maximum as IComparable;
 
-        // Minimun and Maximum are either of type int or double, so there is no need for
+        // Minimum and Maximum are either of type int or double, so there is no need for
         // nullability check here (or later) as both types are IComparable already.
         if (comparableMin!.CompareTo(Maximum) >= 0)
         {

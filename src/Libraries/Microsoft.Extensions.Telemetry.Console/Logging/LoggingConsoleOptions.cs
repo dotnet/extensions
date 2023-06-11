@@ -16,128 +16,130 @@ public class LoggingConsoleOptions
     /// <summary>
     /// Gets or sets a value indicating whether to display scopes.
     /// </summary>
-    /// <remarks>
+    /// <value>
     /// Defaults to <see langword="true"/>.
-    /// </remarks>
+    /// </value>
     public bool IncludeScopes { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets format string used to format timestamp in logging messages.
+    /// Gets or sets the format string used to format timestamps in logging messages.
     /// </summary>
-    /// <remarks>
+    /// <value>
     /// Defaults to <c>yyyy-MM-dd HH:mm:ss.fff</c>.
-    /// </remarks>
+    /// </value>
     public string? TimestampFormat { get; set; } = "yyyy-MM-dd HH:mm:ss.fff";
 
     /// <summary>
     /// Gets or sets a value indicating whether or not UTC timezone should be used for timestamps in logging messages.
     /// </summary>
-    /// <remarks>
+    /// <value>
     /// Defaults to <see langword="false"/>.
-    /// </remarks>
+    /// </value>
     public bool UseUtcTimestamp { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display timestamp.
+    /// Gets or sets a value indicating whether to display the timestamp.
     /// </summary>
-    /// <remarks>
+    /// <value>
     /// Defaults to <see langword="true"/>.
-    /// </remarks>
+    /// </value>
     public bool IncludeTimestamp { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display log level.
+    /// Gets or sets a value indicating whether to display the log level.
     /// </summary>
-    /// <remarks>
+    /// <value>
     /// Defaults to <see langword="true"/>.
-    /// </remarks>
+    /// </value>
     public bool IncludeLogLevel { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display category.
+    /// Gets or sets a value indicating whether to display the category.
     /// </summary>
-    /// <remarks>
+    /// <value>
     /// Defaults to <see langword="true"/>.
-    /// </remarks>
+    /// </value>
     public bool IncludeCategory { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display stack trace.
+    /// Gets or sets a value indicating whether to display the stack trace.
     /// </summary>
-    /// <remarks>
+    /// <value>
     /// Defaults to <see langword="true"/>.
-    /// </remarks>
+    /// </value>
     public bool IncludeExceptionStacktrace { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display activity TraceId.
+    /// Gets or sets a value indicating whether to display the activity TraceId.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="true"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="true"/>.
+    /// </value>
     public bool IncludeTraceId { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display activity SpanId.
+    /// Gets or sets a value indicating whether to display the activity SpanId.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="true"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="true"/>.
+    /// </value>
     public bool IncludeSpanId { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a value indicating whether colors are enabled or not.
     /// </summary>
-    /// <remarks>Defaults to <see langword="true"/>.</remarks>
+    /// <value>
+    /// Defaults to <see langword="true"/>.
+    /// </value>
     public bool ColorsEnabled { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating what color to use for dimmed text.
+    /// Gets or sets the color to use for dimmed text.
     /// </summary>
-    /// <remarks>Defaults to <see cref="ConsoleColor.DarkGray"/>.</remarks>
+    /// <value>Defaults to <see cref="ConsoleColor.DarkGray"/>.</value>
     public ConsoleColor DimmedColor { get; set; } = ConsoleColor.DarkGray;
 
     /// <summary>
-    /// Gets or sets a value indicating what color to use for dimmed text background.
+    /// Gets or sets the color to use for dimmed text background.
     /// </summary>
     public ConsoleColor? DimmedBackgroundColor { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating what color to use for exception text.
+    /// Gets or sets the color to use for exception text.
     /// </summary>
-    /// <remarks>Defaults to <see cref="ConsoleColor.Red"/>.</remarks>
+    /// <value>Defaults to <see cref="ConsoleColor.Red"/>.</value>
     public ConsoleColor ExceptionColor { get; set; } = ConsoleColor.Red;
 
     /// <summary>
-    /// Gets or sets a value indicating what color to use for exception text background.
+    /// Gets or sets the color to use for exception text background.
     /// </summary>
     public ConsoleColor? ExceptionBackgroundColor { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating what color to use for exception stack trace text.
+    /// Gets or sets the color to use for exception stack trace text.
     /// </summary>
-    /// <remarks>Defaults to <see cref="ConsoleColor.DarkRed"/>.</remarks>
+    /// <value>Defaults to <see cref="ConsoleColor.DarkRed"/>.</value>
     public ConsoleColor ExceptionStackTraceColor { get; set; } = ConsoleColor.DarkRed;
 
     /// <summary>
-    /// Gets or sets a value indicating what color to use for exception stack trace text background.
+    /// Gets or sets the color to use for exception stack trace text background.
     /// </summary>
     public ConsoleColor? ExceptionStackTraceBackgroundColor { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to include dimension name/value pairs with each log record.
     /// </summary>
-    /// <remarks>Defaults to <see langword="false"/>.</remarks>
+    /// <value>Defaults to <see langword="false"/>.</value>
     public bool IncludeDimensions { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating what color to use for dimension text.
+    /// Gets or sets the color to use for dimension text.
     /// </summary>
-    /// <remarks>Defaults to <see cref="ConsoleColor.DarkGreen"/>.</remarks>
+    /// <value>Defaults to <see cref="ConsoleColor.DarkGreen"/>.</value>
     public ConsoleColor DimensionsColor { get; set; } = ConsoleColor.DarkGreen;
 
     /// <summary>
-    /// Gets or sets a value indicating what color to use for dimension text background.
+    /// Gets or sets the color to use for dimension text background.
     /// </summary>
     public ConsoleColor? DimensionsBackgroundColor { get; set; }
 }

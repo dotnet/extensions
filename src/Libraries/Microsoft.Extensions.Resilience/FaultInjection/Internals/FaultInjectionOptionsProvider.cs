@@ -22,7 +22,7 @@ internal sealed class FaultInjectionOptionsProvider : IFaultInjectionOptionsProv
     /// The options monitor instance to retrieve chaos policy related configurations from.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// All parameters must not be null.
+    /// Any of the parameters are <see langword="null"/>.
     /// </exception>
     public FaultInjectionOptionsProvider(IOptionsMonitor<FaultInjectionOptions> optionsMonitor)
     {

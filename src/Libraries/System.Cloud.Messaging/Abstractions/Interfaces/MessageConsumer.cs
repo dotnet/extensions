@@ -44,7 +44,7 @@ public abstract class MessageConsumer
     /// <param name="messageMiddlewares">List of middleware in the async processing pipeline.</param>
     /// <param name="terminalDelegate">Terminal message delegate.</param>
     /// <param name="logger"><see cref="Logger"/>.</param>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     protected MessageConsumer(IMessageSource messageSource, IReadOnlyList<IMessageMiddleware> messageMiddlewares, MessageDelegate terminalDelegate, ILogger logger)
     {
         MessageSource = Throw.IfNull(messageSource);
@@ -100,7 +100,7 @@ public abstract class MessageConsumer
     /// </summary>
     /// <param name="cancellationToken">The cancellation token for retrieving and processing message.</param>
     /// <returns>Swallows any exception during retrieving or processing message and returns a non-faulted <see cref="ValueTask"/>.</returns>
-    /// <exception cref="Exception">If there is any exception during <see cref="HandleMessageProcessingFailureAsync(MessageContext, Exception)"/>.</exception>
+    /// <exception cref="Exception">An exception is thrown during <see cref="HandleMessageProcessingFailureAsync(MessageContext, Exception)"/>.</exception>
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = $"Handled by {nameof(Logger)}.")]
     protected virtual async ValueTask FetchAndProcessMessageAsync(CancellationToken cancellationToken)
     {

@@ -20,7 +20,7 @@ internal sealed class ConsumerBackgroundService : BackgroundService
     /// Initializes a new instance of the <see cref="ConsumerBackgroundService"/> class.
     /// </summary>
     /// <param name="consumer"><see cref="MessageConsumer"/>.</param>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public ConsumerBackgroundService(MessageConsumer consumer)
     {
         _consumer = Throw.IfNull(consumer);

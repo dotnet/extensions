@@ -9,9 +9,10 @@ namespace Microsoft.Extensions.Telemetry.Latency;
 public class LatencyContextOptions
 {
     /// <summary>
-    /// Gets or sets a value indicating whether exception is thrown when using unregistered names.
+    /// Gets or sets a value indicating whether an exception is thrown when using unregistered names.
     /// </summary>
-    /// <remarks>The ILatencyContext APIs throws when using unregistred names if true.
-    /// Becomes no-op otherwise. Defaults to false.</remarks>
+    /// <value>
+    /// <see langword="true" /> if the ILatencyContext APIs throws when using unregistered names. <see langword="false" /> to no-op. The default value is <see langword="false" />.
+    /// </value>
     public bool ThrowOnUnregisteredNames { get; set; }
 }

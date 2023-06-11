@@ -38,7 +38,7 @@ public interface IAsyncState
     /// Gets the stored async context from the state.
     /// </summary>
     /// <param name="token">The token representing the state to extract.</param>
-    /// <exception cref="InvalidOperationException">If the context is not initialized.</exception>
+    /// <exception cref="InvalidOperationException">The context is not initialized.</exception>
     /// <returns>The asynchronous state corresponding to the token.</returns>
     object? Get(AsyncStateToken token);
 

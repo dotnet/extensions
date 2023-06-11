@@ -24,7 +24,7 @@ public static class LatencyRecorderMiddlewareExtensions
     /// </remarks>
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder AddLatencyContextMiddleware(this IAsyncProcessingPipelineBuilder pipelineBuilder)
     {
         return AddLatencyContextMiddleware(pipelineBuilder, sp => sp.GetRequiredService<ILatencyContextProvider>(), sp => sp.GetServices<ILatencyDataExporter>());
@@ -43,7 +43,7 @@ public static class LatencyRecorderMiddlewareExtensions
     /// <param name="implementationFactory">The <see cref="ILatencyContextProvider"/> implementation factory.</param>
     /// <param name="exporterFactory">The factory for exporting capture latency context.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder AddLatencyContextMiddleware<T>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                                  Func<IServiceProvider, T> implementationFactory,
                                                                                  Func<IServiceProvider, IEnumerable<ILatencyDataExporter>> exporterFactory)
@@ -65,7 +65,7 @@ public static class LatencyRecorderMiddlewareExtensions
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <param name="implementationFactory">The <see cref="ILatencyContext"/> implementation factory.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder AddLatencyContextMiddleware<T>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                                  Func<IServiceProvider, T> implementationFactory)
         where T : class, ILatencyContext
@@ -92,7 +92,7 @@ public static class LatencyRecorderMiddlewareExtensions
     /// <param name="successMeasureToken">The success token.</param>
     /// <param name="failureMeasureToken">The failure token.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder AddLatencyRecorderMessageMiddleware(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                                       MeasureToken successMeasureToken,
                                                                                       MeasureToken failureMeasureToken)

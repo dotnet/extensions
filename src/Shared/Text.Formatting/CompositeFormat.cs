@@ -49,7 +49,7 @@ internal readonly struct CompositeFormat
     /// <remarks>
     /// Parses a composite format string into an efficient form for later use.
     /// </remarks>
-    /// <exception cref="ArgumentException">When the format string is malformed.</exception>
+    /// <exception cref="ArgumentException">The format string is malformed.</exception>
     public static CompositeFormat Parse([StringSyntaxAttribute(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format)
     {
         if (!TryParse(format, out var cf, out var error))
@@ -67,7 +67,7 @@ internal readonly struct CompositeFormat
     /// <remarks>
     /// Parses a composite format string into an efficient form for later use.
     /// </remarks>
-    /// <exception cref="ArgumentException">When the format string is malformed.</exception>
+    /// <exception cref="ArgumentException">The format string is malformed.</exception>
     public static CompositeFormat Parse([StringSyntaxAttribute(StringSyntaxAttribute.CompositeFormat)] string format)
         => Parse(format.AsSpan());
 
@@ -79,7 +79,7 @@ internal readonly struct CompositeFormat
     /// <remarks>
     /// Parses a composite format string into an efficient form for later use.
     /// </remarks>
-    /// <exception cref="ArgumentException">When the format string is malformed.</exception>
+    /// <exception cref="ArgumentException">The format string is malformed.</exception>
     public static CompositeFormat Parse([StringSyntaxAttribute(StringSyntaxAttribute.CompositeFormat)] ReadOnlySpan<char> format, out IList<string> templates)
     {
         var l = new List<string>();

@@ -16,7 +16,7 @@ public static partial class CommonHealthChecksExtensions
     /// <param name="builder">The builder to add the provider to.</param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" /> or <paramref name="tags"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="tags"/> are <see langword="null" />.</exception>
     public static IHealthChecksBuilder AddManualHealthCheck(this IHealthChecksBuilder builder, params string[] tags)
         => Throw.IfNull(builder)
             .AddManualHealthCheckDependencies()
@@ -28,7 +28,7 @@ public static partial class CommonHealthChecksExtensions
     /// <param name="builder">The builder to add the provider to.</param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" /> or <paramref name="tags"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="tags"/> are <see langword="null" />.</exception>
     public static IHealthChecksBuilder AddManualHealthCheck(this IHealthChecksBuilder builder, IEnumerable<string> tags)
         => Throw.IfNull(builder)
             .AddManualHealthCheckDependencies()
@@ -38,7 +38,7 @@ public static partial class CommonHealthChecksExtensions
     /// Sets the manual health check to the healthy state.
     /// </summary>
     /// <param name="manualHealthCheck">The <see cref="IManualHealthCheck"/>.</param>
-    /// <exception cref="ArgumentNullException">If <paramref name="manualHealthCheck" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="manualHealthCheck" /> is <see langword="null" />.</exception>
     public static void ReportHealthy(this IManualHealthCheck manualHealthCheck)
         => Throw.IfNull(manualHealthCheck).Result = HealthCheckResult.Healthy();
 
@@ -47,7 +47,7 @@ public static partial class CommonHealthChecksExtensions
     /// </summary>
     /// <param name="manualHealthCheck">The <see cref="IManualHealthCheck"/>.</param>
     /// <param name="reason">The reason why the health check is unhealthy.</param>
-    /// <exception cref="ArgumentNullException">If <paramref name="manualHealthCheck" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="manualHealthCheck" /> is <see langword="null" />.</exception>
     public static void ReportUnhealthy(this IManualHealthCheck manualHealthCheck, string reason)
         => Throw.IfNull(manualHealthCheck).Result = HealthCheckResult.Unhealthy(Throw.IfNullOrWhitespace(reason));
 

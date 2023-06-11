@@ -6,10 +6,10 @@ using System;
 namespace System.Cloud.DocumentDb;
 
 /// <summary>
-/// Exception represent the operation is failed w/ a specific reason and should not retry.
+/// The exception that's thrown when the operation failed with a specific reason and should not retry.
 /// </summary>
 /// <remarks>
-/// Please check the log and eliminate this kind of requests.
+/// Check the log and eliminate this kind of request.
 /// Http code 400, 401, 403, 413.
 /// Covered codes may vary on specific engine requirements.
 /// </remarks>

@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="pipelineName">The name of the async processing pipeline.</param>
     /// <returns>The builder for async processing pipeline.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder AddAsyncPipeline(this IServiceCollection services, string pipelineName)
     {
         _ = Throw.IfNull(services);

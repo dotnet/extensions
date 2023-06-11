@@ -21,9 +21,9 @@ public class TimeoutPolicyOptions
     /// <summary>
     /// Gets or sets the timeout interval.
     /// </summary>
-    /// <remarks>
-    /// Default set to 30 seconds.
-    /// </remarks>
+    /// <value>
+    /// The default value is 30 seconds.
+    /// </value>
     [TimeSpan(0, Exclusive = true)]
     public TimeSpan TimeoutInterval { get; set; } = _defaultTimeoutInterval;
 

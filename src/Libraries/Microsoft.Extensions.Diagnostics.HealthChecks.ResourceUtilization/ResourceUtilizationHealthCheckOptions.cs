@@ -39,9 +39,9 @@ public class ResourceUtilizationHealthCheckOptions
     /// <summary>
     /// Gets or sets the time window for used for calculating CPU and memory utilization averages.
     /// </summary>
-    /// <remarks>
-    /// Default set to 5 seconds.
-    /// </remarks>
+    /// <value>
+    /// The default value is 5 seconds.
+    /// </value>
     [TimeSpan(MinimumSamplingWindow, int.MaxValue)]
     public TimeSpan SamplingWindow { get; set; } = DefaultSamplingWindow;
 }

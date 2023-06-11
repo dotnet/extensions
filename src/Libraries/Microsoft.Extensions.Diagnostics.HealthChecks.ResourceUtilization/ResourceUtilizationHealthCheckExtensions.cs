@@ -24,7 +24,7 @@ public static class ResourceUtilizationHealthCheckExtensions
     /// <param name="builder">The builder to add the provider to.</param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(this IHealthChecksBuilder builder, params string[] tags)
     {
         _ = Throw.IfNull(builder);
@@ -40,7 +40,7 @@ public static class ResourceUtilizationHealthCheckExtensions
     /// <param name="builder">The builder to add the provider to.</param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(this IHealthChecksBuilder builder, IEnumerable<string> tags)
     {
         _ = Throw.IfNull(builder);
@@ -56,7 +56,7 @@ public static class ResourceUtilizationHealthCheckExtensions
     /// <param name="builder">The builder to add the provider to.</param>
     /// <param name="section">Configuration for <see cref="ResourceUtilizationHealthCheckOptions"/>.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" /> or <paramref name="section"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="section"/> are <see langword="null" />.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ResourceUtilizationHealthCheckOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",
@@ -80,7 +80,7 @@ public static class ResourceUtilizationHealthCheckExtensions
     /// <param name="section">Configuration section holding an instance of <see cref="ResourceUtilizationHealthCheckOptions"/>.</param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" />, <paramref name="section"/> or <paramref name="tags"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" />, <paramref name="section"/> or <paramref name="tags"/> are <see langword="null" />.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ResourceUtilizationHealthCheckOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",
@@ -106,7 +106,7 @@ public static class ResourceUtilizationHealthCheckExtensions
     /// <param name="section">Configuration section holding an instance of <see cref="ResourceUtilizationHealthCheckOptions"/>.</param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" />, <paramref name="section"/> or <paramref name="tags"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" />, <paramref name="section"/> or <paramref name="tags"/> are <see langword="null" />.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ResourceUtilizationHealthCheckOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",
@@ -131,7 +131,7 @@ public static class ResourceUtilizationHealthCheckExtensions
     /// <param name="builder">The builder to add the provider to.</param>
     /// <param name="configure">Configuration callback.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" /> or <paramref name="configure"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="configure"/> are <see langword="null" />.</exception>
     public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(
         this IHealthChecksBuilder builder,
         Action<ResourceUtilizationHealthCheckOptions> configure)
@@ -150,7 +150,7 @@ public static class ResourceUtilizationHealthCheckExtensions
     /// <param name="configure">Configuration callback.</param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" />, <paramref name="configure"/> or <paramref name="tags"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" />, <paramref name="configure"/> or <paramref name="tags"/> are <see langword="null" />.</exception>
     public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(
         this IHealthChecksBuilder builder,
         Action<ResourceUtilizationHealthCheckOptions> configure,
@@ -171,7 +171,7 @@ public static class ResourceUtilizationHealthCheckExtensions
     /// <param name="configure">Configuration callback.</param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" />, <paramref name="configure"/> or <paramref name="tags"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" />, <paramref name="configure"/> or <paramref name="tags"/> are <see langword="null" />.</exception>
     public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(
         this IHealthChecksBuilder builder,
         Action<ResourceUtilizationHealthCheckOptions> configure,

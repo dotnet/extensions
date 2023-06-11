@@ -302,13 +302,13 @@ public sealed class LogMethodAttribute : Attribute
     /// <summary>
     /// Gets or sets a value indicating whether the generated code should omit the logic to check whether a log level is enabled.
     /// </summary>
+    /// <value>
+    /// The default value is <see langword="true" /> if the log method's logging level is Error or Critical; otherwise the default value is <see langword="false" />.
+    /// </value>
     /// <remarks>
     /// The generated code contains an optimization to avoid calling into the underlying <see cref="ILogger" /> if the log method's log level
     /// is currently not enabled. If your application is already performing this check before calling the logging method, then you
     /// can remove the redundant check performed in the generated code by setting this option to <see langword="true" />.
-    ///
-    /// This defaults to <see langword="true" /> if the log method's logging level is Error or Critical, otherwise it defaults
-    /// to <see langword="false" />.
     /// </remarks>
     public bool SkipEnabledCheck { get; set; }
 }

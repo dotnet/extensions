@@ -72,9 +72,9 @@ public class DatabaseOptions
     /// </summary>
     /// <remarks>
     /// The default is <see cref="Throughput.Unlimited"/>.
-    /// The throughput is in database defined units.
-    /// e.g. Cosmos DB throughput measured in RUs (Request Units) per second:
-    /// <see href="https://docs.microsoft.com/en-us/azure/cosmos-db/concepts-limits">Azure Cosmos DB service quotas</see>.
+    /// The throughput is in database defined units,
+    /// for example, Cosmos DB throughput measured in RUs (request units) per second:
+    /// <see href="https://learn.microsoft.com/azure/cosmos-db/concepts-limits">Azure Cosmos DB service quotas</see>.
     /// </remarks>
     public Throughput Throughput { get; set; } = Throughput.Unlimited;
 
@@ -91,9 +91,9 @@ public class DatabaseOptions
     /// <summary>
     /// Gets or sets a list of preferred regions used for SDK to define failover order for global database.
     /// </summary>
-    /// <remarks>
-    /// Default set to empty <see cref="List{T}" />.
-    /// </remarks>
+    /// <value>
+    /// The default value is empty <see cref="List{T}" />.
+    /// </value>
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
     public IList<string> FailoverRegions { get; set; }
@@ -102,9 +102,9 @@ public class DatabaseOptions
     /// <summary>
     /// Gets or sets a list of region specific configurations for the database.
     /// </summary>
-    /// <remarks>
-    /// Default set to empty <see cref="Dictionary{TKey, TValue}" />.
-    /// </remarks>
+    /// <value>
+    /// The default value is empty <see cref="Dictionary{TKey, TValue}" />.
+    /// </value>
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
     public IDictionary<string, RegionalDatabaseOptions> RegionalDatabaseOptions { get; set; }

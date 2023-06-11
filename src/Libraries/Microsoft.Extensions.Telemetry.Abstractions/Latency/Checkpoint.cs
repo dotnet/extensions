@@ -34,7 +34,7 @@ public readonly struct Checkpoint : IEquatable<Checkpoint>
     public string Name { get; }
 
     /// <summary>
-    /// Gets the relative time since the begining of the associated operation at which the checkpoint was created.
+    /// Gets the relative time since the beginning of the associated operation at which the checkpoint was created.
     /// </summary>
     public long Elapsed { get; }
 
@@ -70,7 +70,7 @@ public readonly struct Checkpoint : IEquatable<Checkpoint>
     /// </summary>
     /// <param name="left">First value.</param>
     /// <param name="right">Second value.</param>
-    /// <returns><see langword="true" /> if its operands are equal, <see langword="false" /> otherwise.</returns>
+    /// <returns><see langword="true" /> if the operands are equal, <see langword="false" /> otherwise.</returns>
     public static bool operator ==(Checkpoint left, Checkpoint right)
     {
         return left.Equals(right);
@@ -81,7 +81,7 @@ public readonly struct Checkpoint : IEquatable<Checkpoint>
     /// </summary>
     /// <param name="left">First value.</param>
     /// <param name="right">Second value.</param>
-    /// <returns><see langword="true" /> if its operands are inequal, <see langword="false" /> otherwise.</returns>
+    /// <returns><see langword="true" /> if the operands are unequal, <see langword="false" /> otherwise.</returns>
     public static bool operator !=(Checkpoint left, Checkpoint right)
     {
         return !(left == right);

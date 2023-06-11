@@ -45,19 +45,21 @@ public class RetryPolicyOptions
     /// <summary>
     /// Gets or sets the type of the back-off.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see cref="BackoffType.ExponentialWithJitter"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see cref="BackoffType.ExponentialWithJitter"/>.
+    /// </value>
     public BackoffType BackoffType { get; set; } = DefaultBackoffType;
 
     /// <summary>
-    /// Gets or sets the delay between retries based on the backoff type, <see cref="Options.BackoffType"/>.
+    /// Gets or sets the delay between retries based on the <see cref="Options.BackoffType">backoff type</see>).
     /// </summary>
+    /// <value>
+    /// The default value is 2 seconds.
+    /// </value>
     /// <remarks>
-    /// Default set to 2 seconds.
-    /// For <see cref="BackoffType.ExponentialWithJitter"/> this represents the median delay to target before the first retry.
-    /// For the <see cref="BackoffType.Linear"/> it represents the initial delay, the following delays increasing linearly with this value.
-    /// In case of <see cref="BackoffType.Constant"/> it represents the constant delay between retries.
+    /// For <see cref="BackoffType.ExponentialWithJitter"/>, this property represents the median delay to target before the first retry.
+    /// For the <see cref="BackoffType.Linear"/>, this property represents the initial delay. The subsequent delays increase linearly with this value.
+    /// In case of <see cref="BackoffType.Constant"/>, this property represents the constant delay between retries.
     /// </remarks>
     [TimeSpan(0, MaxBaseDelay)]
     public TimeSpan BaseDelay { get; set; } = _defaultBackoffBasedDelay;

@@ -22,11 +22,11 @@ public interface IResiliencePipelineProvider
     /// <param name="pipelineName">A pipeline name.</param>
     /// <returns>The pipeline instance.</returns>
     /// <typeparam name="TResult">The type of the result returned by the action executed by the policies.</typeparam>
-    /// <exception cref="ArgumentException">The <paramref name="pipelineName"/> cannot be an empty string.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pipelineName"/> is an empty string.</exception>
     /// <exception cref="OptionsValidationException">The pipeline identified by <paramref name="pipelineName"/> is invalid or not configured.</exception>
     /// <remarks>
     /// Make sure that the pipeline identified by <paramref name="pipelineName"/> is configured, otherwise the provider won't be able to create
-    /// it and throws an error.
+    /// it and throws an exception.
     /// </remarks>
     public IAsyncPolicy<TResult> GetPipeline<TResult>(string pipelineName);
 
@@ -36,12 +36,12 @@ public interface IResiliencePipelineProvider
     /// <param name="pipelineKey">The pipeline key associated with a cached instance of a <paramref name="pipelineName"/> pipeline.</param>
     /// <returns>The pipeline instance.</returns>
     /// <typeparam name="TResult">The type of the result returned by the action executed by the policies.</typeparam>
-    /// <exception cref="ArgumentException">The <paramref name="pipelineName"/> cannot be an empty string.</exception>
+    /// <exception cref="ArgumentException"><paramref name="pipelineName"/> is an empty string.</exception>
     /// <exception cref="OptionsValidationException">The pipeline identified by <paramref name="pipelineName"/> is invalid or not configured.</exception>
     /// <remarks>
     /// This method enables to have multiple instances of the same <paramref name="pipelineName"/> pipeline that are cached by the <paramref name="pipelineKey"/>.
     /// Make sure that the pipeline identified by <paramref name="pipelineName"/> is configured, otherwise the provider won't be able to create
-    /// it and throws an error.
+    /// it and throws an exception.
     /// </remarks>
     public IAsyncPolicy<TResult> GetPipeline<TResult>(string pipelineName, string pipelineKey);
 }

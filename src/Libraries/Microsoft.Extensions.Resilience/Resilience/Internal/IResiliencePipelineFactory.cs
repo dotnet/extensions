@@ -22,7 +22,7 @@ internal interface IResiliencePipelineFactory
     /// <param name="pipelineName">The pipeline name.</param>
     /// <param name="pipelineKey">The pipeline key.</param>
     /// <returns>The policy pipeline.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="pipelineName"/> is null or empty string.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="pipelineName"/> is <see langword="null"/> or empty string.</exception>
     /// <exception cref="InvalidOperationException">The pipeline identified by <paramref name="pipelineName"/> is not recognized.</exception>
     IAsyncPolicy<TPolicyResult> CreatePipeline<TPolicyResult>(string pipelineName, string pipelineKey = "");
 }
