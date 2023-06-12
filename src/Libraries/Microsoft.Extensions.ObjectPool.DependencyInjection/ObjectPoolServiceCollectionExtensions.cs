@@ -23,9 +23,9 @@ public static class ObjectPoolServiceCollectionExtensions
     /// <param name="configure">The action used to configure the options of the pool.</param>
     /// <typeparam name="TService">The type of objects to pool.</typeparam>
     /// <returns>Provided service collection.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The default capacity is <c>Environment.ProcessorCount * 2</c>.
+    /// The default capacity is 1024.
     /// The pooled type instances are obtainable by resolving <see cref="ObjectPool{TService}"/> from the DI container.
     /// </remarks>
     public static IServiceCollection AddPooled<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(
@@ -44,9 +44,9 @@ public static class ObjectPoolServiceCollectionExtensions
     /// <typeparam name="TService">The type of objects to pool.</typeparam>
     /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
     /// <returns>Provided service collection.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     /// <remarks>
-    /// The default capacity is <c>Environment.ProcessorCount * 2</c>.
+    /// The default capacity is 1024.
     /// The pooled type instances are obtainable by resolving <see cref="ObjectPool{TService}"/> from the DI container.
     /// </remarks>
     public static IServiceCollection AddPooled<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(

@@ -16,6 +16,8 @@ public sealed class PoolOptions
     /// <summary>
     /// Gets or sets the maximal capacity of the pool.
     /// </summary>
-    /// <remarks>The default is 1024.</remarks>
+    /// <value>
+    /// The default is 1024.
+    /// </value>
     public int Capacity { get; set; } = DefaultCapacity;
 }
