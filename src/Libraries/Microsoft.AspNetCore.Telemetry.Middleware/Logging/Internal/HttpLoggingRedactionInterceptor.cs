@@ -18,18 +18,11 @@ using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Internal;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.AspNetCore.Telemetry.Http.Logging;
 
 internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
 {
-    private const string RequestStartTimestamp = "RequestStartTimestamp";
-    private const string Duration = "duration";
-
-    // These three fields are "internal" solely for testing purposes:
-    internal TimeProvider TimeProvider = TimeProvider.System;
-
     private readonly IncomingPathLoggingMode _requestPathLogMode;
     private readonly HttpRouteParameterRedactionMode _parameterRedactionMode;
     private readonly ILogger<HttpLoggingRedactionInterceptor> _logger;
@@ -73,12 +66,6 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         if (ShouldExcludePath(context.Request.Path))
         {
             logContext.LoggingFields = HttpLoggingFields.None;
-        }
-        else if (logContext.IsAnyEnabled(HttpLoggingFields.Response))
-        {
-            // We'll need this for the response.
-            // TODO: Should we put a state filed on logContext?
-            context.Items[RequestStartTimestamp] = TimeProvider.GetTimestamp();
         }
 
         // Don't enrich if we're not going to log any part of the request
@@ -153,12 +140,6 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         {
             _responseHeadersReader.Read(context.Response.Headers, logContext);
         }
-
-        // Catching duration at the end:
-        // Note this does not include the time spent writing the response body.
-        var startTime = (long)context.Items[RequestStartTimestamp]!;
-        var duration = (long)TimeProvider.GetElapsedTime(startTime, TimeProvider.GetTimestamp()).TotalMilliseconds;
-        logContext.Add(Duration, duration);
 
         // TODO: What about the exception case?
     }
