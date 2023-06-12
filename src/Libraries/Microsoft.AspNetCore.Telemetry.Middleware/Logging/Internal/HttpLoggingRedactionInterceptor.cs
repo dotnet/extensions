@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Telemetry.Http.Logging;
 internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
 {
     private const string RequestStartTimestamp = "RequestStartTimestamp";
-    private const string Durration = "duration";
+    private const string Duration = "duration";
 
     // These three fields are "internal" solely for testing purposes:
     internal TimeProvider TimeProvider = TimeProvider.System;
@@ -39,13 +39,11 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
     private readonly HeaderReader _requestHeadersReader;
     private readonly HeaderReader _responseHeadersReader;
     private readonly string[] _excludePathStartsWith;
-    private readonly IHttpLogEnricher[] _enrichers;
     private readonly FrozenDictionary<string, DataClassification> _parametersToRedactMap;
 
     public HttpLoggingRedactionInterceptor(
         IOptions<LoggingRedactionOptions> options,
         ILogger<HttpLoggingRedactionInterceptor> logger,
-        IEnumerable<IHttpLogEnricher> httpLogEnrichers,
         IHttpRouteParser httpRouteParser,
         IHttpRouteFormatter httpRouteFormatter,
         IRedactorProvider redactorProvider,
@@ -66,8 +64,6 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         _responseHeadersReader = new(optionsValue.ResponseHeadersDataClasses, redactorProvider);
 
         _excludePathStartsWith = optionsValue.ExcludePathStartsWith.ToArray();
-
-        _enrichers = httpLogEnrichers.ToArray();
     }
 
     public void OnRequest(HttpLoggingContext logContext)
@@ -158,26 +154,11 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
             _responseHeadersReader.Read(context.Response.Headers, logContext);
         }
 
-        if (_enrichers.Length > 0)
-        {
-            var enrichmentBag =  LogMethodHelper.GetHelper();
-            foreach (var enricher in _enrichers)
-            {
-                enricher.Enrich(enrichmentBag, context.Request, context.Response);
-            }
-
-            foreach (var pair in enrichmentBag)
-            {
-                logContext.Parameters.Add(pair);
-            }
-            LogMethodHelper.ReturnHelper(enrichmentBag);
-        }
-
         // Catching duration at the end:
         // Note this does not include the time spent writing the response body.
         var startTime = (long)context.Items[RequestStartTimestamp]!;
         var duration = (long)TimeProvider.GetElapsedTime(startTime, TimeProvider.GetTimestamp()).TotalMilliseconds;
-        logContext.Add(Durration, duration);
+        logContext.Add(Duration, duration);
 
         // TODO: What about the exception case?
     }
