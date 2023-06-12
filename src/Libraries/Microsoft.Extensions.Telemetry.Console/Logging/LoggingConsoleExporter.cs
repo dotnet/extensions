@@ -103,7 +103,7 @@ internal sealed class LoggingConsoleExporter : BaseExporter<LogRecord>
 
         return ExportResult.Success;
 #else
-        WriteBatchOfLogRecords(batch);
+        LoggingConsoleExporter.WriteBatchOfLogRecords(batch);
         return ExportResult.Success;
 #endif
     }
@@ -187,7 +187,7 @@ internal sealed class LoggingConsoleExporter : BaseExporter<LogRecord>
         }
     }
 
-    private void WriteBatchOfLogRecords(Batch<LogRecord> batch)
+    private static void WriteBatchOfLogRecords(Batch<LogRecord> batch)
     {
         foreach (var logRecord in batch)
         {
@@ -204,7 +204,7 @@ internal sealed class LoggingConsoleExporter : BaseExporter<LogRecord>
 
             if (logRecord.Exception is not null)
             {
-                var exceptionMessage = GetExceptionMessage(logRecord.Exception);
+                var exceptionMessage = LoggingConsoleExporter.GetExceptionMessage(logRecord.Exception);
                 System.Console.Write(exceptionMessage);
             }
 
@@ -212,7 +212,7 @@ internal sealed class LoggingConsoleExporter : BaseExporter<LogRecord>
         }
     }
 
-    private string GetExceptionMessage(Exception ex, string tabulation = "")
+    private static string GetExceptionMessage(Exception ex, string tabulation = "")
     {
         var result = PoolFactory.SharedStringBuilderPool.Get();
         try
@@ -229,7 +229,7 @@ internal sealed class LoggingConsoleExporter : BaseExporter<LogRecord>
             {
                 for (var i = 0; i < ae.InnerExceptions.Count; i++)
                 {
-                    _ = result.Append(GetExceptionMessage(ae.InnerExceptions[i], $"{tabulation}\t"));
+                    _ = result.Append(LoggingConsoleExporter.GetExceptionMessage(ae.InnerExceptions[i], $"{tabulation}\t"));
                 }
 
                 return result.ToString();
@@ -237,7 +237,7 @@ internal sealed class LoggingConsoleExporter : BaseExporter<LogRecord>
 
             if (ex.InnerException is not null)
             {
-                _ = result.Append(GetExceptionMessage(ex.InnerException, $"{tabulation}\t"));
+                _ = result.Append(LoggingConsoleExporter.GetExceptionMessage(ex.InnerException, $"{tabulation}\t"));
             }
 
             return result.ToString();
