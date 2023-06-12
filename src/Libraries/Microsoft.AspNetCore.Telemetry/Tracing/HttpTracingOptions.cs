@@ -21,7 +21,7 @@ public class HttpTracingOptions
     /// Gets or sets a map between HTTP request parameters and their data classification.
     /// </summary>
     /// <value>
-    /// The default value is <see cref="Dictionary{TKey, TValue}"/>.
+    /// The default is an empty <see cref="Dictionary{TKey, TValue}"/>.
     /// </value>
     /// <remarks>
     /// If a parameter in requestUrl is not found in this map, it will be redacted as if it was <see cref="DataClassification.Unknown"/>.
@@ -35,19 +35,19 @@ public class HttpTracingOptions
     /// <summary>
     /// Gets or sets a value indicating whether to include path with redacted parameters.
     /// </summary>
-    /// <remarks>
-    /// When false, the exported traces will contain the route template.
-    /// When true, the request path will be recreated using the redacted parameter and included in the exported traces.
-    /// The default value is false.
-    /// </remarks>
+    /// <value>
+    /// <see langword="true" /> if the request path is recreated using the redacted parameter and included in the exported traces; <see langword="false" /> if the exported traces contain the route template. The default is <see langword="false" />.
+    /// </value>
     public bool IncludePath { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating how the HTTP path parameter should be redacted.
     /// </summary>
+    /// <value>
+    /// The default is <see cref="HttpRouteParameterRedactionMode.Strict"/>.
+    /// </value>
     /// <remarks>
-    /// The default is set to <see cref="HttpRouteParameterRedactionMode.Strict"/>.
-    /// It is applicable when <see cref="IncludePath"/> option is enabled.
+    /// This property is applicable when the <see cref="IncludePath"/> option is enabled.
     /// </remarks>
     [Experimental]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
@@ -56,7 +56,7 @@ public class HttpTracingOptions
     /// Gets or sets a list of paths to exclude when auto collecting traces.
     /// </summary>
     /// <remarks>
-    /// Traces for requests matching the exclusion list will not be exported.
+    /// Traces for requests matching the exclusion list are not exported.
     /// </remarks>
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Options pattern.")]
     [Required]

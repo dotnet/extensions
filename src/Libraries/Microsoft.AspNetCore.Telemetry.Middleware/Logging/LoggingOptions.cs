@@ -85,9 +85,11 @@ public class LoggingOptions
     /// <summary>
     /// Gets or sets the maximum number of bytes of the request/response body to be read.
     /// </summary>
+    /// <value>
+    /// The default is ≈ 32K.
+    /// </value>
     /// <remarks>
     /// The number should ideally be below 85K to not be allocated on the <see href="https://learn.microsoft.com/dotnet/standard/garbage-collection/large-object-heap">large object heap</see>.
-    /// The default is set to ≈ 32K.
     /// </remarks>
     [Range(1, MaxBodyReadSize)]
     public int BodySizeLimit { get; set; } = DefaultBodyReadSizeLimit;
