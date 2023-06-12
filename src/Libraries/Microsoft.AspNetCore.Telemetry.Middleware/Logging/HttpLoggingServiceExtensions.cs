@@ -32,14 +32,26 @@ public static class HttpLoggingServiceExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="configureRedaction">Configures the redaction options.</param>
     /// <returns>The original service collection.</returns>
-    public static IServiceCollection AddHttpLoggingRedaction(IServiceCollection services, Action<LoggingRedactionOptions> configureRedaction)
+    public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<LoggingRedactionOptions> configureRedaction)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configureRedaction);
 
-        _ = services.Configure(configureRedaction)
-            .AddSingleton<IHttpLoggingInterceptor, HttpLoggingRedactionInterceptor>();
+        _ = services.Configure(configureRedaction);
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpLoggingInterceptor, HttpLoggingRedactionInterceptor>());
+        return services;
+    }
 
+    /// <summary>
+    /// Enables enrichment of HTTP logging. See <see cref="AddHttpLogging(IServiceCollection)"/>.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The original service collection.</returns>
+    public static IServiceCollection AddHttpLoggingEnrichment(this IServiceCollection services)
+    {
+        _ = Throw.IfNull(services);
+
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpLoggingInterceptor, HttpLoggingEnrichmentInterceptor>());
         return services;
     }
 #endif
@@ -108,6 +120,10 @@ public static class HttpLoggingServiceExtensions
         where T : class, IHttpLogEnricher
     {
         _ = Throw.IfNull(services);
+
+#if NET8_0_OR_GREATER
+        services.AddHttpLoggingEnrichment();
+#endif
 
         return services.AddActivatedSingleton<IHttpLogEnricher, T>();
     }
