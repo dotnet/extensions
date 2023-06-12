@@ -29,7 +29,8 @@ internal sealed class HttpLoggingEnrichmentInterceptor : IHttpLoggingInterceptor
     public void OnResponse(HttpLoggingContext logContext)
     {
         // Don't enrich if we're not going to log any part of the response
-        if (!logContext.IsAnyEnabled(HttpLoggingFields.Response) || _enrichers.Length == 0)
+        if (_enrichers.Length == 0
+            || (!logContext.IsAnyEnabled(HttpLoggingFields.Response) && logContext.Parameters.Count == 0))
         {
             return;
         }
