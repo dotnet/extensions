@@ -105,7 +105,7 @@ public class FakeLogger : ILogger
     /// <remarks>
     /// This is a convenience property that merely returns the latest record from the underlying collector.
     /// </remarks>
-    /// <exception cref="InvalidOperationException">When no records have been captured.</exception>
+    /// <exception cref="InvalidOperationException">No records have been captured.</exception>
     public FakeLogRecord LatestRecord => Collector.LatestRecord;
 
     /// <summary>

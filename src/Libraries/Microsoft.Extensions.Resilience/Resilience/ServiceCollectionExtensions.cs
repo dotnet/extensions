@@ -24,7 +24,7 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The DI container.</param>
     /// <param name="pipelineName">The pipeline name.</param>
     /// <returns>The input <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> cannot be null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IResiliencePipelineBuilder<TPolicyResult> AddResiliencePipeline<TPolicyResult>(
         this IServiceCollection services,
         string pipelineName)

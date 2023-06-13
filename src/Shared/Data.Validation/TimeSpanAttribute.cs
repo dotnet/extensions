@@ -48,9 +48,9 @@ internal sealed class TimeSpanAttribute : ValidationAttribute
     /// <summary>
     /// Gets or sets a value indicating whether the time span validation should exclude the minimum and maximum values.
     /// </summary>
-    /// <remarks>
-    /// By default the property is set to <c>false</c>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <c>false</c>.
+    /// </value>
     public bool Exclusive { get; set; }
 
     private readonly int? _minMs;

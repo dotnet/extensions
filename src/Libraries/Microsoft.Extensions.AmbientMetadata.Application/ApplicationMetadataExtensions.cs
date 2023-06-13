@@ -24,8 +24,8 @@ public static class ApplicationMetadataExtensions
     /// <param name="builder">The host builder.</param>
     /// <param name="sectionName">Section name to bind configuration from. Default set to "ambientmetadata:application".</param>
     /// <returns>The value of <paramref name="builder"/>>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException">If <paramref name="sectionName"/> is either <see langword="null"/>, empty or whitespace.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="sectionName"/> is either <see langword="null"/>, empty or whitespace.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ApplicationMetadata))]
     [UnconditionalSuppressMessage(
         "Trimming",
@@ -52,8 +52,8 @@ public static class ApplicationMetadataExtensions
     /// <param name="hostEnvironment">An instance of <see cref="IHostEnvironment" />.</param>
     /// <param name="sectionName">Section name to save configuration into. Default set to "ambientmetadata:application".</param>
     /// <returns>The value of <paramref name="builder"/>>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder"/> or <paramref name="hostEnvironment"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException">If <paramref name="sectionName"/> is either <see langword="null"/>, empty or whitespace.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="hostEnvironment"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="sectionName"/> is either <see langword="null"/>, empty or whitespace.</exception>
     public static IConfigurationBuilder AddApplicationMetadata(this IConfigurationBuilder builder, IHostEnvironment hostEnvironment, string sectionName = DefaultSectionName)
     {
         _ = Throw.IfNull(builder);
@@ -69,7 +69,7 @@ public static class ApplicationMetadataExtensions
     /// <param name="services">The dependency injection container to add the instance to.</param>
     /// <param name="section">The configuration section to bind.</param>
     /// <returns>The value of <paramref name="services"/>>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="section"/> or <paramref name="section"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="section"/> or <paramref name="section"/> are <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ApplicationMetadata))]
     [UnconditionalSuppressMessage(
         "Trimming",
@@ -91,7 +91,7 @@ public static class ApplicationMetadataExtensions
     /// <param name="services">The dependency injection container to add the instance to.</param>
     /// <param name="configure">The delegate to configure <see cref="ApplicationMetadata"/> with.</param>
     /// <returns>The value of <paramref name="services"/>>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="services"/> or <paramref name="configure"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="configure"/> are <see langword="null"/>.</exception>
     public static IServiceCollection AddApplicationMetadata(this IServiceCollection services, Action<ApplicationMetadata> configure)
     {
         _ = Throw.IfNull(services);

@@ -23,59 +23,59 @@ internal sealed class LogFormatterOptions : ConsoleFormatterOptions
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display timestamp.
+    /// Gets or sets a value indicating whether to display the timestamp.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="true"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="true"/>.
+    /// </value>
     public bool IncludeTimestamp { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display log level.
+    /// Gets or sets a value indicating whether to display the log level.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="true"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="true"/>.
+    /// </value>
     public bool IncludeLogLevel { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display activity TraceId.
+    /// Gets or sets a value indicating whether to display the activity TraceId.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="true"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="true"/>.
+    /// </value>
     public bool IncludeTraceId { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display activity SpanId.
+    /// Gets or sets a value indicating whether to display the activity SpanId.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="true"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="true"/>.
+    /// </value>
     public bool IncludeSpanId { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display category.
+    /// Gets or sets a value indicating whether to display the category.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="true"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="true"/>.
+    /// </value>
     public bool IncludeCategory { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display stack trace.
+    /// Gets or sets a value indicating whether to display the stack trace.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="true"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="true"/>.
+    /// </value>
     public bool IncludeExceptionStacktrace { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to display dimensions.
+    /// Gets or sets a value indicating whether to display the dimensions.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="false"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
     public bool IncludeDimensions { get; set; }
 }
 #endif

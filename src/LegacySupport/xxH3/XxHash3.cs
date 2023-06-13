@@ -117,14 +117,14 @@ namespace System.IO.Hashing
         /// <summary>Computes the XXH3 hash of the provided <paramref name="source"/> data.</summary>
         /// <param name="source">The data to hash.</param>
         /// <returns>The XXH3 64-bit hash code of the provided data.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="source"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
         public static byte[] Hash(byte[] source) => Hash(source, seed: 0);
 
         /// <summary>Computes the XXH3 hash of the provided data using the provided seed.</summary>
         /// <param name="source">The data to hash.</param>
         /// <param name="seed">The seed value for this hash computation.</param>
         /// <returns>The XXH3 64-bit hash code of the provided data.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="source"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
         public static byte[] Hash(byte[] source, long seed)
         {
 #if NET6_0_OR_GREATER

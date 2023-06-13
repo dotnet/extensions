@@ -17,7 +17,7 @@ public static partial class CommonHealthChecksExtensions
     /// </summary>
     /// <param name="services">The dependency injection container to add the publisher to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="services" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services" /> is <see langword="null" />.</exception>
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services)
         => Throw.IfNull(services)
             .RegisterMetering()
@@ -29,7 +29,7 @@ public static partial class CommonHealthChecksExtensions
     /// <param name="services">The dependency injection container to add the publisher to.</param>
     /// <param name="section">Configuration for <see cref="TelemetryHealthCheckPublisherOptions"/>.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="services" /> or <paramref name="section"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services" /> or <paramref name="section"/> are <see langword="null" />.</exception>
     [Experimental]
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services, IConfigurationSection section)
         => Throw.IfNull(services)
@@ -43,7 +43,7 @@ public static partial class CommonHealthChecksExtensions
     /// <param name="services">The dependency injection container to add the publisher to.</param>
     /// <param name="configure">Configuration for <see cref="TelemetryHealthCheckPublisherOptions"/>.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="services" /> or <paramref name="configure"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services" /> or <paramref name="configure"/> are <see langword="null" />.</exception>
     [Experimental]
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services, Action<TelemetryHealthCheckPublisherOptions> configure)
         => Throw.IfNull(services)

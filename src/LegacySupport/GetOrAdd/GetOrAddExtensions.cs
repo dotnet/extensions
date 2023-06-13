@@ -21,7 +21,7 @@ internal static class GetOrAddExtensions
     /// <param name="valueFactory">A function that returns a value to insert into the dictionary if it is not already present.</param>
     /// <param name="factoryArgument">The state to pass to the value factory.</param>
     /// <returns>The value for the key. This will be either the existing value for the key if the key is already in the dictionary, or the new value if the key was not in the dictionary.</returns>
-    /// <exception cref="ArgumentNullException">If the dictionary, key, or value factory are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">The dictionary, key, or value factory is <see langword="null"/>.</exception>
     [ExcludeFromCodeCoverage]
     public static TValue GetOrAdd<TKey, TValue, TArg>(this ConcurrentDictionary<TKey, TValue> dictionary, TKey key, Func<TKey, TArg, TValue> valueFactory, TArg factoryArgument)
     {

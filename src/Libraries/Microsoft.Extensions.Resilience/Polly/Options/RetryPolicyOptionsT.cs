@@ -49,7 +49,7 @@ public class RetryPolicyOptions<TResult> : RetryPolicyOptions
     /// Gets or sets the delegate for customizing delay for the retry policy.
     /// </summary>
     /// <remarks>
-    /// By default this is null and the delay will be calculated based on the backoff type only.
+    /// By default this is <see langword="null"/> and the delay will be calculated based on the backoff type only.
     /// </remarks>
     public Func<RetryDelayArguments<TResult>, TimeSpan>? RetryDelayGenerator { get; set; }
 }

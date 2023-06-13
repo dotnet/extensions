@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.LocalAnalyzers.Json;
 internal enum JsonValueType
 {
     /// <summary>
-    /// A null value.
+    /// A <see langword="null" /> value.
     /// </summary>
     Null = 0,
 

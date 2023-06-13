@@ -22,7 +22,7 @@ internal sealed class PipelineMessageDelegateStitcher
     /// </summary>
     /// <param name="middleware"><see cref="IMessageMiddleware"/>.</param>
     /// <param name="nextHandler"><see cref="MessageDelegate"/>.</param>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public PipelineMessageDelegateStitcher(IMessageMiddleware middleware, MessageDelegate nextHandler)
     {
         _middleware = Throw.IfNull(middleware);

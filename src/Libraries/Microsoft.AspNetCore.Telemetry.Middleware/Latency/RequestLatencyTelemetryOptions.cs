@@ -17,9 +17,9 @@ public class RequestLatencyTelemetryOptions
     /// <summary>
     /// Gets or sets the amount of time to wait for export of latency data.
     /// </summary>
-    /// <remarks>
-    /// Default set to 5 seconds.
-    /// </remarks>
+    /// <value>
+    /// The default value is 5 seconds.
+    /// </value>
     [TimeSpan(RequestLatencyTelemetryOptionsValidator.MinimumTimeoutInMs)]
     public TimeSpan LatencyDataExportTimeout { get; set; } = _defaultTimeout;
 }

@@ -18,7 +18,7 @@ public class FakeRedactionCollector
     /// <summary>
     /// Gets the last redactor request "event".
     /// </summary>
-    /// <exception cref="InvalidOperationException">When there has been no previous redactor request event.</exception>
+    /// <exception cref="InvalidOperationException">There has been no previous redactor request event.</exception>
     public RedactorRequested LastRedactorRequested
     {
         get
@@ -52,7 +52,7 @@ public class FakeRedactionCollector
     /// <summary>
     /// Gets the last redaction "event".
     /// </summary>
-    /// <exception cref="InvalidOperationException">When there has been no previous redaction event.</exception>
+    /// <exception cref="InvalidOperationException">There has been no previous redaction event.</exception>
     public RedactedData LastRedactedData
     {
         get

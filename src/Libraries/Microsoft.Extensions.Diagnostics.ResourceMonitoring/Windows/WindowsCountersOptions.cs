@@ -30,9 +30,9 @@ public class WindowsCountersOptions
     /// <summary>
     /// Gets or sets the default interval used for freshing TcpStateInfo Cache.
     /// </summary>
-    /// <remarks>
-    /// Default set to 5 seconds.
-    /// </remarks>
+    /// <value>
+    /// The default value is 5 seconds.
+    /// </value>
     [Experimental]
     [TimeSpan(MinimumCachingInterval, MaximumCachingInterval)]
     public TimeSpan CachingInterval { get; set; } = DefaultCachingInterval;

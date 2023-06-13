@@ -9,7 +9,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 /// <summary>
-/// Extensions for adding the null resource utilization provider.
+/// Extensions for adding the <see langword="null"/> resource utilization provider.
 /// </summary>
 public static class NullUtilizationExtensions
 {
@@ -21,7 +21,7 @@ public static class NullUtilizationExtensions
     /// <remarks>This extension method will add a non-operational provider that generates fixed CPU and Memory information. Don't use this in
     /// production, but you can use it in development environment when you're uncertain about the underlying platform and don't need real data
     /// to be generated.</remarks>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     public static IResourceMonitorBuilder AddNullProvider(this IResourceMonitorBuilder builder)
     {
         _ = Throw.IfNull(builder);

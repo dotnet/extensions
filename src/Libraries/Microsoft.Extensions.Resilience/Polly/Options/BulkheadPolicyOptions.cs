@@ -20,18 +20,18 @@ public class BulkheadPolicyOptions
     /// <summary>
     /// Gets or sets the maximum parallelization of executions through the bulkhead.
     /// </summary>
-    /// <remarks>
-    /// Default set to 1000.
-    /// </remarks>
+    /// <value>
+    /// The default value is 1000.
+    /// </value>
     [Range(1, DefaultMaxLimitActions)]
     public int MaxConcurrency { get; set; } = DefaultMaxConcurrency;
 
     /// <summary>
     /// Gets or sets the maximum number of actions that may be queued (waiting to acquire an execution slot) at any one time.
     /// </summary>
-    /// <remarks>
-    /// Default set to 0.
-    /// </remarks>
+    /// <value>
+    /// The default value is 0.
+    /// </value>
     [Range(0, DefaultMaxLimitActions)]
     public int MaxQueuedActions { get; set; } = DefaultMaxQueuedActions;
 

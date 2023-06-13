@@ -12,7 +12,7 @@ public enum HttpRouteParameterRedactionMode
     /// All parameters are considered as sensitive and are required to be explicitly annotated with a data classification.
     /// </summary>
     /// <remarks>
-    /// UNannotated parameters are always redacted with the erasing redactor.
+    /// Unannotated parameters are always redacted with the erasing redactor.
     /// </remarks>
     Strict,
 
@@ -20,12 +20,12 @@ public enum HttpRouteParameterRedactionMode
     /// All parameters are considered as non-sensitive and included as-is by default.
     /// </summary>
     /// <remarks>
-    /// Only parameters explicitly annotaed with a data classification are redacted.
+    /// Only parameters explicitly annotated with a data classification are redacted.
     /// </remarks>
     Loose,
 
     /// <summary>
-    /// Route parameters are not redacted regardless of the presence of data classifcation annotations.
+    /// Route parameters are not redacted regardless of the presence of data classification annotations.
     /// </summary>
     None,
 }

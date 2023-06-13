@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Compliance.Testing;
 public readonly struct RedactorRequested : IEquatable<RedactorRequested>
 {
     /// <summary>
-    /// Gets the the data classification for which the redactor was returned.
+    /// Gets the data classification for which the redactor was returned.
     /// </summary>
     public DataClassification DataClassification { get; }
 

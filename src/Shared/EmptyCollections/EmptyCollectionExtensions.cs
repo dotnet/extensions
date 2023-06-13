@@ -18,11 +18,11 @@ namespace Microsoft.Shared.Collections;
 internal static class EmptyCollectionExtensions
 {
     /// <summary>
-    /// Returns an optimized empty collection if the input is null or empty, otherwise returns the input.
+    /// Returns an optimized empty collection if the input is <see langword="null"/> or empty, otherwise returns the input.
     /// </summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="collection">The collection to check for null or empty.</param>
-    /// <returns>Returns a static instance of an empty type if the input collection is null or empty, otherwise the collection.</returns>
+    /// <param name="collection">The collection to check for <see langword="null"/> or empty.</param>
+    /// <returns>Returns a static instance of an empty type if the input collection is <see langword="null"/> or empty, otherwise the collection.</returns>
     /// <remarks>
     /// Substituting a static collection whenever an empty collection is needed helps in two ways. First,
     /// it allows the original empty collection to be garbage collected, freeing memory. Second, the
@@ -33,11 +33,11 @@ internal static class EmptyCollectionExtensions
         => collection == null || collection.Count == 0 ? EmptyReadOnlyList<T>.Instance : collection;
 
     /// <summary>
-    /// Returns an optimized empty collection if the input is null or empty, otherwise returns the input.
+    /// Returns an optimized empty collection if the input is <see langword="null"/> or empty, otherwise returns the input.
     /// </summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="collection">The collection to check for null or empty.</param>
-    /// <returns>Returns a static instance of an empty type if the input collection is null or empty, otherwise the collection.</returns>
+    /// <param name="collection">The collection to check for <see langword="null"/> or empty.</param>
+    /// <returns>Returns a static instance of an empty type if the input collection is <see langword="null"/> or empty, otherwise the collection.</returns>
     /// <remarks>
     /// Substituting a static collection whenever an empty collection is needed helps in two ways. First,
     /// it allows the original empty collection to be garbage collected, freeing memory. Second, the
@@ -48,11 +48,11 @@ internal static class EmptyCollectionExtensions
         => collection == null || collection.Count == 0 ? EmptyReadOnlyList<T>.Instance : collection;
 
     /// <summary>
-    /// Returns an optimized empty collection if the input is null or empty, otherwise returns the input.
+    /// Returns an optimized empty collection if the input is <see langword="null"/> or empty, otherwise returns the input.
     /// </summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="list">The collection to check for null or empty.</param>
-    /// <returns>Returns a static instance of an empty type if the input collection is null or empty, otherwise the collection.</returns>
+    /// <param name="list">The collection to check for <see langword="null"/> or empty.</param>
+    /// <returns>Returns a static instance of an empty type if the input collection is <see langword="null"/> or empty, otherwise the collection.</returns>
     /// <remarks>
     /// Substituting a static collection whenever an empty collection is needed helps in two ways. First,
     /// it allows the original empty collection to be garbage collected, freeing memory. Second, the
@@ -63,11 +63,11 @@ internal static class EmptyCollectionExtensions
         => list == null || list.Count == 0 ? EmptyReadOnlyList<T>.Instance : list;
 
     /// <summary>
-    /// Returns an optimized empty list if the input is null or empty, otherwise returns the input.
+    /// Returns an optimized empty list if the input is <see langword="null"/> or empty, otherwise returns the input.
     /// </summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="list">The list to check for null or empty.</param>
-    /// <returns>Returns a static instance of an empty type if the input collection is null or empty, otherwise the collection.</returns>
+    /// <param name="list">The list to check for <see langword="null"/> or empty.</param>
+    /// <returns>Returns a static instance of an empty type if the input collection is <see langword="null"/> or empty, otherwise the collection.</returns>
     /// <remarks>
     /// Substituting a static list whenever an empty collection is needed helps in two ways. First,
     /// it allows the original empty collection to be garbage collected, freeing memory. Second, the
@@ -78,22 +78,22 @@ internal static class EmptyCollectionExtensions
         => list == null || list.Count == 0 ? EmptyReadOnlyList<T>.Instance : list;
 
     /// <summary>
-    /// Returns an optimized empty array if the input is null or empty, otherwise returns the input.
+    /// Returns an optimized empty array if the input is <see langword="null"/> or empty, otherwise returns the input.
     /// </summary>
     /// <typeparam name="T">The type of the array.</typeparam>
-    /// <param name="array">The array to check for null or empty.</param>
-    /// <returns>Returns a static instance of an empty array if the input array is null or empty, otherwise the array.</returns>
+    /// <param name="array">The array to check for <see langword="null"/> or empty.</param>
+    /// <returns>Returns a static instance of an empty array if the input array is <see langword="null"/> or empty, otherwise the array.</returns>
     public static T[] EmptyIfNull<T>(this T[]? array)
         => array == null || array.Length == 0 ? Array.Empty<T>() : array;
 
     /// <summary>
-    /// Returns an optimized empty collection if the input is null or can be determined to be empty, otherwise returns the input.
+    /// Returns an optimized empty collection if the input is <see langword="null"/> or can be determined to be empty, otherwise returns the input.
     /// </summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="enumerable">The collection to check for null or empty.</param>
-    /// <returns>Returns a static instance of an empty type if the input collection is null or empty, otherwise the collection.</returns>
+    /// <param name="enumerable">The collection to check for <see langword="null"/> or empty.</param>
+    /// <returns>Returns a static instance of an empty type if the input collection is <see langword="null"/> or empty, otherwise the collection.</returns>
     /// <remarks>
-    /// Note that this method does not enumerate the colleciton.
+    /// This method does not enumerate the collection.
     /// </remarks>
     public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T>? enumerable)
     {
@@ -118,12 +118,12 @@ internal static class EmptyCollectionExtensions
     }
 
     /// <summary>
-    /// Returns an optimized empty dictionary if the input is null or can be determined to be empty, otherwise returns the input.
+    /// Returns an optimized empty dictionary if the input is <see langword="null"/> or can be determined to be empty, otherwise returns the input.
     /// </summary>
     /// <typeparam name="TKey">The key type of the dictionary.</typeparam>
     /// <typeparam name="TValue">The value type of the dictionary.</typeparam>
-    /// <param name="dictionary">The dictionary to check for null or empty.</param>
-    /// <returns>Returns a static instance of an empty type if the input dictionary is null or empty, otherwise the dictionary.</returns>
+    /// <param name="dictionary">The dictionary to check for <see langword="null"/> or empty.</param>
+    /// <returns>Returns a static instance of an empty type if the input dictionary is <see langword="null"/> or empty, otherwise the dictionary.</returns>
     /// <remarks>
     /// Note that this method does not enumerate the dictionary.
     /// </remarks>

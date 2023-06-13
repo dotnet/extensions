@@ -18,7 +18,7 @@ public static class EnricherExtensions
     /// <param name="services">The dependency injection container to add the enricher type to.</param>
     /// <typeparam name="T">Enricher type.</typeparam>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddLogEnricher<T>(this IServiceCollection services)
         where T : class, ILogEnricher
     {
@@ -33,7 +33,7 @@ public static class EnricherExtensions
     /// <param name="services">The dependency injection container to add the enricher instance to.</param>
     /// <param name="enricher">The enricher instance to add.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> or <paramref name="enricher"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="enricher"/> are <see langword="null"/>.</exception>
     public static IServiceCollection AddLogEnricher(this IServiceCollection services, ILogEnricher enricher)
     {
         _ = Throw.IfNull(services);
@@ -48,7 +48,7 @@ public static class EnricherExtensions
     /// <typeparam name="T">Enricher type.</typeparam>
     /// <param name="services">The dependency injection container to add the enricher type to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddMetricEnricher<T>(this IServiceCollection services)
         where T : class, IMetricEnricher
     {
@@ -63,7 +63,7 @@ public static class EnricherExtensions
     /// <param name="services">The dependency injection container to add the enricher instance to.</param>
     /// <param name="enricher">The enricher instance to add.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> or <paramref name="enricher"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="enricher"/> are <see langword="null"/>.</exception>
     public static IServiceCollection AddMetricEnricher(this IServiceCollection services, IMetricEnricher enricher)
     {
         _ = Throw.IfNull(services);

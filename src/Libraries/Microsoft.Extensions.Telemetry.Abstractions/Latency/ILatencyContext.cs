@@ -25,7 +25,7 @@ public interface ILatencyContext : IDisposable
     /// slice and dice the data for analysis. Examples include API, Client, UserType etc.
     /// Setting a tag with same name overrides its prior value i.e., last call wins.
     /// </remarks>
-    /// <exception cref="ArgumentNullException">When <paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     void SetTag(TagToken token, string value);
 
     /// <summary>

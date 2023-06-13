@@ -14,9 +14,9 @@ public class StartupInitializationOptions
     /// <summary>
     /// Gets or sets maximum time allowed for initialization logic.
     /// </summary>
-    /// <remarks>
-    /// Default set to 30 seconds.
-    /// </remarks>
+    /// <value>
+    /// The default value is 30 seconds.
+    /// </value>
     [TimeSpan("00:00:05", "01:00:00")]
     public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
 }

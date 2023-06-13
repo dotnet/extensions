@@ -28,7 +28,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <typeparam name="T">Type of singleton.</typeparam>
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder AddNamedSingleton<T>(this IAsyncProcessingPipelineBuilder pipelineBuilder)
         where T : class
     {
@@ -45,7 +45,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <param name="implementationFactory">The implementation factory for the singleton type.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder AddNamedSingleton<T>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                        Func<IServiceProvider, T> implementationFactory)
         where T : class
@@ -65,7 +65,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <param name="name">The name with which the singleton is registered.</param>
     /// <param name="implementationFactory">The implementation factory for the singleton type.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder AddNamedSingleton<T>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                        string name,
                                                                        Func<IServiceProvider, T> implementationFactory)
@@ -88,7 +88,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <typeparam name="TDestination">Type of <see cref="IMessageDestination"/> implementation.</typeparam>
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder ConfigureMessageDestination<TDestination>(this IAsyncProcessingPipelineBuilder pipelineBuilder)
         where TDestination : class, IMessageDestination
     {
@@ -105,7 +105,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <param name="implementationFactory">The implementation factory for <see cref="IMessageDestination"/>.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder ConfigureMessageDestination<TDestination>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                                             Func<IServiceProvider, TDestination> implementationFactory)
         where TDestination : class, IMessageDestination
@@ -125,7 +125,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <param name="name">The name with which the <see cref="IMessageDestination"/> is registered with.</param>
     /// <param name="implementationFactory">The implementation factory for <see cref="IMessageDestination"/>.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder ConfigureMessageDestination<TDestination>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                                             string name,
                                                                                             Func<IServiceProvider, TDestination> implementationFactory)
@@ -148,7 +148,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <typeparam name="TSource">Type of <see cref="IMessageSource"/> implementation.</typeparam>
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder ConfigureMessageSource<TSource>(this IAsyncProcessingPipelineBuilder pipelineBuilder)
         where TSource : class, IMessageSource
     {
@@ -165,7 +165,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <param name="implementationFactory">The implementation factory for <see cref="IMessageSource"/>.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder ConfigureMessageSource<TSource>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                                   Func<IServiceProvider, TSource> implementationFactory)
         where TSource : class, IMessageSource
@@ -187,7 +187,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <typeparam name="TMiddleware">Type of <see cref="IMessageMiddleware"/> implementation.</typeparam>
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder AddMessageMiddleware<TMiddleware>(this IAsyncProcessingPipelineBuilder pipelineBuilder)
         where TMiddleware : class, IMessageMiddleware
     {
@@ -207,7 +207,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <param name="implementationFactory">The implementation factory for <see cref="IMessageMiddleware"/>.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder AddMessageMiddleware<TMiddleware>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                                     Func<IServiceProvider, TMiddleware> implementationFactory)
         where TMiddleware : class, IMessageMiddleware
@@ -229,7 +229,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// </remarks>
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder ConfigureTerminalMessageDelegate(this IAsyncProcessingPipelineBuilder pipelineBuilder)
     {
         _ = Throw.IfNull(pipelineBuilder);
@@ -249,7 +249,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <param name="implementationFactory">The implementation factory for <see cref="MessageDelegate"/>.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder ConfigureTerminalMessageDelegate(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                                    Func<IServiceProvider, MessageDelegate> implementationFactory)
     {
@@ -269,7 +269,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <typeparam name="TConsumer">Type of <see cref="MessageConsumer"/> implementation.</typeparam>
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder ConfigureMessageConsumer<TConsumer>(this IAsyncProcessingPipelineBuilder pipelineBuilder)
         where TConsumer : MessageConsumer
     {
@@ -286,7 +286,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <param name="implementationFactory">The implementation factory for <see cref="MessageConsumer"/>.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static IAsyncProcessingPipelineBuilder ConfigureMessageConsumer<TConsumer>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                                       Func<IServiceProvider, TConsumer> implementationFactory)
         where TConsumer : MessageConsumer
@@ -307,7 +307,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     ///   2. <see cref="ConfigureMessageConsumer{TConsumer}(IAsyncProcessingPipelineBuilder, Func{IServiceProvider, TConsumer})"/>.
     /// </remarks>
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static void RunConsumerAsBackgroundService(this IAsyncProcessingPipelineBuilder pipelineBuilder)
     {
         _ = Throw.IfNull(pipelineBuilder);

@@ -15,18 +15,18 @@ public class ResourceUsageThresholds
     /// <summary>
     /// Gets or sets the percentage threshold for the degraded state.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="null" />.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="null" />.
+    /// </value>
     [Range(0.0, 100.0)]
     public double? DegradedUtilizationPercentage { get; set; }
 
     /// <summary>
     /// Gets or sets the percentage threshold for the unhealthy state.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="null" />.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="null" />.
+    /// </value>
     [Range(0.0, 100.0)]
     public double? UnhealthyUtilizationPercentage { get; set; }
 }

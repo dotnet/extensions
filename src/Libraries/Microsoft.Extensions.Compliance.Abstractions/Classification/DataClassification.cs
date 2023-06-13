@@ -45,9 +45,9 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     /// <summary>
     /// Initializes a new instance of the <see cref="DataClassification"/> struct.
     /// </summary>
-    /// <param name="taxonomyName">Name of the taxonomy this classification belongs to.</param>
+    /// <param name="taxonomyName">The name of the taxonomy this classification belongs to.</param>
     /// <param name="value">The taxonomy-specific bit vector representing the data classes.</param>
-    /// <exception cref="ArgumentException">If bit 63, corresponding to <see cref="UnknownTaxonomyValue"/> is set in the <paramref name="value"/> value.</exception>
+    /// <exception cref="ArgumentException">Bit 63, which corresponds to <see cref="UnknownTaxonomyValue"/>, is set in the <paramref name="value"/> value.</exception>
     public DataClassification(string taxonomyName, ulong value)
     {
         TaxonomyName = Throw.IfNullOrEmpty(taxonomyName);
@@ -116,7 +116,7 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     /// <param name="left">The first classification to combine.</param>
     /// <param name="right">The second classification to combine.</param>
     /// <returns>A new classification object representing the combination of the two input classifications.</returns>
-    /// <exception cref="ArgumentException">if the two classifications aren't part of the same taxonomy.</exception>
+    /// <exception cref="ArgumentException">The two classifications aren't part of the same taxonomy.</exception>
     public static DataClassification Combine(DataClassification left, DataClassification right)
     {
         if (string.IsNullOrEmpty(left.TaxonomyName))
@@ -142,7 +142,7 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     /// <param name="left">The first classification to combine.</param>
     /// <param name="right">The second classification to combine.</param>
     /// <returns>A new classification object representing the combination of the two input classifications.</returns>
-    /// <exception cref="ArgumentException">if the two classifications aren't part of the same taxonomy.</exception>
+    /// <exception cref="ArgumentException">The two classifications aren't part of the same taxonomy.</exception>
     [SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "It's called Combine")]
     public static DataClassification operator |(DataClassification left, DataClassification right)
     {

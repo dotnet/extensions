@@ -18,7 +18,7 @@ public static class NullLatencyContextExtensions
     /// </summary>
     /// <param name="services">The dependency injection container to add the context to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddNullLatencyContext(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);

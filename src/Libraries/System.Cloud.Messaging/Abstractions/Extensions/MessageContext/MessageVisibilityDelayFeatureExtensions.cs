@@ -18,7 +18,7 @@ public static class MessageVisibilityDelayFeatureExtensions
     /// </summary>
     /// <param name="context">The message context.</param>
     /// <param name="visibilityDelay">The time span representing when the message should be next visible for processing via a different <see cref="MessageConsumer"/>.</param>
-    /// <exception cref="ArgumentNullException">If <paramref name="context"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
     public static void SetVisibilityDelay(this MessageContext context, TimeSpan visibilityDelay)
     {
         _ = Throw.IfNull(context);
@@ -26,13 +26,13 @@ public static class MessageVisibilityDelayFeatureExtensions
     }
 
     /// <summary>
-    /// Try to get <see cref="IMessageVisibilityDelayFeature"/> in the provided <paramref name="visibilityDelay"/> from the <see cref="MessageContext"/>.
+    /// Tries to get <see cref="IMessageVisibilityDelayFeature"/> in the provided <paramref name="visibilityDelay"/> from the <see cref="MessageContext"/>.
     /// </summary>
     /// <param name="context">The message context.</param>
     /// <param name="visibilityDelay">The optional feature to delay the message visibility.</param>
     /// <returns><see cref="bool"/> and if <see langword="true"/>, a corresponding <see cref="IMessageVisibilityDelayFeature"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="context"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">If no source <see cref="IFeatureCollection"/> is added to <paramref name="context"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">No source <see cref="IFeatureCollection"/> is added to <paramref name="context"/>.</exception>
     public static bool TryGetVisibilityDelay(this MessageContext context, [NotNullWhen(true)] out IMessageVisibilityDelayFeature? visibilityDelay)
     {
         _ = Throw.IfNull(context);

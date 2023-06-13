@@ -55,7 +55,7 @@ internal sealed class MaybeNullWhenAttribute : Attribute
 {
     /// <summary>Initializes the attribute with the specified return value condition.</summary>
     /// <param name="returnValue">
-    /// The return value condition. If the method returns this value, the associated parameter may be null.
+    /// The return value condition. If the method returns this value, the associated parameter may be <see langword="null" />.
     /// </param>
     public MaybeNullWhenAttribute(bool returnValue) => ReturnValue = returnValue;
 
@@ -70,7 +70,7 @@ internal sealed class NotNullWhenAttribute : Attribute
 {
     /// <summary>Initializes the attribute with the specified return value condition.</summary>
     /// <param name="returnValue">
-    /// The return value condition. If the method returns this value, the associated parameter will not be null.
+    /// The return value condition. If the method returns this value, the associated parameter will not be <see langword="null" />.
     /// </param>
     public NotNullWhenAttribute(bool returnValue) => ReturnValue = returnValue;
 
@@ -145,7 +145,7 @@ internal sealed class MemberNotNullWhenAttribute : Attribute
 {
     /// <summary>Initializes the attribute with the specified return value condition and a field or property member.</summary>
     /// <param name="returnValue">
-    /// The return value condition. If the method returns this value, the associated parameter will not be null.
+    /// The return value condition. If the method returns this value, the associated parameter will not be <see langword="null" />.
     /// </param>
     /// <param name="member">
     /// The field or property member that is promised to be not-null.
@@ -158,7 +158,7 @@ internal sealed class MemberNotNullWhenAttribute : Attribute
 
     /// <summary>Initializes the attribute with the specified return value condition and list of field and property members.</summary>
     /// <param name="returnValue">
-    /// The return value condition. If the method returns this value, the associated parameter will not be null.
+    /// The return value condition. If the method returns this value, the associated parameter will not be <see langword="null" />.
     /// </param>
     /// <param name="members">
     /// The list of field and property members that are promised to be not-null.

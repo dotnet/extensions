@@ -160,7 +160,7 @@ public static class HttpClientLoggingExtensions
     /// <returns>
     /// An <see cref="IHttpClientBuilder" /> that can be used to configure the client.
     /// </returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
@@ -194,7 +194,7 @@ public static class HttpClientLoggingExtensions
     /// <returns>
     /// An <see cref="IHttpClientBuilder" /> that can be used to configure the client.
     /// </returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",

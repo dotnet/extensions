@@ -17,7 +17,7 @@ public interface IEnrichmentPropertyBag
     /// </summary>
     /// <param name="key">Enrichment property key.</param>
     /// <param name="value">Enrichment property value.</param>
-    /// <exception cref="ArgumentException">When <paramref name="key"/> is an empty string.</exception>
+    /// <exception cref="ArgumentException"><paramref name="key"/> is an empty string.</exception>
     /// <exception cref="ArgumentNullException">
     /// Either <paramref name="key"/> or <paramref name="value"/> is <see langword="null" />.
     /// </exception>
@@ -54,7 +54,7 @@ public interface IEnrichmentPropertyBag
     /// </summary>
     /// <param name="key">Enrichment property key.</param>
     /// <param name="value">Enrichment property value.</param>
-    /// <exception cref="ArgumentException">When <paramref name="key"/> is an empty string.</exception>
+    /// <exception cref="ArgumentException"><paramref name="key"/> is an empty string.</exception>
     /// <exception cref="ArgumentNullException">
     /// Either <paramref name="key"/> or <paramref name="value"/> is <see langword="null" />.
     /// </exception>

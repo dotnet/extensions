@@ -24,9 +24,9 @@ public class ChaosPolicyOptionsBase
     /// Gets or sets a value indicating whether
     /// a chaos policy should be enabled or not.
     /// </summary>
-    /// <remarks>
-    /// Default is set to <see langword="false"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
     public bool Enabled { get; set; } = DefaultEnabled;
 
     /// <summary>

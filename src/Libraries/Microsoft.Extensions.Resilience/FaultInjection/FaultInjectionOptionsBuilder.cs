@@ -23,7 +23,7 @@ public class FaultInjectionOptionsBuilder
     /// </summary>
     /// <param name="services">The services collection.</param>
     /// <exception cref="ArgumentNullException">
-    /// All parameters cannot be null.
+    /// Any parameter is <see langword="null"/>.
     /// </exception>
     public FaultInjectionOptionsBuilder(IServiceCollection services)
     {
@@ -52,7 +52,7 @@ public class FaultInjectionOptionsBuilder
     /// </param>
     /// <returns>The builder object itself so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters cannot be null.
+    /// Any parameter is <see langword="null"/>.
     /// </exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(FaultInjectionOptions))]
     [UnconditionalSuppressMessage(
@@ -79,7 +79,7 @@ public class FaultInjectionOptionsBuilder
     /// </param>
     /// <returns>The builder object itself so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters cannot be null.
+    /// Any parameter is <see langword="null"/>.
     /// </exception>
     public FaultInjectionOptionsBuilder Configure(Action<FaultInjectionOptions> configureOptions)
     {
@@ -99,10 +99,10 @@ public class FaultInjectionOptionsBuilder
     /// <param name="exception">The exception instance to be added.</param>
     /// <returns>The builder object itself so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException">
-    /// The exception cannot be null.
+    /// <paramref name="exception"/> is <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// The key must not be an empty string or null.
+    /// <paramref name="key"/> is an empty string or <see langword="null"/>.
     /// </exception>
     public FaultInjectionOptionsBuilder AddException(string key, Exception exception)
     {
@@ -121,10 +121,10 @@ public class FaultInjectionOptionsBuilder
     /// <param name="customResult">The custom result object instance to be added.</param>
     /// <returns>The builder object itself so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException">
-    /// The exception cannot be null.
+    /// <paramref name="customResult"/> is <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// The key must not be an empty string or null.
+    /// <paramref name="key"/> is an empty string or <see langword="null"/>.
     /// </exception>
     [Experimental]
     public FaultInjectionOptionsBuilder AddCustomResult(string key, object customResult)
