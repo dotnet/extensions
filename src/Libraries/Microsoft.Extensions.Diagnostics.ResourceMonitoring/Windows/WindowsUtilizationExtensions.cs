@@ -62,7 +62,7 @@ public static class WindowsUtilizationExtensions
     /// An extension method that creates a few OpenTelemetry instruments for system counters.
     /// </summary>
     /// <param name="builder">The builder.</param>
-    /// <returns>The builder.</returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
     [Experimental]

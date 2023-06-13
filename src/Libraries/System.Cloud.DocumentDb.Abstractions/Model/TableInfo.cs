@@ -7,13 +7,13 @@ using Microsoft.Shared.Diagnostics;
 namespace System.Cloud.DocumentDb;
 
 /// <summary>
-/// The struct representing read only table configurations.
+/// Represents read-only table configurations.
 /// </summary>
 /// <remarks>
 /// Contains similar information as <see cref="TableOptions"/>,
-/// but can not be extended and modified.
-/// It is designed to be used in a hot pass,
-/// and having 8x performance comparing to using <see cref="TableOptions"/>.
+/// but can't be extended and modified.
+/// It's designed to be used in a hot pass,
+/// and has 8x performance compared to using <see cref="TableOptions"/>.
 /// </remarks>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance",
     "CA1815:Override equals and operator equals on value types",
@@ -71,11 +71,11 @@ public readonly struct TableInfo
     /// Gets a value indicating whether a <see cref="ITableLocator"/> is required to be used with this table.
     /// </summary>
     /// <value>
-    /// The default is <see langword="false"/>, which means locator will not be used even if configured.
+    /// The default is <see langword="false"/>, which means a locator isn't used even if configured.
     /// </value>
     /// <remarks>
-    /// If locator is required, requests will require that <see cref="RequestOptions"/> be specified to provide <see cref="RequestOptions{TDocument}.Document"/>.
-    /// This is a protection mechanism to ensure a specific table is designed to forget provide documents when the table locator is in use.
+    /// If a locator is required, requests require that <see cref="RequestOptions"/> be specified to provide <see cref="RequestOptions{TDocument}.Document"/>.
+    /// This is a protection mechanism to ensure that the table forgets provided documents.
     /// </remarks>
     public bool IsLocatorRequired { get; }
 
