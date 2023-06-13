@@ -44,6 +44,7 @@ public class DatabaseOptionsTests
 
         Assert.Equal(string.Empty, config.DatabaseName);
         Throughput.Unlimited.Should().Be(config.Throughput);
+        Assert.True(config.OverrideSerialization);
     }
 
     [Fact]
