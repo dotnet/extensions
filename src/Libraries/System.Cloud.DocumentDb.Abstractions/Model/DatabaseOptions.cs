@@ -82,11 +82,23 @@ public class DatabaseOptions
     /// Gets or sets json serializer options.
     /// </summary>
     /// <remarks>
+    /// This will be used only if <see cref="OverrideSerialization"/> is enabled.
     /// Default is the default <see cref="JsonSerializerOptions" />.
     /// Those options will be used by compatible APIs to serialize input before sending to server and deserialize output.
     /// This includes sent/received documents.
     /// </remarks>
     public JsonSerializerOptions JsonSerializerOptions { get; set; } = new();
+
+    /// <summary>
+    /// Gets or sets a value indicating whether serialization overridden.
+    /// </summary>
+    /// <remarks>
+    /// Default is <see langword="true"/>.
+    /// When enabled, System.Text.Json based serialization will be configured with
+    /// settings defined in <see cref="JsonSerializerOptions"/>.
+    /// </remarks>
+    [Experimental("New feature.")]
+    public bool OverrideSerialization { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a list of preferred regions used for SDK to define failover order for global database.
