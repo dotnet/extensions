@@ -26,30 +26,36 @@ public class LoggingOptions
     private static readonly TimeSpan _defaultReadTimeout = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// Gets or sets a value indicating whether request will be logged additionally before any further processing.
+    /// Gets or sets a value indicating whether the request is logged additionally before any further processing.
     /// </summary>
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
     /// <remarks>
     /// When enabled, two entries will be logged for each incoming request. Note, that the first log record won't be enriched.
     /// When disabled, only one entry will be logged for each incoming request (with corresponding response's data).
-    /// Default set to <see langword="false"/>.
     /// </remarks>
     public bool LogRequestStart { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether HTTP request and response body will be logged.
     /// </summary>
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
     /// <remarks>
-    /// Please avoid enabling this options in production environment as it might lead to leaking privacy information.
-    /// Default set to <see langword="false"/>.
+    /// Avoid enabling this option in a production environment as it might lead to leaking privacy information.
     /// </remarks>
     public bool LogBody { get; set; }
 
     /// <summary>
     /// Gets or sets a strategy how request path should be logged.
     /// </summary>
+    /// <value>
+    /// The default value is <see cref="IncomingPathLoggingMode.Formatted"/>.
+    /// </value>
     /// <remarks>
     /// Make sure you add redactors to ensure that sensitive information doesn't find its way into your log records.
-    /// Default set to <see cref="IncomingPathLoggingMode.Formatted"/>.
     /// This option only applies when the <see cref="RequestPathParameterRedactionMode"/>
     /// option is not set to <see cref="HttpRouteParameterRedactionMode.None"/>.
     /// </remarks>
@@ -58,28 +64,32 @@ public class LoggingOptions
     /// <summary>
     /// Gets or sets a value indicating how request path parameter should be redacted.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see cref="HttpRouteParameterRedactionMode.Strict"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see cref="HttpRouteParameterRedactionMode.Strict"/>.
+    /// </value>
     [Experimental]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>
     /// Gets or sets a maximum amount of time to wait for the request body to be read.
     /// </summary>
+    /// <value>
+    /// The default value is 1 second.
+    /// </value>
     /// <remarks>
     /// The number should be above 1 millisecond and below 1 minute.
-    /// Default set to 1 second.
     /// </remarks>
     [TimeSpan(Millisecond, Minute)]
     public TimeSpan RequestBodyReadTimeout { get; set; } = _defaultReadTimeout;
 
     /// <summary>
-    /// Gets or sets a value indicating the maximum number of bytes of the request/response body to be read.
+    /// Gets or sets the maximum number of bytes of the request/response body to be read.
     /// </summary>
+    /// <value>
+    /// The default is ≈ 32K.
+    /// </value>
     /// <remarks>
-    /// The number should ideally be below 85K to not be allocated on the <see href="https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/large-object-heap">large object heap</see>.
-    /// Default set to ≈ 32K.
+    /// The number should ideally be below 85K to not be allocated on the <see href="https://learn.microsoft.com/dotnet/standard/garbage-collection/large-object-heap">large object heap</see>.
     /// </remarks>
     [Range(1, MaxBodyReadSize)]
     public int BodySizeLimit { get; set; } = DefaultBodyReadSizeLimit;
@@ -87,8 +97,10 @@ public class LoggingOptions
     /// <summary>
     /// Gets or sets a map between HTTP path parameters and their data classification.
     /// </summary>
+    /// <value>
+    /// The default value is an empty dictionary.
+    /// </value>
     /// <remarks>
-    /// Default set to an empty dictionary.
     /// If a parameter within a controller's action is not annotated with a data classification attribute and
     /// it's not found in this map, it will be redacted as if it was <see cref="DataClassification.Unknown"/>.
     /// If you don't want a parameter to be redacted, mark it as <see cref="DataClassification.None"/>.
@@ -100,10 +112,9 @@ public class LoggingOptions
     /// <summary>
     /// Gets or sets a map between request headers to be logged and their data classification.
     /// </summary>
-    /// <remarks>
-    /// Default set to an empty dictionary.
-    /// That means that no request header will be logged by default.
-    /// </remarks>
+    /// <value>
+    /// The default value is an empty dictionary, which means that no request header is logged by default.
+    /// </value>
     [Required]
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
@@ -112,12 +123,13 @@ public class LoggingOptions
     /// <summary>
     /// Gets or sets the set of request body content types which are considered text and thus possible to log.
     /// </summary>
+    /// <value>
+    /// The default value is an empty <see cref="HashSet{T}"/>, which means that the request's body isn't logged.
+    /// </value>
     /// <remarks>
-    /// Make sure to not enable body logging in production environment, as it will cause
-    /// both performance impact and leakage of sensitive data.
-    /// If you need to log body in production, please go through compliance and security.
-    /// Default set to an empty <see cref="HashSet{T}"/>.
-    /// That means that request's body will not be logged by default.
+    /// Don't enable body logging in a production environment, as it might impact
+    /// performance and leak sensitive data.
+    /// If you need to log body in production, go through compliance and security.
     /// </remarks>
     /// <example>
     /// A typical set of known text content-types like json, xml or text would be:
@@ -140,10 +152,9 @@ public class LoggingOptions
     /// <summary>
     /// Gets or sets a map between response headers to be logged and their data classification.
     /// </summary>
-    /// <remarks>
-    /// Default set to an empty dictionary.
-    /// That means that no response header will be logged by default.
-    /// </remarks>
+    /// <value>
+    /// The default value is an empty dictionary, which means that no response header is logged by default.
+    /// </value>
     [Required]
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
@@ -152,12 +163,12 @@ public class LoggingOptions
     /// <summary>
     /// Gets or sets the set of response body content types which are considered text and thus possible to log.
     /// </summary>
+    /// <value>
+    /// The default value is an empty <see cref="HashSet{T}"/>, which means that the response's body isn't logged.
+    /// </value>
     /// <remarks>
-    /// Make sure to not enable body logging in production environment, as it will cause
-    /// both performance impact and leakage of sensitive data.
-    /// If you need to log body in production, please go through compliance and security.
-    /// Default set to an empty <see cref="HashSet{T}"/>.
-    /// That means that response's body will not be logged by default.
+    /// Don't enable body logging in a production environment, as it might impact performance and leak sensitive data.
+    /// If you need to log body in production, go through compliance and security.
     /// </remarks>
     /// <example>
     /// A typical set of known text content-types like json, xml or text would be:
@@ -180,10 +191,12 @@ public class LoggingOptions
     /// <summary>
     /// Gets or sets the set of HTTP paths that should be excluded from logging.
     /// </summary>
+    /// <value>
+    /// The default value is an empty <see cref="HashSet{T}"/>.
+    /// </value>
     /// <remarks>
     /// Any path added to the set will not be logged.
     /// Paths are case insensitive.
-    /// Default set to an empty <see cref="HashSet{T}"/>.
     /// </remarks>
     /// <example>
     /// A typical set of HTTP paths would be:

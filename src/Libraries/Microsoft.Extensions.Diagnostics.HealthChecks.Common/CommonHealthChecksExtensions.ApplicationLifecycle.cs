@@ -29,7 +29,7 @@ public static partial class CommonHealthChecksExtensions
     /// <param name="builder">The builder to add the provider to.</param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder" /> or <paramref name="tags"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="tags"/> are <see langword="null" />.</exception>
     public static IHealthChecksBuilder AddApplicationLifecycleHealthCheck(this IHealthChecksBuilder builder, IEnumerable<string> tags)
         => Throw.IfNull(builder)
             .AddCheck<ApplicationLifecycleHealthCheck>("ApplicationLifecycle", tags: Throw.IfNull(tags));

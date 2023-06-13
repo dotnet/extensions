@@ -20,7 +20,7 @@ internal sealed class PolicyFactoryUtility
     /// <summary>
     /// Validates the options.
     /// </summary>
-    /// <exception cref="ValidationException">When <paramref name="options"/> are not valid.</exception>
+    /// <exception cref="ValidationException"><paramref name="options"/> are not valid.</exception>
     public static void ValidateOptions<TOptions>(IValidateOptions<TOptions> validator, TOptions options)
         where TOptions : class, new()
     {

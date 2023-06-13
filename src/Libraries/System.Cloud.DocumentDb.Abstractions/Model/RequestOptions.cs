@@ -39,11 +39,13 @@ public class RequestOptions
     /// <summary>
     /// Gets or sets a value indicating whether written object should be returned back after write operations.
     /// </summary>
+    /// <value>
+    /// The default value is <see langword="false" />.
+    /// </value>
     /// <remarks>
-    /// Indicating whether written object should be returned back after write operations like Create, Upsert, Patch and Replace.
-    /// Setting the option to false will cause the response to have a null item.
+    /// Indicates whether written object should be returned back after write operations like Create, Upsert, Patch, and Replace.
+    /// Setting the option to false causes the response to have a <see langword="null"/> item.
     /// This reduces networking and CPU load by not sending the resource back over the network and serializing it on the client.
-    /// Default is <see langword="false" />.
     /// </remarks>
     public bool ContentResponseOnWrite { get; set; }
 

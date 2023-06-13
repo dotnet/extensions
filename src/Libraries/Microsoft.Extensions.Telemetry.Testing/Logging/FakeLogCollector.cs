@@ -81,7 +81,7 @@ public class FakeLogCollector
     /// <returns>
     /// The latest log record created.
     /// </returns>
-    /// <exception cref="InvalidOperationException">When no records have been captured.</exception>
+    /// <exception cref="InvalidOperationException">No records have been captured.</exception>
     public FakeLogRecord LatestRecord
     {
         get

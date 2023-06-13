@@ -30,7 +30,7 @@ public class RequestMetadata
     /// <remarks>
     /// The <see cref="DependencyName"/> property is initialized to <c>"unknown"</c>.
     /// </remarks>
-    /// <exception cref="ArgumentNullException">When any of the parameters are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public RequestMetadata(string methodType, string requestRoute, string requestName = TelemetryConstants.Unknown)
     {
         MethodType = Throw.IfNull(methodType);

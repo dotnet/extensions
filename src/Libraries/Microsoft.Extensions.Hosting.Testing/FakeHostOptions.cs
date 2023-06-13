@@ -34,9 +34,11 @@ public class FakeHostOptions
     public TimeSpan TimeToLive { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
-    /// Gets or sets a value indicating whether fake logging would be configured automatically.
+    /// Gets or sets a value indicating whether fake logging is configured automatically.
     /// </summary>
-    /// <remarks>Default is <see langword="true"/>.</remarks>
+    /// <value>
+    /// The default value is <see langword="true"/>.
+    /// </value>
     public bool FakeLogging { get; set; } = true;
 
     /// <inheritdoc cref="ServiceProviderOptions"/>
@@ -46,8 +48,10 @@ public class FakeHostOptions
     public bool ValidateOnBuild { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether fake redaction would be configured automatically.
+    /// Gets or sets a value indicating whether fake redaction is configured automatically.
     /// </summary>
-    /// <remarks>Default is <see langword="true"/>.</remarks>
+    /// <value>
+    /// The default value is <see langword="true"/>.
+    /// </value>
     public bool FakeRedaction { get; set; } = true;
 }

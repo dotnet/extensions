@@ -26,7 +26,7 @@ internal sealed class RequestHeadersLogEnricher : ILogEnricher
     /// </summary>
     /// <param name="httpContextAccessor">HttpContextAccessor responsible for obtaining properties from HTTP context.</param>
     /// <param name="options">Options to customize configuration of <see cref="RequestHeadersLogEnricher"/>.</param>
-    /// <param name="redactorProvider">RedactorProvidor to get redactor to redact enriched data according to the data class.</param>
+    /// <param name="redactorProvider">RedactorProvider to get redactor to redact enriched data according to the data class.</param>
     public RequestHeadersLogEnricher(IHttpContextAccessor httpContextAccessor, IOptions<RequestHeadersLogEnricherOptions> options,
         IRedactorProvider? redactorProvider = null)
     {

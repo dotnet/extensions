@@ -23,9 +23,9 @@ public static class MessagePostponeFeatureExtensions
     /// <param name="context">The message context.</param>
     /// <param name="delay">The time by which the message processing is to be postponed.</param>
     /// <param name="cancellationToken">The cancellation token for the postpone operation.</param>
-    /// <returns><see cref="ValueTask"/>.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
-    /// <exception cref="InvalidOperationException">If there is no <see cref="IMessagePostponeFeature"/> added to <paramref name="context"/>.</exception>
+    /// <returns>To be added.</returns>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null" />.</exception>
+    /// <exception cref="InvalidOperationException">There is no <see cref="IMessagePostponeFeature"/> added to <paramref name="context"/>.</exception>
     public static ValueTask PostponeAsync(this MessageContext context, TimeSpan delay, CancellationToken cancellationToken)
     {
         _ = Throw.IfNullOrMemberNull(context, context?.Features);
@@ -41,7 +41,7 @@ public static class MessagePostponeFeatureExtensions
     /// </summary>
     /// <param name="context">The message context.</param>
     /// <param name="messagePostponeFeature">The feature to postpone message processing.</param>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static void SetMessagePostponeFeature(this MessageContext context, IMessagePostponeFeature messagePostponeFeature)
     {
         _ = Throw.IfNull(context);

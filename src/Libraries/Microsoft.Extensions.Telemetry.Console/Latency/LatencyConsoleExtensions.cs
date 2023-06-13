@@ -21,7 +21,7 @@ public static class LatencyConsoleExtensions
     /// </summary>
     /// <param name="services">Dependency injection container.</param>
     /// <returns>Provided service collection with <see cref="LatencyConsoleExporter"/> added.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddConsoleLatencyDataExporter(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);

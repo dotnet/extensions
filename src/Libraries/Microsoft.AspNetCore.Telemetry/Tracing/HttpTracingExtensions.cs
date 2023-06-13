@@ -25,7 +25,7 @@ public static class HttpTracingExtensions
     /// </summary>
     /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add the tracing auto collector.</param>
     /// <returns>The <see cref="TracerProviderBuilder"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static TracerProviderBuilder AddHttpTracing(this TracerProviderBuilder builder)
     {
         _ = Throw.IfNull(builder);
@@ -42,7 +42,7 @@ public static class HttpTracingExtensions
     /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add the tracing auto collector.</param>
     /// <param name="configure">The <see cref="HttpTracingOptions"/> configuration delegate.</param>
     /// <returns>The <see cref="TracerProviderBuilder"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static TracerProviderBuilder AddHttpTracing(this TracerProviderBuilder builder, Action<HttpTracingOptions> configure)
     {
         _ = Throw.IfNull(builder);
@@ -61,7 +61,7 @@ public static class HttpTracingExtensions
     /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add the tracing auto collector.</param>
     /// <param name="section">Configuration section that contains <see cref="HttpTracingOptions"/>.</param>
     /// <returns>The <see cref="TracerProviderBuilder"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(HttpTracingOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",

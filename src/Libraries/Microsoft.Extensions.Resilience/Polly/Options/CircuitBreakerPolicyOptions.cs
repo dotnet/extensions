@@ -25,10 +25,11 @@ public class CircuitBreakerPolicyOptions
     /// <summary>
     /// Gets or sets the failure threshold.
     /// </summary>
+    /// <value>
+    /// A ratio number higher than 0, up to 1. The default value is 0.1.
+    /// </value>
     /// <remarks>
-    /// If the ratio (between the number of failed request and total request) exceeds this threshold, the circuit will break.
-    /// A ratio number higher than 0, up to 1.
-    /// Default set to 0.1.
+    /// If the ratio of the number of failed requests to total requests exceeds this threshold, the circuit will break.
     /// </remarks>
     [ExclusiveRange(0, 1.0)]
     public double FailureThreshold { get; set; } = DefaultFailureThreshold;
@@ -36,11 +37,13 @@ public class CircuitBreakerPolicyOptions
     /// <summary>
     /// Gets or sets the minimum throughput.
     /// </summary>
+    /// <value>
+    /// The default value is 100.
+    /// </value>
     /// <remarks>
     /// This defines how many actions must pass through the circuit in the time-slice,
     /// for statistics to be considered significant and the circuit-breaker to come into action.
-    /// Value must be greater than one.
-    /// Default set to 100.
+    /// The value must be greater than 1.
     /// </remarks>
     [ExclusiveRange(1, int.MaxValue)]
     public int MinimumThroughput { get; set; } = DefaultMinimumThroughput;
@@ -48,10 +51,11 @@ public class CircuitBreakerPolicyOptions
     /// <summary>
     /// Gets or sets the duration of break.
     /// </summary>
+    /// <value>
+    /// The duration the circuit will stay open before resetting. The default value is 100.
+    /// </value>
     /// <remarks>
-    /// The duration the circuit will stay open before resetting.
-    /// Value must be greater than 0.5 seconds.
-    /// Default set to 5 seconds.
+    /// The value must be greater than 0.5 seconds.
     /// </remarks>
     [TimeSpan(MinPolicyWaitingMilliseconds, Exclusive = true)]
     public TimeSpan BreakDuration { get; set; } = _defaultBreakDuration;
@@ -59,11 +63,11 @@ public class CircuitBreakerPolicyOptions
     /// <summary>
     /// Gets or sets the duration of the sampling.
     /// </summary>
-    /// <remarks>
+    /// <value>
     /// The duration of the time-slice over which failure ratios are assessed.
-    /// Value must be greater than 0.5 seconds.
-    /// Default set to 30 seconds.
-    /// </remarks>
+    /// The value must be greater than 0.5 seconds.
+    /// The default value is 30 seconds.
+    /// </value>
     [TimeSpan(MinPolicyWaitingMilliseconds, Exclusive = true)]
     public TimeSpan SamplingDuration { get; set; } = _defaultSamplingDuration;
 

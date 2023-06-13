@@ -24,40 +24,48 @@ public class LoggingOptions
     private const HttpRouteParameterRedactionMode DefaultPathParameterRedactionMode = HttpRouteParameterRedactionMode.Strict;
 
     /// <summary>
-    /// Gets or sets a value indicating whether request will be logged additionally before any further processing.
+    /// Gets or sets a value indicating whether the request is logged additionally before any further processing.
     /// </summary>
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
     /// <remarks>
     /// When enabled, two entries will be logged for each incoming request - one for request and one for response, if available.
-    /// When disabled, only one entry will be logged for each incoming request which includes both request and response data.
-    /// Default set to <see langword="false"/>.
+    /// When disabled, only one entry will be logged for each incoming request, which includes both request and response data.
     /// </remarks>
     public bool LogRequestStart { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether HTTP request and response body will be logged.
+    /// Gets or sets a value indicating whether the HTTP request and response body are logged.
     /// </summary>
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
     /// <remarks>
-    /// Please avoid enabling this options in production environment as it might lead to leaking privacy information.
-    /// Default set to <see langword="false"/>.
+    /// Avoid enabling this option in a production environment as it might lead to leaking privacy information.
     /// </remarks>
     public bool LogBody { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating the maximum number of bytes of the request or response body to read.
+    /// Gets or sets the maximum number of bytes of the request or response body to read.
     /// </summary>
+    /// <value>
+    /// The default value is ≈ 32K.
+    /// </value>
     /// <remarks>
-    /// The number should ideally be below 85K to not be allocated on the <see href="https://docs.microsoft.com/en-us/dotnet/standard/garbage-collection/large-object-heap">large object heap</see>.
-    /// Default set to ≈ 32K.
+    /// The number should ideally be below 85K to not be allocated on the <see href="https://learn.microsoft.com/dotnet/standard/garbage-collection/large-object-heap">large object heap</see>.
     /// </remarks>
     [Range(1, MaxIncomingBodySize)]
     public int BodySizeLimit { get; set; } = DefaultReadSizeLimit;
 
     /// <summary>
-    /// Gets or sets a value indicating the maximum amount of time to wait for the request or response body to be read.
+    /// Gets or sets the maximum amount of time to wait for the request or response body to be read.
     /// </summary>
+    /// <value>
+    /// The default value is 1 second.
+    /// </value>
     /// <remarks>
     /// The number should be above 1 millisecond and below 1 hour.
-    /// Default set to 1 second.
     /// </remarks>
     [TimeSpan(Millisecond, Hour)]
     public TimeSpan BodyReadTimeout { get; set; } = TimeSpan.FromSeconds(1);
@@ -81,10 +89,12 @@ public class LoggingOptions
     /// <summary>
     /// Gets or sets the set of HTTP request headers to log and their respective data classes to use for redaction.
     /// </summary>
+    /// <value>
+    /// The default value is <see cref="HashSet{T}"/>.
+    /// </value>
     /// <remarks>
     /// If empty, no HTTP request headers will be logged.
     /// If the data class is <see cref="DataClassification.None"/>, no redaction will be done.
-    /// Default set to <see cref="HashSet{T}"/>.
     /// </remarks>
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
@@ -94,10 +104,12 @@ public class LoggingOptions
     /// <summary>
     /// Gets or sets the set of HTTP response headers to log and their respective data classes to use for redaction.
     /// </summary>
+    /// <value>
+    /// The default value is <see cref="HashSet{T}"/>.
+    /// </value>
     /// <remarks>
     /// If the data class is <see cref="DataClassification.None"/>, no redaction will be done.
     /// If empty, no HTTP response headers will be logged.
-    /// Default set to <see cref="HashSet{T}"/>.
     /// </remarks>
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
@@ -105,21 +117,23 @@ public class LoggingOptions
     public IDictionary<string, DataClassification> ResponseHeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
 
     /// <summary>
-    /// Gets or sets a value indicating how outgoing HTTP request path should be logged.
+    /// Gets or sets a value indicating how the outgoing HTTP request path should be logged.
     /// </summary>
+    /// <value>
+    /// The default value is <see cref="OutgoingPathLoggingMode.Formatted"/>.
+    /// </value>
     /// <remarks>
-    /// Default set to <see cref="OutgoingPathLoggingMode.Formatted"/>.
     /// This option is applied only when the <see cref="RequestPathLoggingMode"/> option is not set to <see cref="HttpRouteParameterRedactionMode.None"/>,
-    /// otherwise this setting is ignored and unredacted HTTP request path is logged.
+    /// otherwise this setting is ignored and the unredacted HTTP request path is logged.
     /// </remarks>
     public OutgoingPathLoggingMode RequestPathLoggingMode { get; set; } = DefaultPathLoggingMode;
 
     /// <summary>
     /// Gets or sets a value indicating how outgoing HTTP request path parameters should be redacted.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see cref="HttpRouteParameterRedactionMode.Strict"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see cref="HttpRouteParameterRedactionMode.Strict"/>.
+    /// </value>
     [Experimental]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 

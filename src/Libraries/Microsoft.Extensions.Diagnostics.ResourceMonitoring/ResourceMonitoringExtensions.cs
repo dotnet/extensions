@@ -24,7 +24,7 @@ public static class ResourceMonitoringExtensions
     /// <param name="services">The dependency injection container to add the monitor to.</param>
     /// <param name="configure">Delegate to configure <see cref="IResourceMonitorBuilder"/>.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    /// <exception cref="ArgumentNullException">If either <paramref name="services"/> or <paramref name="configure"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Either <paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddResourceMonitoring(
         this IServiceCollection services,
         Action<IResourceMonitorBuilder> configure)
@@ -41,7 +41,7 @@ public static class ResourceMonitoringExtensions
     /// <param name="builder">The host builder to bind to.</param>
     /// <param name="configure">Delegate to configure <see cref="IResourceMonitorBuilder"/>.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If either <paramref name="builder"/> or <paramref name="configure"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Either <paramref name="builder"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
     public static IHostBuilder ConfigureResourceMonitoring(
         this IHostBuilder builder,
         Action<IResourceMonitorBuilder> configure)
@@ -60,7 +60,7 @@ public static class ResourceMonitoringExtensions
     /// <param name="builder">The builder instance used to configure the tracker.</param>
     /// <param name="configure">Delegate to configure <see cref="ResourceMonitoringOptions"/>.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If either <paramref name="builder"/> or <paramref name="configure"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException">Either <paramref name="builder"/> or <paramref name="configure"/> is <see langword="null" />.</exception>
     public static IResourceMonitorBuilder ConfigureMonitor(
         this IResourceMonitorBuilder builder,
         Action<ResourceMonitoringOptions> configure)
@@ -77,7 +77,7 @@ public static class ResourceMonitoringExtensions
     /// <param name="builder">The builder instance used to configure the tracker.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ResourceMonitoringOptions"/>.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If either <paramref name="builder"/> or <paramref name="section"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException">Either <paramref name="builder"/> or <paramref name="section"/> is <see langword="null" />.</exception>
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",

@@ -20,7 +20,7 @@ public static class ExceptionSummarizationExtensions
     /// </summary>
     /// <param name="services">The dependency injection container to add the summarizer to.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddExceptionSummarizer(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
@@ -35,7 +35,7 @@ public static class ExceptionSummarizationExtensions
     /// <param name="services">The dependency injection container to add the summarizer to.</param>
     /// <param name="configure">Delegates that configures the set of registered summary providers.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="services"/> or <paramref name="configure"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="configure"/> are <see langword="null"/>.</exception>
     public static IServiceCollection AddExceptionSummarizer(this IServiceCollection services, Action<IExceptionSummarizationBuilder> configure)
     {
         _ = Throw.IfNull(services);
@@ -52,6 +52,6 @@ public static class ExceptionSummarizationExtensions
     /// </summary>
     /// <param name="builder">The builder to attach the provider to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     public static IExceptionSummarizationBuilder AddHttpProvider(this IExceptionSummarizationBuilder builder) => Throw.IfNull(builder).AddProvider<HttpExceptionSummaryProvider>();
 }

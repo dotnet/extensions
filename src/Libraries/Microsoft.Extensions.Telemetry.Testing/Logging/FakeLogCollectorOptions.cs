@@ -35,9 +35,9 @@ public class FakeLogCollectorOptions
     /// <summary>
     /// Gets or sets a value indicating whether to collect records that are logged when the associated log level is currently disabled.
     /// </summary>
-    /// <remarks>
+    /// <value>
     /// Defaults to <see langword="true"/>.
-    /// </remarks>
+    /// </value>
     public bool CollectRecordsForDisabledLogLevels { get; set; } = true;
 
     /// <summary>

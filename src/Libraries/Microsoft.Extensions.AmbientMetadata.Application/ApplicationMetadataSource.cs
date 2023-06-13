@@ -21,8 +21,8 @@ internal sealed class ApplicationMetadataSource : IConfigurationSource
     /// </summary>
     /// <param name="hostEnvironment">An instance of <see cref="IHostEnvironment"/>.</param>
     /// <param name="sectionName">Section name to be used in configuration.</param>
-    /// <exception cref="ArgumentNullException">If <paramref name="hostEnvironment"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException">If <paramref name="sectionName"/> is either <see langword="null"/>, empty or whitespace.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="hostEnvironment"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="sectionName"/> is either <see langword="null"/>, empty or whitespace.</exception>
     public ApplicationMetadataSource(IHostEnvironment hostEnvironment, string sectionName)
     {
         _hostEnvironment = Throw.IfNull(hostEnvironment);

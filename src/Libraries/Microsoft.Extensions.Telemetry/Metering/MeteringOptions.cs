@@ -31,9 +31,9 @@ public class MeteringOptions
     /// <summary>
     /// Gets or sets default meter state to be used for emitting metrics.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see cref="MeteringState.Enabled"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see cref="MeteringState.Enabled"/>.
+    /// </value>
     public MeteringState MeterState { get; set; } = MeteringState.Enabled;
 
     /// <summary>

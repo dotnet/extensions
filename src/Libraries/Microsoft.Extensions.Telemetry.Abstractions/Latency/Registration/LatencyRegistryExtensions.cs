@@ -18,7 +18,7 @@ public static class LatencyRegistryExtensions
     /// <param name="services">The dependency injection container to add the names to.</param>
     /// <param name="names">Set of checkpoint names.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> or <paramref name="names"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="names"/> are <see langword="null"/>.</exception>
     public static IServiceCollection RegisterCheckpointNames(this IServiceCollection services, params string[] names)
     {
         _ = Throw.IfNull(services);
@@ -36,7 +36,7 @@ public static class LatencyRegistryExtensions
     /// <param name="services">The dependency injection container to add the names to.</param>
     /// <param name="names">Set of measure names.</param>
     /// <returns>Provided service collection.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> or <paramref name="names"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="names"/> are <see langword="null"/>.</exception>
     public static IServiceCollection RegisterMeasureNames(this IServiceCollection services, params string[] names)
     {
         _ = Throw.IfNull(services);
@@ -54,7 +54,7 @@ public static class LatencyRegistryExtensions
     /// <param name="services">The dependency injection container to add the names to.</param>
     /// <param name="names">Set of tag names.</param>
     /// <returns>Provided service collection.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> or <paramref name="names"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="names"/> are <see langword="null"/>.</exception>
     public static IServiceCollection RegisterTagNames(this IServiceCollection services, params string[] names)
     {
         _ = Throw.IfNull(services);

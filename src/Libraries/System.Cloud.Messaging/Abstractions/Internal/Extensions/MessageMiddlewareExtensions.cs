@@ -18,7 +18,7 @@ internal static class MessageMiddlewareExtensions
     /// <param name="middleware">The middleware.</param>
     /// <param name="nextHandler">The next delegate in the pipeline.</param>
     /// <returns>Composed message handler.</returns>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static MessageDelegate Stitch(this IMessageMiddleware middleware, MessageDelegate nextHandler)
     {
         _ = Throw.IfNull(middleware);

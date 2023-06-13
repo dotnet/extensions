@@ -79,7 +79,7 @@ internal sealed class UnconditionalSuppressMessageAttribute : Attribute
     /// Gets or sets an optional argument expanding on exclusion criteria.
     /// </summary>
     /// <remarks>
-    /// The <see cref="MessageId "/> property is an optional argument that specifies additional
+    /// The <see cref="MessageId"/> property is an optional argument that specifies additional
     /// exclusion where the literal metadata target is not sufficiently precise. For example,
     /// the <see cref="UnconditionalSuppressMessageAttribute"/> cannot be applied within a method,
     /// and it may be desirable to suppress a violation against a statement in the method that will

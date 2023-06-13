@@ -6,11 +6,11 @@ using System;
 namespace System.Cloud.DocumentDb;
 
 /// <summary>
-/// Exception represent the operation is failed w/o a specific reason.
+/// The exception that's thrown when the operation failed without a specific reason.
 /// </summary>
 /// <remarks>
 /// It might due to some failures on server side.
-/// Please ask engineer to investigate on this case and escalate if necessary.
+/// Ask the engineer to investigate this case and escalate if necessary.
 /// Http code 500.
 /// </remarks>
 public class DatabaseServerException : DatabaseException

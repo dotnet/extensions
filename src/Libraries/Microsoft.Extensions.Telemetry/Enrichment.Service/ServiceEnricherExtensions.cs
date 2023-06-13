@@ -36,7 +36,7 @@ public static class ServiceEnricherExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service enricher to.</param>
     /// <param name="configure">The <see cref="ServiceLogEnricherOptions"/> configuration delegate.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static IServiceCollection AddServiceLogEnricher(this IServiceCollection services, Action<ServiceLogEnricherOptions> configure)
     {
         _ = Throw.IfNull(services);
@@ -53,7 +53,7 @@ public static class ServiceEnricherExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service enricher to.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ServiceLogEnricherOptions"/> in the service enricher.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static IServiceCollection AddServiceLogEnricher(this IServiceCollection services, IConfigurationSection section)
     {
         _ = Throw.IfNull(services);
@@ -84,7 +84,7 @@ public static class ServiceEnricherExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service enricher to.</param>
     /// <param name="configure">The <see cref="ServiceMetricEnricherOptions"/> configuration delegate.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static IServiceCollection AddServiceMetricEnricher(this IServiceCollection services, Action<ServiceMetricEnricherOptions> configure)
     {
         _ = Throw.IfNull(services);
@@ -101,7 +101,7 @@ public static class ServiceEnricherExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service enricher to.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ServiceMetricEnricherOptions"/> in the service enricher.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static IServiceCollection AddServiceMetricEnricher(this IServiceCollection services, IConfigurationSection section)
     {
         _ = Throw.IfNull(services);
@@ -134,7 +134,7 @@ public static class ServiceEnricherExtensions
     /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add the service trace enricher to.</param>
     /// <param name="configure">The <see cref="ServiceTraceEnricherOptions"/> configuration delegate.</param>
     /// <returns>The <see cref="TracerProviderBuilder"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static TracerProviderBuilder AddServiceTraceEnricher(this TracerProviderBuilder builder, Action<ServiceTraceEnricherOptions> configure)
     {
         _ = Throw.IfNull(builder);
@@ -152,7 +152,7 @@ public static class ServiceEnricherExtensions
     /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add the Service trace enricher to.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ServiceTraceEnricherOptions"/> in the Service trace enricher.</param>
     /// <returns>The <see cref="TracerProviderBuilder"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static TracerProviderBuilder AddServiceTraceEnricher(this TracerProviderBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);

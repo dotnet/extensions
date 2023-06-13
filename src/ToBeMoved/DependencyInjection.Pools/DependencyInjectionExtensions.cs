@@ -26,7 +26,7 @@ public static class DependencyInjectionExtensions
     /// <param name="configure">The action used to configure the options of the pool.</param>
     /// <typeparam name="TDefinition">The type of objects to pool.</typeparam>
     /// <returns>Provided service collection.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// The default capacity is 1024.
     /// The pooled type instances are obtainable the same way like any other type instances from the DI container.
@@ -45,7 +45,7 @@ public static class DependencyInjectionExtensions
     /// <typeparam name="TDefinition">The type of objects to pool.</typeparam>
     /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
     /// <returns>Provided service collection.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     /// <remarks>
     /// The default capacity is 1024.
     /// The pooled type instances are obtainable the same way like any other type instances from the DI container.

@@ -27,7 +27,7 @@ public static class HttpLoggingServiceExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     public static IServiceCollection AddHttpLogging(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
@@ -81,7 +81,7 @@ public static class HttpLoggingServiceExtensions
     /// <typeparam name="T">Type of enricher.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the instance of <typeparamref name="T"/> to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     public static IServiceCollection AddHttpLogEnricher<T>(this IServiceCollection services)
         where T : class, IHttpLogEnricher
     {
@@ -98,7 +98,7 @@ public static class HttpLoggingServiceExtensions
     /// </remarks>
     /// <param name="builder">An application's request pipeline builder.</param>
     /// <returns>The <see cref="IApplicationBuilder"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="builder"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     public static IApplicationBuilder UseHttpLoggingMiddleware(this IApplicationBuilder builder)
     {
         _ = Throw.IfNull(builder);

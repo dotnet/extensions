@@ -21,13 +21,13 @@ public class HeaderSetup<THeader>
     /// <summary>
     /// Gets the type of the parser to parse header values.
     /// </summary>
-    /// <remarks>Not null when <see cref="ParserInstance" /> is <see langword="null"/> and vice versa.</remarks>
+    /// <remarks>Not <see langword="null"/> when <see cref="ParserInstance" /> is <see langword="null"/> and vice versa.</remarks>
     public Type? ParserType { get; }
 
     /// <summary>
     /// Gets the parser to parse header values.
     /// </summary>
-    /// <remarks>Not null when <see cref="ParserType" /> is <see langword="null"/> and vice versa.</remarks>
+    /// <remarks>Not <see langword="null"/> when <see cref="ParserType" /> is <see langword="null"/> and vice versa.</remarks>
     public HeaderParser<THeader>? ParserInstance { get; }
 
     /// <summary>

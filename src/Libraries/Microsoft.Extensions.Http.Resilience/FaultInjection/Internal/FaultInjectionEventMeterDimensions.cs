@@ -19,7 +19,7 @@ internal static class FaultInjectionEventMeterDimensions
     public const string FaultType = "FaultType";
 
     /// <summary>
-    /// Value corresponding to injected fault, e.g., NotFonudException, 200ms.
+    /// Value corresponding to injected fault, for example, NotFoundException, 200ms.
     /// </summary>
     public const string InjectedValue = "InjectedValue";
 

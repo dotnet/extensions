@@ -41,9 +41,9 @@ internal sealed class LengthAttribute : ValidationAttribute
     /// <summary>
     /// Gets or sets a value indicating whether the length validation should exclude the <see cref="MinimumLength"/> and <see cref="MaximumLength"/> values.
     /// </summary>
-    /// <remarks>
-    /// By default the property is set to <c>false</c>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <c>false</c>.
+    /// </value>
     public bool Exclusive { get; set; }
 
     /// <summary>
@@ -82,14 +82,14 @@ internal sealed class LengthAttribute : ValidationAttribute
     /// Validates that a given value is in range.
     /// </summary>
     /// <remarks>
-    /// This method returns <c>true</c> if the <paramref name = "value" /> is null.
-    /// It is assumed the <see cref = "RequiredAttribute" /> is used if the value may not be null.
+    /// This method returns <c>true</c> if the <paramref name = "value" /> is <see langword="null"/>.
+    /// It is assumed the <see cref = "RequiredAttribute" /> is used if the value may not be <see langword="null"/>.
     /// </remarks>
     /// <param name="value">The value to validate.</param>
     /// <param name="validationContext">Additional context for this validation.</param>
     /// <returns>A value indicating success or failure.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">if <see cref="MinimumLength"/> is less than zero or if it is greater than <see cref="MaximumLength"/>.</exception>
-    /// <exception cref="InvalidOperationException">if the validated type is not supported.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><see cref="MinimumLength"/> is less than zero or if it is greater than <see cref="MaximumLength"/>.</exception>
+    /// <exception cref="InvalidOperationException">The validated type is not supported.</exception>
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The ctor is marked with RequiresUnreferencedCode.")]
     protected override ValidationResult IsValid(object? value, ValidationContext? validationContext)
     {

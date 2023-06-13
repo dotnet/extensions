@@ -14,27 +14,27 @@ public class ChaosPolicyOptionsGroup
     /// <summary>
     /// Gets or sets the latency policy options of the chaos policy options group.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="null"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="null"/>.
+    /// </value>
     [ValidateObjectMembers]
     public LatencyPolicyOptions? LatencyPolicyOptions { get; set; }
 
     /// <summary>
     /// Gets or sets the http response injection policy options of the chaos policy options group.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="null"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="null"/>.
+    /// </value>
     [ValidateObjectMembers]
     public HttpResponseInjectionPolicyOptions? HttpResponseInjectionPolicyOptions { get; set; }
 
     /// <summary>
     /// Gets or sets the exception policy options of the chaos policy options group.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see langword="null"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="null"/>.
+    /// </value>
     [ValidateObjectMembers]
     public ExceptionPolicyOptions? ExceptionPolicyOptions { get; set; }
 

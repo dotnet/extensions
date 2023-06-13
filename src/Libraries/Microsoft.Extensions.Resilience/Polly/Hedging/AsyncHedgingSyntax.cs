@@ -35,7 +35,7 @@ internal static class AsyncHedgingSyntax
     /// <returns>
     /// The policy instance.
     /// </returns>
-    /// <exception cref="ArgumentNullException">Arguments cannot be null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static AsyncHedgingPolicy<TResult> AsyncHedgingPolicy<TResult>(
         this PolicyBuilder<TResult> policyBuilder,
         HedgedTaskProvider<TResult> hedgedTaskProvider,

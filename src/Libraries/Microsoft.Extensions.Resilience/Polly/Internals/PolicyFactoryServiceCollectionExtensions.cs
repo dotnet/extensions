@@ -21,7 +21,7 @@ internal static class PolicyFactoryServiceCollectionExtensions
     /// <typeparam name="TResult">The type of the result returned by the action executed by the policies.</typeparam>
     /// <param name="services">The DI container.</param>
     /// <returns>The input <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> cannot be null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddPolicyFactory<TResult>(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);

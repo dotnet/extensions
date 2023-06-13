@@ -19,9 +19,9 @@ public readonly struct Throughput
     /// Gets throughput value.
     /// </summary>
     /// <remarks>
-    /// The throughput is in database defined units.
-    /// e.g. Cosmos DB throughput measured in RUs (Request Units) per second:
-    /// <see href="https://docs.microsoft.com/en-us/azure/cosmos-db/concepts-limits">Azure Cosmos DB service quotas</see>.
+    /// The throughput is in database defined units,
+    /// for example, Cosmos DB throughput measured in RUs (request units) per second:
+    /// <see href="https://learn.microsoft.com/azure/cosmos-db/concepts-limits">Azure Cosmos DB service quotas</see>.
     /// </remarks>
     public int? Value { get; }
 

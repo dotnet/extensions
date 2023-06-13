@@ -16,9 +16,9 @@ public class ConnectionTimeoutOptions
     /// <summary>
     /// Gets or sets the time after which a connection will be shut down.
     /// </summary>
-    /// <remarks>
-    /// Default set to 5 minutes.
-    /// </remarks>
+    /// <value>
+    /// The default value is 5 minutes.
+    /// </value>
     [TimeSpan(0, Exclusive = true)]
     public TimeSpan Timeout { get; set; } = _defaultTimeout;
 }

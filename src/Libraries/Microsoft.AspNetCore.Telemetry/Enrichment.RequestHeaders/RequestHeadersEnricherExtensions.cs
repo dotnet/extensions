@@ -21,7 +21,7 @@ public static class RequestHeadersEnricherExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the Request Headers Log Enricher to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     public static IServiceCollection AddRequestHeadersLogEnricher(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
@@ -37,7 +37,7 @@ public static class RequestHeadersEnricherExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the Request Headers Log Enricher to.</param>
     /// <param name="configure">The <see cref="RequestHeadersLogEnricherOptions"/> configuration delegate.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     public static IServiceCollection AddRequestHeadersLogEnricher(this IServiceCollection services, Action<RequestHeadersLogEnricherOptions> configure)
     {
         _ = Throw.IfNull(services);
@@ -55,7 +55,7 @@ public static class RequestHeadersEnricherExtensions
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="RequestHeadersLogEnricherOptions"/>
     /// in the Request Headers Log Enricher.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">The <paramref name="services"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(RequestHeadersLogEnricherOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",
