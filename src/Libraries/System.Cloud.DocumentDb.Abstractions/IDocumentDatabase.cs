@@ -105,7 +105,7 @@ public interface IDocumentDatabase
     /// <exception cref="DatabaseRetryableException">Thrown when a request failed but can be retried.
     /// This includes throttling and server not available cases. </exception>
     /// <exception cref="DatabaseException">A generic exception thrown in all other not covered above cases.</exception>
-    /// <remarks><seealso cref="Throughput.Value"/>.</remarks>
+    /// <seealso cref="Throughput.Value"/>
     Task<IDatabaseResponse<bool>> UpdateTableSettingsAsync(
         TableOptions tableOptions,
         RequestOptions requestOptions,

@@ -61,19 +61,21 @@ public readonly struct TableInfo
     /// <summary>
     /// Gets the table throughput value.
     /// </summary>
-    /// <remarks>
-    /// Default is <see cref="Throughput.Unlimited"/>.
-    /// <seealso cref="Throughput.Value"/>.
-    /// </remarks>
+    /// <value>
+    /// The default is <see cref="Throughput.Unlimited"/>.
+    /// </value>
+    /// <seealso cref="Throughput.Value"/>
     public Throughput Throughput { get; }
 
     /// <summary>
-    /// Gets a value indicating whether a <see cref="ITableLocator"/> required to be used with this table.
+    /// Gets a value indicating whether a <see cref="ITableLocator"/> is required to be used with this table.
     /// </summary>
+    /// <value>
+    /// The default is <see langword="false"/>, which means locator will not be used even if configured.
+    /// </value>
     /// <remarks>
-    /// Default is <see langword="false"/>, which means locator will not be used even if configured.
-    /// If locator is required, requests will require <see cref="RequestOptions"/> provided to API to provide <see cref="RequestOptions{TDocument}.Document"/>.
-    /// This is the protection mechanism to avoid engineers not designed specific table to forget provide documents when table locator is in use.
+    /// If locator is required, requests will require that <see cref="RequestOptions"/> be specified to provide <see cref="RequestOptions{TDocument}.Document"/>.
+    /// This is a protection mechanism to ensure a specific table is designed to forget provide documents when the table locator is in use.
     /// </remarks>
     public bool IsLocatorRequired { get; }
 
@@ -98,7 +100,7 @@ public readonly struct TableInfo
     /// </summary>
     /// <param name="info">The source table info.</param>
     /// <param name="tableNameOverride">The table name.</param>
-    /// <param name="isRegionalOverride">Is the table regional.</param>
+    /// <param name="isRegionalOverride"><see langword="true" /> to mark the table as regional; otherwise, <see langword="false" />.</param>
     public TableInfo(in TableInfo info, string? tableNameOverride = null, bool? isRegionalOverride = null)
     {
         TableName = tableNameOverride ?? info.TableName;

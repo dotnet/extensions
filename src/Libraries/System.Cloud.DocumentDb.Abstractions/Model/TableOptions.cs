@@ -56,17 +56,19 @@ public class TableOptions
     /// <summary>
     /// Gets or sets the table throughput value.
     /// </summary>
-    /// <remarks>
-    /// Default is <see cref="Throughput.Unlimited"/>.
-    /// <seealso cref="Throughput.Value"/>.
-    /// </remarks>
+    /// <value>
+    /// The default is <see cref="Throughput.Unlimited"/>.
+    /// </value>
+    /// <seealso cref="Throughput.Value"/>
     public Throughput Throughput { get; set; } = Throughput.Unlimited;
 
     /// <summary>
     /// Gets or sets a value indicating whether a <see cref="ITableLocator"/> required to be used with this table.
     /// </summary>
+    /// <value>
+    /// The default is <see langword="false"/>, which means a locator will not be used even if configured.
+    /// </value>
     /// <remarks>
-    /// Default is <see langword="false"/>, which means locator will not be used even if configured.
     /// If locator is required, requests will require <see cref="RequestOptions"/> provided to API to provide <see cref="RequestOptions{TDocument}.Document"/>.
     /// This is the protection mechanism to avoid engineers not designed specific table to forget provide documents when table locator is in use.
     /// </remarks>

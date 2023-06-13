@@ -47,9 +47,7 @@ public static class LinuxUtilizationExtensions
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring of <see cref="LinuxResourceUtilizationProviderOptions"/>.</param>
     /// <returns>Returns the builder.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
-    /// <remarks>
-    /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>.
-    /// </remarks>
+    /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
     public static IResourceMonitorBuilder AddLinuxProvider(this IResourceMonitorBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
