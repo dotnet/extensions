@@ -33,7 +33,7 @@ internal sealed class HttpLatencyTelemetryHandler : DelegatingHandler
         _handlerStart = tokenIssuer.GetCheckpointToken(HttpCheckpoints.HandlerRequestStart);
         _applicationName = appMetdata.Value.ApplicationName;
 
-        if (telemetryOptions.EnableDetailedLatencyBreadkdown)
+        if (telemetryOptions.EnableDetailedLatencyBreakdown)
         {
             _latencyListener.Enable();
         }

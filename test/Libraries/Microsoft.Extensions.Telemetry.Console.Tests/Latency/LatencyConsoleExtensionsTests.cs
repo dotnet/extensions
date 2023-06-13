@@ -50,7 +50,7 @@ public class LatencyConsoleExtensionsTests
     [Fact]
     public void ConsoleExporterExtensions_Add_BindsToConfigSection()
     {
-        LarencyConsoleOptions expectedOptions = new()
+        LatencyConsoleOptions expectedOptions = new()
         {
             OutputTags = true
         };
@@ -59,19 +59,19 @@ public class LatencyConsoleExtensionsTests
         using var provider = new ServiceCollection()
             .AddConsoleLatencyDataExporter(config)
             .BuildServiceProvider();
-        var actualOptions = provider.GetRequiredService<IOptions<LarencyConsoleOptions>>();
+        var actualOptions = provider.GetRequiredService<IOptions<LatencyConsoleOptions>>();
 
         Assert.True(actualOptions.Value.OutputTags);
     }
 
-    private static IConfigurationSection GetConfigSection(LarencyConsoleOptions options)
+    private static IConfigurationSection GetConfigSection(LatencyConsoleOptions options)
     {
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                    { $"{nameof(LarencyConsoleOptions)}:{nameof(options.OutputTags)}", options.OutputTags.ToString(null) },
+                    { $"{nameof(LatencyConsoleOptions)}:{nameof(options.OutputTags)}", options.OutputTags.ToString(null) },
             })
             .Build()
-            .GetSection($"{nameof(LarencyConsoleOptions)}");
+            .GetSection($"{nameof(LatencyConsoleOptions)}");
     }
 }

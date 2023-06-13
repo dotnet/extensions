@@ -10,7 +10,7 @@ public class LatencyConsoleOptionsTests
     [Fact]
     public void ConsoleExporterOptions_BasicTest()
     {
-        var o = new LarencyConsoleOptions();
+        var o = new LatencyConsoleOptions();
         Assert.True(o.OutputCheckpoints);
         Assert.True(o.OutputTags);
         Assert.True(o.OutputMeasures);

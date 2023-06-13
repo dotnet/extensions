@@ -6,7 +6,7 @@ namespace Microsoft.Extensions.Telemetry.Console;
 /// <summary>
 /// Options for console latency data exporter.
 /// </summary>
-public class LarencyConsoleOptions
+public class LatencyConsoleOptions
 {
     /// <summary>
     /// Gets or sets a value indicating whether to emit latency checkpoint information to the console.

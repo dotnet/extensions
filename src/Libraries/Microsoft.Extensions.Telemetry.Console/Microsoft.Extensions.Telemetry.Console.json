@@ -2,25 +2,25 @@
   "Name": "Microsoft.Extensions.Telemetry.Console, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "class Microsoft.Extensions.Telemetry.Console.LarencyConsoleOptions",
+      "Type": "class Microsoft.Extensions.Telemetry.Console.LatencyConsoleOptions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Console.LarencyConsoleOptions.LarencyConsoleOptions();",
+          "Member": "Microsoft.Extensions.Telemetry.Console.LatencyConsoleOptions.LatencyConsoleOptions();",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "bool Microsoft.Extensions.Telemetry.Console.LarencyConsoleOptions.OutputCheckpoints { get; set; }",
+          "Member": "bool Microsoft.Extensions.Telemetry.Console.LatencyConsoleOptions.OutputCheckpoints { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "bool Microsoft.Extensions.Telemetry.Console.LarencyConsoleOptions.OutputMeasures { get; set; }",
+          "Member": "bool Microsoft.Extensions.Telemetry.Console.LatencyConsoleOptions.OutputMeasures { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "bool Microsoft.Extensions.Telemetry.Console.LarencyConsoleOptions.OutputTags { get; set; }",
+          "Member": "bool Microsoft.Extensions.Telemetry.Console.LatencyConsoleOptions.OutputTags { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -34,7 +34,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Console.LatencyConsoleExtensions.AddConsoleLatencyDataExporter(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Telemetry.Console.LarencyConsoleOptions> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Console.LatencyConsoleExtensions.AddConsoleLatencyDataExporter(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Telemetry.Console.LatencyConsoleOptions> configure);",
           "Stage": "Stable"
         },
         {

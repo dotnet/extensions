@@ -71,7 +71,7 @@ public class LatencyConsoleExporterTests
 
         var ld = GetLatencyData();
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LarencyConsoleOptions
+        var options = Microsoft.Extensions.Options.Options.Create(new LatencyConsoleOptions
         {
             OutputCheckpoints = true,
             OutputTags = true,
@@ -93,7 +93,7 @@ public class LatencyConsoleExporterTests
 
         var ld = GetLongLatencyData();
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LarencyConsoleOptions
+        var options = Microsoft.Extensions.Options.Options.Create(new LatencyConsoleOptions
         {
             OutputCheckpoints = true,
             OutputTags = true,
@@ -115,7 +115,7 @@ public class LatencyConsoleExporterTests
 
         var ld = GetLatencyData();
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LarencyConsoleOptions
+        var options = Microsoft.Extensions.Options.Options.Create(new LatencyConsoleOptions
         {
             OutputCheckpoints = false,
             OutputTags = false,
@@ -137,7 +137,7 @@ public class LatencyConsoleExporterTests
 
         var ld = GetEmptyLatencyData();
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LarencyConsoleOptions
+        var options = Microsoft.Extensions.Options.Options.Create(new LatencyConsoleOptions
         {
             OutputCheckpoints = true,
             OutputTags = true,

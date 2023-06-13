@@ -19,5 +19,5 @@ public class HttpClientLatencyTelemetryOptions
     /// <remarks>
     /// Detailed breakdowns add checkpoints for HTTP operations, such as connection open and request headers sent.
     /// </remarks>
-    public bool EnableDetailedLatencyBreadkdown { get; set; } = true;
+    public bool EnableDetailedLatencyBreakdown { get; set; } = true;
 }
