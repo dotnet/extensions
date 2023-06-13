@@ -30,7 +30,7 @@
       ],
       "Properties": [
         {
-          "Member": "bool Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryOptions.EnableDetailedLatencyBreadkdown { get; set; }",
+          "Member": "bool Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryOptions.EnableDetailedLatencyBreakdown { get; set; }",
           "Stage": "Stable"
         }
       ]

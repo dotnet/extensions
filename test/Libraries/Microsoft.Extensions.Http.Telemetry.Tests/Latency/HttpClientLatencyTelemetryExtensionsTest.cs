@@ -49,7 +49,7 @@ public class HttpClientLatencyTelemetryExtensionsTest
 
         var options = sp.GetRequiredService<IOptions<HttpClientLatencyTelemetryOptions>>().Value;
         Assert.NotNull(options);
-        Assert.True(options.EnableDetailedLatencyBreadkdown);
+        Assert.True(options.EnableDetailedLatencyBreakdown);
 
         var handler = sp.GetRequiredService<HttpLatencyTelemetryHandler>();
         Assert.NotNull(handler);
@@ -77,13 +77,13 @@ public class HttpClientLatencyTelemetryExtensionsTest
             .AddDefaultHttpClientLatencyTelemetry(a =>
             {
                 invoked = true;
-                a.EnableDetailedLatencyBreadkdown = false;
+                a.EnableDetailedLatencyBreakdown = false;
             })
             .BuildServiceProvider();
 
         var options = sp.GetRequiredService<IOptions<HttpClientLatencyTelemetryOptions>>().Value;
         Assert.NotNull(options);
-        Assert.False(options.EnableDetailedLatencyBreadkdown);
+        Assert.False(options.EnableDetailedLatencyBreakdown);
         Assert.True(invoked);
     }
 
@@ -92,7 +92,7 @@ public class HttpClientLatencyTelemetryExtensionsTest
     {
         HttpClientLatencyTelemetryOptions expectedOptions = new()
         {
-            EnableDetailedLatencyBreadkdown = false
+            EnableDetailedLatencyBreakdown = false
         };
 
         var config = GetConfigSection(expectedOptions);
@@ -103,7 +103,7 @@ public class HttpClientLatencyTelemetryExtensionsTest
 
         var options = sp.GetRequiredService<IOptions<HttpClientLatencyTelemetryOptions>>().Value;
         Assert.NotNull(options);
-        Assert.Equal(expectedOptions.EnableDetailedLatencyBreadkdown, options.EnableDetailedLatencyBreadkdown);
+        Assert.Equal(expectedOptions.EnableDetailedLatencyBreakdown, options.EnableDetailedLatencyBreakdown);
     }
 
     private static IConfigurationSection GetConfigSection(HttpClientLatencyTelemetryOptions options)
@@ -111,7 +111,7 @@ public class HttpClientLatencyTelemetryExtensionsTest
         return new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                { $"{nameof(HttpClientLatencyTelemetryOptions)}:{nameof(options.EnableDetailedLatencyBreadkdown)}", options.EnableDetailedLatencyBreadkdown.ToString(CultureInfo.InvariantCulture) },
+                { $"{nameof(HttpClientLatencyTelemetryOptions)}:{nameof(options.EnableDetailedLatencyBreakdown)}", options.EnableDetailedLatencyBreakdown.ToString(CultureInfo.InvariantCulture) },
             })
             .Build()
             .GetSection($"{nameof(HttpClientLatencyTelemetryOptions)}");
