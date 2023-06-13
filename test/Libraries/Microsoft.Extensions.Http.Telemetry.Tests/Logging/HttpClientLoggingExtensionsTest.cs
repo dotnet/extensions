@@ -835,6 +835,30 @@ public class HttpClientLoggingExtensionsTest
     }
 
     [Fact]
+    public async Task AddHttpClientLogging_DoesntImpactOtherClients_HasNetScope()
+    {
+        const string RequestPath = "https://we.wont.hit.this.dd22anyway.com";
+        await using var provider = new ServiceCollection()
+             .AddFakeLogging()
+             .AddFakeRedaction()
+             .AddHttpClient("test")
+             .AddHttpClientLogging()
+             .Services
+             .AddHttpClient("normal")
+             .Services
+             .BlockRemoteCall()
+             .BuildServiceProvider();
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("normal");
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(RequestPath));
+
+        _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+        var collector = provider.GetFakeLogCollector();
+        var logRecords = collector.GetSnapshot().Select(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.Internal.HttpLoggingHandler").ToList();
+
+        Assert.Equal(2, logRecords.Count);
+    }
+
+    [Fact]
     public async Task AddDefaultHttpClientLogging_DisablesNetScope()
     {
         const string RequestPath = "https://we.wont.hit.this.dd22anyway.com";
