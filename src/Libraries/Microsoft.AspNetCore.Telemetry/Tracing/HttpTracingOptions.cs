@@ -36,7 +36,9 @@ public class HttpTracingOptions
     /// Gets or sets a value indicating whether to include path with redacted parameters.
     /// </summary>
     /// <value>
-    /// <see langword="true" /> if the request path is recreated using the redacted parameter and included in the exported traces; <see langword="false" /> if the exported traces contain the route template. The default is <see langword="false" />.
+    /// <see langword="true" /> if the request path is recreated using the redacted parameter and included in the
+    /// exported traces; <see langword="false" /> if the exported traces contain the route template.
+    /// The default is <see langword="false" />.
     /// </value>
     public bool IncludePath { get; set; }
 
