@@ -12,7 +12,7 @@
       ],
       "Properties": [
         {
-          "Member": "System.Func<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration, bool> Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.FilterChecks { get; set; }",
+          "Member": "System.Func<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration, bool>? Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.FilterChecks { get; set; }",
           "Stage": "Experimental"
         },
         {

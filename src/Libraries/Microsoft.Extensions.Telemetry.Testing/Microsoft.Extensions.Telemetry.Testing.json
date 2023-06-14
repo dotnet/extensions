@@ -274,6 +274,10 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.MetricCollector(System.Diagnostics.Metrics.Instrument instrument, System.TimeProvider? timeProvider = null);",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "void Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.Clear();",
           "Stage": "Experimental"
         },
@@ -361,6 +365,12 @@
           "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.GetUpDownCounterValues<T>(string updownCounterName);",
           "Stage": "Experimental"
         }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector.Count { get; }",
+          "Stage": "Experimental"
+        }
       ]
     },
     {
@@ -416,15 +426,19 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "int Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>.Count { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Diagnostics.Metrics.Instrument Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>.Instrument { get; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricValue<T>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>.LatestWritten { get; }",
           "Stage": "Experimental"
         },
         {
           "Member": "T? Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>.LatestWrittenValue { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string Microsoft.Extensions.Telemetry.Testing.Metering.MetricValuesHolder<T>.MetricName { get; }",
           "Stage": "Experimental"
         }
       ]

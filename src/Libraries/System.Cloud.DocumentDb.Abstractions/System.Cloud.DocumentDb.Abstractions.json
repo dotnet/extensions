@@ -204,6 +204,10 @@
           "Stage": "Experimental"
         },
         {
+          "Member": "bool System.Cloud.DocumentDb.DatabaseOptions.OverrideSerialization { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "string? System.Cloud.DocumentDb.DatabaseOptions.PrimaryKey { get; set; }",
           "Stage": "Experimental"
         },

@@ -7,13 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Latency;
 using Microsoft.Shared.Memoization;
 using Microsoft.Shared.Pools;
 using Microsoft.Shared.Text;
 using CF = Microsoft.Shared.Text.CompositeFormat;
 
-namespace Microsoft.Extensions.Telemetry.Console;
+namespace Microsoft.Extensions.Telemetry.Latency.Internal;
 
 internal sealed class LatencyConsoleExporter : ILatencyDataExporter
 {
@@ -47,7 +46,7 @@ internal sealed class LatencyConsoleExporter : ILatencyDataExporter
                 _title,
                 null,
                 cnt,
-                ((double)latencyData.DurationTimestamp / latencyData.DurationTimestampFrequency) * MillisPerSecond,
+                (double)latencyData.DurationTimestamp / latencyData.DurationTimestampFrequency * MillisPerSecond,
                 latencyData.Checkpoints.Length,
                 latencyData.Tags.Length,
                 latencyData.Measures.Length);
@@ -65,7 +64,7 @@ internal sealed class LatencyConsoleExporter : ILatencyDataExporter
                 for (int i = 0; i < latencyData.Checkpoints.Length; i++)
                 {
                     var c = latencyData.Checkpoints[i];
-                    _ = sb.AppendFormat(fmt, null, c.Name, ((double)c.Elapsed / c.Frequency) * MillisPerSecond);
+                    _ = sb.AppendFormat(fmt, null, c.Name, (double)c.Elapsed / c.Frequency * MillisPerSecond);
                 }
             }
 
@@ -102,7 +101,7 @@ internal sealed class LatencyConsoleExporter : ILatencyDataExporter
             }
 
             // the whole sample is output in a single shot so it won't be interrupted with conflicting output
-            return System.Console.Out.WriteAsync(sb.ToString());
+            return Console.Out.WriteAsync(sb.ToString());
         }
         finally
         {
