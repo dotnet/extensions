@@ -858,7 +858,9 @@ public class HttpClientLoggingExtensionsTest
         var collector = provider.GetFakeLogCollector();
         var logRecords = collector.GetSnapshot().Where(l => l.Category == "System.Net.Http.HttpClient.normal.LogicalHandler").ToList();
 
-        Assert.Equal(2, logRecords.Count);
+        Assert.Collection(logRecords,
+            r => Assert.Equal("RequestPipelineStart", r.Id.Name),
+            r => Assert.Equal("RequestPipelineEnd", r.Id.Name));
     }
 
     [Fact]
