@@ -26,10 +26,6 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder);",
-          "Stage": "Stable"
-        },
-        {
           "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, params string[] tags);",
           "Stage": "Stable"
         },

@@ -10,8 +10,8 @@
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset startTime);",
-          "Stage": "Stable"
+          "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset epoch);",
+          "Stage": "Experimental"
         },
         {
           "Member": "void Microsoft.Extensions.Time.Testing.FakeTimeProvider.Advance(System.TimeSpan delta);",
@@ -47,6 +47,10 @@
         }
       ],
       "Properties": [
+        {
+          "Member": "System.DateTimeOffset Microsoft.Extensions.Time.Testing.FakeTimeProvider.Epoch { get; }",
+          "Stage": "Experimental"
+        },
         {
           "Member": "override System.TimeZoneInfo Microsoft.Extensions.Time.Testing.FakeTimeProvider.LocalTimeZone { get; }",
           "Stage": "Stable"

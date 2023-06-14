@@ -44,6 +44,48 @@
       ]
     },
     {
+      "Type": "static class Microsoft.Extensions.Telemetry.Latency.LatencyConsoleExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Latency.LatencyConsoleExtensions.AddConsoleLatencyDataExporter(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Latency.LatencyConsoleExtensions.AddConsoleLatencyDataExporter(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Telemetry.LatencyConsoleOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Latency.LatencyConsoleExtensions.AddConsoleLatencyDataExporter(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Telemetry.LatencyConsoleOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.LatencyConsoleOptions.LatencyConsoleOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.LatencyConsoleOptions.OutputCheckpoints { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.LatencyConsoleOptions.OutputMeasures { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.LatencyConsoleOptions.OutputTags { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "static class Microsoft.Extensions.Telemetry.Latency.LatencyContextExtensions",
       "Stage": "Stable",
       "Methods": [

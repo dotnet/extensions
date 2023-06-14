@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Console.Test;
+namespace Microsoft.Extensions.Telemetry.Latency.Test;
 
 public class LatencyConsoleOptionsTests
 {

@@ -6,9 +6,10 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Telemetry.Latency;
+using Microsoft.Extensions.Telemetry.Latency.Internal;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Console.Test;
+namespace Microsoft.Extensions.Telemetry.Latency.Test.Internal;
 
 [Collection("StdoutUsage")]
 public class LatencyConsoleExporterTests
@@ -71,7 +72,7 @@ public class LatencyConsoleExporterTests
 
         var ld = GetLatencyData();
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LatencyConsoleOptions
+        var options = Options.Options.Create(new LatencyConsoleOptions
         {
             OutputCheckpoints = true,
             OutputTags = true,
@@ -93,7 +94,7 @@ public class LatencyConsoleExporterTests
 
         var ld = GetLongLatencyData();
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LatencyConsoleOptions
+        var options = Options.Options.Create(new LatencyConsoleOptions
         {
             OutputCheckpoints = true,
             OutputTags = true,
@@ -115,7 +116,7 @@ public class LatencyConsoleExporterTests
 
         var ld = GetLatencyData();
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LatencyConsoleOptions
+        var options = Options.Options.Create(new LatencyConsoleOptions
         {
             OutputCheckpoints = false,
             OutputTags = false,
@@ -137,7 +138,7 @@ public class LatencyConsoleExporterTests
 
         var ld = GetEmptyLatencyData();
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LatencyConsoleOptions
+        var options = Options.Options.Create(new LatencyConsoleOptions
         {
             OutputCheckpoints = true,
             OutputTags = true,

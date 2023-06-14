@@ -6,10 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Telemetry.Latency;
+using Microsoft.Extensions.Telemetry.Latency.Internal;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Console;
+namespace Microsoft.Extensions.Telemetry.Latency;
 
 /// <summary>
 /// Extensions to add console latency data exporter.

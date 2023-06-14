@@ -12,6 +12,8 @@
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedPools>true</InjectSharedPools>
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
+    <InjectSharedTextFormatting>true</InjectSharedTextFormatting>
+    <InjectSharedMemoization>true</InjectSharedMemoization>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
