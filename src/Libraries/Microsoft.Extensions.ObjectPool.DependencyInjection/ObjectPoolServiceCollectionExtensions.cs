@@ -32,7 +32,7 @@ public static class ObjectPoolServiceCollectionExtensions
     /// </remarks>
     public static IServiceCollection AddPooled<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(
         this IServiceCollection services,
-        Action<PoolOptions>? configure = null)
+        Action<DependencyInjectionPoolOptions>? configure = null)
         where TService : class
     {
         return services.AddPooledInternal<TService, TService>(configure);
@@ -53,7 +53,7 @@ public static class ObjectPoolServiceCollectionExtensions
     /// </remarks>
     public static IServiceCollection AddPooled<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
         this IServiceCollection services,
-        Action<PoolOptions>? configure = null)
+        Action<DependencyInjectionPoolOptions>? configure = null)
         where TService : class
         where TImplementation : class, TService
     {
@@ -61,16 +61,16 @@ public static class ObjectPoolServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Registers an action used to configure the <see cref="PoolOptions"/> of a typed pool.
+    /// Registers an action used to configure the <see cref="DependencyInjectionPoolOptions"/> of a typed pool.
     /// </summary>
     /// <typeparam name="TService">The type of objects to pool.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configure">The action used to configure the options.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection ConfigurePool<TService>(this IServiceCollection services, Action<PoolOptions> configure)
+    public static IServiceCollection ConfigurePool<TService>(this IServiceCollection services, Action<DependencyInjectionPoolOptions> configure)
         where TService : class
     {
-        return services.Configure<PoolOptions>(typeof(TService).FullName, configure);
+        return services.Configure<DependencyInjectionPoolOptions>(typeof(TService).FullName, configure);
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public static class ObjectPoolServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
     /// <param name="section">The configuration section to bind.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(PoolOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(DependencyInjectionPoolOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
@@ -93,7 +93,7 @@ public static class ObjectPoolServiceCollectionExtensions
                 Throw.ArgumentException(nameof(section), $"Can't parse '{child.Key}' value '{child.Value}' to integer.");
             }
 
-            _ = services.Configure<PoolOptions>(child.Key, options => options.Capacity = capacity);
+            _ = services.Configure<DependencyInjectionPoolOptions>(child.Key, options => options.Capacity = capacity);
         }
 
         return services;
@@ -101,7 +101,7 @@ public static class ObjectPoolServiceCollectionExtensions
 
     private static IServiceCollection AddPooledInternal<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
         this IServiceCollection services,
-        Action<PoolOptions>? configure)
+        Action<DependencyInjectionPoolOptions>? configure)
         where TService : class
         where TImplementation : class, TService
     {
@@ -116,7 +116,7 @@ public static class ObjectPoolServiceCollectionExtensions
         return services
             .AddSingleton<ObjectPool<TService>>(provider =>
             {
-                var options = provider.GetService<IOptionsFactory<PoolOptions>>()?.Create(typeof(TService).FullName!) ?? new PoolOptions();
+                var options = provider.GetService<IOptionsFactory<DependencyInjectionPoolOptions>>()?.Create(typeof(TService).FullName!) ?? new DependencyInjectionPoolOptions();
 
                 return new DefaultObjectPool<TService>(new DependencyInjectionPooledObjectPolicy<TService, TImplementation>(provider), options.Capacity);
             });

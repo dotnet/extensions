@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.ObjectPool;
 /// Contains configuration for pools.
 /// </summary>
 [Experimental]
-public sealed class PoolOptions
+public sealed class DependencyInjectionPoolOptions
 {
     internal const int DefaultCapacity = 1024;
 

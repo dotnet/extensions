@@ -39,7 +39,7 @@ public class DependencyInjectionExtensionsTest
     }
 
     [Fact]
-    public void ConfigurePools_ConfiguresPoolOptions()
+    public void ConfigurePools_ConfiguresDependencyInjectionPoolOptions()
     {
         var builder = new ConfigurationBuilder();
         builder.AddInMemoryCollection(new[]
@@ -51,26 +51,26 @@ public class DependencyInjectionExtensionsTest
         var services = new ServiceCollection().ConfigurePools(builder.Build().GetSection("My:Pools"));
         using var provider = services.BuildServiceProvider();
 
-        var sut = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
+        var sut = provider.GetRequiredService<IOptionsMonitor<DependencyInjectionPoolOptions>>();
 
         Assert.Equal(2048, sut.Get(typeof(TestClass).FullName!).Capacity);
         Assert.Equal(4096, sut.Get(typeof(TestDependency).FullName!).Capacity);
     }
 
     [Fact]
-    public void ConfiguresPoolOptions()
+    public void ConfiguresDependencyInjectionPoolOptions()
     {
         var services = new ServiceCollection()
-            .Configure<PoolOptions>(typeof(TestClass).FullName, options => options.Capacity = 2048)
-            .Configure<PoolOptions>(typeof(TestDependency).FullName, options => options.Capacity = 4096);
+            .Configure<DependencyInjectionPoolOptions>(typeof(TestClass).FullName, options => options.Capacity = 2048)
+            .Configure<DependencyInjectionPoolOptions>(typeof(TestDependency).FullName, options => options.Capacity = 4096);
 
         using var provider = services.BuildServiceProvider(validateScopes: true);
 
-        var options = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
+        var options = provider.GetRequiredService<IOptionsMonitor<DependencyInjectionPoolOptions>>();
 
-        Assert.Equal(PoolOptions.DefaultCapacity, options.CurrentValue.Capacity);
-        Assert.Equal(PoolOptions.DefaultCapacity, options.Get(null).Capacity);
-        Assert.Equal(PoolOptions.DefaultCapacity, options.Get(typeof(object).FullName!).Capacity);
+        Assert.Equal(DependencyInjectionPoolOptions.DefaultCapacity, options.CurrentValue.Capacity);
+        Assert.Equal(DependencyInjectionPoolOptions.DefaultCapacity, options.Get(null).Capacity);
+        Assert.Equal(DependencyInjectionPoolOptions.DefaultCapacity, options.Get(typeof(object).FullName!).Capacity);
         Assert.Equal(2048, options.Get(typeof(TestClass).FullName!).Capacity);
         Assert.Equal(4096, options.Get(typeof(TestDependency).FullName!).Capacity);
     }
@@ -116,7 +116,7 @@ public class DependencyInjectionExtensionsTest
 
         var pool = services.BuildServiceProvider().GetService<ObjectPool<TestDependency>>();
         using var provider = services.BuildServiceProvider();
-        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
+        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DependencyInjectionPoolOptions>>();
 
         Assert.NotNull(pool);
         Assert.Equal(64, optionsMonitor.Get(typeof(TestDependency).FullName).Capacity);
@@ -145,7 +145,7 @@ public class DependencyInjectionExtensionsTest
 
         using var provider = services.BuildServiceProvider(validateScopes: true);
         var pool = provider.GetService<ObjectPool<ITestClass>>();
-        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
+        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DependencyInjectionPoolOptions>>();
 
         Assert.NotNull(pool);
         Assert.Equal(TestDependency.DefaultMessage, pool!.Get().ReadMessage());
