@@ -28,7 +28,7 @@ internal sealed class LatencyConsoleExporter : ILatencyDataExporter
     private readonly bool _outputMeasures;
     private long _sampleCount = -1;
 
-    public LatencyConsoleExporter(IOptions<LarencyConsoleOptions> options)
+    public LatencyConsoleExporter(IOptions<LatencyConsoleOptions> options)
     {
         var o = options.Value;
         _outputCheckpoints = o.OutputCheckpoints;

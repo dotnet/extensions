@@ -26,7 +26,7 @@ public class HttpResponseInjectionPolicyOptions : ChaosPolicyOptionsBase
     /// Gets or sets the key to retrieve custom response settings.
     /// </summary>
     /// <remarks>
-    /// This field is optional and it defaults to null.
+    /// This field is optional and it defaults to <see langword="null"/>.
     /// </remarks>
     public string? HttpContentKey { get; set; }
 }

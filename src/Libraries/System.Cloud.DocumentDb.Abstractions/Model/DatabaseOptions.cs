@@ -72,9 +72,9 @@ public class DatabaseOptions
     /// </summary>
     /// <remarks>
     /// The default is <see cref="Throughput.Unlimited"/>.
-    /// The throughput is in database defined units.
-    /// e.g. Cosmos DB throughput measured in RUs (Request Units) per second:
-    /// <see href="https://docs.microsoft.com/en-us/azure/cosmos-db/concepts-limits">Azure Cosmos DB service quotas</see>.
+    /// The throughput is in database defined units,
+    /// for example, Cosmos DB throughput measured in RUs (request units) per second:
+    /// <see href="https://learn.microsoft.com/azure/cosmos-db/concepts-limits">Azure Cosmos DB service quotas</see>.
     /// </remarks>
     public Throughput Throughput { get; set; } = Throughput.Unlimited;
 
@@ -82,6 +82,7 @@ public class DatabaseOptions
     /// Gets or sets json serializer options.
     /// </summary>
     /// <remarks>
+    /// This will be used only if <see cref="OverrideSerialization"/> is enabled.
     /// Default is the default <see cref="JsonSerializerOptions" />.
     /// Those options will be used by compatible APIs to serialize input before sending to server and deserialize output.
     /// This includes sent/received documents.
@@ -89,11 +90,22 @@ public class DatabaseOptions
     public JsonSerializerOptions JsonSerializerOptions { get; set; } = new();
 
     /// <summary>
-    /// Gets or sets a list of preferred regions used for SDK to define failover order for global database.
+    /// Gets or sets a value indicating whether serialization overridden.
     /// </summary>
     /// <remarks>
-    /// Default set to empty <see cref="List{T}" />.
+    /// Default is <see langword="true"/>.
+    /// When enabled, System.Text.Json based serialization will be configured with
+    /// settings defined in <see cref="JsonSerializerOptions"/>.
     /// </remarks>
+    [Experimental("New feature.")]
+    public bool OverrideSerialization { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a list of preferred regions used for SDK to define failover order for global database.
+    /// </summary>
+    /// <value>
+    /// The default value is empty <see cref="List{T}" />.
+    /// </value>
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
     public IList<string> FailoverRegions { get; set; }
@@ -102,9 +114,9 @@ public class DatabaseOptions
     /// <summary>
     /// Gets or sets a list of region specific configurations for the database.
     /// </summary>
-    /// <remarks>
-    /// Default set to empty <see cref="Dictionary{TKey, TValue}" />.
-    /// </remarks>
+    /// <value>
+    /// The default value is empty <see cref="Dictionary{TKey, TValue}" />.
+    /// </value>
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
     public IDictionary<string, RegionalDatabaseOptions> RegionalDatabaseOptions { get; set; }

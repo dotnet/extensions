@@ -53,10 +53,10 @@ public class QueryRequestOptions<TDocument> : RequestOptions<TDocument>
     /// Gets or sets the maximum number of items that can be buffered client side during parallel query execution.
     /// </summary>
     /// <remarks>
-    /// Default is <see langword="null" />.
+    /// The default is <see langword="null" />.
     /// A positive property value limits the number of buffered items to the set value.
     /// If this is set to <see langword="null" />, the system automatically decides the number of items to buffer.
-    /// This is only suggestive and cannot be abide by in certain cases.
+    /// This is only suggestive and cannot be abided by in certain cases.
     /// </remarks>
     [Range(1, MaxBufferedCount)]
     public int? MaxBufferedItemCount { get; set; }

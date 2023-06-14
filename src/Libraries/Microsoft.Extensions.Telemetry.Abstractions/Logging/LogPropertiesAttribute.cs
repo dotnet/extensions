@@ -21,7 +21,7 @@ public sealed class LogPropertiesAttribute : Attribute
     /// <remarks>
     /// Use this parameterless constructor if you want
     /// to get a source-generated set of properties to be logged.
-    /// In case you need to provide your own set of properties or their custom names, please
+    /// In case you need to provide your own set of properties or their custom names,
     /// use the <see cref="LogPropertiesAttribute(Type, string)"/> constructor overload instead.
     /// </remarks>
     /// <example>
@@ -99,18 +99,18 @@ public sealed class LogPropertiesAttribute : Attribute
     public string? ProviderMethod { get; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether null properties are logged.
+    /// Gets or sets a value indicating whether <see langword="null"/> properties are logged.
     /// </summary>
-    /// <remarks>
+    /// <value>
     /// Defaults to <see langword="false"/>.
-    /// </remarks>
+    /// </value>
     public bool SkipNullProperties { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to prefix the name of the logging method parameter to the generated name of each property being logged.
     /// </summary>
-    /// <remarks>
+    /// <value>
     /// Defaults to <see langword="false"/>.
-    /// </remarks>
+    /// </value>
     public bool OmitParameterName { get; set; }
 }

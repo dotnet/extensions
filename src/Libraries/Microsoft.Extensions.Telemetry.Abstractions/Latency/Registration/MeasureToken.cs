@@ -28,7 +28,7 @@ public readonly struct MeasureToken
     /// </summary>
     /// <param name="name">Name of the measure.</param>
     /// <param name="position">Position of the token in the token table.</param>
-    /// <exception cref="ArgumentNullException">When <paramref name="name"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
     public MeasureToken(string name, int position)
     {
         Name = Throw.IfNullOrWhitespace(name);

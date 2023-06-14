@@ -59,7 +59,7 @@ public abstract class MessageContext
     /// </summary>
     /// <param name="features">The feature collection.</param>
     /// <param name="sourcePayload">The source payload.</param>
-    /// <exception cref="ArgumentNullException">If any of the arguments is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     protected MessageContext(IFeatureCollection features, ReadOnlyMemory<byte> sourcePayload)
     {
         Features = Throw.IfNull(features);
@@ -72,7 +72,7 @@ public abstract class MessageContext
     /// </summary>
     /// <typeparam name="T">The type of the feature to be added to the <see cref="Features"/>.</typeparam>
     /// <param name="feature">The feature to be added to the <see cref="Features"/>.</param>
-    /// <exception cref="ArgumentNullException">If the <paramref name="feature"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="feature"/> is <see langword="null"/>.</exception>
     public void AddFeature<T>(T feature)
     {
         _ = Throw.IfNull(feature);
@@ -84,7 +84,7 @@ public abstract class MessageContext
     /// </summary>
     /// <typeparam name="T">The type of the feature to be added to the <see cref="SourceFeatures"/>.</typeparam>
     /// <param name="feature">The feature to be added to the <see cref="SourceFeatures"/>.</param>
-    /// <exception cref="ArgumentNullException">If the <paramref name="feature"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="feature"/> is <see langword="null"/>.</exception>
     public void AddSourceFeature<T>(T feature)
     {
         _ = Throw.IfNull(feature);
@@ -97,7 +97,7 @@ public abstract class MessageContext
     /// </summary>
     /// <typeparam name="T">The type of the feature to be added to the <see cref="DestinationFeatures"/>.</typeparam>
     /// <param name="feature">The feature to be added to the <see cref="DestinationFeatures"/>.</param>
-    /// <exception cref="ArgumentNullException">If the <paramref name="feature"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="feature"/> is <see langword="null"/>.</exception>
     public void AddDestinationFeature<T>(T feature)
     {
         _ = Throw.IfNull(feature);
@@ -125,7 +125,7 @@ public abstract class MessageContext
     /// Sets the payload in the <see cref="MessageContext"/> for the <see cref="IMessageDestination"/> message.
     /// </summary>
     /// <param name="payload">The payload for destination message.</param>
-    /// <exception cref="ArgumentNullException">If the <paramref name="payload"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="payload"/> is <see langword="null"/>.</exception>
     public void SetDestinationPayload(ReadOnlyMemory<byte> payload)
     {
         _ = Throw.IfNull(payload);

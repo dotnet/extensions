@@ -46,8 +46,8 @@ public static class HostingFakesExtensions
     /// Gets the object that collects log records sent to the fake logger.
     /// </summary>
     /// <param name="host">An <see cref="IHost"/> instance.</param>
-    /// <exception cref="InvalidOperationException">When no collector exists in the provider.</exception>
-    /// <returns>The collector which tracks records logged to fake loggers.</returns>
+    /// <exception cref="InvalidOperationException">No collector exists in the provider.</exception>
+    /// <returns>The collector that tracks records logged to fake loggers.</returns>
     public static FakeLogCollector GetFakeLogCollector(this IHost host)
     {
         _ = Throw.IfNull(host);
@@ -58,8 +58,8 @@ public static class HostingFakesExtensions
     /// Gets the object reporting all redactions performed.
     /// </summary>
     /// <param name="host">An <see cref="IHost"/> instance.</param>
-    /// <exception cref="InvalidOperationException">When no collector exists in the provider.</exception>
-    /// <returns>The collector which tracks redactions performed on log messages.</returns>
+    /// <exception cref="InvalidOperationException">No collector exists in the provider.</exception>
+    /// <returns>The collector that tracks redactions performed on log messages.</returns>
     public static FakeRedactionCollector GetFakeRedactionCollector(this IHost host)
     {
         _ = Throw.IfNull(host);

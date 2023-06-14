@@ -24,7 +24,7 @@ public static class RequestLatencyTelemetryExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
     /// <returns>Provided service collection with request latency telemetry middleware added.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddRequestLatencyTelemetry(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
@@ -43,7 +43,7 @@ public static class RequestLatencyTelemetryExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
     /// <param name="configure">Configuration of <see cref="RequestLatencyTelemetryOptions"/>.</param>
     /// <returns>Provided service collection with request latency telemetry middleware added.</returns>
-    /// <exception cref="ArgumentNullException">When either <paramref name="services"/> or <paramref name="configure"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException">Either <paramref name="services"/> or <paramref name="configure"/> is <see langword="null" />.</exception>
     public static IServiceCollection AddRequestLatencyTelemetry(this IServiceCollection services, Action<RequestLatencyTelemetryOptions> configure)
     {
         _ = Throw.IfNull(services);
@@ -61,7 +61,7 @@ public static class RequestLatencyTelemetryExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
     /// <param name="section">Configuration of <see cref="RequestLatencyTelemetryOptions"/>.</param>
     /// <returns>Provided service collection with request latency telemetry middleware added.</returns>
-    /// <exception cref="ArgumentNullException">When either <paramref name="services"/> or <paramref name="section"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException">Either <paramref name="services"/> or <paramref name="section"/> is <see langword="null" />.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, type: typeof(RequestLatencyTelemetryOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",
@@ -83,7 +83,7 @@ public static class RequestLatencyTelemetryExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
     /// <returns>The <see cref="IApplicationBuilder"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="builder"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     public static IApplicationBuilder UseRequestLatencyTelemetry(this IApplicationBuilder builder)
     {
         _ = Throw.IfNull(builder);

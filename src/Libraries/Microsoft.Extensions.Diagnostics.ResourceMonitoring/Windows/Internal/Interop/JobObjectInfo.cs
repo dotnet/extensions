@@ -184,8 +184,8 @@ internal static class JobObjectInfo
         /// <summary>
         /// Validate that the process is inside a JobObject.
         /// </summary>
-        /// <exception cref="InvalidOperationException">if the process is not running in a job.</exception>
-        /// <returns>A boolean to determine if the process is inside a JobObject or not.</returns>
+        /// <exception cref="InvalidOperationException">The process is not running in a job.</exception>
+        /// <returns><see langword="true" /> if the process is inside a JobObject; otherwise, <see langword="false" />.</returns>
         public static bool IsProcessInJob()
         {
             const uint DUPLICATE_SAME_ACCESS = 0x00000002;

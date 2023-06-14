@@ -89,7 +89,7 @@ public class HttpLatencyTelemetryHandlerTest
         var sop = new Mock<IOptions<ApplicationMetadata>>();
         sop.Setup(a => a.Value).Returns(new ApplicationMetadata());
         var hop = new Mock<IOptions<HttpClientLatencyTelemetryOptions>>();
-        hop.Setup(a => a.Value).Returns(new HttpClientLatencyTelemetryOptions { EnableDetailedLatencyBreadkdown = false });
+        hop.Setup(a => a.Value).Returns(new HttpClientLatencyTelemetryOptions { EnableDetailedLatencyBreakdown = false });
         var lcti = HttpMockProvider.GetTokenIssuer();
 
         using var listener = HttpMockProvider.GetListener(context, lcti.Object);

@@ -51,7 +51,7 @@ public class HttpFaultInjectionOptionsBuilder
     /// </param>
     /// <returns>The builder object itself so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters cannot be null.
+    /// Any parameter is <see langword="null"/>.
     /// </exception>
     public HttpFaultInjectionOptionsBuilder Configure(IConfiguration section)
     {
@@ -68,7 +68,7 @@ public class HttpFaultInjectionOptionsBuilder
     /// </param>
     /// <returns>The builder object itself so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException">
-    /// All parameters cannot be null.
+    /// Any parameter is <see langword="null"/>.
     /// </exception>
     public HttpFaultInjectionOptionsBuilder Configure(Action<FaultInjectionOptions> configureOptions)
     {
@@ -83,10 +83,10 @@ public class HttpFaultInjectionOptionsBuilder
     /// <param name="exception">The exception instance to be added.</param>
     /// <returns>The builder object itself so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException">
-    /// The exception cannot be null.
+    /// <paramref name="exception"/> is <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// The key must not be an empty string or null.
+    /// <paramref name="key"/> is an empty string or <see langword="null"/>.
     /// </exception>
     public HttpFaultInjectionOptionsBuilder AddException(string key, Exception exception)
     {

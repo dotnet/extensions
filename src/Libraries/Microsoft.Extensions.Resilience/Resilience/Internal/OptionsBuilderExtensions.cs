@@ -21,8 +21,8 @@ internal static class OptionsBuilderExtensions
     /// </summary>
     /// <typeparam name="T">The options type.</typeparam>
     /// <param name="builder">The options builder instance.</param>
-    /// <param name="section">The section. This parameter can be null.</param>
-    /// <param name="configureOptions">The configure options action. This parameter can be null.</param>
+    /// <param name="section">The section. This parameter can be <see langword="null"/>.</param>
+    /// <param name="configureOptions">The configure options action. This parameter can be <see langword="null"/>.</param>
     /// <returns>The builder instance.</returns>
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",

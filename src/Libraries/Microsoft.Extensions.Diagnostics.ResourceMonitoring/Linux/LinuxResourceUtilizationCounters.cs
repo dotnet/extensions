@@ -6,9 +6,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// <summary>
 /// The names of instruments published by this package.
 /// </summary>
-/// <remarks>
-/// <seealso cref="System.Diagnostics.Metrics.Instrument"/>.
-/// </remarks>
+/// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
 public static class LinuxResourceUtilizationCounters
 {
     /// <summary>

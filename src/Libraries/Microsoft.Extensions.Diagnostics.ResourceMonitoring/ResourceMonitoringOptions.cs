@@ -25,26 +25,29 @@ public class ResourceMonitoringOptions
     /// <summary>
     /// Gets or sets the maximum time window for which utilization can be requested.
     /// </summary>
-    /// <remarks>
-    /// Default set to 5 seconds.
-    /// </remarks>
+    /// <value>
+    /// The default value is 5 seconds.
+    /// </value>
     [TimeSpan(MinimumSamplingWindow, MaximumSamplingWindow)]
     public TimeSpan CollectionWindow { get; set; } = DefaultCollectionWindow;
 
     /// <summary>
     /// Gets or sets the interval at which a new utilization sample is captured.
     /// </summary>
-    /// <remarks>
-    /// Default set to 1 second.
-    /// </remarks>
+    /// <value>
+    /// The default value is 1 second.
+    /// </value>
     [TimeSpan(MinimumSamplingPeriod, MaximumSamplingPeriod)]
     public TimeSpan SamplingInterval { get; set; } = DefaultSamplingInterval;
 
     /// <summary>
     /// Gets or sets the default period used for utilization calculation.
     /// </summary>
+    /// <value>
+    /// The default value is 5 seconds.
+    /// </value>
     /// <remarks>
-    /// Default set to 5 seconds. The value needs to be less than or equal to the <see cref="CollectionWindow"/>.
+    /// The value needs to be less than or equal to the <see cref="CollectionWindow"/>.
     /// Most importantly, this period is used to calculate <see cref="Utilization"/> instances pushed to publishers.
     /// </remarks>
     [Experimental]

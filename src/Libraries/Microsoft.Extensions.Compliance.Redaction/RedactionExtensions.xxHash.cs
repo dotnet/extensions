@@ -19,7 +19,7 @@ public static partial class RedactionExtensions
     /// <param name="configure">Configuration function.</param>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder"/>, <paramref name="configure" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="configure" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
     public static IRedactionBuilder SetXXHash3Redactor(this IRedactionBuilder builder, Action<XXHash3RedactorOptions> configure, params DataClassification[] classifications)
     {
         _ = Throw.IfNull(builder);
@@ -41,7 +41,7 @@ public static partial class RedactionExtensions
     /// <param name="section">Configuration section.</param>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="builder"/>, <paramref name="section" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="section" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(XXHash3RedactorOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",

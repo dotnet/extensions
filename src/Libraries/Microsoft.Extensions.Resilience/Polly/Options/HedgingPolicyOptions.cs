@@ -51,12 +51,13 @@ public class HedgingPolicyOptions
     /// <summary>
     /// Gets or sets the maximum hedged attempts to perform the desired task.
     /// </summary>
+    /// <value>
+    /// The number of concurrent hedged tasks that will be triggered by the policy. The default value is 2.
+    /// </value>
     /// <remarks>
-    /// Default set to 2.
-    /// The value defines how many concurrent hedged tasks will be triggered by the policy.
-    /// This includes the primary hedged task that is initially performed, and the further tasks that will
+    /// This value includes the primary hedged task that is initially performed, and the further tasks that will
     /// be fetched from the provider and spawned in parallel.
-    /// The value must be bigger or equal to 2, and lower or equal to 10.
+    /// The value must be greater than or equal to 2, and less than or equal to 10.
     /// </remarks>
     [Range(MinimumHedgedAttempts, MaximumHedgedAttempts)]
     public int MaxHedgedAttempts { get; set; } = DefaultMaxHedgedAttempts;

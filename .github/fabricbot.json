@@ -357,10 +357,6 @@
         ],
         "searchTerms": [
           {
-            "name": "isPr",
-            "parameters": {}
-          },
-          {
             "name": "isOpen",
             "parameters": {}
           },
@@ -381,10 +377,6 @@
             "parameters": {
               "days": 7
             }
-          },
-          {
-            "name": "isIssue",
-            "parameters": {}
           }
         ],
         "actions": [
@@ -645,7 +637,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.0 Preview5"
+              "milestoneName": "8.0 Preview6"
             }
           }
         ],
@@ -655,100 +647,7 @@
           "acceptRespondToBotActions": true
         }
       },
-      "disabled": true
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isActivitySender",
-              "parameters": {
-                "user": "dotnet-maestro[bot]"
-              }
-            },
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "opened"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "Auto-approve maestro PRs",
-        "actions": [
-          {
-            "name": "approvePullRequest",
-            "parameters": {
-              "comment": "Go, you big red fire engine!"
-            }
-          }
-        ]
-      },
-      "disabled": true
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "labelAdded",
-              "parameters": {
-                "label": "automerge :octocat:"
-              }
-            },
-            {
-              "operator": "or",
-              "operands": [
-                {
-                  "name": "activitySenderHasPermissions",
-                  "parameters": {
-                    "permissions": "admin"
-                  }
-                },
-                {
-                  "name": "activitySenderHasPermissions",
-                  "parameters": {
-                    "permissions": "write"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "Auto-approve auto-merge PRs",
-        "actions": [
-          {
-            "name": "approvePullRequest",
-            "parameters": {
-              "comment": "Happy to oblige"
-            }
-          }
-        ]
-      },
-      "disabled": true
+      "disabled": false
     },
     {
       "taskType": "trigger",

@@ -28,10 +28,10 @@ internal sealed class LinuxUtilizationParser
     /// <remarks>
     /// Stat file contains information about all CPUs and their time.
     /// </remarks>
-    /// <remakrs>
+    /// <remarks>
     /// The file has format of whitespace separated values. Each value has its own meaning and unit.
     /// To know which value we read, why and what it means refer to proc (5) man page (its POSIX).
-    /// </remakrs>
+    /// </remarks>
     private static readonly FileInfo _procStat = new("/proc/stat");
 
     /// <remarks>

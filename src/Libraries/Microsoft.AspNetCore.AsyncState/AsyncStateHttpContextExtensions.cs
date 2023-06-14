@@ -20,7 +20,7 @@ public static class AsyncStateHttpContextExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="services"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     public static IServiceCollection AddAsyncStateHttpContext(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);

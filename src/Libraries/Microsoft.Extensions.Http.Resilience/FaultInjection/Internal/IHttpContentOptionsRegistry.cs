@@ -18,7 +18,7 @@ internal interface IHttpContentOptionsRegistry
     /// <returns>
     /// An instance of <see cref="HttpContent"/> from the registered <see cref="HttpContentOptions"/>
     /// instance identified by the given key.
-    /// Returns null if the provided key is null or not found.
+    /// Returns <see langword="null"/> if the provided key is <see langword="null"/> or not found.
     /// </returns>
     public HttpContent? GetHttpContent(string key);
 }

@@ -37,7 +37,7 @@ public static class AsyncStateExtensions
     /// </summary>
     /// <param name="services">The dependency injection container to remove the implementations from.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">If <paramref name="services"/> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static IServiceCollection TryRemoveAsyncStateCore(this IServiceCollection services)
     {

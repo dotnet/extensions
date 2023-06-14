@@ -12,9 +12,9 @@ namespace Microsoft.Extensions.Http.Resilience;
 public interface IRequestRoutingStrategyFactory
 {
     /// <summary>
-    /// Creates a new instance of <seealso cref="IRequestRoutingStrategy"/>.
+    /// Creates a new instance of <see cref="IRequestRoutingStrategy"/>.
     /// </summary>
-    /// <returns>The RequestRoutingStragegy for providing the routes.</returns>
+    /// <returns>The RequestRoutingStrategy for providing the routes.</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     IRequestRoutingStrategy CreateRoutingStrategy();
 }

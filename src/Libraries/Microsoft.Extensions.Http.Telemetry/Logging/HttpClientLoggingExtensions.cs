@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -24,6 +25,8 @@ public static class HttpClientLoggingExtensions
 {
     internal static readonly string HandlerAddedTwiceExceptionMessage =
         $"{typeof(HttpLoggingHandler)} was already added either to all HttpClientBuilder's or to the current instance of {typeof(IHttpClientBuilder)}.";
+
+    private static readonly ServiceDescriptor _removeDefaultLoggingFilterDescriptor = ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, BuiltInLoggingRemoverFilter>();
 
     /// <summary>
     /// Adds a <see cref="DelegatingHandler" /> to collect and emit logs for outgoing requests for all http clients.
@@ -42,8 +45,9 @@ public static class HttpClientLoggingExtensions
         _ = services
             .AddHttpRouteProcessor()
             .AddHttpHeadersRedactor()
-            .AddOutgoingRequestContext()
-            .RemoveAll<IHttpMessageHandlerBuilderFilter>();
+            .AddOutgoingRequestContext();
+
+        AddBuiltInLoggingRemoverFilter(services, name: null);
 
         services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
         services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
@@ -135,8 +139,9 @@ public static class HttpClientLoggingExtensions
         _ = builder.Services
             .AddHttpRouteProcessor()
             .AddHttpHeadersRedactor()
-            .AddOutgoingRequestContext()
-            .RemoveAll<IHttpMessageHandlerBuilderFilter>();
+            .AddOutgoingRequestContext();
+
+        AddBuiltInLoggingRemoverFilter(builder.Services, builder.Name);
 
         builder.Services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
         builder.Services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
@@ -160,7 +165,7 @@ public static class HttpClientLoggingExtensions
     /// <returns>
     /// An <see cref="IHttpClientBuilder" /> that can be used to configure the client.
     /// </returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
@@ -177,8 +182,9 @@ public static class HttpClientLoggingExtensions
         _ = builder.Services
             .AddHttpRouteProcessor()
             .AddHttpHeadersRedactor()
-            .AddOutgoingRequestContext()
-            .RemoveAll<IHttpMessageHandlerBuilderFilter>();
+            .AddOutgoingRequestContext();
+
+        AddBuiltInLoggingRemoverFilter(builder.Services, builder.Name);
 
         builder.Services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
         builder.Services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
@@ -194,7 +200,7 @@ public static class HttpClientLoggingExtensions
     /// <returns>
     /// An <see cref="IHttpClientBuilder" /> that can be used to configure the client.
     /// </returns>
-    /// <exception cref="ArgumentNullException">One of the arguments is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
@@ -211,8 +217,9 @@ public static class HttpClientLoggingExtensions
         _ = builder.Services
             .AddHttpRouteProcessor()
             .AddHttpHeadersRedactor()
-            .AddOutgoingRequestContext()
-            .RemoveAll<IHttpMessageHandlerBuilderFilter>();
+            .AddOutgoingRequestContext();
+
+        AddBuiltInLoggingRemoverFilter(builder.Services, builder.Name);
 
         builder.Services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
         builder.Services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
@@ -260,5 +267,61 @@ public static class HttpClientLoggingExtensions
                     loggingOptions),
                 loggingOptions);
         };
+    }
+
+    private static void AddBuiltInLoggingRemoverFilter(IServiceCollection services, string? name)
+    {
+        // We want to remove default logging. To do that we need to modify the builder after the filter that adds logging runs.
+        // To do that we use another filter that runs after LoggingHttpMessageHandlerBuilderFilter. This is done by inserting
+        // our filter to the service collection as the first item. That ensures it is in the right position when resolving
+        // IHttpMessageHandlerBuilderFilter instances. It doesn't matter if AddHttpClient is called before or after.
+        if (!services.Contains(_removeDefaultLoggingFilterDescriptor))
+        {
+            services.Insert(0, _removeDefaultLoggingFilterDescriptor);
+        }
+
+        _ = services.Configure<BuiltInLoggerRemoverFilterOptions>(o => o.ClientNames.Add(name));
+    }
+
+    private sealed class BuiltInLoggerRemoverFilterOptions
+    {
+        // Names of clients to remove built-in logging from.
+        // A null value means built-in logging is removed globally from clients.
+        public HashSet<string?> ClientNames { get; } = new HashSet<string?>();
+    }
+
+    private sealed class BuiltInLoggingRemoverFilter : IHttpMessageHandlerBuilderFilter
+    {
+        private readonly BuiltInLoggerRemoverFilterOptions _options;
+        private readonly bool _global;
+
+        [SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "This constructor is used by dependency injection.")]
+        public BuiltInLoggingRemoverFilter(IOptions<BuiltInLoggerRemoverFilterOptions> options)
+        {
+            _options = options.Value;
+            _global = _options.ClientNames.Contains(null);
+        }
+
+        public Action<HttpMessageHandlerBuilder> Configure(Action<HttpMessageHandlerBuilder> next)
+        {
+            return (builder) =>
+            {
+                // Run other configuration first, we want to decorate.
+                next(builder);
+
+                if (_global || _options.ClientNames.Contains(builder.Name))
+                {
+                    // Remove the logger handlers added by the filter. Fortunately, they're both public, so it is a simple test on the type.
+                    for (var i = builder.AdditionalHandlers.Count - 1; i >= 0; i--)
+                    {
+                        var handlerType = builder.AdditionalHandlers[i].GetType();
+                        if (handlerType == typeof(LoggingScopeHttpMessageHandler) || handlerType == typeof(LoggingHttpMessageHandler))
+                        {
+                            builder.AdditionalHandlers.RemoveAt(i);
+                        }
+                    }
+                }
+            };
+        }
     }
 }

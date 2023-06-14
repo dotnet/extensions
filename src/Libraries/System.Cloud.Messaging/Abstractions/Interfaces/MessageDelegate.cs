@@ -11,7 +11,7 @@ namespace System.Cloud.Messaging;
 /// The message delegate called by <see cref="IMessageMiddleware"/> to continue processing the message in the pipeline chain.
 /// </summary>
 /// <remarks>
-/// It is inspired from the next delegate in the <see href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware">ASP.NET Core Middleware</see> pipeline.
+/// It is inspired from the next delegate in the <see href="https://learn.microsoft.com/aspnet/core/fundamentals/middleware">ASP.NET Core Middleware</see> pipeline.
 /// </remarks>
 /// <param name="context">The message context.</param>
 /// <returns><see cref="ValueTask"/>.</returns>

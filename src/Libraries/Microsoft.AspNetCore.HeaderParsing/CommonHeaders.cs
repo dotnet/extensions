@@ -90,7 +90,7 @@ public static class CommonHeaders
     public static HeaderSetup<RangeHeaderValue> Range => new(HeaderNames.Range, RangeHeaderValueParser.Instance);
 
     /// <summary>
-    /// Gets Referer header setup.
+    /// Gets Referrer header setup.
     /// </summary>
     public static HeaderSetup<Uri> Referer => new(HeaderNames.Referer, Parsers.UriParser.Instance, cacheable: true);
 

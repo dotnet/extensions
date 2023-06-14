@@ -67,7 +67,7 @@ public abstract class Redactor
     /// <param name="source">Value to redact.</param>
     /// <param name="destination">Buffer to store redacted value.</param>
     /// <returns>Number of characters produced when redacting the given source input.</returns>
-    /// <exception cref="ArgumentException">When <paramref name="destination"/> is too small.</exception>
+    /// <exception cref="ArgumentException"><paramref name="destination"/> is too small.</exception>
     public abstract int Redact(ReadOnlySpan<char> source, Span<char> destination);
 
     /// <summary>
@@ -79,7 +79,7 @@ public abstract class Redactor
     /// Returns 0 when <paramref name="source"/> is <see langword="null"/>.
     /// </remarks>
     /// <returns>Number of characters written to the buffer.</returns>
-    /// <exception cref="ArgumentException">When <paramref name="destination"/> is too small.</exception>
+    /// <exception cref="ArgumentException"><paramref name="destination"/> is too small.</exception>
     public int Redact(string? source, Span<char> destination) => Redact(source.AsSpan(), destination);
 
     /// <summary>
@@ -90,7 +90,7 @@ public abstract class Redactor
     /// <remarks>
     /// Returns an empty string when <paramref name="source"/> is <see langword="null"/>.
     /// </remarks>
-    /// <exception cref="ArgumentNullException">When <paramref name="source"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
     public virtual string Redact(string? source) => Redact(source.AsSpan());
 
     /// <summary>
@@ -104,7 +104,7 @@ public abstract class Redactor
     /// </param>
     /// <param name="provider">Format provider to retrieve format for span formattable.</param>
     /// <returns>Redacted value.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     [SkipLocalsInit]
     [SuppressMessage("Minor Code Smell", "S3247:Duplicate casts should not be made", Justification = "Avoid pattern matching to improve jitted code")]
     public string Redact<T>(T value, string? format = null, IFormatProvider? provider = null)
@@ -156,7 +156,7 @@ public abstract class Redactor
     /// </param>
     /// <param name="provider">Format provider to retrieve format for span formattable.</param>
     /// <returns>Number of characters written to the buffer.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     [SkipLocalsInit]
     [SuppressMessage("Minor Code Smell", "S3247:Duplicate casts should not be made", Justification = "Avoid pattern matching to improve jitted code")]
     public int Redact<T>(T value, Span<char> destination, string? format = null, IFormatProvider? provider = null)

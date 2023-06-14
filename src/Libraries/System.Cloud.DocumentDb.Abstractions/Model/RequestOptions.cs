@@ -12,7 +12,7 @@ namespace System.Cloud.DocumentDb;
 /// </summary>
 /// <remarks>
 /// Not all parameters supported by all APIs and engines.
-/// Not supported parameters will be ignored.
+/// Unsupported parameters are ignored.
 /// </remarks>
 /// <typeparam name="TDocument">
 /// The document entity type to be used as a table schema.
@@ -32,63 +32,69 @@ public class RequestOptions<TDocument> : RequestOptions
 /// </summary>
 /// <remarks>
 /// Not all parameters supported by all APIs and engines.
-/// Not supported parameters will be ignored.
+/// Unsupported parameters are ignored.
 /// </remarks>
 public class RequestOptions
 {
     /// <summary>
     /// Gets or sets a value indicating whether written object should be returned back after write operations.
     /// </summary>
+    /// <value>
+    /// The default value is <see langword="false" />.
+    /// </value>
     /// <remarks>
-    /// Indicating whether written object should be returned back after write operations like Create, Upsert, Patch and Replace.
-    /// Setting the option to false will cause the response to have a null item.
+    /// Indicates whether written object should be returned back after write operations like Create, Upsert, Patch, and Replace.
+    /// Setting the option to false causes the response to have a <see langword="null"/> item.
     /// This reduces networking and CPU load by not sending the resource back over the network and serializing it on the client.
-    /// Default is <see langword="false" />.
     /// </remarks>
     public bool ContentResponseOnWrite { get; set; }
 
     /// <summary>
     /// Gets or sets the partition key elements for the current request.
     /// </summary>
-    /// <remarks>
-    /// Default is <see langword="null" />.
-    /// </remarks>
+    /// <value>
+    /// The default is <see langword="null" />.
+    /// </value>
     public IReadOnlyList<object?>? PartitionKey { get; set; }
 
     /// <summary>
     /// Gets or sets the consistency level required for the request.
     /// </summary>
-    /// <remarks>
-    /// Default is <see langword="null" />.
-    /// </remarks>
+    /// <value>
+    /// The default is <see langword="null" />.
+    /// </value>
     public ConsistencyLevel? ConsistencyLevel { get; set; }
 
     /// <summary>
     /// Gets or sets the token for use with session consistency.
     /// </summary>
-    /// <remarks>
-    /// Default is <see langword="null" />.
-    /// </remarks>
+    /// <value>
+    /// The default is <see langword="null" />.
+    /// </value>
     public string? SessionToken { get; set; }
 
     /// <summary>
     /// Gets or sets the item version parameter to control item version for concurrent modifications.
     /// </summary>
+    /// <value>
+    /// The default is <see langword="null" />.
+    /// </value>
     /// <remarks>
-    /// Default is <see langword="null" />.
-    /// For HTTP based protocols it could be based on ETag property.
+    /// For HTTP based protocols, the item version could be based on ETag property.
     /// It can be obtained from <see cref="IDatabaseResponse.ItemVersion"/>
-    /// by doing operation providing item as result.
+    /// by performing an operation that provides the item as the result.
     /// </remarks>
     public string? ItemVersion { get; set; }
 
     /// <summary>
-    /// Gets or sets the region id.
+    /// Gets or sets the region ID.
     /// </summary>
+    /// <value>
+    /// The default is <see langword="null" />.
+    /// </value>
     /// <remarks>
-    /// Default is <see langword="null" />.
-    /// If the region is not set, request will work with global database.
-    /// Otherwise it should operate with database of specified region.
+    /// If the region is not set, the request will work with global database.
+    /// Otherwise it should operate with database of a specified region.
     /// </remarks>
     public string? Region { get; set; }
 }

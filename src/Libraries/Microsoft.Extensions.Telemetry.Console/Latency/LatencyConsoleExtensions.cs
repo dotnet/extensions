@@ -21,12 +21,12 @@ public static class LatencyConsoleExtensions
     /// </summary>
     /// <param name="services">Dependency injection container.</param>
     /// <returns>Provided service collection with <see cref="LatencyConsoleExporter"/> added.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddConsoleLatencyDataExporter(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
 
-        _ = services.AddOptions<LarencyConsoleOptions>();
+        _ = services.AddOptions<LatencyConsoleOptions>();
         services.TryAddSingleton<ILatencyDataExporter, LatencyConsoleExporter>();
 
         return services;
@@ -36,10 +36,10 @@ public static class LatencyConsoleExtensions
     /// Add latency data exporter for the console.
     /// </summary>
     /// <param name="services">Dependency injection container.</param>
-    /// <param name="configure"><see cref="LarencyConsoleOptions"/> configuration delegate.</param>
+    /// <param name="configure"><see cref="LatencyConsoleOptions"/> configuration delegate.</param>
     /// <returns>Provided service collection with <see cref="LatencyConsoleExporter"/> added.</returns>
     /// <exception cref="ArgumentNullException">Either <paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
-    public static IServiceCollection AddConsoleLatencyDataExporter(this IServiceCollection services, Action<LarencyConsoleOptions> configure)
+    public static IServiceCollection AddConsoleLatencyDataExporter(this IServiceCollection services, Action<LatencyConsoleOptions> configure)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configure);
@@ -53,10 +53,10 @@ public static class LatencyConsoleExtensions
     /// Add latency data exporter for the console.
     /// </summary>
     /// <param name="services">Dependency injection container.</param>
-    /// <param name="section">Configuration of <see cref="LarencyConsoleOptions"/>.</param>
+    /// <param name="section">Configuration of <see cref="LatencyConsoleOptions"/>.</param>
     /// <returns>Provided service collection with <see cref="LatencyConsoleExporter"/> added.</returns>
     /// <exception cref="ArgumentNullException">Either <paramref name="services"/> or <paramref name="section"/> is <see langword="null"/>.</exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LarencyConsoleOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LatencyConsoleOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
@@ -66,7 +66,7 @@ public static class LatencyConsoleExtensions
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(section);
 
-        _ = services.Configure<LarencyConsoleOptions>(section);
+        _ = services.Configure<LatencyConsoleOptions>(section);
 
         return AddConsoleLatencyDataExporter(services);
     }

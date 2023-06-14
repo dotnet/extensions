@@ -13,31 +13,31 @@ internal sealed class LogFormatterTheme
     /// <summary>
     /// Gets or sets a value indicating whether colors are enabled or not.
     /// </summary>
-    /// <remarks>Default is <see langword="true"/>.</remarks>
+    /// <value>Default is <see langword="true"/>.</value>
     public bool ColorsEnabled { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating what color to use for dimmed text.
+    /// Gets or sets the color to use for dimmed text.
     /// </summary>
-    /// <remarks>Default is <see cref="Colors.DarkGrayOnNone"/>.</remarks>
+    /// <value>The default value is <see cref="Colors.DarkGrayOnNone"/>.</value>
     public ColorSet Dimmed { get; set; } = Colors.DarkGrayOnNone;
 
     /// <summary>
-    /// Gets or sets a value indicating what color to use for exception text.
+    /// Gets or sets the color to use for exception text.
     /// </summary>
-    /// <remarks>Default is <see cref="Colors.RedOnNone"/>.</remarks>
+    /// <value>Default is <see cref="Colors.RedOnNone"/>.</value>
     public ColorSet Exception { get; set; } = Colors.RedOnNone;
 
     /// <summary>
-    /// Gets or sets a value indicating what color to use for exception stack trace.
+    /// Gets or sets the  color to use for exception stack trace.
     /// </summary>
-    /// <remarks>Default is <see cref="Colors.DarkRedOnNone"/>.</remarks>
+    /// <value>Default is <see cref="Colors.DarkRedOnNone"/>.</value>
     public ColorSet ExceptionStackTrace { get; set; } = Colors.DarkRedOnNone;
 
     /// <summary>
-    /// Gets or sets a value indicating what color to use for dimensions.
+    /// Gets or sets the color to use for dimensions.
     /// </summary>
-    /// <remarks>Default is <see cref="Colors.DarkGreenOnNone"/>.</remarks>
+    /// <value>Default is <see cref="Colors.DarkGreenOnNone"/>.</value>
     public ColorSet Dimensions { get; set; } = Colors.DarkGreenOnNone;
 }
 

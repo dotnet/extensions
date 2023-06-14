@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Telemetry.Testing.Metering.Internal;
@@ -16,6 +18,7 @@ namespace Microsoft.Extensions.Telemetry.Testing.Metering;
 /// </summary>
 /// <typeparam name="T">The type of metric measurement value.</typeparam>
 [Experimental]
+[DebuggerDisplay("Count = {Count}, LatestWrittenValue = {LatestWrittenValue}")]
 public sealed class MetricValuesHolder<T>
     where T : struct
 {
@@ -40,24 +43,29 @@ public sealed class MetricValuesHolder<T>
 #endif
     private string? _latestWrittenKey;
 
-    internal MetricValuesHolder(TimeProvider timeProvider, AggregationType aggregationType, string metricName)
+    internal MetricValuesHolder(TimeProvider timeProvider, AggregationType aggregationType, Instrument instrument)
     {
         _timeProvider = timeProvider;
         _aggregationType = aggregationType;
-        MetricName = metricName;
+        Instrument = instrument;
         _values = new();
         _valuesTable = new();
     }
 
     /// <summary>
-    /// Gets the metric name.
+    /// Gets the instrument that produces the values maintained by this holder.
     /// </summary>
-    public string MetricName { get; }
+    public Instrument Instrument { get; }
 
     /// <summary>
-    /// Gets all metric values recorded by the instrument.
+    /// Gets all metric values recorded by the metric's instruments.
     /// </summary>
     public IReadOnlyCollection<MetricValue<T>> AllValues => _values;
+
+    /// <summary>
+    /// Gets the total number of values held by this instance.
+    /// </summary>
+    public int Count => _values.Count;
 
     /// <summary>
     /// Gets the latest recorded metric measurement value.

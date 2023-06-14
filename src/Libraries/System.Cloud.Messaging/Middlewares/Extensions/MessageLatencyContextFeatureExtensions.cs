@@ -21,7 +21,7 @@ public static class MessageLatencyContextFeatureExtensions
     /// </remarks>
     /// <param name="context">The message context.</param>
     /// <param name="latencyContext">The latency context to store fine-grained latency for different processing steps.</param>
-    /// <exception cref="ArgumentNullException">If any of the parameters is null.</exception>
+    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
     public static void SetLatencyContext(this MessageContext context, ILatencyContext latencyContext)
     {
         _ = Throw.IfNullOrMemberNull(context, context?.Features);
@@ -39,7 +39,7 @@ public static class MessageLatencyContextFeatureExtensions
     /// <param name="context">The message context.</param>
     /// <param name="latencyContext">The optional latency context registered with the <paramref name="context"/>.</param>
     /// <returns><see cref="bool"/> and if <see langword="true"/>, a corresponding <see cref="ILatencyContext"/>.</returns>
-    /// <exception cref="ArgumentNullException">If the <paramref name="context"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
     public static bool TryGetLatencyContext(this MessageContext context, [NotNullWhen(true)] out ILatencyContext? latencyContext)
     {
         _ = Throw.IfNullOrMemberNull(context, context?.Features);

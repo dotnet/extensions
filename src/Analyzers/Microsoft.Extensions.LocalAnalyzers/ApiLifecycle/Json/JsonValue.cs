@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.LocalAnalyzers.Json;
 internal readonly struct JsonValue : IEquatable<JsonValue>
 {
     /// <summary>
-    /// Represents a null JsonValue.
+    /// Represents a <see langword="null" /> JsonValue.
     /// </summary>
     public static readonly JsonValue Null = new(JsonValueType.Null, default, null);
     private readonly object? _reference;

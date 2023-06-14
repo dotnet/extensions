@@ -24,60 +24,60 @@ public class SocketsHttpHandlerOptions
     /// <summary>
     /// Gets or sets a value indicating whether to automatically follow redirection responses.
     /// </summary>
-    /// <remarks>
-    /// Default set to false.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="false" />.
+    /// </value>
     public bool AllowAutoRedirect { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to use cookies when sending requests.
     /// </summary>
-    /// <remarks>
-    /// Default set to false.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see langword="false" />.
+    /// </value>
     public bool UseCookies { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum number of concurrent connections (per server endpoint) allowed when making requests.
     /// </summary>
-    /// <remarks>
-    /// Default set to `100000`.
-    /// </remarks>
+    /// <value>
+    /// The default value is `100000`.
+    /// </value>
     [Range(1, MaxConnectionsPerServerUpperLimit)]
     public int MaxConnectionsPerServer { get; set; } = MaxConnectionsPerServerUpperLimit;
 
     /// <summary>
     /// Gets or sets the type of decompression method used by the handler for automatic decompression of the HTTP content response.
     /// </summary>
-    /// <remarks>
-    /// Default set to `All`.
-    /// </remarks>
+    /// <value>
+    /// The default value is `All`.
+    /// </value>
     public DecompressionMethods AutomaticDecompression { get; set; } = DecompressionMethods.All;
 
     /// <summary>
     /// Gets or sets the length of time (in seconds) to wait for a connection to the server before terminating the attempt and generating an error.
     /// </summary>
-    /// <remarks>
-    /// Default set to 10 seconds. 100 minutes is the max timeout value in Azure SLB.
-    /// </remarks>
+    /// <value>
+    /// The default value is 10 seconds. 100 minutes is the max timeout value in Azure SLB.
+    /// </value>
     [TimeSpan("00:00:05", "00:05:00")]
     public TimeSpan ConnectTimeout { get; set; } = _defaultConnectTimeout;
 
     /// <summary>
     /// Gets or sets how long a connection can be in the pool to be considered reusable.
     /// </summary>
-    /// <remarks>
-    /// Default set to 5 minutes.
-    /// </remarks>
+    /// <value>
+    /// The default value is 5 minutes.
+    /// </value>
     [TimeSpan("00:00:01", "00:15:00")]
     public TimeSpan PooledConnectionLifetime { get; set; } = _defaultConnectionLifetime;
 
     /// <summary>
     /// Gets or sets how long a connection can be idle in the pool to be considered reusable.
     /// </summary>
-    /// <remarks>
-    /// Default set to 3 minutes.
-    /// </remarks>
+    /// <value>
+    /// The default value is 3 minutes.
+    /// </value>
     [TimeSpan("00:00:01", "01:40:00")]
     public TimeSpan PooledConnectionIdleTimeout { get; set; } = _defaultConnectionIdleTimeout;
 
@@ -85,18 +85,18 @@ public class SocketsHttpHandlerOptions
     /// <summary>
     /// Gets or sets the keep alive ping delay.
     /// </summary>
-    /// <remarks>
-    /// Default set to 1 minute.
-    /// </remarks>
+    /// <value>
+    /// The default value is 1 minute.
+    /// </value>
     [TimeSpan("00:00:01", "01:00:00")]
     public TimeSpan KeepAlivePingDelay { get; set; } = _defaultKeepAlivePingDelay;
 
     /// <summary>
     /// Gets or sets the keep alive ping timeout.
     /// </summary>
-    /// <remarks>
-    /// Default set to 30 seconds.
-    /// </remarks>
+    /// <value>
+    /// The default value is 30 seconds.
+    /// </value>
     [TimeSpan("00:00:01", "00:05:00")]
     public TimeSpan KeepAlivePingTimeout { get; set; } = _defaultKeepAlivePingTimeout;
 #endif

@@ -20,17 +20,19 @@ public class HttpClientTracingOptions
     /// <summary>
     /// Gets or sets a value indicating how HTTP request path parameters should be redacted.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see cref="HttpRouteParameterRedactionMode.Strict"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see cref="HttpRouteParameterRedactionMode.Strict"/>.
+    /// </value>
     [Experimental]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>
     /// Gets or sets a map between HTTP request parameters and their data classification.
     /// </summary>
+    /// <value>
+    /// The default value is an empty <see cref="Dictionary{TKey, TValue}"/>.
+    /// </value>
     /// <remarks>
-    /// Default set to empty <see cref="Dictionary{TKey, TValue}"/>.
     /// If a parameter within a controller's action is not annotated with a data classification attribute and
     /// it's not found in this map, it will be redacted as if it was <see cref="DataClassification.Unknown"/>.
     /// If the parameter will not contain sensitive information and shouldn't be redacted, mark it as <see cref="DataClassification.None"/>.

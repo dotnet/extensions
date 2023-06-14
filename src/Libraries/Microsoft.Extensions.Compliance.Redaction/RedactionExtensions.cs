@@ -19,7 +19,7 @@ public static partial class RedactionExtensions
     /// </summary>
     /// <param name="builder"><see cref="IHostBuilder"/> instance.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     public static IHostBuilder ConfigureRedaction(this IHostBuilder builder)
     {
         _ = Throw.IfNull(builder);
@@ -33,8 +33,8 @@ public static partial class RedactionExtensions
     /// <param name="builder"><see cref="IHostBuilder"/> instance.</param>
     /// <param name="configure">Configuration for <see cref="IRedactionBuilder"/>.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="builder"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException">When <paramref name="configure"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="configure"/> is <see langword="null"/>.</exception>
     public static IHostBuilder ConfigureRedaction(
         this IHostBuilder builder,
         Action<HostBuilderContext, IRedactionBuilder> configure)
@@ -51,8 +51,8 @@ public static partial class RedactionExtensions
     /// <param name="builder"><see cref="IHostBuilder"/> instance.</param>
     /// <param name="configure">Configuration for <see cref="IRedactionBuilder"/>.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="builder"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException">When <paramref name="configure"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="configure"/> is <see langword="null"/>.</exception>
     public static IHostBuilder ConfigureRedaction(this IHostBuilder builder, Action<IRedactionBuilder> configure)
     {
         _ = Throw.IfNull(builder);
@@ -66,7 +66,7 @@ public static partial class RedactionExtensions
     /// </summary>
     /// <param name="services">Instance of <see cref="IServiceCollection"/> used to configure redaction.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddRedaction(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
@@ -80,8 +80,8 @@ public static partial class RedactionExtensions
     /// <param name="services">Instance of <see cref="IServiceCollection"/> used to configure redaction.</param>
     /// <param name="configure">Configuration function for <see cref="IRedactionBuilder"/>.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">When <paramref name="services"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException">When <paramref name="configure"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="configure"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddRedaction(this IServiceCollection services, Action<IRedactionBuilder> configure)
     {
         _ = Throw.IfNull(services);

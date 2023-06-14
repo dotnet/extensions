@@ -19,7 +19,7 @@ public interface IFaultInjectionOptionsProvider
     /// </summary>
     /// <param name="optionsGroupName">The chaos policy options group name.</param>
     /// <param name="optionsGroup">
-    /// The <see cref="ChaosPolicyOptionsGroup"/> associated with the options group name if it is found; otherwise, null.
+    /// The <see cref="ChaosPolicyOptionsGroup"/> associated with the options group name if it is found; otherwise, <see langword="null"/>.
     /// </param>
     /// <returns>
     /// True if the <see cref="ChaosPolicyOptionsGroup"/> associated with the options group name if it is found; otherwise, false.

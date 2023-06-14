@@ -62,11 +62,9 @@ public static class WindowsUtilizationExtensions
     /// An extension method that creates a few OpenTelemetry instruments for system counters.
     /// </summary>
     /// <param name="builder">The builder.</param>
-    /// <returns>Returns the builder.</returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
-    /// <remarks>
-    /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>.
-    /// </remarks>
+    /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
     [Experimental]
     public static IResourceMonitorBuilder AddWindowsCounters(this IResourceMonitorBuilder builder)
     {
@@ -91,12 +89,10 @@ public static class WindowsUtilizationExtensions
     /// An extension method that creates a few OpenTelemetry instruments for system counters.
     /// </summary>
     /// <param name="builder">The builder.</param>
-    /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring of <see cref="WindowsCountersOptions"/>.</param>
-    /// <returns>Returns the builder.</returns>
+    /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="WindowsCountersOptions"/>.</param>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
-    /// <remarks>
-    /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>.
-    /// </remarks>
+    /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
     [Experimental]
     public static IResourceMonitorBuilder AddWindowsCounters(this IResourceMonitorBuilder builder, IConfigurationSection section)
     {
@@ -123,12 +119,10 @@ public static class WindowsUtilizationExtensions
     /// An extension method that creates a few OpenTelemetry instruments for system counters.
     /// </summary>
     /// <param name="builder">The builder.</param>
-    /// <param name="configure">The delegate for configuring of <see cref="WindowsCountersOptions"/>.</param>
-    /// <returns>Returns the builder.</returns>
+    /// <param name="configure">The delegate for configuration of <see cref="WindowsCountersOptions"/>.</param>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
-    /// <remarks>
-    /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>.
-    /// </remarks>
+    /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
     [Experimental]
     public static IResourceMonitorBuilder AddWindowsCounters(this IResourceMonitorBuilder builder, Action<WindowsCountersOptions> configure)
     {
