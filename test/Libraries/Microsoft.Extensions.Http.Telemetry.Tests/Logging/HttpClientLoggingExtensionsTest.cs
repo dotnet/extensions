@@ -835,7 +835,7 @@ public class HttpClientLoggingExtensionsTest
     }
 
     [Fact]
-    public async Task AddHttpClientLogging_DoesntImpactOtherClients_HasNetScope()
+    public async Task AddHttpClientLogging_CallFromOtherClient_HasBuiltInLogging()
     {
         const string RequestPath = "https://we.wont.hit.this.dd22anyway.com";
         await using var provider = new ServiceCollection()
@@ -848,12 +848,15 @@ public class HttpClientLoggingExtensionsTest
              .Services
              .BlockRemoteCall()
              .BuildServiceProvider();
+
+        // The test client has AddHttpClientLogging. The normal client doesn't.
+        // The normal client should still log via the builtin HTTP logging.
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("normal");
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(RequestPath));
 
         _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
         var collector = provider.GetFakeLogCollector();
-        var logRecords = collector.GetSnapshot().Select(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.Internal.HttpLoggingHandler").ToList();
+        var logRecords = collector.GetSnapshot().Where(l => l.Category == "System.Net.Http.HttpClient.normal.LogicalHandler").ToList();
 
         Assert.Equal(2, logRecords.Count);
     }
