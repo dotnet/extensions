@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Telemetry</RootNamespace>
     <Description>Provides canonical implementations of telemetry abstractions</Description>
@@ -47,7 +47,6 @@
     <InternalsVisibleToTest Include="Microsoft.AspNetCore.Telemetry.Tests" />
     <InternalsVisibleToTest Include="Microsoft.AspNetCore.Telemetry.Middleware.Tests" />
     <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Telemetry.Tests" />
-    <InternalsVisibleToTest Include="Microsoft.Azure.Extensions.Telemetry.Tests" />
     <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Telemetry.PerformanceTests" />
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
     <InternalsVisibleTo Include="Microsoft.Extensions.Http.Telemetry" />
