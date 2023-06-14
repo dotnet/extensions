@@ -835,6 +835,35 @@ public class HttpClientLoggingExtensionsTest
     }
 
     [Fact]
+    public async Task AddHttpClientLogging_CallFromOtherClient_HasBuiltInLogging()
+    {
+        const string RequestPath = "https://we.wont.hit.this.dd22anyway.com";
+        await using var provider = new ServiceCollection()
+             .AddFakeLogging()
+             .AddFakeRedaction()
+             .AddHttpClient("test")
+             .AddHttpClientLogging()
+             .Services
+             .AddHttpClient("normal")
+             .Services
+             .BlockRemoteCall()
+             .BuildServiceProvider();
+
+        // The test client has AddHttpClientLogging. The normal client doesn't.
+        // The normal client should still log via the builtin HTTP logging.
+        var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("normal");
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(RequestPath));
+
+        _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+        var collector = provider.GetFakeLogCollector();
+        var logRecords = collector.GetSnapshot().Where(l => l.Category == "System.Net.Http.HttpClient.normal.LogicalHandler").ToList();
+
+        Assert.Collection(logRecords,
+            r => Assert.Equal("RequestPipelineStart", r.Id.Name),
+            r => Assert.Equal("RequestPipelineEnd", r.Id.Name));
+    }
+
+    [Fact]
     public async Task AddDefaultHttpClientLogging_DisablesNetScope()
     {
         const string RequestPath = "https://we.wont.hit.this.dd22anyway.com";
