@@ -52,7 +52,7 @@ public class CircuitBreakerPolicyOptions
     /// Gets or sets the duration of break.
     /// </summary>
     /// <value>
-    /// The duration the circuit will stay open before resetting. The default value is 100.
+    /// The duration the circuit will stay open before resetting. The default value is 5 seconds.
     /// </value>
     /// <remarks>
     /// The value must be greater than 0.5 seconds.
