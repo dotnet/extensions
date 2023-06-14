@@ -1,0 +1,24 @@
+.NET Core uses third-party libraries or other resources that may be
+distributed under licenses different than the .NET Core software.
+
+In the event that we accidentally failed to list a required notice, please
+bring it to our attention. Post an issue or email us:
+
+           dotnet@microsoft.com
+
+The attached notices are provided for information only.
+
+
+License notice for OpenTelemetry .NET
+--------------------------------
+
+https://github.com/open-telemetry/opentelemetry-dotnet
+
+https://github.com/open-telemetry/opentelemetry-dotnet/blob/952c3b17f/src/OpenTelemetry/Internal/SelfDiagnostics.cs
+https://github.com/open-telemetry/opentelemetry-dotnet/blob/952c3b17f/src/OpenTelemetry/Internal/SelfDiagnosticsConfigParser.cs
+https://github.com/open-telemetry/opentelemetry-dotnet/blob/952c3b17f/src/OpenTelemetry/Internal/SelfDiagnosticsConfigRefresher.cs
+https://github.com/open-telemetry/opentelemetry-dotnet/blob/952c3b17f/src/OpenTelemetry/Internal/SelfDiagnosticsEventListener.cs
+
+Copyright The OpenTelemetry Authors
+Licensed under the Apache License, Version 2.0.
+https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/LICENSE
