@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool.Test.TestResources;
 using Microsoft.Extensions.Options;
@@ -16,6 +18,43 @@ public class DependencyInjectionExtensionsTest
     {
         Assert.Throws<ArgumentNullException>(() => ObjectPoolServiceCollectionExtensions.AddPooled<TestClass>(null!));
         Assert.Throws<ArgumentNullException>(() => ObjectPoolServiceCollectionExtensions.AddPooled<ITestClass, TestClass>(null!));
+    }
+
+    [Fact]
+    public void ConfigurePools_ThrowsOnUnparsableMaximumCapacity()
+    {
+        var builder = new ConfigurationBuilder();
+        builder.AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string?>($"My:Pools:{typeof(TestClass).FullName!}", "twenty!"),
+            new KeyValuePair<string, string?>($"My:Pools:{typeof(TestDependency).FullName!}", "4096"),
+        });
+
+        var exception = Assert.Throws<ArgumentException>(
+            () => new ServiceCollection().ConfigurePools(builder.Build().GetSection("My:Pools")));
+
+        Assert.StartsWith(
+            "Can't parse 'Microsoft.Extensions.ObjectPool.Test.TestResources.TestClass' value 'twenty!' to integer.",
+            exception.Message);
+    }
+
+    [Fact]
+    public void ConfigurePools_ConfiguresPoolOptions()
+    {
+        var builder = new ConfigurationBuilder();
+        builder.AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string?>($"My:Pools:{typeof(TestClass).FullName!}", "2048"),
+            new KeyValuePair<string, string?>($"My:Pools:{typeof(TestDependency).FullName!}", "4096"),
+        });
+
+        var services = new ServiceCollection().ConfigurePools(builder.Build().GetSection("My:Pools"));
+        using var provider = services.BuildServiceProvider();
+
+        var sut = provider.GetRequiredService<IOptionsMonitor<PoolOptions>>();
+
+        Assert.Equal(2048, sut.Get(typeof(TestClass).FullName!).Capacity);
+        Assert.Equal(4096, sut.Get(typeof(TestDependency).FullName!).Capacity);
     }
 
     [Fact]
@@ -34,6 +73,12 @@ public class DependencyInjectionExtensionsTest
         Assert.Equal(PoolOptions.DefaultCapacity, options.Get(typeof(object).FullName!).Capacity);
         Assert.Equal(2048, options.Get(typeof(TestClass).FullName!).Capacity);
         Assert.Equal(4096, options.Get(typeof(TestDependency).FullName!).Capacity);
+    }
+
+    [Fact]
+    public void ConfigurePools_ThrowsOnNullSection()
+    {
+        Assert.Throws<ArgumentNullException>(() => new ServiceCollection().ConfigurePools(null!));
     }
 
     [Fact]

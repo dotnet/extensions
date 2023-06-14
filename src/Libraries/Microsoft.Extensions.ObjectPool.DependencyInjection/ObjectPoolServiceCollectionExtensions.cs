@@ -3,12 +3,14 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.Extensions.ObjectPool;
 
 /// <summary>
 /// Extension methods for adding <see cref="ObjectPool{T}"/> to DI container.
@@ -69,6 +71,32 @@ public static class ObjectPoolServiceCollectionExtensions
         where TService : class
     {
         return services.Configure<PoolOptions>(typeof(TService).FullName, configure);
+    }
+
+    /// <summary>
+    /// Configures DI pools.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
+    /// <param name="section">The configuration section to bind.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(PoolOptions))]
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+        Justification = "Addressed by [DynamicDependency]")]
+    public static IServiceCollection ConfigurePools(this IServiceCollection services, IConfigurationSection section)
+    {
+        foreach (var child in Throw.IfNull(section).GetChildren())
+        {
+            if (!int.TryParse(child.Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var capacity))
+            {
+                Throw.ArgumentException(nameof(section), $"Can't parse '{child.Key}' value '{child.Value}' to integer.");
+            }
+
+            _ = services.Configure<PoolOptions>(child.Key, options => options.Capacity = capacity);
+        }
+
+        return services;
     }
 
     private static IServiceCollection AddPooledInternal<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
