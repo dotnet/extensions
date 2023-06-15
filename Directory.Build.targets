@@ -13,6 +13,15 @@
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1138;MSB3270</MSBuildWarningsAsMessages>
     <WarningLevel>5</WarningLevel>
 
+    <!--
+      Related to https://github.com/dotnet/extensions/pull/4061
+
+      warning NU1603: Microsoft.AspNetCore.Telemetry depends on Microsoft.NET.ILLink.Tasks (>= 7.0.100-1.23211.1)
+                      but Microsoft.NET.ILLink.Tasks 7.0.100-1.23211.1 was not found.
+                      An approximate best match of Microsoft.NET.ILLink.Tasks 8.0.0-alpha.1.23060.9 was resolved.
+    -->
+    <NoWarn>$(NoWarn);NU1603</NoWarn>
+
     <!-- This is false for local development, but set to true in the CI system -->
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">false</TreatWarningsAsErrors>
 
