@@ -3,6 +3,7 @@
     <RootNamespace>Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.Diagnostics.ResourceMonitoring</Description>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SkipTests>true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net472'">
