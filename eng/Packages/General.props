@@ -34,7 +34,7 @@
     <PackageVersion Include="OpenTelemetry" Version="1.4.0" />
     <PackageVersion Include="Polly.Contrib.Simmy" Version="0.3.0" />
     <PackageVersion Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
-    <PackageVersion Include="Polly" Version="7.2.3" />
+    <PackageVersion Include="Polly" Version="7.2.4" />
     <PackageVersion Include="protobuf-net" Version="3.0.101" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
