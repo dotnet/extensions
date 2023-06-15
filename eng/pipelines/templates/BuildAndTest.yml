@@ -41,6 +41,10 @@ steps:
   #       Get-ChildItem env:* | Sort-Object Name  
   #   displayName: Debug
 
+  - ${{ if ne(parameters.isWindows, 'true') }}:
+    - script: $(Build.SourcesDirectory)/eng/install-native-dependencies.sh
+      displayName: Install Build Dependencies
+
   - pwsh: |
         function Export { param($i); Write-Host "$i"; Write-Host "##$i" }
         Export "vso[task.setvariable variable=IsDeltaBuild]${{ parameters.isDeltaBuild }}"
