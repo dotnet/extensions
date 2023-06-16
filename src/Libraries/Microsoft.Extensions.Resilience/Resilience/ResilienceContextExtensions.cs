@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Shared.Diagnostics;
 using Polly;
@@ -19,6 +20,7 @@ public static class ResilienceContextExtensions
     /// </summary>
     /// <param name="context">The context instance.</param>
     /// <param name="requestMetadata">The request metadata.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> or <paramref name="requestMetadata"/> is <see langword="null"/>.</exception>
     public static void SetRequestMetadata(this ResilienceContext context, RequestMetadata requestMetadata)
     {
         _ = Throw.IfNull(context);
@@ -32,6 +34,7 @@ public static class ResilienceContextExtensions
     /// </summary>
     /// <param name="context">The context instance.</param>
     /// <returns>The instance of <see cref="RequestMetadata"/> or <see langword="null"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is <see langword="null"/>.</exception>
     public static RequestMetadata? GetRequestMetadata(this ResilienceContext context)
     {
         _ = Throw.IfNull(context);

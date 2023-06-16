@@ -12,7 +12,7 @@ using Polly.Extensions.Telemetry;
 
 namespace Microsoft.Extensions.Resilience.Resilience.Internal;
 
-internal class ResilienceEnricher
+internal sealed class ResilienceEnricher
 {
     private readonly FrozenDictionary<Type, Func<object, FailureResultContext>> _faultFactories;
     private readonly IOutgoingRequestContext? _outgoingRequestContext;
