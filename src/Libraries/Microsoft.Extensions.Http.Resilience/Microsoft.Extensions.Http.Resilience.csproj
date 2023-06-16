@@ -29,7 +29,7 @@
     <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
     <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.NamedService\DependencyInjection.NamedService.csproj" />
-    <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.Pools\DependencyInjection.Pools.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.ObjectPool.DependencyInjection\Microsoft.Extensions.ObjectPool.DependencyInjection.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Pools;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Metering;
@@ -30,7 +29,7 @@ public static class HeaderParsingExtensions
         if (!Throw.IfNull(services).Any(x => x.ServiceType == typeof(HeaderParsingFeature.PoolHelper)))
         {
             _ = services
-                .AddPool<HeaderParsingFeature.PoolHelper>()
+                .AddPooled<HeaderParsingFeature.PoolHelper>()
                 .AddSingleton<IHttpContextAccessor, HttpContextAccessor>()
                 .AddSingleton<IHeaderRegistry, HeaderRegistry>()
                 .AddScoped(provider => provider.GetRequiredService<ObjectPool<HeaderParsingFeature.PoolHelper>>().Get())
