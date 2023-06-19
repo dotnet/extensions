@@ -27,7 +27,7 @@ public class FakeTimeProvider : TimeProvider
     /// <remarks>
     /// This can be set by passing in a <see cref="DateTimeOffset"/> to the constructor
     /// which takes the <c>epoch</c> argument. If the default constructor is used,
-    /// the clocks start time defaults to midnight January 1st 2000.
+    /// the clock's start time defaults to midnight January 1st 2000.
     /// </remarks>
     [Experimental]
     public DateTimeOffset Epoch { get; } = new DateTimeOffset(2000, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
