@@ -197,7 +197,9 @@ public class PoolTests
         pool.Return(s);
         var s2 = pool.Get();
 
-#if NET6_0_OR_GREATER
+#if NET8_0_OR_GREATER
+        // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
+        // and as such the API is available in .NET 8 onwards.
         Assert.Same(s, s2);
 #else
         Assert.NotSame(s, s2);

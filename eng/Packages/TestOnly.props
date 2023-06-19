@@ -42,5 +42,6 @@
   <Import Project="$(MSBuildThisFileDirectory)\TestOnly-net462.props" />
   <Import Project="$(MSBuildThisFileDirectory)\TestOnly-netcoreapp3.1.props" />
   <Import Project="$(MSBuildThisFileDirectory)\TestOnly-net6.0.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\TestOnly-net7.0.props" />
   <Import Project="$(MSBuildThisFileDirectory)\TestOnly-latest.props" />
 </Project>

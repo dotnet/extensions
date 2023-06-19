@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(IsWindowsBuild)' == 'true' ">$(NetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
+    <TargetFrameworks>$(TestNetCoreTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsWindowsBuild)' == 'true' ">$(TestNetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>

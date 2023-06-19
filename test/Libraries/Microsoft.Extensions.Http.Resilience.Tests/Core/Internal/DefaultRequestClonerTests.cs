@@ -78,7 +78,9 @@ public class DefaultRequestClonerTests
         initialRequest.Properties.Add("A", "A");
         initialRequest.Properties.Add("B", "B");
 
-#if NET5_0_OR_GREATER
+#if NET8_0_OR_GREATER
+        // Whilst these API are marked as NET5_0_OR_GREATER we don't build .NET 5.0,
+        // and as such the API is available in .NET 8 onwards.
         initialRequest.Options.Set(new HttpRequestOptionsKey<string>("C"), "C");
         initialRequest.Options.Set(new HttpRequestOptionsKey<string>("D"), "D");
 #endif
@@ -98,7 +100,9 @@ public class DefaultRequestClonerTests
         cloned.Properties["A"].Should().Be("A");
         cloned.Properties["B"].Should().Be("B");
 
-#if NET5_0_OR_GREATER
+#if NET8_0_OR_GREATER
+        // Whilst these API are marked as NET5_0_OR_GREATER we don't build .NET 5.0,
+        // and as such the API is available in .NET 8 onwards.
         initialRequest.Options.TryGetValue(new HttpRequestOptionsKey<string>("C"), out var val).Should().BeTrue();
         val.Should().Be("C");
 

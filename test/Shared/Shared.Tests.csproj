@@ -6,8 +6,8 @@
 
   <PropertyGroup>
     <NoWarn>$(NoWarn);CA1716</NoWarn>
-    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(IsWindowsBuild)' == 'true' ">$(NetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
+    <TargetFrameworks>$(TestNetCoreTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsWindowsBuild)' == 'true' ">$(TestNetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net472' ">

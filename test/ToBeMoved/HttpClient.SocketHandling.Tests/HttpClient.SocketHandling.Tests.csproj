@@ -3,7 +3,7 @@
     <AssemblyName>Microsoft.Extensions.HttpClient.SocketHandling.Tests</AssemblyName>
     <RootNamespace>Microsoft.Extensions.HttpClient.SocketHandling.Test</RootNamespace>
     <Description>Tests for Microsoft.Extensions.HttpClient.SocketHandling</Description>
-    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(TestNetCoreTargetFrameworks)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>

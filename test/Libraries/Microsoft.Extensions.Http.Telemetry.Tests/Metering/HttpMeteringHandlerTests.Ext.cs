@@ -125,7 +125,9 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
         Assert.Equal("www.example-failure3.com", latest.GetDimension(Metric.ReqHost));
         Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(Metric.DependencyName));
         Assert.Equal($"POST {TelemetryConstants.Unknown}", latest.GetDimension(Metric.ReqName));
-#if NET6_0_OR_GREATER
+#if NET8_0_OR_GREATER
+        // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
+        // and as such the API is available in .NET 8 onwards.
         Assert.Equal((int)HttpStatusCode.BadGateway, latest.GetDimension(Metric.RspResultCode));
 #else
         Assert.Equal((int)HttpStatusCode.ServiceUnavailable, latest.GetDimension(Metric.RspResultCode));

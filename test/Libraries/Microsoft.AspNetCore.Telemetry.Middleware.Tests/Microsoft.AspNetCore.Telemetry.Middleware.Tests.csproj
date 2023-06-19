@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <TargetFrameworks>$(TestNetCoreTargetFrameworks)</TargetFrameworks>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
   </PropertyGroup>
 

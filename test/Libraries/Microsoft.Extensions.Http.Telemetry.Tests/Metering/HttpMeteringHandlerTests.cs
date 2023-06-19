@@ -675,7 +675,9 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
         }
         else if (request.RequestUri == _failure3Uri)
         {
-#if NET6_0_OR_GREATER
+#if NET8_0_OR_GREATER
+            // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
+            // and as such the API is available in .NET 8 onwards.
             throw new HttpRequestException("Something went wrong", null, HttpStatusCode.BadGateway);
 #else
             throw new HttpRequestException("Something went wrong");

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.TestUtilities</AssemblyName>
     <RootNamespace>Microsoft.TestUtilities</RootNamespace>
-    <TargetFrameworks>$(NetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
+    <TargetFrameworks>$(TestNetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
