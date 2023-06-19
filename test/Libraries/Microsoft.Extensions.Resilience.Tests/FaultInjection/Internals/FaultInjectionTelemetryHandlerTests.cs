@@ -19,7 +19,7 @@ public class FaultInjectionTelemetryHandlerTests
         var logger = Mock.Of<ILogger<IChaosPolicyFactory>>();
 
         using var meter = new Meter<IChaosPolicyFactory>();
-        using var metricCollector = new MetricCollector(meter);
+        using var metricCollector = new MetricCollector<long>(meter, MetricName);
         var counter = meter.CreateCounter<long>(MetricName);
         var metricCounter = new FaultInjectionMetricCounter(counter);
 
@@ -29,12 +29,12 @@ public class FaultInjectionTelemetryHandlerTests
 
         FaultInjectionTelemetryHandler.LogAndMeter(logger, metricCounter, GroupName, FaultType, InjectedValue);
 
-        var latest = metricCollector.GetCounterValues<long>(MetricName)!.LatestWritten;
+        var latest = metricCollector.LastMeasurement;
 
         Assert.NotNull(latest);
         Assert.Equal(1, latest.Value);
-        Assert.Equal(GroupName, latest.GetDimension(FaultInjectionEventMeterDimensions.FaultInjectionGroupName));
-        Assert.Equal(FaultType, latest.GetDimension(FaultInjectionEventMeterDimensions.FaultType));
-        Assert.Equal(InjectedValue, latest.GetDimension(FaultInjectionEventMeterDimensions.InjectedValue));
+        Assert.Equal(GroupName, latest.Tags[FaultInjectionEventMeterDimensions.FaultInjectionGroupName]);
+        Assert.Equal(FaultType, latest.Tags[FaultInjectionEventMeterDimensions.FaultType]);
+        Assert.Equal(InjectedValue, latest.Tags[FaultInjectionEventMeterDimensions.InjectedValue]);
     }
 }
