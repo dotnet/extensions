@@ -67,7 +67,7 @@ public static class UsingExperimentalApiAnalyzerTest
                 }
             }
 
-            [Experimental]
+            [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
             public class ExpClass
             {
             }

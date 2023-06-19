@@ -266,7 +266,7 @@ public sealed class LogMethodAttribute : Attribute
     /// }
     /// </code>
     /// </example>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public LogMethodAttribute()
     {
         EventId = 0;

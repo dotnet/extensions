@@ -28,12 +28,12 @@ public static class TelemetryConstants
     /// <summary>
     /// Header for client application name, sent on an outgoing http call.
     /// </summary>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public const string ClientApplicationNameHeader = "X-ClientApplication";
 
     /// <summary>
     /// Header for server application name, sent on a http request.
     /// </summary>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public const string ServerApplicationNameHeader = "X-ServerApplication";
 }

@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Resilience.Internal;
 /// <summary>
 /// Extensions for <see cref="OptionsBuilder{TOptions}"/>.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 internal static class OptionsBuilderExtensions
 {
     /// <summary>

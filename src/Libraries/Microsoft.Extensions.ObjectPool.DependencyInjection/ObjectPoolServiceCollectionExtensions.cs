@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.ObjectPool;
 /// <summary>
 /// Extension methods for adding <see cref="ObjectPool{T}"/> to DI container.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public static class ObjectPoolServiceCollectionExtensions
 {
     /// <summary>

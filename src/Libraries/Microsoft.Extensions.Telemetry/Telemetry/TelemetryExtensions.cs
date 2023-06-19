@@ -25,7 +25,7 @@ public static class TelemetryExtensions
     /// </summary>
     /// <param name="request"><see cref="HttpWebRequest"/> object.</param>
     /// <param name="metadata">Metadata for the request.</param>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static void SetRequestMetadata(this HttpWebRequest request, RequestMetadata metadata)
     {
         _ = Throw.IfNull(request);
@@ -58,7 +58,7 @@ public static class TelemetryExtensions
     /// </summary>
     /// <param name="request"><see cref="HttpWebRequest"/> object.</param>
     /// <returns>Request metadata.</returns>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static RequestMetadata? GetRequestMetadata(this HttpWebRequest request)
     {
         _ = Throw.IfNull(request);

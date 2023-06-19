@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// </code>
 /// </example>
 [SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "Not applicable to this exception")]
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public class AutoClientException : Exception
 {
     /// <summary>

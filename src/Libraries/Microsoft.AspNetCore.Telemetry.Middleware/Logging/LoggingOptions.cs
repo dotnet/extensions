@@ -67,7 +67,7 @@ public class LoggingOptions
     /// <value>
     /// The default value is <see cref="HttpRouteParameterRedactionMode.Strict"/>.
     /// </value>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>
@@ -208,7 +208,7 @@ public class LoggingOptions
     /// };
     /// </code>
     /// </example>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     [Required]
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]

@@ -30,7 +30,7 @@ public static partial class CommonHealthChecksExtensions
     /// <param name="section">Configuration for <see cref="TelemetryHealthCheckPublisherOptions"/>.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services" /> or <paramref name="section"/> are <see langword="null" />.</exception>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services, IConfigurationSection section)
         => Throw.IfNull(services)
             .Configure<TelemetryHealthCheckPublisherOptions>(Throw.IfNull(section))
@@ -44,7 +44,7 @@ public static partial class CommonHealthChecksExtensions
     /// <param name="configure">Configuration for <see cref="TelemetryHealthCheckPublisherOptions"/>.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services" /> or <paramref name="configure"/> are <see langword="null" />.</exception>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services, Action<TelemetryHealthCheckPublisherOptions> configure)
         => Throw.IfNull(services)
             .Configure(Throw.IfNull(configure))

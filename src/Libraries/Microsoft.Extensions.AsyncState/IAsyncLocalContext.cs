@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.AsyncState;
 /// </summary>
 /// <typeparam name="T">The type of the asynchronous state.</typeparam>
 /// <remarks>This type is intended for internal use. Use <see cref="IAsyncContext{T}"/> instead.</remarks>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable S4023 // Interfaces should not be empty
 public interface IAsyncLocalContext<T> : IAsyncContext<T>

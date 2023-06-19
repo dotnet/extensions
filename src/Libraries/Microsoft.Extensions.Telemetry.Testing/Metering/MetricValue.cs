@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Telemetry.Testing.Metering;
 /// Represents the whole information about a single metric measurement.
 /// </summary>
 /// <typeparam name="T">The type of metric measurement value.</typeparam>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public sealed class MetricValue<T>
     where T : struct
 {

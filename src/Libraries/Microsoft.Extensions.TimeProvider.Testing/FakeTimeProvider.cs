@@ -29,7 +29,7 @@ public class FakeTimeProvider : TimeProvider
     /// which takes the <c>epoch</c> argument. If the default constructor is used,
     /// the clocks start time defaults to midnight January 1st 2000.
     /// </remarks>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public DateTimeOffset Epoch { get; } = new DateTimeOffset(2000, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
 
     /// <summary>
@@ -49,7 +49,7 @@ public class FakeTimeProvider : TimeProvider
     /// Initializes a new instance of the <see cref="FakeTimeProvider"/> class.
     /// </summary>
     /// <param name="epoch">The starting point for the clock used by this <see cref="FakeTimeProvider"/>.</param>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public FakeTimeProvider(DateTimeOffset epoch)
         : this()
     {

@@ -17,7 +17,7 @@ public static class MeteringExtensions
     /// </summary>
     /// <param name="services">The dependency injection container to register metering into.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IServiceCollection RegisterMetering(this IServiceCollection services)
     {
         services.TryAdd(ServiceDescriptor.Singleton(typeof(Meter<>), typeof(Meter<>)));

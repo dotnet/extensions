@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Hosting.Testing;
 /// <summary>
 /// Extension methods supporting host unit testing scenarios.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public static class HostingFakesExtensions
 {
     /// <summary>

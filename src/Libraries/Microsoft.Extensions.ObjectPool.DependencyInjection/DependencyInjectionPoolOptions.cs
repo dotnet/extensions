@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.ObjectPool;
 /// <summary>
 /// Contains configuration for pools.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public sealed class DependencyInjectionPoolOptions
 {
     internal const int DefaultCapacity = 1024;

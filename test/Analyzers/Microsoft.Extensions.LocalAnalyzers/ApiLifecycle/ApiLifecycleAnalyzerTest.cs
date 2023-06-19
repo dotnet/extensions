@@ -228,7 +228,7 @@ public class ApiLifecycleAnalyzerTest
                 using System.Collections.Generic;
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental]
+                [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
                 public class AdditionalContext2
                 {
                     protected IReadOnlyDictionary<string, object> Features { get; } = new Dictionary<string, object>();
@@ -347,7 +347,7 @@ public class ApiLifecycleAnalyzerTest
 
                 private T[] _buffer = Array.Empty<T>();
 
-                [Experimental]
+                [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
                 public BufferWriter2() { }
 
                 public ReadOnlyMemory<T> WrittenMemory => _buffer.AsMemory(0, WrittenCount);
@@ -474,7 +474,7 @@ public class ApiLifecycleAnalyzerTest
                     public DataClass DataClass { get; }
                 }
 
-                [Experimental]
+                [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
                 public enum DataClass
                 {
 
@@ -562,10 +562,10 @@ public class ApiLifecycleAnalyzerTest
 
             using System.Diagnostics.CodeAnalysis;
 
-            [Experimental]
+            [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
             public static class Test
             {
-                [Experimental]
+                [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
                 public static void Load()
                 {
                     // Intentionally left empty.
@@ -707,7 +707,7 @@ public class ApiLifecycleAnalyzerTest
                 using System.Collections.Generic;
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental]
+                [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
                 public class WindowsCountersOptions2
                 {
                     [Required]
@@ -728,7 +728,7 @@ public class ApiLifecycleAnalyzerTest
 
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental]
+                [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
                 public sealed class BufferWriter<T>
                 {
                     internal const int MaxArrayLength = 0X7FEF_FFFF;   // Copy of the internal Array.MaxArrayLength const
@@ -751,7 +751,7 @@ public class ApiLifecycleAnalyzerTest
 
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental]
+                [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
                 public class BaseType
                 {
                     public virtual int P => 1;
@@ -774,7 +774,7 @@ public class ApiLifecycleAnalyzerTest
 
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental]
+                [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
                 public class OuterType
                 {
                     public int ReadValue(string s) => new InnerType().P;

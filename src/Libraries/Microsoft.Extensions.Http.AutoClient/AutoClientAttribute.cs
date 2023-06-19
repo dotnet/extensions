@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 [AttributeUsage(AttributeTargets.Interface)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class AutoClientAttribute : Attribute

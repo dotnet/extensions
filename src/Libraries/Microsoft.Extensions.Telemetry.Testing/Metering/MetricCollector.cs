@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Telemetry.Testing.Metering;
 /// <remarks>
 /// This type has been designed to be used only for testing purposes.
 /// </remarks>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 [DebuggerDisplay("Count = {Count}")]
 public partial class MetricCollector : IDisposable
 {

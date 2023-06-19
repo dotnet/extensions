@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Telemetry.Testing.Metering;
 /// The metric measurements holder that contains information belonging to one named metric.
 /// </summary>
 /// <typeparam name="T">The type of metric measurement value.</typeparam>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 [DebuggerDisplay("Count = {Count}, LatestWrittenValue = {LatestWrittenValue}")]
 public sealed class MetricValuesHolder<T>
     where T : struct

@@ -23,7 +23,7 @@ public class HttpClientTracingOptions
     /// <value>
     /// The default value is <see cref="HttpRouteParameterRedactionMode.Strict"/>.
     /// </value>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>

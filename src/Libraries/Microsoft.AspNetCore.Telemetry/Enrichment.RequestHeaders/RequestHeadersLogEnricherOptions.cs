@@ -20,7 +20,7 @@ public class RequestHeadersLogEnricherOptions
     /// Default value is an empty dictionary.
     /// </remarks>
     [Required]
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 #pragma warning disable CA2227 // Collection properties should be read only
     public IDictionary<string, DataClassification> HeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
 #pragma warning restore CA2227 // Collection properties should be read only

@@ -12,13 +12,13 @@ namespace Microsoft.Extensions.Telemetry.Metering;
 /// A meter class where the meter name is derived from the specified <typeparamref name="TMeterName"/> type name.
 /// </summary>
 /// <typeparam name="TMeterName">The type whose name is used as the meter name.</typeparam>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public class Meter<TMeterName> : Meter
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Meter{TMeterName}"/> class.
     /// </summary>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public Meter()
         : base(typeof(TMeterName).FullName!)
     {

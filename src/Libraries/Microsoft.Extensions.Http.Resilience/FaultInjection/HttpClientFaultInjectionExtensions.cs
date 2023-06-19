@@ -147,7 +147,7 @@ public static class HttpClientFaultInjectionExtensions
     /// <returns>
     /// The <see cref="IHttpClientBuilder"/> so that additional calls can be chained.
     /// </returns>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IHttpClientBuilder AddWeightedFaultInjectionPolicyHandlers(this IHttpClientBuilder httpClientBuilder,
         Action<FaultPolicyWeightAssignmentsOptions> weightAssignmentsConfig)
     {
@@ -176,7 +176,7 @@ public static class HttpClientFaultInjectionExtensions
     /// <returns>
     /// The <see cref="IHttpClientBuilder"/> so that additional calls can be chained.
     /// </returns>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     [DynamicDependency(
         DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor,
         typeof(FaultPolicyWeightAssignmentsOptions))]

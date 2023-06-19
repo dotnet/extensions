@@ -66,7 +66,9 @@
   </Target>
 
   <ItemGroup Condition="'$(Stage)' == 'dev' AND '$(OutputType)' != 'Exe' AND '$(Api)' != 'false'">
-    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExperimentalAttribute" />
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExperimentalAttribute">
+      <_Parameter1></_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <Target Name="AddInternalsVisibleToDynamicProxyGenAssembly2" BeforeTargets="BeforeCompile">

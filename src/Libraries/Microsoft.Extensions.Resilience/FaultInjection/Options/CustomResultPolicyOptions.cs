@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Resilience.FaultInjection;
 /// <summary>
 /// Custom Result chaos policy options definition.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public class CustomResultPolicyOptions : ChaosPolicyOptionsBase
 {
     /// <summary>
@@ -20,7 +20,7 @@ public class CustomResultPolicyOptions : ChaosPolicyOptionsBase
     /// from <see cref="ICustomResultRegistry"/>.
     /// Default is set to <see cref="string.Empty"/>.
     /// </remarks>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     [Required]
     public string CustomResultKey { get; set; } = string.Empty;
 }

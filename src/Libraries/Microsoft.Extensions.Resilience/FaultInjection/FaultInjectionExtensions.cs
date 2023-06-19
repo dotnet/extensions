@@ -125,7 +125,7 @@ public static class FaultInjectionExtensions
     /// <exception cref="ArgumentNullException">
     /// Any of the parameters are <see langword="null"/>.
     /// </exception>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static Context WithFaultInjection(this Context context, FaultPolicyWeightAssignmentsOptions weightAssignments)
     {
         _ = Throw.IfNull(context);

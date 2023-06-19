@@ -65,7 +65,7 @@ public static class RoutingStrategyBuilderExtensions
     /// <returns>
     /// The same routing builder instance.
     /// </returns>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IRoutingStrategyBuilder ConfigureOrderedGroups(this IRoutingStrategyBuilder builder, Action<OrderedGroupsRoutingOptions, IServiceProvider> configure)
     {
         _ = Throw.IfNull(builder);
@@ -119,7 +119,7 @@ public static class RoutingStrategyBuilderExtensions
     /// <returns>
     /// The same routing builder instance.
     /// </returns>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IRoutingStrategyBuilder ConfigureWeightedGroups(this IRoutingStrategyBuilder builder, Action<WeightedGroupsRoutingOptions, IServiceProvider> configure)
     {
         _ = Throw.IfNull(builder);

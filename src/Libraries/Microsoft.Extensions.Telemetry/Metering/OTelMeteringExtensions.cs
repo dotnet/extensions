@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Telemetry.Metering;
 /// <summary>
 /// Metering extensions for OpenTelemetry based metrics.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public static class OTelMeteringExtensions
 {
     /// <summary>
@@ -22,7 +22,7 @@ public static class OTelMeteringExtensions
     /// </summary>
     /// <param name="builder"><see cref="MeterProviderBuilder"/> instance.</param>
     /// <returns>Returns <see cref="MeterProviderBuilder"/> for chaining.</returns>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static MeterProviderBuilder AddMetering(
         this MeterProviderBuilder builder)
     {
@@ -35,7 +35,7 @@ public static class OTelMeteringExtensions
     /// <param name="builder"><see cref="MeterProviderBuilder"/> instance.</param>
     /// <param name="configurationSection">Configuration section that contains <see cref="MeteringOptions"/>.</param>
     /// <returns>Returns <see cref="MeterProviderBuilder"/> for chaining.</returns>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static MeterProviderBuilder AddMetering(
         this MeterProviderBuilder builder,
         IConfigurationSection configurationSection)
@@ -52,7 +52,7 @@ public static class OTelMeteringExtensions
     /// <param name="builder"><see cref="MeterProviderBuilder"/> instance.</param>
     /// <param name="configure">The <see cref="MeteringOptions"/> configuration delegate.</param>
     /// <returns>Returns <see cref="MeterProviderBuilder"/> for chaining.</returns>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static MeterProviderBuilder AddMetering(
         this MeterProviderBuilder builder,
         Action<MeteringOptions> configure)

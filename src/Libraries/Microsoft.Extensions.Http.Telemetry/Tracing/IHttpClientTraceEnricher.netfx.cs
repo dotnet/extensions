@@ -23,7 +23,7 @@ public interface IHttpClientTraceEnricher
     /// <remarks>
     /// If your enricher fetches some information from <see cref="HttpWebRequest"/> or <see cref="HttpWebResponse"/> to enrich HTTP traces, then make sure to check it for <see langword="null"/>.
     /// </remarks>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     void Enrich(Activity activity, HttpWebRequest? webRequest, HttpWebResponse? webResponse);
 }
 

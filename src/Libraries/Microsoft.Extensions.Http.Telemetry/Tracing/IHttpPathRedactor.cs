@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Http.Telemetry.Tracing;
 /// <summary>
 /// Interface for implementing a redaction mechanism for outgoing HTTP request paths.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public interface IHttpPathRedactor
 {
     /// <summary>

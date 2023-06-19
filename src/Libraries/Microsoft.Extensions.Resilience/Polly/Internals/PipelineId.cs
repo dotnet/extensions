@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Resilience.Internal;
 /// <summary>
 /// Composite key for the pipeline.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 internal sealed record PipelineId(string PipelineName, string PipelineKey, string? ResultType, string PolicyPipelineKey)
 {
     /// <summary>
@@ -19,7 +19,7 @@ internal sealed record PipelineId(string PipelineName, string PipelineKey, strin
     /// <param name="pipelineName">The pipeline name.</param>
     /// <param name="pipelineKey">The pipeline key.</param>
     /// <returns>The pipeline id instance.</returns>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static PipelineId Create<T>(string pipelineName, string pipelineKey)
     {
         var policyPipelineKey = string.IsNullOrEmpty(pipelineKey) ? $"{typeof(T).Name}-{pipelineName}" : $"{typeof(T).Name}-{pipelineName}-{pipelineKey}";
@@ -33,7 +33,7 @@ internal sealed record PipelineId(string PipelineName, string PipelineKey, strin
     /// <param name="pipelineName">The pipeline name.</param>
     /// <param name="pipelineKey">The pipeline key.</param>
     /// <returns>The pipeline id instance.</returns>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static PipelineId Create(string pipelineName, string pipelineKey)
     {
         var policyPipelineKey = string.IsNullOrEmpty(pipelineKey) ? pipelineName : $"{pipelineName}-{pipelineKey}";

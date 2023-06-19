@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Telemetry.Testing.Metering;
 /// This type has been designed to be used only for testing purposes.
 /// </remarks>
 /// <typeparam name="TMeterName">The type whose name is used as the <see cref="Meter"/> instance name.</typeparam>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 #pragma warning disable SA1649 // File name should match first type name
 public sealed class MetricCollector<TMeterName> : MetricCollector
 #pragma warning restore SA1649 // File name should match first type name

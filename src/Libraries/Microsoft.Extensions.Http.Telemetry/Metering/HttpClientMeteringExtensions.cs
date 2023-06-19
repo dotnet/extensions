@@ -34,7 +34,7 @@ public static class HttpClientMeteringExtensions
     /// <returns>
     /// <see cref="IServiceCollection" /> instance for chaining.
     /// </returns>
-    [Experimental]
+    [Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IServiceCollection AddHttpClientMeteringForAllHttpClients(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);

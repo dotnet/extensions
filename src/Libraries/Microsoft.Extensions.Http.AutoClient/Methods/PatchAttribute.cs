@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental]
+[Experimental(diagnosticId: "NETEXT0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class PatchAttribute : Attribute
 {
