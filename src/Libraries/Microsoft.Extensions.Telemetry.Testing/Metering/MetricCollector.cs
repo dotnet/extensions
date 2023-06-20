@@ -33,6 +33,7 @@ public sealed class MetricCollector<T> : IDisposable
         typeof(decimal),
     };
 
+    internal int WaitersCount => _waiters.Count; // Internal for testing
     private readonly MeterListener _meterListener = new();
     private readonly List<CollectedMeasurement<T>> _measurements = new();
     private readonly List<Waiter> _waiters = new();
@@ -136,8 +137,9 @@ public sealed class MetricCollector<T> : IDisposable
             // wake up anybody still waiting and inform them of the bad news: their horse is dead...
             foreach (var w in _waiters)
             {
-                w.TaskSource.SetException(MakeObjectDisposedException());
+                _ = w.TaskSource.TrySetException(MakeObjectDisposedException());
             }
+            _waiters.Clear();
         }
     }
 
@@ -200,57 +202,58 @@ public sealed class MetricCollector<T> : IDisposable
     /// <summary>
     /// Returns a task that completes when the collector has collected a minimum number of measurements.
     /// </summary>
-    /// <param name="numMeasurements">The minimum number of measurements to wait for.</param>
+    /// <param name="minCount">The minimum number of measurements to wait for.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that completes when the collector has collected the requisite number of measurements.</returns>
-    [SuppressMessage("Resilience", "R9A061:The async method doesn't support cancellation", Justification = "Not relevant in this case")]
-    public Task WaitForMeasurementsAsync(int numMeasurements)
+    public Task WaitForMeasurementsAsync(int minCount, CancellationToken cancellationToken = default)
     {
-        _ = Throw.IfLessThan(numMeasurements, 1);
+        _ = Throw.IfLessThan(minCount, 1);
 
+        Waiter w;
         lock (_measurements)
         {
             ThrowIfDisposed();
 
-            if (_measurements.Count >= numMeasurements)
+            if (_measurements.Count >= minCount)
             {
                 return Task.CompletedTask;
             }
 
-            var w = new Waiter(numMeasurements);
+            w = new Waiter(minCount);
             _waiters.Add(w);
-
-            return w.TaskSource.Task;
         }
+
+        if (cancellationToken.CanBeCanceled)
+        {
+            _ = cancellationToken.Register(() =>
+            {
+                lock (_measurements)
+                {
+#if NET6_0_OR_GREATER
+                    w.TaskSource.TrySetCanceled(cancellationToken);
+#else
+                    w.TaskSource.TrySetCanceled();
+#endif
+
+                    _waiters.Remove(w);
+                }
+            });
+        }
+
+        return w.TaskSource.Task;
     }
 
     /// <summary>
     /// Returns a task that completes when the collector has collected a minimum number of measurements.
     /// </summary>
-    /// <param name="numMeasurements">The minimum number of measurements to wait for.</param>
+    /// <param name="minCount">The minimum number of measurements to wait for.</param>
     /// <param name="timeout">How long to wait.</param>
-    /// <param name="timeProvider">The time provider against which the timeout executes. If this is <see langword="null"/> then the provider
-    /// selected when creating the metric collector is used.</param>
     /// <returns>A task that completes when the collector has collected the requisite number of measurements.</returns>
     [SuppressMessage("Resilience", "R9A061:The async method doesn't support cancellation", Justification = "Not relevant in this case")]
-    public Task WaitForMeasurementsAsync(int numMeasurements, TimeSpan timeout, TimeProvider? timeProvider = null)
+    public async Task WaitForMeasurementsAsync(int minCount, TimeSpan timeout)
     {
-        _ = Throw.IfLessThan(numMeasurements, 1);
-        _ = Throw.IfLessThan(timeout.Ticks, 0);
-
-        lock (_measurements)
-        {
-            ThrowIfDisposed();
-
-            if (_measurements.Count >= numMeasurements)
-            {
-                return Task.CompletedTask;
-            }
-
-            var w = new Waiter(numMeasurements);
-            _waiters.Add(w);
-
-            return w.TaskSource.Task.WaitAsync(timeout, timeProvider ?? _timeProvider, CancellationToken.None);
-        }
+        using var cancellationTokenSource = new CancellationTokenSource(timeout);
+        await WaitForMeasurementsAsync(minCount, cancellationTokenSource.Token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -300,7 +303,7 @@ public sealed class MetricCollector<T> : IDisposable
                 // wake up any waiters that need it
                 for (int i = _waiters.Count - 1; i >= 0; i--)
                 {
-                    if (_measurements.Count >= _waiters[i].NumMeasurements)
+                    if (_measurements.Count >= _waiters[i].MinCount)
                     {
                         // we use TrySetResult since the task may already be in the Cancelled state due to a timeout.
                         _ = _waiters[i].TaskSource.TrySetResult(true);
@@ -326,12 +329,15 @@ public sealed class MetricCollector<T> : IDisposable
 
     private readonly struct Waiter
     {
-        public Waiter(int numMeasurements)
+        public Waiter(int minCount)
         {
-            NumMeasurements = numMeasurements;
+            MinCount = minCount;
         }
 
-        public int NumMeasurements { get; }
-        public TaskCompletionSource<bool> TaskSource { get; } = new();
+        public int MinCount { get; }
+
+        // The TCS is modified in a lock.
+        // Use RunContinuationsAsynchronously to ensure continuations don't run when holding the lock.
+        public TaskCompletionSource<bool> TaskSource { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 }
