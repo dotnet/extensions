@@ -2,614 +2,371 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Telemetry.Testing.Metering.Test;
 
-public partial class MetricCollectorTests
+public static class MetricCollectorTests
 {
     [Fact]
-    public void Ctor_Throws_WhenInvalidArguments()
+    public static void Constructor_NullAndEmptyChecks()
     {
-        Assert.Throws<ArgumentNullException>(() => new MetricCollector((Meter)null!));
-        Assert.Throws<ArgumentNullException>(() => new MetricCollector((IEnumerable<string>)null!));
-        Assert.Throws<ArgumentNullException>(() => new MetricCollector((Instrument)null!));
+        Assert.Throws<ArgumentNullException>(() => new MetricCollector<long>((Instrument<long>)null!));
+        Assert.Throws<ArgumentNullException>(() => new MetricCollector<long>((ObservableInstrument<long>)null!));
+        Assert.Throws<ArgumentNullException>(() => new MetricCollector<long>(new Meter(Guid.NewGuid().ToString()), null!));
+        Assert.Throws<ArgumentNullException>(() => new MetricCollector<long>(null!, "Hello"));
+        Assert.Throws<ArgumentNullException>(() => new MetricCollector<long>(null, null!, "Hello"));
+
+        Assert.Throws<ArgumentException>(() => new MetricCollector<long>(new Meter(Guid.NewGuid().ToString()), string.Empty));
+        Assert.Throws<ArgumentException>(() => new MetricCollector<long>(null, string.Empty, "Hello"));
+        Assert.Throws<ArgumentException>(() => new MetricCollector<long>(null, "Hello", string.Empty));
     }
 
     [Fact]
-    public void Measurements_AreFilteredOut_WithMeterNameFilter()
-    {
-        using var meter1 = new Meter(Guid.NewGuid().ToString());
-        using var meter2 = new Meter(Guid.NewGuid().ToString());
-        using var meterToIgnore = new Meter(Guid.NewGuid().ToString());
-
-        using var metricCollector = new MetricCollector(new[] { meter1.Name, meter2.Name });
-
-        const int IntValue1 = 999;
-        meter1.CreateCounter<int>("int_counter1").Add(IntValue1);
-
-        // Measurement is captured
-        Assert.Equal(IntValue1, metricCollector.GetCounterValue<int>("int_counter1"));
-
-        const double DoubleValue1 = 999;
-        meter2.CreateHistogram<double>("double_histogram1").Record(DoubleValue1);
-
-        // Measurement is captured
-        Assert.Equal(DoubleValue1, metricCollector.GetHistogramValue<double>("double_histogram1"));
-
-        const int IntValue2 = 999999;
-        meterToIgnore.CreateCounter<int>("int_counter2").Add(IntValue2);
-
-        // Measurement is filtered out
-        Assert.Null(metricCollector.GetCounterValue<int>("int_counter2"));
-
-        const double DoubleValue2 = 111.2222;
-        meter2.CreateHistogram<double>("double_histogram2").Record(DoubleValue2);
-
-        // Measurement is filtered out
-        Assert.Null(metricCollector.GetCounterValue<int>("double_histogram2"));
-    }
-
-    [Fact]
-    public void Measurements_SingleInstrument()
-    {
-        var meterName = Guid.NewGuid().ToString();
-        using var meter1 = new Meter(meterName);
-        using var meter2 = new Meter(meterName);
-
-        const int IntValue1 = 123459;
-        const int IntValue2 = 987654;
-
-        var ctr1 = meter1.CreateCounter<int>("int_counter1");
-        var ctr2 = meter2.CreateCounter<int>("int_counter2");
-
-        using var metricCollector = new MetricCollector(ctr2);
-
-        ctr1.Add(IntValue1);
-        ctr2.Add(IntValue2);
-
-        var x = metricCollector.GetAllCounters<int>();
-
-        // Single measurement is captured
-        Assert.Equal(1, metricCollector.Count);
-        Assert.Equal(IntValue2, metricCollector.GetCounterValue<int>("int_counter2"));
-    }
-
-    [Fact]
-    public void Measurements_AreFilteredOut_WithMeterFilter()
-    {
-        var meterName = Guid.NewGuid().ToString();
-        using var meter1 = new Meter(meterName);
-        using var meter2 = new Meter(meterName);
-
-        using var metricCollector = new MetricCollector(meter1);
-
-        const int IntValue1 = 123459;
-        meter1.CreateCounter<int>("int_counter1").Add(IntValue1);
-
-        // Measurement is captured
-        Assert.Equal(IntValue1, metricCollector.GetCounterValue<int>("int_counter1"));
-
-        const double DoubleValue1 = 987;
-        meter1.CreateHistogram<double>("double_histogram1").Record(DoubleValue1);
-
-        // Measurement is captured
-        Assert.Equal(DoubleValue1, metricCollector.GetHistogramValue<double>("double_histogram1"));
-
-        const int IntValue2 = 91111;
-        meter2.CreateCounter<int>("int_counter2").Add(IntValue2);
-
-        // Measurement is filtered out
-        Assert.Null(metricCollector.GetCounterValue<int>("int_counter2"));
-
-        const double DoubleValue2 = 333.7777;
-        meter2.CreateHistogram<double>("double_histogram2").Record(DoubleValue2);
-
-        // Measurement is filtered out
-        Assert.Null(metricCollector.GetCounterValue<int>("double_histogram2"));
-    }
-
-    [Fact]
-    public void GetCounterValues_ReturnsMeteringValuesHolder()
-    {
-        const long TestValue = 111;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-
-        var counter = meter.CreateCounter<long>(Guid.NewGuid().ToString());
-
-        using var metricCollector = new MetricCollector(meter);
-
-        counter.Add(TestValue);
-
-        var meteringHolder = metricCollector.GetCounterValues<long>(counter.Name);
-
-        Assert.NotNull(meteringHolder);
-        Assert.Equal(TestValue, meteringHolder.GetValue());
-        Assert.Null(metricCollector.GetCounterValues<byte>(counter.Name));
-        Assert.Null(metricCollector.GetCounterValues<short>(counter.Name));
-        Assert.Null(metricCollector.GetCounterValues<int>(counter.Name));
-        Assert.Null(metricCollector.GetCounterValues<float>(counter.Name));
-        Assert.Null(metricCollector.GetCounterValues<double>(counter.Name));
-        Assert.Null(metricCollector.GetCounterValues<decimal>(counter.Name));
-    }
-
-    [Fact]
-    public void GetHistogramValues_ReturnsMeteringValuesHolder()
-    {
-        const int TestValue = 271;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-        var histogram = meter.CreateHistogram<int>(Guid.NewGuid().ToString());
-        using var metricCollector = new MetricCollector(meter);
-
-        histogram.Record(TestValue);
-
-        var meteringHolder = metricCollector.GetHistogramValues<int>(histogram.Name);
-
-        Assert.NotNull(meteringHolder);
-        Assert.Equal(TestValue, meteringHolder.GetValue());
-        Assert.Null(metricCollector.GetHistogramValues<byte>(histogram.Name));
-        Assert.Null(metricCollector.GetHistogramValues<short>(histogram.Name));
-        Assert.Null(metricCollector.GetHistogramValues<long>(histogram.Name));
-        Assert.Null(metricCollector.GetHistogramValues<float>(histogram.Name));
-        Assert.Null(metricCollector.GetHistogramValues<double>(histogram.Name));
-        Assert.Null(metricCollector.GetHistogramValues<decimal>(histogram.Name));
-    }
-
-    [Fact]
-    public void GetObservableCounterValues_ReturnsMeteringValuesHolder()
-    {
-        const byte TestValue = 255;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-        var observableCounter = meter.CreateObservableCounter<byte>(Guid.NewGuid().ToString(), () => TestValue);
-        using var metricCollector = new MetricCollector(meter);
-
-        metricCollector.CollectObservableInstruments();
-        var meteringHolder = metricCollector.GetObservableCounterValues<byte>(observableCounter.Name);
-
-        Assert.NotNull(meteringHolder);
-        Assert.Equal(TestValue, meteringHolder.GetValue());
-        Assert.Null(metricCollector.GetObservableCounterValues<short>(observableCounter.Name));
-        Assert.Null(metricCollector.GetObservableCounterValues<int>(observableCounter.Name));
-        Assert.Null(metricCollector.GetObservableCounterValues<long>(observableCounter.Name));
-        Assert.Null(metricCollector.GetObservableCounterValues<float>(observableCounter.Name));
-        Assert.Null(metricCollector.GetObservableCounterValues<double>(observableCounter.Name));
-        Assert.Null(metricCollector.GetObservableCounterValues<decimal>(observableCounter.Name));
-    }
-
-    [Fact]
-    public void GetUpDownCounterValues_ReturnsMeteringValuesHolder()
-    {
-        const short TestValue = 19999;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-        var upDownCounter = meter.CreateUpDownCounter<short>(Guid.NewGuid().ToString());
-        using var metricCollector = new MetricCollector(meter);
-
-        upDownCounter.Add(TestValue);
-        var meteringHolder = metricCollector.GetUpDownCounterValues<short>(upDownCounter.Name);
-
-        Assert.NotNull(meteringHolder);
-        Assert.Equal(TestValue, meteringHolder.GetValue());
-        Assert.Null(metricCollector.GetUpDownCounterValues<byte>(upDownCounter.Name));
-        Assert.Null(metricCollector.GetUpDownCounterValues<int>(upDownCounter.Name));
-        Assert.Null(metricCollector.GetUpDownCounterValues<long>(upDownCounter.Name));
-        Assert.Null(metricCollector.GetUpDownCounterValues<float>(upDownCounter.Name));
-        Assert.Null(metricCollector.GetUpDownCounterValues<double>(upDownCounter.Name));
-        Assert.Null(metricCollector.GetUpDownCounterValues<decimal>(upDownCounter.Name));
-    }
-
-    [Fact]
-    public void GetObservableGaugeValues_ReturnsMeteringValuesHolder()
-    {
-        const long TestValue = 11_225_599L;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-        var observableGauge = meter.CreateObservableGauge(Guid.NewGuid().ToString(), () => TestValue);
-        using var metricCollector = new MetricCollector(meter);
-
-        metricCollector.CollectObservableInstruments();
-        var meteringHolder = metricCollector.GetObservableGaugeValues<long>(observableGauge.Name);
-
-        Assert.NotNull(meteringHolder);
-        Assert.Equal(TestValue, meteringHolder.GetValue());
-        Assert.Null(metricCollector.GetObservableGaugeValues<short>(observableGauge.Name));
-        Assert.Null(metricCollector.GetObservableGaugeValues<int>(observableGauge.Name));
-        Assert.Null(metricCollector.GetObservableGaugeValues<byte>(observableGauge.Name));
-        Assert.Null(metricCollector.GetObservableGaugeValues<float>(observableGauge.Name));
-        Assert.Null(metricCollector.GetObservableGaugeValues<double>(observableGauge.Name));
-        Assert.Null(metricCollector.GetObservableGaugeValues<decimal>(observableGauge.Name));
-    }
-
-    [Fact]
-    public void GetObservableUpDownCounterValues_ReturnsMeteringValuesHolder()
-    {
-        const int TestValue = int.MaxValue;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-        var observableUpDownCounter = meter.CreateObservableUpDownCounter(Guid.NewGuid().ToString(), () => TestValue);
-        using var metricCollector = new MetricCollector(meter);
-
-        metricCollector.CollectObservableInstruments();
-        var meteringHolder = metricCollector.GetObservableUpDownCounterValues<int>(observableUpDownCounter.Name);
-
-        Assert.NotNull(meteringHolder);
-        Assert.Equal(TestValue, meteringHolder.GetValue());
-        Assert.Null(metricCollector.GetObservableUpDownCounterValues<short>(observableUpDownCounter.Name));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValues<long>(observableUpDownCounter.Name));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValues<byte>(observableUpDownCounter.Name));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValues<float>(observableUpDownCounter.Name));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValues<double>(observableUpDownCounter.Name));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValues<decimal>(observableUpDownCounter.Name));
-    }
-
-    [Fact]
-    public void GetCounterValue_ReturnsValue()
-    {
-        const long TestValue = 111;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-
-        var counter = meter.CreateCounter<long>(Guid.NewGuid().ToString());
-
-        using var metricCollector = new MetricCollector(meter);
-
-        counter.Add(TestValue);
-
-        Assert.Equal(TestValue, metricCollector.GetCounterValue<long>(counter.Name));
-        Assert.Null(metricCollector.GetCounterValue<byte>(counter.Name));
-        Assert.Null(metricCollector.GetCounterValue<short>(counter.Name));
-        Assert.Null(metricCollector.GetCounterValue<int>(counter.Name));
-        Assert.Null(metricCollector.GetCounterValue<float>(counter.Name));
-        Assert.Null(metricCollector.GetCounterValue<double>(counter.Name));
-        Assert.Null(metricCollector.GetCounterValue<decimal>(counter.Name));
-    }
-
-    [Fact]
-    public void GetHistogramValue_ReturnsValue()
-    {
-        const int TestValue = 271;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-        var histogram = meter.CreateHistogram<int>(Guid.NewGuid().ToString());
-        using var metricCollector = new MetricCollector(meter);
-
-        histogram.Record(TestValue);
-
-        Assert.Equal(TestValue, metricCollector.GetHistogramValue<int>(histogram.Name));
-        Assert.Null(metricCollector.GetHistogramValue<byte>(histogram.Name));
-        Assert.Null(metricCollector.GetHistogramValue<short>(histogram.Name));
-        Assert.Null(metricCollector.GetHistogramValue<long>(histogram.Name));
-        Assert.Null(metricCollector.GetHistogramValue<float>(histogram.Name));
-        Assert.Null(metricCollector.GetHistogramValue<double>(histogram.Name));
-        Assert.Null(metricCollector.GetHistogramValue<decimal>(histogram.Name));
-    }
-
-    [Fact]
-    public void GetObservableCounterValue_ReturnsValue()
-    {
-        const byte TestValue = 255;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-        var observableCounter = meter.CreateObservableCounter(Guid.NewGuid().ToString(), () => TestValue);
-        using var metricCollector = new MetricCollector(meter);
-
-        metricCollector.CollectObservableInstruments();
-
-        Assert.Equal(TestValue, metricCollector.GetObservableCounterValue<byte>(observableCounter.Name));
-        Assert.Null(metricCollector.GetObservableCounterValue<short>(observableCounter.Name));
-        Assert.Null(metricCollector.GetObservableCounterValue<int>(observableCounter.Name));
-        Assert.Null(metricCollector.GetObservableCounterValue<long>(observableCounter.Name));
-        Assert.Null(metricCollector.GetObservableCounterValue<float>(observableCounter.Name));
-        Assert.Null(metricCollector.GetObservableCounterValue<double>(observableCounter.Name));
-        Assert.Null(metricCollector.GetObservableCounterValue<decimal>(observableCounter.Name));
-    }
-
-    [Fact]
-    public void GetUpDownCounterValue_ReturnsValue()
-    {
-        const short TestValue = 19999;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-        var upDownCounter = meter.CreateUpDownCounter<short>(Guid.NewGuid().ToString());
-        using var metricCollector = new MetricCollector(meter);
-
-        upDownCounter.Add(TestValue);
-
-        Assert.Equal(TestValue, metricCollector.GetUpDownCounterValue<short>(upDownCounter.Name));
-        Assert.Null(metricCollector.GetUpDownCounterValue<byte>(upDownCounter.Name));
-        Assert.Null(metricCollector.GetUpDownCounterValue<int>(upDownCounter.Name));
-        Assert.Null(metricCollector.GetUpDownCounterValue<long>(upDownCounter.Name));
-        Assert.Null(metricCollector.GetUpDownCounterValue<float>(upDownCounter.Name));
-        Assert.Null(metricCollector.GetUpDownCounterValue<double>(upDownCounter.Name));
-        Assert.Null(metricCollector.GetUpDownCounterValue<decimal>(upDownCounter.Name));
-    }
-
-    [Fact]
-    public void GetObservableGaugeValue_ReturnsValue()
-    {
-        const long TestValue = 11_225_599L;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-        var observableGauge = meter.CreateObservableGauge(Guid.NewGuid().ToString(), () => TestValue);
-        using var metricCollector = new MetricCollector(meter);
-
-        metricCollector.CollectObservableInstruments();
-
-        Assert.Equal(TestValue, metricCollector.GetObservableGaugeValue<long>(observableGauge.Name));
-        Assert.Null(metricCollector.GetObservableGaugeValue<short>(observableGauge.Name));
-        Assert.Null(metricCollector.GetObservableGaugeValue<int>(observableGauge.Name));
-        Assert.Null(metricCollector.GetObservableGaugeValue<byte>(observableGauge.Name));
-        Assert.Null(metricCollector.GetObservableGaugeValue<float>(observableGauge.Name));
-        Assert.Null(metricCollector.GetObservableGaugeValue<double>(observableGauge.Name));
-        Assert.Null(metricCollector.GetObservableGaugeValue<decimal>(observableGauge.Name));
-    }
-
-    [Fact]
-    public void GetObservableUpDownCounterValue_ReturnsValue()
-    {
-        const int TestValue = int.MaxValue;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-        var observableUpDownCounter = meter.CreateObservableUpDownCounter(Guid.NewGuid().ToString(), () => TestValue);
-        using var metricCollector = new MetricCollector(meter);
-
-        metricCollector.CollectObservableInstruments();
-
-        Assert.Equal(TestValue, metricCollector.GetObservableUpDownCounterValue<int>(observableUpDownCounter.Name));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValue<short>(observableUpDownCounter.Name));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValue<long>(observableUpDownCounter.Name));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValue<byte>(observableUpDownCounter.Name));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValue<float>(observableUpDownCounter.Name));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValue<double>(observableUpDownCounter.Name));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValue<decimal>(observableUpDownCounter.Name));
-    }
-
-    [Fact]
-    public void Clear_RemovesAllMeasurements()
-    {
-        var meterName = Guid.NewGuid().ToString();
-
-        using var meter = new Meter(meterName);
-        using var metricCollector = new MetricCollector(new[] { meterName });
-
-        const int CounterValue = 1;
-        meter.CreateCounter<int>("int_counter").Add(CounterValue);
-
-        const int HistogramValue = 2;
-        meter.CreateHistogram<int>("int_histogram").Record(HistogramValue);
-
-        const long UpDownCounterValue = -999L;
-        meter.CreateUpDownCounter<long>("long_updownCounter").Add(UpDownCounterValue);
-
-        const short ObservableCounterValue = short.MaxValue;
-        meter.CreateObservableCounter("short_observable_counter", () => ObservableCounterValue);
-
-        const decimal ObservableGaugeValue = decimal.MinValue;
-        meter.CreateObservableGauge("decimal_observable_gauge", () => ObservableGaugeValue);
-
-        const double ObservableUpdownCouterValue = double.MaxValue;
-        meter.CreateObservableUpDownCounter("double_observable_updownCounter", () => ObservableUpdownCouterValue);
-
-        Assert.Equal(CounterValue, metricCollector.GetCounterValue<int>("int_counter")!.Value);
-        Assert.Equal(HistogramValue, metricCollector.GetHistogramValue<int>("int_histogram")!.Value);
-        Assert.Equal(UpDownCounterValue, metricCollector.GetUpDownCounterValue<long>("long_updownCounter")!.Value);
-
-        metricCollector.CollectObservableInstruments();
-
-        Assert.Equal(ObservableCounterValue, metricCollector.GetObservableCounterValue<short>("short_observable_counter")!.Value);
-        Assert.Equal(ObservableGaugeValue, metricCollector.GetObservableGaugeValue<decimal>("decimal_observable_gauge")!.Value);
-        Assert.Equal(ObservableUpdownCouterValue, metricCollector.GetObservableUpDownCounterValue<double>("double_observable_updownCounter")!.Value);
-
-        metricCollector.Clear();
-
-        Assert.Null(metricCollector.GetCounterValue<int>("int_counter"));
-        Assert.Null(metricCollector.GetHistogramValue<int>("int_histogram"));
-        Assert.Null(metricCollector.GetUpDownCounterValue<long>("long_updownCounter"));
-        Assert.Null(metricCollector.GetObservableCounterValue<short>("short_observable_counter"));
-        Assert.Null(metricCollector.GetObservableGaugeValue<decimal>("decimal_observable_gauge"));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValue<double>("double_observable_updownCounter"));
-    }
-
-    [Fact]
-    public void CollectObservableInstruments_RecordsObservableMetrics()
+    public static void Constructor_TypeChecks()
     {
         using var meter = new Meter(Guid.NewGuid().ToString());
-        using var metricCollector = new MetricCollector(meter);
+        var counter = meter.CreateCounter<long>("Counter");
 
-        const int CounterValue = 47_382_492;
-        const float UpDownCounterValue = 921.342f;
-        const decimal GaugeValue = 12340m;
-
-        meter.CreateObservableCounter("ObservableCounter", () => CounterValue);
-        meter.CreateObservableGauge("ObservableGauge", () => GaugeValue);
-        meter.CreateObservableUpDownCounter("ObservableUpDownCounter", () => UpDownCounterValue);
-
-        // Observable instruments are not recorded
-        Assert.Null(metricCollector.GetObservableCounterValue<int>("ObservableCounter"));
-        Assert.Null(metricCollector.GetObservableGaugeValue<decimal>("ObservableGauge"));
-        Assert.Null(metricCollector.GetObservableUpDownCounterValue<float>("ObservableUpDownCounter"));
-
-        // Force recording of observable instruments
-        metricCollector.CollectObservableInstruments();
-
-        Assert.Equal(CounterValue, metricCollector.GetObservableCounterValue<int>("ObservableCounter"));
-        Assert.Equal(GaugeValue, metricCollector.GetObservableGaugeValue<decimal>("ObservableGauge"));
-        Assert.Equal(UpDownCounterValue, metricCollector.GetObservableUpDownCounterValue<float>("ObservableUpDownCounter"));
+        Assert.Throws<InvalidOperationException>(() => new MetricCollector<Guid>(meter, "Counter"));
+        Assert.Throws<InvalidOperationException>(() => new MetricCollector<Guid>(null, meter.Name, "Counter"));
     }
 
     [Fact]
-    public void GetXxxValue_ThrowsWhenInvalidValueTypeIsUsed()
+    public static void Constructor_Meter()
     {
-        using var metricCollector = new MetricCollector();
+        const string CounterName = "MyCounter";
 
-        var ex = Assert.Throws<InvalidOperationException>(() => metricCollector.GetCounterValue<ushort>(string.Empty));
-        Assert.Equal($"The type {typeof(ushort).FullName} is not supported as a type for a metric measurement value", ex.Message);
+        var now = DateTimeOffset.Now;
 
-        var ex1 = Assert.Throws<InvalidOperationException>(() => metricCollector.GetHistogramValue<ulong>(string.Empty));
-        Assert.Equal($"The type {typeof(ulong).FullName} is not supported as a type for a metric measurement value", ex1.Message);
-
-        var ex2 = Assert.Throws<InvalidOperationException>(() => metricCollector.GetUpDownCounterValue<sbyte>(string.Empty));
-        Assert.Equal($"The type {typeof(sbyte).FullName} is not supported as a type for a metric measurement value", ex2.Message);
-
-        var ex3 = Assert.Throws<InvalidOperationException>(() => metricCollector.GetObservableCounterValue<uint>(string.Empty));
-        Assert.Equal($"The type {typeof(uint).FullName} is not supported as a type for a metric measurement value", ex3.Message);
-
-        var ex4 = Assert.Throws<InvalidOperationException>(() => metricCollector.GetObservableGaugeValue<uint>(string.Empty));
-        Assert.Equal($"The type {typeof(uint).FullName} is not supported as a type for a metric measurement value", ex4.Message);
-
-        var ex5 = Assert.Throws<InvalidOperationException>(() => metricCollector.GetObservableUpDownCounterValue<uint>(string.Empty));
-        Assert.Equal($"The type {typeof(uint).FullName} is not supported as a type for a metric measurement value", ex5.Message);
-    }
-
-    [Fact]
-    public void GetXxxValues_ThrowsWhenInvalidValueTypeIsUsed()
-    {
-        using var metricCollector = new MetricCollector();
-
-        var ex = Assert.Throws<InvalidOperationException>(() => metricCollector.GetCounterValues<ushort>(string.Empty));
-        Assert.Equal($"The type {typeof(ushort).FullName} is not supported as a type for a metric measurement value", ex.Message);
-
-        var ex1 = Assert.Throws<InvalidOperationException>(() => metricCollector.GetHistogramValues<ulong>(string.Empty));
-        Assert.Equal($"The type {typeof(ulong).FullName} is not supported as a type for a metric measurement value", ex1.Message);
-
-        var ex2 = Assert.Throws<InvalidOperationException>(() => metricCollector.GetUpDownCounterValues<sbyte>(string.Empty));
-        Assert.Equal($"The type {typeof(sbyte).FullName} is not supported as a type for a metric measurement value", ex2.Message);
-
-        var ex3 = Assert.Throws<InvalidOperationException>(() => metricCollector.GetObservableCounterValues<uint>(string.Empty));
-        Assert.Equal($"The type {typeof(uint).FullName} is not supported as a type for a metric measurement value", ex3.Message);
-
-        var ex4 = Assert.Throws<InvalidOperationException>(() => metricCollector.GetObservableGaugeValues<ulong>(string.Empty));
-        Assert.Equal($"The type {typeof(ulong).FullName} is not supported as a type for a metric measurement value", ex4.Message);
-
-        var ex5 = Assert.Throws<InvalidOperationException>(() => metricCollector.GetObservableUpDownCounterValues<ushort>(string.Empty));
-        Assert.Equal($"The type {typeof(ushort).FullName} is not supported as a type for a metric measurement value", ex5.Message);
-    }
-
-    [Fact]
-    public void GenericMetricCollector_CapturesFilteredMetering()
-    {
-        const int TestValue = 10;
-        using var metricCollector = new MetricCollector<MetricCollectorTests>();
-        using var meter = new Meter(typeof(MetricCollectorTests).FullName!);
-        using var meterToIgnore = new Meter(Guid.NewGuid().ToString());
-
-        var counter1 = meter.CreateCounter<int>(Guid.NewGuid().ToString());
-        var counter2 = meterToIgnore.CreateCounter<int>(Guid.NewGuid().ToString());
-
-        Assert.NotNull(metricCollector.GetCounterValues<int>(counter1.Name));
-        Assert.Null(metricCollector.GetCounterValues<int>(counter2.Name));
-
-        counter1.Add(TestValue);
-        counter2.Add(TestValue);
-
-        Assert.NotNull(metricCollector.GetCounterValue<int>(counter1.Name));
-        Assert.Null(metricCollector.GetCounterValues<int>(counter2.Name));
-    }
-
-    [Fact]
-    public void GetAllCounters_ReturnsAllCounters()
-    {
-        const long TestValue = 111;
+        var timeProvider = new FakeTimeProvider(now);
         using var meter = new Meter(Guid.NewGuid().ToString());
-        using var metricCollector = new MetricCollector(meter);
+        using var collector = new MetricCollector<long>(meter, CounterName, timeProvider);
 
-        var counter1 = meter.CreateCounter<long>(Guid.NewGuid().ToString());
-        var counter2 = meter.CreateCounter<long>(Guid.NewGuid().ToString());
-        var counter3 = meter.CreateCounter<long>(Guid.NewGuid().ToString());
+        Assert.Null(collector.Instrument);
+        Assert.Empty(collector.GetMeasurementSnapshot());
+        Assert.Null(collector.LastMeasurement);
 
-        counter1.Add(TestValue);
-        counter2.Add(TestValue);
-        counter3.Add(TestValue);
+        var counter = meter.CreateCounter<long>(CounterName);
+        counter.Add(3);
 
-        Assert.Equal(3, metricCollector.GetAllCounters<long>()!.Count);
+        // verify the update was recorded
+        Assert.Equal(counter, collector.Instrument);
+        Assert.NotNull(collector.LastMeasurement);
+
+        // verify measurement info is correct
+        Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Same(collector.GetMeasurementSnapshot().Last(), collector.LastMeasurement);
+        Assert.Equal(3, collector.LastMeasurement.Value);
+        Assert.Empty(collector.LastMeasurement.Tags);
+        Assert.Equal(now, collector.LastMeasurement.Timestamp);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(1));
+        counter.Add(2);
+
+        // verify measurement info is correct
+        Assert.Equal(2, collector.GetMeasurementSnapshot().Count);
+        Assert.Same(collector.GetMeasurementSnapshot().Last(), collector.LastMeasurement);
+        Assert.Equal(2, collector.LastMeasurement.Value);
+        Assert.Empty(collector.LastMeasurement.Tags);
+        Assert.Equal(timeProvider.GetUtcNow(), collector.LastMeasurement.Timestamp);
+
+        collector.Clear();
+        Assert.Equal(counter, collector.Instrument);
+        Assert.Empty(collector.GetMeasurementSnapshot());
+        Assert.Null(collector.LastMeasurement);
+        Assert.Null(collector.LastMeasurement);
     }
 
     [Fact]
-    public void GetAllUpDownCounters_ReturnsAllCounters()
+    public static void Constructor_Instrument()
     {
-        const long TestValue = 111;
+        const string CounterName = "MyCounter";
+
+        var now = DateTimeOffset.Now;
+
+        var timeProvider = new FakeTimeProvider(now);
         using var meter = new Meter(Guid.NewGuid().ToString());
-        using var metricCollector = new MetricCollector(meter);
+        var counter = meter.CreateCounter<long>(CounterName);
+        using var collector = new MetricCollector<long>(counter, timeProvider);
 
-        var counter1 = meter.CreateUpDownCounter<long>(Guid.NewGuid().ToString());
-        var counter2 = meter.CreateUpDownCounter<long>(Guid.NewGuid().ToString());
-        var counter3 = meter.CreateUpDownCounter<long>(Guid.NewGuid().ToString());
+        Assert.Empty(collector.GetMeasurementSnapshot());
+        Assert.Null(collector.LastMeasurement);
 
-        counter1.Add(TestValue);
-        counter2.Add(TestValue);
-        counter3.Add(TestValue);
+        counter.Add(3);
 
-        Assert.Equal(3, metricCollector.GetAllUpDownCounters<long>()!.Count);
+        // verify the update was recorded
+        Assert.Equal(counter, collector.Instrument);
+        Assert.NotNull(collector.LastMeasurement);
+
+        // verify measurement info is correct
+        Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Same(collector.GetMeasurementSnapshot().Last(), collector.LastMeasurement);
+        Assert.Equal(3, collector.LastMeasurement.Value);
+        Assert.Empty(collector.LastMeasurement.Tags);
+        Assert.Equal(now, collector.LastMeasurement.Timestamp);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(1));
+        counter.Add(2);
+
+        // verify measurement info is correct
+        Assert.Equal(2, collector.GetMeasurementSnapshot().Count);
+        Assert.Same(collector.GetMeasurementSnapshot().Last(), collector.LastMeasurement);
+        Assert.Equal(2, collector.LastMeasurement.Value);
+        Assert.Empty(collector.LastMeasurement.Tags);
+        Assert.Equal(timeProvider.GetUtcNow(), collector.LastMeasurement.Timestamp);
+
+        collector.Clear();
+        Assert.Equal(counter, collector.Instrument);
+        Assert.Empty(collector.GetMeasurementSnapshot());
+        Assert.Null(collector.LastMeasurement);
+        Assert.Null(collector.LastMeasurement);
     }
 
     [Fact]
-    public void GetAllHistograms_ReturnsAllHistograms()
+    public static void Constructor_Scope()
     {
-        const long TestValue = 111;
-        using var meter = new Meter(Guid.NewGuid().ToString());
-        using var metricCollector = new MetricCollector(meter);
+        const string CounterName = "MyCounter";
 
-        var counter1 = meter.CreateHistogram<long>(Guid.NewGuid().ToString());
-        var counter2 = meter.CreateHistogram<long>(Guid.NewGuid().ToString());
-        var counter3 = meter.CreateHistogram<long>(Guid.NewGuid().ToString());
+        var now = DateTimeOffset.Now;
 
-        counter1.Record(TestValue);
-        counter2.Record(TestValue);
-        counter3.Record(TestValue);
+        var timeProvider = new FakeTimeProvider(now);
+        var scope = new object();
+        using var meter = new Meter(Guid.NewGuid().ToString(), null, null, scope);
+        var counter = meter.CreateCounter<long>(CounterName);
+        using var collector = new MetricCollector<long>(scope, meter.Name, counter.Name, timeProvider);
+        using var collector2 = new MetricCollector<long>(new object(), meter.Name, counter.Name, timeProvider);
 
-        Assert.Equal(3, metricCollector.GetAllHistograms<long>()!.Count);
+        Assert.Empty(collector.GetMeasurementSnapshot());
+        Assert.Null(collector.LastMeasurement);
+
+        counter.Add(3);
+
+        // verify the update was recorded
+        Assert.Equal(counter, collector.Instrument);
+        Assert.NotNull(collector.LastMeasurement);
+
+        // verify measurement info is correct
+        Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Same(collector.GetMeasurementSnapshot().Last(), collector.LastMeasurement);
+        Assert.Equal(3, collector.LastMeasurement.Value);
+        Assert.Empty(collector.LastMeasurement.Tags);
+        Assert.Equal(now, collector.LastMeasurement.Timestamp);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(1));
+        counter.Add(2);
+
+        // verify measurement info is correct
+        Assert.Equal(2, collector.GetMeasurementSnapshot().Count);
+        Assert.Same(collector.GetMeasurementSnapshot().Last(), collector.LastMeasurement);
+        Assert.Equal(2, collector.LastMeasurement.Value);
+        Assert.Empty(collector.LastMeasurement.Tags);
+        Assert.Equal(timeProvider.GetUtcNow(), collector.LastMeasurement.Timestamp);
+
+        collector.Clear();
+        Assert.Equal(counter, collector.Instrument);
+        Assert.Empty(collector.GetMeasurementSnapshot());
+        Assert.Null(collector.LastMeasurement);
+        Assert.Null(collector.LastMeasurement);
+
+        Assert.Null(collector2.LastMeasurement);
     }
 
     [Fact]
-    public void GetAllGauges_ReturnsAllGauges()
+    public static void Constructor_ObservableInstrument()
     {
-        const long TestValue = 111;
+        const string CounterName = "MyCounter";
+
+        var now = DateTimeOffset.Now;
+
+        var timeProvider = new FakeTimeProvider(now);
         using var meter = new Meter(Guid.NewGuid().ToString());
-        using var metricCollector = new MetricCollector(meter);
-        _ = meter.CreateObservableGauge(Guid.NewGuid().ToString(), () => TestValue);
-        _ = meter.CreateObservableGauge(Guid.NewGuid().ToString(), () => TestValue);
-        _ = meter.CreateObservableGauge(Guid.NewGuid().ToString(), () => TestValue);
+        int observationCount = 0;
 
-        // Force recording of observable instruments
-        metricCollector.CollectObservableInstruments();
+        var counter = meter.CreateObservableCounter<long>(CounterName, () =>
+        {
+            if (observationCount == 0)
+            {
+                observationCount++;
+                return 3;
+            }
+            else
+            {
+                return 2;
+            }
+        });
 
-        Assert.Equal(3, metricCollector.GetAllObservableGauges<long>()!.Count);
+        using var collector = new MetricCollector<long>(counter, timeProvider);
+
+        Assert.Empty(collector.GetMeasurementSnapshot());
+        Assert.Null(collector.LastMeasurement);
+
+        collector.RecordObservableInstruments();
+
+        // verify the update was recorded
+        Assert.Equal(counter, collector.Instrument);
+        Assert.NotNull(collector.LastMeasurement);
+
+        // verify measurement info is correct
+        Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Same(collector.GetMeasurementSnapshot().Last(), collector.LastMeasurement);
+        Assert.Equal(3, collector.LastMeasurement.Value);
+        Assert.Empty(collector.LastMeasurement.Tags);
+        Assert.Equal(now, collector.LastMeasurement.Timestamp);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(1));
+        collector.RecordObservableInstruments();
+
+        // verify measurement info is correct
+        Assert.Equal(2, collector.GetMeasurementSnapshot().Count);
+        Assert.Same(collector.GetMeasurementSnapshot().Last(), collector.LastMeasurement);
+        Assert.Equal(2, collector.LastMeasurement.Value);
+        Assert.Empty(collector.LastMeasurement.Tags);
+        Assert.Equal(timeProvider.GetUtcNow(), collector.LastMeasurement.Timestamp);
     }
 
     [Fact]
-    public void GetAllObservableCounters_ReturnsAllObservableCounters()
+    public static async Task Wait()
     {
-        const long TestValue = 111;
+        const string CounterName = "MyCounter";
+
+        var now = DateTimeOffset.Now;
+
+        var timeProvider = new FakeTimeProvider(now);
         using var meter = new Meter(Guid.NewGuid().ToString());
-        using var metricCollector = new MetricCollector(meter);
+        using var collector = new MetricCollector<long>(meter, CounterName, timeProvider);
+        var counter = meter.CreateCounter<long>(CounterName);
 
-        _ = meter.CreateObservableCounter(Guid.NewGuid().ToString(), () => TestValue);
-        _ = meter.CreateObservableCounter(Guid.NewGuid().ToString(), () => TestValue);
-        _ = meter.CreateObservableCounter(Guid.NewGuid().ToString(), () => TestValue);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await collector.WaitForMeasurementsAsync(-1));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await collector.WaitForMeasurementsAsync(0));
 
-        // Force recording of observable instruments
-        metricCollector.CollectObservableInstruments();
+        var wait = collector.WaitForMeasurementsAsync(2);
+        Assert.False(wait.IsCompleted);
 
-        Assert.Equal(3, metricCollector.GetAllObservableCounters<long>()!.Count);
+        counter.Add(1);
+        Assert.False(wait.IsCompleted);
+
+        counter.Add(1);
+        Assert.True(wait.IsCompleted);
+        Assert.False(wait.IsFaulted);
+
+        collector.Clear();
+        counter.Add(1);
+        wait = collector.WaitForMeasurementsAsync(1);
+        Assert.True(wait.IsCompleted);
+        Assert.False(wait.IsFaulted);
     }
 
     [Fact]
-    public void GetAllObservableUpDownCounters_ReturnsAllObservableUpDownCounters()
+    public static async Task WaitWithTimeout()
     {
-        const long TestValue = 111;
+        const string CounterName = "MyCounter";
+
+        var now = DateTimeOffset.Now;
+
+        var timeProvider = new FakeTimeProvider(now);
         using var meter = new Meter(Guid.NewGuid().ToString());
-        using var metricCollector = new MetricCollector(meter);
+        using var collector = new MetricCollector<long>(meter, CounterName, timeProvider);
+        var counter = meter.CreateCounter<long>(CounterName);
 
-        _ = meter.CreateObservableUpDownCounter(Guid.NewGuid().ToString(), () => TestValue);
-        _ = meter.CreateObservableUpDownCounter(Guid.NewGuid().ToString(), () => TestValue);
-        _ = meter.CreateObservableUpDownCounter(Guid.NewGuid().ToString(), () => TestValue);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await collector.WaitForMeasurementsAsync(-1));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await collector.WaitForMeasurementsAsync(0));
 
-        // Force recording of observable instruments
-        metricCollector.CollectObservableInstruments();
+        var wait = collector.WaitForMeasurementsAsync(2, TimeSpan.FromSeconds(1));
+        Assert.False(wait.IsCompleted);
 
-        Assert.Equal(3, metricCollector.GetAllObservableUpDownCounters<long>()!.Count);
+        counter.Add(1);
+        Assert.False(wait.IsCompleted);
+
+#if false
+// TODO: This is broken for netcoreapp3.1 and net6.0, but works for net462 and net8.0.
+        timeProvider.Advance(TimeSpan.FromSeconds(1));
+        Assert.True(wait.IsCompleted);
+        Assert.True(wait.IsFaulted);
+#endif
+
+        collector.Clear();
+        counter.Add(1);
+        wait = collector.WaitForMeasurementsAsync(1, TimeSpan.FromSeconds(1));
+        Assert.True(wait.IsCompleted);
+        Assert.False(wait.IsFaulted);
     }
 
     [Fact]
-    public void GetAllCounters_WithoutUnsupportedT_Throws()
+    public static async Task Dispose()
     {
-        using var meter = new Meter(Guid.NewGuid().ToString());
-        using var metricCollector = new MetricCollector(meter);
+        const string CounterName = "MyCounter";
 
-        Assert.Throws<InvalidOperationException>(() => metricCollector.GetAllCounters<TagList>());
+        var now = DateTimeOffset.Now;
+
+        var timeProvider = new FakeTimeProvider(now);
+        using var meter = new Meter(Guid.NewGuid().ToString());
+        var collector = new MetricCollector<long>(meter, CounterName, timeProvider);
+        var counter = meter.CreateCounter<long>(CounterName);
+
+        var wait = collector.WaitForMeasurementsAsync(2, TimeSpan.FromSeconds(1));
+
+        collector.Dispose();
+        collector.Dispose();    // second call is a nop
+
+        Assert.Throws<ObjectDisposedException>(() => collector.GetMeasurementSnapshot());
+        Assert.Throws<ObjectDisposedException>(() => collector.Clear());
+        Assert.Throws<ObjectDisposedException>(() => collector.LastMeasurement);
+        Assert.Throws<ObjectDisposedException>(() => collector.RecordObservableInstruments());
+
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await collector.WaitForMeasurementsAsync(1));
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await collector.WaitForMeasurementsAsync(1, TimeSpan.FromSeconds(1)));
+
+#if false
+// TODO: This is broken for netcoreapp3.1 and net6.0, but works for net462 and net8.0.
+        Assert.True(wait.IsCompleted);
+        Assert.True(wait.IsFaulted);
+#endif
+
+        collector = new MetricCollector<long>(meter, CounterName, timeProvider);
+        collector.Dispose();
+        counter.Add(1);
+        Assert.Throws<ObjectDisposedException>(() => collector.Clear());
+    }
+
+    [Fact]
+    public static void Snapshot()
+    {
+        const string CounterName = "MyCounter";
+
+        var now = DateTimeOffset.Now;
+
+        var timeProvider = new FakeTimeProvider(now);
+        using var meter = new Meter(Guid.NewGuid().ToString());
+        using var collector = new MetricCollector<long>(meter, CounterName, timeProvider);
+        var counter = meter.CreateCounter<long>(CounterName);
+
+        counter.Add(1);
+        counter.Add(2);
+        counter.Add(3);
+
+        var snap = collector.GetMeasurementSnapshot();
+        Assert.Equal(3, snap.Count);
+        Assert.Equal(3, collector.GetMeasurementSnapshot().Count);
+
+        Assert.Equal(1, snap[0].Value);
+        Assert.Empty(snap[0].Tags);
+        Assert.Equal(now, snap[0].Timestamp);
+
+        Assert.Equal(2, snap[1].Value);
+        Assert.Empty(snap[1].Tags);
+        Assert.Equal(now, snap[1].Timestamp);
+
+        Assert.Equal(3, snap[2].Value);
+        Assert.Empty(snap[2].Tags);
+        Assert.Equal(now, snap[2].Timestamp);
+
+        snap = collector.GetMeasurementSnapshot(true);
+        Assert.Equal(3, snap.Count);
+        Assert.Equal(0, collector.GetMeasurementSnapshot().Count);
     }
 }

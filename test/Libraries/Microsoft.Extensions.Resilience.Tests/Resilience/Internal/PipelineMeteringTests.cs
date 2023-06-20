@@ -30,7 +30,6 @@ public class PipelineMeteringTests : IDisposable
     private readonly Mock<IExceptionSummarizer> _summarizer;
     private readonly Mock<IOutgoingRequestContext> _outgoingContext;
     private readonly Meter<PipelineMetering> _meter;
-    private readonly MetricCollector _metricCollector;
     private PipelineMetering _metering;
 
     public PipelineMeteringTests()
@@ -38,13 +37,13 @@ public class PipelineMeteringTests : IDisposable
         _summarizer = new Mock<IExceptionSummarizer>(MockBehavior.Strict);
         _outgoingContext = new Mock<IOutgoingRequestContext>(MockBehavior.Strict);
         _meter = new();
-        _metricCollector = new(_meter);
+        Counter = new(_meter, MetricName);
         _metering = new PipelineMetering(_meter, _summarizer.Object, new[] { _outgoingContext.Object });
     }
 
     public void Dispose()
     {
-        _metricCollector.Dispose();
+        Counter.Dispose();
         _meter.Dispose();
     }
 
@@ -66,7 +65,7 @@ public class PipelineMeteringTests : IDisposable
 
         RecordPipelineExecution(null);
 
-        Assert.Equal(expectedKey, Counter.LatestWritten!.GetDimension(ResilienceDimensions.PipelineKey));
+        Assert.Equal(expectedKey, Counter.LastMeasurement?.Tags[ResilienceDimensions.PipelineKey]);
     }
 
     [Fact]
@@ -87,8 +86,8 @@ public class PipelineMeteringTests : IDisposable
 
         RecordPipelineExecution(null);
 
-        Assert.Equal(TelemetryConstants.Unknown, Counter.LatestWritten!.GetDimension(ResilienceDimensions.DependencyName));
-        Assert.Equal(TelemetryConstants.Unknown, Counter.LatestWritten!.GetDimension(ResilienceDimensions.RequestName));
+        Assert.Equal(TelemetryConstants.Unknown, Counter.LastMeasurement?.Tags[ResilienceDimensions.DependencyName]);
+        Assert.Equal(TelemetryConstants.Unknown, Counter.LastMeasurement?.Tags[ResilienceDimensions.RequestName]);
     }
 
     [Fact]
@@ -98,16 +97,16 @@ public class PipelineMeteringTests : IDisposable
 
         RecordPipelineExecution(null);
 
-        var latest = Counter.LatestWritten!;
+        var latest = Counter.LastMeasurement!;
 
-        Assert.Equal(PipelineName, latest.GetDimension(ResilienceDimensions.PipelineName));
-        Assert.Equal(PipelineKey, latest.GetDimension(ResilienceDimensions.PipelineKey));
-        Assert.Equal(ResultType, latest.GetDimension(ResilienceDimensions.ResultType));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(ResilienceDimensions.FailureSource));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(ResilienceDimensions.FailureReason));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(ResilienceDimensions.FailureSummary));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(ResilienceDimensions.DependencyName));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(ResilienceDimensions.RequestName));
+        Assert.Equal(PipelineName, latest.Tags[ResilienceDimensions.PipelineName]);
+        Assert.Equal(PipelineKey, latest.Tags[ResilienceDimensions.PipelineKey]);
+        Assert.Equal(ResultType, latest.Tags[ResilienceDimensions.ResultType]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[ResilienceDimensions.FailureSource]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[ResilienceDimensions.FailureReason]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[ResilienceDimensions.FailureSummary]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[ResilienceDimensions.DependencyName]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[ResilienceDimensions.RequestName]);
     }
 
     [Fact]
@@ -120,11 +119,11 @@ public class PipelineMeteringTests : IDisposable
 
         RecordPipelineExecution(er);
 
-        var latest = Counter.LatestWritten!;
+        var latest = Counter.LastMeasurement!;
 
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(ResilienceDimensions.FailureSource));
-        Assert.Equal("InvalidOperationException", latest.GetDimension(ResilienceDimensions.FailureReason));
-        Assert.Equal("type:desc:details", latest.GetDimension(ResilienceDimensions.FailureSummary));
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[ResilienceDimensions.FailureSource]);
+        Assert.Equal("InvalidOperationException", latest.Tags[ResilienceDimensions.FailureReason]);
+        Assert.Equal("type:desc:details", latest.Tags[ResilienceDimensions.FailureSummary]);
     }
 
     [Fact]
@@ -138,10 +137,10 @@ public class PipelineMeteringTests : IDisposable
         _outgoingContext.Setup(o => o.RequestMetadata).Returns(metadata1);
         RecordPipelineExecution(null, new Context());
 
-        var latest = Counter.LatestWritten!;
+        var latest = Counter.LastMeasurement!;
 
-        Assert.Equal("dep", latest.GetDimension(ResilienceDimensions.DependencyName));
-        Assert.Equal("req", latest.GetDimension(ResilienceDimensions.RequestName));
+        Assert.Equal("dep", latest.Tags[ResilienceDimensions.DependencyName]);
+        Assert.Equal("req", latest.Tags[ResilienceDimensions.RequestName]);
 
         var ctx = new Context
         {
@@ -149,10 +148,10 @@ public class PipelineMeteringTests : IDisposable
         };
         RecordPipelineExecution(null, ctx);
 
-        latest = Counter.LatestWritten!;
+        latest = Counter.LastMeasurement!;
 
-        Assert.Equal("dep2", latest.GetDimension(ResilienceDimensions.DependencyName));
-        Assert.Equal("req2", latest.GetDimension(ResilienceDimensions.RequestName));
+        Assert.Equal("dep2", latest.Tags[ResilienceDimensions.DependencyName]);
+        Assert.Equal("req2", latest.Tags[ResilienceDimensions.RequestName]);
     }
 
     private void RecordPipelineExecution(Exception? exception, Context? context = null)
@@ -161,7 +160,7 @@ public class PipelineMeteringTests : IDisposable
 
     }
 
-    private MetricValuesHolder<long> Counter => _metricCollector.GetHistogramValues<long>(MetricName)!;
+    private MetricCollector<long> Counter { get; }
 
     private void Initialize(string pipelineKey = PipelineKey)
     {

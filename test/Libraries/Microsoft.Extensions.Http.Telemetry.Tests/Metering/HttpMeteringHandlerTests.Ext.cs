@@ -15,74 +15,73 @@ using Xunit;
 
 namespace Microsoft.Extensions.Http.Telemetry.Metering.Test;
 
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
 public sealed partial class HttpMeteringHandlerTests : IDisposable
 {
     [Fact]
-    public void SendAsync_expectedFailure_EmptyOutgoingRequestMetricEnricher()
+    public async Task SendAsync_expectedFailure_EmptyOutgoingRequestMetricEnricher()
     {
         using var meter = new Meter<HttpMeteringHandler>();
-        using var metricCollector = new MetricCollector(meter);
+        using var metricCollector = new MetricCollector<long>(meter, Metric.OutgoingRequestMetricName);
         using var client = CreateClientWithHandler(meter);
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _expectedFailureUri);
 
-        using var _ = client.SendAsync(httpRequestMessage, _cancellationTokenSource.Token).Result;
+        using var _ = await client.SendAsync(httpRequestMessage, _cancellationTokenSource.Token);
 
-        var latest = metricCollector.GetHistogramValues<long>(Metric.OutgoingRequestMetricName)!.LatestWritten!;
+        var latest = metricCollector.LastMeasurement;
         Assert.NotNull(latest);
-        Assert.Equal("www.example-expectedfailure.com", latest.GetDimension(Metric.ReqHost));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(Metric.DependencyName));
-        Assert.Equal($"GET {TelemetryConstants.Unknown}", latest.GetDimension(Metric.ReqName));
-        Assert.Equal(400, latest.GetDimension(Metric.RspResultCode));
-        Assert.Equal(HttpRequestResultType.ExpectedFailure.ToInvariantString(), latest.GetDimension(Metric.RspResultCategory));
+        Assert.Equal("www.example-expectedfailure.com", latest.Tags[Metric.ReqHost]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[Metric.DependencyName]);
+        Assert.Equal($"GET {TelemetryConstants.Unknown}", latest.Tags[Metric.ReqName]);
+        Assert.Equal(400, latest.Tags[Metric.RspResultCode]);
+        Assert.Equal(HttpRequestResultType.ExpectedFailure.ToInvariantString(), latest.Tags[Metric.RspResultCategory]);
     }
 
     [Fact]
     public async Task SendAsync_TaskCanceledException()
     {
         using var meter = new Meter<HttpMeteringHandler>();
-        using var metricCollector = new MetricCollector(meter);
+        using var metricCollector = new MetricCollector<long>(meter, Metric.OutgoingRequestMetricName);
         using var client = CreateClientWithHandler(meter);
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, _failure1Uri);
 
         await Assert.ThrowsAsync<TaskCanceledException>(async () => await client.SendAsync(httpRequestMessage, _cancellationTokenSource.Token));
 
-        var latest = metricCollector.GetHistogramValues<long>(Metric.OutgoingRequestMetricName)!.LatestWritten!;
+        var latest = metricCollector.LastMeasurement;
         Assert.NotNull(latest);
-        Assert.Equal("www.example-failure1.com", latest.GetDimension(Metric.ReqHost));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(Metric.DependencyName));
-        Assert.Equal($"POST {TelemetryConstants.Unknown}", latest.GetDimension(Metric.ReqName));
-        Assert.Equal((int)HttpStatusCode.GatewayTimeout, latest.GetDimension(Metric.RspResultCode));
-        Assert.Equal(HttpRequestResultType.Failure.ToInvariantString(), latest.GetDimension(Metric.RspResultCategory));
+        Assert.Equal("www.example-failure1.com", latest.Tags[Metric.ReqHost]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[Metric.DependencyName]);
+        Assert.Equal($"POST {TelemetryConstants.Unknown}", latest.Tags[Metric.ReqName]);
+        Assert.Equal((int)HttpStatusCode.GatewayTimeout, latest.Tags[Metric.RspResultCode]);
+        Assert.Equal(HttpRequestResultType.Failure.ToInvariantString(), latest.Tags[Metric.RspResultCategory]);
     }
 
     [Fact]
     public async Task SendAsync_InvalidOperationException()
     {
         using var meter = new Meter<HttpMeteringHandler>();
-        using var metricCollector = new MetricCollector(meter);
+        using var metricCollector = new MetricCollector<long>(meter, Metric.OutgoingRequestMetricName);
         using var client = CreateClientWithHandler(meter);
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, _failure2Uri);
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.SendAsync(httpRequestMessage, _cancellationTokenSource.Token));
 
-        var latest = metricCollector.GetHistogramValues<long>(Metric.OutgoingRequestMetricName)!.LatestWritten!;
+        var latest = metricCollector.LastMeasurement;
         Assert.NotNull(latest);
-        Assert.Equal("www.example-failure2.com", latest.GetDimension(Metric.ReqHost));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(Metric.DependencyName));
-        Assert.Equal($"POST {TelemetryConstants.Unknown}", latest.GetDimension(Metric.ReqName));
-        Assert.Equal((int)HttpStatusCode.InternalServerError, latest.GetDimension(Metric.RspResultCode));
-        Assert.Equal(HttpRequestResultType.Failure.ToInvariantString(), latest.GetDimension(Metric.RspResultCategory));
+        Assert.Equal("www.example-failure2.com", latest.Tags[Metric.ReqHost]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[Metric.DependencyName]);
+        Assert.Equal($"POST {TelemetryConstants.Unknown}", latest.Tags[Metric.ReqName]);
+        Assert.Equal((int)HttpStatusCode.InternalServerError, latest.Tags[Metric.RspResultCode]);
+        Assert.Equal(HttpRequestResultType.Failure.ToInvariantString(), latest.Tags[Metric.RspResultCategory]);
     }
 
     [Fact]
     public async Task SendAsync_Exception_OutgoingRequestMetricEnricherOnly()
     {
         using var meter = new Meter<HttpMeteringHandler>();
-        using var metricCollector = new MetricCollector(meter);
+        using var metricCollector = new MetricCollector<long>(meter, Metric.OutgoingRequestMetricName);
         using var client = CreateClientWithHandler(meter,
             new List<IOutgoingRequestMetricEnricher>
             {
@@ -99,40 +98,39 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
 
         await Assert.ThrowsAsync<HttpRequestException>(async () => await client.SendAsync(httpRequestMessage, _cancellationTokenSource.Token));
 
-        var latest = metricCollector.GetHistogramValues<long>(Metric.OutgoingRequestMetricName)!.LatestWritten!;
+        var latest = metricCollector.LastMeasurement;
         Assert.NotNull(latest);
-        Assert.Equal("www.example-failure.com", latest.GetDimension(Metric.ReqHost));
-        Assert.Equal("failure_service", latest.GetDimension(Metric.DependencyName));
-        Assert.Equal("POST TestRequestName", latest.GetDimension(Metric.ReqName));
-        Assert.Equal((int)HttpStatusCode.ServiceUnavailable, latest.GetDimension(Metric.RspResultCode));
-        Assert.Equal(HttpRequestResultType.Failure.ToInvariantString(), latest.GetDimension(Metric.RspResultCategory));
-        Assert.Equal("test_value_1", latest.GetDimension("test_property_1"));
+        Assert.Equal("www.example-failure.com", latest.Tags[Metric.ReqHost]);
+        Assert.Equal("failure_service", latest.Tags[Metric.DependencyName]);
+        Assert.Equal("POST TestRequestName", latest.Tags[Metric.ReqName]);
+        Assert.Equal((int)HttpStatusCode.ServiceUnavailable, latest.Tags[Metric.RspResultCode]);
+        Assert.Equal(HttpRequestResultType.Failure.ToInvariantString(), latest.Tags[Metric.RspResultCategory]);
+        Assert.Equal("test_value_1", latest.Tags["test_property_1"]);
     }
 
     [Fact]
     public async Task SendAsync_HttpRequestException()
     {
         using var meter = new Meter<HttpMeteringHandler>();
-        using var metricCollector = new MetricCollector(meter);
+        using var metricCollector = new MetricCollector<long>(meter, Metric.OutgoingRequestMetricName);
         using var client = CreateClientWithHandler(meter);
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, _failure3Uri);
 
         await Assert.ThrowsAsync<HttpRequestException>(async () => await client.SendAsync(httpRequestMessage, _cancellationTokenSource.Token));
 
-        var latest = metricCollector.GetHistogramValues<long>(Metric.OutgoingRequestMetricName)!.LatestWritten!;
+        var latest = metricCollector.LastMeasurement;
         Assert.NotNull(latest);
-        Assert.Equal("www.example-failure3.com", latest.GetDimension(Metric.ReqHost));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(Metric.DependencyName));
-        Assert.Equal($"POST {TelemetryConstants.Unknown}", latest.GetDimension(Metric.ReqName));
+        Assert.Equal("www.example-failure3.com", latest.Tags[Metric.ReqHost]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[Metric.DependencyName]);
+        Assert.Equal($"POST {TelemetryConstants.Unknown}", latest.Tags[Metric.ReqName]);
 #if NET8_0_OR_GREATER
         // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
         // and as such the API is available in .NET 8 onwards.
-        Assert.Equal((int)HttpStatusCode.BadGateway, latest.GetDimension(Metric.RspResultCode));
+        Assert.Equal((int)HttpStatusCode.BadGateway, latest.Tags[Metric.RspResultCode]);
 #else
-        Assert.Equal((int)HttpStatusCode.ServiceUnavailable, latest.GetDimension(Metric.RspResultCode));
+        Assert.Equal((int)HttpStatusCode.ServiceUnavailable, latest.Tags[Metric.RspResultCode]);
 #endif
-        Assert.Equal(HttpRequestResultType.Failure.ToInvariantString(), latest.GetDimension(Metric.RspResultCategory));
+        Assert.Equal(HttpRequestResultType.Failure.ToInvariantString(), latest.Tags[Metric.RspResultCategory]);
     }
-#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 }

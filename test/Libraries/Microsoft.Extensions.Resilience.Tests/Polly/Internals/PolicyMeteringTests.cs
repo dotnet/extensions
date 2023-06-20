@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
@@ -32,7 +31,6 @@ public class PolicyMeteringTests : IDisposable
     private readonly Mock<IExceptionSummarizer> _summarizer;
     private readonly Mock<IOutgoingRequestContext> _outgoingContext;
     private readonly Meter<PolicyMetering> _meter;
-    private readonly MetricCollector _metricCollector;
     private PolicyMetering _metering;
     private FailureResultContext _context;
 
@@ -42,7 +40,7 @@ public class PolicyMeteringTests : IDisposable
         _outgoingContext = new Mock<IOutgoingRequestContext>(MockBehavior.Strict);
 
         _meter = new();
-        _metricCollector = new(_meter);
+        Counter = new(_meter, MetricName);
 
         var services = new ServiceCollection();
         services.TryAddSingleton(_outgoingContext.Object);
@@ -53,7 +51,7 @@ public class PolicyMeteringTests : IDisposable
 
     public void Dispose()
     {
-        _metricCollector.Dispose();
+        Counter.Dispose();
         _meter.Dispose();
     }
 
@@ -75,7 +73,7 @@ public class PolicyMeteringTests : IDisposable
 
         RecordEvent(true, "policy", "ev", null);
 
-        Assert.Equal(expectedKey, Counter.LatestWritten!.GetDimension(ResilienceDimensions.PipelineKey));
+        Assert.Equal(expectedKey, Counter.LastMeasurement?.Tags[ResilienceDimensions.PipelineKey]);
     }
 
     [InlineData(true)]
@@ -85,7 +83,7 @@ public class PolicyMeteringTests : IDisposable
     {
         RecordEvent(typed, "policy", "ev", null);
 
-        Counter.AllValues.Should().BeEmpty();
+        Assert.Null(Counter.LastMeasurement);
     }
 
     [Fact]
@@ -100,8 +98,8 @@ public class PolicyMeteringTests : IDisposable
 
         RecordEvent(true, "policy", "ev", null);
 
-        Assert.Equal(TelemetryConstants.Unknown, Counter.LatestWritten!.GetDimension(ResilienceDimensions.DependencyName));
-        Assert.Equal(TelemetryConstants.Unknown, Counter.LatestWritten!.GetDimension(ResilienceDimensions.RequestName));
+        Assert.Equal(TelemetryConstants.Unknown, Counter.LastMeasurement?.Tags[ResilienceDimensions.DependencyName]);
+        Assert.Equal(TelemetryConstants.Unknown, Counter.LastMeasurement?.Tags[ResilienceDimensions.RequestName]);
     }
 
     [InlineData(true)]
@@ -113,18 +111,18 @@ public class PolicyMeteringTests : IDisposable
 
         RecordEvent(typed, "policy", "ev", null);
 
-        var latest = Counter.LatestWritten;
+        var latest = Counter.LastMeasurement!;
 
-        Assert.Equal(PipelineName, latest!.GetDimension(ResilienceDimensions.PipelineName));
-        Assert.Equal(PipelineKey, latest.GetDimension(ResilienceDimensions.PipelineKey));
-        Assert.Equal(ResultType, latest.GetDimension(ResilienceDimensions.ResultType));
-        Assert.Equal("policy", latest.GetDimension(ResilienceDimensions.PolicyName));
-        Assert.Equal("ev", latest.GetDimension(ResilienceDimensions.EventName));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(ResilienceDimensions.FailureSource));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(ResilienceDimensions.FailureReason));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(ResilienceDimensions.FailureSummary));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(ResilienceDimensions.DependencyName));
-        Assert.Equal(TelemetryConstants.Unknown, latest.GetDimension(ResilienceDimensions.RequestName));
+        Assert.Equal(PipelineName, latest.Tags[ResilienceDimensions.PipelineName]);
+        Assert.Equal(PipelineKey, latest.Tags[ResilienceDimensions.PipelineKey]);
+        Assert.Equal(ResultType, latest.Tags[ResilienceDimensions.ResultType]);
+        Assert.Equal("policy", latest.Tags[ResilienceDimensions.PolicyName]);
+        Assert.Equal("ev", latest.Tags[ResilienceDimensions.EventName]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[ResilienceDimensions.FailureSource]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[ResilienceDimensions.FailureReason]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[ResilienceDimensions.FailureSummary]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[ResilienceDimensions.DependencyName]);
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[ResilienceDimensions.RequestName]);
     }
 
     [InlineData(true)]
@@ -139,11 +137,11 @@ public class PolicyMeteringTests : IDisposable
 
         RecordEvent(typed, "policy", "ev", er);
 
-        var latest = Counter.LatestWritten;
+        var latest = Counter.LastMeasurement!;
 
-        Assert.Equal(TelemetryConstants.Unknown, latest!.GetDimension(ResilienceDimensions.FailureSource));
-        Assert.Equal("InvalidOperationException", latest.GetDimension(ResilienceDimensions.FailureReason));
-        Assert.Equal("type:desc:details", latest.GetDimension(ResilienceDimensions.FailureSummary));
+        Assert.Equal(TelemetryConstants.Unknown, latest.Tags[ResilienceDimensions.FailureSource]);
+        Assert.Equal("InvalidOperationException", latest.Tags[ResilienceDimensions.FailureReason]);
+        Assert.Equal("type:desc:details", latest.Tags[ResilienceDimensions.FailureSummary]);
     }
 
     [Fact]
@@ -153,11 +151,11 @@ public class PolicyMeteringTests : IDisposable
         _context = FailureResultContext.Create("src", "reason", "summary");
         _metering.RecordEvent("policy", "ev", new DelegateResult<string>("test"), new Context());
 
-        var latest = Counter.LatestWritten;
+        var latest = Counter.LastMeasurement!;
 
-        Assert.Equal("src", latest!.GetDimension(ResilienceDimensions.FailureSource));
-        Assert.Equal("reason", latest.GetDimension(ResilienceDimensions.FailureReason));
-        Assert.Equal("summary", latest.GetDimension(ResilienceDimensions.FailureSummary));
+        Assert.Equal("src", latest.Tags[ResilienceDimensions.FailureSource]);
+        Assert.Equal("reason", latest.Tags[ResilienceDimensions.FailureReason]);
+        Assert.Equal("summary", latest.Tags[ResilienceDimensions.FailureSummary]);
     }
 
     [InlineData(true)]
@@ -173,10 +171,10 @@ public class PolicyMeteringTests : IDisposable
         _outgoingContext.Setup(o => o.RequestMetadata).Returns(metadata1);
         RecordEvent(typed, "policy", "ev", null, new Context());
 
-        var latest = Counter.LatestWritten;
+        var latest = Counter.LastMeasurement!;
 
-        Assert.Equal("dep", latest!.GetDimension(ResilienceDimensions.DependencyName));
-        Assert.Equal("req", latest.GetDimension(ResilienceDimensions.RequestName));
+        Assert.Equal("dep", latest.Tags[ResilienceDimensions.DependencyName]);
+        Assert.Equal("req", latest.Tags[ResilienceDimensions.RequestName]);
 
         var ctx = new Context
         {
@@ -184,9 +182,9 @@ public class PolicyMeteringTests : IDisposable
         };
         RecordEvent(typed, "policy", "ev", null, ctx);
 
-        latest = Counter.LatestWritten;
-        Assert.Equal("dep2", latest!.GetDimension(ResilienceDimensions.DependencyName));
-        Assert.Equal("req2", latest.GetDimension(ResilienceDimensions.RequestName));
+        latest = Counter.LastMeasurement!;
+        Assert.Equal("dep2", latest.Tags[ResilienceDimensions.DependencyName]);
+        Assert.Equal("req2", latest.Tags[ResilienceDimensions.RequestName]);
     }
 
     private void RecordEvent(bool typed, string policyName, string eventName, Exception? exception, Context? context = null)
@@ -201,7 +199,7 @@ public class PolicyMeteringTests : IDisposable
         }
     }
 
-    private MetricValuesHolder<long> Counter => _metricCollector.GetCounterValues<long>(MetricName)!;
+    private MetricCollector<long> Counter { get; }
 
     private void Initialize(string pipelineKey = PipelineKey)
     {

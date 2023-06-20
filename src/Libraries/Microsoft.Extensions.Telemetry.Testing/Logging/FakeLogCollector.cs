@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
@@ -63,15 +62,21 @@ public class FakeLogCollector
     /// <summary>
     /// Gets the records that are held by the collector.
     /// </summary>
+    /// <param name="clear">Setting this to <see langword="true"/> will atomically clear the set of accumulated log records.</param>
     /// <returns>
     /// The list of records tracked to date by the collector.
     /// </returns>
-    [SuppressMessage("Minor Code Smell", "S4049:Properties should be preferred", Justification = "Not suitable for a property since it allocates.")]
-    public IReadOnlyList<FakeLogRecord> GetSnapshot()
+    public IReadOnlyList<FakeLogRecord> GetSnapshot(bool clear = false)
     {
         lock (_records)
         {
-            return _records.ToArray();
+            var records = _records.ToArray();
+            if (clear)
+            {
+                _records.Clear();
+            }
+
+            return records;
         }
     }
 
