@@ -250,7 +250,7 @@ public class FakeTimeProviderTests
         var t = source.Task.WaitAsync(_infiniteTimeout, timeProvider, CancellationToken.None);
         while (!t.IsCompleted)
         {
-            timeProvider.Advance();
+            timeProvider.Advance(TimeSpan.FromMilliseconds(1));
             await Task.Delay(1);
             _ = source.TrySetResult(true);
         }
@@ -269,7 +269,7 @@ public class FakeTimeProviderTests
         var t = source.Task.WaitAsync(TimeSpan.FromMilliseconds(1), timeProvider, CancellationToken.None);
         while (!t.IsCompleted)
         {
-            timeProvider.Advance();
+            timeProvider.Advance(TimeSpan.FromMilliseconds(1));
             await Task.Delay(1);
         }
 

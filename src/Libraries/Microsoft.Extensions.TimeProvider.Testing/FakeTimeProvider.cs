@@ -90,11 +90,6 @@ public class FakeTimeProvider : TimeProvider
     public void Advance(TimeSpan delta)
         => SetUtcNow(_now + delta);
 
-    /// <summary>
-    /// Advances the clock's time by one millisecond.
-    /// </summary>
-    public void Advance() => Advance(TimeSpan.FromMilliseconds(1));
-
     /// <inheritdoc />
     public override long GetTimestamp()
     {
