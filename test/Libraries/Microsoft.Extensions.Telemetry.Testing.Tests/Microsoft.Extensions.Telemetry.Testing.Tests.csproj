@@ -2,6 +2,7 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Telemetry.Testing</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.Telemetry.Testing.</Description>
+    <InjectTaskWaitAsyncOnLegacy>true</InjectTaskWaitAsyncOnLegacy>
   </PropertyGroup>
 
   <PropertyGroup>

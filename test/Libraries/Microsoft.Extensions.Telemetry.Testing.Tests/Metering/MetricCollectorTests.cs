@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
@@ -244,21 +245,53 @@ public static class MetricCollectorTests
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await collector.WaitForMeasurementsAsync(-1));
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await collector.WaitForMeasurementsAsync(0));
 
+        Assert.Equal(0, collector.WaitersCount);
+
         var wait = collector.WaitForMeasurementsAsync(2);
+        Assert.Equal(1, collector.WaitersCount);
         Assert.False(wait.IsCompleted);
 
         counter.Add(1);
         Assert.False(wait.IsCompleted);
+        Assert.Equal(1, collector.WaitersCount);
 
         counter.Add(1);
         Assert.True(wait.IsCompleted);
         Assert.False(wait.IsFaulted);
+        Assert.Equal(0, collector.WaitersCount);
 
         collector.Clear();
         counter.Add(1);
         wait = collector.WaitForMeasurementsAsync(1);
         Assert.True(wait.IsCompleted);
         Assert.False(wait.IsFaulted);
+        Assert.Equal(0, collector.WaitersCount);
+    }
+
+    [Fact]
+    public static async Task WaitWithCancellation()
+    {
+        const string CounterName = "MyCounter";
+
+        var now = DateTimeOffset.Now;
+
+        var timeProvider = new FakeTimeProvider(now);
+        using var meter = new Meter(Guid.NewGuid().ToString());
+        using var collector = new MetricCollector<long>(meter, CounterName, timeProvider);
+        var counter = meter.CreateCounter<long>(CounterName);
+
+        using var cts = new CancellationTokenSource();
+        var wait = collector.WaitForMeasurementsAsync(1, cts.Token);
+
+        Assert.Equal(1, collector.WaitersCount);
+
+        cts.Cancel();
+
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => wait);
+#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
+
+        Assert.Equal(0, collector.WaitersCount);
     }
 
     [Fact]
@@ -278,22 +311,35 @@ public static class MetricCollectorTests
 
         var wait = collector.WaitForMeasurementsAsync(2, TimeSpan.FromSeconds(1));
         Assert.False(wait.IsCompleted);
+        Assert.Equal(1, collector.WaitersCount);
 
         counter.Add(1);
         Assert.False(wait.IsCompleted);
-
-#if false
-// TODO: This is broken for netcoreapp3.1 and net6.0, but works for net462 and net8.0.
-        timeProvider.Advance(TimeSpan.FromSeconds(1));
-        Assert.True(wait.IsCompleted);
-        Assert.True(wait.IsFaulted);
-#endif
+        Assert.Equal(1, collector.WaitersCount);
 
         collector.Clear();
-        counter.Add(1);
         wait = collector.WaitForMeasurementsAsync(1, TimeSpan.FromSeconds(1));
-        Assert.True(wait.IsCompleted);
-        Assert.False(wait.IsFaulted);
+        Assert.Equal(2, collector.WaitersCount);
+        counter.Add(1);
+        Assert.Equal(1, collector.WaitersCount);
+
+        // Task should be complete. Error if not complete after delay.
+        await wait.WaitAsync(TimeSpan.FromSeconds(5), TimeProvider.System);
+    }
+
+    [Fact]
+    public static async Task WaitWithTimeout_CanceledFromTimeout()
+    {
+        const string CounterName = "MyCounter";
+
+        var now = DateTimeOffset.Now;
+
+        var timeProvider = new FakeTimeProvider(now);
+        using var meter = new Meter(Guid.NewGuid().ToString());
+        using var collector = new MetricCollector<long>(meter, CounterName, timeProvider);
+        var counter = meter.CreateCounter<long>(CounterName);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => collector.WaitForMeasurementsAsync(1, TimeSpan.FromMilliseconds(50)));
     }
 
     [Fact]
