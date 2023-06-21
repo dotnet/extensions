@@ -16,6 +16,9 @@
     <!-- This is false for local development, but set to true in the CI system -->
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">false</TreatWarningsAsErrors>
 
+    <!-- TODO: depends on https://github.com/dotnet/extensions/pull/4086#issuecomment-1597726254 -->
+    <NoWarn>$(NoWarn);NETSDK1206</NoWarn>
+
     <!-- TODO: to be reenabled and all warnings fixed (https://github.com/dotnet/r9/issues/177) -->
     <NoWarn>$(NoWarn);IL2026;IL2087;IL2067;IL2075;IL2091;IL2072;IL2090;CA1825;IL2070;IL2098;IL2057</NoWarn>
 
@@ -24,7 +27,6 @@
 
     <!-- R9A029 is for customers, not for this repo -->
     <NoWarn>$(NoWarn);R9A029</NoWarn>
-
 
     <!-- NU5104: A stable release of a package should not have a prerelease dependency -->
     <NoWarn>$(NoWarn);NU5104</NoWarn>
