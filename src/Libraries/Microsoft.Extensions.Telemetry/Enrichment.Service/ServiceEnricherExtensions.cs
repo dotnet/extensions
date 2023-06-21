@@ -43,7 +43,7 @@ public static class ServiceEnricherExtensions
         _ = Throw.IfNull(configure);
 
         return services
-            .AddLogEnricher<ServiceLogEnricher>()
+            .AddStaticLogEnricher<ServiceLogEnricher>()
             .AddLogEnricherOptions(configure);
     }
 
@@ -60,7 +60,7 @@ public static class ServiceEnricherExtensions
         _ = Throw.IfNull(section);
 
         return services
-            .AddLogEnricher<ServiceLogEnricher>()
+            .AddStaticLogEnricher<ServiceLogEnricher>()
             .AddLogEnricherOptions(_ => { }, section);
     }
 

@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 /// <summary>
 /// EventSource implementation for R9 logging implementation.
 /// </summary>
-[EventSource(Name = "R9-Logging-Instrumentation")]
+[EventSource(Name = "Logging-Instrumentation")]
 internal sealed class LoggingEventSource : EventSource
 {
     public static readonly LoggingEventSource Log = new();
@@ -20,7 +20,7 @@ internal sealed class LoggingEventSource : EventSource
         LogException(ex.ToString());
     }
 
-    [Event(1, Message = "Exception occurred during logging. {exception}.", Level = EventLevel.Error)]
+    [Event(1, Message = "Exception occurred while logging. {exception}.", Level = EventLevel.Error)]
     private void LogException(string exception)
     {
         WriteEvent(1, exception);

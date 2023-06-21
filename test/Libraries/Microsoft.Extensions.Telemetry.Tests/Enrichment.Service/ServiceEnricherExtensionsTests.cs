@@ -41,7 +41,7 @@ public class ServiceEnricherExtensionsTests
             .Build();
 
         // Assert
-        Assert.NotNull(host.Services.GetRequiredService<ILogEnricher>());
+        Assert.NotNull(host.Services.GetRequiredService<IStaticLogEnricher>());
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class ServiceEnricherExtensionsTests
             .Build();
 
         // Assert
-        Assert.NotNull(host.Services.GetRequiredService<ILogEnricher>());
+        Assert.NotNull(host.Services.GetRequiredService<IStaticLogEnricher>());
         var options = host.Services.GetRequiredService<IOptions<ServiceLogEnricherOptions>>().Value;
         Assert.NotNull(options);
         Assert.False(options.ApplicationName);
@@ -84,7 +84,7 @@ public class ServiceEnricherExtensionsTests
             .Build();
 
         // Assert
-        var enricher = host.Services.GetRequiredService<ILogEnricher>();
+        var enricher = host.Services.GetRequiredService<IStaticLogEnricher>();
         Assert.NotNull(enricher);
         Assert.IsType<ServiceLogEnricher>(enricher);
         var options = host.Services.GetRequiredService<IOptions<ServiceLogEnricherOptions>>().Value;

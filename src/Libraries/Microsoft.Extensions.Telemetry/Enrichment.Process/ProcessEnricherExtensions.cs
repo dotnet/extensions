@@ -43,6 +43,7 @@ public static class ProcessEnricherExtensions
 
         return services
             .AddLogEnricher<ProcessLogEnricher>()
+            .AddStaticLogEnricher<StaticProcessLogEnricher>()
             .AddLogEnricherOptions(configure);
     }
 
@@ -60,6 +61,7 @@ public static class ProcessEnricherExtensions
 
         return services
             .AddLogEnricher<ProcessLogEnricher>()
+            .AddStaticLogEnricher<StaticProcessLogEnricher>()
             .AddLogEnricherOptions(_ => { }, section);
     }
 

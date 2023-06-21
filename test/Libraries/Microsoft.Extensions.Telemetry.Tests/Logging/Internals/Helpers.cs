@@ -1,14 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Hosting.Testing;
-using Microsoft.Extensions.Logging;
-using OpenTelemetry;
-using OpenTelemetry.Logs;
 
 namespace Microsoft.Extensions.Telemetry.Logging.Test.Internals;
 
@@ -70,13 +63,14 @@ internal static class Helpers
         return true;
     }
 
+#if false
     public static ILogger CreateLogger(Action<ILoggingBuilder> configure, BaseExporter<LogRecord> exporter)
     {
         var hostBuilder = FakeHost.CreateBuilder(options => options.FakeLogging = false)
             .ConfigureLogging(builder =>
             {
                 configure.Invoke(builder);
-                _ = builder.AddOpenTelemetryLogging().AddProcessor(new SimpleLogRecordExportProcessor(exporter));
+                _ = builder.Services.AddExtendedLogging();
             });
 
         var host = hostBuilder.Build();
@@ -84,4 +78,5 @@ internal static class Helpers
 
         return logger;
     }
+#endif
 }
