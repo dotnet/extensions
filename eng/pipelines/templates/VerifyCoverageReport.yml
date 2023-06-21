@@ -30,3 +30,7 @@ steps:
       summaryFileLocation: ./merged.cobertura.xml
       pathToSources: $(Build.SourcesDirectory)
       reportDirectory: ./CoverageResultsHtml
+
+  - pwsh: |
+        $(Build.SourcesDirectory)/eng/scripts/ValidateProjectCoverage.ps1 -CoberturaReportXml ./merged.cobertura.xml
+    displayName: Check per-project coverage
