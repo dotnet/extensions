@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.Http.Resilience.Internal.Routing;
+namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 
 internal sealed class DefaultRoutingStrategyFactory<TRoutingStrategy> : IRequestRoutingStrategyFactory
     where TRoutingStrategy : IRequestRoutingStrategy

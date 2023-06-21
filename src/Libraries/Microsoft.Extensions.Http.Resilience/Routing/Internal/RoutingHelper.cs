@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Http.Resilience.Internal;
 
-namespace Microsoft.Extensions.Http.Resilience.Internal.Routing;
+namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 
 internal static class RoutingHelper
 {

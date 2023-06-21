@@ -4,10 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Http.Resilience.Internal.Routing;
+namespace Microsoft.Extensions.Http.Resilience.Routing.Internal.WeightedGroups;
 
 internal sealed class WeightedGroupsRoutingStrategy : IRequestRoutingStrategy, IResettable
 {

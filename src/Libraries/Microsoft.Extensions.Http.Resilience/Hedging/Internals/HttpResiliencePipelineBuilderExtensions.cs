@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Resilience.Internal.Routing;
+using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Resilience.Internal;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal;
