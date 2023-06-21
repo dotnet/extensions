@@ -37,7 +37,6 @@
     <PackageReference Include="Polly.Core" />
     <PackageReference Include="Polly.Extensions" />
     <PackageReference Include="Polly.RateLimiting" />
-    <PackageReference Include="Polly.Contrib.WaitAndRetry" />
     <PackageReference Include="Polly.Contrib.Simmy" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
