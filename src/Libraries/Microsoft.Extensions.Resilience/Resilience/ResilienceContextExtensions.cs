@@ -20,7 +20,7 @@ public static class ResilienceContextExtensions
     /// </summary>
     /// <param name="context">The context instance.</param>
     /// <param name="requestMetadata">The request metadata.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> or <paramref name="requestMetadata"/> is <see langword="null"/>.</exception>
+    /// <paramref name="context"/> is <see langword="null"/> or <paramref name="requestMetadata"/> is <see langword="null"/>.
     public static void SetRequestMetadata(this ResilienceContext context, RequestMetadata requestMetadata)
     {
         _ = Throw.IfNull(context);
@@ -34,7 +34,7 @@ public static class ResilienceContextExtensions
     /// </summary>
     /// <param name="context">The context instance.</param>
     /// <returns>The instance of <see cref="RequestMetadata"/> or <see langword="null"/>.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="context"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
     public static RequestMetadata? GetRequestMetadata(this ResilienceContext context)
     {
         _ = Throw.IfNull(context);

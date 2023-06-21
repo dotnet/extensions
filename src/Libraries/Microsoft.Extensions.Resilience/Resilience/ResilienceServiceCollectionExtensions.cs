@@ -37,7 +37,7 @@ public static class ResilienceServiceCollectionExtensions
     /// </item>
     /// </list>
     /// </remarks>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddResilienceEnrichment(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
@@ -68,7 +68,9 @@ public static class ResilienceServiceCollectionExtensions
     /// <param name="services">The services.</param>
     /// <param name="configure">The configure result dimensions.</param>
     /// <returns>The input <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="services"/> is <see langword="null"/> or <paramref name="configure"/> is <see langword="null"/>.
+    /// </exception>
     public static IServiceCollection ConfigureFailureResultContext<TResult>(
        this IServiceCollection services,
        Func<TResult, FailureResultContext> configure)
