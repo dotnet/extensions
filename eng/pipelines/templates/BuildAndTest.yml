@@ -60,7 +60,10 @@ steps:
     displayName: Build
 
   - ${{ if ne(parameters.skipTests, 'true') }}:
-    - script: ${{ parameters.buildScript }} -test -configuration ${{ parameters.buildConfig }} /bl:${{ parameters.repoLogPath }}/tests.binlog $(_OfficialBuildIdArgs)
+    - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
+              --settings $(Build.SourcesDirectory)/eng/CodeCoverage.config
+              --output ${{ parameters.repoTestResultsPath }}
+              "${{ parameters.buildScript }} -test -configuration ${{ parameters.buildConfig }} /bl:${{ parameters.repoLogPath }}/tests.binlog $(_OfficialBuildIdArgs)"
       displayName: Run tests
 
     - pwsh: |
