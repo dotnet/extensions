@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Internal.Routing;
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
+using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Resilience.Internal;
 using Microsoft.Shared.Diagnostics;
 

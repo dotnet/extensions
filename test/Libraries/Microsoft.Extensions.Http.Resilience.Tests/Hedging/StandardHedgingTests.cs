@@ -12,7 +12,7 @@ using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Microsoft.Extensions.Http.Resilience.Internal.Routing;
+using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Hedgings.Helpers;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience;

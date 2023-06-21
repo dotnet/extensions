@@ -9,13 +9,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Microsoft.Extensions.Http.Resilience.Internal.Routing;
+using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Resilience.Test.Hedging.Routing;
+namespace Microsoft.Extensions.Http.Resilience.Test.Routing;
 
 public abstract class RoutingStrategyTest
 {

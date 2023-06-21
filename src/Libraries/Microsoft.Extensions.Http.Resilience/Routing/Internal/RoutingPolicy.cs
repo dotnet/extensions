@@ -5,10 +5,11 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
-namespace Microsoft.Extensions.Http.Resilience.Internal.Routing;
+namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 
 /// <summary>
 /// Adds routing support to an inner policy.

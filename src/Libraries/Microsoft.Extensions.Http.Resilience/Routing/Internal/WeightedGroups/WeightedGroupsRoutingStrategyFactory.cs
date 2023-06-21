@@ -4,7 +4,7 @@
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Http.Resilience.Internal.Routing;
+namespace Microsoft.Extensions.Http.Resilience.Routing.Internal.WeightedGroups;
 
 internal sealed class WeightedGroupsRoutingStrategyFactory : PooledRoutingStrategyFactory<WeightedGroupsRoutingStrategy, WeightedGroupsRoutingOptions>
 {

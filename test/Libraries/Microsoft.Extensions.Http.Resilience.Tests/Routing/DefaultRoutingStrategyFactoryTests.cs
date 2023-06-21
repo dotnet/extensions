@@ -3,11 +3,12 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Resilience.Internal.Routing;
+using Microsoft.Extensions.Http.Resilience.Routing.Internal;
+using Microsoft.Extensions.Http.Resilience.Test.Hedging.Internals;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Resilience.Test.Hedging.Internals;
+namespace Microsoft.Extensions.Http.Resilience.Test.Routing;
 
 public sealed class DefaultRoutingStrategyFactoryTests : IDisposable
 {

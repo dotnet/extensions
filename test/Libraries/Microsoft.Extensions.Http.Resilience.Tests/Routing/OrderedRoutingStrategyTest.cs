@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Microsoft.Extensions.Http.Resilience.Internal.Routing;
+using Microsoft.Extensions.Http.Resilience.Routing.Internal.OrderedGroups;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Resilience.Test.Hedging.Routing;
+namespace Microsoft.Extensions.Http.Resilience.Test.Routing;
 
 public class OrderedRoutingStrategyTest : RoutingStrategyTest
 {

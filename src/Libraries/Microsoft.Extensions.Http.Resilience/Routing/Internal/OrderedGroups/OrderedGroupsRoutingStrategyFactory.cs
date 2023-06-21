@@ -4,7 +4,7 @@
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Http.Resilience.Internal.Routing;
+namespace Microsoft.Extensions.Http.Resilience.Routing.Internal.OrderedGroups;
 
 internal sealed class OrderedGroupsRoutingStrategyFactory : PooledRoutingStrategyFactory<OrderedGroupsRoutingStrategy, OrderedGroupsRoutingOptions>
 {

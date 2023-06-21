@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Microsoft.Extensions.Http.Resilience.Internal.Routing;
+using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Resilience.Test.Hedging.Internals;
+namespace Microsoft.Extensions.Http.Resilience.Test.Routing;
 
 public class RoutingHelperTest
 {
@@ -20,7 +20,7 @@ public class RoutingHelperTest
         var randomizer = new Mock<IRandomizer>(MockBehavior.Strict);
         randomizer.Setup(v => v.NextDouble(10)).Returns(nextResult);
 
-        var result = RoutingHelper.SelectByWeight(new List<int> { 1, 2, 3, 4 }, v => v, randomizer.Object);
+        var result = new List<int> { 1, 2, 3, 4 }.SelectByWeight(v => v, randomizer.Object);
 
         Assert.Equal(expectedEndpoint, result);
     }
@@ -31,6 +31,6 @@ public class RoutingHelperTest
         var randomizer = new Mock<IRandomizer>(MockBehavior.Strict);
         randomizer.Setup(v => v.NextDouble(10)).Returns(10000);
 
-        Assert.Throws<InvalidOperationException>(() => RoutingHelper.SelectByWeight(new List<int> { 1, 2, 3, 4 }, v => v, randomizer.Object));
+        Assert.Throws<InvalidOperationException>(() => new List<int> { 1, 2, 3, 4 }.SelectByWeight(v => v, randomizer.Object));
     }
 }

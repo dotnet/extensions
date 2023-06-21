@@ -5,7 +5,7 @@ using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Http.Resilience.Internal.Routing;
+namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 
 internal abstract class PooledRoutingStrategyFactory<T, TOptions> : IPooledRequestRoutingStrategyFactory
     where T : class, IRequestRoutingStrategy, IResettable
