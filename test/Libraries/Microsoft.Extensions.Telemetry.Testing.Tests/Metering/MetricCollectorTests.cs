@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Threading;
@@ -288,7 +287,9 @@ public static class MetricCollectorTests
 
         cts.Cancel();
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => wait);
+#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
 
         Assert.Equal(0, collector.WaitersCount);
     }
@@ -322,10 +323,8 @@ public static class MetricCollectorTests
         counter.Add(1);
         Assert.Equal(1, collector.WaitersCount);
 
-        // TODO: For some reason IsCompleted isn't immediately set to true. Investigate why.
-        await wait;
-        Assert.True(wait.IsCompleted);
-        Assert.False(wait.IsFaulted);
+        // Task should be complete. Error if not complete after delay.
+        await wait.WaitAsync(TimeSpan.FromSeconds(5), TimeProvider.System);
     }
 
     [Fact]
