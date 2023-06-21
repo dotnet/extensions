@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "dotnet-coverage": {
-      "version": "17.6.9",
+      "version": "17.7.1",
       "commands": [
         "dotnet-coverage"
       ]

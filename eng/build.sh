@@ -10,6 +10,7 @@ set -e
 usage()
 {
   echo "Custom settings:"
+  echo "  --testCoverage             Run unit tests and capture code coverage information."
   echo "  --vs <value>               Comma delimited list of keywords to filter the projects in the solution"
   echo "                             Pass '*' to generate a solution with all projects."
   echo "  --onlyTfms <value>         Semi-colon delimited list of TFMs to build (e.g. 'net8.0;net6.0')"
@@ -24,6 +25,8 @@ onlyTfms=''
 hasProjects=false
 hasWarnAsError=false
 hasRestore=false
+configuration=''
+testCoverage=false
 
 properties=''
 
@@ -35,7 +38,7 @@ while [[ $# > 0 ]]; do
       "$DIR/common/build.sh" --help
       exit 0
       ;;
-     -vs)
+    -vs)
       filter=true
       shift
       keywords=$1
@@ -50,7 +53,7 @@ while [[ $# > 0 ]]; do
       properties="$properties $1 $(realpath $2)"
       shift
       ;;
-     -restore)
+    -restore)
       hasRestore=true
       properties="$properties $1"
       ;;
@@ -63,6 +66,14 @@ while [[ $# > 0 ]]; do
       fi
       properties="$properties $1 $value"
       shift
+      ;;
+    -configuration|-c)
+      configuration=$2
+      properties="$properties $1 $2"
+      shift
+      ;;
+    -testcoverage)
+      testCoverage=true
       ;;
     *)
       properties="$properties $1"
@@ -79,7 +90,7 @@ fi
 if [[ "$filter" == true ]]; then
   # Install required toolset
   . "$DIR/common/tools.sh"
-  InitializeDotNetCli true
+  InitializeDotNetCli true > /dev/null
 
   # Invoke the solution generator
   script=$(realpath $DIR/../scripts/Slngen.ps1)
@@ -123,3 +134,24 @@ if [[ "$hasWarnAsError" == false ]]; then
 fi
 
 "$DIR/common/build.sh" $properties
+
+
+# Perform code coverage as the last operation, this enables the following scenarios:
+#   .\build.sh --restore --build --c Release --testCoverage
+if [[ "$testCoverage" == true ]]; then
+  # Install required toolset
+  . "$DIR/common/tools.sh"
+  InitializeDotNetCli true > /dev/null
+
+  repoRoot=$(realpath $DIR/../)
+  testResultPath="$repoRoot/artifacts/TestResults/$configuration"
+
+  # Run tests and collect code coverage
+  $repoRoot/.dotnet/dotnet 'dotnet-coverage' collect --settings $repoRoot/eng/CodeCoverage.config --output $testResultPath/local.cobertura.xml "$repoRoot/build.sh --test --configuration $configuration"
+
+  # Generate the code coverage report and open it in the browser
+  $repoRoot/.dotnet/dotnet reportgenerator -reports:$testResultPath/*.cobertura.xml -targetdir:$testResultPath/CoverageResultsHtml -reporttypes:HtmlInline_AzurePipelines
+  echo ""
+  echo -e "\e[32mCode coverage results:\e[0m $testResultPath/CoverageResultsHtml/index.html"
+  echo ""
+fi

@@ -58,6 +58,10 @@ Param(
   [Parameter(ParameterSetName='CommandLine')]
   [switch] $help,
 
+  # Run tests with code coverage
+  [Parameter(ParameterSetName='CommandLine')]
+  [switch] $testCoverage,
+
   [Parameter(ParameterSetName='CommandLine')]
   [Parameter(ParameterSetName='VisualStudio')]
   [string[]] $onlyTfms = $null,
@@ -72,6 +76,7 @@ Param(
 
 function Print-Usage() {
   Write-Host "Custom settings:"
+  Write-Host "  -testCoverage           Run unit tests and capture code coverage information."
   Write-Host "  -vs <value>             Comma delimited list of keywords to filter the projects in the solution."
   Write-Host "                          Pass '*' to generate a solution with all projects."
   Write-Host "  -noLaunch               Don't open the generated solution in Visual Studio (only if -vs specified)"
@@ -96,7 +101,7 @@ if ($filter.Count -ne 0) {
   try {
     # Install required toolset
     . $PSScriptRoot/common/tools.ps1
-    InitializeDotNetCli -install $true
+    InitializeDotNetCli -install $true | Out-Null
 
     Push-Location $PSScriptRoot/../
     if ($filter -eq '*') {
@@ -116,7 +121,9 @@ if ($filter.Count -ne 0) {
     $restore = $true;
   }
   catch {
-    exit $LASTEXITCODE;
+    Write-Host $_.Exception.Message -Foreground "Red"
+    Write-Host $_.ScriptStackTrace -Foreground "DarkGray"
+    exit $global:LASTEXITCODE;
   }
   finally {
     Pop-Location
@@ -175,3 +182,32 @@ if ([string]::IsNullOrWhiteSpace($projects)) {
        -help:$help `
        @properties
 
+
+# Perform code coverage as the last operation, this enables the following scenarios:
+#   .\build.cmd -restore -build -c Release -testCoverage
+if ($testCoverage) {
+  try {
+    # Install required toolset
+    . $PSScriptRoot/common/tools.ps1
+    InitializeDotNetCli -install $true | Out-Null
+
+    Push-Location $PSScriptRoot/../
+
+    $testResultPath = "./artifacts/TestResults/$configuration";
+
+    # Run tests and collect code coverage
+    ./.dotnet/dotnet dotnet-coverage collect --settings ./eng/CodeCoverage.config --output $testResultPath/local.cobertura.xml "build.cmd -test -configuration $configuration -bl:`$$binaryLog"
+
+    # Generate the code coverage report and open it in the browser
+    ./.dotnet/dotnet reportgenerator -reports:$testResultPath/*.cobertura.xml -targetdir:$testResultPath/CoverageResultsHtml -reporttypes:HtmlInline_AzurePipelines
+    Start-Process $testResultPath/CoverageResultsHtml/index.html
+  }
+  catch {
+    Write-Host $_.Exception.Message -Foreground "Red"
+    Write-Host $_.ScriptStackTrace -Foreground "DarkGray"
+    exit $global:LASTEXITCODE;
+  }
+  finally {
+    Pop-Location
+  }
+}
