@@ -139,6 +139,7 @@ public sealed class MetricCollector<T> : IDisposable
             {
                 _ = w.TaskSource.TrySetException(MakeObjectDisposedException());
             }
+
             _waiters.Clear();
         }
     }
