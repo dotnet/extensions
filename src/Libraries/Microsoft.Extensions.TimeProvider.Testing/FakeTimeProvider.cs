@@ -7,88 +7,131 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Time.Testing;
 
 /// <summary>
-/// A synthetic clock used to provide deterministic behavior in tests.
+/// A synthetic time provider used to enable deterministic behavior in tests.
 /// </summary>
 public class FakeTimeProvider : TimeProvider
 {
-    internal readonly List<FakeTimeProviderTimer.Waiter> Waiters = new();
-
-    private DateTimeOffset _now;
-    private TimeZoneInfo _localTimeZone;
-
-    /// <summary>
-    /// Gets the time which was used as the starting point for the clock in this <see cref="FakeTimeProvider"/>.
-    /// </summary>
-    /// <remarks>
-    /// This can be set by passing in a <see cref="DateTimeOffset"/> to the constructor
-    /// which takes the <c>epoch</c> argument. If the default constructor is used,
-    /// the clock's start time defaults to midnight January 1st 2000.
-    /// </remarks>
-    [Experimental]
-    public DateTimeOffset Epoch { get; } = new DateTimeOffset(2000, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
+    internal readonly HashSet<Waiter> Waiters = new();
+    private DateTimeOffset _now = new(2000, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
+    private TimeZoneInfo _localTimeZone = TimeZoneInfo.Utc;
+    private int _wakeWaitersGate;
+    private TimeSpan _autoAdvanceAmount;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FakeTimeProvider"/> class.
     /// </summary>
     /// <remarks>
-    /// This creates a clock whose time is set to midnight January 1st 2000.
-    /// The clock is set to not automatically advance every time it is read.
+    /// This creates a provider whose time is initially set to midnight January 1st 2000.
+    /// The provider is set to not automatically advance time each time it is read.
     /// </remarks>
+    [Experimental]
     public FakeTimeProvider()
     {
-        _localTimeZone = TimeZoneInfo.Utc;
-        _now = Epoch;
+        Start = _now;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FakeTimeProvider"/> class.
     /// </summary>
-    /// <param name="epoch">The starting point for the clock used by this <see cref="FakeTimeProvider"/>.</param>
+    /// <param name="startDateTime">The initial time and date reported by the provider.</param>
+    /// <remarks>
+    /// The provider is set to not automatically advance time each time it is read.
+    /// </remarks>
     [Experimental]
-    public FakeTimeProvider(DateTimeOffset epoch)
-        : this()
+    public FakeTimeProvider(DateTimeOffset startDateTime)
     {
-        Epoch = epoch;
-        _now = epoch;
+        _ = Throw.IfLessThan(startDateTime.Ticks, 0);
+
+        _now = startDateTime;
+        Start = _now;
+    }
+
+    /// <summary>
+    /// Gets the starting date and time for this provider.
+    /// </summary>
+    [Experimental]
+    public DateTimeOffset Start { get; }
+
+    /// <summary>
+    /// Gets or sets the amount of time by which time advances whenever the clock is read.
+    /// </summary>
+    /// <remarks>
+    /// This defaults to <see cref="TimeSpan.Zero"/>.
+    /// </remarks>
+    [Experimental]
+    public TimeSpan AutoAdvanceAmount
+    {
+        get => _autoAdvanceAmount;
+        set
+        {
+            _ = Throw.IfLessThan(value.Ticks, 0);
+            _autoAdvanceAmount = value;
+        }
     }
 
     /// <inheritdoc />
     public override DateTimeOffset GetUtcNow()
     {
-        return _now;
+        DateTimeOffset result;
+
+        lock (Waiters)
+        {
+            result = _now;
+            _now += _autoAdvanceAmount;
+        }
+
+        WakeWaiters();
+        return result;
     }
 
     /// <summary>
-    /// Sets the date and time in the UTC timezone.
+    /// Sets the date and time in the UTC time zone.
     /// </summary>
-    /// <param name="value">The date and time in the UTC timezone.</param>
+    /// <param name="value">The date and time in the UTC time zone.</param>
+    [Experimental]
     public void SetUtcNow(DateTimeOffset value)
     {
-        if (value < _now)
+        lock (Waiters)
         {
-            Throw.ArgumentOutOfRangeException(nameof(value), $"Cannot go back in time. Current time is {GetUtcNow()}.");
+            if (value < _now)
+            {
+                Throw.ArgumentOutOfRangeException(nameof(value), $"Cannot go back in time. Current time is {_now}.");
+            }
+
+            _now = value;
         }
 
-        while (value >= _now && TryGetWaiterToWake(value) is FakeTimeProviderTimer.Waiter waiter)
-        {
-            _now = waiter.WakeupTime;
-            waiter.TriggerAndSchedule(false);
-        }
-
-        _now = value;
+        WakeWaiters();
     }
 
     /// <summary>
-    /// Advances the clock's time by a specific amount.
+    /// Advances time by a specific amount.
     /// </summary>
     /// <param name="delta">The amount of time to advance the clock by.</param>
+    /// <remarks>
+    /// Advancing time affects the timers created from this provider, and all other operations that are directly or
+    /// indirectly using this provider as a time source. Whereas when using <see cref="TimeProvider.System"/>, time
+    /// marches forward automatically in hardware, for the fake time provider the application is responsible for
+    /// doing this explicitly by calling this method.
+    /// </remarks>
+    [Experimental]
     public void Advance(TimeSpan delta)
-        => SetUtcNow(_now + delta);
+    {
+        _ = Throw.IfLessThan(delta.Ticks, 0);
+
+        lock (Waiters)
+        {
+            _now += delta;
+        }
+
+        WakeWaiters();
+    }
 
     /// <inheritdoc />
     public override long GetTimestamp()
@@ -109,52 +152,35 @@ public class FakeTimeProvider : TimeProvider
     public override TimeZoneInfo LocalTimeZone => _localTimeZone;
 
     /// <summary>
-    /// Sets the local timezone.
+    /// Sets the local time zone.
     /// </summary>
-    /// <param name="localTimeZone">The local timezone.</param>
-    public void SetLocalTimeZone(TimeZoneInfo localTimeZone)
-    {
-        _localTimeZone = localTimeZone;
-    }
+    /// <param name="localTimeZone">The local time zone.</param>
+    [Experimental]
+    public void SetLocalTimeZone(TimeZoneInfo localTimeZone) => _localTimeZone = localTimeZone;
 
     /// <summary>
-    /// Gets the amount that the value from <see cref="GetTimestamp"/> increments per second.
+    /// Gets the amount by which the value from <see cref="GetTimestamp"/> increments per second.
     /// </summary>
     /// <remarks>
-    /// We fix it here for test instability which would otherwise occur within
-    /// <see cref="GetTimestamp"/> when the result of multiplying underlying ticks
-    /// by frequency and dividing by ticks per second is truncated to long.
-    ///
-    /// Similarly truncation could occur when reversing this calculation to figure a time
-    /// interval from the difference between two timestamps.
-    ///
-    /// As ticks per second is always 10^7, setting frequency to 10^7 is convenient.
-    /// It happens that the system usually uses 10^9 or 10^6 so this could expose
-    /// any assumption made that it is one of those values.
+    /// This is fixed to the value of <see cref="TimeSpan.TicksPerSecond"/>.
     /// </remarks>
     public override long TimestampFrequency => TimeSpan.TicksPerSecond;
 
     /// <summary>
-    /// Returns a string representation this clock's current time.
+    /// Returns a string representation this provider's idea of current time.
     /// </summary>
-    /// <returns>A string representing the clock's current time.</returns>
+    /// <returns>A string representing the provider's current time.</returns>
     public override string ToString() => GetUtcNow().ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture);
 
     /// <inheritdoc />
     public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
     {
-        return new FakeTimeProviderTimer(this, dueTime, period, callback, state);
+        var timer = new Timer(this, Throw.IfNull(callback), state);
+        _ = timer.Change(dueTime, period);
+        return timer;
     }
 
-    internal void AddWaiter(FakeTimeProviderTimer.Waiter waiter)
-    {
-        lock (Waiters)
-        {
-            Waiters.Add(waiter);
-        }
-    }
-
-    internal void RemoveWaiter(FakeTimeProviderTimer.Waiter waiter)
+    internal void RemoveWaiter(Waiter waiter)
     {
         lock (Waiters)
         {
@@ -162,39 +188,82 @@ public class FakeTimeProvider : TimeProvider
         }
     }
 
-    private FakeTimeProviderTimer.Waiter? TryGetWaiterToWake(DateTimeOffset targetNow)
+    internal void AddWaiter(Waiter waiter, long dueTime)
     {
-        var candidate = default(FakeTimeProviderTimer.Waiter);
-
         lock (Waiters)
         {
-            if (Waiters.Count == 0)
-            {
-                return null;
-            }
-
-            foreach (var waiter in Waiters)
-            {
-                if (waiter.WakeupTime > targetNow)
-                {
-                    continue;
-                }
-
-                if (candidate is null)
-                {
-                    candidate = waiter;
-                    continue;
-                }
-
-                // This finds the waiter with the minimum WakeupTime and also ensures that if multiple waiters have the same
-                // the one that is picked is also the one that was scheduled first.
-                candidate = candidate.WakeupTime > waiter.WakeupTime
-                        || (candidate.WakeupTime == waiter.WakeupTime && candidate.ScheduledOn > waiter.ScheduledOn)
-                    ? waiter
-                    : candidate;
-            }
+            waiter.ScheduledOn = _now.Ticks;
+            waiter.WakeupTime = _now.Ticks + dueTime;
+            _ = Waiters.Add(waiter);
         }
 
-        return candidate;
+        WakeWaiters();
+    }
+
+    private void WakeWaiters()
+    {
+        if (Interlocked.CompareExchange(ref _wakeWaitersGate, 1, 0) == 1)
+        {
+            // some other thread is already in here, so let it take care of things
+            return;
+        }
+
+        while (true)
+        {
+            Waiter? candidate = null;
+            lock (Waiters)
+            {
+                // find an expired waiter
+                foreach (var waiter in Waiters)
+                {
+                    if (waiter.WakeupTime > _now.Ticks)
+                    {
+                        // not expired yet
+                    }
+                    else if (candidate is null)
+                    {
+                        // our first candidate
+                        candidate = waiter;
+                    }
+                    else if (waiter.WakeupTime < candidate.WakeupTime)
+                    {
+                        // found a waiter with an earlier wake time, it's our new candidate
+                        candidate = waiter;
+                    }
+                    else if (waiter.WakeupTime > candidate.WakeupTime)
+                    {
+                        // the waiter has a later wake time, so keep the current candidate
+                    }
+                    else if (waiter.ScheduledOn < candidate.ScheduledOn)
+                    {
+                        // the new waiter has the same wake time aa the candidate, pick whichever was scheduled earliest to maintain order
+                        candidate = waiter;
+                    }
+                }
+            }
+
+            if (candidate == null)
+            {
+                // didn't find a candidate to wake, we're done
+                _wakeWaitersGate = 0;
+                return;
+            }
+
+            // invoke the callback
+            candidate.InvokeCallback();
+
+            // see if we need to reschedule the waiter
+            if (candidate.Period > 0)
+            {
+                // update the waiter's state
+                candidate.ScheduledOn = _now.Ticks;
+                candidate.WakeupTime += candidate.Period;
+            }
+            else
+            {
+                // this waiter is never running again, so remove from the set.
+                RemoveWaiter(candidate);
+            }
+        }
     }
 }

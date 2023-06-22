@@ -20,7 +20,6 @@ public class FakeTimeProviderTests
         var timestamp = timeProvider.GetTimestamp();
         var frequency = timeProvider.TimestampFrequency;
 
-        Assert.Equal(timeProvider.Epoch, now);
         Assert.Equal(2000, now.Year);
         Assert.Equal(1, now.Month);
         Assert.Equal(1, now.Day);
@@ -30,12 +29,12 @@ public class FakeTimeProviderTests
         Assert.Equal(0, now.Millisecond);
         Assert.Equal(TimeSpan.Zero, now.Offset);
         Assert.Equal(10_000_000, frequency);
+        Assert.Equal(TimeSpan.Zero, timeProvider.AutoAdvanceAmount);
 
         var timestamp2 = timeProvider.GetTimestamp();
         var frequency2 = timeProvider.TimestampFrequency;
         var now2 = timeProvider.GetUtcNow();
 
-        Assert.Equal(timeProvider.Epoch, now2);
         Assert.Equal(now, now2);
         Assert.Equal(frequency, frequency2);
         Assert.Equal(timestamp, timestamp2);
@@ -51,7 +50,6 @@ public class FakeTimeProviderTests
         var frequency = timeProvider.TimestampFrequency;
         var now = timeProvider.GetUtcNow();
 
-        Assert.Equal(timeProvider.Epoch + TimeSpan.FromMilliseconds(8), now);
         Assert.Equal(2001, now.Year);
         Assert.Equal(2, now.Month);
         Assert.Equal(3, now.Day);
@@ -61,13 +59,13 @@ public class FakeTimeProviderTests
         Assert.Equal(TimeSpan.Zero, now.Offset);
         Assert.Equal(8, now.Millisecond);
         Assert.Equal(10_000_000, frequency);
+        Assert.Equal(TimeSpan.Zero, timeProvider.AutoAdvanceAmount);
 
         timeProvider.Advance(TimeSpan.FromMilliseconds(8));
         var pnow2 = timeProvider.GetTimestamp();
         var frequency2 = timeProvider.TimestampFrequency;
         now = timeProvider.GetUtcNow();
 
-        Assert.Equal(timeProvider.Epoch + TimeSpan.FromMilliseconds(16), now);
         Assert.Equal(2001, now.Year);
         Assert.Equal(2, now.Month);
         Assert.Equal(3, now.Day);
@@ -86,6 +84,19 @@ public class FakeTimeProviderTests
         var localTimeZone = timeProvider.LocalTimeZone;
 
         Assert.Equal(TimeZoneInfo.Utc, localTimeZone);
+    }
+
+    [Fact]
+    public void SetLocalTimeZoneWorks()
+    {
+        var timeProvider = new FakeTimeProvider();
+
+        var localTimeZone = timeProvider.LocalTimeZone;
+        Assert.Equal(TimeZoneInfo.Utc, localTimeZone);
+
+        var tz = TimeZoneInfo.CreateCustomTimeZone("DUMMY", TimeSpan.FromHours(2), null, null);
+        timeProvider.SetLocalTimeZone(tz);
+        Assert.Equal(timeProvider.LocalTimeZone, tz);
     }
 
     [Fact]
@@ -142,7 +153,7 @@ public class FakeTimeProviderTests
         var timeProvider = new FakeTimeProvider();
 
         Assert.Throws<ArgumentOutOfRangeException>(() => timeProvider.Advance(TimeSpan.FromTicks(-1)));
-        Assert.Throws<ArgumentOutOfRangeException>(() => timeProvider.SetUtcNow(timeProvider.Epoch - TimeSpan.FromTicks(1)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => timeProvider.SetUtcNow(timeProvider.GetUtcNow() - TimeSpan.FromTicks(1)));
     }
 
     [Fact]
@@ -291,6 +302,23 @@ public class FakeTimeProviderTests
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
         await Assert.ThrowsAsync<TaskCanceledException>(() => t).ConfigureAwait(false);
 #pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
+    }
+
+    [Fact]
+    public void AutoAdvance()
+    {
+        var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow)
+        {
+            AutoAdvanceAmount = TimeSpan.FromSeconds(1)
+        };
+
+        var first = timeProvider.GetUtcNow();
+        var second = timeProvider.GetUtcNow();
+        var third = timeProvider.GetUtcNow();
+
+        Assert.Equal(timeProvider.Start, first);
+        Assert.Equal(timeProvider.Start + TimeSpan.FromSeconds(1), second);
+        Assert.Equal(timeProvider.Start + TimeSpan.FromSeconds(2), third);
     }
 }
 

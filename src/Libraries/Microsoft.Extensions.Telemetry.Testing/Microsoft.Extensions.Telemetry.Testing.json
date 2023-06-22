@@ -20,10 +20,6 @@
         {
           "Member": "bool Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>.MatchesTags(params string[] tags);",
           "Stage": "Experimental"
-        },
-        {
-          "Member": "override string Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>.ToString();",
-          "Stage": "Experimental"
         }
       ],
       "Properties": [
@@ -328,7 +324,11 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.Instrument instrument, System.TimeProvider? timeProvider = null);",
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.Instrument<T> instrument, System.TimeProvider? timeProvider = null);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.ObservableInstrument<T> instrument, System.TimeProvider? timeProvider = null);",
           "Stage": "Experimental"
         },
         {
