@@ -14,7 +14,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
-public static partial class HedgingHttpClientBuilderExtensions
+public static partial class HttpClientBuilderExtensions
 {
     private const string StandardHandlerPostfix = "standard-hedging";
     private const string StandardInnerHandlerPostfix = "standard-hedging-endpoint";

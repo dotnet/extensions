@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// Extension methods for configuring <see cref="DelegatingHandler"/> message handlers as part of
 /// the <see cref="HttpClient"/> message handler pipeline.
 /// </summary>
-public static partial class HedgingHttpClientBuilderExtensions
+public static partial class HttpClientBuilderExtensions
 {
     internal static HedgedTaskProvider<HttpResponseMessage> CreateHedgedTaskProvider(string pipelineName)
     {
