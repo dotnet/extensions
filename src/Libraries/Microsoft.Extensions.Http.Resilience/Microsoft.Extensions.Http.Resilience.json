@@ -78,20 +78,6 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Http.Resilience.HedgingHttpClientBuilderExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder Microsoft.Extensions.Http.Resilience.HedgingHttpClientBuilderExtensions.AddStandardHedgingHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder Microsoft.Extensions.Http.Resilience.HedgingHttpClientBuilderExtensions.AddStandardHedgingHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "class Microsoft.Extensions.Http.Resilience.HttpBulkheadPolicyOptions : Microsoft.Extensions.Resilience.Options.BulkheadPolicyOptions",
       "Stage": "Stable",
       "Methods": [
@@ -141,6 +127,14 @@
         },
         {
           "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardHedgingHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardHedgingHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
           "Stage": "Stable"
         }
       ]
