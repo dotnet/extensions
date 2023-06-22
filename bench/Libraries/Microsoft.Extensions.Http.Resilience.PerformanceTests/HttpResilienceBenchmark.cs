@@ -14,6 +14,10 @@ public class HttpResilienceBenchmark
 {
     private static readonly Uri _uri = new("https://bogus");
 
+    private HttpClient _client = null!;
+    private HttpClient _standardClient = null!;
+    private HttpClient _hedgingClient = null!;
+
     private static HttpRequestMessage Request
     {
         get
@@ -23,10 +27,6 @@ public class HttpResilienceBenchmark
             return request;
         }
     }
-
-    private HttpClient _client = null!;
-    private HttpClient _standardClient = null!;
-    private HttpClient _hedgingClient = null!;
 
     [GlobalSetup]
     public void GlobalSetup()

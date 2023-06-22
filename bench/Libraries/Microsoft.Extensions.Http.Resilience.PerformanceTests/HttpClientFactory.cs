@@ -28,9 +28,9 @@ public enum HedgingClientType
 
 internal static class HttpClientFactory
 {
-    public const string EmptyClient = "Empty";
+    internal const string EmptyClient = "Empty";
 
-    public const string StandardClient = "Standard";
+    internal const string StandardClient = "Standard";
 
     private const string HedgingEndpoint1 = "http://localhost1";
     private const string HedgingEndpoint2 = "http://localhost2";
