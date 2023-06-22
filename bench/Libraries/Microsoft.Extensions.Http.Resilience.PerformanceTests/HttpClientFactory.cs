@@ -4,9 +4,13 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Telemetry.Metering;
 
 #pragma warning disable R9A033 // Replace uses of 'Enum.GetName' and 'Enum.ToString' with the '[EnumStrings]' code generator for improved performance
@@ -24,6 +28,10 @@ public enum HedgingClientType
 
 internal static class HttpClientFactory
 {
+    public const string EmptyClient = "Empty";
+
+    public const string StandardClient = "Standard";
+
     private const string HedgingEndpoint1 = "http://localhost1";
     private const string HedgingEndpoint2 = "http://localhost2";
 
@@ -34,14 +42,25 @@ internal static class HttpClientFactory
             .RegisterMetering()
             .AddSingleton<IRedactorProvider>(NullRedactorProvider.Instance)
             .AddTransient<NoRemoteCallHandler>()
-            .AddHedging(clientType);
+            .AddHedging(clientType)
+            .AddHttpClient(StandardClient, client => client.Timeout = Timeout.InfiniteTimeSpan)
+            .AddStandardResilienceHandler()
+            .Services
+            .AddHttpClient(StandardClient)
+            .AddHttpMessageHandler<NoRemoteCallHandler>()
+            .Services
+            .AddHttpClient(EmptyClient, client => client.Timeout = Timeout.InfiniteTimeSpan)
+            .AddHttpMessageHandler<NoRemoteCallHandler>();
+
+        services.RemoveAll<ILoggerFactory>();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
         return services.BuildServiceProvider();
     }
 
     private static IServiceCollection AddHedging(this IServiceCollection services, HedgingClientType clientType)
     {
-        var clientBuilder = services.AddHttpClient(clientType.ToString());
+        var clientBuilder = services.AddHttpClient(clientType.ToString(), client => client.Timeout = Timeout.InfiniteTimeSpan);
         var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectPipelineByAuthority(SimpleClassifications.PublicData);
         _ = clientBuilder.AddHttpMessageHandler<NoRemoteCallHandler>();
 
