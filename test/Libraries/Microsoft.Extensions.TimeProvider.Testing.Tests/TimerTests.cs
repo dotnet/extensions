@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Time.Testing.Test;
 
-public class FakeTimeProviderTimerTests
+public class TimerTests
 {
     private void EmptyTimerTarget(object? o)
     {
@@ -165,7 +165,8 @@ public class FakeTimeProviderTimerTests
     [Fact]
     public void TimerChangeDueTimeOutOfRangeThrows()
     {
-        using var t = new FakeTimeProviderTimer(new FakeTimeProvider(), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), new TimerCallback(EmptyTimerTarget), null);
+        using var t = new Timer(new FakeTimeProvider(), new TimerCallback(EmptyTimerTarget), null);
+        _ = t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1));
 
         Assert.Throws<ArgumentOutOfRangeException>("dueTime", () => t.Change(TimeSpan.FromMilliseconds(-2), TimeSpan.FromMilliseconds(1)));
         Assert.Throws<ArgumentOutOfRangeException>("dueTime", () => t.Change(TimeSpan.FromMilliseconds(-2), TimeSpan.FromSeconds(1)));
@@ -176,7 +177,8 @@ public class FakeTimeProviderTimerTests
     [Fact]
     public void TimerChangePeriodOutOfRangeThrows()
     {
-        using var t = new FakeTimeProviderTimer(new FakeTimeProvider(), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), new TimerCallback(EmptyTimerTarget), null);
+        using var t = new Timer(new FakeTimeProvider(), new TimerCallback(EmptyTimerTarget), null);
+        _ = t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1));
 
         Assert.Throws<ArgumentOutOfRangeException>("period", () => t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(-2)));
         Assert.Throws<ArgumentOutOfRangeException>("period", () => t.Change(TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(-2)));
@@ -187,10 +189,22 @@ public class FakeTimeProviderTimerTests
     [Fact]
     public void Timer_Change_AfterDispose_Test()
     {
-        var t = new FakeTimeProviderTimer(new FakeTimeProvider(), TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1), new TimerCallback(EmptyTimerTarget), null);
+        var t = new Timer(new FakeTimeProvider(), new TimerCallback(EmptyTimerTarget), null);
+        _ = t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1));
 
         Assert.True(t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1)));
         t.Dispose();
+        Assert.False(t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1)));
+    }
+
+    [Fact]
+    public async Task Timer_Change_AfterDisposeAsync_Test()
+    {
+        var t = new Timer(new FakeTimeProvider(), new TimerCallback(EmptyTimerTarget), null);
+        _ = t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1));
+
+        Assert.True(t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1)));
+        await t.DisposeAsync();
         Assert.False(t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1)));
     }
 
@@ -261,30 +275,30 @@ public class FakeTimeProviderTimerTests
     [Fact]
     public void UtcNowUpdatedBeforeTimerCallback()
     {
-        var timeProvider = new FakeTimeProvider();
+        var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
         var callbackTime = DateTimeOffset.MinValue;
         using var timer = timeProvider.CreateTimer(_ => { callbackTime = timeProvider.GetUtcNow(); }, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(10));
 
         var value1 = callbackTime;
 
-        timeProvider.SetUtcNow(timeProvider.Epoch + TimeSpan.FromMilliseconds(20));
+        timeProvider.SetUtcNow(timeProvider.Start + TimeSpan.FromMilliseconds(20));
 
         var value2 = callbackTime;
 
-        timeProvider.SetUtcNow(timeProvider.Epoch + TimeSpan.FromMilliseconds(1000));
+        timeProvider.SetUtcNow(timeProvider.Start + TimeSpan.FromMilliseconds(1000));
 
         var value3 = callbackTime;
 
-        Assert.Equal(timeProvider.Epoch, value1);
-        Assert.Equal(timeProvider.Epoch + TimeSpan.FromMilliseconds(20), value2);
-        Assert.Equal(timeProvider.Epoch + TimeSpan.FromMilliseconds(1000), value3);
+        Assert.Equal(timeProvider.Start, value1);
+        Assert.Equal(timeProvider.Start + TimeSpan.FromMilliseconds(20), value2);
+        Assert.Equal(timeProvider.Start + TimeSpan.FromMilliseconds(1000), value3);
     }
 
     [Fact]
     public void LongPausesTriggerMultipleCallbacks()
     {
         var callbackTimes = new List<DateTimeOffset>();
-        var timeProvider = new FakeTimeProvider();
+        var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
         var period = TimeSpan.FromMilliseconds(10);
         var timer = timeProvider.CreateTimer(_ => { callbackTimes.Add(timeProvider.GetUtcNow()); }, null, TimeSpan.Zero, period);
 
@@ -294,13 +308,13 @@ public class FakeTimeProviderTimerTests
 
         var value2 = callbackTimes.ToArray();
 
-        Assert.Equal(new[] { timeProvider.Epoch }, value1);
+        Assert.Equal(new[] { timeProvider.Start }, value1);
         Assert.Equal(new[]
         {
-            timeProvider.Epoch,
-            timeProvider.Epoch + period,
-            timeProvider.Epoch + period + period,
-            timeProvider.Epoch + period + period + period,
+            timeProvider.Start,
+            timeProvider.Start + period + period + period,
+            timeProvider.Start + period + period + period,
+            timeProvider.Start + period + period + period,
         },
         value2);
     }
@@ -315,7 +329,10 @@ public class FakeTimeProviderTimerTests
         using var timer2 = timeProvider.CreateTimer(_ => callbacks.Add((2, timeProvider.GetElapsedTime(startTime))), null, TimeSpan.FromMilliseconds(3), TimeSpan.FromMilliseconds(3));
         using var timer3 = timeProvider.CreateTimer(_ => callbacks.Add((3, timeProvider.GetElapsedTime(startTime))), null, TimeSpan.FromMilliseconds(6), TimeSpan.FromMilliseconds(5));
 
-        timeProvider.Advance(TimeSpan.FromMilliseconds(11));
+        timeProvider.Advance(TimeSpan.FromMilliseconds(3));
+        timeProvider.Advance(TimeSpan.FromMilliseconds(3));
+        timeProvider.Advance(TimeSpan.FromMilliseconds(3));
+        timeProvider.Advance(TimeSpan.FromMilliseconds(2));
 
         Assert.Equal(new[]
         {
@@ -329,5 +346,47 @@ public class FakeTimeProviderTimerTests
             (3, TimeSpan.FromMilliseconds(11)),
         },
         callbacks);
+    }
+
+    [Fact]
+    public void OutOfOrderWakeTimes()
+    {
+        const int MaxDueTime = 10;
+        const int TotalTimers = 128;
+
+        var timeProvider = new FakeTimeProvider();
+        var triggers = new bool[TotalTimers];
+        var dueTimes = new int[TotalTimers];
+        var random = new Random();
+        var timers = new List<ITimer>();
+
+        for (int i = 0; i < triggers.Length; i++)
+        {
+            dueTimes[i] = random.Next(MaxDueTime);
+            timers.Add(timeProvider.CreateTimer(index => triggers[(int)index!] = true, i, TimeSpan.FromSeconds(dueTimes[i]), TimeSpan.Zero));
+            timeProvider.Advance(TimeSpan.FromTicks(1));
+        }
+
+        for (int i = 0; i < MaxDueTime + 1; i += 2)
+        {
+            for (int j = 0; j < TotalTimers; j++)
+            {
+                if (dueTimes[j] <= i)
+                {
+                    Assert.True(triggers[j]);
+                }
+                else
+                {
+                    Assert.False(triggers[j]);
+                }
+            }
+
+            timeProvider.Advance(TimeSpan.FromSeconds(2));
+        }
+
+        foreach (var timer in timers)
+        {
+            timer.Dispose();
+        }
     }
 }

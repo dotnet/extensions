@@ -7,19 +7,19 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
-          "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset epoch);",
+          "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset startTime);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset startTime, System.TimeSpan autoAdvanceAmount);",
           "Stage": "Experimental"
         },
         {
           "Member": "void Microsoft.Extensions.Time.Testing.FakeTimeProvider.Advance(System.TimeSpan delta);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "void Microsoft.Extensions.Time.Testing.FakeTimeProvider.Advance();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override System.Threading.ITimer Microsoft.Extensions.Time.Testing.FakeTimeProvider.CreateTimer(System.Threading.TimerCallback callback, object? state, System.TimeSpan dueTime, System.TimeSpan period);",
@@ -35,11 +35,11 @@
         },
         {
           "Member": "void Microsoft.Extensions.Time.Testing.FakeTimeProvider.SetLocalTimeZone(System.TimeZoneInfo localTimeZone);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "void Microsoft.Extensions.Time.Testing.FakeTimeProvider.SetUtcNow(System.DateTimeOffset value);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override string Microsoft.Extensions.Time.Testing.FakeTimeProvider.ToString();",
@@ -47,10 +47,6 @@
         }
       ],
       "Properties": [
-        {
-          "Member": "System.DateTimeOffset Microsoft.Extensions.Time.Testing.FakeTimeProvider.Epoch { get; }",
-          "Stage": "Experimental"
-        },
         {
           "Member": "override System.TimeZoneInfo Microsoft.Extensions.Time.Testing.FakeTimeProvider.LocalTimeZone { get; }",
           "Stage": "Stable"
