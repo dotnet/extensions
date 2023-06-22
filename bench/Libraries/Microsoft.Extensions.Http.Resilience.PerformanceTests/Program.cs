@@ -15,9 +15,8 @@ namespace Microsoft.Extensions.Http.Resilience.FaultInjection.Benchmark
         {
             var doNotRequireSlnToRunBenchmarks = ManualConfig
                 .Create(DefaultConfig.Instance)
-                .AddJob(Job.MediumRun.WithToolchain(InProcessEmitToolchain.Instance))
-                .AddDiagnoser(MemoryDiagnoser.Default)
-                .WithOptions(ConfigOptions.DisableOptimizationsValidator);
+                .AddJob(Job.MediumRun.WithToolchain(InProcessEmitToolchain.Instance).WithIterationCount(100))
+                .AddDiagnoser(MemoryDiagnoser.Default);
 
             BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, doNotRequireSlnToRunBenchmarks);
         }
