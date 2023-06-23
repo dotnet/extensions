@@ -253,7 +253,11 @@ public sealed class MetricCollector<T> : IDisposable
     [SuppressMessage("Resilience", "R9A061:The async method doesn't support cancellation", Justification = "Not relevant in this case")]
     public async Task WaitForMeasurementsAsync(int minCount, TimeSpan timeout)
     {
-        using var cancellationTokenSource = new CancellationTokenSource(timeout);
+#if NET8_0_OR_GREATER
+        using var cancellationTokenSource = new CancellationTokenSource(timeout, _timeProvider);
+#else
+        using var cancellationTokenSource = _timeProvider.CreateCancellationTokenSource(timeout);
+#endif
         await WaitForMeasurementsAsync(minCount, cancellationTokenSource.Token).ConfigureAwait(false);
     }
 
