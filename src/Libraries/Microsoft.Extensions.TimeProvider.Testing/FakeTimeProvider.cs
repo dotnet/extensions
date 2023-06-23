@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -30,7 +30,7 @@ public class FakeTimeProvider : TimeProvider
     /// This creates a provider whose time is initially set to midnight January 1st 2000.
     /// The provider is set to not automatically advance time each time it is read.
     /// </remarks>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public FakeTimeProvider()
     {
         Start = _now;
@@ -64,7 +64,7 @@ public class FakeTimeProvider : TimeProvider
     /// <remarks>
     /// This defaults to <see cref="TimeSpan.Zero"/>.
     /// </remarks>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public TimeSpan AutoAdvanceAmount
     {
         get => _autoAdvanceAmount;

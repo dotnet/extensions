@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Telemetry.Metering;
 /// <summary>
 /// Options for configuring metering.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 public class MeteringOptions
 {
     /// <summary>

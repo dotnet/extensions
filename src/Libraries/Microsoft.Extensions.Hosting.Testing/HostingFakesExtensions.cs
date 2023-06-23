@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Hosting.Testing;
 /// <summary>
 /// Extension methods supporting host unit testing scenarios.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 public static class HostingFakesExtensions
 {
     /// <summary>

@@ -134,7 +134,7 @@ public class LoggingOptions
     /// <value>
     /// The default value is <see cref="HttpRouteParameterRedactionMode.Strict"/>.
     /// </value>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>

@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Telemetry.Testing.Metering;
 /// <summary>
 /// Extensions to simplify working with lists of measurements.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 public static class MeasurementExtensions
 {
     /// <summary>

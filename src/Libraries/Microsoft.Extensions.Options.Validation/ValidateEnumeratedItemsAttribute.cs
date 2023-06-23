@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Options.Validation;
 /// Marks a field or property to be enumerated, and each enumerated object to be validated.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 public sealed class ValidateEnumeratedItemsAttribute : Attribute
 {
     /// <summary>
