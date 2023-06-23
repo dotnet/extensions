@@ -415,14 +415,6 @@ internal sealed class Parser
             return (null, false);
         }
 
-        // check if any of methodSymbol parameters is of IMeter type
-        if (symbols.IMeterInterface != null &&
-            methodSymbol.Parameters.Any(p => ParserUtilities.IsBaseOrIdentity(p.Type, symbols.IMeterInterface, _compilation)))
-        {
-            // The method uses old IMeter, no need to parse it
-            return (null, false);
-        }
-
         if (instrumentKind == InstrumentKind.Gauge)
         {
             Diag(DiagDescriptors.ErrorGaugeNotSupported, methodSymbol.GetLocation());
