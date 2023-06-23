@@ -49,7 +49,7 @@ public class HttpMeteringHandler : DelegatingHandler
     /// </summary>
     /// <param name="meter">The meter.</param>
     /// <param name="enrichers">Enumerable of outgoing request metric enrichers.</param>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public HttpMeteringHandler(
         Meter<HttpMeteringHandler> meter,
         IEnumerable<IOutgoingRequestMetricEnricher> enrichers)

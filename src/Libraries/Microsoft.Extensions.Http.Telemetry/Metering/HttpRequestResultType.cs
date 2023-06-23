@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Http.Telemetry.Metering;
 /// <summary>
 /// Statuses for classifying http request result.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 [EnumStrings]
 public enum HttpRequestResultType
 {

@@ -53,7 +53,7 @@ public static class TracingEnricherExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add this enricher to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException">The argument <paramref name="services"/> is <see langword="null"/>.</exception>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public static IServiceCollection AddTraceEnricher<T>(this IServiceCollection services)
         where T : class, ITraceEnricher
     {
@@ -71,7 +71,7 @@ public static class TracingEnricherExtensions
     /// <param name="enricher">Enricher to be added.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException">The argument <paramref name="services"/> or <paramref name="enricher"/> is <see langword="null" />.</exception>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public static IServiceCollection AddTraceEnricher(this IServiceCollection services, ITraceEnricher enricher)
     {
         _ = Throw.IfNull(services);

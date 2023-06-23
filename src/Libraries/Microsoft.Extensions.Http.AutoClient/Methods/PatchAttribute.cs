@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class PatchAttribute : Attribute
 {

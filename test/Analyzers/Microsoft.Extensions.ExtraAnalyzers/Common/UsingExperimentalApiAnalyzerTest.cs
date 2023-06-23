@@ -67,7 +67,7 @@ public static class UsingExperimentalApiAnalyzerTest
                 }
             }
 
-            [Experimental]
+            [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
             public class ExpClass
             {
             }

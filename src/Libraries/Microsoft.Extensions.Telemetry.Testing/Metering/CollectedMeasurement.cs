@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Telemetry.Testing.Metering;
 /// Represents a single measurement performed by an instrument.
 /// </summary>
 /// <typeparam name="T">The type of metric measurement value.</typeparam>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 [DebuggerDisplay("{DebuggerToString(),nq}")]
 public sealed class CollectedMeasurement<T>
     where T : struct

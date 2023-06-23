@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Resilience.FaultInjection;
 /// <summary>
 /// Class to contain fault-injection policy weight assignments.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 public class FaultPolicyWeightAssignmentsOptions
 {
     /// <summary>

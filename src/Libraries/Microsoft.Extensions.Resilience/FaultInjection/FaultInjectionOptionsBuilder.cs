@@ -126,7 +126,7 @@ public class FaultInjectionOptionsBuilder
     /// <exception cref="ArgumentException">
     /// <paramref name="key"/> is an empty string or <see langword="null"/>.
     /// </exception>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public FaultInjectionOptionsBuilder AddCustomResult(string key, object customResult)
     {
         _ = Throw.IfNull(customResult);
