@@ -33,7 +33,7 @@ public static class OptionsBuilderExtensions
 
         _ = services.AddOptions();
 
-        return new OptionsBuilder<TOptions>(services, name ?? Microsoft.Extensions.Options.Options.DefaultName)
+        return new OptionsBuilder<TOptions>(services, name ?? Options.DefaultName)
             .ValidateOnStart();
     }
 
@@ -59,7 +59,7 @@ public static class OptionsBuilderExtensions
             .AddOptions()
             .TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<TOptions>, TValidateOptions>());
 
-        return new OptionsBuilder<TOptions>(services, name ?? Microsoft.Extensions.Options.Options.DefaultName)
+        return new OptionsBuilder<TOptions>(services, name ?? Options.DefaultName)
             .ValidateOnStart();
     }
 
