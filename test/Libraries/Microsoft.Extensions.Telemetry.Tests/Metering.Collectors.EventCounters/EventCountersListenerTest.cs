@@ -330,8 +330,33 @@ public class EventCountersListenerTest
         Assert.Equal(0, instrumentCounter.Count);
     }
 
-    [Fact]
-    public void EventCountersListener_Emits_WhenSumCounterMatches()
+    [Theory]
+    [InlineData(EventLevel.Verbose)]
+    [InlineData(EventLevel.Informational)]
+    [InlineData(EventLevel.Warning)]
+    [InlineData(EventLevel.Error)]
+    public void EventCountersListener_Ignores_LowEventLevels(EventLevel eventLevel)
+    {
+        using var meter = new Meter<EventCountersListener>();
+        using var instrumentCounter = new InstrumentCounter(meter);
+        using var metricCollector = new MetricCollector<long>(meter, $"{_eventSourceName}|{_counterName}");
+
+        using var eventSource = new EventSource(_eventSourceName);
+        using var listener = new EventCountersListener(_options, meter);
+        eventSource.Write(EventName,
+            new EventSourceOptions { Level = eventLevel },
+            new
+            {
+                payload = new { CounterType = "Sum", Name = _counterName, Increment = 1 }
+            });
+
+        Assert.Equal(0, instrumentCounter.Count);
+    }
+
+    [Theory]
+    [InlineData(EventLevel.Critical)]
+    [InlineData(EventLevel.LogAlways)]
+    public void EventCountersListener_Emits_WhenSumCounterMatches(EventLevel eventLevel)
     {
         using var meter = new Meter<EventCountersListener>();
         using var metricCollector = new MetricCollector<long>(meter, $"{_eventSourceName}|{_counterName}");
@@ -339,7 +364,7 @@ public class EventCountersListenerTest
         using var eventSource = new EventSource(_eventSourceName);
         using var listener = new EventCountersListener(_options, meter);
         eventSource.Write(EventName,
-            new EventSourceOptions { Level = EventLevel.LogAlways },
+            new EventSourceOptions { Level = eventLevel },
             new
             {
                 payload = new { CounterType = "Sum", Name = _counterName, Increment = 1 }

@@ -231,7 +231,7 @@ internal sealed class EventCountersListener : EventListener
         }
 
         _logger.EnablingEventSource(eventSource.Name);
-        EnableEvents(eventSource, EventLevel.LogAlways, EventKeywords.All, _eventSourceSettings);
+        EnableEvents(eventSource, EventLevel.Critical, EventKeywords.None, _eventSourceSettings);
     }
 
     private void RecordSumEvent(IDictionary<string, object> eventPayload, string counterName)
