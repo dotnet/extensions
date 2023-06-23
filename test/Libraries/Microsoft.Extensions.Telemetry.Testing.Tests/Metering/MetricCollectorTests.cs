@@ -334,9 +334,8 @@ public static class MetricCollectorTests
 
         var now = DateTimeOffset.Now;
 
-        var timeProvider = new FakeTimeProvider(now);
         using var meter = new Meter(Guid.NewGuid().ToString());
-        using var collector = new MetricCollector<long>(meter, CounterName, timeProvider);
+        using var collector = new MetricCollector<long>(meter, CounterName);
         var counter = meter.CreateCounter<long>(CounterName);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => collector.WaitForMeasurementsAsync(1, TimeSpan.FromMilliseconds(50)));
@@ -367,11 +366,8 @@ public static class MetricCollectorTests
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await collector.WaitForMeasurementsAsync(1));
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await collector.WaitForMeasurementsAsync(1, TimeSpan.FromSeconds(1)));
 
-#if false
-// TODO: This is broken for netcoreapp3.1 and net6.0, but works for net462 and net8.0.
         Assert.True(wait.IsCompleted);
         Assert.True(wait.IsFaulted);
-#endif
 
         collector = new MetricCollector<long>(meter, CounterName, timeProvider);
         collector.Dispose();
