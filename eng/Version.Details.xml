@@ -166,13 +166,13 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23319.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.23322.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>dfc6882da43decb37f12e0d9011ce82b25225578</Sha>
+      <Sha>9747cf5ac4abb6a5a13cf31fa78b91d599180e07</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.23319.1">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.23322.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>dfc6882da43decb37f12e0d9011ce82b25225578</Sha>
+      <Sha>9747cf5ac4abb6a5a13cf31fa78b91d599180e07</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
