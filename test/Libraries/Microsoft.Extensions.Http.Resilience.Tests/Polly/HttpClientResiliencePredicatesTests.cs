@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using Polly;
 using Polly.Timeout;
 using Xunit;
 
@@ -30,9 +31,12 @@ public class HttpClientResiliencePredicatesTests
 
     [Theory]
     [MemberData(nameof(HandledExceptionsClassified))]
-    public void IsTransientHttpException_Exception_ShouldClassify(Exception exceptions, bool expectedCondition)
+    public void IsTransientHttpException_Exception_ShouldClassify(Exception ex, bool expectedCondition)
     {
-        var isTransientHttpException = HttpClientResiliencePredicates.IsTransientHttpException(exceptions);
+        var isTransientHttpException = HttpClientResiliencePredicates.IsTransientHttpException(ex);
+        Assert.Equal(expectedCondition, isTransientHttpException);
+
+        isTransientHttpException = HttpClientResiliencePredicates.IsTransientHttpOutcome(Outcome.FromException<HttpResponseMessage>(ex));
         Assert.Equal(expectedCondition, isTransientHttpException);
     }
 
@@ -51,6 +55,10 @@ public class HttpClientResiliencePredicatesTests
             var response = new HttpResponseMessage { StatusCode = statusCode };
             var isTransientFailure = HttpClientResiliencePredicates.IsTransientHttpFailure(response);
             Assert.Equal(expectedCondition, isTransientFailure);
+
+            isTransientFailure = HttpClientResiliencePredicates.IsTransientHttpOutcome(Outcome.FromResult(response));
+            Assert.Equal(expectedCondition, isTransientFailure);
+
             response.Dispose();
         }
 

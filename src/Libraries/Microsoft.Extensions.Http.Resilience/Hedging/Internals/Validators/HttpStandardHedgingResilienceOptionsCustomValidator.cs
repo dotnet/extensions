@@ -26,20 +26,20 @@ internal sealed class HttpStandardHedgingResilienceOptionsCustomValidator : IVal
             builder.AddError($"The hedging routing is not configured for '{name}' HTTP client.");
         }
 
-        if (options.EndpointOptions.TimeoutOptions.TimeoutInterval > options.TotalRequestTimeoutOptions.TimeoutInterval)
+        if (options.EndpointOptions.TimeoutOptions.Timeout > options.TotalRequestTimeoutOptions.Timeout)
         {
-            builder.AddError($"Total request timeout policy must have a greater timeout than the attempt timeout policy. " +
-                $"Total Request Timeout: {options.TotalRequestTimeoutOptions.TimeoutInterval.TotalSeconds}s, " +
-                $"Attempt Timeout: {options.EndpointOptions.TimeoutOptions.TimeoutInterval.TotalSeconds}s");
+            builder.AddError($"Total request timeout strategy must have a greater timeout than the attempt timeout strategy. " +
+                $"Total Request Timeout: {options.TotalRequestTimeoutOptions.Timeout.TotalSeconds}s, " +
+                $"Attempt Timeout: {options.EndpointOptions.TimeoutOptions.Timeout.TotalSeconds}s");
         }
 
-        var timeout = TimeSpan.FromMilliseconds(options.EndpointOptions.TimeoutOptions.TimeoutInterval.TotalMilliseconds * CircuitBreakerTimeoutMultiplier);
+        var timeout = TimeSpan.FromMilliseconds(options.EndpointOptions.TimeoutOptions.Timeout.TotalMilliseconds * CircuitBreakerTimeoutMultiplier);
         if (options.EndpointOptions.CircuitBreakerOptions.SamplingDuration < timeout)
         {
-            builder.AddError("The sampling duration of circuit breaker policy needs to be at least double of " +
-                $"an attempt timeout policy’s timeout interval, in order to be effective. " +
+            builder.AddError("The sampling duration of circuit breaker strategy needs to be at least double of " +
+                $"an attempt timeout strategy’s timeout interval, in order to be effective. " +
                 $"Sampling Duration: {options.EndpointOptions.CircuitBreakerOptions.SamplingDuration.TotalSeconds}s," +
-                $"Attempt Timeout: {options.EndpointOptions.TimeoutOptions.TimeoutInterval.TotalSeconds}s");
+                $"Attempt Timeout: {options.EndpointOptions.TimeoutOptions.Timeout.TotalSeconds}s");
         }
 
         // if generator is specified we cannot calculate the max hedging delay
@@ -48,10 +48,10 @@ internal sealed class HttpStandardHedgingResilienceOptionsCustomValidator : IVal
             var maxHedgingDelay = TimeSpan.FromMilliseconds((options.HedgingOptions.MaxHedgedAttempts - 1) * options.HedgingOptions.HedgingDelay.TotalMilliseconds);
 
             // Stryker disable once Equality
-            if (maxHedgingDelay > options.TotalRequestTimeoutOptions.TimeoutInterval)
+            if (maxHedgingDelay > options.TotalRequestTimeoutOptions.Timeout)
             {
-                builder.AddError($"The cumulative delay of the hedging policy is larger than total request timeout interval. " +
-                    $"Total Request Timeout: {options.TotalRequestTimeoutOptions.TimeoutInterval.TotalSeconds}s, " +
+                builder.AddError($"The cumulative delay of the hedging strategy is larger than total request timeout interval. " +
+                    $"Total Request Timeout: {options.TotalRequestTimeoutOptions.Timeout.TotalSeconds}s, " +
                     $"Cumulative Hedging Delay: {maxHedgingDelay.TotalSeconds}s");
             }
         }

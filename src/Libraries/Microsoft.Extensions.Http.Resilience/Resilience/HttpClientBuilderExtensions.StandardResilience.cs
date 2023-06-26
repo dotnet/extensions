@@ -2,15 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Options.Validation;
-using Microsoft.Extensions.Resilience;
-using Microsoft.Extensions.Resilience.Internal;
 using Microsoft.Shared.Diagnostics;
+using Polly;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
@@ -19,16 +18,16 @@ public static partial class HttpClientBuilderExtensions
     private const string StandardIdentifier = "standard";
 
     /// <summary>
-    /// Adds a <see cref="PolicyHttpMessageHandler" /> that uses a standard resilience pipeline with default options to send the requests and handle any transient errors.
-    /// The pipeline combines multiple policies that are configured based on HTTP-specific <see cref="HttpStandardResilienceOptions"/> options with recommended defaults.
+    /// Adds a standard resilience handler that uses a multiple resilience strategies with default options to send the requests and handle any transient errors.
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="section">The section that the options will bind against.</param>
-    /// <returns>The HTTP pipeline builder instance.</returns>
+    /// <returns>The HTTP resilience handler builder instance.</returns>
     /// <remarks>
-    /// See <see cref="HttpStandardResilienceOptions"/> for more details about the individual policies configured by this method.
+    /// The resilience strategy combines multiple strategies that are configured based on HTTP-specific <see cref="HttpStandardResilienceOptions"/> options with recommended defaults.
+    /// See <see cref="HttpStandardResilienceOptions"/> for more details about the individual resilience strategies configured by this method.
     /// </remarks>
-    public static IHttpStandardResiliencePipelineBuilder AddStandardResilienceHandler(this IHttpClientBuilder builder, IConfigurationSection section)
+    public static IHttpStandardResilienceStrategyBuilder AddStandardResilienceHandler(this IHttpClientBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
@@ -37,16 +36,16 @@ public static partial class HttpClientBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a <see cref="PolicyHttpMessageHandler" /> that uses a standard resilience pipeline with default options to send the requests and handle any transient errors.
-    /// The pipeline combines multiple policies that are configured based on HTTP-specific <see cref="HttpStandardResilienceOptions"/> options with recommended defaults.
+    /// Adds a standard resilience handler that uses a multiple resilience strategies with default options to send the requests and handle any transient errors.
     /// </summary>
     /// <param name="builder">The builder instance.</param>
-    /// <param name="configure">The action that configures the resilience options.</param>
-    /// <returns>The HTTP pipeline builder instance.</returns>
+    /// <param name="configure">The callback that configures the options.</param>
+    /// <returns>The HTTP resilience handler builder instance.</returns>
     /// <remarks>
-    /// See <see cref="HttpStandardResilienceOptions"/> for more details about the individual policies configured by this method.
+    /// The resilience strategy combines multiple strategies that are configured based on HTTP-specific <see cref="HttpStandardResilienceOptions"/> options with recommended defaults.
+    /// See <see cref="HttpStandardResilienceOptions"/> for more details about the individual resilience strategies configured by this method.
     /// </remarks>
-    public static IHttpStandardResiliencePipelineBuilder AddStandardResilienceHandler(this IHttpClientBuilder builder, Action<HttpStandardResilienceOptions> configure)
+    public static IHttpStandardResilienceStrategyBuilder AddStandardResilienceHandler(this IHttpClientBuilder builder, Action<HttpStandardResilienceOptions> configure)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
@@ -55,40 +54,38 @@ public static partial class HttpClientBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a <see cref="PolicyHttpMessageHandler" /> that uses a standard resilience pipeline with default <see cref="HttpStandardResilienceOptions"/>
-    /// to send the requests and handle any transient errors.
-    /// The pipeline combines multiple policies that are configured based on HTTP-specific <see cref="HttpStandardResilienceOptions"/> options with recommended defaults.
+    /// Adds a standard resilience handler that uses a multiple resilience strategies with default options to send the requests and handle any transient errors.
     /// </summary>
     /// <param name="builder">The builder instance.</param>
-    /// <returns>The HTTP pipeline builder instance.</returns>
+    /// <returns>The HTTP resilience handler builder instance.</returns>
     /// <remarks>
-    /// See <see cref="HttpStandardResilienceOptions"/> for more details about the individual policies configured by this method.
+    /// The resilience strategy combines multiple strategies that are configured based on HTTP-specific <see cref="HttpStandardResilienceOptions"/> options with recommended defaults.
+    /// See <see cref="HttpStandardResilienceOptions"/> for more details about the individual resilience strategies configured by this method.
     /// </remarks>
-    public static IHttpStandardResiliencePipelineBuilder AddStandardResilienceHandler(this IHttpClientBuilder builder)
+    public static IHttpStandardResilienceStrategyBuilder AddStandardResilienceHandler(this IHttpClientBuilder builder)
     {
         _ = Throw.IfNull(builder);
 
-        _ = builder.Services.ConfigureHttpFailureResultContext();
+        var optionsName = StrategyNameHelper.GetName(builder.Name, StandardIdentifier);
 
-        return new HttpStandardResiliencePipelineBuilder(builder.AddResilienceHandler(StandardIdentifier).AddStandardPipeline());
+        _ = builder.Services.AddValidatedOptions<HttpStandardResilienceOptions, HttpStandardResilienceOptionsCustomValidator>(optionsName);
+        _ = builder.AddResilienceHandler(StandardIdentifier, (builder, context) =>
+        {
+            context.EnableReloads<HttpStandardResilienceOptions>(optionsName);
+
+            var monitor = context.ServiceProvider.GetRequiredService<IOptionsMonitor<HttpStandardResilienceOptions>>();
+            var options = monitor.Get(optionsName);
+
+            _ = builder
+                .AddRateLimiter(options.RateLimiterOptions)
+                .AddTimeout(options.TotalRequestTimeoutOptions)
+                .AddRetry(options.RetryOptions)
+                .AddAdvancedCircuitBreaker(options.CircuitBreakerOptions)
+                .AddTimeout(options.AttemptTimeoutOptions);
+        });
+
+        return new HttpStandardResilienceStrategyBuilder(optionsName, builder.Services);
     }
 
-    private static HttpResiliencePipelineBuilder AddStandardPipeline(this IResiliencePipelineBuilder<HttpResponseMessage> builder)
-    {
-        var resilienceBuilder =
-            builder.AddPolicy<HttpResponseMessage, HttpStandardResilienceOptions, HttpStandardResilienceOptionsValidator>(
-            builder.PipelineName,
-            options => { },
-            (builder, options, _) =>
-                builder
-                    .AddBulkheadPolicy(StandardPolicyNames.Bulkhead, options.BulkheadOptions)
-                    .AddTimeoutPolicy(StandardPolicyNames.TotalRequestTimeout, options.TotalRequestTimeoutOptions)
-                    .AddRetryPolicy(StandardPolicyNames.Retry, options.RetryOptions)
-                    .AddCircuitBreakerPolicy(StandardPolicyNames.CircuitBreaker, options.CircuitBreakerOptions)
-                    .AddTimeoutPolicy(StandardPolicyNames.AttemptTimeout, options.AttemptTimeoutOptions));
-
-        _ = builder.Services.AddValidatedOptions<HttpStandardResilienceOptions, HttpStandardResilienceOptionsCustomValidator>(builder.PipelineName);
-
-        return new HttpResiliencePipelineBuilder(resilienceBuilder);
-    }
+    private record HttpStandardResilienceStrategyBuilder(string StrategyName, IServiceCollection Services) : IHttpStandardResilienceStrategyBuilder;
 }

@@ -3,50 +3,58 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Http.Resilience.Internal.Validators;
 using Microsoft.Extensions.Options.Validation;
-using Microsoft.Extensions.Resilience.Options;
+using Polly.Timeout;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Options for resilient pipeline of policies assigned to a particular endpoint. It is using three chained layers in this order (from the outermost to the innermost):
-/// Bulkhead -> Circuit Breaker -> Attempt Timeout.
+/// Options for the pipeline of resilience strategies assigned to a particular endpoint.
 /// </summary>
+/// <remarks>
+/// It is using three chained layers in this order (from the outermost to the innermost): Bulkhead -> Circuit Breaker -> Attempt Timeout.
+/// </remarks>
 public class HedgingEndpointOptions
 {
-    private static readonly TimeSpan _timeoutInterval = TimeSpan.FromSeconds(10);
-
     /// <summary>
     /// Gets or sets the bulkhead options for the endpoint.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpBulkheadPolicyOptions"/> using default properties values.
+    /// By default it is initialized with a unique instance of <see cref="HttpRateLimiterStrategyOptions"/> using default properties values.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
-    public HttpBulkheadPolicyOptions BulkheadOptions { get; set; } = new();
+    public HttpRateLimiterStrategyOptions RateLimiterOptions { get; set; } = new HttpRateLimiterStrategyOptions
+    {
+        StrategyName = StandardHedgingStrategyNames.RateLimiter
+    };
 
     /// <summary>
     /// Gets or sets the circuit breaker options for the endpoint.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpCircuitBreakerPolicyOptions"/> using default properties values.
+    /// By default it is initialized with a unique instance of <see cref="HttpCircuitBreakerStrategyOptions"/> using default properties values.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
-    public HttpCircuitBreakerPolicyOptions CircuitBreakerOptions { get; set; } = new();
+    public HttpCircuitBreakerStrategyOptions CircuitBreakerOptions { get; set; } = new HttpCircuitBreakerStrategyOptions
+    {
+        StrategyName = StandardHedgingStrategyNames.CircuitBreaker
+    };
 
     /// <summary>
-    /// Gets or sets the options for the timeout policy applied per each request attempt.
+    /// Gets or sets the options for the timeout resilience strategy applied per each request attempt.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpTimeoutPolicyOptions"/>
-    /// using a custom <see cref="TimeoutPolicyOptions.TimeoutInterval"/> of 10 seconds.
+    /// By default it is initialized with a unique instance of <see cref="HttpTimeoutStrategyOptions"/>
+    /// using a custom <see cref="TimeoutStrategyOptions.Timeout"/> of 10 seconds.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
-    public HttpTimeoutPolicyOptions TimeoutOptions { get; set; } = new()
+    public HttpTimeoutStrategyOptions TimeoutOptions { get; set; } = new()
     {
-        TimeoutInterval = _timeoutInterval,
+        Timeout = TimeSpan.FromSeconds(10),
+        StrategyName = StandardHedgingStrategyNames.AttemptTimeout
     };
 }

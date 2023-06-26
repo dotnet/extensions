@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Resilience.Options;
+using Polly.Retry;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal.Validators;
 
@@ -15,30 +15,30 @@ internal sealed class HttpStandardResilienceOptionsCustomValidator : IValidateOp
     {
         var builder = new ValidateOptionsResultBuilder();
 
-        if (options.AttemptTimeoutOptions.TimeoutInterval > options.TotalRequestTimeoutOptions.TimeoutInterval)
+        if (options.AttemptTimeoutOptions.Timeout > options.TotalRequestTimeoutOptions.Timeout)
         {
-            builder.AddError($"Total request timeout policy must have a greater timeout than the attempt timeout policy. " +
-                $"Total Request Timeout: {options.TotalRequestTimeoutOptions.TimeoutInterval.TotalSeconds}s, " +
-                $"Attempt Timeout: {options.AttemptTimeoutOptions.TimeoutInterval.TotalSeconds}s");
+            builder.AddError($"Total request timeout resilience strategy must have a greater timeout than the attempt resilience strategy. " +
+                $"Total Request Timeout: {options.TotalRequestTimeoutOptions.Timeout.TotalSeconds}s, " +
+                $"Attempt Timeout: {options.AttemptTimeoutOptions.Timeout.TotalSeconds}s");
         }
 
-        if (options.CircuitBreakerOptions.SamplingDuration < TimeSpan.FromMilliseconds(options.AttemptTimeoutOptions.TimeoutInterval.TotalMilliseconds * CircuitBreakerTimeoutMultiplier))
+        if (options.CircuitBreakerOptions.SamplingDuration < TimeSpan.FromMilliseconds(options.AttemptTimeoutOptions.Timeout.TotalMilliseconds * CircuitBreakerTimeoutMultiplier))
         {
-            builder.AddError("The sampling duration of circuit breaker policy needs to be at least double of " +
-                $"an attempt timeout policy’s timeout interval, in order to be effective. " +
+            builder.AddError("The sampling duration of circuit breaker strategy needs to be at least double of " +
+                $"an attempt timeout strategy’s timeout interval, in order to be effective. " +
                 $"Sampling Duration: {options.CircuitBreakerOptions.SamplingDuration.TotalSeconds}s," +
-                $"Attempt Timeout: {options.AttemptTimeoutOptions.TimeoutInterval.TotalSeconds}s");
+                $"Attempt Timeout: {options.AttemptTimeoutOptions.Timeout.TotalSeconds}s");
         }
 
-        if (options.RetryOptions.RetryCount != RetryPolicyOptions.InfiniteRetry)
+        if (options.RetryOptions.RetryCount != RetryStrategyOptions.InfiniteRetryCount)
         {
-            TimeSpan retrySum = options.RetryOptions.GetRetryPolicyDelaySum();
+            TimeSpan retrySum = ValidationHelper.GetAggregatedDelay(options.RetryOptions);
 
-            if (retrySum > options.TotalRequestTimeoutOptions.TimeoutInterval)
+            if (retrySum > options.TotalRequestTimeoutOptions.Timeout)
             {
-                builder.AddError($"The cumulative delay of the retry policy cannot be larger than total request timeout policy interval. " +
+                builder.AddError($"The cumulative delay of the retry strategy cannot be larger than total request timeout policy interval. " +
                 $"Cumulative Delay: {retrySum.TotalSeconds}s," +
-                $"Total Request Timeout: {options.TotalRequestTimeoutOptions.TimeoutInterval.TotalSeconds}s");
+                $"Total Request Timeout: {options.TotalRequestTimeoutOptions.Timeout.TotalSeconds}s");
             }
         }
 

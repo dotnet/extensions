@@ -5,54 +5,86 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Http.Telemetry;
+using Microsoft.Extensions.Telemetry;
 using Polly;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal;
 
 /// <summary>
-/// Base class for resilience handler, i.e. handlers that use resilience pipelines to send the requests.
+/// Base class for resilience handler, i.e. handlers that use resilience strategies  to send the requests.
 /// </summary>
-internal sealed class ResilienceHandler : PolicyHttpMessageHandler
+internal sealed class ResilienceHandler : DelegatingHandler
 {
-    private readonly Lazy<HttpMessageInvoker> _invoker;
-    private readonly Action<Context, Lazy<HttpMessageInvoker>> _invokerSetter;
-    private readonly Action<Context, HttpRequestMessage> _requestSetter;
+    private readonly Func<HttpRequestMessage, ResilienceStrategy<HttpResponseMessage>> _strategyProvider;
 
-    public ResilienceHandler(string pipelineName, Func<HttpRequestMessage, IAsyncPolicy<HttpResponseMessage>> policySelector)
-        : base(policySelector)
+    public ResilienceHandler(Func<HttpRequestMessage, ResilienceStrategy<HttpResponseMessage>> strategyProvider)
     {
-        // Stryker disable once boolean : no means to test this
-        _invoker = new Lazy<HttpMessageInvoker>(() => new HttpMessageInvoker(InnerHandler!), true);
-        _invokerSetter = ContextExtensions.CreateMessageInvokerSetter(pipelineName);
-        _requestSetter = ContextExtensions.CreateRequestMessageSetter(pipelineName);
+        _strategyProvider = strategyProvider;
     }
 
     /// <inheritdoc/>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        var strategy = _strategyProvider(request);
         var created = false;
-        if (request.GetPolicyExecutionContext() is not Context context)
+        if (request.GetResilienceContext() is not ResilienceContext context)
         {
-            context = new Context();
-            request.SetPolicyExecutionContext(context);
+            context = ResilienceContext.Get();
             created = true;
+            request.SetResilienceContext(context);
         }
 
-        // set common properties to the context
-        context.SetRequestMetadata(request);
-        _invokerSetter(context, _invoker);
-        _requestSetter(context, request);
+        if (request.GetRequestMetadata() is RequestMetadata requestMetadata)
+        {
+            context.Properties.Set(ResilienceKeys.RequestMetadata, requestMetadata);
+        }
+
+        context.Properties.Set(ResilienceKeys.RequestMessage, request);
+        var previousToken = context.CancellationToken;
+        context.CancellationToken = cancellationToken;
 
         try
         {
-            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            var outcome = await strategy.ExecuteOutcomeAsync(
+                static async (context, state) =>
+                {
+                    var request = context.Properties.GetValue(ResilienceKeys.RequestMessage, state.request);
+
+                    try
+                    {
+                        var response = await state.instance.SendCoreAsync(request, context.CancellationToken).ConfigureAwait(context.ContinueOnCapturedContext);
+                        return Outcome.FromResult(response);
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types
+                    catch (Exception e)
+                    {
+                        return Outcome.FromException<HttpResponseMessage>(e);
+                    }
+#pragma warning restore CA1031 // Do not catch general exception types
+                },
+                context,
+                (instance: this, request))
+                .ConfigureAwait(context.ContinueOnCapturedContext);
+
+            outcome.EnsureSuccess();
+
+            return outcome.Result!;
         }
         finally
         {
             if (created)
             {
-                request.SetPolicyExecutionContext(null);
+                ResilienceContext.Return(context);
+                request.SetResilienceContext(null);
+            }
+            else
+            {
+                context.CancellationToken = previousToken;
             }
         }
     }
+
+    private Task<HttpResponseMessage> SendCoreAsync(HttpRequestMessage requestMessage, CancellationToken cancellationToken)
+        => base.SendAsync(requestMessage, cancellationToken);
 }

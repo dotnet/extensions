@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Shared.Diagnostics;
+using Polly;
 using Polly.Timeout;
 
 namespace Microsoft.Extensions.Http.Resilience;
@@ -15,7 +16,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 public static class HttpClientResiliencePredicates
 {
     /// <summary>
-    /// Determines whether an exception should be treated by policies as a transient failure.
+    /// Determines whether an exception should be treated by resilience strategies as a transient failure.
     /// </summary>
     public static readonly Predicate<Exception> IsTransientHttpException = exception =>
     {
@@ -41,6 +42,16 @@ public static class HttpClientResiliencePredicates
             response.StatusCode == HttpStatusCode.RequestTimeout ||
             statusCode == TooManyRequests;
 
+    };
+
+    /// <summary>
+    /// Determines whether an outcome should be treated by resilience strategies as a transient failure.
+    /// </summary>
+    public static readonly Predicate<Outcome<HttpResponseMessage>> IsTransientHttpOutcome = outcome => outcome switch
+    {
+        { Result: { } response } when IsTransientHttpFailure(response) => true,
+        { Exception: { } exception } when IsTransientHttpException(exception) => true,
+        _ => false
     };
 
     private const int InternalServerErrorCode = (int)HttpStatusCode.InternalServerError;

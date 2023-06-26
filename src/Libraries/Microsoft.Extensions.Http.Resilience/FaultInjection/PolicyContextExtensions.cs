@@ -9,7 +9,7 @@ using Polly;
 namespace Microsoft.Extensions.Http.Resilience.FaultInjection;
 
 /// <summary>
-/// Provides extension methods for <see cref="Polly.Context"/>.
+/// Provides extension methods for <see cref="Context"/>.
 /// </summary>
 [Experimental]
 public static class PolicyContextExtensions

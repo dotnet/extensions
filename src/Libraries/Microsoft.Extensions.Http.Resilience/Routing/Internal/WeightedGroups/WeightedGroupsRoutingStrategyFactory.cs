@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Http.Resilience.Routing.Internal.WeightedGroups;
 
-internal sealed class WeightedGroupsRoutingStrategyFactory : PooledRoutingStrategyFactory<WeightedGroupsRoutingStrategy, WeightedGroupsRoutingOptions>
+internal sealed class WeightedGroupsRoutingStrategyFactory : RequestRoutingStrategyFactory<WeightedGroupsRoutingStrategy, WeightedGroupsRoutingOptions>
 {
     public WeightedGroupsRoutingStrategyFactory(string clientId, ObjectPool<WeightedGroupsRoutingStrategy> pool, IOptionsMonitor<WeightedGroupsRoutingOptions> optionsMonitor)
         : base(clientId, pool, optionsMonitor)

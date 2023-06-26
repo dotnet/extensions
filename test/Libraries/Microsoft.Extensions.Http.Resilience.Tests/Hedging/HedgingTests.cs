@@ -9,11 +9,12 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Microsoft.Extensions.Http.Resilience.Routing.Internal;
+using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Telemetry.Metering;
 using Moq;
 using Polly;
@@ -31,21 +32,21 @@ public abstract class HedgingTests<TBuilder> : IDisposable
     public const int DefaultHedgingAttempts = 3;
 
     private readonly CancellationTokenSource _cancellationTokenSource;
-    private readonly Mock<IRequestClonerInternal> _requestCloneHandlerMock;
+    private readonly Mock<IRequestCloner> _requestCloneHandlerMock;
     private readonly Mock<IRequestRoutingStrategy> _requestRoutingStrategyMock;
-    private readonly Mock<IPooledRequestRoutingStrategyFactory> _requestRoutingStrategyFactoryMock;
+    private readonly Mock<IRequestRoutingStrategyFactory> _requestRoutingStrategyFactoryMock;
     private readonly IServiceCollection _services;
     private readonly List<string> _requests = new();
     private readonly Queue<HttpResponseMessage> _responses = new();
     private readonly Func<IHttpClientBuilder, IRequestRoutingStrategyFactory, TBuilder> _createDefaultBuilder;
     private bool _failure;
 
-    protected HedgingTests(Func<IHttpClientBuilder, IRequestRoutingStrategyFactory, TBuilder> createDefaultBuilder)
+    private protected HedgingTests(Func<IHttpClientBuilder, IRequestRoutingStrategyFactory, TBuilder> createDefaultBuilder)
     {
         _cancellationTokenSource = new CancellationTokenSource();
-        _requestCloneHandlerMock = new Mock<IRequestClonerInternal>(MockBehavior.Strict);
+        _requestCloneHandlerMock = new Mock<IRequestCloner>(MockBehavior.Strict);
         _requestRoutingStrategyMock = new Mock<IRequestRoutingStrategy>(MockBehavior.Strict);
-        _requestRoutingStrategyFactoryMock = new Mock<IPooledRequestRoutingStrategyFactory>(MockBehavior.Strict);
+        _requestRoutingStrategyFactoryMock = new Mock<IRequestRoutingStrategyFactory>(MockBehavior.Strict);
 
         _services = new ServiceCollection().RegisterMetering().AddLogging();
         _services.AddSingleton(_requestCloneHandlerMock.Object);
@@ -76,28 +77,30 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         _createDefaultBuilder(services.AddHttpClient("dummy"), _requestRoutingStrategyFactoryMock.Object);
 
-        Assert.NotNull(services.BuildServiceProvider().GetRequiredService<IRequestClonerInternal>());
+        Assert.NotNull(services.BuildServiceProvider().GetRequiredService<IRequestCloner>());
     }
 
     [Fact]
     public async Task SendAsync_EnsureContextFlows()
     {
+        var key = new ResiliencePropertyKey<string>("custom-data");
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
-        var context = new Context { ["custom-data"] = "my-data" };
-        request.SetPolicyExecutionContext(context);
+        var context = ResilienceContext.Get();
+        context.Properties.Set(key, "my-data");
+        request.SetResilienceContext(context);
         var calls = 0;
 
         SetupRouting();
         SetupRoutes(3, "https://enpoint-{0}:80");
-        _services.RemoveAll<IRequestClonerInternal>();
-        _services.AddRequestCloner();
+        _services.RemoveAll<IRequestCloner>();
+        _services.TryAddSingleton<IRequestCloner, RequestCloner>();
         ConfigureHedgingOptions(options =>
         {
-            options.OnHedgingAsync = args =>
+            options.OnHedging = args =>
             {
-                Assert.Equal("my-data", (string)args.Context["custom-data"]);
+                args.Context.Properties.GetValue(key, "").Should().Be("my-data");
                 calls++;
-                return Task.CompletedTask;
+                return default;
             };
         });
 
@@ -124,7 +127,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         AddResponse(HttpStatusCode.OK);
 
         var response = await client.SendAsync(request, _cancellationTokenSource.Token);
-        Assert.Empty(_responses);
+        AssertNoResponse();
 
         Assert.Single(_requests);
         Assert.Equal("https://enpoint-1:80/some-path?query", _requests[0]);
@@ -175,9 +178,9 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         SetupCloner(request, true);
         SetupRoutes(4);
 
-        AddResponse(HttpStatusCode.InternalServerError);
-        AddResponse(HttpStatusCode.InternalServerError);
         AddResponse(HttpStatusCode.ServiceUnavailable);
+        AddResponse(HttpStatusCode.InternalServerError);
+        AddResponse(HttpStatusCode.InternalServerError);
 
         using var client = CreateClientWithHandler();
 
@@ -231,16 +234,23 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         Assert.Equal("https://enpoint-3:80/some-path?query", _requests[2]);
     }
 
-    protected void AddResponse(HttpStatusCode statusCode)
+    protected void AssertNoResponse() => Assert.Empty(_responses);
+
+    protected void AddResponse(HttpStatusCode statusCode) => AddResponse(statusCode, 1);
+
+    protected void AddResponse(HttpStatusCode statusCode, int count)
     {
+        for (int i = 0; i < count; i++)
+        {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        _responses.Enqueue(new HttpResponseMessage(statusCode));
+            _responses.Enqueue(new HttpResponseMessage(statusCode));
 #pragma warning restore CA2000 // Dispose objects before losing scope
+        }
     }
 
-    protected abstract void ConfigureHedgingOptions(Action<HttpHedgingPolicyOptions> configure);
+    protected abstract void ConfigureHedgingOptions(Action<HttpHedgingStrategyOptions> configure);
 
-    protected System.Net.Http.HttpClient CreateClientWithHandler() => _services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient(ClientId);
+    protected HttpClient CreateClientWithHandler() => _services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient(ClientId);
 
     protected void SetupCloner(HttpRequestMessage request, bool createCalled)
     {
@@ -265,7 +275,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         return Task.FromResult(_responses.Dequeue());
     }
 
-    private void SetupRoutes(int totalAttempts, string pattern = "https://dummy-{0}")
+    protected void SetupRoutes(int totalAttempts, string pattern = "https://dummy-{0}")
     {
         int attemptCount = 0;
 
@@ -280,7 +290,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
             .Returns(() => attemptCount <= totalAttempts);
     }
 
-    private void SetupRouting(bool mustReturn = true)
+    protected void SetupRouting(bool mustReturn = true)
     {
         _requestRoutingStrategyFactoryMock.Setup(s => s.CreateRoutingStrategy()).Returns(() => _requestRoutingStrategyMock.Object);
         if (mustReturn)

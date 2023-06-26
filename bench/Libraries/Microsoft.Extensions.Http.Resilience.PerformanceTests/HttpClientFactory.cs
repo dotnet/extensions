@@ -61,7 +61,7 @@ internal static class HttpClientFactory
     private static IServiceCollection AddHedging(this IServiceCollection services, HedgingClientType clientType)
     {
         var clientBuilder = services.AddHttpClient(clientType.ToString(), client => client.Timeout = Timeout.InfiniteTimeSpan);
-        var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectPipelineByAuthority(SimpleClassifications.PublicData);
+        var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectStrategyByAuthority(SimpleClassifications.PublicData);
         _ = clientBuilder.AddHttpMessageHandler<NoRemoteCallHandler>();
 
         int routes = clientType.HasFlag(HedgingClientType.ManyRoutes) ? 50 : 2;

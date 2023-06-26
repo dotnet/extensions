@@ -3,79 +3,97 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Options.Validation;
-using Microsoft.Extensions.Resilience.Options;
+using Polly.Timeout;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Options for resilient pipeline of policies for usage in HTTP scenarios. It is using five chained layers in this order (from the outermost to the innermost):
-/// Bulkhead -> Total Request Timeout -> Retry -> Circuit Breaker -> Attempt Timeout.
+/// Options for resilience strategies for usage in HTTP scenarios.
 /// </summary>
-/// /// <remarks>
-/// The configuration of each policy is initialized with the default options per type. The request goes through these policies:
-/// 1. Total request timeout policy applies an overall timeout to the execution, ensuring that the request including hedging attempts does not exceed the configured limit.
-/// 2. The retry policy retries the request in case the dependency is slow or returns a transient error.
-/// 3. The bulkhead policy limits the maximum number of concurrent requests being send to the dependency.
-/// 4. The circuit breaker blocks the execution if too many direct failures or timeouts are detected.
-/// 5. The attempt timeout policy limits each request attempt duration and throws if its exceeded.
+/// <remarks>
+/// These options represent configuration for five chained resilience strategies in this order (from the outermost to the innermost):
+/// <para>
+/// Bulkhead -> Total Request Timeout -> Retry -> Circuit Breaker -> Attempt Timeout.
+/// </para>
+/// The configuration of each Strategy is initialized with the default options per type. The request goes through these strategies:
+/// <list type="number">
+/// <item>Total request timeout Strategy applies an overall timeout to the execution, ensuring that the request including hedging attempts does not exceed the configured limit.</item>
+/// <item>The retry Strategy retries the request in case the dependency is slow or returns a transient error.</item>
+/// <item>The bulkhead Strategy limits the maximum number of concurrent requests being send to the dependency.</item>
+/// <item>The circuit breaker blocks the execution if too many direct failures or timeouts are detected.</item>
+/// <item>The attempt timeout Strategy limits each request attempt duration and throws if its exceeded.</item>
+/// </list>
 /// </remarks>
 public class HttpStandardResilienceOptions
 {
-    private static readonly TimeSpan _attemptTimeoutInterval = TimeSpan.FromSeconds(10);
-
     /// <summary>
     /// Gets or sets the bulkhead options.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpBulkheadPolicyOptions"/> using default properties values.
+    /// By default it is initialized with a unique instance of <see cref="HttpRateLimiterStrategyOptions"/> using default properties values.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
-    public HttpBulkheadPolicyOptions BulkheadOptions { get; set; } = new();
+    public HttpRateLimiterStrategyOptions RateLimiterOptions { get; set; } = new HttpRateLimiterStrategyOptions
+    {
+        StrategyName = StandardStrategyNames.RateLimiter
+    };
 
     /// <summary>
-    /// Gets or sets the timeout policy options for the total timeout applied on the request's execution.
+    /// Gets or sets the timeout Strategy options for the total timeout applied on the request's execution.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpTimeoutPolicyOptions"/>
-    /// using default properties values.
+    /// By default it is initialized with a unique instance of <see cref="HttpTimeoutStrategyOptions"/>
+    /// using custom <see cref="TimeoutStrategyOptions.Timeout"/> of 30 seconds.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
-    public HttpTimeoutPolicyOptions TotalRequestTimeoutOptions { get; set; } = new();
+    public HttpTimeoutStrategyOptions TotalRequestTimeoutOptions { get; set; } = new HttpTimeoutStrategyOptions
+    {
+        Timeout = TimeSpan.FromSeconds(30),
+        StrategyName = StandardStrategyNames.TotalRequestTimeout
+    };
 
     /// <summary>
-    /// Gets or sets the retry policy Options.
+    /// Gets or sets the retry Strategy Options.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpRetryPolicyOptions"/> using default properties values.
+    /// By default it is initialized with a unique instance of <see cref="HttpRetryStrategyOptions"/> using default properties values.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
-    public HttpRetryPolicyOptions RetryOptions { get; set; } = new();
+    public HttpRetryStrategyOptions RetryOptions { get; set; } = new HttpRetryStrategyOptions
+    {
+        StrategyName = StandardStrategyNames.Retry
+    };
 
     /// <summary>
     /// Gets or sets the circuit breaker options.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpCircuitBreakerPolicyOptions"/> using default properties values.
+    /// By default it is initialized with a unique instance of <see cref="HttpCircuitBreakerStrategyOptions"/> using default properties values.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
-    public HttpCircuitBreakerPolicyOptions CircuitBreakerOptions { get; set; } = new();
+    public HttpCircuitBreakerStrategyOptions CircuitBreakerOptions { get; set; } = new HttpCircuitBreakerStrategyOptions
+    {
+        StrategyName = StandardStrategyNames.CircuitBreaker
+    };
 
     /// <summary>
-    /// Gets or sets the options for the timeout policy applied per each request attempt.
+    /// Gets or sets the options for the timeout Strategy applied per each request attempt.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpTimeoutPolicyOptions"/>
-    /// using custom <see cref="TimeoutPolicyOptions.TimeoutInterval"/> of 10 seconds.
+    /// By default it is initialized with a unique instance of <see cref="HttpTimeoutStrategyOptions"/>
+    /// using custom <see cref="TimeoutStrategyOptions.Timeout"/> of 10 seconds.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
-    public HttpTimeoutPolicyOptions AttemptTimeoutOptions { get; set; } = new()
+    public HttpTimeoutStrategyOptions AttemptTimeoutOptions { get; set; } = new()
     {
-        TimeoutInterval = _attemptTimeoutInterval,
+        Timeout = TimeSpan.FromSeconds(10),
+        StrategyName = StandardStrategyNames.AttemptTimeout
     };
 }
