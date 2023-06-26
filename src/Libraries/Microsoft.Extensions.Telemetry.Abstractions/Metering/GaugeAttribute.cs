@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Telemetry.Metering;
 /// static partial class Metric
 /// {
 ///     [Gauge]
-///     static partial MemoryUsage CreateMemoryUsage(IMeter meter);
+///     static partial MemoryUsage CreateMemoryUsage(Meter meter);
 /// }
 /// </code>
 /// </example>
@@ -58,7 +58,7 @@ public sealed class GaugeAttribute : Attribute
     /// static partial class Metric
     /// {
     ///     [Gauge(Name="SampleMetric")]
-    ///     static partial MemoryUsage CreateMemoryUsage(IMeter meter);
+    ///     static partial MemoryUsage CreateMemoryUsage(Meter meter);
     /// }
     /// </code>
     /// </example>

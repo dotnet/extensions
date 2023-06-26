@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Telemetry.Metering;
 /// static partial class Metric
 /// {
 ///     [Histogram("RequestName", "RequestStatusCode")]
-///     static partial RequestLatency CreateRequestLatency(IMeter meter);
+///     static partial RequestLatency CreateRequestLatency(Meter meter);
 /// }
 /// </code>
 /// </example>
@@ -58,7 +58,7 @@ public sealed class HistogramAttribute : Attribute
     /// static partial class Metric
     /// {
     ///     [Histogram("RequestName", "RequestStatusCode", Name="SampleMetric")]
-    ///     static partial RequestLatency CreateRequestLatency(IMeter meter);
+    ///     static partial RequestLatency CreateRequestLatency(Meter meter);
     /// }
     /// </code>
     /// </example>
