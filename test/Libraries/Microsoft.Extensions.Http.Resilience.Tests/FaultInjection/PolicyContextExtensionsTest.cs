@@ -49,4 +49,16 @@ public class PolicyContextExtensionsTest
         var result = context.GetCallingRequestMessage();
         Assert.Null(result);
     }
+
+    [Fact]
+    public void GetCallingRequestMessage_RequestMessageSetToIncompatibleObject_ShouldReturnNull()
+    {
+        var context = new Context
+        {
+            ["CallingRequestMessage"] = new object()
+        };
+
+        var result = context.GetCallingRequestMessage();
+        Assert.Null(result);
+    }
 }
