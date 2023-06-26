@@ -10,22 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Core\**" />
-    <Compile Remove="Hedging\**" />
-    <EmbeddedResource Remove="Core\**" />
-    <EmbeddedResource Remove="Hedging\**" />
-    <None Remove="Core\**" />
-    <None Remove="Hedging\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Hedging\HedgingTests.cs" />
-    <Compile Include="Hedging\HttpClientHedgingResiliencePredicatesTests.cs" />
-    <Compile Include="Hedging\HttpStandardHedgingResilienceOptionsCustomValidatorTests.cs" />
-    <Compile Include="Hedging\StandardHedgingTests.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="configs\appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

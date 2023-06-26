@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience;
 using Moq;
 using Polly;
+using Polly.Hedging;
 using Polly.Registry;
 using Xunit;
 
@@ -99,6 +100,22 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
 
         Assert.Equal(8, options.HedgingOptions.MaxHedgedAttempts);
+    }
+
+    [Fact]
+    public void ActionGenerator_Ok()
+    {
+        var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
+        var generator = options.HedgingOptions.HedgingActionGenerator;
+        var primary = ResilienceContext.Get();
+        var secondary = ResilienceContext.Get();
+        using var response = new HttpResponseMessage(HttpStatusCode.OK);
+
+        var args = new HedgingActionGeneratorArguments<HttpResponseMessage>(primary, secondary, 0, _ => Outcome.FromResultAsTask(response));
+        generator.Invoking(g => g(args)).Should().Throw<InvalidOperationException>().WithMessage("Request message snapshot is not attached to the resilience context.");
+
+        primary.Properties.Set(ResilienceKeys.RequestSnapshot, Mock.Of<IHttpRequestMessageSnapshot>());
+        generator.Invoking(g => g(args)).Should().Throw<InvalidOperationException>().WithMessage("Routing strategy is not attached to the resilience context.");
     }
 
 #if NET8_0_OR_GREATER

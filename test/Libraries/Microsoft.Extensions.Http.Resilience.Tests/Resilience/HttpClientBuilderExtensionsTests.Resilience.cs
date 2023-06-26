@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Castle.Core.Resource;
 using FluentAssertions;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
@@ -12,7 +13,10 @@ using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
+using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Resilience;
+using Microsoft.Extensions.Resilience.Internal;
 using Microsoft.Extensions.Telemetry.Metering;
 using Moq;
 using Polly;
@@ -53,6 +57,37 @@ public sealed partial class HttpClientBuilderExtensionsTests
         builder.AddResilienceHandler("test", ConfigureBuilder);
 
         Assert.Contains(services, s => s.ServiceType == typeof(ResilienceStrategyProvider<HttpKey>));
+    }
+
+    [Fact]
+    public void AddResilienceHandler_EnsureServicesNotAddedTwice()
+    {
+        var services = new ServiceCollection();
+        IHttpClientBuilder? builder = services.AddHttpClient("client");
+
+        builder.AddResilienceHandler("test", ConfigureBuilder);
+        var count = builder.Services.Count;
+
+        // add twice intentionally
+        builder.AddResilienceHandler("test", ConfigureBuilder);
+
+        builder.Services.Should().HaveCount(count + 2);
+    }
+
+    [Fact]
+    public void AddResilienceHandler_EnsureFailureResultContext()
+    {
+        var serviceProvider = new ServiceCollection().AddHttpClient("client").AddResilienceHandler("test", ConfigureBuilder).Services.BuildServiceProvider();
+        var options = serviceProvider.GetRequiredService<IOptions<FailureEventMetricsOptions<HttpResponseMessage>>>().Value;
+
+        using var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
+        var context = options.GetContextFromResult(response);
+
+        context.FailureReason.Should().Be("500");
+        context.AdditionalInformation.Should().Be("InternalServerError");
+        context.FailureSource.Should().Be(TelemetryConstants.Unknown);
+
+        options.GetContextFromResult(null!).FailureReason.Should().Be(TelemetryConstants.Unknown);
     }
 
     [Fact]

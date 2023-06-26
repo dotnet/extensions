@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.Diagnostics;
 using Polly;
