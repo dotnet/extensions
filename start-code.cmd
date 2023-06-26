@@ -7,7 +7,8 @@ FOR /f "delims=" %%a IN ('where.exe code') DO @SET vscode=%%a& GOTO break
 :break
 
 IF ["%vscode%"] == [""] (
-    echo [ERROR] Visual Studio Code is not installed or can't be found.
+    echo [41m[ERROR][0m Visual Studio Code is not installed or can't be found.
+    echo.
     exit /b 1
 )
 
@@ -22,7 +23,8 @@ SET DOTNET_MULTILEVEL_LOOKUP=0
 SET PATH=%DOTNET_ROOT%;%PATH%
 
 IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
-    echo [ERROR] .NET SDK has not yet been installed. Run `%~dp0restore.cmd` to install the toolset.
+    echo [41m[ERROR][0m .NET SDK has not yet been installed. Run [93m%~dp0restore.cmd[0m to install.
+    echo.
     exit /b 1
 )
 
