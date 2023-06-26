@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
 using Moq;
@@ -28,7 +28,7 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
 #if NET8_0_OR_GREATER
         // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
         // and as such the API is available in .NET 8 onwards.
-        Assert.Equal(3, validationResult.Failures.Count());
+        validationResult.Failures.Should().HaveCount(3);
 #endif
     }
 
@@ -39,7 +39,7 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
 
         var validationResult = CreateValidator("dummy").Validate("dummy", options);
 
-        Assert.True(validationResult.Succeeded);
+        validationResult.Succeeded.Should().BeTrue();
     }
 
     [Fact]
@@ -49,9 +49,8 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
 
         var validationResult = CreateValidator("dummy").Validate("other", options);
 
-        Assert.True(validationResult.Failed);
-        Assert.Equal("The hedging routing is not configured for 'other' HTTP client.", validationResult.FailureMessage);
-
+        validationResult.Failed.Should().BeFalse();
+        validationResult.FailureMessage.Should().Be("The hedging routing is not configured for 'other' HTTP client.");
     }
 
     public static IEnumerable<object[]> GetOptions_ValidOptions_EnsureNoErrors_Data

@@ -15,13 +15,21 @@ internal static class RetryAfterHelper
     /// <see href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After" />.
     internal static bool TryParse(HttpResponseMessage response, TimeProvider timeProvider, out TimeSpan retryAfter)
     {
-        retryAfter = response.Headers.RetryAfter switch
+        var (parsed, delay) = response.Headers.RetryAfter switch
         {
-            { Date: { } date } => date - timeProvider.GetUtcNow(),
-            { Delta: { } delta } => delta,
-            _ => TimeSpan.MinValue
+            { Date: { } date } => (true, date - timeProvider.GetUtcNow()),
+            { Delta: { } delta } => (true, delta),
+            _ => (false, default)
         };
 
-        return retryAfter >= TimeSpan.Zero;
+        // It can happen that the server returns a point in time in the past.
+        // This indicates that retry can happen immediately.
+        if (parsed && delay < TimeSpan.Zero)
+        {
+            delay = TimeSpan.Zero;
+        }
+
+        retryAfter = delay;
+        return parsed;
     }
 }
