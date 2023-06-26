@@ -45,14 +45,12 @@ public class HttpStandardResilienceOptions
     /// Gets or sets the timeout Strategy options for the total timeout applied on the request's execution.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpTimeoutStrategyOptions"/>
-    /// using custom <see cref="TimeoutStrategyOptions.Timeout"/> of 30 seconds.
+    /// By default it is initialized with a unique instance of <see cref="HttpTimeoutStrategyOptions"/>.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
     public HttpTimeoutStrategyOptions TotalRequestTimeoutOptions { get; set; } = new HttpTimeoutStrategyOptions
     {
-        Timeout = TimeSpan.FromSeconds(30),
         StrategyName = StandardStrategyNames.TotalRequestTimeout
     };
 

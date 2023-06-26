@@ -47,8 +47,7 @@ public class HttpStandardHedgingResilienceOptions
     [ValidateObjectMembers]
     public HttpTimeoutStrategyOptions TotalRequestTimeoutOptions { get; set; } = new HttpTimeoutStrategyOptions
     {
-        StrategyName = StandardHedgingStrategyNames.TotalRequestTimeout,
-        Timeout = TimeSpan.FromSeconds(30)
+        StrategyName = StandardHedgingStrategyNames.TotalRequestTimeout
     };
 
     /// <summary>
