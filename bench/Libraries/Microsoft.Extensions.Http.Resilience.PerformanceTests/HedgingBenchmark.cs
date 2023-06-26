@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,11 +10,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Http.Resilience.Bench;
 
-public class Benchmark
+public class HedgingBenchmark
 {
-    private static HttpRequestMessage Request => new(HttpMethod.Post, "https://bogus");
+    private static readonly Uri _uri = new("https://bogus");
+    private static HttpRequestMessage Request => new(HttpMethod.Post, _uri);
 
-    private System.Net.Http.HttpClient _client = null!;
+    private HttpClient _client = null!;
 
     [GlobalSetup]
     public void GlobalSetup()
