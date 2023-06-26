@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// <summary>
 /// The context used when building a resilience strategy HTTP handler.
 /// </summary>
-public class ResilienceHandlerContext
+public sealed class ResilienceHandlerContext
 {
     private readonly AddResilienceStrategyContext<HttpKey> _context;
 
