@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Metering;
 using Polly;
 using Polly.Registry;
@@ -180,7 +181,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
             }
         });
 
-        Assert.Throws<ValidationException>(() => GetStrategy(builder.Services, $"test-standard"));
+        Assert.Throws<OptionsValidationException>(() => GetStrategy(builder.Services, $"test-standard"));
     }
 
     [InlineData(MethodArgs.None)]

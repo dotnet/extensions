@@ -69,6 +69,8 @@ public static partial class HttpClientBuilderExtensions
         var optionsName = StrategyNameHelper.GetName(builder.Name, StandardIdentifier);
 
         _ = builder.Services.AddValidatedOptions<HttpStandardResilienceOptions, HttpStandardResilienceOptionsCustomValidator>(optionsName);
+        _ = builder.Services.AddValidatedOptions<HttpStandardResilienceOptions, HttpStandardResilienceOptionsValidator>(optionsName);
+
         _ = builder.AddResilienceHandler(StandardIdentifier, (builder, context) =>
         {
             context.EnableReloads<HttpStandardResilienceOptions>(optionsName);
