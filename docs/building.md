@@ -98,11 +98,14 @@ To find out more about the script and its parameters run: `.\build.cmd -help`.
 
 #### TL;DR
 
-Generating a new solution and opening it in Visual Studio is as easy as running:
+Generating a new "filtered" solution and opening it in Visual Studio is as easy as running:
 
 ```powershell
 > build.cmd -vs <keywords>
 ```
+
+For example, to generate a solution that contains projects with "Http" and "Fakes" in their names you can run: `.\build.cmd -vs Http,Fakes`.<br />
+If for some reason you wish to generate a solution with all projects you can pass `*` for the keyword, e.g.: `.\build.cmd -vs *`.
 
 If you already have a solution you'd like to open in Visual Studio then run the following command:
 
