@@ -43,7 +43,7 @@ public class FakeTimeProvider : TimeProvider
     /// <remarks>
     /// The provider is set to not automatically advance time each time it is read.
     /// </remarks>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public FakeTimeProvider(DateTimeOffset startDateTime)
     {
         _ = Throw.IfLessThan(startDateTime.Ticks, 0);
@@ -55,7 +55,7 @@ public class FakeTimeProvider : TimeProvider
     /// <summary>
     /// Gets the starting date and time for this provider.
     /// </summary>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public DateTimeOffset Start { get; }
 
     /// <summary>
@@ -94,7 +94,7 @@ public class FakeTimeProvider : TimeProvider
     /// Sets the date and time in the UTC time zone.
     /// </summary>
     /// <param name="value">The date and time in the UTC time zone.</param>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public void SetUtcNow(DateTimeOffset value)
     {
         lock (Waiters)
@@ -120,7 +120,7 @@ public class FakeTimeProvider : TimeProvider
     /// marches forward automatically in hardware, for the fake time provider the application is responsible for
     /// doing this explicitly by calling this method.
     /// </remarks>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public void Advance(TimeSpan delta)
     {
         _ = Throw.IfLessThan(delta.Ticks, 0);
@@ -155,7 +155,7 @@ public class FakeTimeProvider : TimeProvider
     /// Sets the local time zone.
     /// </summary>
     /// <param name="localTimeZone">The local time zone.</param>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public void SetLocalTimeZone(TimeZoneInfo localTimeZone) => _localTimeZone = localTimeZone;
 
     /// <summary>
