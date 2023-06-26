@@ -91,6 +91,26 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     [Fact]
+    public async Task AddResilienceHandler_EnsureResilienceHandlerContext()
+    {
+        var verified = false;
+        _builder
+            .AddResilienceHandler("test", (_, context) =>
+            {
+                context.ServiceProvider.Should().NotBeNull();
+                context.BuilderName.Should().Be($"{BuilderName}-test");
+                context.StrategyKey.Should().Be("dummy-key");
+                verified = true;
+            })
+            .SelectStrategyBy(_ => _ => "dummy-key");
+
+        _builder.AddHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.InternalServerError));
+
+        await CreateClient(BuilderName).GetAsync("https://dummy");
+        verified.Should().BeTrue();
+    }
+
+    [Fact]
     public void AddResilienceHandler_EnsureCorrectRegistryOptions()
     {
         var services = new ServiceCollection();

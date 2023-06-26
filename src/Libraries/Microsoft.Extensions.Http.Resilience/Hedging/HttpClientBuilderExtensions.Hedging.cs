@@ -112,7 +112,7 @@ public static partial class HttpClientBuilderExtensions
             context.EnableReloads<HttpStandardHedgingResilienceOptions>(optionsName);
 
             _ = builder
-                .AddStrategy(new RoutingStrategy(context.ServiceProvider.GetRoutingFactory(routingBuilder.Name)))
+                .AddStrategy(new RoutingResilienceStrategy(context.ServiceProvider.GetRoutingFactory(routingBuilder.Name)))
                 .AddStrategy(new RequestMessageSnapshotStrategy(context.ServiceProvider.GetRequiredService<IRequestCloner>()))
                 .AddTimeout(options.TotalRequestTimeoutOptions)
                 .AddHedging(options.HedgingOptions);

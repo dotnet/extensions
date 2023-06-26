@@ -49,7 +49,7 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
 
         var validationResult = CreateValidator("dummy").Validate("other", options);
 
-        validationResult.Failed.Should().BeFalse();
+        validationResult.Failed.Should().BeTrue();
         validationResult.FailureMessage.Should().Be("The hedging routing is not configured for 'other' HTTP client.");
     }
 

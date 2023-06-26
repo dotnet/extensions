@@ -12,11 +12,11 @@ namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 /// <summary>
 /// Adds routing support to an inner strategy.
 /// </summary>
-internal sealed class RoutingStrategy : ResilienceStrategy
+internal sealed class RoutingResilienceStrategy : ResilienceStrategy
 {
     private readonly IRequestRoutingStrategyFactory _factory;
 
-    public RoutingStrategy(IRequestRoutingStrategyFactory factory)
+    public RoutingResilienceStrategy(IRequestRoutingStrategyFactory factory)
     {
         _factory = factory;
     }
@@ -26,17 +26,17 @@ internal sealed class RoutingStrategy : ResilienceStrategy
         ResilienceContext context,
         TState state)
     {
+        if (!context.Properties.TryGetValue(ResilienceKeys.RequestMessage, out var request))
+        {
+            Throw.InvalidOperationException("The HTTP request message was not found in the resilience context.");
+        }
+
         var strategy = _factory.CreateRoutingStrategy();
 
         // if there are not routes we cannot continue
         if (!strategy.TryGetNextRoute(out var route))
         {
             Throw.InvalidOperationException("The routing strategy did not provide any route URL on the first attempt.");
-        }
-
-        if (!context.Properties.TryGetValue(ResilienceKeys.RequestMessage, out var request))
-        {
-            Throw.InvalidOperationException("The HTTP request message was not found in the resilience context.");
         }
 
         context.Properties.Set(ResilienceKeys.RoutingStrategy, strategy);
