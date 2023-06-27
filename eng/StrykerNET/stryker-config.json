@@ -1,0 +1,29 @@
+{
+    "stryker-config": {
+      "reporters": [
+        "json",
+        "html"
+      ],
+      "ignore-methods": [
+        "*Exception.ctor",
+        "AddError",
+        "ConfigureAwait",
+        "Dispose",
+        "LogError",
+        "LogInformation",
+        "Throws.*",
+        "Throw.*",
+        "ValidateOptionsResult.Fail",
+        "ValidationResult.ctor"
+      ],
+      "ignore-mutations": [
+        "block",
+        "statement"
+      ],
+      "target-framework": "net8.0",
+      "thresholds": {
+        "high": 100,
+        "low": 100
+      }
+    }
+  }

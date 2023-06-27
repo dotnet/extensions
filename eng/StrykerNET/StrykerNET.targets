@@ -1,0 +1,144 @@
+<Project>
+  <!--
+    For the large part this is a copy of the Arcade SDK's implementations:
+      - https://github.com/dotnet/arcade/blob/b888df17/src/Microsoft.DotNet.Arcade.Sdk/tools/XUnit/XUnit.Runner.targets
+      - https://github.com/dotnet/arcade/blob/b888df17/src/Microsoft.DotNet.Arcade.Sdk/tools/VSTest.targets
+   -->
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="$(XUnitVersion)" IsImplicitlyDefined="true" PrivateAssets="all" Publish="true"/>
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudioVersion)" IsImplicitlyDefined="true" PrivateAssets="all" Publish="true"/>
+  </ItemGroup>
+
+  <!-- Workaround for https://github.com/xunit/xunit/issues/1651 -->
+  <ItemGroup>
+    <None Remove="$(NuGetPackageRoot)xunit.runner.visualstudio\$(XUnitRunnerVisualStudioVersion)\build\net20\..\_common\xunit.abstractions.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The list of projects references marked with ProjectUnderTest=true. Essentially, these projects will be mutated.
+     -->
+    <_ProjectUnderTestProjectReference Include="@(ProjectReference->WithMetadataValue('ProjectUnderTest', 'true'))" />
+  </ItemGroup>
+
+
+  <Target Name="RunTests"
+          Outputs="%(TestToRun.ResultsStdOutPath)"
+          Condition="'@(TestToRun)' != ''">
+    <!--
+       is little hack. Select only those test projects that target the "latest" TFM.
+       As per the Stryker.NET docs (https://stryker-mutator.io/docs/stryker-net/configuration/#target-framework-string):
+
+            If the project targets multiple frameworks, this way you can specify the particular framework to build against.
+            If you specify a non-existent target, Stryker will build the project against a random one (or the only one if so).
+
+        There is probably a better way to filter, but it wasn't found to date...
+     -->
+    <ItemGroup>
+      <_FilteredTestToRun Include="@(TestToRun->WithMetadataValue('TargetFramework', '$(LatestTargetFramework)'))" />
+    </ItemGroup>
+
+    <CallTarget Targets="RunMutationTests" 
+                Condition=" '@(_ProjectUnderTestProjectReference)' != '' and '@(_FilteredTestToRun)' != '' " />
+  </Target>
+
+
+  <Target Name="_UpdateStrykerJson">
+    <PropertyGroup>
+      <!-- The template file, don't modify it as it is used by the private repo! -->
+      <_StrykerJsonConfigFile>$([MSBuild]::NormalizePath('$(RepositoryEngineeringDir)', 'StrykerNET', 'stryker-config.json'))</_StrykerJsonConfigFile>
+      <!-- The script that will make a copy of the template config and update it with the "latest" TFM -->
+      <_UpdateStrykerJsonScripPath>$([MSBuild]::NormalizePath('$(ArtifactsTmpDir)', 'update-strykerconfigjson.$(MSBuildProjectName).ps1'))</_UpdateStrykerJsonScripPath>
+      <!-- The name of the new config -->
+      <_UpdatedStrykerJsonPath>$([MSBuild]::NormalizePath('$(ArtifactsTmpDir)', '$(MSBuildProjectName).json'))</_UpdatedStrykerJsonPath>
+    </PropertyGroup>
+
+    <!-- Create a temporary script that would create a new stryker-config.json from the template with the "latest" TFM -->
+    <ItemGroup>
+      <_UpdateStrykerConfigJsonScript Include="$config = Get-Content $(_StrykerJsonConfigFile) | ConvertFrom-Json;" />
+      <_UpdateStrykerConfigJsonScript Include="$config.'stryker-config'.'target-framework' = '$(LatestTargetFramework)';" />
+      <_UpdateStrykerConfigJsonScript Include="$config | ConvertTo-Json | Out-File $(_UpdatedStrykerJsonPath);" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_UpdateStrykerJsonScripPath)" Lines="@(_UpdateStrykerConfigJsonScript)" Overwrite="true" Encoding="Unicode" />
+
+    <!-- ...run the script -->
+    <Exec Command='powershell $(_UpdateStrykerJsonScripPath)' WorkingDirectory="$(RepoRoot)" Condition=" '$(OS)' == 'Windows_NT' " />
+    <Exec Command='$(DotNetTool) pwsh $(_UpdateStrykerJsonScripPath)' WorkingDirectory="$(RepoRoot)" Condition=" '$(OS)' != 'Windows_NT' " />
+
+    <!-- ...and delete the script -->
+    <Delete Files="$(_UpdateStrykerJsonScripPath)" Condition=" Exists($(_UpdateStrykerJsonScripPath)) " />
+  </Target>
+
+
+  <Target Name="RunMutationTests" DependsOnTargets="_UpdateStrykerJson">
+    <!-- Ensure there is a one-to-one mapping between a test project and a project-under-test -->
+    <PropertyGroup>
+      <_ProjectUnderTestCount>@(_ProjectUnderTestProjectReference->Count())</_ProjectUnderTestCount>
+    </PropertyGroup>
+    <Error Condition="$(_ProjectUnderTestCount) != 1" Text="There can be only one ProjectUnderTest. Found $(_ProjectUnderTestCount)."/>
+
+    <PropertyGroup>
+      <_MutationTestResultsLogDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsLogDir)', 'MutationTestLogs'))</_MutationTestResultsLogDir>
+      <_MutationTestResultsResultsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)', 'MutationTestResults'))</_MutationTestResultsResultsDir>
+      <_TestResultsResultsDir>$([MSBuild]::NormalizePath('$(_MutationTestResultsResultsDir)', '$(MSBuildProjectName)'))</_TestResultsResultsDir>
+      <_ResultFileNameNoExt>$(MSBuildProjectName)_$(LatestTargetFramework)_$(TestArchitectures)</_ResultFileNameNoExt>
+      <_ResultsStdOutPath>$(_MutationTestResultsLogDir)$(_ResultFileNameNoExt).log</_ResultsStdOutPath>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(_MutationTestResultsLogDir)"/>
+    <MakeDir Directories="$(_TestResultsResultsDir)"/>
+
+    <PropertyGroup>
+      <_TestEnvironment>$(LatestTargetFramework)|$(TestArchitectures)</_TestEnvironment>
+
+      <_ProjectUnderTestPathRaw>%(_ProjectUnderTestProjectReference.Identity)</_ProjectUnderTestPathRaw>
+      <_ProjectUnderTestPath>$([MSBuild]::NormalizePath('$(_ProjectUnderTestPathRaw)'))</_ProjectUnderTestPath>
+
+      <_TestRunner Condition="'%(_FilteredTestToRun.Architecture)'=='x86' And Exists('$(DotNetRoot)x86\dotnet.exe')">$(DotNetRoot)x86\dotnet.exe</_TestRunner>
+      <_TestRunner Condition="'$(_TestRunner)'==''">$(DotNetTool)</_TestRunner>
+
+       <!-- https://stryker-mutator.io/docs/stryker-net/configuration/#project-information -->
+      <_TestRunnerArgs>stryker --project "$(_ProjectUnderTestPath)" --test-project "$(MSBuildProjectFullPath)" --config-file "$(_UpdatedStrykerJsonPath)" --output "$(_TestResultsResultsDir)"</_TestRunnerArgs>
+      <_TestRunnerArgs Condition=" '$(StrykerLogToFile)' == 'true' ">$(_TestRunnerArgs) --log-to-file </_TestRunnerArgs>
+
+      <_TestRunnerCommand>"$(_TestRunner)" $(_TestRunnerArgs)</_TestRunnerCommand>
+
+      <!--
+        Redirect std output of the runner.
+        Note that xUnit outputs failure info to both STDOUT (stack trace, message) and STDERR (failed test name)
+      -->
+      <_TestRunnerCommand Condition="'$(TestCaptureOutput)' != 'false'">$(_TestRunnerCommand) > "$(_ResultsStdOutPath)" 2>&amp;1</_TestRunnerCommand>
+    </PropertyGroup>
+
+    <Message Text="Mutating $(_ProjectUnderTestPath) [$(_TestEnvironment)]" Importance="high"/>
+    <Exec Command='$(_TestRunnerCommand)'
+          LogStandardErrorAsError="false"
+          WorkingDirectory="$(_TargetDir)"
+          IgnoreExitCode="true"
+          Timeout="$(_TestTimeout)"
+          ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="ExitCode" PropertyName="_TestErrorCode" />
+    </Exec>
+
+    <!--
+      Add command line to the log.
+    -->
+    <WriteLinesToFile File="$(_ResultsStdOutPath)"
+                      Overwrite="false"
+                      Lines=";=== COMMAND LINE ===;$(_TestRunnerCommand)"
+                      Condition="'$(TestCaptureOutput)' != 'false'" />
+
+    <!--
+      Report test status.
+    -->
+    <Message Text="Mutation tests succeeded: $(_ProjectUnderTestPath) [$(_TestEnvironment)]" Condition="'$(_TestErrorCode)' == '0'" Importance="high" />
+
+    <!--
+      Ideally we would set ContinueOnError="ErrorAndContinue" so that when a test fails in multi-targeted test project
+      we'll still run tests for all target frameworks. ErrorAndContinue doesn't work well on Linux though: https://github.com/Microsoft/msbuild/issues/3961.
+    -->
+    <Error Text="Mutation tests failed: $(_ResultsStdOutPath) [$(_TestEnvironment)]" Condition="'$(_TestErrorCode)' != '0' and '$(_ErrorOnTestFailure)' != 'false'" File="Stryker.NET" />
+  </Target>
+
+</Project>

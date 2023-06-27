@@ -1,84 +1,89 @@
-[CmdletBinding(PositionalBinding=$false, DefaultParameterSetName = 'CommandLine')]
+[CmdletBinding(PositionalBinding = $false, DefaultParameterSetName = 'CommandLine')]
 Param(
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [string][Alias('c')]$configuration = "Debug",
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [string]$platform = $null,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [string] $projects,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [string][Alias('v')]$verbosity = "minimal",
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [string] $msbuildEngine = $null,
-  [Parameter(ParameterSetName='CommandLine')]
-  [boolean] $warnAsError = $false,        # NOTE: inverted the Arcade's default
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
+  [boolean] $warnAsError = $false, # NOTE: inverted the Arcade's default
+  [Parameter(ParameterSetName = 'CommandLine')]
   [boolean] $nodeReuse = $true,
-  [Parameter(ParameterSetName='CommandLine')]
-  [Parameter(ParameterSetName='VisualStudio')]
+  [Parameter(ParameterSetName = 'CommandLine')]
+  [Parameter(ParameterSetName = 'VisualStudio')]
   [switch][Alias('r')]$restore,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $deployDeps,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch][Alias('b')]$build,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $rebuild,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $deploy,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch][Alias('t')]$test,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $integrationTest,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $performanceTest,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $sign,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $pack,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $publish,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $clean,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch][Alias('bl')]$binaryLog,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch][Alias('nobl')]$excludeCIBinarylog,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $ci,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $prepareMachine,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [string] $runtimeSourceFeed = '',
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [string] $runtimeSourceFeedKey = '',
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $excludePrereleaseVS,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $nativeToolsOnMachine,
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $help,
 
   # Run tests with code coverage
-  [Parameter(ParameterSetName='CommandLine')]
+  [Parameter(ParameterSetName = 'CommandLine')]
   [switch] $testCoverage,
 
-  [Parameter(ParameterSetName='CommandLine')]
-  [Parameter(ParameterSetName='VisualStudio')]
+  # Run mutation tests
+  [Parameter(ParameterSetName = 'CommandLine')]
+  [switch] $mutationTest,
+
+  [Parameter(ParameterSetName = 'CommandLine')]
+  [Parameter(ParameterSetName = 'VisualStudio')]
   [string[]] $onlyTfms = $null,
 
-  [Parameter(ParameterSetName='VisualStudio')]
+  [Parameter(ParameterSetName = 'VisualStudio')]
   [string[]] $vs = $null,
-  [Parameter(ParameterSetName='VisualStudio')]
+  [Parameter(ParameterSetName = 'VisualStudio')]
   [switch] $noLaunch = $false,
 
-  [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
+  [Parameter(ValueFromRemainingArguments = $true)][String[]]$properties
 )
 
 function Print-Usage() {
   Write-Host "Custom settings:"
-  Write-Host "  -testCoverage           Run unit tests and capture code coverage information."
-  Write-Host "  -vs <value>             Comma delimited list of keywords to filter the projects in the solution."
-  Write-Host "                          Pass '*' to generate a solution with all projects."
+  Write-Host "  -testCoverage           Run unit tests and capture code coverage information"
+  Write-Host "  -mutationTest           Run mutation tests"
+  Write-Host "  -vs <value>             Comma delimited list of keywords to filter the projects in the solution"
+  Write-Host "                          Pass '*' to generate a solution with all projects"
   Write-Host "  -noLaunch               Don't open the generated solution in Visual Studio (only if -vs specified)"
   Write-Host "  -onlyTfms <value>       Semi-colon delimited list of TFMs to build (e.g. 'net8.0;net6.0')"
   Write-Host ""
@@ -130,6 +135,32 @@ if ($filter.Count -ne 0) {
   }
 }
 
+# Mutation tests are very special kind of tests and, thus, have to run exclusively
+if ($mutationTest) {
+  # Disable incompatible options
+  $restore = $false
+  $build = $false
+  $deploy = $false
+  $deployDeps = $false
+  $integrationTest = $false
+  $performanceTest = $false
+  $sign = $false
+  $pack = $false
+  $testCoverage = $false
+
+  $test = $true;
+  $properties += '/p:TestRunnerName=StrykerNET';
+
+  # Set envvars so that Stryker can locate the .NET SDK
+  $env:DOTNET_ROOT = $(Resolve-Path "$PSScriptRoot/../.dotnet");
+  $env:DOTNET_MULTILEVEL_LOOKUP = 0;
+  $env:PATH = "$env:DOTNET_ROOT;$env:PATH";
+
+  # Create a marker file
+  '' | Out-File .mutationtests
+}
+
+
 # If no projects explicitly specified, look for a top-level solution file.
 # - If there's no solution file found - no worries, build the default project configured in eng\Build.props.
 # - If a solution file is found - buid it.
@@ -151,36 +182,43 @@ if ([string]::IsNullOrWhiteSpace($projects)) {
   }
 }
 
-. $PSScriptRoot/common/build.ps1 `
-       -configuration $configuration `
-       -platform $platform `
-       -projects $projects `
-       -verbosity $verbosity `
-       -msbuildEngine $msbuildEngine `
-       -warnAsError $([boolean]::Parse("$warnAsError")) `
-       -nodeReuse $nodeReuse `
-       -restore:$restore `
-       -deployDeps:$deployDeps `
-       -build:$build `
-       -rebuild:$rebuild `
-       -deploy:$deploy `
-       -test:$test `
-       -integrationTest:$integrationTest `
-       -performanceTest:$performanceTest `
-       -sign:$sign `
-       -pack:$pack `
-       -publish:$publish `
-       -clean:$clean `
-       -binaryLog:$binaryLog `
-       -excludeCIBinarylog:$excludeCIBinarylog `
-       -ci:$ci `
-       -prepareMachine:$prepareMachine `
-       -runtimeSourceFeed $runtimeSourceFeed `
-       -runtimeSourceFeedKey $runtimeSourceFeedKey `
-       -excludePrereleaseVS:$excludePrereleaseVS `
-       -nativeToolsOnMachine:$nativeToolsOnMachine `
-       -help:$help `
-       @properties
+try {
+  . $PSScriptRoot/common/build.ps1 `
+      -configuration $configuration `
+      -platform $platform `
+      -projects $projects `
+      -verbosity $verbosity `
+      -msbuildEngine $msbuildEngine `
+      -warnAsError $([boolean]::Parse("$warnAsError")) `
+      -nodeReuse $nodeReuse `
+      -restore:$restore `
+      -deployDeps:$deployDeps `
+      -build:$build `
+      -rebuild:$rebuild `
+      -deploy:$deploy `
+      -test:$test `
+      -integrationTest:$integrationTest `
+      -performanceTest:$performanceTest `
+      -sign:$sign `
+      -pack:$pack `
+      -publish:$publish `
+      -clean:$clean `
+      -binaryLog:$binaryLog `
+      -excludeCIBinarylog:$excludeCIBinarylog `
+      -ci:$ci `
+      -prepareMachine:$prepareMachine `
+      -runtimeSourceFeed $runtimeSourceFeed `
+      -runtimeSourceFeedKey $runtimeSourceFeedKey `
+      -excludePrereleaseVS:$excludePrereleaseVS `
+      -nativeToolsOnMachine:$nativeToolsOnMachine `
+      -help:$help `
+      @properties
+}
+finally {
+  if ($mutationTest) {
+    Remove-Item -Path .mutationtests
+  }
+}
 
 
 # Perform code coverage as the last operation, this enables the following scenarios:

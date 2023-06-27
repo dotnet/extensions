@@ -1,0 +1,19 @@
+<Project>
+
+  <!-- Stryker.NET doesn't support passing arguments to dotnet or MSBuild processes, so we have to set it explicitly -->
+  <PropertyGroup>
+    <!-- Mutation tests only run for the latest TFM -->
+    <NetCoreTargetFrameworks>$(LatestTargetFramework)</NetCoreTargetFrameworks>
+    <ConditionalNet462></ConditionalNet462>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
+
+    <!-- Disable signing -->
+    <SignArtifacts>false</SignArtifacts>
+    <SignAssembly>false</SignAssembly>
+    <SkipAnalyzers>true</SkipAnalyzers>
+
+    <!-- Stryker debug option, see https://github.com/stryker-mutator/stryker-net/blob/master/docs/configuration.md#log-to-file-flag -->
+    <StrykerLogToFile>false</StrykerLogToFile>
+  </PropertyGroup>
+
+</Project>

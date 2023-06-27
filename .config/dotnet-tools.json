@@ -14,6 +14,12 @@
         "reportgenerator"
       ]
     },
+    "dotnet-stryker": {
+      "version": "3.9.2",
+      "commands": [
+        "dotnet-stryker"
+      ]
+    },
     "microsoft.visualstudio.slngen.tool": {
       "version": "9.5.3",
       "commands": [

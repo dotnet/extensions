@@ -219,7 +219,7 @@ stages:
 # This stage performs quality gates enforcements
 # ----------------------------------------------------------------
 - stage: qualitygates
-  displayName: QualityGates
+  displayName: CodeCoverage
   condition: ne(variables['SkipQualityGates'], 'true')
   dependsOn: 
     - build
@@ -285,6 +285,10 @@ stages:
         clean: all
 
       jobs:
+
+      # ----------------------------------------------------------------
+      # This job runs builds with "warnings as errors" on
+      # ----------------------------------------------------------------
       - job: WarningsCheck
         timeoutInMinutes: 180
 
@@ -317,6 +321,38 @@ stages:
               skipQualityGates: true
               isDeltaBuild: $(IsDeltaBuild)
               isWindows: false
+
+      # ----------------------------------------------------------------
+      # This job runs mutation tests using Stryker.NET
+      # ----------------------------------------------------------------
+      - job: MutationTests
+        timeoutInMinutes: 180
+
+        pool:
+          ${{ if eq(variables['runAsPublic'], 'true') }}:
+            name: $(DncEngPublicBuildPool)
+            demands: ImageOverride -equals windows.vs2022preview.amd64.open
+          # Non-public (i.e., official builds)
+          ${{ else }}:
+            name: $(DncEngInternalBuildPool)
+            demands: ImageOverride -equals windows.vs2022preview.amd64
+
+        variables:
+          - _buildScript: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
+
+        preSteps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            fetchDepth: 1
+
+        steps:
+          - template: /eng/pipelines/templates/MutationTests.yml
+            parameters:
+              buildScript: $(_buildScript)
+              buildConfig: $(_BuildConfig)
+              repoLogPath: $(Build.Arcade.LogsPath)
+              repoTestResultsPath: $(Build.Arcade.TestResultsPath)
 
 
 # Publish and validation steps. Only run in official builds
