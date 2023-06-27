@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
@@ -16,6 +17,7 @@ namespace Microsoft.Extensions.Resilience;
 /// <summary>
 /// Extension class for the Service Collection DI container.
 /// </summary>
+[Experimental]
 public static class ResilienceServiceCollectionExtensions
 {
     /// <summary>
