@@ -366,10 +366,6 @@ public static class MetricCollectorTests
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await collector.WaitForMeasurementsAsync(1));
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await collector.WaitForMeasurementsAsync(1, TimeSpan.FromSeconds(1)));
 
-        // HACK: there seems to be something executing asynchronously which takes a while to finish. This needs to be tracked on
-        //       I'm adding the sleep here to keep the test from being flaky.
-        Thread.Sleep(2000);
-
         Assert.True(wait.IsCompleted);
         Assert.True(wait.IsFaulted);
 
