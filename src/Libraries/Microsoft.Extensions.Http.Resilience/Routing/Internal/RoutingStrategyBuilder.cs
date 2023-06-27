@@ -5,15 +5,4 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 
-internal sealed class RoutingStrategyBuilder : IRoutingStrategyBuilder
-{
-    public RoutingStrategyBuilder(string name, IServiceCollection services)
-    {
-        Name = name;
-        Services = services;
-    }
-
-    public string Name { get; }
-
-    public IServiceCollection Services { get; }
-}
+internal sealed record RoutingStrategyBuilder(string Name, IServiceCollection Services) : IRoutingStrategyBuilder;

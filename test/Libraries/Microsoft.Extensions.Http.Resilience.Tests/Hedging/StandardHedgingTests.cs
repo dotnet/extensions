@@ -12,13 +12,13 @@ using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Microsoft.Extensions.Http.Resilience.Routing.Internal;
-using Microsoft.Extensions.Http.Resilience.Test.Hedgings.Helpers;
+using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience;
-using Microsoft.Extensions.Resilience.Internal;
 using Moq;
 using Polly;
+using Polly.Hedging;
+using Polly.Registry;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Resilience.Test.Hedging;
@@ -52,7 +52,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     [Fact]
     public void EnsureValidated_AdvancedValidation()
     {
-        Builder.Configure(options => options.TotalRequestTimeoutOptions.TimeoutInterval = TimeSpan.FromSeconds(1));
+        Builder.Configure(options => options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(1));
 
         Assert.Throws<OptionsValidationException>(() => CreateClientWithHandler());
     }
@@ -72,7 +72,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     {
         Builder.Configure((o, serviceProvider) =>
         {
-            serviceProvider.GetRequiredService<IResiliencePipelineProvider>().Should().NotBeNull();
+            serviceProvider.GetRequiredService<ResilienceStrategyProvider<HttpKey>>().Should().NotBeNull();
             o.HedgingOptions.MaxHedgedAttempts = 8;
         });
 
@@ -100,6 +100,22 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
 
         Assert.Equal(8, options.HedgingOptions.MaxHedgedAttempts);
+    }
+
+    [Fact]
+    public void ActionGenerator_Ok()
+    {
+        var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
+        var generator = options.HedgingOptions.HedgingActionGenerator;
+        var primary = ResilienceContext.Get();
+        var secondary = ResilienceContext.Get();
+        using var response = new HttpResponseMessage(HttpStatusCode.OK);
+
+        var args = new HedgingActionGeneratorArguments<HttpResponseMessage>(primary, secondary, 0, _ => Outcome.FromResultAsTask(response));
+        generator.Invoking(g => g(args)).Should().Throw<InvalidOperationException>().WithMessage("Request message snapshot is not attached to the resilience context.");
+
+        primary.Properties.Set(ResilienceKeys.RequestSnapshot, Mock.Of<IHttpRequestMessageSnapshot>());
+        generator.Invoking(g => g(args)).Should().Throw<InvalidOperationException>().WithMessage("Routing strategy is not attached to the resilience context.");
     }
 
 #if NET8_0_OR_GREATER
@@ -147,35 +163,40 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     [Fact]
     public async Task VerifyPipeline()
     {
-        var noPolicy = Policy.NoOpAsync<HttpResponseMessage>();
-        var builder = new Mock<IPolicyPipelineBuilder<HttpResponseMessage>>(MockBehavior.Strict);
-        Builder.Services.RemoveAll<IPolicyPipelineBuilder<HttpResponseMessage>>();
-        Builder.Services.AddSingleton(builder.Object);
-
-        var serviceProvider = Builder.Services.BuildServiceProvider();
-        var options = serviceProvider.GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
-
-        // primary handler
-        builder.SetupSequence(o => o.Initialize(It.Is<PipelineId>(v => v.PipelineName == "clientId-standard-hedging")));
-        builder.SetupSequence(o => o.AddTimeoutPolicy("StandardHedging-TotalRequestTimeout", options.TotalRequestTimeoutOptions)).Returns(builder.Object);
-        builder.SetupSequence(o => o.AddPolicy(It.Is<IAsyncPolicy<HttpResponseMessage>>(p => p is RoutingPolicy))).Returns(builder.Object);
-        builder.SetupSequence(o => o.AddPolicy(It.Is<IAsyncPolicy<HttpResponseMessage>>(p => p is RequestMessageSnapshotPolicy))).Returns(builder.Object);
-        builder.SetupSequence(o => o.AddHedgingPolicy("StandardHedging-Hedging", It.IsAny<HedgedTaskProvider<HttpResponseMessage>>(), options.HedgingOptions)).Returns(builder.Object);
-        builder.Setup(o => o.Build()).Returns(noPolicy);
-
-        // inner handler
-        builder.SetupSequence(o => o.Initialize(It.Is<PipelineId>(v => v.PipelineName == "clientId-standard-hedging-endpoint")));
-        builder.SetupSequence(o => o.AddBulkheadPolicy("StandardHedging-Bulkhead", options.EndpointOptions.BulkheadOptions)).Returns(builder.Object);
-        builder.SetupSequence(o => o.AddCircuitBreakerPolicy("StandardHedging-CircuitBreaker", options.EndpointOptions.CircuitBreakerOptions)).Returns(builder.Object);
-        builder.SetupSequence(o => o.AddTimeoutPolicy("StandardHedging-AttemptTimeout", options.EndpointOptions.TimeoutOptions)).Returns(builder.Object);
-        builder.Setup(o => o.Build()).Returns(noPolicy);
-
-        using var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(ClientId);
-        AddResponse(HttpStatusCode.OK);
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
+        var strategies = new List<IList<ResilienceStrategy>>();
+
+        Builder.Services.RemoveAll<ResilienceStrategyBuilder>();
+        Builder.Services.AddTransient(_ =>
+        {
+            return new ResilienceStrategyBuilder
+            {
+                OnCreatingStrategy = list => strategies.Add(list)
+            };
+        });
+        Builder.SelectStrategyByAuthority(SimpleClassifications.PublicData);
+
+        SetupRouting();
+        SetupRoutes(1);
+        SetupCloner(request, false);
+        AddResponse(HttpStatusCode.OK);
+
+        using var client = CreateClientWithHandler();
         await client.SendAsync(request, CancellationToken.None);
 
-        builder.VerifyAll();
+        // primary handler
+        strategies.Should().HaveCount(2);
+        strategies[0].Should().HaveCount(4);
+        strategies[0][0].GetType().Name.Should().Contain("Routing");
+        strategies[0][1].GetType().Name.Should().Contain("Snapshot");
+        strategies[0][2].GetType().Name.Should().Contain("Timeout");
+        strategies[0][3].GetType().Name.Should().Contain("Hedging");
+
+        // inner handler
+        strategies[1].Should().HaveCount(3);
+        strategies[1][0].GetType().Name.Should().Contain("RateLimiter");
+        strategies[1][1].GetType().Name.Should().Contain("CircuitBreaker");
+        strategies[1][2].GetType().Name.Should().Contain("Timeout");
     }
 
     [InlineData(null)]
@@ -183,22 +204,22 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     [Theory]
     public async Task VerifyPipelineSelection(string? customKey)
     {
-        var noPolicy = Policy.NoOpAsync<HttpResponseMessage>();
-        var provider = new Mock<IResiliencePipelineProvider>(MockBehavior.Strict);
+        var noPolicy = NullResilienceStrategy<HttpResponseMessage>.Instance;
+        var provider = new Mock<ResilienceStrategyProvider<HttpKey>>(MockBehavior.Strict);
         Builder.Services.RemoveAll<IResiliencePipelineProvider>();
         Builder.Services.AddSingleton(provider.Object);
         if (customKey == null)
         {
-            Builder.SelectPipelineByAuthority(SimpleClassifications.PublicData);
+            Builder.SelectStrategyByAuthority(SimpleClassifications.PublicData);
         }
         else
         {
-            Builder.SelectPipelineBy(_ => _ => customKey);
+            Builder.SelectStrategyBy(_ => _ => customKey);
         }
 
         customKey ??= "https://key:80";
-        provider.Setup(v => v.GetPipeline<HttpResponseMessage>("clientId-standard-hedging")).Returns(noPolicy);
-        provider.Setup(v => v.GetPipeline<HttpResponseMessage>("clientId-standard-hedging-endpoint", customKey)).Returns(noPolicy);
+        provider.Setup(v => v.GetStrategy<HttpResponseMessage>(new HttpKey("clientId-standard-hedging", string.Empty))).Returns(noPolicy);
+        provider.Setup(v => v.GetStrategy<HttpResponseMessage>(new HttpKey("clientId-standard-hedging-endpoint", customKey))).Returns(noPolicy);
 
         using var client = CreateClientWithHandler();
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://key:80/discarded");
@@ -209,5 +230,39 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         provider.VerifyAll();
     }
 
-    protected override void ConfigureHedgingOptions(Action<HttpHedgingPolicyOptions> configure) => Builder.Configure(options => configure(options.HedgingOptions));
+    [Fact]
+    public async Task DynamicReloads_Ok()
+    {
+        // arrange
+        var requests = new List<HttpRequestMessage>();
+        var config = ConfigurationStubFactory.Create(
+            new()
+            {
+                { "standard:HedgingOptions:MaxHedgedAttempts", "3" }
+            },
+            out var reloadAction).GetSection("standard");
+
+        Builder.Configure(config).Configure(options => options.HedgingOptions.HedgingDelay = Timeout.InfiniteTimeSpan);
+        SetupRouting();
+        SetupRoutes(10);
+
+        var client = CreateClientWithHandler();
+
+        // act && assert
+        AddResponse(HttpStatusCode.InternalServerError, 3);
+        using var firstRequest = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
+        SetupCloner(firstRequest, true);
+        await client.SendAsync(firstRequest);
+        AssertNoResponse();
+
+        reloadAction(new() { { "standard:HedgingOptions:MaxHedgedAttempts", "7" } });
+
+        AddResponse(HttpStatusCode.InternalServerError, 7);
+        using var secondRequest = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
+        SetupCloner(secondRequest, true);
+        await client.SendAsync(secondRequest);
+        AssertNoResponse();
+    }
+
+    protected override void ConfigureHedgingOptions(Action<HttpHedgingStrategyOptions> configure) => Builder.Configure(options => configure(options.HedgingOptions));
 }

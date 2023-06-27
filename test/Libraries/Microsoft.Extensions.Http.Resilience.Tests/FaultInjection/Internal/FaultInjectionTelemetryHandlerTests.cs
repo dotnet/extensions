@@ -1,9 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Resilience.FaultInjection;
 using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Testing.Logging;
 using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Moq;
 using Xunit;
@@ -17,7 +19,7 @@ public class FaultInjectionTelemetryHandlerTests
     [Fact]
     public void LogAndMeter_WithHttpContentKey()
     {
-        var logger = Mock.Of<ILogger<IHttpClientChaosPolicyFactory>>();
+        var logger = new FakeLogger();
 
         using var meter = new Meter<IChaosPolicyFactory>();
         using var metricCollector = new MetricCollector<long>(meter, MetricName);
@@ -39,6 +41,14 @@ public class FaultInjectionTelemetryHandlerTests
         Assert.Equal(FaultType, latest.Tags[FaultInjectionEventMeterDimensions.FaultType]);
         Assert.Equal(InjectedValue, latest.Tags[FaultInjectionEventMeterDimensions.InjectedValue]);
         Assert.Equal(HttpContentKey, latest.Tags[FaultInjectionEventMeterDimensions.HttpContentKey]);
+
+        var entries = logger.Collector.GetSnapshot();
+        entries.Should().HaveCount(1);
+        entries[0].Message.Should().Be(
+            "Fault-injection group name: TestClient. " +
+            "Fault type: Type. " +
+            "Injected value: Value. " +
+            "Http content key: HttpContentKey.");
     }
 
     [Fact]

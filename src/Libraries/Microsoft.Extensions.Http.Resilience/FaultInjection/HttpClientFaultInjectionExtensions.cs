@@ -10,8 +10,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.FaultInjection.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience.FaultInjection;
-using Microsoft.Extensions.Resilience.Internal;
 using Microsoft.Shared.Diagnostics;
+using Polly;
 
 namespace Microsoft.Extensions.Http.Resilience.FaultInjection;
 
@@ -205,18 +205,17 @@ public static class HttpClientFaultInjectionExtensions
 
     private static IHttpClientBuilder AddChaosMessageHandler(this IHttpClientBuilder httpClientBuilder)
     {
-        _ = httpClientBuilder
-            .AddResilienceHandler("chaos")
-            .AddPolicy((pipelineBuilder, services) =>
-            {
-                var chaosPolicyFactory = services.GetRequiredService<IChaosPolicyFactory>();
-                var httpClientChaosPolicyFactory = services.GetRequiredService<IHttpClientChaosPolicyFactory>();
-                _ = pipelineBuilder
-                    .AddPolicy(httpClientChaosPolicyFactory.CreateHttpResponsePolicy())
-                    .AddPolicy(chaosPolicyFactory.CreateExceptionPolicy())
-                    .AddPolicy(chaosPolicyFactory.CreateLatencyPolicy<HttpResponseMessage>());
-            });
+        return httpClientBuilder.AddHttpMessageHandler(serviceProvider =>
+        {
+            var chaosPolicyFactory = serviceProvider.GetRequiredService<IChaosPolicyFactory>();
+            var httpClientChaosPolicyFactory = serviceProvider.GetRequiredService<IHttpClientChaosPolicyFactory>();
 
-        return httpClientBuilder;
+            var policy = Policy.WrapAsync(
+                chaosPolicyFactory.CreateLatencyPolicy<HttpResponseMessage>(),
+                chaosPolicyFactory.CreateExceptionPolicy().AsAsyncPolicy<HttpResponseMessage>(),
+                httpClientChaosPolicyFactory.CreateHttpResponsePolicy());
+
+            return new PolicyHttpMessageHandler(policy);
+        });
     }
 }

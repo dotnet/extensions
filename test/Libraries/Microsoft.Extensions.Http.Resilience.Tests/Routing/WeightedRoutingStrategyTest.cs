@@ -160,7 +160,7 @@ public class WeightedRoutingStrategyTest : RoutingStrategyTest
         });
     }
 
-    protected override IRequestRoutingStrategy CreateEmptyStrategy() => new WeightedGroupsRoutingStrategy(Mock.Of<IRandomizer>());
+    internal override IRequestRoutingStrategy CreateEmptyStrategy() => new WeightedGroupsRoutingStrategy(Mock.Of<IRandomizer>());
 
     private static WeightedEndpointGroup CreateGroup(params string[] endpoints)
     {

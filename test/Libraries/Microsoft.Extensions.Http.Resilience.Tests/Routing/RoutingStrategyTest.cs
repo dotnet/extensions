@@ -55,7 +55,7 @@ public abstract class RoutingStrategyTest
         {
             var strategy = factory.CreateRoutingStrategy();
             strategies.Add(strategy);
-            ((IPooledRequestRoutingStrategyFactory)factory).ReturnRoutingStrategy(strategy);
+            factory.ReturnRoutingStrategy(strategy);
         }
 
         // assert that some strategies were pooled
@@ -154,9 +154,9 @@ public abstract class RoutingStrategyTest
         CollectUrls(factory.CreateRoutingStrategy()).Should().Equal(expectedUrls);
     }
 
-    protected IRequestRoutingStrategy CreateStrategy(string? name = null) => CreateRoutingFactory(name).CreateRoutingStrategy();
+    internal IRequestRoutingStrategy CreateStrategy(string? name = null) => CreateRoutingFactory(name).CreateRoutingStrategy();
 
-    protected IRequestRoutingStrategyFactory CreateRoutingFactory(string? name = null) => Builder.Services.BuildServiceProvider().GetRoutingFactory(name ?? Builder.Name);
+    internal IRequestRoutingStrategyFactory CreateRoutingFactory(string? name = null) => Builder.Services.BuildServiceProvider().GetRoutingFactory(name ?? Builder.Name);
 
     private static IEnumerable<string> CollectUrls(IRequestRoutingStrategy strategy)
     {
@@ -177,7 +177,7 @@ public abstract class RoutingStrategyTest
 
     protected abstract IEnumerable<Action<IRoutingStrategyBuilder>> ConfigureInvalidRoutes();
 
-    protected abstract IRequestRoutingStrategy CreateEmptyStrategy();
+    internal abstract IRequestRoutingStrategy CreateEmptyStrategy();
 
     protected void SetupRandomizer(double result) => Randomizer.Setup(r => r.NextDouble(It.IsAny<double>())).Returns(result);
 

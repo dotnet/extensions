@@ -76,7 +76,7 @@ public class OrderedRoutingStrategyTest : RoutingStrategyTest
         yield return "https://dummy-route/";
     }
 
-    protected override IRequestRoutingStrategy CreateEmptyStrategy() => new OrderedGroupsRoutingStrategy(Mock.Of<IRandomizer>());
+    internal override IRequestRoutingStrategy CreateEmptyStrategy() => new OrderedGroupsRoutingStrategy(Mock.Of<IRandomizer>());
 
     protected override IEnumerable<Action<IRoutingStrategyBuilder>> ConfigureInvalidRoutes()
     {

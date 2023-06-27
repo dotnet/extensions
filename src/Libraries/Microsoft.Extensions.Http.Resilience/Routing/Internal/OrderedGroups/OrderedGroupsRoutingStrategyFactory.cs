@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Http.Resilience.Routing.Internal.OrderedGroups;
 
-internal sealed class OrderedGroupsRoutingStrategyFactory : PooledRoutingStrategyFactory<OrderedGroupsRoutingStrategy, OrderedGroupsRoutingOptions>
+internal sealed class OrderedGroupsRoutingStrategyFactory : RequestRoutingStrategyFactory<OrderedGroupsRoutingStrategy, OrderedGroupsRoutingOptions>
 {
     public OrderedGroupsRoutingStrategyFactory(string clientId, ObjectPool<OrderedGroupsRoutingStrategy> pool, IOptionsMonitor<OrderedGroupsRoutingOptions> optionsMonitor)
         : base(clientId, pool, optionsMonitor)

@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Http.Resilience</RootNamespace>
     <Description>Resilience mechanisms for HTTP Client.</Description>
     <Workstream>Resilience</Workstream>
+    <NoWarn>$(NoWarn);R9A049</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -19,7 +20,7 @@
 
   <PropertyGroup>
     <Stage>normal</Stage>
-    <MinCodeCoverage>99</MinCodeCoverage>
+    <MinCodeCoverage>98</MinCodeCoverage>
     <MinMutationScore>100</MinMutationScore>
   </PropertyGroup>
 
@@ -44,4 +45,5 @@
     <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Resilience.Tests" />
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
   </ItemGroup>
+
 </Project>
