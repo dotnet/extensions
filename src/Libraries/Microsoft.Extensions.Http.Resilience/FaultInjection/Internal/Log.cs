@@ -12,7 +12,7 @@ internal static partial class Log
         "Fault-injection group name: {groupName}. " +
         "Fault type: {faultType}. " +
         "Injected value: {injectedValue}. " +
-        "Http content key: {httpContentKey}. ")]
+        "Http content key: {httpContentKey}.")]
     public static partial void LogInjection(
         ILogger logger,
         string groupName,
