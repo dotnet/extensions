@@ -13,9 +13,12 @@
     <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
     <InjectxxH3OnLegacy>true</InjectxxH3OnLegacy>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
-    <InjectSharedThrow>false</InjectSharedThrow>
-    <InjectDiagnosticAttributesOnLegacy>false</InjectDiagnosticAttributesOnLegacy>
-    <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
+    <InjectSharedThrow>true</InjectSharedThrow>
+    <InjectDiagnosticAttributesOnLegacy>true</InjectDiagnosticAttributesOnLegacy>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
+    <InjectSharedDataValidation>true</InjectSharedDataValidation>
+    <InjectSharedPools>true</InjectSharedPools>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,6 +28,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.EnumStrings\Microsoft.Extensions.EnumStrings.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Resilience\Microsoft.Extensions.Resilience.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExceptionSummarization\Microsoft.Extensions.Diagnostics.ExceptionSummarization.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />

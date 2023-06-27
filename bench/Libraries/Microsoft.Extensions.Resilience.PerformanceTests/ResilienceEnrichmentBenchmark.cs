@@ -44,7 +44,7 @@ public class ResilienceEnrichmentBenchmark
         services.AddLogging();
         configure(services);
 
-        return services.BuildServiceProvider().GetRequiredService<ResilienceStrategyProvider<string>>().Get("my-strategy");
+        return services.BuildServiceProvider().GetRequiredService<ResilienceStrategyProvider<string>>().GetStrategy("my-strategy");
     }
 
     private class DummyStrategy : ResilienceStrategy

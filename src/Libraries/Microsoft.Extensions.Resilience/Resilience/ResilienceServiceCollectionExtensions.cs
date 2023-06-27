@@ -51,7 +51,7 @@ public static class ResilienceServiceCollectionExtensions
         services.TryAddActivatedSingleton<ResilienceEnricher>();
 
         _ = services
-            .AddOptions<TelemetryResilienceStrategyOptions>()
+            .AddOptions<TelemetryOptions>()
             .Configure<IServiceProvider>((options, serviceProvider) =>
             {
                 var enricher = serviceProvider.GetRequiredService<ResilienceEnricher>();

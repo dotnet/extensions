@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -12,13 +13,12 @@ using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
-using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience;
-using Microsoft.Extensions.Resilience.Internal;
 using Microsoft.Extensions.Telemetry.Metering;
 using Moq;
 using Polly;
+using Polly.Extensions.Telemetry;
 using Polly.Registry;
 using Xunit;
 
@@ -74,19 +74,30 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     [Fact]
-    public void AddResilienceHandler_EnsureFailureResultContext()
+    public async Task AddResilienceHandler_EnsureFailureResultContext()
     {
-        var serviceProvider = new ServiceCollection().AddHttpClient("client").AddResilienceHandler("test", ConfigureBuilder).Services.BuildServiceProvider();
-        var options = serviceProvider.GetRequiredService<IOptions<FailureEventMetricsOptions<HttpResponseMessage>>>().Value;
+        var asserted = false;
+        var services = new ServiceCollection()
+            .AddResilienceEnrichment()
+            .Configure<TelemetryOptions>(options =>
+            {
+                options.Enrichers.Add(context =>
+                {
+                    context.Tags.Single(t => t.Key == "failure-reason").Should().Be("500");
+                    asserted = true;
+                });
+            });
 
-        using var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-        var context = options.GetContextFromResult(response);
+        var clientBuilder = services.AddHttpClient("client");
+        clientBuilder.AddResilienceHandler("test", ConfigureBuilder);
+        clientBuilder.ConfigurePrimaryHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.InternalServerError));
 
-        context.FailureReason.Should().Be("500");
-        context.AdditionalInformation.Should().Be("InternalServerError");
-        context.FailureSource.Should().Be(TelemetryConstants.Unknown);
+        var client = services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("client");
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
 
-        options.GetContextFromResult(null!).FailureReason.Should().Be(TelemetryConstants.Unknown);
+        using var response = await client.SendAsync(request);
+
+        asserted.Should().BeTrue();
     }
 
     [Fact]

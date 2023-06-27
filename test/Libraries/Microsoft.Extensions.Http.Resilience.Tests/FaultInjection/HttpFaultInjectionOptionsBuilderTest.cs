@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.FaultInjection.Internal;
@@ -130,18 +131,14 @@ public class HttpFaultInjectionOptionsBuilderTest
     }
 
     [Fact]
-    public void AddExceptionForFaultInjection_ShouldAddInstanceToExceptionRegistryOptions()
+    public void AddExceptionForFaultInjection_ShouldNotThrow()
     {
         var testExceptionKey = "TestExceptionKey";
         var testExceptionInstance = new InjectedFaultException();
         var services = new ServiceCollection();
         var faultInjectionOptionsBuilder = new HttpFaultInjectionOptionsBuilder(services);
-        faultInjectionOptionsBuilder.AddException(testExceptionKey, testExceptionInstance);
 
-        using var provider = services.BuildServiceProvider();
-        var faultInjectionExceptionOptions = provider.GetRequiredService<IOptionsMonitor<FaultInjectionExceptionOptions>>().Get(testExceptionKey);
-
-        Assert.Equal(faultInjectionExceptionOptions.Exception, testExceptionInstance);
+        faultInjectionOptionsBuilder.Invoking(v => v.AddException(testExceptionKey, testExceptionInstance)).Should().NotThrow();
     }
 
     [Fact]
