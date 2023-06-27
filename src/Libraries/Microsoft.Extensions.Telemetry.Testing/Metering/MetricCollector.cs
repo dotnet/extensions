@@ -130,18 +130,19 @@ public sealed class MetricCollector<T> : IDisposable
             }
 
             _disposed = true;
-
-            _meterListener.Dispose();
-            _measurements.Clear();
-
-            // wake up anybody still waiting and inform them of the bad news: their horse is dead...
-            foreach (var w in _waiters)
-            {
-                _ = w.TaskSource.TrySetException(MakeObjectDisposedException());
-            }
-
-            _waiters.Clear();
         }
+
+        _meterListener.Dispose();
+        _measurements.Clear();
+
+        // wake up anybody still waiting and inform them of the bad news: their horse is dead...
+        foreach (var w in _waiters)
+        {
+            // trigger the task from outside the lock
+            _ = w.TaskSource.TrySetException(MakeObjectDisposedException());
+        }
+
+        _waiters.Clear();
     }
 
     /// <summary>
@@ -230,14 +231,15 @@ public sealed class MetricCollector<T> : IDisposable
             {
                 lock (_measurements)
                 {
-#if NET6_0_OR_GREATER
-                    w.TaskSource.TrySetCanceled(cancellationToken);
-#else
-                    w.TaskSource.TrySetCanceled();
-#endif
-
                     _waiters.Remove(w);
                 }
+
+                // trigger the task from outside the lock
+#if NET6_0_OR_GREATER
+                w.TaskSource.TrySetCanceled(cancellationToken);
+#else
+                w.TaskSource.TrySetCanceled();
+#endif
             });
         }
 
@@ -298,6 +300,7 @@ public sealed class MetricCollector<T> : IDisposable
     {
         var m = new CollectedMeasurement<T>(measurement, tags, _timeProvider.GetUtcNow());
 
+        List<Waiter>? toBeWoken = null;
         lock (_measurements)
         {
             if (!_disposed)
@@ -310,11 +313,21 @@ public sealed class MetricCollector<T> : IDisposable
                 {
                     if (_measurements.Count >= _waiters[i].MinCount)
                     {
-                        // we use TrySetResult since the task may already be in the Cancelled state due to a timeout.
-                        _ = _waiters[i].TaskSource.TrySetResult(true);
+                        toBeWoken ??= new();
+                        toBeWoken.Add(_waiters[i]);
                         _waiters.RemoveAt(i);
                     }
                 }
+            }
+        }
+
+        if (toBeWoken != null)
+        {
+            // trigger the task from outside the lock
+            foreach (var w in toBeWoken)
+            {
+                // we use TrySetResult since the task may already be in the Cancelled state due to a timeout.
+                _ = w.TaskSource.TrySetResult(true);
             }
         }
     }
@@ -341,8 +354,10 @@ public sealed class MetricCollector<T> : IDisposable
 
         public int MinCount { get; }
 
-        // The TCS is modified in a lock.
-        // Use RunContinuationsAsynchronously to ensure continuations don't run when holding the lock.
-        public TaskCompletionSource<bool> TaskSource { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        // NOTE: In order to avoid potential dead locks, this task should
+        // be completed when the main lock is not being held. Otherwise,
+        // application code being woken up by the task could potentially
+        // call back into the MetricCollector code and thus trigger a deadlock.
+        public TaskCompletionSource<bool> TaskSource { get; } = new();
     }
 }
