@@ -4,7 +4,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Options.Validation;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Http.Resilience;
 

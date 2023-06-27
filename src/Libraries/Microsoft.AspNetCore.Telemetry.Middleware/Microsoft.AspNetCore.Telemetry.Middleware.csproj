@@ -8,7 +8,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
-    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMeteringGenerator>true</UseMeteringGenerator>
     <InjectSharedThrow>false</InjectSharedThrow>
@@ -29,7 +28,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.AutoActivation\DependencyInjection.AutoActivation.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Telemetry\Microsoft.AspNetCore.Telemetry.csproj" />
   </ItemGroup>

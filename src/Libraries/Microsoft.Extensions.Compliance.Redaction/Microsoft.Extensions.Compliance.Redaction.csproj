@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
     <InjectxxH3OnLegacy>true</InjectxxH3OnLegacy>
   </PropertyGroup>
 

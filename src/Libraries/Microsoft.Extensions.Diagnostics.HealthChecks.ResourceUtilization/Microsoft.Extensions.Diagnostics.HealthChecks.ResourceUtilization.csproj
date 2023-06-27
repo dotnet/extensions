@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
   </PropertyGroup>

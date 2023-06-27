@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <InjectSharedTextFormatting>true</InjectSharedTextFormatting>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
@@ -23,7 +22,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
     <ProjectReference Include="..\..\ToBeRemoved\Options.ValidateOnStart\Options.ValidateOnStart.csproj" />
   </ItemGroup>
 
