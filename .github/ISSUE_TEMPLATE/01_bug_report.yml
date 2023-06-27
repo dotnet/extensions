@@ -46,7 +46,7 @@ body:
     attributes:
       label: Regression?
       description: |
-        Did this work in a previous build or release of .NET R9? If you can try a previous release or build to find out, that can help us narrow down the problem. If you don't know, that's OK.
+        Did this work in a previous build or release? If you can try a previous release or build to find out, that can help us narrow down the problem. If you don't know, that's OK.
       placeholder: Regression?
     validations:
       required: false
