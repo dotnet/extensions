@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Http.Resilience.FaultInjection;
 /// Provides extension methods for <see cref="Context"/>.
 /// </summary>
 [Experimental]
-public static class PolicyContextExtensions
+public static class ContextExtensions
 {
     private const string CallingRequestMessage = "CallingRequestMessage";
 

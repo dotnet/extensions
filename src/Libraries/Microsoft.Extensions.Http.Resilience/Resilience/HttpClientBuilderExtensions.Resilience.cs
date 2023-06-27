@@ -37,11 +37,9 @@ public static partial class HttpClientBuilderExtensions
         _ = Throw.IfNullOrEmpty(strategyName);
         _ = Throw.IfNull(configure);
 
-        var resilienceBuilder = builder.AddResilienceHandler(
-            strategyName,
-            (builder, _) => configure(builder));
+        return builder.AddResilienceHandler(strategyName, ConfigureBuilder);
 
-        return resilienceBuilder;
+        void ConfigureBuilder(ResilienceStrategyBuilder<HttpResponseMessage> builder, ResilienceHandlerContext context) => configure(builder);
     }
 
     /// <summary>

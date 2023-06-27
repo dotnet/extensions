@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Http.Resilience.FaultInjection.Test;
 
-public class PolicyContextExtensionsTest
+public class ContextExtensionsTest
 {
     [Fact]
     public void WithCallingRequestMessage_ShouldSetRequestMessageInContext()
