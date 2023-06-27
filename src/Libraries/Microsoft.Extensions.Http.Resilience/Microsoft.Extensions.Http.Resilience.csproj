@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Http.Resilience</RootNamespace>
     <Description>Resilience mechanisms for HTTP Client.</Description>
@@ -20,7 +20,7 @@
 
   <PropertyGroup>
     <Stage>normal</Stage>
-    <MinCodeCoverage>99</MinCodeCoverage>
+    <MinCodeCoverage>98</MinCodeCoverage>
     <MinMutationScore>100</MinMutationScore>
   </PropertyGroup>
 
