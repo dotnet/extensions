@@ -158,6 +158,7 @@ if ($mutationTest) {
 
   # Create a marker file
   '' | Out-File .mutationtests
+  'net8.0' | Out-File '.targetframeworks'
 }
 
 
@@ -217,6 +218,7 @@ try {
 finally {
   if ($mutationTest) {
     Remove-Item -Path .mutationtests
+    Remove-Item -Path .targetframeworks
   }
 }
 
