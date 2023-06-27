@@ -13,8 +13,10 @@ using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
+using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience;
+using Microsoft.Extensions.Resilience.Test.Resilience;
 using Microsoft.Extensions.Telemetry.Metering;
 using Moq;
 using Polly;
@@ -76,6 +78,8 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [Fact]
     public async Task AddResilienceHandler_EnsureFailureResultContext()
     {
+        using var listener = MeteringUtil.ListenPollyMetrics();
+
         var asserted = false;
         var services = new ServiceCollection()
             .AddResilienceEnrichment()
@@ -83,14 +87,25 @@ public sealed partial class HttpClientBuilderExtensionsTests
             {
                 options.Enrichers.Add(context =>
                 {
-                    context.Tags.Single(t => t.Key == "failure-reason").Should().Be("500");
+                    var dict = context.Tags.ToDictionary(t => t.Key, t => t.Value);
+                    dict.Should().ContainKey("failure-reason").WhoseValue.Should().Be("500");
+                    dict.Should().ContainKey("failure-summary").WhoseValue.Should().Be("InternalServerError");
+                    dict.Should().ContainKey("failure-source").WhoseValue.Should().Be(TelemetryConstants.Unknown);
+
                     asserted = true;
                 });
             });
 
-        var clientBuilder = services.AddHttpClient("client");
-        clientBuilder.AddResilienceHandler("test", ConfigureBuilder);
-        clientBuilder.ConfigurePrimaryHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.InternalServerError));
+        var clientBuilder = services
+            .AddHttpClient("client")
+            .ConfigurePrimaryHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.InternalServerError))
+            .AddStandardResilienceHandler()
+            .Configure(options =>
+            {
+                options.RetryOptions.ShouldHandle = _ => PredicateResult.True;
+                options.RetryOptions.RetryCount = 1;
+                options.RetryOptions.BaseDelay = TimeSpan.Zero;
+            });
 
         var client = services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("client");
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
