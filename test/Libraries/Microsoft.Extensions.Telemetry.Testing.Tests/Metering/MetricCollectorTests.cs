@@ -366,8 +366,8 @@ public static class MetricCollectorTests
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await collector.WaitForMeasurementsAsync(1));
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await collector.WaitForMeasurementsAsync(1, TimeSpan.FromSeconds(1)));
 
-        Assert.True(wait.IsCompleted);
-        Assert.True(wait.IsFaulted);
+        Assert.True(wait.IsCompleted, $"Wait task should be completed. Status: {wait.Status}");
+        Assert.True(wait.IsFaulted, $"Wait task should be faulted. Status: {wait.Status}");
 
         collector = new MetricCollector<long>(meter, CounterName, timeProvider);
         collector.Dispose();
