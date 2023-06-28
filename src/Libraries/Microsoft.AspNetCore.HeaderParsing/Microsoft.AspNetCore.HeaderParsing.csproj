@@ -8,7 +8,6 @@
 
   <PropertyGroup>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
     <UseMeteringGenerator>true</UseMeteringGenerator>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
@@ -23,7 +22,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.ObjectPool.DependencyInjection\Microsoft.Extensions.ObjectPool.DependencyInjection.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
     <ProjectReference Include="..\..\ToBeRemoved\Options.ValidateOnStart\Options.ValidateOnStart.csproj" />
   </ItemGroup>
 

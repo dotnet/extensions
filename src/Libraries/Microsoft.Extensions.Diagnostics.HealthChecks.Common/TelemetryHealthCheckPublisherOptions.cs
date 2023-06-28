@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 /// <summary>
 /// Options for the telemetry health check publisher.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 public class TelemetryHealthCheckPublisherOptions
 {
     /// <summary>

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -65,7 +65,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// <param name="builder">The strategy builder.</param>
     /// <param name="configure">The configure method.</param>
     /// <returns>The same builder instance.</returns>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, Action<HttpStandardHedgingResilienceOptions, IServiceProvider> configure)
     {
         _ = Throw.IfNull(builder);

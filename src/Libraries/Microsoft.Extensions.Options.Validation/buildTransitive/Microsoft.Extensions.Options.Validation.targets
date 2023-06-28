@@ -1,3 +1,0 @@
-<Project>
-  <Import Project="$(MSBuildThisFileDirectory)/MultiTargetRoslynComponent.targets" />
-</Project>

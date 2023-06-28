@@ -61,9 +61,9 @@ public class ComplexModel
     [ValidateObjectMembers]
     public ModelWithoutOptionsValidator? ValWithoutOptionsValidator { get; set; }
 
-#pragma warning disable R9G113
+#pragma warning disable SYSLIB1212 // Member potentially missing transitive validation.
     public Model? ValWithoutRecursiveValidation { get; set; }
-#pragma warning restore R9G113
+#pragma warning restore SYSLIB1212 // Member potentially missing transitive validation.
 }
 
 public class InceptionComplexModel

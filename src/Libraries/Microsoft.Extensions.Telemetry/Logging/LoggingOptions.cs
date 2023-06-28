@@ -59,7 +59,7 @@ public class LoggingOptions
     /// <remarks>
     /// When set to a value less than 2 KB or greater than 32 KB, an exception will be thrown.
     /// </remarks>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     [Range(MinDefinedStackTraceLength, MaxDefinedStackTraceLength, ErrorMessage = "Maximum stack trace length should be between 2kb and 32kb")]
     public int MaxStackTraceLength { get; set; } = DefaultStackTraceLength;
 }

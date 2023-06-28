@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 [AttributeUsage(AttributeTargets.Method)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class RequestNameAttribute : Attribute

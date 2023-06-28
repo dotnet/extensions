@@ -9,6 +9,10 @@
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMeteringGenerator>true</UseMeteringGenerator>
     <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
+    <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
+    <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
+    <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
+    <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
   </PropertyGroup>
@@ -21,7 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExceptionSummarization\Microsoft.Extensions.Diagnostics.ExceptionSummarization.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
   </ItemGroup>
 
