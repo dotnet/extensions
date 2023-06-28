@@ -16,7 +16,17 @@
     <!-- This is false for local development, but set to true in the CI system -->
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">false</TreatWarningsAsErrors>
 
-    <!-- TODO: to be reenabled and all warnings fixed (https://github.com/dotnet/r9/issues/177) -->
+    <!--
+      TODO: to be resolved (https://github.com/dotnet/extensions/issues/4128)
+
+      warning CS0436: (NETCORE_ENGINEERING_TELEMETRY=Build) The type '__Attributes' in
+      'Microsoft.Extensions.Options.SourceGeneration/Microsoft.Extensions.Options.Generators.Generator/Validators.g.cs' conflicts with the imported type
+      '__Attributes' in 'Microsoft.Extensions.Telemetry, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.
+      Using the type defined in 'Microsoft.Extensions.Options.SourceGeneration/Microsoft.Extensions.Options.Generators.Generator/Validators.g.cs'.
+     -->
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+
+    <!-- TODO: to be re-enabled and all warnings fixed (https://github.com/dotnet/extensions/issues/4002) -->
     <NoWarn>$(NoWarn);IL2026;IL2087;IL2067;IL2075;IL2091;IL2072;IL2090;CA1825;IL2070;IL2098;IL2057</NoWarn>
 
     <!-- Prevent analyzer crashes from stopping things -->
@@ -35,14 +45,14 @@
     <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net472' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>
   </PropertyGroup>
 
-  <!-- .NET 8 specific configurations (https://github.com/dotnet/r9/issues/177) -->
+  <!-- .NET 8 specific configurations (https://github.com/dotnet/extensions/issues/4126) -->
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
     <!-- Ignore ASP0019: Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate key  -->
     <NoWarn>$(NoWarn);ASP0019</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Ignore RS1024: Compare symbols correctly (https://github.com/dotnet/r9/issues/177) -->
+    <!-- Ignore RS1024: Compare symbols correctly (https://github.com/dotnet/extensions/issues/4127) -->
     <NoWarn>$(NoWarn);RS1024</NoWarn>
   </PropertyGroup>
 
