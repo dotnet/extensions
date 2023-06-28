@@ -7,7 +7,6 @@
     <Workstream>Fundamentals</Workstream>
     <Category>HTTP Processing</Category>
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
-    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
   </PropertyGroup>
 
@@ -23,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Libraries\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
     <ProjectReference Include="..\..\ToBeRemoved\Options.ValidateOnStart\Options.ValidateOnStart.csproj" />
   </ItemGroup>
 

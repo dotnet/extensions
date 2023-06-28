@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -65,7 +65,7 @@ public static class HttpStandardResilienceBuilderBuilderExtensions
     /// <param name="configure">The configure method.</param>
     /// <returns>The same builder instance.</returns>
 #pragma warning disable S3872 // Parameter names should not duplicate the names of their methods
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public static IHttpStandardResilienceStrategyBuilder Configure(this IHttpStandardResilienceStrategyBuilder builder, Action<HttpStandardResilienceOptions, IServiceProvider> configure)
 #pragma warning restore S3872 // Parameter names should not duplicate the names of their methods
     {

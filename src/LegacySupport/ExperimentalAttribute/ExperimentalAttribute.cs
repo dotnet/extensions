@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if !NET8_0_OR_GREATER
+
 namespace System.Diagnostics.CodeAnalysis;
 
 /// <summary>
@@ -24,30 +26,31 @@ internal sealed class ExperimentalAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="ExperimentalAttribute"/> class.
     /// </summary>
-    public ExperimentalAttribute()
+    /// <param name="diagnosticId">Human readable explanation for marking experimental API.</param>
+    public ExperimentalAttribute(string diagnosticId)
     {
-        // Intentionally left empty.
+        DiagnosticId = diagnosticId;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExperimentalAttribute"/> class.
+    ///  Gets the ID that the compiler will use when reporting a use of the API the attribute applies to.
     /// </summary>
-    /// <param name="message">Human readable explanation for marking experimental API.</param>
-    public ExperimentalAttribute(string message)
-    {
-#pragma warning disable R9A014 // Use the 'Microsoft.Extensions.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
-#pragma warning disable R9A039 // Remove superfluous null check when compiling in a nullable context
-#pragma warning disable R9A060 // Consider removing unnecessary null coalescing (??) since the left-hand value is statically known not to be null
-#pragma warning disable SA1101 // Prefix local calls with this
-        Message = message ?? throw new ArgumentNullException(nameof(message));
-#pragma warning restore SA1101 // Prefix local calls with this
-#pragma warning restore R9A060 // Consider removing unnecessary null coalescing (??) since the left-hand value is statically known not to be null
-#pragma warning restore R9A039 // Remove superfluous null check when compiling in a nullable context
-#pragma warning restore R9A014 // Use the 'Microsoft.Extensions.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
-    }
+    /// <value>The unique diagnostic ID.</value>
+    /// <remarks>
+    ///  The diagnostic ID is shown in build output for warnings and errors.
+    ///  <para>This property represents the unique ID that can be used to suppress the warnings or errors, if needed.</para>
+    /// </remarks>
+    public string DiagnosticId { get; }
 
     /// <summary>
-    /// Gets a human readable explanation for marking API as experimental.
+    ///  Gets or sets the URL for corresponding documentation.
+    ///  The API accepts a format string instead of an actual URL, creating a generic URL that includes the diagnostic ID.
     /// </summary>
-    public string? Message { get; }
+    /// <value>The format string that represents a URL to corresponding documentation.</value>
+    /// <remarks>An example format string is <c>https://contoso.com/obsoletion-warnings/{0}</c>.</remarks>
+#pragma warning disable S3996 // URI properties should not be strings
+    public string? UrlFormat { get; set; }
+#pragma warning restore S3996 // URI properties should not be strings
 }
+
+#endif

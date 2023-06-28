@@ -21,7 +21,7 @@ internal interface IHttpRouteFormatter
     /// <param name="redactionMode">Strategy to decide how parameters are redacted.</param>
     /// <param name="parametersToRedact">Dictionary of parameters with their data classification that needs to be redacted.</param>
     /// <returns>Returns formatted path with sensitive parameter values redacted.</returns>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     string Format(string httpRoute, string httpPath, HttpRouteParameterRedactionMode redactionMode, IReadOnlyDictionary<string, DataClassification> parametersToRedact);
 
     /// <summary>
@@ -32,6 +32,6 @@ internal interface IHttpRouteFormatter
     /// <param name="redactionMode">Strategy to decide how parameters are redacted.</param>
     /// <param name="parametersToRedact">Dictionary of parameters with their data classification that needs to be redacted.</param>
     /// <returns>Returns formatted path with sensitive parameter values redacted.</returns>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     string Format(in ParsedRouteSegments routeSegments, string httpPath, HttpRouteParameterRedactionMode redactionMode, IReadOnlyDictionary<string, DataClassification> parametersToRedact);
 }

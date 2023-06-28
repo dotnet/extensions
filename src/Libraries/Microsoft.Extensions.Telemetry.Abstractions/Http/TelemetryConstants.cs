@@ -28,12 +28,12 @@ public static class TelemetryConstants
     /// <summary>
     /// Header for client application name, sent on an outgoing http call.
     /// </summary>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public const string ClientApplicationNameHeader = "X-ClientApplication";
 
     /// <summary>
     /// Header for server application name, sent on a http request.
     /// </summary>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public const string ServerApplicationNameHeader = "X-ServerApplication";
 }

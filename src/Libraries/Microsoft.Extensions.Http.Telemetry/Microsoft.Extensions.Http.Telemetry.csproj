@@ -8,7 +8,6 @@
   <PropertyGroup>
     <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
     <UseMeteringGenerator>true</UseMeteringGenerator>
     <UseMeteringReportsGenerator>true</UseMeteringReportsGenerator>
     <InjectGetOrAddOnLegacy>false</InjectGetOrAddOnLegacy>
@@ -32,7 +31,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.AutoActivation\DependencyInjection.AutoActivation.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.EnumStrings\Microsoft.Extensions.EnumStrings.csproj" />
   </ItemGroup>

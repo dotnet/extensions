@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 /// OpenTelemetry Logger provider class.
 /// </summary>
 [ProviderAlias("R9")]
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 public sealed class LoggerProvider : BaseProvider, ILoggerProvider, ISupportExternalScope
 {
     private const int ProcessorShutdownGracePeriodInMs = 5000;
