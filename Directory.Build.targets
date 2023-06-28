@@ -102,7 +102,7 @@
       <_BlameArgs>--blame --blame-crash --blame-crash-dump-type full --blame-hang --blame-hang-dump-type full --blame-hang-timeout 6m</_BlameArgs>
 
       <!-- This property is used by the Arcade SDK while bootstrapping the VS Test runner -->
-      <TestRunnerAdditionalArguments>$(TestRunnerAdditionalArguments) $(_BlameArgs)</TestRunnerAdditionalArguments>
+      <TestRunnerAdditionalArguments>$(TestRunnerAdditionalArguments)</TestRunnerAdditionalArguments>
     </PropertyGroup>
   </Target>
 </Project>
