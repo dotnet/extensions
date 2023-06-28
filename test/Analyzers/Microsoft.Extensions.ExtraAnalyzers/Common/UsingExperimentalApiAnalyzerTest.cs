@@ -13,19 +13,12 @@ public static class UsingExperimentalApiAnalyzerTest
     [MemberData(nameof(TestData))]
     public static async Task Common(string source)
     {
-        const string AttributeSource = @"
-            namespace System.Diagnostics.CodeAnalysis
-            {
-                public sealed class ExperimentalAttribute : System.Attribute { }
-            }";
-
         var d = await RoslynTestUtils.RunAnalyzer(
                 new UsingExperimentalApiAnalyzer(),
                 null,
                 new[]
                 {
                     source,
-                    AttributeSource,
                 }).ConfigureAwait(false);
 
         var expectedCount = source.CountSpans();
@@ -81,7 +74,7 @@ public static class UsingExperimentalApiAnalyzerTest
             using System.Diagnostics.CodeAnalysis;
 
             #pragma warning disable R9A029
-            [assembly: Experimental]
+            [assembly: Experimental(diagnosticId: ""TBD"", UrlFormat = ""TBD"")]
             #pragma warning restore R9A029
 
             public class TestClass : /*0+*/ExpClass/*-0*/
