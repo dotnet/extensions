@@ -76,7 +76,6 @@ public static partial class HttpClientBuilderExtensions
 
         builder.Services.TryAddSingleton<Randomizer>();
 
-        _ = builder.Services.AddValidatedOptions<RequestRoutingStrategyOptions, RequestRoutingStrategyOptionsValidator>(optionsName);
         _ = builder.Services.AddValidatedOptions<HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsValidator>(optionsName);
         _ = builder.Services.AddValidatedOptions<HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsCustomValidator>(optionsName);
         _ = builder.Services.PostConfigure<HttpStandardHedgingResilienceOptions>(optionsName, options =>

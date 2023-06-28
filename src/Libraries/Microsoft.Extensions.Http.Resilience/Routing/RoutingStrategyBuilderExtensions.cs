@@ -6,10 +6,12 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Extensions.Http.Resilience.Internal.Routing;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal.OrderedGroups;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal.WeightedGroups;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Resilience;
@@ -35,9 +37,8 @@ public static class RoutingStrategyBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        _ = builder.Services.Configure<OrderedGroupsRoutingOptions>(builder.Name, section);
-
-        return builder.ConfigureOrderedGroupsCore();
+        _ = builder.ConfigureOrderedGroupsCore().Bind(section);
+        return builder;
     }
 
     /// <summary>
@@ -70,11 +71,9 @@ public static class RoutingStrategyBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        _ = builder.Services
-            .AddOptions<OrderedGroupsRoutingOptions>(builder.Name)
-            .Configure(configure);
+        _ = builder.ConfigureOrderedGroupsCore().Configure(configure);
 
-        return builder.ConfigureOrderedGroupsCore();
+        return builder;
     }
 
     /// <summary>
@@ -91,9 +90,9 @@ public static class RoutingStrategyBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        _ = builder.Services.Configure<WeightedGroupsRoutingOptions>(builder.Name, section);
+        _ = builder.ConfigureWeightedGroupsCore().Bind(section);
 
-        return builder.ConfigureWeightedGroupsCore();
+        return builder;
     }
 
     /// <summary>
@@ -130,7 +129,9 @@ public static class RoutingStrategyBuilderExtensions
             .AddOptions<WeightedGroupsRoutingOptions>(builder.Name)
             .Configure(configure);
 
-        return builder.ConfigureWeightedGroupsCore();
+        _ = builder.ConfigureWeightedGroupsCore().Configure(configure);
+
+        return builder;
     }
 
     internal static IRoutingStrategyBuilder ConfigureRoutingStrategy(this IRoutingStrategyBuilder builder, Func<IServiceProvider, Func<RequestRoutingStrategy>> factory)
@@ -142,24 +143,27 @@ public static class RoutingStrategyBuilderExtensions
         return builder;
     }
 
-    private static IRoutingStrategyBuilder ConfigureOrderedGroupsCore(this IRoutingStrategyBuilder builder)
+    private static OptionsBuilder<OrderedGroupsRoutingOptions> ConfigureOrderedGroupsCore(this IRoutingStrategyBuilder builder)
     {
-        return builder.ConfigureRoutingStrategy(serviceProvider =>
+        _ = builder.ConfigureRoutingStrategy(serviceProvider =>
         {
             var optionsCache = new NamedOptionsCache<OrderedGroupsRoutingOptions>(builder.Name, serviceProvider.GetRequiredService<IOptionsMonitor<OrderedGroupsRoutingOptions>>());
             var factory = new OrderedGroupsRoutingStrategyFactory(serviceProvider.GetRequiredService<Randomizer>(), optionsCache);
             return () => factory.Get();
         });
+
+        return builder.Services.AddValidatedOptions<OrderedGroupsRoutingOptions, OrderedGroupsRoutingOptionsValidator>(builder.Name);
     }
 
-
-    private static IRoutingStrategyBuilder ConfigureWeightedGroupsCore(this IRoutingStrategyBuilder builder)
+    private static OptionsBuilder<WeightedGroupsRoutingOptions> ConfigureWeightedGroupsCore(this IRoutingStrategyBuilder builder)
     {
-        return builder.ConfigureRoutingStrategy(serviceProvider =>
+        _ = builder.ConfigureRoutingStrategy(serviceProvider =>
         {
             var optionsCache = new NamedOptionsCache<WeightedGroupsRoutingOptions>(builder.Name, serviceProvider.GetRequiredService<IOptionsMonitor<WeightedGroupsRoutingOptions>>());
             var factory = new WeightedGroupsRoutingStrategyFactory(serviceProvider.GetRequiredService<Randomizer>(), optionsCache);
             return () => factory.Get();
         });
+
+        return builder.Services.AddValidatedOptions<WeightedGroupsRoutingOptions, WeightedGroupsRoutingOptionsValidator>(builder.Name);
     }
 }

@@ -38,7 +38,7 @@ public abstract class RoutingStrategyTest
     {
         Configure(Builder);
 
-        Assert.Throws<InvalidOperationException>(() => CreateStrategy("unknown"));
+        Assert.Throws<OptionsValidationException>(() => CreateStrategy("unknown"));
     }
 
     [Fact]

@@ -178,7 +178,6 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
 
         SetupRouting();
         SetupRoutes(1);
-        SetupCloner(request, false);
         AddResponse(HttpStatusCode.OK);
 
         using var client = CreateClientWithHandler();
@@ -250,7 +249,6 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         // act && assert
         AddResponse(HttpStatusCode.InternalServerError, 3);
         using var firstRequest = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
-        SetupCloner(firstRequest, true);
         await client.SendAsync(firstRequest);
         AssertNoResponse();
 
@@ -258,7 +256,6 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
 
         AddResponse(HttpStatusCode.InternalServerError, 7);
         using var secondRequest = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
-        SetupCloner(secondRequest, true);
         await client.SendAsync(secondRequest);
         AssertNoResponse();
     }
