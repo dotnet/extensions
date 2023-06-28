@@ -49,7 +49,7 @@ internal sealed class RedactorProvider : IRedactorProvider
             }
         }
 
-        return dict.ToFrozenDictionary(optimizeForReading: true);
+        return dict.ToFrozenDictionary();
     }
 
     private static Redactor GetFallbackRedactor(IEnumerable<Redactor> redactors, Type defaultRedactorType)

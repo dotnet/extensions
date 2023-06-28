@@ -17,31 +17,40 @@
   <ItemGroup>
     <PackageVersion Include="AutoFixture.AutoMoq" Version="4.17.0" />
     <PackageVersion Include="autofixture" Version="4.17.0" />
-    <PackageVersion Include="BenchmarkDotNet" Version="0.13.2" />
-    <PackageVersion Include="FluentAssertions" Version="6.2.0" />
-    <PackageVersion Include="Grpc.Core.Testing" Version="2.41.0" />
-    <PackageVersion Include="K4os.Hash.xxHash" Version="1.0.7" />
-    <PackageVersion Include="MessagePack" Version="2.4.35" />
-    <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.18.0" />
-    <PackageVersion Include="Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel" Version="2.18.0" />
-    <PackageVersion Include="Microsoft.Cloud.InstrumentationFramework" Version="3.3.4.1" />
-    <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="2.0.76" />
-    <PackageVersion Include="Microsoft.GenevaAgentChannel" Version="5.1.15580001" />
-    <PackageVersion Include="Microsoft.Skype.Seatbelt.Core.ClientHelpers" Version="8.6.0" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.13.5" />
+    <PackageVersion Include="FluentAssertions" Version="6.11.0" />
+    <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.3" />
     <PackageVersion Include="Moq.AutoMock" Version="3.1.0" />
-    <PackageVersion Include="Moq" Version="4.16.1" />
+    <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="OpenTelemetry.Exporter.InMemory" Version="1.4.0" />
-    <PackageVersion Include="ServiceFabric.Mocks" Version="4.2.6" />
     <PackageVersion Include="StrongNamer" Version="0.2.5" />
-    <PackageVersion Include="System.Data.HashFunction.xxHash" Version="2.0.0" />
-    <PackageVersion Include="Unofficial.Microsoft.WindowsAzure.ServiceRuntime.Msshrtmi" Version="2.9.0" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerVersion)" />
     <PackageVersion Include="Xunit.Combinatorial" Version="1.5.25" />
     <PackageVersion Include="xunit.extensibility.execution" Version="2.4.2" />
   </ItemGroup>
 
-  <Import Project="$(MSBuildThisFileDirectory)\TestOnly-net462.props" />
-  <Import Project="$(MSBuildThisFileDirectory)\TestOnly-netcoreapp3.1.props" />
-  <Import Project="$(MSBuildThisFileDirectory)\TestOnly-net6.0.props" />
-  <Import Project="$(MSBuildThisFileDirectory)\TestOnly-net7.0.props" />
-  <Import Project="$(MSBuildThisFileDirectory)\TestOnly-latest.props" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.22" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="3.1.22" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="6.0.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.8" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="7.0.8" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == '$(LatestTargetFramework)'">
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(MicrosoftAspNetCoreMvcTestingVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostVersion)" />
+  </ItemGroup>
 </Project>

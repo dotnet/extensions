@@ -4,16 +4,11 @@
   <!-- Packages used only during build time -->
 
   <ItemGroup>
-    <PackageVersion Include="FlatSharp.Compiler" Version="6.3.5" />
-    <PackageVersion Include="Google.Protobuf.Tools" Version="3.21.9" />
-    <PackageVersion Include="Grpc.Tools" Version="2.45.0" />
-    <PackageVersion Include="LibGit2Sharp" Version="0.27.0-preview-0175" />
+    <PackageVersion Include="LibGit2Sharp" Version="0.27.2" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="17.4.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0" />
-    <PackageVersion Include="Microsoft.M365.Internal.Security.SecurityTooling.SDLToolingConfig" Version="0.8.0" GeneratePathProperty="true" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.5.22" />
-    <PackageVersion Include="MSBuild.StructuredLogger" Version="2.1.790" />
+    <PackageVersion Include="MSBuild.StructuredLogger" Version="2.1.820" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="8.52.0.60960" />
     <PackageVersion Include="StyleCop.Analyzers.Unstable" Version="1.2.0.435" />
   </ItemGroup>

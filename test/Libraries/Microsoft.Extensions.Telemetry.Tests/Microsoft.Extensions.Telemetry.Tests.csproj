@@ -32,6 +32,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
-    <PackageReference Include="System.Net.Http" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" />
+    <PackageReference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net462'" />
   </ItemGroup>
 </Project>

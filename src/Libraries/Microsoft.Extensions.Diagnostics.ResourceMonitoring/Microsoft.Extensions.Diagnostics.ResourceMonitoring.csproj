@@ -20,7 +20,7 @@
     <MinMutationScore>90</MinMutationScore>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <Compile Remove="Linux\*.cs" />
     <Compile Remove="Linux\*\*.cs" />
   </ItemGroup>
@@ -34,7 +34,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Condition="'$(TargetFramework)' == 'net462'" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Condition="'$(TargetFramework)' != 'net462'" />
     <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />

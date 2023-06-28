@@ -28,7 +28,7 @@ internal sealed class TcpTableInfo
 #pragma warning disable CS0618
             .Select(s => (uint)IPAddress.Parse(s).Address)
 #pragma warning restore CS0618
-            .ToFrozenSet(optimizeForReading: true);
+            .ToFrozenSet();
         _cachingInterval = options.Value.CachingInterval;
         _refreshAfter = default;
     }

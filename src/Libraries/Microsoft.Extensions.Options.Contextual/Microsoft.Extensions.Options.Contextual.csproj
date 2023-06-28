@@ -27,8 +27,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Options" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'" />
-    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Condition="'$(TargetFramework)' == 'net462'" />
+    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFramework)' == 'net462'" />
   </ItemGroup>
 
   <ItemGroup>

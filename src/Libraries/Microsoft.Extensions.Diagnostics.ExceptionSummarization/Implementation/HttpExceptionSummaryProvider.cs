@@ -59,8 +59,8 @@ internal sealed class HttpExceptionSummaryProvider : IExceptionSummaryProvider
         }
 
         _descriptions = descriptions.ToImmutableArray();
-        _socketErrorMap = socketErrors.ToFrozenDictionary(optimizeForReading: true);
-        _webExceptionStatusMap = webStatuses.ToFrozenDictionary(optimizeForReading: true);
+        _socketErrorMap = socketErrors.ToFrozenDictionary();
+        _webExceptionStatusMap = webStatuses.ToFrozenDictionary();
     }
 
     public IEnumerable<Type> SupportedExceptionTypes { get; } = new[]

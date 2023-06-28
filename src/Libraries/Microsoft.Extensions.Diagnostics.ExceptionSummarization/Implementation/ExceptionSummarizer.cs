@@ -32,7 +32,7 @@ internal sealed class ExceptionSummarizer : IExceptionSummarizer
             }
         }
 
-        _exceptionTypesToProviders = exceptionTypesToProvidersBuilder.ToFrozenDictionary(optimizeForReading: true);
+        _exceptionTypesToProviders = exceptionTypesToProvidersBuilder.ToFrozenDictionary();
     }
 
     /// <summary>
