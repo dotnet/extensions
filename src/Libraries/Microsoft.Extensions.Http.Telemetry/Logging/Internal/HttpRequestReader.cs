@@ -53,7 +53,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         _requestMetadataContext = requestMetadataContext;
         _downstreamDependencyMetadataManager = downstreamDependencyMetadataManager;
 
-        _defaultSensitiveParameters = optionsValue.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true);
+        _defaultSensitiveParameters = optionsValue.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
 
         if (optionsValue.LogBody)
         {

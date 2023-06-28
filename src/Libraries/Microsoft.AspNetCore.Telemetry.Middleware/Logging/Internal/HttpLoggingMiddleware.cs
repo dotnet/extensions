@@ -86,7 +86,7 @@ internal sealed class HttpLoggingMiddleware : IMiddleware
             _logResponseBody = optionsValue.ResponseBodyContentTypes.Count > 0;
         }
 
-        _parametersToRedactMap = optionsValue.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true);
+        _parametersToRedactMap = optionsValue.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
 
         _requestPathLogMode = EnsureRequestPathLoggingModeIsValid(optionsValue.RequestPathLoggingMode);
         _parameterRedactionMode = optionsValue.RequestPathParameterRedactionMode;

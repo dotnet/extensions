@@ -451,7 +451,7 @@ internal sealed class Emitter : EmitterBase
                     }
                 }
 
-                OutCloseBraceWithExtra(frozenDictionaryAvailable ? ", optimizeForReading: true);" : ";");
+                OutCloseBraceWithExtra(frozenDictionaryAvailable ? ");" : ";");
             }
 
             var keyType = IsBigEnum(tsm) ? "ulong" : "int";

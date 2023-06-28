@@ -35,7 +35,7 @@ internal sealed class HttpResponseBodyReader
 
         var responseOptions = options.Value;
         _streamManager = new RecyclableMemoryStreamManager();
-        _readableResponseContentTypes = responseOptions.ResponseBodyContentTypes.ToFrozenSet(StringComparer.OrdinalIgnoreCase, optimizeForReading: true);
+        _readableResponseContentTypes = responseOptions.ResponseBodyContentTypes.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
         _responseReadLimit = responseOptions.BodySizeLimit;
 
         debugger ??= DebuggerState.System;

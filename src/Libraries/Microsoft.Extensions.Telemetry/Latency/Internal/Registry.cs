@@ -41,7 +41,7 @@ internal sealed class Registry
             keyOrderBuilder.Add(OrderedKeys[i], i);
         }
 
-        _keyOrder = keyOrderBuilder.ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true);
+        _keyOrder = keyOrderBuilder.ToFrozenDictionary(StringComparer.Ordinal);
         _throwOnUnregisteredKeyLookup = throwOnUnregisteredKeyLookup;
     }
 

@@ -47,7 +47,7 @@ internal sealed class HttpClientRedactionProcessor : BaseProcessor<Activity>
         _requestMetadataContext = requestMetadataContext;
         _downstreamDependencyMetadataManager = downstreamDependencyMetadataManager;
 
-        _parametersToRedact = _options.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true);
+        _parametersToRedact = _options.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
 
         _logger.ConfiguredHttpClientTracingOptions(_options);
     }

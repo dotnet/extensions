@@ -60,7 +60,7 @@ internal sealed class IncomingHttpRouteUtility : IIncomingHttpRouteUtility
             }
         }
 
-        return _parametersToRedactCache.GetOrAdd(httpRoute, static (_, paramsToRedact) => paramsToRedact.ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true), parametersToRedact);
+        return _parametersToRedactCache.GetOrAdd(httpRoute, static (_, paramsToRedact) => paramsToRedact.ToFrozenDictionary(StringComparer.Ordinal), parametersToRedact);
     }
 #else
     public IReadOnlyDictionary<string, DataClassification> GetSensitiveParameters(string httpRoute, HttpRequest request, IReadOnlyDictionary<string, DataClassification> defaultSensitiveParameters)
