@@ -6,12 +6,6 @@
 
     <!-- Redirect test logs into a subfolder -->
     <TestResultsLogDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsLogDir)', 'TestLogs'))</TestResultsLogDir>
-
-    <!--
-      Run tests with the VS Test Runner (dotnet test) instead of the XUnit Test runner (dotnet exec).
-      This is needed to produce Cobertura code coverage. See the targets file to more information.
-    -->
-    <UseVSTestRunner>true</UseVSTestRunner>
   </PropertyGroup>
 
   <ItemGroup>
