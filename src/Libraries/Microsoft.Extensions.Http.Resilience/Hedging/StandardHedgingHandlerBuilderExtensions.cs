@@ -64,7 +64,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// <param name="configure">The configure method.</param>
     /// <returns>The same builder instance.</returns>
 #pragma warning disable S3872 // Parameter names should not duplicate the names of their methods
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, Action<HttpStandardHedgingResilienceOptions, IServiceProvider> configure)
 #pragma warning restore S3872 // Parameter names should not duplicate the names of their methods
     {

@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Http.Resilience.FaultInjection;
 /// <summary>
 /// Provides extension methods for <see cref="Polly.Context"/>.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 public static class PolicyContextExtensions
 {
     private const string CallingRequestMessage = "CallingRequestMessage";

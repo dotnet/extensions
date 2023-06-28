@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using Microsoft.Extensions.Options.Validation;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Http.Resilience;
 

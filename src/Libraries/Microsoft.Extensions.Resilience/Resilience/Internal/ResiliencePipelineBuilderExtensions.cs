@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Resilience.Internal;
 /// Pub-internal extension methods for the <see cref="IResiliencePipelineBuilder{TResult}"/>.
 /// </summary>
 /// <remarks>Do not use this class directly, it's reserved for internal use and can change at any time.</remarks>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 internal static class ResiliencePipelineBuilderExtensions
 {
     /// <summary>

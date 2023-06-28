@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, AllowMultiple = true)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class StaticHeaderAttribute : Attribute

@@ -6,17 +6,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <Stage>normal</Stage>
     <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>100</MinMutationScore>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
     <ProjectReference Include="..\..\ToBeRemoved\Options.ValidateOnStart\Options.ValidateOnStart.csproj" />
   </ItemGroup>
 

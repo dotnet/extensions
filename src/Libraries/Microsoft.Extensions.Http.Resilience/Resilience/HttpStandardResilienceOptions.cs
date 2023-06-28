@@ -3,7 +3,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.Options.Validation;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience.Options;
 
 namespace Microsoft.Extensions.Http.Resilience;

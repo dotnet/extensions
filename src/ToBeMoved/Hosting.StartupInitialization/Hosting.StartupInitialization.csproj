@@ -6,7 +6,6 @@
     <Description>Provides infrastructure to execute asynchronous functions on server startups</Description>
     <Workstream>Fundamentals</Workstream>
     <Category>Application Bootstrap</Category>
-    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
     <InjectSharedTextFormatting>true</InjectSharedTextFormatting>
     <InjectSharedDebugger>true</InjectSharedDebugger>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
@@ -28,7 +27,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Libraries\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj " />
-    <ProjectReference Include="..\..\Libraries\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
     <ProjectReference Include="..\..\ToBeRemoved\Options.ValidateOnStart\Options.ValidateOnStart.csproj" />
   </ItemGroup>
 

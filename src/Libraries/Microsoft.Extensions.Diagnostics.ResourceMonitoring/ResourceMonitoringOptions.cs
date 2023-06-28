@@ -50,7 +50,7 @@ public class ResourceMonitoringOptions
     /// The value needs to be less than or equal to the <see cref="CollectionWindow"/>.
     /// Most importantly, this period is used to calculate <see cref="Utilization"/> instances pushed to publishers.
     /// </remarks>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     [TimeSpan(MinimumSamplingWindow, MaximumSamplingWindow)]
     public TimeSpan CalculationPeriod { get; set; } = DefaultCollectionWindow;
 }
