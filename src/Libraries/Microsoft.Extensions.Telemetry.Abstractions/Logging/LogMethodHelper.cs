@@ -6,9 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-#if NET6_0_OR_GREATER
 using Microsoft.Extensions.Logging;
-#endif
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Shared.Diagnostics;
@@ -202,10 +200,8 @@ public sealed class LogMethodHelper : List<KeyValuePair<string, object?>>, ILogP
         }
     }
 
-#if NET6_0_OR_GREATER
     /// <summary>
     /// Gets log define options configured to skip the log level enablement check.
     /// </summary>
     public static LogDefineOptions SkipEnabledCheckOptions { get; } = new() { SkipEnabledCheck = true };
-#endif
 }

@@ -34,11 +34,8 @@ public static class HttpStandardResilienceBuilderBuilderExtensions
         _ = builder.Services.Configure<HttpStandardResilienceOptions>(
             builder.StrategyName,
             section,
-#if NET6_0_OR_GREATER
             o => o.ErrorOnUnknownConfiguration = true);
-#else
-            _ => { });
-#endif
+
         return builder;
     }
 

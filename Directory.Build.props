@@ -99,7 +99,22 @@
     </ItemGroup>
   </Target>
 
-  <!-- R9 common properties -->
+  <!-- Test configuration -->
+  <PropertyGroup>
+    <!-- Disable building Integration Test projects in LUT. -->
+    <BuildForLiveUnitTesting Condition="'$(BuildForLiveUnitTesting)' == '' and '$(IsIntegrationTestProject)' == 'true'">false</BuildForLiveUnitTesting>
+
+    <!-- Redirect test logs into a subfolder -->
+    <TestResultsLogDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsLogDir)', 'TestLogs'))</TestResultsLogDir>
+
+    <!--
+      Run tests with the VS Test Runner (dotnet test) instead of the XUnit Test runner (dotnet exec).
+      This is needed to produce Cobertura code coverage. See the targets file to more information.
+    -->
+    <UseVSTestRunner>true</UseVSTestRunner>
+  </PropertyGroup>
+
+  <!-- Common properties -->
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Analyzers.props" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Packaging.props" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\LegacySupport.props" />

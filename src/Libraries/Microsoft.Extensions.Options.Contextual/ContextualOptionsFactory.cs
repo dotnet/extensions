@@ -18,11 +18,7 @@ namespace Microsoft.Extensions.Options.Contextual;
 /// </summary>
 /// <typeparam name="TOptions">The type of options being requested.</typeparam>
 internal sealed class ContextualOptionsFactory<TOptions> : IContextualOptionsFactory<TOptions>
-#if NET5_0_OR_GREATER
     where TOptions : class
-#else
-    where TOptions : class, new()
-#endif
 {
     private readonly IOptionsFactory<TOptions> _baseFactory;
     private readonly ILoadContextualOptions<TOptions>[] _loaders;
@@ -124,11 +120,7 @@ internal sealed class ContextualOptionsFactory<TOptions> : IContextualOptionsFac
                 if (result.Failed)
                 {
                     failures ??= new();
-#if NETFRAMEWORK || NETSTANDARD2_0
-                    failures.Add(result.FailureMessage);
-#else
                     failures.AddRange(result.Failures);
-#endif
                 }
             }
 

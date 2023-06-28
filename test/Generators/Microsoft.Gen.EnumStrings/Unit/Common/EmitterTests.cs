@@ -20,11 +20,7 @@ public class EmitterTests
         var sources = new List<string>();
         foreach (var file in Directory.GetFiles("TestClasses"))
         {
-#if NETCOREAPP3_1_OR_GREATER
             sources.Add("#define NETCOREAPP3_1_OR_GREATER\n" + File.ReadAllText(file));
-#else
-            sources.Add(File.ReadAllText(file));
-#endif
         }
 
         // try it without the frozen collections

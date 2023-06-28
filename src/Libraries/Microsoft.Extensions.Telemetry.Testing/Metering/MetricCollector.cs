@@ -231,15 +231,11 @@ public sealed class MetricCollector<T> : IDisposable
             {
                 lock (_measurements)
                 {
-                    _waiters.Remove(w);
+                    _ = _waiters.Remove(w);
                 }
 
                 // trigger the task from outside the lock
-#if NET6_0_OR_GREATER
-                w.TaskSource.TrySetCanceled(cancellationToken);
-#else
-                w.TaskSource.TrySetCanceled();
-#endif
+                _ = w.TaskSource.TrySetCanceled(cancellationToken);
             });
         }
 
