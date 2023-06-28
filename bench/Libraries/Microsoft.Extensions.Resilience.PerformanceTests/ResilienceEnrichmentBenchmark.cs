@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
+using Microsoft.Extensions.Resilience.Test.Resilience;
 using Polly;
 using Polly.Registry;
 using Polly.Telemetry;
@@ -14,12 +16,14 @@ namespace Microsoft.Extensions.Resilience.Bench;
 
 public class ResilienceEnrichmentBenchmark
 {
+    private MeterListener? _listener;
     private ResilienceStrategy? _strategy;
     private ResilienceStrategy? _strategyEnriched;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
+        _listener = MeteringUtil.ListenPollyMetrics();
         _strategy = CreateResilienceStrategy(_ => { });
         _strategyEnriched = CreateResilienceStrategy(services =>
         {
@@ -28,6 +32,8 @@ public class ResilienceEnrichmentBenchmark
         });
     }
 
+    [GlobalCleanup]
+    public void Cleanup() => _listener?.Dispose();
 
     [Benchmark(Baseline = true)]
     public void ReportTelemetry() => _strategy!.Execute(() => "dummy-result");
