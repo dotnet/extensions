@@ -3,6 +3,10 @@
     <RootNamespace>Microsoft.Extensions.Resilience</RootNamespace>
     <Description>Benchmarks for Microsoft.Extensions.Resilience.</Description>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <Compile Include="..\..\..\test\Libraries\Microsoft.Extensions.Resilience.Tests\Resilience\MeteringUtil.cs" Link="MeteringUtil.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Resilience\Microsoft.Extensions.Resilience.csproj" />

@@ -14,7 +14,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Resilience;
 using Moq;
 using Polly;
 using Polly.Hedging;
@@ -206,7 +205,6 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     {
         var noPolicy = NullResilienceStrategy<HttpResponseMessage>.Instance;
         var provider = new Mock<ResilienceStrategyProvider<HttpKey>>(MockBehavior.Strict);
-        Builder.Services.RemoveAll<IResiliencePipelineProvider>();
         Builder.Services.AddSingleton(provider.Object);
         if (customKey == null)
         {

@@ -8,14 +8,13 @@
   <PropertyGroup>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMeteringGenerator>true</UseMeteringGenerator>
+    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
     <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
     <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
-    <InjectSharedPools>true</InjectSharedPools>
-    <InjectDictionaryExtensionsOnLegacy>true</InjectDictionaryExtensionsOnLegacy>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -27,7 +26,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExceptionSummarization\Microsoft.Extensions.Diagnostics.ExceptionSummarization.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.EnumStrings\Microsoft.Extensions.EnumStrings.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,7 +33,6 @@
     <PackageReference Include="Polly.Core" />
     <PackageReference Include="Polly.Extensions" />
     <PackageReference Include="Polly.RateLimiting" />
-    <PackageReference Include="Polly.Contrib.WaitAndRetry" />
     <PackageReference Include="Polly.Contrib.Simmy" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
@@ -45,8 +42,6 @@
   <ItemGroup>
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
     <InternalsVisibleToTest Include="$(AssemblyName).PerformanceTests" />
-    <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Resilience" />
-    <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Resilience.Tests" />
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
   </ItemGroup>
 </Project>
