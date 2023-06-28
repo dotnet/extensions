@@ -127,6 +127,19 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
         _reportedTags!["req-name"].Should().Be("my-req");
     }
 
+    [Fact]
+    public void AddResilienceEnrichment_RequestMetadataFromOutgoingRequestContext_EnsureDimensions()
+    {
+        var requestMetadata = new RequestMetadata { RequestName = "my-req", DependencyName = "my-dep" };
+        _services.TryAddSingleton(Mock.Of<IOutgoingRequestContext>(v => v.RequestMetadata == requestMetadata));
+
+        Build();
+        _telemetry!.Report("dummy-event", ResilienceContext.Get(), string.Empty);
+
+        _reportedTags!["dep-name"].Should().Be("my-dep");
+        _reportedTags!["req-name"].Should().Be("my-req");
+    }
+
     private void Build()
     {
         _services.BuildServiceProvider().GetRequiredService<ResilienceStrategyProvider<string>>().GetStrategy("dummy");
