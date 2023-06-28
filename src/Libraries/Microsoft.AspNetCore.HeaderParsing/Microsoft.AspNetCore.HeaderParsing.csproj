@@ -25,7 +25,7 @@
     <ProjectReference Include="..\..\ToBeRemoved\Options.ValidateOnStart\Options.ValidateOnStart.csproj" />
   </ItemGroup>
 
- <ItemGroup Condition="'$(TargetFramework)' != 'net462' and '$(TargetFramework)' != 'netstandard2.0'">
+ <ItemGroup Condition="'$(TargetFramework)' != 'net462'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
@@ -34,7 +34,7 @@
     <PackageReference Include="Microsoft.Extensions.ObjectPool" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageReference Include="Microsoft.AspNetCore.Http" />
     <PackageReference Include="System.Net.Http" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />

@@ -42,7 +42,7 @@
     <NoWarn Condition="'$(GenerateDocumentationFile)' != 'true'">$(NoWarn);SA1600;SA0001</NoWarn>
 
     <!-- Legacy targets do not support attributes for a nullable context thus suppressing null check warnings -->
-    <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net472' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>
+    <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>
   </PropertyGroup>
 
   <!-- .NET 8 specific configurations (https://github.com/dotnet/extensions/issues/4126) -->

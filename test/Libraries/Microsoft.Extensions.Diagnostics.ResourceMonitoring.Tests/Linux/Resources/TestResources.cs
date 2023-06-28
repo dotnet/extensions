@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using Castle.Core.Internal;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
@@ -52,7 +51,7 @@ internal sealed class TestResources : IDisposable
         {
             if (!File.Exists(files.Key))
             {
-                if (files.Value.IsNullOrEmpty())
+                if (string.IsNullOrEmpty(files.Value))
                 {
                     File.Create(files.Key).Close();
                     _set.Add(files.Key);

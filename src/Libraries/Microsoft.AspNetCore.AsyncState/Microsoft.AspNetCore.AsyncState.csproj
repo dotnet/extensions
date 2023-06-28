@@ -16,11 +16,11 @@
     <ProjectReference Include="..\Microsoft.Extensions.AsyncState\Microsoft.Extensions.AsyncState.csproj" />
   </ItemGroup>
 
- <ItemGroup Condition="'$(TargetFramework)' != 'net462' and '$(TargetFramework)' != 'netstandard2.0'">
+ <ItemGroup Condition="'$(TargetFramework)' != 'net462'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageReference Include="Microsoft.AspNetCore.Http" />
   </ItemGroup>
 
