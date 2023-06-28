@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Options.Validation;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Resilience.FaultInjection;
 
@@ -42,6 +42,6 @@ public class ChaosPolicyOptionsGroup
     /// Gets or sets the custom result policy options of the chaos policy options group.
     /// </summary>
     [ValidateObjectMembers]
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public CustomResultPolicyOptions? CustomResultPolicyOptions { get; set; }
 }

@@ -24,7 +24,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 [AttributeUsage(AttributeTargets.Parameter)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class BodyAttribute : Attribute

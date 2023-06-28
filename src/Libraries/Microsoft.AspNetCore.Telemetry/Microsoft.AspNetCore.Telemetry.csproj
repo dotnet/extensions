@@ -8,7 +8,6 @@
 
   <PropertyGroup>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
     <InjectExperimentalAttributeOnLegacy>false</InjectExperimentalAttributeOnLegacy>
     <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
     <InjectDiagnosticAttributesOnLegacy>false</InjectDiagnosticAttributesOnLegacy>

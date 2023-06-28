@@ -116,7 +116,7 @@ public static class HttpTracingExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add this enricher.</param>
     /// <returns><see cref="IServiceCollection"/> for chaining.</returns>
     /// <exception cref="ArgumentNullException">The argument <paramref name="services"/> is <see langword="null"/>.</exception>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public static IServiceCollection AddHttpTraceEnricher<T>(this IServiceCollection services)
         where T : class, IHttpTraceEnricher
     {
@@ -132,7 +132,7 @@ public static class HttpTracingExtensions
     /// <param name="enricher">Enricher to be added.</param>
     /// <returns><see cref="TracerProviderBuilder"/> for chaining.</returns>
     /// <exception cref="ArgumentNullException">The argument <paramref name="services"/> or <paramref name="enricher"/> is <see langword="null" />.</exception>
-    [Experimental]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
     public static IServiceCollection AddHttpTraceEnricher(this IServiceCollection services, IHttpTraceEnricher enricher)
     {
         _ = Throw.IfNull(services);

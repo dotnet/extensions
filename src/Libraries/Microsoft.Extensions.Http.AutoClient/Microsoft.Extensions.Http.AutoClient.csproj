@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
   </PropertyGroup>
 
@@ -23,10 +22,6 @@
   <ItemGroup>
     <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.AutoClient\Roslyn3.8\Microsoft.Gen.AutoClient.Roslyn3.8.csproj" />
     <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.AutoClient\Roslyn4.0\Microsoft.Gen.AutoClient.Roslyn4.0.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

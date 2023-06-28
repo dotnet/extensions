@@ -3,7 +3,6 @@
     <AssemblyName>Microsoft.Extensions.Options.ValidateOnStart.Tests</AssemblyName>
     <RootNamespace>Microsoft.Extensions.Options.ValidateOnStart.Test</RootNamespace>
     <Description>Tests for Microsoft.Extensions.Options.ValidateOnStart</Description>
-    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Options.Validation\Microsoft.Extensions.Options.Validation.csproj" ProjectUnderTest="true" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" />
   </ItemGroup>
 </Project>

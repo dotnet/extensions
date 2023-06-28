@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// When a REST API client fails, it will throw a <see cref="AutoClientException"/>.
 /// This exception contains a <see cref="AutoClientHttpError"/> instance that holds details like content, headers and status code.
 /// </remarks>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 public class AutoClientHttpError
 {
     /// <summary>

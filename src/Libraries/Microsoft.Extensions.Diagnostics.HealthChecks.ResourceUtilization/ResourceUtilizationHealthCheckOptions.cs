@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
-using Microsoft.Extensions.Options.Validation;
+using Microsoft.Extensions.Options;
 using Microsoft.Shared.Data.Validation;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
