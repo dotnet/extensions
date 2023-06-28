@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Resilience.Resilience;
 /// <summary>
 /// Extensions for <see cref="ResilienceContext"/>.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 public static class ResilienceContextExtensions
 {
     private static readonly ResiliencePropertyKey<RequestMetadata?> _requestMetadataKey = new(TelemetryConstants.RequestMetadataKey);

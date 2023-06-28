@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Resilience;
 /// <summary>
 /// Extension class for the Service Collection DI container.
 /// </summary>
-[Experimental]
+[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 public static class ResilienceServiceCollectionExtensions
 {
     /// <summary>
