@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Options;
 using Polly.Timeout;

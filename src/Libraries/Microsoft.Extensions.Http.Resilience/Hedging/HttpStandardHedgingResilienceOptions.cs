@@ -4,7 +4,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
 using Microsoft.Extensions.Options;
 
