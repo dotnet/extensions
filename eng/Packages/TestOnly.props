@@ -1,19 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <!-- Disable building Integration Test projects in LUT. -->
-    <BuildForLiveUnitTesting Condition="'$(BuildForLiveUnitTesting)' == '' and '$(IsIntegrationTestProject)' == 'true'">false</BuildForLiveUnitTesting>
-
-    <!-- Redirect test logs into a subfolder -->
-    <TestResultsLogDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsLogDir)', 'TestLogs'))</TestResultsLogDir>
-
-    <!--
-      Run tests with the VS Test Runner (dotnet test) instead of the XUnit Test runner (dotnet exec).
-      This is needed to produce Cobertura code coverage. See the targets file to more information.
-    -->
-    <UseVSTestRunner>true</UseVSTestRunner>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageVersion Include="AutoFixture.AutoMoq" Version="4.17.0" />
     <PackageVersion Include="autofixture" Version="4.17.0" />
@@ -35,13 +21,13 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.22" />
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="3.1.22" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.32" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="3.1.32" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.1" />
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="6.0.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.19" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="6.0.19" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">

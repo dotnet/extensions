@@ -694,9 +694,7 @@ public class LogMethodTests
         SkipEnabledCheckTestExtensions.LoggerMethodWithFalseSkipEnabledCheck(logger, LogLevel.Information, "p1");
         Assert.Equal(0, logger.Collector.Count);
 
-#if NET8_0_OR_GREATER
-        // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
-        // and as such the API is available in .NET 8 onwards.
+#if NET6_0_OR_GREATER
         SkipEnabledCheckTestExtensions.LoggerMethodWithTrueSkipEnabledCheck(logger);
         Assert.Equal(1, logger.Collector.Count);
 #endif

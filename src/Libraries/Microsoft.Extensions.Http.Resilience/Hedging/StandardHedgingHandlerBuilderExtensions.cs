@@ -36,11 +36,7 @@ public static class StandardHedgingHandlerBuilderExtensions
         _ = builder.Services.Configure<HttpStandardHedgingResilienceOptions>(
             builder.Name,
             section,
-#if NET6_0_OR_GREATER
             o => o.ErrorOnUnknownConfiguration = true);
-#else
-            _ => { });
-#endif
 
         return builder;
     }

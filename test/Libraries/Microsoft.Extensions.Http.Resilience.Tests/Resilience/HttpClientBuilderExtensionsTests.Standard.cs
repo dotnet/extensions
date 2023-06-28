@@ -122,13 +122,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
         AddStandardResilienceHandler(mode, builder, _invalidConfigurationSection, options => { });
 
-#if NET8_0_OR_GREATER
-        // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
-        // and as such the API is available in .NET 8 onwards.
         Assert.Throws<InvalidOperationException>(() => HttpClientBuilderExtensionsTests.GetStrategy(builder.Services, $"test-standard"));
-#else
-        GetStrategy(builder.Services, $"test-standard").Should().NotBeNull();
-#endif
     }
 
     [Fact]
