@@ -35,7 +35,7 @@ internal sealed class RequestHeadersLogEnricher : ILogEnricher
 
         _headersDataClasses = opt.HeadersDataClasses.Count == 0
             ? FrozenDictionary<string, DataClassification>.Empty
-            : opt.HeadersDataClasses.ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true);
+            : opt.HeadersDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
 
         if (_headersDataClasses.Count > 0)
         {

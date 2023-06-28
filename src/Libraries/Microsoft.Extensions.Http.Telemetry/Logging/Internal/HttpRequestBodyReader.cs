@@ -38,7 +38,7 @@ internal sealed class HttpRequestBodyReader
     {
         var requestOptions = Throw.IfMemberNull(options, options.Value);
 
-        _readableRequestContentTypes = requestOptions.RequestBodyContentTypes.ToFrozenSet(StringComparer.OrdinalIgnoreCase, optimizeForReading: true);
+        _readableRequestContentTypes = requestOptions.RequestBodyContentTypes.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
         debugger ??= DebuggerState.System;
         _requestReadLimit = requestOptions.BodySizeLimit;
 

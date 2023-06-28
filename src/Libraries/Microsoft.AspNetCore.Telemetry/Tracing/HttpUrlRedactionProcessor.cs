@@ -44,7 +44,7 @@ internal sealed class HttpUrlRedactionProcessor
         _routeParser = routeParser;
         _routeUtility = routeUtility;
 
-        _defaultParamsToRedact = _options.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true);
+        _defaultParamsToRedact = _options.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
         _excludePathStartsWith = _options.ExcludePathStartsWith.ToArray();
 
         _logger.ConfiguredHttpTracingOptions(_options);

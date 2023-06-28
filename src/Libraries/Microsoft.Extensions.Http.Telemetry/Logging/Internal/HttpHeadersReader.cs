@@ -25,8 +25,8 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
 
         _redactor = redactor;
 
-        _requestHeaders = options.Value.RequestHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase, optimizeForReading: true);
-        _responseHeaders = options.Value.ResponseHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase, optimizeForReading: true);
+        _requestHeaders = options.Value.RequestHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        _responseHeaders = options.Value.ResponseHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
     }
 
     public void ReadRequestHeaders(HttpRequestMessage request, List<KeyValuePair<string, string>>? destination)

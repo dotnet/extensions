@@ -141,10 +141,10 @@ internal sealed class HttpRequestLatencyListener : EventListener
 
             _eventToTokenMap = new Dictionary<string, FrozenDictionary<string, CheckpointToken>>
             {
-                { SocketProviderName, socket.ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true) },
-                { NameResolutionProivderName, nameResolution.ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true) },
-                { HttpProviderName, http.ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true) }
-            }.ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true);
+                { SocketProviderName, socket.ToFrozenDictionary(StringComparer.Ordinal) },
+                { NameResolutionProivderName, nameResolution.ToFrozenDictionary(StringComparer.Ordinal) },
+                { HttpProviderName, http.ToFrozenDictionary(StringComparer.Ordinal) }
+            }.ToFrozenDictionary(StringComparer.Ordinal);
         }
 
         public CheckpointToken? GetCheckpointToken(string eventSourceName, string? eventName)

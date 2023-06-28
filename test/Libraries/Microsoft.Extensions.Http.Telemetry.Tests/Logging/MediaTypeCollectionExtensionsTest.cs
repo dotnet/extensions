@@ -24,7 +24,7 @@ public class MediaTypeCollectionExtensionsTest
     [Fact]
     public void Covers_WhenCovers_ReturnsTrue()
     {
-        var collection = new HashSet<string>(_readableContentTypes, StringComparer.OrdinalIgnoreCase).ToFrozenSet(StringComparer.OrdinalIgnoreCase, optimizeForReading: true);
+        var collection = new HashSet<string>(_readableContentTypes, StringComparer.OrdinalIgnoreCase).ToFrozenSet(StringComparer.OrdinalIgnoreCase);
         collection.Covers("application/xml").Should().BeTrue();
         collection.Covers("APPLICATION/XML").Should().BeTrue();
         collection.Covers("application/json").Should().BeTrue();
@@ -41,7 +41,7 @@ public class MediaTypeCollectionExtensionsTest
     [Fact]
     public void Covers_WhenNotCovers_ReturnsFalse()
     {
-        var collection = new HashSet<string>(_readableContentTypes, StringComparer.OrdinalIgnoreCase).ToFrozenSet(StringComparer.OrdinalIgnoreCase, optimizeForReading: true);
+        var collection = new HashSet<string>(_readableContentTypes, StringComparer.OrdinalIgnoreCase).ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
         collection.Covers(null!).Should().BeFalse();
         collection.Covers("").Should().BeFalse();

@@ -36,7 +36,7 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
             AddDependency(dependency, dependencyTrieMap);
         }
 
-        _frozenProcessedMetadataMap = ProcessDownstreamDependencyMetadata(dependencyTrieMap).ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true);
+        _frozenProcessedMetadataMap = ProcessDownstreamDependencyMetadata(dependencyTrieMap).ToFrozenDictionary(StringComparer.Ordinal);
     }
 
     public RequestMetadata? GetRequestMetadata(HttpRequestMessage requestMessage)
