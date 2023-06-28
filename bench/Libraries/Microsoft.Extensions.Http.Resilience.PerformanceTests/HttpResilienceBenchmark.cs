@@ -16,6 +16,7 @@ public class HttpResilienceBenchmark
 
     private HttpClient _client = null!;
     private HttpClient _standardClient = null!;
+    private HttpClient _singleHandlerClient = null!;
     private HttpClient _hedgingClient = null!;
 
     private static HttpRequestMessage Request
@@ -35,6 +36,7 @@ public class HttpResilienceBenchmark
         var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
         _client = factory.CreateClient(HttpClientFactory.EmptyClient);
         _standardClient = factory.CreateClient(HttpClientFactory.StandardClient);
+        _singleHandlerClient = factory.CreateClient(HttpClientFactory.SingleHandlerClient);
         _hedgingClient = factory.CreateClient(nameof(HedgingClientType.Ordered));
     }
 
@@ -54,5 +56,11 @@ public class HttpResilienceBenchmark
     public Task<HttpResponseMessage> StandardHedgingHandler()
     {
         return _hedgingClient.SendAsync(Request, CancellationToken.None);
+    }
+
+    [Benchmark]
+    public Task<HttpResponseMessage> SingleHandler()
+    {
+        return _singleHandlerClient.SendAsync(Request, CancellationToken.None);
     }
 }

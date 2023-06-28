@@ -3,19 +3,32 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.Extensions.Http.Resilience;
+namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 
 /// <summary>
 /// Defines a strategy for retrieval of route URLs,
 /// used to route one request across a set of different endpoints.
 /// </summary>
-internal interface IRequestRoutingStrategy
+internal abstract class RequestRoutingStrategy : IResettable, IDisposable
 {
+    protected RequestRoutingStrategy(Randomizer randomizer)
+    {
+        Randomizer = randomizer;
+    }
+
+    public Randomizer Randomizer { get; }
+
     /// <summary>
     /// Gets the next route Uri.
     /// </summary>
     /// <param name="nextRoute">Holds next route value, or <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if next route available, <see langword="false"/> otherwise.</returns>
-    bool TryGetNextRoute([NotNullWhen(true)] out Uri? nextRoute);
+    public abstract bool TryGetNextRoute([NotNullWhen(true)] out Uri? nextRoute);
+
+    public abstract bool TryReset();
+
+    public abstract void Dispose();
 }

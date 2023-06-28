@@ -15,8 +15,6 @@ using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Resilience;
-using Microsoft.Extensions.Resilience.Test.Resilience;
 using Microsoft.Extensions.Telemetry.Metering;
 using Moq;
 using Polly;

@@ -9,7 +9,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal;
 
-internal sealed class ByAuthorityStrategyKeyProvider : IStrategyKeyProvider
+internal sealed class ByAuthorityStrategyKeyProvider
 {
     private readonly Redactor _redactor;
     private readonly ConcurrentDictionary<(string scheme, string host, int port), string> _cache = new();

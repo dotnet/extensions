@@ -6,6 +6,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal;
 
@@ -17,25 +18,22 @@ internal static class StrategyKeyProviderHelper
         {
             var redactor = serviceProvider.GetRequiredService<IRedactorProvider>().GetRedactor(classification);
 
-            return new ByAuthorityStrategyKeyProvider(redactor);
+            return new ByAuthorityStrategyKeyProvider(redactor).GetStrategyKey;
         });
     }
 
     public static void SelectStrategyBy(IServiceCollection services, string strategyName, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory)
     {
-        UseStrategyKeyProvider(services, strategyName, serviceProvider =>
-        {
-            return new ByCustomSelectorStrategyKeyProvider(selectorFactory(serviceProvider));
-        });
+        UseStrategyKeyProvider(services, strategyName, serviceProvider => selectorFactory(serviceProvider));
     }
 
-    public static IStrategyKeyProvider? GetStrategyKeyProvider(this IServiceProvider provider, string strategyName)
+    public static Func<HttpRequestMessage, string>? GetStrategyKeyProvider(this IServiceProvider provider, string strategyName)
     {
-        return provider.GetService<INamedServiceProvider<IStrategyKeyProvider>>()?.GetService(strategyName);
+        return provider.GetRequiredService<IOptionsMonitor<StrategyKeyOptions>>().Get(strategyName).KeyProvider;
     }
 
-    private static void UseStrategyKeyProvider(IServiceCollection services, string strategyName, Func<IServiceProvider, IStrategyKeyProvider> factory)
+    private static void UseStrategyKeyProvider(IServiceCollection services, string strategyName, Func<IServiceProvider, Func<HttpRequestMessage, string>> factory)
     {
-        _ = services.AddNamedSingleton(strategyName, factory);
+        _ = services.AddOptions<StrategyKeyOptions>(strategyName).Configure<IServiceProvider>((options, provider) => options.KeyProvider = factory(provider));
     }
 }

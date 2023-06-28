@@ -4,7 +4,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +34,8 @@ internal static class HttpClientFactory
 
     internal const string StandardClient = "Standard";
 
+    internal const string SingleHandlerClient = "SingleHandler";
+
     private const string HedgingEndpoint1 = "http://localhost1";
     private const string HedgingEndpoint2 = "http://localhost2";
 
@@ -47,10 +51,14 @@ internal static class HttpClientFactory
             .AddStandardResilienceHandler()
             .Services
             .AddHttpClient(StandardClient)
-            .AddHttpMessageHandler<NoRemoteCallHandler>()
+            .ConfigurePrimaryHttpMessageHandler(() => new NoRemoteCallHandler())
             .Services
             .AddHttpClient(EmptyClient, client => client.Timeout = Timeout.InfiniteTimeSpan)
-            .AddHttpMessageHandler<NoRemoteCallHandler>();
+            .ConfigurePrimaryHttpMessageHandler(() => new NoRemoteCallHandler())
+            .Services
+            .AddHttpClient(SingleHandlerClient, client => client.Timeout = Timeout.InfiniteTimeSpan)
+            .AddHttpMessageHandler(() => new EmptyHandler())
+            .ConfigurePrimaryHttpMessageHandler(() => new NoRemoteCallHandler());
 
         services.RemoveAll<ILoggerFactory>();
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
@@ -114,5 +122,13 @@ internal static class HttpClientFactory
         }
 
         return services;
+    }
+
+    private class EmptyHandler : DelegatingHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
     }
 }

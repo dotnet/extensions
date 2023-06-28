@@ -14,7 +14,7 @@ public class RoutingResilienceStrategyTests
     [Fact]
     public void NoRequestMessage_Throws()
     {
-        RoutingResilienceStrategy strategy = new RoutingResilienceStrategy(Mock.Of<IRequestRoutingStrategyFactory>());
+        RoutingResilienceStrategy strategy = new RoutingResilienceStrategy(() => Mock.Of<RequestRoutingStrategy>());
 
         strategy.Invoking(s => s.Execute(() => { })).Should().Throw<InvalidOperationException>().WithMessage("The HTTP request message was not found in the resilience context.");
     }

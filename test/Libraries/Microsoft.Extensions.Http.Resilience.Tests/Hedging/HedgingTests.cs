@@ -12,8 +12,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Telemetry.Metering;
 using Moq;
@@ -32,29 +31,26 @@ public abstract class HedgingTests<TBuilder> : IDisposable
     public const int DefaultHedgingAttempts = 3;
 
     private readonly CancellationTokenSource _cancellationTokenSource;
-    private readonly Mock<IRequestCloner> _requestCloneHandlerMock;
-    private readonly Mock<IRequestRoutingStrategy> _requestRoutingStrategyMock;
-    private readonly Mock<IRequestRoutingStrategyFactory> _requestRoutingStrategyFactoryMock;
+    private readonly Mock<RequestRoutingStrategy> _requestRoutingStrategyMock;
+    private Func<RequestRoutingStrategy>? _requestRoutingStrategyFactory;
     private readonly IServiceCollection _services;
     private readonly List<string> _requests = new();
     private readonly Queue<HttpResponseMessage> _responses = new();
-    private readonly Func<IHttpClientBuilder, IRequestRoutingStrategyFactory, TBuilder> _createDefaultBuilder;
+    private readonly Func<IHttpClientBuilder, Func<RequestRoutingStrategy>, TBuilder> _createDefaultBuilder;
     private bool _failure;
 
-    private protected HedgingTests(Func<IHttpClientBuilder, IRequestRoutingStrategyFactory, TBuilder> createDefaultBuilder)
+    private protected HedgingTests(Func<IHttpClientBuilder, Func<RequestRoutingStrategy>, TBuilder> createDefaultBuilder)
     {
         _cancellationTokenSource = new CancellationTokenSource();
-        _requestCloneHandlerMock = new Mock<IRequestCloner>(MockBehavior.Strict);
-        _requestRoutingStrategyMock = new Mock<IRequestRoutingStrategy>(MockBehavior.Strict);
-        _requestRoutingStrategyFactoryMock = new Mock<IRequestRoutingStrategyFactory>(MockBehavior.Strict);
+        _requestRoutingStrategyMock = new Mock<RequestRoutingStrategy>(MockBehavior.Strict);
+        _requestRoutingStrategyFactory = () => _requestRoutingStrategyMock.Object;
 
         _services = new ServiceCollection().RegisterMetering().AddLogging();
-        _services.AddSingleton(_requestCloneHandlerMock.Object);
         _services.AddSingleton<IRedactorProvider>(NullRedactorProvider.Instance);
 
         var httpClient = _services.AddHttpClient(ClientId);
 
-        Builder = createDefaultBuilder(httpClient, _requestRoutingStrategyFactoryMock.Object);
+        Builder = createDefaultBuilder(httpClient, _requestRoutingStrategyFactory);
         _ = httpClient.AddHttpMessageHandler(() => new TestHandlerStub(InnerHandlerFunction));
         _createDefaultBuilder = createDefaultBuilder;
     }
@@ -63,21 +59,9 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
     public void Dispose()
     {
-        _requestCloneHandlerMock.VerifyAll();
         _requestRoutingStrategyMock.VerifyAll();
-        _requestRoutingStrategyFactoryMock.VerifyAll();
         _cancellationTokenSource.Cancel();
         _cancellationTokenSource.Dispose();
-    }
-
-    [Fact]
-    public void AddHedging_EnsureRequestCloner()
-    {
-        var services = new ServiceCollection();
-
-        _createDefaultBuilder(services.AddHttpClient("dummy"), _requestRoutingStrategyFactoryMock.Object);
-
-        Assert.NotNull(services.BuildServiceProvider().GetRequiredService<IRequestCloner>());
     }
 
     [Fact]
@@ -92,8 +76,6 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         SetupRouting();
         SetupRoutes(3, "https://enpoint-{0}:80");
-        _services.RemoveAll<IRequestCloner>();
-        _services.TryAddSingleton<IRequestCloner, RequestCloner>();
         ConfigureHedgingOptions(options =>
         {
             options.OnHedging = args =>
@@ -122,7 +104,6 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         SetupRoutes(1, "https://enpoint-{0}:80/");
         using var client = CreateClientWithHandler();
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
-        SetupCloner(request, false);
 
         AddResponse(HttpStatusCode.OK);
 
@@ -138,7 +119,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
 
-        SetupRouting(false);
+        SetupRouting();
         SetupRoutes(0);
 
         _failure = true;
@@ -155,7 +136,6 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
 
         SetupRouting();
-        SetupCloner(request, true);
         SetupRoutes(2);
 
         _failure = true;
@@ -175,7 +155,6 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
 
         SetupRouting();
-        SetupCloner(request, true);
         SetupRoutes(4);
 
         AddResponse(HttpStatusCode.ServiceUnavailable);
@@ -195,7 +174,6 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
 
         SetupRouting();
-        SetupCloner(request, true);
         SetupRoutes(2);
 
         AddResponse(HttpStatusCode.InternalServerError);
@@ -207,8 +185,6 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         var result = await client.SendAsync(request, _cancellationTokenSource.Token);
         Assert.Equal(2, _requests.Count);
-
-        _requestCloneHandlerMock.Verify(o => o.CreateSnapshot(It.IsAny<HttpRequestMessage>()), Times.Exactly(1));
     }
 
     [Fact]
@@ -217,7 +193,6 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
 
         SetupRouting();
-        SetupCloner(request, true);
         SetupRoutes(3, "https://enpoint-{0}:80");
 
         AddResponse(HttpStatusCode.InternalServerError);
@@ -252,17 +227,6 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
     protected HttpClient CreateClientWithHandler() => _services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient(ClientId);
 
-    protected void SetupCloner(HttpRequestMessage request, bool createCalled)
-    {
-        var snapshot = createCalled ?
-            Mock.Of<IHttpRequestMessageSnapshot>(v => v.Create() == request) :
-            Mock.Of<IHttpRequestMessageSnapshot>();
-
-        _requestCloneHandlerMock
-            .Setup(mock => mock.CreateSnapshot(It.IsAny<HttpRequestMessage>()))
-            .Returns(snapshot);
-    }
-
     private Task<HttpResponseMessage> InnerHandlerFunction(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         _requests.Add(request.RequestUri!.ToString());
@@ -290,12 +254,8 @@ public abstract class HedgingTests<TBuilder> : IDisposable
             .Returns(() => attemptCount <= totalAttempts);
     }
 
-    protected void SetupRouting(bool mustReturn = true)
+    protected void SetupRouting()
     {
-        _requestRoutingStrategyFactoryMock.Setup(s => s.CreateRoutingStrategy()).Returns(() => _requestRoutingStrategyMock.Object);
-        if (mustReturn)
-        {
-            _requestRoutingStrategyFactoryMock.Setup(s => s.ReturnRoutingStrategy(_requestRoutingStrategyMock.Object)).Verifiable();
-        }
+        _requestRoutingStrategyFactory = () => _requestRoutingStrategyMock.Object;
     }
 }

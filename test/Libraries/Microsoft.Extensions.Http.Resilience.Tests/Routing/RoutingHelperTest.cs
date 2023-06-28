@@ -17,7 +17,7 @@ public class RoutingHelperTest
     [Theory]
     public void SelectEndpoint_Ok(double nextResult, int expectedEndpoint)
     {
-        var randomizer = new Mock<IRandomizer>(MockBehavior.Strict);
+        var randomizer = new Mock<Randomizer>(MockBehavior.Strict);
         randomizer.Setup(v => v.NextDouble(10)).Returns(nextResult);
 
         var result = new List<int> { 1, 2, 3, 4 }.SelectByWeight(v => v, randomizer.Object);
@@ -28,7 +28,7 @@ public class RoutingHelperTest
     [Fact]
     public void SelectEndpoint_Invalid()
     {
-        var randomizer = new Mock<IRandomizer>(MockBehavior.Strict);
+        var randomizer = new Mock<Randomizer>(MockBehavior.Strict);
         randomizer.Setup(v => v.NextDouble(10)).Returns(10000);
 
         Assert.Throws<InvalidOperationException>(() => new List<int> { 1, 2, 3, 4 }.SelectByWeight(v => v, randomizer.Object));

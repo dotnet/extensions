@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 
 internal static class RoutingHelper
 {
-    public static T SelectByWeight<T>(this IList<T> endpoints, Func<T, double> weightProvider, IRandomizer randomizer)
+    public static T SelectByWeight<T>(this IList<T> endpoints, Func<T, double> weightProvider, Randomizer randomizer)
     {
         var accumulatedProbability = 0d;
         var weightSum = 0d;

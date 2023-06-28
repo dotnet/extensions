@@ -73,7 +73,10 @@ public static partial class HttpClientBuilderExtensions
 
         var optionsName = builder.Name;
         var routingBuilder = new RoutingStrategyBuilder(builder.Name, builder.Services);
-        builder.Services.TryAddSingleton<IRequestCloner, RequestCloner>();
+
+        builder.Services.TryAddSingleton<Randomizer>();
+
+        _ = builder.Services.AddValidatedOptions<RequestRoutingStrategyOptions, RequestRoutingStrategyOptionsValidator>(optionsName);
         _ = builder.Services.AddValidatedOptions<HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsValidator>(optionsName);
         _ = builder.Services.AddValidatedOptions<HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsCustomValidator>(optionsName);
         _ = builder.Services.PostConfigure<HttpStandardHedgingResilienceOptions>(optionsName, options =>
@@ -96,7 +99,7 @@ public static partial class HttpClientBuilderExtensions
                     return null;
                 }
 
-                var requestMessage = snapshot.Create().ReplaceHost(route);
+                var requestMessage = snapshot.CreateRequestMessage().ReplaceHost(route);
 
                 // replace the request message
                 args.ActionContext.Properties.Set(ResilienceKeys.RequestMessage, requestMessage);
@@ -110,10 +113,11 @@ public static partial class HttpClientBuilderExtensions
         {
             var options = context.GetOptions<HttpStandardHedgingResilienceOptions>(optionsName);
             context.EnableReloads<HttpStandardHedgingResilienceOptions>(optionsName);
+            var routingOptions = context.GetOptions<RequestRoutingStrategyOptions>(routingBuilder.Name);
 
             _ = builder
-                .AddStrategy(new RoutingResilienceStrategy(context.ServiceProvider.GetRoutingFactory(routingBuilder.Name)))
-                .AddStrategy(new RequestMessageSnapshotStrategy(context.ServiceProvider.GetRequiredService<IRequestCloner>()))
+                .AddStrategy(new RoutingResilienceStrategy(routingOptions.RoutingStrategyProvider!))
+                .AddStrategy(new RequestMessageSnapshotStrategy())
                 .AddTimeout(options.TotalRequestTimeoutOptions)
                 .AddHedging(options.HedgingOptions);
         });
