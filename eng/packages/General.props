@@ -66,6 +66,12 @@
     <PackageVersion Include="YamlDotNet" Version="13.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.5.22" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="8.52.0.60960" />
+    <PackageVersion Include="StyleCop.Analyzers.Unstable" Version="1.2.0.435" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageVersion Include="Microsoft.AspNetCore.Http.Features" Version="2.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.2.2" />

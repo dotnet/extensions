@@ -170,8 +170,8 @@ packages
 # NuGet v3's project.json files produces more ignoreable files
 *.nuget.props
 *.nuget.targets
-!src/Packages
-!eng/Packages
+!src/[Pp]ackages
+!eng/[Pp]ackages
 
 # Microsoft Azure Build Output
 csx/
