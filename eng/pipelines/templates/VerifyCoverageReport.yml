@@ -15,6 +15,15 @@ steps:
             --output ./merged.cobertura.xml
     displayName: Merge code coverage reports
 
+  # TEMP: PublishCodeCoverageResults@2 is currently broken. As a workaround run the task on Windows
+  #       and use .NET 7, which the task depends on.
+  #       See https://github.com/dotnet/extensions/issues/4124#issuecomment-1612369770.
+  - task: UseDotNet@2
+    displayName: 'Install .NET 7.x'
+    inputs:
+      version: '7.x'
+      includePreviewVersions: true
+
   - task: PublishCodeCoverageResults@2
     displayName: Publish unified code coverage report
     inputs:

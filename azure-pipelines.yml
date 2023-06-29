@@ -245,11 +245,11 @@ stages:
         pool:
           ${{ if eq(variables['runAsPublic'], 'true') }}:
             name: $(DncEngPublicBuildPool)
-            demands: ImageOverride -equals build.ubuntu.2004.amd64.open
+            demands: ImageOverride -equals windows.vs2022preview.amd64.open
           # Non-public (i.e., official builds)
           ${{ else }}:
             name: $(DncEngInternalBuildPool)
-            demands: ImageOverride -equals build.ubuntu.2004.amd64
+            demands: ImageOverride -equals windows.vs2022preview.amd64
 
         preSteps:
           - checkout: self
@@ -258,7 +258,7 @@ stages:
             fetchDepth: 1
 
         steps:
-        - script: $(Build.SourcesDirectory)/build.sh --ci --restore
+        - script: $(Build.SourcesDirectory)/build.cmd -ci -restore
           displayName: Init toolset
 
         - template: /eng/pipelines/templates/VerifyCoverageReport.yml
