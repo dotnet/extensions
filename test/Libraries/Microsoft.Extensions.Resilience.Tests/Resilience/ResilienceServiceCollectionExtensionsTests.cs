@@ -112,10 +112,9 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
 
         Build();
         _telemetry!.Report("dummy-event", context, string.Empty);
-        var tags = _metricCollector.LastMeasurement!.Tags;
 
         Tags["dep-name"].Should().Be("my-dep");
-        tags["req-name"].Should().Be("my-req");
+        Tags["req-name"].Should().Be("my-req");
     }
 
     [Fact]
