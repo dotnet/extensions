@@ -5,15 +5,19 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal;
 
+/// <summary>
+/// The cache for named options that allows accessing the last valid options instance.
+/// </summary>
+/// <typeparam name="TOptions">The type of options.</typeparam>
 internal sealed class NamedOptionsCache<TOptions>
 {
-    public NamedOptionsCache(string clientId, IOptionsMonitor<TOptions> optionsMonitor)
+    public NamedOptionsCache(string optionsName, IOptionsMonitor<TOptions> optionsMonitor)
     {
-        Options = optionsMonitor.Get(clientId);
+        Options = optionsMonitor.Get(optionsName);
 
         _ = optionsMonitor.OnChange((options, name) =>
         {
-            if (name == clientId)
+            if (name == optionsName)
             {
                 Options = options;
             }

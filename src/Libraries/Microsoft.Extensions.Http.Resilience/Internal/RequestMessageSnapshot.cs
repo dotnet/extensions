@@ -43,10 +43,10 @@ internal sealed class RequestMessageSnapshot : IResettable, IDisposable
             _ = clone.Options.TryAdd(prop.Key, prop.Value);
         }
 #else
-            foreach (var prop in _properties)
-            {
-                clone.Properties.Add(prop);
-            }
+        foreach (var prop in _properties)
+        {
+            clone.Properties.Add(prop);
+        }
 #endif
         foreach (KeyValuePair<string, IEnumerable<string>> header in _headers)
         {
@@ -90,7 +90,7 @@ internal sealed class RequestMessageSnapshot : IResettable, IDisposable
 #if NET5_0_OR_GREATER
         _properties.AddRange(request.Options);
 #else
-            _properties.AddRange(request.Properties);
+        _properties.AddRange(request.Properties);
 #endif
     }
 }
