@@ -159,7 +159,7 @@ public abstract class RoutingStrategyTest
     {
         return Builder.Services
             .BuildServiceProvider()
-            .GetRequiredService<IOptionsMonitor<RequestRoutingStrategyOptions>>()
+            .GetRequiredService<IOptionsMonitor<RequestRoutingOptions>>()
             .Get(name ?? Builder.Name).RoutingStrategyProvider!;
     }
 

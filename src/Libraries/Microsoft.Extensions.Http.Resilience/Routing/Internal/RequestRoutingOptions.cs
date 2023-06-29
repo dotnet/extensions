@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 
-internal class RequestRoutingStrategyOptions
+internal class RequestRoutingOptions
 {
     [Required]
     public Func<RequestRoutingStrategy>? RoutingStrategyProvider { get; set; }

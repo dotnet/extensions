@@ -13,7 +13,7 @@ internal sealed record RoutingStrategyBuilder : IRoutingStrategyBuilder
         Name = name;
         Services = services;
 
-        _ = Services.AddValidatedOptions<RequestRoutingStrategyOptions, RequestRoutingStrategyOptionsValidator>(name);
+        _ = Services.AddValidatedOptions<RequestRoutingOptions, RequestRoutingStrategyOptionsValidator>(name);
     }
 
     public string Name { get; }

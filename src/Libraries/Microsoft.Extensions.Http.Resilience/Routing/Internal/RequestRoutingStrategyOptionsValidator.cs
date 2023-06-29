@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 
 [OptionsValidator]
-internal partial class RequestRoutingStrategyOptionsValidator : IValidateOptions<RequestRoutingStrategyOptions>
+internal partial class RequestRoutingStrategyOptionsValidator : IValidateOptions<RequestRoutingOptions>
 {
 }
 

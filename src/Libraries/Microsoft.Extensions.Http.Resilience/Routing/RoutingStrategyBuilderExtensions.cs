@@ -133,7 +133,7 @@ public static class RoutingStrategyBuilderExtensions
     internal static IRoutingStrategyBuilder ConfigureRoutingStrategy(this IRoutingStrategyBuilder builder, Func<IServiceProvider, Func<RequestRoutingStrategy>> factory)
     {
         _ = builder.Services
-            .AddOptions<RequestRoutingStrategyOptions>(builder.Name)
+            .AddOptions<RequestRoutingOptions>(builder.Name)
             .Configure<IServiceProvider>((options, provider) => options.RoutingStrategyProvider = factory(provider));
 
         return builder;

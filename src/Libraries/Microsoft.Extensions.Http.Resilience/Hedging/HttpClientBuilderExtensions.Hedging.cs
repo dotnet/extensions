@@ -112,7 +112,7 @@ public static partial class HttpClientBuilderExtensions
         {
             var options = context.GetOptions<HttpStandardHedgingResilienceOptions>(optionsName);
             context.EnableReloads<HttpStandardHedgingResilienceOptions>(optionsName);
-            var routingOptions = context.GetOptions<RequestRoutingStrategyOptions>(routingBuilder.Name);
+            var routingOptions = context.GetOptions<RequestRoutingOptions>(routingBuilder.Name);
 
             _ = builder
                 .AddStrategy(new RoutingResilienceStrategy(routingOptions.RoutingStrategyProvider!))
