@@ -218,11 +218,11 @@ stages:
 # ----------------------------------------------------------------
 # This stage performs quality gates enforcements
 # ----------------------------------------------------------------
-- stage: qualitygates
-  displayName: QualityGates
-  condition: ne(variables['SkipQualityGates'], 'true')
+- stage: codecoverage
+  displayName: CodeCoverage
   dependsOn: 
     - build
+  condition: and(succeeded('build'), ne(variables['SkipQualityGates'], 'true'))
   variables:
   - template: /eng/common/templates/variables/pool-providers.yml
   jobs:
@@ -325,7 +325,7 @@ stages:
     parameters:
       validateDependsOn:
         - build
-        - qualitygates
+        - codecoverage
         - correctness
       publishingInfraVersion: 3
       enableSymbolValidation: false
