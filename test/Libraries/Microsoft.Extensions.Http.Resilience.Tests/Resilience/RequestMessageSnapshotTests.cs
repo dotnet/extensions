@@ -26,7 +26,6 @@ public class RequestMessageSnapshotTests
             Content = new StreamContent(new MemoryStream())
         };
 
-
         var exception = Assert.Throws<InvalidOperationException>(() => RequestMessageSnapshot.Create(initialRequest));
         Assert.Equal("StreamContent content cannot by cloned.", exception.Message);
         initialRequest.Dispose();
