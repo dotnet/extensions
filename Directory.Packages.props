@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildThisFileDirectory)\eng\Packages\BuildOnly.props" />
-  <Import Project="$(MSBuildThisFileDirectory)\eng\Packages\General.props" />
-  <Import Project="$(MSBuildThisFileDirectory)\eng\Packages\TestOnly.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\packages\General.props" />
 </Project>

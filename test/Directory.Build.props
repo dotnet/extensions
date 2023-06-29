@@ -1,4 +1,6 @@
 <Project>
+  <Import Project="$(MSBuildThisFileDirectory)\..\eng\packages\TestOnly.props" />
+
   <PropertyGroup>
     <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)' == ''">false</GenerateDocumentationFile>
   </PropertyGroup>
