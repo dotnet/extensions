@@ -25,6 +25,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- This reference is not strictly needed by this package, but we include here such that
+         application using this package to invoke the auto client code generator will inherit
+         this reference, such that the generated code will work.
+    -->
+    <ProjectReference Include="../Microsoft.Extensions.Http.Telemetry/Microsoft.Extensions.Http.Telemetry.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="System.Net.Http" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
