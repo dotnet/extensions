@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Telemetry.Metering;
@@ -32,17 +33,16 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly Mock<RequestRoutingStrategy> _requestRoutingStrategyMock;
-    private Func<RequestRoutingStrategy>? _requestRoutingStrategyFactory;
+    private readonly Func<RequestRoutingStrategy> _requestRoutingStrategyFactory;
     private readonly IServiceCollection _services;
     private readonly List<string> _requests = new();
     private readonly Queue<HttpResponseMessage> _responses = new();
-    private readonly Func<IHttpClientBuilder, Func<RequestRoutingStrategy>, TBuilder> _createDefaultBuilder;
     private bool _failure;
 
     private protected HedgingTests(Func<IHttpClientBuilder, Func<RequestRoutingStrategy>, TBuilder> createDefaultBuilder)
     {
         _cancellationTokenSource = new CancellationTokenSource();
-        _requestRoutingStrategyMock = new Mock<RequestRoutingStrategy>(MockBehavior.Strict);
+        _requestRoutingStrategyMock = new Mock<RequestRoutingStrategy>(MockBehavior.Strict, new Randomizer());
         _requestRoutingStrategyFactory = () => _requestRoutingStrategyMock.Object;
 
         _services = new ServiceCollection().RegisterMetering().AddLogging();
@@ -52,7 +52,6 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         Builder = createDefaultBuilder(httpClient, _requestRoutingStrategyFactory);
         _ = httpClient.AddHttpMessageHandler(() => new TestHandlerStub(InnerHandlerFunction));
-        _createDefaultBuilder = createDefaultBuilder;
     }
 
     public TBuilder Builder { get; private set; }
@@ -256,6 +255,6 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
     protected void SetupRouting()
     {
-        _requestRoutingStrategyFactory = () => _requestRoutingStrategyMock.Object;
+        _requestRoutingStrategyMock.Setup(s => s.Dispose());
     }
 }

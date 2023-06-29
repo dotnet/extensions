@@ -114,7 +114,9 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         var args = new HedgingActionGeneratorArguments<HttpResponseMessage>(primary, secondary, 0, _ => Outcome.FromResultAsTask(response));
         generator.Invoking(g => g(args)).Should().Throw<InvalidOperationException>().WithMessage("Request message snapshot is not attached to the resilience context.");
 
-        primary.Properties.Set(ResilienceKeys.RequestSnapshot, RequestMessageSnapshot.Create(new HttpRequestMessage()));
+        using var request = new HttpRequestMessage();
+        using var snapshot = RequestMessageSnapshot.Create(request);
+        primary.Properties.Set(ResilienceKeys.RequestSnapshot, snapshot);
         generator.Invoking(g => g(args)).Should().Throw<InvalidOperationException>().WithMessage("Routing strategy is not attached to the resilience context.");
     }
 

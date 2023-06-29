@@ -125,10 +125,6 @@ public static class RoutingStrategyBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        _ = builder.Services
-            .AddOptions<WeightedGroupsRoutingOptions>(builder.Name)
-            .Configure(configure);
-
         _ = builder.ConfigureWeightedGroupsCore().Configure(configure);
 
         return builder;

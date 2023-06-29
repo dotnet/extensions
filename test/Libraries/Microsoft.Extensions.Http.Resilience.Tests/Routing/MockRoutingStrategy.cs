@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 
@@ -27,7 +28,7 @@ internal class MockRoutingStrategy : RequestRoutingStrategy
     {
     }
 
-    public override bool TryGetNextRoute(out Uri? nextRoute)
+    public override bool TryGetNextRoute([NotNullWhen(true)] out Uri? nextRoute)
     {
         nextRoute = _mockService.Route;
         return true;

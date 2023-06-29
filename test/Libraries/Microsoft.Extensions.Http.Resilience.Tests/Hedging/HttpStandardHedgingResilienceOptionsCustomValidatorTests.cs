@@ -40,17 +40,6 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
         validationResult.Succeeded.Should().BeTrue();
     }
 
-    [Fact]
-    public void Validate_ValidOptionsWithoutRouting_ValidationErrors()
-    {
-        HttpStandardHedgingResilienceOptions options = new();
-
-        var validationResult = CreateValidator().Validate("other", options);
-
-        validationResult.Failed.Should().BeTrue();
-        validationResult.FailureMessage.Should().Be("The hedging routing is not configured for 'other' HTTP client.");
-    }
-
     public static IEnumerable<object[]> GetOptions_ValidOptions_EnsureNoErrors_Data
     {
         get
@@ -122,7 +111,6 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
 
     private static HttpStandardHedgingResilienceOptionsCustomValidator CreateValidator()
     {
-
         return new HttpStandardHedgingResilienceOptionsCustomValidator();
     }
 }
