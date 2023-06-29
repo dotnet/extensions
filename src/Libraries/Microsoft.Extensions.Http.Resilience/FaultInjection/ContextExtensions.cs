@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Http.Resilience.FaultInjection;
 /// <summary>
 /// Provides extension methods for <see cref="Context"/>.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
 public static class ContextExtensions
 {
     private const string CallingRequestMessage = "CallingRequestMessage";

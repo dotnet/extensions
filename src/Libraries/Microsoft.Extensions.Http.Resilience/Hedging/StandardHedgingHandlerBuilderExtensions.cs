@@ -61,7 +61,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// <param name="builder">The strategy builder.</param>
     /// <param name="configure">The configure method.</param>
     /// <returns>The same builder instance.</returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, Action<HttpStandardHedgingResilienceOptions, IServiceProvider> configure)
     {
         _ = Throw.IfNull(builder);

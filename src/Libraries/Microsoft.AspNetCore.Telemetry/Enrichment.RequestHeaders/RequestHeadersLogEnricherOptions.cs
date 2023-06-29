@@ -20,7 +20,7 @@ public class RequestHeadersLogEnricherOptions
     /// Default value is an empty dictionary.
     /// </remarks>
     [Required]
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
 #pragma warning disable CA2227 // Collection properties should be read only
     public IDictionary<string, DataClassification> HeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
 #pragma warning restore CA2227 // Collection properties should be read only

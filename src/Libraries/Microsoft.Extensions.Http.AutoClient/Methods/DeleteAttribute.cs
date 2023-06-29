@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class DeleteAttribute : Attribute
 {

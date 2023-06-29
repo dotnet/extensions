@@ -42,6 +42,6 @@ public class ChaosPolicyOptionsGroup
     /// Gets or sets the custom result policy options of the chaos policy options group.
     /// </summary>
     [ValidateObjectMembers]
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public CustomResultPolicyOptions? CustomResultPolicyOptions { get; set; }
 }

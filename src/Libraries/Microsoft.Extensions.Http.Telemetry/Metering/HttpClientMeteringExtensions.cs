@@ -34,7 +34,7 @@ public static class HttpClientMeteringExtensions
     /// <returns>
     /// <see cref="IServiceCollection" /> instance for chaining.
     /// </returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public static IServiceCollection AddHttpClientMeteringForAllHttpClients(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);

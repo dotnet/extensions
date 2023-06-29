@@ -65,7 +65,7 @@ public static class WindowsUtilizationExtensions
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public static IResourceMonitorBuilder AddWindowsCounters(this IResourceMonitorBuilder builder)
     {
         _ = Throw.IfNull(builder);
@@ -93,7 +93,7 @@ public static class WindowsUtilizationExtensions
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public static IResourceMonitorBuilder AddWindowsCounters(this IResourceMonitorBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
@@ -123,7 +123,7 @@ public static class WindowsUtilizationExtensions
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public static IResourceMonitorBuilder AddWindowsCounters(this IResourceMonitorBuilder builder, Action<WindowsCountersOptions> configure)
     {
         _ = Throw.IfNull(builder);

@@ -97,7 +97,7 @@ public class DatabaseOptions
     /// When enabled, System.Text.Json based serialization will be configured with
     /// settings defined in <see cref="JsonSerializerOptions"/>.
     /// </remarks>
-    [Experimental("New feature.")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public bool OverrideSerialization { get; set; } = true;
 
     /// <summary>
@@ -106,8 +106,7 @@ public class DatabaseOptions
     /// <value>
     /// The default value is empty <see cref="List{T}" />.
     /// </value>
-    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
-        Justification = "Options pattern.")]
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Options pattern.")]
     public IList<string> FailoverRegions { get; set; }
         = new List<string>();
 
@@ -117,8 +116,7 @@ public class DatabaseOptions
     /// <value>
     /// The default value is empty <see cref="Dictionary{TKey, TValue}" />.
     /// </value>
-    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
-        Justification = "Options pattern.")]
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Options pattern.")]
     public IDictionary<string, RegionalDatabaseOptions> RegionalDatabaseOptions { get; set; }
         = new Dictionary<string, RegionalDatabaseOptions>();
 }

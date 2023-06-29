@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.ObjectPool;
 /// <summary>
 /// Contains configuration for pools.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
 public sealed class DependencyInjectionPoolOptions
 {
     internal const int DefaultCapacity = 1024;

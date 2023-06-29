@@ -228,7 +228,7 @@ public class ApiLifecycleAnalyzerTest
                 using System.Collections.Generic;
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
                 public class AdditionalContext2
                 {
                     protected IReadOnlyDictionary<string, object> Features { get; } = new Dictionary<string, object>();
@@ -347,7 +347,7 @@ public class ApiLifecycleAnalyzerTest
 
                 private T[] _buffer = Array.Empty<T>();
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
                 public BufferWriter2() { }
 
                 public ReadOnlyMemory<T> WrittenMemory => _buffer.AsMemory(0, WrittenCount);
@@ -474,7 +474,7 @@ public class ApiLifecycleAnalyzerTest
                     public DataClass DataClass { get; }
                 }
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
                 public enum DataClass
                 {
 
@@ -562,10 +562,10 @@ public class ApiLifecycleAnalyzerTest
 
             using System.Diagnostics.CodeAnalysis;
 
-            [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+            [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
             public static class Test
             {
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
                 public static void Load()
                 {
                     // Intentionally left empty.
@@ -707,7 +707,7 @@ public class ApiLifecycleAnalyzerTest
                 using System.Collections.Generic;
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
                 public class WindowsCountersOptions2
                 {
                     [Required]
@@ -728,7 +728,7 @@ public class ApiLifecycleAnalyzerTest
 
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
                 public sealed class BufferWriter<T>
                 {
                     internal const int MaxArrayLength = 0X7FEF_FFFF;   // Copy of the internal Array.MaxArrayLength const
@@ -751,7 +751,7 @@ public class ApiLifecycleAnalyzerTest
 
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
                 public class BaseType
                 {
                     public virtual int P => 1;
@@ -774,7 +774,7 @@ public class ApiLifecycleAnalyzerTest
 
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
                 public class OuterType
                 {
                     public int ReadValue(string s) => new InnerType().P;
