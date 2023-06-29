@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
-using Microsoft.Extensions.Resilience.Test.Resilience;
 using Polly;
 using Polly.Registry;
 using Polly.Telemetry;

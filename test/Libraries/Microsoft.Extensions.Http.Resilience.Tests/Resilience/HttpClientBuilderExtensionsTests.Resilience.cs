@@ -17,8 +17,8 @@ using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience;
-using Microsoft.Extensions.Resilience.Test.Resilience;
 using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Moq;
 using Polly;
 using Polly.Extensions.Telemetry;
@@ -79,7 +79,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [Fact]
     public async Task AddResilienceHandler_EnsureFailureResultContext()
     {
-        using var listener = MeteringUtil.ListenPollyMetrics();
+        using var metricCollector = new MetricCollector<int>(null, "Polly", "resilience-events");
 
         var asserted = false;
         var services = new ServiceCollection()
