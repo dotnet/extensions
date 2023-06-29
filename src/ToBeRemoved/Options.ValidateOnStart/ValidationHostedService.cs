@@ -40,7 +40,7 @@ internal sealed class ValidationHostedService : IHostedService
 #if FIXME
 // FIXME: this should be set to true, but this currently bafs as of 04/03/2023
 #endif
-        _validators = options.Value.Validators.ToFrozenDictionary(optimizeForReading: false);
+        _validators = options.Value.Validators.ToFrozenDictionary();
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
