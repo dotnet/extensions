@@ -63,6 +63,7 @@ Get-ChildItem -Path src -Include '*.*sproj' -Recurse | ForEach-Object {
 }
 
 $Errors = New-Object System.Collections.ArrayList
+$Kudos = New-Object System.Collections.ArrayList
 
 Write-Verbose "Collecting projects from code coverage report..."
 $CoberturaReport.coverage.packages.package | ForEach-Object {
@@ -73,8 +74,7 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
 
     Write-Verbose "Project $Name with line coverage $LineCoverage and branch coverage $BranchCoverage"
 
-    if ($ProjectToMinCoverageMap.ContainsKey($Name))
-    {
+    if ($ProjectToMinCoverageMap.ContainsKey($Name)) {
         if ($ProjectToMinCoverageMap[$Name] -eq 'n/a')
         {
             Write-Host "$Name ...code coverage is not applicable"
@@ -83,8 +83,8 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
 
         [double]$MinCodeCoverage = $ProjectToMinCoverageMap[$Name]
 
-        if ($MinCodeCoverage -gt $LineCoverage)
-        {
+        # Detect the under-coverage
+        if ($MinCodeCoverage -gt $LineCoverage) {
             $IsFailed = $true
             [void]$Errors.Add(
                 (
@@ -96,14 +96,24 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
             )
         }
 
-        if ($MinCodeCoverage -gt $BranchCoverage)
-        {
+        if ($MinCodeCoverage -gt $BranchCoverage) {
             $IsFailed = $true
             [void]$Errors.Add(
                 (
                     New-Object PSObject -Property @{
-                        "Project"=$Name;"Coverage Type"="Branch";
-                        "Actual"=$BranchCoverage;"Expected"=$MinCodeCoverage
+                        "Project"=$Name;"Coverage Type"="Branch";"Actual"=$BranchCoverage;"Expected"=$MinCodeCoverage
+                    }
+                )
+            )
+        }
+
+        # Detect the over-coverage
+        $lowerstReported = if ($LineCoverage -lt $BranchCoverage) { $LineCoverage } else { $BranchCoverage };
+        if ($MinCodeCoverage -lt $lowerstReported) {
+            [void]$Kudos.Add(
+                (
+                    New-Object PSObject -Property @{
+                        "Project"=$Name;"Expected"=$MinCodeCoverage;"Actual"=$lowerstReported
                     }
                 )
             )
@@ -117,11 +127,18 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
     }
 }
 
+if ($Kudos.Count -eq 0)
+{
+    Write-Host ""
+    Write-Warning "Good job! The coverage increased"
+    $Kudos | Sort-Object Project | Format-Table "Project", @{ Name="Expected"; Expression="Expected"; Width=10 }, @{ Name="Actual"; Expression="Actual"; Width=10 } -AutoSize -Wrap
+}
+
 if ($Errors.Count -eq 0)
 {
     Write-Host "`r`nAll good, no issues found."
     exit 0;
-}
+}    
 
 Write-Header -message "`r`n[!!] Found $($Errors.Count) issues!" -isError ($Errors.Count -ne 0)
 $Errors | Sort-Object Project, 'Coverage Type' | Format-Table "Project", @{ Name="Coverage Type"; Expression="Coverage Type"; Width=15 }, @{ Name="Actual"; Expression="Actual"; Width=10 }, @{ Name="Expected"; Expression="Expected"; Width=10 } -AutoSize -Wrap
