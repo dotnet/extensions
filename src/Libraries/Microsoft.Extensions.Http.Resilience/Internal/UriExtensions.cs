@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal;
 
@@ -23,7 +22,7 @@ internal static class UriExtensions
     /// <returns><paramref name="currentUri"/> with host from <paramref name="hostUri"/>.</returns>
     public static Uri ReplaceHost(this Uri currentUri, Uri hostUri)
     {
-        if (currentUri.Scheme == hostUri.Scheme && currentUri.Host == hostUri.Host && currentUri.Port == hostUri.Port)
+        if (currentUri.Scheme == hostUri.Scheme && currentUri.Host == hostUri.Host && currentUri.Port == hostUri.Port && hostUri.LocalPath == "/")
         {
             return currentUri;
         }

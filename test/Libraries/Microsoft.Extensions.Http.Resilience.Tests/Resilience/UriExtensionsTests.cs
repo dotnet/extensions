@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Http.Resilience.Test.Resilience;
 
 #pragma warning disable CA2000 // Test class
 
-public class HttpRequestMessageExtensionsTests
+public class UriExtensionsTests
 {
     [Theory]
     [InlineData("https://initial.uri", "https://fallback-uri.com")]
@@ -29,17 +29,23 @@ public class HttpRequestMessageExtensionsTests
     }
 
     [Theory]
-    [InlineData("https://initial.uri", "https://initial.uri")]
-    [InlineData("https://initial.uri/somepath", "https://initial.uri/somepath")]
-    [InlineData("https://initial.uri/somepath/someotherpath", "https://initial.uri/somepath/someotherpath")]
-    [InlineData("https://initial.uri:2030/somepath", "https://initial.uri:2030/somepath")]
-    [InlineData("https://initial.uri:2030/somepath?query=value", "https://initial.uri:2030/somepath?query=value")]
-    [InlineData("https://initial.uri?a=1&b=2&c=3", "https://initial.uri?a=1&b=2&c=3")]
-    [InlineData("https://initial.uri?", "https://initial.uri")]
-    public void ReplaceHost_TargetHostSame_ShouldReturnInitialUri(string initialUriString, string replacementUri)
+    [InlineData("https://initial.uri", "https://initial.uri", true)]
+    [InlineData("https://initial.uri:123", "https://initial.uri:123", true)]
+    [InlineData("http://initial.uri:123", "http://initial.uri:123", true)]
+    [InlineData("https://initial.uri", "https://initial.uri:123", false)]
+    [InlineData("https://initial.uri:123", "https://initial.uri:123/some-path", false)]
+    [InlineData("http://initial.uri:123", "https://initial.uri:123", false)]
+    public void ReplaceHost_TargetHostSame_ShouldReturnInitialUri(string initialUriString, string replacementUri, bool shouldBeSame)
     {
         var initialUri = new Uri(initialUriString);
 
-        initialUri.ReplaceHost(new Uri(replacementUri)).Should().BeSameAs(initialUri);
+        if (shouldBeSame)
+        {
+            initialUri.ReplaceHost(new Uri(replacementUri)).Should().BeSameAs(initialUri);
+        }
+        else
+        {
+            initialUri.ReplaceHost(new Uri(replacementUri)).Should().NotBeSameAs(initialUri);
+        }
     }
 }
