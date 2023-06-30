@@ -117,7 +117,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         using var request = new HttpRequestMessage();
         using var snapshot = RequestMessageSnapshot.Create(request);
         primary.Properties.Set(ResilienceKeys.RequestSnapshot, snapshot);
-        generator.Invoking(g => g(args)).Should().Throw<InvalidOperationException>().WithMessage("Routing strategy is not attached to the resilience context.");
+        generator.Invoking(g => g(args)).Should().NotThrow();
     }
 
 #if NET8_0_OR_GREATER
@@ -260,6 +260,23 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         using var secondRequest = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
         await client.SendAsync(secondRequest);
         AssertNoResponse();
+    }
+
+    [Fact]
+    public async Task NoRouting_Ok()
+    {
+        // arrange
+        Builder.Services.Configure<RequestRoutingOptions>(Builder.RoutingStrategyBuilder.Name, options => options.RoutingStrategyProvider = null);
+
+        var client = CreateClientWithHandler();
+
+        // act && assert
+        AddResponse(HttpStatusCode.InternalServerError, 3);
+        using var firstRequest = new HttpRequestMessage(HttpMethod.Get, "https://some-endpoint:1234/some-path?query");
+        await client.SendAsync(firstRequest);
+        AssertNoResponse();
+
+        Requests.Should().AllSatisfy(r => r.Should().Be("https://some-endpoint:1234/some-path?query"));
     }
 
     protected override void ConfigureHedgingOptions(Action<HttpHedgingStrategyOptions> configure) => Builder.Configure(options => configure(options.HedgingOptions));

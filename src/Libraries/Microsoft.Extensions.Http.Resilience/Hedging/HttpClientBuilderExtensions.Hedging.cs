@@ -87,21 +87,21 @@ public static partial class HttpClientBuilderExtensions
                     Throw.InvalidOperationException("Request message snapshot is not attached to the resilience context.");
                 }
 
-                if (!args.PrimaryContext.Properties.TryGetValue(ResilienceKeys.RoutingStrategy, out var routingStrategy))
-                {
-                    Throw.InvalidOperationException("Routing strategy is not attached to the resilience context.");
-                }
-
-                if (!routingStrategy.TryGetNextRoute(out var route))
-                {
-                    // no routes left, stop hedging
-                    return null;
-                }
-
-                var requestMessage = snapshot.CreateRequestMessage().ReplaceHost(route);
+                var requestMessage = snapshot.CreateRequestMessage();
 
                 // replace the request message
                 args.ActionContext.Properties.Set(ResilienceKeys.RequestMessage, requestMessage);
+
+                if (args.PrimaryContext.Properties.TryGetValue(ResilienceKeys.RoutingStrategy, out var routingStrategy))
+                {
+                    if (!routingStrategy.TryGetNextRoute(out var route))
+                    {
+                        // no routes left, stop hedging
+                        return null;
+                    }
+
+                    requestMessage = requestMessage.ReplaceHost(route);
+                }
 
                 return () => args.Callback(args.ActionContext);
             };
@@ -115,7 +115,7 @@ public static partial class HttpClientBuilderExtensions
             var routingOptions = context.GetOptions<RequestRoutingOptions>(routingBuilder.Name);
 
             _ = builder
-                .AddStrategy(new RoutingResilienceStrategy(routingOptions.RoutingStrategyProvider!))
+                .AddStrategy(new RoutingResilienceStrategy(routingOptions.RoutingStrategyProvider))
                 .AddStrategy(new RequestMessageSnapshotStrategy())
                 .AddTimeout(options.TotalRequestTimeoutOptions)
                 .AddHedging(options.HedgingOptions);

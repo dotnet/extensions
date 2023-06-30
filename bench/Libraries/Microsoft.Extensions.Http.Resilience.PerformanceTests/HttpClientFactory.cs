@@ -24,6 +24,7 @@ public enum HedgingClientType
     Weighted = 1 << 0,
     Ordered = 1 << 1,
     ManyRoutes = 1 << 2,
+    NoRoutes = 1 << 3,
 }
 
 internal static class HttpClientFactory
@@ -67,6 +68,11 @@ internal static class HttpClientFactory
         var clientBuilder = services.AddHttpClient(clientType.ToString(), client => client.Timeout = Timeout.InfiniteTimeSpan);
         var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectStrategyByAuthority(SimpleClassifications.PublicData);
         _ = clientBuilder.AddHttpMessageHandler<NoRemoteCallHandler>();
+
+        if (clientType.HasFlag(HedgingClientType.NoRoutes))
+        {
+            return services;
+        }
 
         int routes = clientType.HasFlag(HedgingClientType.ManyRoutes) ? 50 : 2;
 

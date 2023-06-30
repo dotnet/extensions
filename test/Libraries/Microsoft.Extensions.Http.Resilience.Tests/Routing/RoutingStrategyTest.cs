@@ -34,14 +34,6 @@ public abstract class RoutingStrategyTest
     public virtual bool CompareOrder => true;
 
     [Fact]
-    public void Validate_Ok()
-    {
-        Configure(Builder);
-
-        Assert.Throws<OptionsValidationException>(() => CreateStrategy("unknown"));
-    }
-
-    [Fact]
     public void CreateStrategy_EnsurePooled()
     {
         SetupRandomizer(60d);

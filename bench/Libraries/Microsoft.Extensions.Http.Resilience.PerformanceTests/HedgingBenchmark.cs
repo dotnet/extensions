@@ -20,29 +20,21 @@ public class HedgingBenchmark
     [GlobalSetup]
     public void GlobalSetup()
     {
-        var type = RoutingStrategy;
-
-        if (ManyRoutes)
-        {
-            type |= HedgingClientType.ManyRoutes;
-        }
-
-        var serviceProvider = HttpClientFactory.InitializeServiceProvider(type);
+        var serviceProvider = HttpClientFactory.InitializeServiceProvider(Type);
         var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
 #pragma warning disable R9A033 // Replace uses of 'Enum.GetName' and 'Enum.ToString' with the '[EnumStrings]' code generator for improved performance
-        _client = factory.CreateClient(type.ToString());
+        _client = factory.CreateClient(Type.ToString());
 #pragma warning restore R9A033 // Replace uses of 'Enum.GetName' and 'Enum.ToString' with the '[EnumStrings]' code generator for improved performance
     }
 
-    [Params(HedgingClientType.Weighted, HedgingClientType.Ordered)]
-    public HedgingClientType RoutingStrategy { get; set; }
-
-    [Params(true, false)]
-    public bool ManyRoutes { get; set; }
+    [Params(
+        HedgingClientType.NoRoutes,
+        HedgingClientType.Weighted,
+        HedgingClientType.Ordered,
+        HedgingClientType.Weighted | HedgingClientType.ManyRoutes,
+        HedgingClientType.Ordered | HedgingClientType.ManyRoutes)]
+    public HedgingClientType Type { get; set; }
 
     [Benchmark]
-    public Task<HttpResponseMessage> HedgingCall()
-    {
-        return _client.SendAsync(Request, CancellationToken.None);
-    }
+    public Task<HttpResponseMessage> HedgingCall() => _client.SendAsync(Request, CancellationToken.None);
 }
