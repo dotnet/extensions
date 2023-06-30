@@ -100,7 +100,7 @@ public static partial class HttpClientBuilderExtensions
                         return null;
                     }
 
-                    requestMessage.RequestUri = requestMessage.RequestUri.ReplaceHost(route);
+                    requestMessage.RequestUri = requestMessage.RequestUri!.ReplaceHost(route);
                 }
 
                 return () => args.Callback(args.ActionContext);
