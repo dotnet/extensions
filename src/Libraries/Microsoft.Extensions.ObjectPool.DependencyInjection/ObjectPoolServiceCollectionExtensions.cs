@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.ObjectPool;
 /// <summary>
 /// Extension methods for adding <see cref="ObjectPool{T}"/> to DI container.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
 public static class ObjectPoolServiceCollectionExtensions
 {
     /// <summary>

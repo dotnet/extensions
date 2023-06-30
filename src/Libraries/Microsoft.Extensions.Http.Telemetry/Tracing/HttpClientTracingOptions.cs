@@ -23,7 +23,7 @@ public class HttpClientTracingOptions
     /// <value>
     /// The default value is <see cref="HttpRouteParameterRedactionMode.Strict"/>.
     /// </value>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>

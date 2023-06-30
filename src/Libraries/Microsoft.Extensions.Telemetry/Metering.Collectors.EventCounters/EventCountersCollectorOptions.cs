@@ -69,7 +69,7 @@ public class EventCountersCollectorOptions
     /// EventSource: "Microsoft-AspNetCore-Server-Kestrel", Counters:
     ///   - "connection-queue-length", "request-queue-length".
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public bool IncludeRecommendedDefault { get; set; }
 
 #if NET5_0_OR_GREATER

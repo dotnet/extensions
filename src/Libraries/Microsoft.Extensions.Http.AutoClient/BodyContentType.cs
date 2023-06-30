@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// <summary>
 /// Defines the types of encoding possible for request bodies.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
 public enum BodyContentType
 {
     /// <summary>

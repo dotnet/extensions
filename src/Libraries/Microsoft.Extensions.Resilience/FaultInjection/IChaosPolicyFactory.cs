@@ -40,6 +40,6 @@ public interface IChaosPolicyFactory
     /// </summary>
     /// <typeparam name="TResult">The type of value policies created by this method will inject.</typeparam>
     /// <returns>A custom result policy, an instance of <see cref="AsyncInjectOutcomePolicy{TResult}"/>.</returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public AsyncInjectOutcomePolicy<TResult> CreateCustomResultPolicy<TResult>();
 }

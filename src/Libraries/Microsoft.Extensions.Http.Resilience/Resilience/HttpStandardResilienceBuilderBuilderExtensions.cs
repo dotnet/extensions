@@ -62,7 +62,7 @@ public static class HttpStandardResilienceBuilderBuilderExtensions
     /// <param name="configure">The configure method.</param>
     /// <returns>The same builder instance.</returns>
 #pragma warning disable S3872 // Parameter names should not duplicate the names of their methods
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public static IHttpStandardResilienceStrategyBuilder Configure(this IHttpStandardResilienceStrategyBuilder builder, Action<HttpStandardResilienceOptions, IServiceProvider> configure)
 #pragma warning restore S3872 // Parameter names should not duplicate the names of their methods
     {

@@ -67,7 +67,7 @@ public static class RoutingStrategyBuilderExtensions
     /// <returns>
     /// The same routing builder instance.
     /// </returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public static IRoutingStrategyBuilder ConfigureOrderedGroups(this IRoutingStrategyBuilder builder, Action<OrderedGroupsRoutingOptions, IServiceProvider> configure)
     {
         _ = Throw.IfNull(builder);
@@ -121,7 +121,7 @@ public static class RoutingStrategyBuilderExtensions
     /// <returns>
     /// The same routing builder instance.
     /// </returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public static IRoutingStrategyBuilder ConfigureWeightedGroups(this IRoutingStrategyBuilder builder, Action<WeightedGroupsRoutingOptions, IServiceProvider> configure)
     {
         _ = Throw.IfNull(builder);

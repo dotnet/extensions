@@ -51,7 +51,7 @@ public class HttpTracingOptions
     /// <remarks>
     /// This property is applicable when the <see cref="IncludePath"/> option is enabled.
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>

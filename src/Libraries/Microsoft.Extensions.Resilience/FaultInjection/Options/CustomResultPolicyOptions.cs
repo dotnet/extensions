@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Resilience.FaultInjection;
 /// <summary>
 /// Custom Result chaos policy options definition.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
 public class CustomResultPolicyOptions : ChaosPolicyOptionsBase
 {
     /// <summary>
@@ -20,7 +20,7 @@ public class CustomResultPolicyOptions : ChaosPolicyOptionsBase
     /// from <see cref="ICustomResultRegistry"/>.
     /// Default is set to <see cref="string.Empty"/>.
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     [Required]
     public string CustomResultKey { get; set; } = string.Empty;
 }

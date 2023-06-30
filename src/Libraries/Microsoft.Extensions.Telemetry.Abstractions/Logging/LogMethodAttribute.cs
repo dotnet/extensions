@@ -266,7 +266,7 @@ public sealed class LogMethodAttribute : Attribute
     /// }
     /// </code>
     /// </example>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public LogMethodAttribute()
     {
         EventId = 0;

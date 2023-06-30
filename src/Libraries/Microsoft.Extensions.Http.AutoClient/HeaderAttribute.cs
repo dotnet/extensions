@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
 [AttributeUsage(AttributeTargets.Parameter)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class HeaderAttribute : Attribute

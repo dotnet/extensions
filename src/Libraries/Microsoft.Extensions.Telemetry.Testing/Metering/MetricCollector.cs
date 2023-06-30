@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Telemetry.Testing.Metering;
 /// Collects the measurements published from an <see cref="Instrument{T}"/> or <see cref="ObservableInstrument{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of metric data being recorded.</typeparam>
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
 [DebuggerDisplay("{_measurements.Count} measurements")]
 public sealed class MetricCollector<T> : IDisposable
     where T : struct
