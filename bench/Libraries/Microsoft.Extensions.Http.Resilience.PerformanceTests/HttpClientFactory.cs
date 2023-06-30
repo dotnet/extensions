@@ -4,9 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,9 +29,7 @@ public enum HedgingClientType
 internal static class HttpClientFactory
 {
     internal const string EmptyClient = "Empty";
-
     internal const string StandardClient = "Standard";
-
     internal const string SingleHandlerClient = "SingleHandler";
 
     private const string HedgingEndpoint1 = "http://localhost1";
@@ -122,13 +118,5 @@ internal static class HttpClientFactory
         }
 
         return services;
-    }
-
-    private class EmptyHandler : DelegatingHandler
-    {
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        }
     }
 }
