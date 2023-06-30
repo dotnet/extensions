@@ -6,7 +6,7 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
 
-namespace Microsoft.Gen.Logging.Bench;
+namespace Microsoft.Extensions.Telemetry.Bench;
 
 internal static class Program
 {

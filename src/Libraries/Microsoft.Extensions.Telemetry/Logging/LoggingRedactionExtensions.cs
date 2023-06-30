@@ -20,7 +20,7 @@ public static class LoggingRedactionExtensions
     /// </summary>
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    public static ILoggingBuilder EnableRedactionAndEnrichment(this ILoggingBuilder builder)
+    public static ILoggingBuilder EnableRedaction(this ILoggingBuilder builder)
     {
         _ = Throw.IfNull(builder);
 

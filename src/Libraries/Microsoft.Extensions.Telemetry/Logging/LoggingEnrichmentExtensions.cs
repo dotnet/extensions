@@ -23,8 +23,8 @@ public static class LoggingEnrichmentExtensions
     /// </summary>
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    public static ILoggingBuilder EnableRedactionAndEnrichment(this ILoggingBuilder builder)
-        => EnableRedactionAndEnrichment(builder, _ => { });
+    public static ILoggingBuilder EnableEnrichment(this ILoggingBuilder builder)
+        => EnableEnrichment(builder, _ => { });
 
     /// <summary>
     /// Enables enrichment functionality within the logging infrastructure.
@@ -32,7 +32,7 @@ public static class LoggingEnrichmentExtensions
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <param name="configure">Delegate the fine-tune the options.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    public static ILoggingBuilder EnableRedactionAndEnrichment(this ILoggingBuilder builder, Action<LoggerEnrichmentOptions> configure)
+    public static ILoggingBuilder EnableEnrichment(this ILoggingBuilder builder, Action<LoggerEnrichmentOptions> configure)
     {
         _ = Throw.IfNull(builder);
 
@@ -49,7 +49,7 @@ public static class LoggingEnrichmentExtensions
     /// <param name="builder">The dependency injection container to add logging to.</param>
     /// <param name="section">Configuration section that contains <see cref="LoggerEnrichmentOptions"/>.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    public static ILoggingBuilder EnableRedactionAndEnrichment(this ILoggingBuilder builder, IConfigurationSection section)
+    public static ILoggingBuilder EnableEnrichment(this ILoggingBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
 

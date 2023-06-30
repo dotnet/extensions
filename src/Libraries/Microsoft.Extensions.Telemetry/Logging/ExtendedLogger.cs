@@ -20,12 +20,18 @@ internal sealed partial class ExtendedLogger : ILogger
     private const string ExceptionStackTrace = "stackTrace";
 
     private readonly ILogger _nextLogger;
+    private readonly Action<LogLevel, EventId, PropertyJoiner, Exception?, Func<PropertyJoiner, Exception?, string>> _nextLoggerLog;
+    private readonly Func<LogLevel, bool> _nextLoggerIsEnabled;
     private readonly ExtendedLoggerFactory _factory;
 
     public ExtendedLogger(ILogger nextLogger, ExtendedLoggerFactory factory)
     {
         _nextLogger = nextLogger;
         _factory = factory;
+
+        // get delegates to those methods to avoid the interface dispatch overhead
+        _nextLoggerLog = nextLogger.Log<PropertyJoiner>;
+        _nextLoggerIsEnabled = nextLogger.IsEnabled;
     }
 
     public IDisposable? BeginScope<TState>(TState state)
@@ -36,7 +42,7 @@ internal sealed partial class ExtendedLogger : ILogger
 
     public bool IsEnabled(LogLevel logLevel)
     {
-        return _nextLogger.IsEnabled(logLevel);
+        return _nextLoggerIsEnabled(logLevel);
     }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
@@ -114,7 +120,7 @@ internal sealed partial class ExtendedLogger : ILogger
         // presume warning/error/critical levels are enabled, to avoid the call to IsEnabled
         if (logLevel < LogLevel.Warning)
         {
-            if (!IsEnabled(logLevel))
+            if (_nextLoggerIsEnabled(logLevel))
             {
                 return;
             }
@@ -149,7 +155,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 msgState.AddProperty(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
             }
 
-            _nextLogger.Log(logLevel, eventId, joiner, exception, static (s, e) => s.Formatter(s.DynamicProperties, e));
+            _nextLoggerLog(logLevel, eventId, joiner, exception, static (s, e) => s.Formatter(s.DynamicProperties, e));
         }
         catch (Exception ex)
         {
@@ -162,7 +168,7 @@ internal sealed partial class ExtendedLogger : ILogger
         // presume warning/error/critical levels are enabled, to avoid the call to IsEnabled
         if (logLevel < LogLevel.Warning)
         {
-            if (!IsEnabled(logLevel))
+            if (_nextLoggerIsEnabled(logLevel))
             {
                 return;
             }

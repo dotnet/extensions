@@ -4,19 +4,14 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Telemetry.Logging;
-using Microsoft.Shared.Pools;
 
-namespace Microsoft.Gen.Logging.Bench;
+namespace Microsoft.Extensions.Telemetry.Bench;
 
 /// <summary>
 /// A logger which captures the last log state logged to it.
 /// </summary>
 internal sealed class MockLogger : ILogger
 {
-    private readonly ObjectPool<List<KeyValuePair<string, object?>>> _listPool = PoolFactory.CreateListPool<KeyValuePair<string, object?>>();
-
     private sealed class Disposable : IDisposable
     {
         public void Dispose()
@@ -35,48 +30,37 @@ internal sealed class MockLogger : ILogger
         return new Disposable();
     }
 
-    public bool IsEnabled(LogLevel logLevel)
-    {
-        return Enabled;
-    }
-
-    public bool Enabled { get; set; }
+    public bool IsEnabled(LogLevel logLevel) => true;
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        if (!IsEnabled(logLevel))
-        {
-            return;
-        }
-
         switch (state)
         {
-            case LogMethodHelper helper:
+            case IReadOnlyList<KeyValuePair<string, object?>> l:
             {
-                // this path is optimized in the real Logger implementation, so it is here too...
+                for (int i = 0; i < l.Count; i++)
+                {
+                    _ = ProcessItem(l[i]);
+                }
+
                 break;
             }
 
             case IEnumerable<KeyValuePair<string, object?>> enumerable:
             {
-                var l = _listPool.Get();
-
                 foreach (var e in enumerable)
                 {
-                    // Any non-primitive value type will be turned into a string on this path.
-                    // But when using the generated code, this conversion to string happens in the
-                    // generated code, which eliminates the overhead of boxing the value type.
-                    if (e.Value is Guid)
-                    {
-                        _ = e.Value.ToString();
-                    }
-
-                    l.Add(e);
+                    _ = ProcessItem(e);
                 }
 
-                _listPool.Return(l);
                 break;
             }
         }
+    }
+
+    private static object? ProcessItem(KeyValuePair<string, object?> item)
+    {
+        var o = item.Value;
+        return o;
     }
 }
