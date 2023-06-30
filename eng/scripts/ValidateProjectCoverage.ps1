@@ -62,7 +62,9 @@ Get-ChildItem -Path src -Include '*.*sproj' -Recurse | ForEach-Object {
     $ProjectToMinCoverageMap[$AssemblyName] = $MinCodeCoverage
 }
 
+$esc = [char]27
 $Errors = New-Object System.Collections.ArrayList
+$Kudos = New-Object System.Collections.ArrayList
 
 Write-Verbose "Collecting projects from code coverage report..."
 $CoberturaReport.coverage.packages.package | ForEach-Object {
@@ -73,8 +75,7 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
 
     Write-Verbose "Project $Name with line coverage $LineCoverage and branch coverage $BranchCoverage"
 
-    if ($ProjectToMinCoverageMap.ContainsKey($Name))
-    {
+    if ($ProjectToMinCoverageMap.ContainsKey($Name)) {
         if ($ProjectToMinCoverageMap[$Name] -eq 'n/a')
         {
             Write-Host "$Name ...code coverage is not applicable"
@@ -83,27 +84,45 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
 
         [double]$MinCodeCoverage = $ProjectToMinCoverageMap[$Name]
 
-        if ($MinCodeCoverage -gt $LineCoverage)
-        {
+        # Detect the under-coverage
+        if ($MinCodeCoverage -gt $LineCoverage) {
             $IsFailed = $true
             [void]$Errors.Add(
                 (
                     New-Object PSObject -Property @{
-                        "Project"=$Name;"Coverage Type"="Line";
-                        "Actual"=$LineCoverage;"Expected"=$MinCodeCoverage
+                        "Project" = $Name;
+                        "Coverage Type" = "Line";
+                        "Expected" = $MinCodeCoverage;
+                        "Actual" = "$esc[1m$esc[0;31m$($LineCoverage)$esc[0m"
                     }
                 )
             )
         }
 
-        if ($MinCodeCoverage -gt $BranchCoverage)
-        {
+        if ($MinCodeCoverage -gt $BranchCoverage) {
             $IsFailed = $true
             [void]$Errors.Add(
                 (
                     New-Object PSObject -Property @{
-                        "Project"=$Name;"Coverage Type"="Branch";
-                        "Actual"=$BranchCoverage;"Expected"=$MinCodeCoverage
+                        "Project" = $Name;
+                        "Coverage Type" = "Branch";
+                        "Expected" = $MinCodeCoverage;
+                        "Actual" = "$esc[1m$esc[0;31m$($BranchCoverage)$esc[0m"
+                    }
+                )
+            )
+        }
+
+        # Detect the over-coverage
+        [int]$lowestReported = [math]::Min([math]::Truncate($LineCoverage), [math]::Truncate($BranchCoverage));
+        Write-Debug "line: $LineCoverage, branch: $BranchCoverage, min: $lowestReported, threshold: $MinCodeCoverage"
+        if ([int]$MinCodeCoverage -lt $lowestReported) {
+            [void]$Kudos.Add(
+                (
+                    New-Object PSObject -Property @{
+                        "Project" = $Name;
+                        "Expected" = $MinCodeCoverage;
+                        "Actual" = "$esc[1m$esc[0;32m$($lowestReported)$esc[0m";
                     }
                 )
             )
@@ -117,6 +136,18 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
     }
 }
 
+if ($Kudos.Count -ne 0)
+{
+    Write-Header -message "`r`nGood job! The coverage increased" -isError $false
+    $Kudos | `
+        Sort-Object Project | `
+        Format-Table "Project", `
+                    @{ Name="Expected"; Expression="Expected"; Width=10; Alignment = "Right" }, `
+                    @{ Name="Actual"; Expression="Actual"; Width=10; Alignment = "Right" } `
+                    -AutoSize -Wrap
+    Write-Host "##vso[task.logissue type=warning;]Good job! The coverage increased, please update your projects"
+}
+
 if ($Errors.Count -eq 0)
 {
     Write-Host "`r`nAll good, no issues found."
@@ -124,6 +155,12 @@ if ($Errors.Count -eq 0)
 }
 
 Write-Header -message "`r`n[!!] Found $($Errors.Count) issues!" -isError ($Errors.Count -ne 0)
-$Errors | Sort-Object Project, 'Coverage Type' | Format-Table "Project", @{ Name="Coverage Type"; Expression="Coverage Type"; Width=15 }, @{ Name="Actual"; Expression="Actual"; Width=10 }, @{ Name="Expected"; Expression="Expected"; Width=10 } -AutoSize -Wrap
+$Errors | `
+    Sort-Object Project, 'Coverage Type' | `
+    Format-Table "Project", `
+                @{ Name="Expected"; Expression="Expected"; Width=10; Alignment = "Right" }, `
+                @{ Name="Actual"; Expression="Actual"; Width=10; Alignment = "Right" }, `
+                @{ Name="Coverage Type"; Expression="Coverage Type"; Width=10; Alignment = "Center" } `
+                -AutoSize -Wrap
 exit -1;
 
