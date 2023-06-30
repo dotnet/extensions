@@ -26,21 +26,21 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
 #pragma warning disable S107 // Methods should not have too many parameters
     public ExtendedLoggerFactory(
         IEnumerable<ILoggerProvider> providers,
-        IOptionsMonitor<LoggerFilterOptions> filterOptions,
-        IOptionsMonitor<LoggerEnrichmentOptions>? enrichmentOptions,
-        IOptionsMonitor<LoggerRedactionOptions>? redactionOptions,
-        IOptions<LoggerFactoryOptions>? factoryOptions,
-        IExternalScopeProvider? scopeProvider,
         IEnumerable<ILogEnricher> enrichers,
         IEnumerable<IStaticLogEnricher> staticEnrichers,
-        IRedactorProvider redactorProvider)
+        IOptionsMonitor<LoggerFilterOptions> filterOptions,
+        IOptions<LoggerFactoryOptions>? factoryOptions = null,
+        IExternalScopeProvider? scopeProvider = null,
+        IOptionsMonitor<LoggerEnrichmentOptions>? enrichmentOptions = null,
+        IOptionsMonitor<LoggerRedactionOptions>? redactionOptions = null,
+        IRedactorProvider? redactorProvider = null)
 #pragma warning restore S107 // Methods should not have too many parameters
     {
         _loggerFactory = new LoggerFactory(providers, filterOptions, factoryOptions, scopeProvider);
         _enrichers = enrichers.Select<ILogEnricher, Action<IEnrichmentPropertyBag>>(e => e.Enrich).ToArray();
         _changeTokenRegistration = enrichmentOptions?.OnChange(UpdateStackTraceOptions);
 
-        var provider = redactionOptions != null
+        var provider = redactionOptions != null && redactorProvider != null
             ? redactorProvider
             : NullRedactorProvider.Instance;
         _redactorProvider = provider.GetRedactor;

@@ -46,7 +46,7 @@ public class LoggerFactory
         NewWithEnrichers
     }
 
-    private static readonly ILogger[] _loggers = new[]
+    private readonly ILogger[] _loggers = new[]
     {
         GetLogger(LoggerFactoryVersions.Original),
         GetLogger(LoggerFactoryVersions.New),
@@ -59,6 +59,7 @@ public class LoggerFactory
     private static ILogger GetLogger(LoggerFactoryVersions config)
     {
         var serviceCollection = new ServiceCollection();
+
         serviceCollection.AddLogging(builder =>
         {
             builder.AddProvider(new MockLoggerProvider());

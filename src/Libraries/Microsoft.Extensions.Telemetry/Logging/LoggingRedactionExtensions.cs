@@ -24,7 +24,7 @@ public static class LoggingRedactionExtensions
     {
         _ = Throw.IfNull(builder);
 
-        builder.Services.TryAddSingleton<ILoggerFactory, ExtendedLoggerFactory>();
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
         _ = builder.Services.AddOptions<LoggerRedactionOptions>();
 
         return builder;

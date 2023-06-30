@@ -12,10 +12,20 @@ internal static class Program
 {
     public static void Main(string[] args)
     {
+#if DEBUG
+        var c = new LoggerFactory
+        {
+            Factory = LoggerFactory.LoggerFactoryVersions.Original
+        };
+
+        c.ClassicCodeGen_RefTypes();
+        c.ModernCodeGen_RefTypes();
+#else
         var dontRequireSlnToRunBenchmarks = ManualConfig
             .Create(DefaultConfig.Instance)
             .AddJob(Job.MediumRun.WithToolchain(InProcessEmitToolchain.Instance));
 
         BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, dontRequireSlnToRunBenchmarks);
+#endif
     }
 }

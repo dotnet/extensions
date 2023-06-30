@@ -36,7 +36,7 @@ public static class LoggingEnrichmentExtensions
     {
         _ = Throw.IfNull(builder);
 
-        builder.Services.TryAddSingleton<ILoggerFactory, ExtendedLoggerFactory>();
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
         _ = builder.Services.Configure(configure);
         _ = builder.Services.AddValidatedOptions<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>();
 
@@ -53,7 +53,7 @@ public static class LoggingEnrichmentExtensions
     {
         _ = Throw.IfNull(builder);
 
-        builder.Services.TryAddSingleton<ILoggerFactory, ExtendedLoggerFactory>();
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
         _ = builder.Services.AddValidatedOptions<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>().Bind(section);
 
         return builder;
