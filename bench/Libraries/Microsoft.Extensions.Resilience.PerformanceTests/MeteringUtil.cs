@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 
-namespace Microsoft.Extensions.Resilience.Test.Resilience;
+namespace Microsoft.Extensions.Resilience.Bench;
 
 internal class MeteringUtil
 {

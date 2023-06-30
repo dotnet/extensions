@@ -29,8 +29,8 @@ public enum HedgingClientType
 internal static class HttpClientFactory
 {
     internal const string EmptyClient = "Empty";
-
     internal const string StandardClient = "Standard";
+    internal const string SingleHandlerClient = "SingleHandler";
 
     private const string HedgingEndpoint1 = "http://localhost1";
     private const string HedgingEndpoint2 = "http://localhost2";
@@ -47,10 +47,14 @@ internal static class HttpClientFactory
             .AddStandardResilienceHandler()
             .Services
             .AddHttpClient(StandardClient)
-            .AddHttpMessageHandler<NoRemoteCallHandler>()
+            .ConfigurePrimaryHttpMessageHandler(() => new NoRemoteCallHandler())
             .Services
             .AddHttpClient(EmptyClient, client => client.Timeout = Timeout.InfiniteTimeSpan)
-            .AddHttpMessageHandler<NoRemoteCallHandler>();
+            .ConfigurePrimaryHttpMessageHandler(() => new NoRemoteCallHandler())
+            .Services
+            .AddHttpClient(SingleHandlerClient, client => client.Timeout = Timeout.InfiniteTimeSpan)
+            .AddHttpMessageHandler(() => new EmptyHandler())
+            .ConfigurePrimaryHttpMessageHandler(() => new NoRemoteCallHandler());
 
         services.RemoveAll<ILoggerFactory>();
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);

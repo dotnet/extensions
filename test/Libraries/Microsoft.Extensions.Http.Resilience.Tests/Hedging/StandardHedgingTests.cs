@@ -12,6 +12,7 @@ using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -29,7 +30,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     {
     }
 
-    private static IStandardHedgingHandlerBuilder ConfigureDefaultBuilder(IHttpClientBuilder builder, IRequestRoutingStrategyFactory factory)
+    private static IStandardHedgingHandlerBuilder ConfigureDefaultBuilder(IHttpClientBuilder builder, Func<RequestRoutingStrategy> factory)
     {
         return builder
             .AddStandardHedgingHandler(routing => routing.ConfigureRoutingStrategy(_ => factory))
@@ -113,7 +114,9 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         var args = new HedgingActionGeneratorArguments<HttpResponseMessage>(primary, secondary, 0, _ => Outcome.FromResultAsTask(response));
         generator.Invoking(g => g(args)).Should().Throw<InvalidOperationException>().WithMessage("Request message snapshot is not attached to the resilience context.");
 
-        primary.Properties.Set(ResilienceKeys.RequestSnapshot, Mock.Of<IHttpRequestMessageSnapshot>());
+        using var request = new HttpRequestMessage();
+        using var snapshot = RequestMessageSnapshot.Create(request);
+        primary.Properties.Set(ResilienceKeys.RequestSnapshot, snapshot);
         generator.Invoking(g => g(args)).Should().Throw<InvalidOperationException>().WithMessage("Routing strategy is not attached to the resilience context.");
     }
 
@@ -177,7 +180,6 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
 
         SetupRouting();
         SetupRoutes(1);
-        SetupCloner(request, false);
         AddResponse(HttpStatusCode.OK);
 
         using var client = CreateClientWithHandler();
@@ -249,7 +251,6 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         // act && assert
         AddResponse(HttpStatusCode.InternalServerError, 3);
         using var firstRequest = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
-        SetupCloner(firstRequest, true);
         await client.SendAsync(firstRequest);
         AssertNoResponse();
 
@@ -257,7 +258,6 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
 
         AddResponse(HttpStatusCode.InternalServerError, 7);
         using var secondRequest = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
-        SetupCloner(secondRequest, true);
         await client.SendAsync(secondRequest);
         AssertNoResponse();
     }

@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal.OrderedGroups;
+using Microsoft.Extensions.ObjectPool;
 using Moq;
 using Xunit;
 
@@ -76,7 +78,7 @@ public class OrderedRoutingStrategyTest : RoutingStrategyTest
         yield return "https://dummy-route/";
     }
 
-    internal override IRequestRoutingStrategy CreateEmptyStrategy() => new OrderedGroupsRoutingStrategy(Mock.Of<IRandomizer>());
+    internal override RequestRoutingStrategy CreateEmptyStrategy() => new OrderedGroupsRoutingStrategy(Mock.Of<Randomizer>(), Mock.Of<ObjectPool<OrderedGroupsRoutingStrategy>>());
 
     protected override IEnumerable<Action<IRoutingStrategyBuilder>> ConfigureInvalidRoutes()
     {

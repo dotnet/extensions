@@ -15,13 +15,6 @@ namespace Microsoft.Extensions.Http.Resilience.Internal;
 /// </summary>
 internal sealed class RequestMessageSnapshotStrategy : ResilienceStrategy
 {
-    private readonly IRequestCloner _requestCloner;
-
-    public RequestMessageSnapshotStrategy(IRequestCloner requestCloner)
-    {
-        _requestCloner = requestCloner;
-    }
-
     protected override async ValueTask<Outcome<TResult>> ExecuteCoreAsync<TResult, TState>(
         Func<ResilienceContext, TState, ValueTask<Outcome<TResult>>> callback,
         ResilienceContext context,
@@ -32,7 +25,7 @@ internal sealed class RequestMessageSnapshotStrategy : ResilienceStrategy
             Throw.InvalidOperationException("The HTTP request message was not found in the resilience context.");
         }
 
-        using var snapshot = _requestCloner.CreateSnapshot(request);
+        using var snapshot = RequestMessageSnapshot.Create(request);
 
         context.Properties.Set(ResilienceKeys.RequestSnapshot, snapshot);
 

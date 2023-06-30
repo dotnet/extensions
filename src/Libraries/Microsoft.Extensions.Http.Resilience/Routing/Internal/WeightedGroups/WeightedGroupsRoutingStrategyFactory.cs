@@ -1,17 +1,37 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Options;
+using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Http.Resilience.Routing.Internal.WeightedGroups;
 
-internal sealed class WeightedGroupsRoutingStrategyFactory : RequestRoutingStrategyFactory<WeightedGroupsRoutingStrategy, WeightedGroupsRoutingOptions>
+internal sealed class WeightedGroupsRoutingStrategyFactory : IPooledObjectPolicy<WeightedGroupsRoutingStrategy>
 {
-    public WeightedGroupsRoutingStrategyFactory(string clientId, ObjectPool<WeightedGroupsRoutingStrategy> pool, IOptionsMonitor<WeightedGroupsRoutingOptions> optionsMonitor)
-        : base(clientId, pool, optionsMonitor)
+    private readonly Randomizer _randomizer;
+    private readonly NamedOptionsCache<WeightedGroupsRoutingOptions> _cache;
+    private readonly ObjectPool<WeightedGroupsRoutingStrategy> _pool;
+
+    public WeightedGroupsRoutingStrategyFactory(Randomizer randomizer, NamedOptionsCache<WeightedGroupsRoutingOptions> cache)
     {
+        _randomizer = randomizer;
+        _cache = cache;
+#pragma warning disable S3366 // "this" should not be exposed from constructors
+        _pool = PoolFactory.CreatePool(this);
+#pragma warning restore S3366 // "this" should not be exposed from constructors
     }
 
-    protected override void Initialize(WeightedGroupsRoutingStrategy strategy, WeightedGroupsRoutingOptions options) => strategy.Initialize(options.Groups, options.SelectionMode);
+    public WeightedGroupsRoutingStrategy Get()
+    {
+        var strategy = _pool.Get();
+        strategy.Initialize(_cache.Options.Groups, _cache.Options.SelectionMode);
+        return strategy;
+    }
+
+    public void Return(WeightedGroupsRoutingStrategy strategy) => _pool.Return(strategy);
+
+    WeightedGroupsRoutingStrategy IPooledObjectPolicy<WeightedGroupsRoutingStrategy>.Create() => new(_randomizer, _pool);
+
+    bool IPooledObjectPolicy<WeightedGroupsRoutingStrategy>.Return(WeightedGroupsRoutingStrategy obj) => obj.TryReset();
 }

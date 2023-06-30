@@ -40,10 +40,10 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
         using var request = new HttpRequestMessage(HttpMethod.Head, url);
 
-        var key = provider.GetStrategyKey(request);
+        var key = provider(request);
 
         Assert.Equal(expectedStrategyKey, key);
-        Assert.Same(provider.GetStrategyKey(request), provider.GetStrategyKey(request));
+        Assert.Same(provider(request), provider(request));
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
         using var request = new HttpRequestMessage();
 
-        Assert.Throws<InvalidOperationException>(() => provider.GetStrategyKey(request));
+        Assert.Throws<InvalidOperationException>(() => provider(request));
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
 
-        Assert.Throws<InvalidOperationException>(() => provider.GetStrategyKey(request));
+        Assert.Throws<InvalidOperationException>(() => provider(request));
     }
 
     [InlineData(true, "https://dummy:21/path", "https://")]
@@ -98,10 +98,10 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
         using var request = new HttpRequestMessage(HttpMethod.Head, url);
 
-        var key = provider.GetStrategyKey(request);
+        var key = provider(request);
 
         Assert.Equal(expectedStrategyKey, key);
-        Assert.NotSame(provider.GetStrategyKey(request), provider.GetStrategyKey(request));
+        Assert.NotSame(provider(request), provider(request));
     }
 
     [InlineData(true, "https://dummy:21/path", "https://dummy:21")]

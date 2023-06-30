@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal.WeightedGroups;
+using Microsoft.Extensions.ObjectPool;
 using Moq;
 using Xunit;
 
@@ -160,7 +162,7 @@ public class WeightedRoutingStrategyTest : RoutingStrategyTest
         });
     }
 
-    internal override IRequestRoutingStrategy CreateEmptyStrategy() => new WeightedGroupsRoutingStrategy(Mock.Of<IRandomizer>());
+    internal override RequestRoutingStrategy CreateEmptyStrategy() => new WeightedGroupsRoutingStrategy(Mock.Of<Randomizer>(), Mock.Of<ObjectPool<WeightedGroupsRoutingStrategy>>());
 
     private static WeightedEndpointGroup CreateGroup(params string[] endpoints)
     {

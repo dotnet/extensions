@@ -91,23 +91,20 @@ public static partial class HttpClientBuilderExtensions
 
             return request =>
             {
-                var key = strategyKeyProvider.GetStrategyKey(request);
+                var key = strategyKeyProvider(request);
                 return resilienceProvider.GetStrategy<HttpResponseMessage>(new HttpKey(strategyName, key));
             };
         }
     }
 
-    private static void TouchStrategyKey(IStrategyKeyProvider provider)
+    private static void TouchStrategyKey(Func<HttpRequestMessage, string> provider)
     {
         // this piece of code eagerly checks that the strategy key provider is correctly configured
         // combined with HttpClient auto-activation we can detect any issues on startup
-        if (provider is ByAuthorityStrategyKeyProvider)
-        {
 #pragma warning disable S1075 // URIs should not be hardcoded - this URL is not used for any real request, nor in any telemetry
-            using var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:123");
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:123");
 #pragma warning restore S1075 // URIs should not be hardcoded
-            _ = provider.GetStrategyKey(request);
-        }
+        _ = provider(request);
     }
 
     private static IHttpResilienceStrategyBuilder AddHttpResilienceStrategy(

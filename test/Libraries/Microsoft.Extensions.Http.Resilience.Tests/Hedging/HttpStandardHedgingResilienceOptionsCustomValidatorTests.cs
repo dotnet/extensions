@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
-using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Resilience.Test.Hedging;
@@ -21,7 +19,7 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
         options.EndpointOptions.CircuitBreakerOptions.SamplingDuration = TimeSpan.FromSeconds(1);
         options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(1);
 
-        var validationResult = CreateValidator("dummy").Validate("dummy", options);
+        var validationResult = CreateValidator().Validate("dummy", options);
 
         Assert.True(validationResult.Failed);
 
@@ -37,20 +35,9 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
     {
         HttpStandardHedgingResilienceOptions options = new();
 
-        var validationResult = CreateValidator("dummy").Validate("dummy", options);
+        var validationResult = CreateValidator().Validate("dummy", options);
 
         validationResult.Succeeded.Should().BeTrue();
-    }
-
-    [Fact]
-    public void Validate_ValidOptionsWithoutRouting_ValidationErrors()
-    {
-        HttpStandardHedgingResilienceOptions options = new();
-
-        var validationResult = CreateValidator("dummy").Validate("other", options);
-
-        validationResult.Failed.Should().BeTrue();
-        validationResult.FailureMessage.Should().Be("The hedging routing is not configured for 'other' HTTP client.");
     }
 
     public static IEnumerable<object[]> GetOptions_ValidOptions_EnsureNoErrors_Data
@@ -84,7 +71,7 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
     [Theory]
     public void Validate_ValidOptions_EnsureNoErrors(HttpStandardHedgingResilienceOptions options)
     {
-        var validationResult = CreateValidator("dummy").Validate("dummy", options);
+        var validationResult = CreateValidator().Validate("dummy", options);
 
         Assert.False(validationResult.Failed);
     }
@@ -117,15 +104,13 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
     [Theory]
     public void Validate_InvalidOptions_EnsureErrors(HttpStandardHedgingResilienceOptions options)
     {
-        var validationResult = CreateValidator("dummy").Validate("dummy", options);
+        var validationResult = CreateValidator().Validate("dummy", options);
 
         Assert.True(validationResult.Failed);
     }
 
-    private static HttpStandardHedgingResilienceOptionsCustomValidator CreateValidator(string name)
+    private static HttpStandardHedgingResilienceOptionsCustomValidator CreateValidator()
     {
-        var mock = Mock.Of<INamedServiceProvider<IRequestRoutingStrategyFactory>>(v => v.GetService(name) == Mock.Of<IRequestRoutingStrategyFactory>());
-
-        return new HttpStandardHedgingResilienceOptionsCustomValidator(mock);
+        return new HttpStandardHedgingResilienceOptionsCustomValidator();
     }
 }

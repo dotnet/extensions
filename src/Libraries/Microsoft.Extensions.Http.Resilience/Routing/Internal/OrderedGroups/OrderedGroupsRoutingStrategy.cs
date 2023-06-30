@@ -10,16 +10,16 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Resilience.Routing.Internal.OrderedGroups;
 
-internal sealed class OrderedGroupsRoutingStrategy : IRequestRoutingStrategy, IResettable
+internal sealed class OrderedGroupsRoutingStrategy : RequestRoutingStrategy, IResettable
 {
-    private readonly IRandomizer _randomizer;
-
+    private readonly ObjectPool<OrderedGroupsRoutingStrategy> _pool;
     private int _lastUsedIndex;
     private IList<EndpointGroup>? _groups;
 
-    public OrderedGroupsRoutingStrategy(IRandomizer randomizer)
+    public OrderedGroupsRoutingStrategy(Randomizer randomizer, ObjectPool<OrderedGroupsRoutingStrategy> pool)
+        : base(randomizer)
     {
-        _randomizer = randomizer;
+        _pool = pool;
     }
 
     public void Initialize(IList<EndpointGroup> groups)
@@ -29,7 +29,7 @@ internal sealed class OrderedGroupsRoutingStrategy : IRequestRoutingStrategy, IR
         _groups = groups;
     }
 
-    public bool TryGetNextRoute([NotNullWhen(true)] out Uri? nextRoute)
+    public override bool TryGetNextRoute([NotNullWhen(true)] out Uri? nextRoute)
     {
         if (_groups == null)
         {
@@ -38,7 +38,7 @@ internal sealed class OrderedGroupsRoutingStrategy : IRequestRoutingStrategy, IR
 
         if (TryGetNextGroup(out var group))
         {
-            nextRoute = group!.Endpoints.SelectByWeight(e => e.Weight, _randomizer!).Uri!;
+            nextRoute = group!.Endpoints.SelectByWeight(e => e.Weight, Randomizer!).Uri!;
             return true;
         }
 
@@ -46,7 +46,9 @@ internal sealed class OrderedGroupsRoutingStrategy : IRequestRoutingStrategy, IR
         return false;
     }
 
-    public bool TryReset()
+    public override void Dispose() => _pool.Return(this);
+
+    public override bool TryReset()
     {
         _groups = null;
         _lastUsedIndex = 0;

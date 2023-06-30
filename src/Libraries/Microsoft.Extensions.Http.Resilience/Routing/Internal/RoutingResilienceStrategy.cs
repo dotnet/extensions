@@ -14,11 +14,11 @@ namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 /// </summary>
 internal sealed class RoutingResilienceStrategy : ResilienceStrategy
 {
-    private readonly IRequestRoutingStrategyFactory _factory;
+    private readonly Func<RequestRoutingStrategy> _provider;
 
-    public RoutingResilienceStrategy(IRequestRoutingStrategyFactory factory)
+    public RoutingResilienceStrategy(Func<RequestRoutingStrategy> provider)
     {
-        _factory = factory;
+        _provider = provider;
     }
 
     protected override async ValueTask<Outcome<TResult>> ExecuteCoreAsync<TResult, TState>(
@@ -31,7 +31,7 @@ internal sealed class RoutingResilienceStrategy : ResilienceStrategy
             Throw.InvalidOperationException("The HTTP request message was not found in the resilience context.");
         }
 
-        var strategy = _factory.CreateRoutingStrategy();
+        using var strategy = _provider();
 
         // if there are not routes we cannot continue
         if (!strategy.TryGetNextRoute(out var route))
@@ -44,13 +44,6 @@ internal sealed class RoutingResilienceStrategy : ResilienceStrategy
         // for primary request, use retrieved route
         request.RequestUri = request.RequestUri!.ReplaceHost(route!);
 
-        try
-        {
-            return await callback(context, state).ConfigureAwait(context.ContinueOnCapturedContext);
-        }
-        finally
-        {
-            _factory.ReturnRoutingStrategy(strategy);
-        }
+        return await callback(context, state).ConfigureAwait(context.ContinueOnCapturedContext);
     }
 }

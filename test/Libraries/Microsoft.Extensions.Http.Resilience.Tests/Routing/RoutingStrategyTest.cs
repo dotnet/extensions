@@ -29,7 +29,7 @@ public abstract class RoutingStrategyTest
 
     public IRoutingStrategyBuilder Builder { get; set; }
 
-    internal Mock<IRandomizer> Randomizer { get; } = new Mock<IRandomizer>(MockBehavior.Strict);
+    internal Mock<Randomizer> Randomizer { get; } = new Mock<Randomizer>(MockBehavior.Strict);
 
     public virtual bool CompareOrder => true;
 
@@ -38,7 +38,7 @@ public abstract class RoutingStrategyTest
     {
         Configure(Builder);
 
-        Assert.Throws<InvalidOperationException>(() => CreateStrategy("unknown"));
+        Assert.Throws<OptionsValidationException>(() => CreateStrategy("unknown"));
     }
 
     [Fact]
@@ -49,13 +49,12 @@ public abstract class RoutingStrategyTest
         Configure(Builder);
 
         var factory = CreateRoutingFactory();
-        var strategies = new HashSet<IRequestRoutingStrategy>();
+        var strategies = new HashSet<RequestRoutingStrategy>();
 
         for (int i = 0; i < 10; i++)
         {
-            var strategy = factory.CreateRoutingStrategy();
+            using var strategy = factory();
             strategies.Add(strategy);
-            factory.ReturnRoutingStrategy(strategy);
         }
 
         // assert that some strategies were pooled
@@ -148,17 +147,23 @@ public abstract class RoutingStrategyTest
 
         var factory = CreateRoutingFactory();
 
-        CollectUrls(factory.CreateRoutingStrategy()).Should().Equal(expectedUrls);
+        CollectUrls(factory()).Should().Equal(expectedUrls);
 
         // intentionally, we check that the output on subsequent calls is the same
-        CollectUrls(factory.CreateRoutingStrategy()).Should().Equal(expectedUrls);
+        CollectUrls(factory()).Should().Equal(expectedUrls);
     }
 
-    internal IRequestRoutingStrategy CreateStrategy(string? name = null) => CreateRoutingFactory(name).CreateRoutingStrategy();
+    internal RequestRoutingStrategy CreateStrategy(string? name = null) => CreateRoutingFactory(name)();
 
-    internal IRequestRoutingStrategyFactory CreateRoutingFactory(string? name = null) => Builder.Services.BuildServiceProvider().GetRoutingFactory(name ?? Builder.Name);
+    internal Func<RequestRoutingStrategy> CreateRoutingFactory(string? name = null)
+    {
+        return Builder.Services
+            .BuildServiceProvider()
+            .GetRequiredService<IOptionsMonitor<RequestRoutingOptions>>()
+            .Get(name ?? Builder.Name).RoutingStrategyProvider!;
+    }
 
-    private static IEnumerable<string> CollectUrls(IRequestRoutingStrategy strategy)
+    private static IEnumerable<string> CollectUrls(RequestRoutingStrategy strategy)
     {
         while (strategy.TryGetNextRoute(out var route))
         {
@@ -177,7 +182,7 @@ public abstract class RoutingStrategyTest
 
     protected abstract IEnumerable<Action<IRoutingStrategyBuilder>> ConfigureInvalidRoutes();
 
-    internal abstract IRequestRoutingStrategy CreateEmptyStrategy();
+    internal abstract RequestRoutingStrategy CreateEmptyStrategy();
 
     protected void SetupRandomizer(double result) => Randomizer.Setup(r => r.NextDouble(It.IsAny<double>())).Returns(result);
 

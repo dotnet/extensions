@@ -14,15 +14,8 @@ namespace Microsoft.Extensions.Http.Resilience.Test.Resilience;
 #pragma warning disable CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
 
-public class DefaultRequestClonerTests
+public class RequestMessageSnapshotTests
 {
-    private readonly RequestCloner _cloneHandler;
-
-    public DefaultRequestClonerTests()
-    {
-        _cloneHandler = new RequestCloner();
-    }
-
     [Fact]
     public void CreateSnapshot_StreamContent_ShouldThrow()
     {
@@ -33,8 +26,8 @@ public class DefaultRequestClonerTests
             Content = new StreamContent(new MemoryStream())
         };
 
-        var exception = Assert.Throws<InvalidOperationException>(() => _cloneHandler.CreateSnapshot(initialRequest));
-        Assert.Equal("StreamContent content cannot by cloned using the RequestCloner.", exception.Message);
+        var exception = Assert.Throws<InvalidOperationException>(() => RequestMessageSnapshot.Create(initialRequest));
+        Assert.Equal("StreamContent content cannot by cloned.", exception.Message);
         initialRequest.Dispose();
     }
 
@@ -42,8 +35,8 @@ public class DefaultRequestClonerTests
     public void CreateSnapshot_CreatesClone()
     {
         using var request = CreateRequest();
-        var snapshot = _cloneHandler.CreateSnapshot(request);
-        var cloned = snapshot.Create();
+        using var snapshot = RequestMessageSnapshot.Create(request);
+        var cloned = snapshot.CreateRequestMessage();
         AssertClonedMessage(request, cloned);
     }
 
@@ -51,10 +44,10 @@ public class DefaultRequestClonerTests
     public void CreateSnapshot_OriginalMessageChanged_SnapshotReturnsOriginalData()
     {
         using var request = CreateRequest();
-        var snapshot = _cloneHandler.CreateSnapshot(request);
+        using var snapshot = RequestMessageSnapshot.Create(request);
 
         request.Properties["some-new-prop"] = "ABC";
-        var cloned = snapshot.Create();
+        var cloned = snapshot.CreateRequestMessage();
         cloned.Properties.Should().NotContainKey("some-new-prop");
     }
 

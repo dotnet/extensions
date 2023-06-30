@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal.Validators;
@@ -10,21 +9,10 @@ namespace Microsoft.Extensions.Http.Resilience.Internal.Validators;
 internal sealed class HttpStandardHedgingResilienceOptionsCustomValidator : IValidateOptions<HttpStandardHedgingResilienceOptions>
 {
     private const int CircuitBreakerTimeoutMultiplier = 2;
-    private readonly INamedServiceProvider<IRequestRoutingStrategyFactory> _namedServiceProvider;
-
-    public HttpStandardHedgingResilienceOptionsCustomValidator(INamedServiceProvider<IRequestRoutingStrategyFactory> namedServiceProvider)
-    {
-        _namedServiceProvider = namedServiceProvider;
-    }
 
     public ValidateOptionsResult Validate(string? name, HttpStandardHedgingResilienceOptions options)
     {
         var builder = new ValidateOptionsResultBuilder();
-
-        if (_namedServiceProvider.GetService(name!) is null)
-        {
-            builder.AddError($"The hedging routing is not configured for '{name}' HTTP client.");
-        }
 
         if (options.EndpointOptions.TimeoutOptions.Timeout > options.TotalRequestTimeoutOptions.Timeout)
         {

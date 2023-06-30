@@ -10,10 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.Extensions.Resilience.Tests\Resilience\MeteringUtil.cs" Link="Resilience\MeteringUtil.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="configs\appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

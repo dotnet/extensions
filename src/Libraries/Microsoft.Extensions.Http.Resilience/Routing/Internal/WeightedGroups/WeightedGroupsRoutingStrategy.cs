@@ -10,18 +10,19 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Resilience.Routing.Internal.WeightedGroups;
 
-internal sealed class WeightedGroupsRoutingStrategy : IRequestRoutingStrategy, IResettable
+internal sealed class WeightedGroupsRoutingStrategy : RequestRoutingStrategy
 {
-    private readonly IRandomizer _randomizer;
     private readonly List<WeightedEndpointGroup> _groups;
+    private readonly ObjectPool<WeightedGroupsRoutingStrategy> _pool;
     private bool _initialGroupPicked;
     private WeightedGroupSelectionMode _mode;
     private bool _initialized;
 
-    public WeightedGroupsRoutingStrategy(IRandomizer randomizer)
+    public WeightedGroupsRoutingStrategy(Randomizer randomizer, ObjectPool<WeightedGroupsRoutingStrategy> pool)
+        : base(randomizer)
     {
-        _randomizer = randomizer;
         _groups = new List<WeightedEndpointGroup>();
+        _pool = pool;
     }
 
     public void Initialize(IEnumerable<WeightedEndpointGroup> groups, WeightedGroupSelectionMode mode)
@@ -33,7 +34,9 @@ internal sealed class WeightedGroupsRoutingStrategy : IRequestRoutingStrategy, I
         _groups.AddRange(groups);
     }
 
-    public bool TryReset()
+    public override void Dispose() => _pool.Return(this);
+
+    public override bool TryReset()
     {
         _initialized = false;
         _mode = WeightedGroupSelectionMode.EveryAttempt;
@@ -42,7 +45,7 @@ internal sealed class WeightedGroupsRoutingStrategy : IRequestRoutingStrategy, I
         return true;
     }
 
-    public bool TryGetNextRoute([NotNullWhen(true)] out Uri? nextRoute)
+    public override bool TryGetNextRoute([NotNullWhen(true)] out Uri? nextRoute)
     {
         if (!_initialized)
         {
@@ -51,7 +54,7 @@ internal sealed class WeightedGroupsRoutingStrategy : IRequestRoutingStrategy, I
 
         if (TryGetNextGroup(out var group))
         {
-            nextRoute = group!.Endpoints.SelectByWeight(e => e.Weight, _randomizer).Uri!;
+            nextRoute = group!.Endpoints.SelectByWeight(e => e.Weight, Randomizer).Uri!;
             return true;
         }
 
@@ -77,7 +80,7 @@ internal sealed class WeightedGroupsRoutingStrategy : IRequestRoutingStrategy, I
         if (!_initialGroupPicked)
         {
             _initialGroupPicked = true;
-            return _groups.SelectByWeight(g => g.Weight, _randomizer);
+            return _groups.SelectByWeight(g => g.Weight, Randomizer);
         }
 
         if (_mode == WeightedGroupSelectionMode.InitialAttempt)
@@ -86,7 +89,7 @@ internal sealed class WeightedGroupsRoutingStrategy : IRequestRoutingStrategy, I
         }
         else
         {
-            return _groups.SelectByWeight(g => g.Weight, _randomizer);
+            return _groups.SelectByWeight(g => g.Weight, Randomizer);
         }
     }
 }

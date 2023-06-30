@@ -3,17 +3,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Resilience.Resilience;
+using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Moq;
 using Polly;
-using Polly.Extensions.Telemetry;
 using Polly.Registry;
 using Polly.Telemetry;
 using Xunit;
@@ -28,14 +26,12 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
     private readonly Mock<IExceptionSummarizer> _summarizer = new(MockBehavior.Strict);
 
     private ResilienceStrategyTelemetry? _telemetry;
-    private MeterListener _listener;
+    private MetricCollector<int> _metricCollector;
     private IServiceCollection _services;
-    private Dictionary<string, object?>? _reportedTags;
 
     public ResilienceServiceCollectionExtensionsTests()
     {
-        _listener = MeteringUtil.ListenPollyMetrics();
-
+        _metricCollector = new MetricCollector<int>(null, "Polly", "resilience-events");
         _services = new ServiceCollection()
             .AddResilienceEnrichment()
             .AddResilienceStrategy("dummy", builder =>
@@ -49,17 +45,11 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
             });
 
         _services.TryAddSingleton(_summarizer.Object);
-
-        _services.PostConfigure<TelemetryOptions>(options =>
-        {
-            options.Enrichers.Add(context =>
-            {
-                _reportedTags = context.Tags.ToDictionary(t => t.Key, t => t.Value);
-            });
-        });
     }
 
-    public void Dispose() => _listener.Dispose();
+    public void Dispose() => _metricCollector.Dispose();
+
+    private IReadOnlyDictionary<string, object?> Tags => _metricCollector.LastMeasurement!.Tags;
 
     [Fact]
     public void AddResilienceEnrichment_NoOutcome_EnsureDimensions()
@@ -67,11 +57,11 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
         Build();
         _telemetry!.Report("dummy-event", ResilienceContext.Get(), string.Empty);
 
-        _reportedTags!["failure-reason"].Should().BeNull();
-        _reportedTags!["failure-source"].Should().BeNull();
-        _reportedTags!["failure-summary"].Should().BeNull();
-        _reportedTags!["dep-name"].Should().BeNull();
-        _reportedTags!["req-name"].Should().BeNull();
+        Tags["failure-reason"].Should().BeNull();
+        Tags["failure-source"].Should().BeNull();
+        Tags["failure-summary"].Should().BeNull();
+        Tags["dep-name"].Should().BeNull();
+        Tags["req-name"].Should().BeNull();
     }
 
     [Fact]
@@ -94,9 +84,9 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
             "dummy-event",
             new OutcomeArguments<string, string>(ResilienceContext.Get(), Outcome.FromException<string>(new InvalidOperationException { Source = "my-source" }), string.Empty));
 
-        _reportedTags!["failure-reason"].Should().Be("InvalidOperationException");
-        _reportedTags!["failure-summary"].Should().Be("type:desc:details");
-        _reportedTags!["failure-source"].Should().Be("my-source");
+        Tags["failure-reason"].Should().Be("InvalidOperationException");
+        Tags["failure-summary"].Should().Be("type:desc:details");
+        Tags["failure-source"].Should().Be("my-source");
     }
 
     [Fact]
@@ -109,9 +99,9 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
             "dummy-event",
             new OutcomeArguments<string, string>(ResilienceContext.Get(), Outcome.FromResult("string-result"), string.Empty));
 
-        _reportedTags!["failure-source"].Should().Be("my-source");
-        _reportedTags!["failure-reason"].Should().Be("my-reason");
-        _reportedTags!["failure-summary"].Should().Be("string-result");
+        Tags["failure-source"].Should().Be("my-source");
+        Tags["failure-reason"].Should().Be("my-reason");
+        Tags["failure-summary"].Should().Be("string-result");
     }
 
     [Fact]
@@ -123,8 +113,8 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
         Build();
         _telemetry!.Report("dummy-event", context, string.Empty);
 
-        _reportedTags!["dep-name"].Should().Be("my-dep");
-        _reportedTags!["req-name"].Should().Be("my-req");
+        Tags["dep-name"].Should().Be("my-dep");
+        Tags["req-name"].Should().Be("my-req");
     }
 
     [Fact]
@@ -136,8 +126,8 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
         Build();
         _telemetry!.Report("dummy-event", ResilienceContext.Get(), string.Empty);
 
-        _reportedTags!["dep-name"].Should().Be("my-dep");
-        _reportedTags!["req-name"].Should().Be("my-req");
+        Tags["dep-name"].Should().Be("my-dep");
+        Tags["req-name"].Should().Be("my-req");
     }
 
     private void Build()
