@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Net.Http;
+using FluentAssertions;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Xunit;
 
@@ -22,19 +22,24 @@ public class HttpRequestMessageExtensionsTests
     [InlineData("https://initial.uri?", "https://fallback-uri.com")]
     public void ReplaceHost_ValidArguments_ShouldReplaceUri(string initialUriString, string expectedUriString)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, new Uri(initialUriString));
         var fallbackUri = new Uri("https://fallback-uri.com");
+        var initialUri = new Uri(initialUriString);
 
-        request = request.ReplaceHost(fallbackUri);
-        var expectedUri = new Uri(expectedUriString);
-        Assert.Equal(expectedUri, request.RequestUri);
+        initialUri.ReplaceHost(fallbackUri).Should().Be(new Uri(expectedUriString));
     }
 
-    [Fact]
-    public void ReplaceHost_NullUri_ShouldThrow()
+    [Theory]
+    [InlineData("https://initial.uri", "https://initial.uri")]
+    [InlineData("https://initial.uri/somepath", "https://initial.uri/somepath")]
+    [InlineData("https://initial.uri/somepath/someotherpath", "https://initial.uri/somepath/someotherpath")]
+    [InlineData("https://initial.uri:2030/somepath", "https://initial.uri:2030/somepath")]
+    [InlineData("https://initial.uri:2030/somepath?query=value", "https://initial.uri:2030/somepath?query=value")]
+    [InlineData("https://initial.uri?a=1&b=2&c=3", "https://initial.uri?a=1&b=2&c=3")]
+    [InlineData("https://initial.uri?", "https://initial.uri")]
+    public void ReplaceHost_TargetHostSame_ShouldReturnInitialUri(string initialUriString, string replacementUri)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, new Uri("https://initial.uri"));
-        Assert.Throws<ArgumentNullException>(() =>
-            request.ReplaceHost(null!));
+        var initialUri = new Uri(initialUriString);
+
+        initialUri.ReplaceHost(new Uri(replacementUri)).Should().BeSameAs(initialUri);
     }
 }

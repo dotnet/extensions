@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Http.Resilience.Bench;
 
 public class HedgingBenchmark
 {
-    private static readonly Uri _uri = new("https://bogus");
+    private static readonly Uri _uri = new(HttpClientFactory.PrimaryEndpoint);
     private static HttpRequestMessage Request => new(HttpMethod.Post, _uri);
 
     private HttpClient _client = null!;

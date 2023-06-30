@@ -32,9 +32,8 @@ internal static class HttpClientFactory
     internal const string EmptyClient = "Empty";
     internal const string StandardClient = "Standard";
     internal const string SingleHandlerClient = "SingleHandler";
-
-    private const string HedgingEndpoint1 = "http://localhost1";
-    private const string HedgingEndpoint2 = "http://localhost2";
+    internal const string PrimaryEndpoint = "http://localhost1";
+    internal const string SecondaryEndpoint = "http://localhost2";
 
     public static ServiceProvider InitializeServiceProvider(HedgingClientType clientType)
     {
@@ -88,11 +87,11 @@ internal static class HttpClientFactory
                         {
                             new WeightedEndpoint
                             {
-                                Uri = new Uri(HedgingEndpoint1)
+                                Uri = new Uri(PrimaryEndpoint)
                             },
                             new WeightedEndpoint
                             {
-                                Uri = new Uri(HedgingEndpoint2)
+                                Uri = new Uri(SecondaryEndpoint)
                             }
                         }
                     };
@@ -111,11 +110,11 @@ internal static class HttpClientFactory
                         {
                             new WeightedEndpoint
                             {
-                                Uri = new Uri(HedgingEndpoint1)
+                                Uri = new Uri(PrimaryEndpoint)
                             },
                             new WeightedEndpoint
                             {
-                                Uri = new Uri(HedgingEndpoint2)
+                                Uri = new Uri(SecondaryEndpoint)
                             }
                         }
                     };

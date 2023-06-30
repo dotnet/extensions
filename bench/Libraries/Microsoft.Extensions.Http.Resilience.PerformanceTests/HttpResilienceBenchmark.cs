@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Http.Resilience.Bench;
 
 public class HttpResilienceBenchmark
 {
-    private static readonly Uri _uri = new("https://bogus");
+    private static readonly Uri _uri = new(HttpClientFactory.PrimaryEndpoint);
 
     private HttpClient _client = null!;
     private HttpClient _standardClient = null!;

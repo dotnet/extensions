@@ -16,17 +16,19 @@ internal static class UriExtensions
 #endif
 
     /// <summary>
-    /// Replaces host of <paramref name="currentUri"/> with the host from <paramref name="updatedUri"/>.
+    /// Replaces host of <paramref name="currentUri"/> with the host from <paramref name="hostUri"/>.
     /// </summary>
     /// <param name="currentUri">Uri with old host.</param>
-    /// <param name="updatedUri">Uri with new host.</param>
-    /// <returns><paramref name="currentUri"/> with host from <paramref name="updatedUri"/>.</returns>
-    public static Uri ReplaceHost(this Uri currentUri, Uri updatedUri)
+    /// <param name="hostUri">Uri with new host.</param>
+    /// <returns><paramref name="currentUri"/> with host from <paramref name="hostUri"/>.</returns>
+    public static Uri ReplaceHost(this Uri currentUri, Uri hostUri)
     {
-        _ = Throw.IfNull(currentUri);
-        _ = Throw.IfNull(updatedUri);
+        if (currentUri.Scheme == hostUri.Scheme && currentUri.Host == hostUri.Host && currentUri.Port == hostUri.Port)
+        {
+            return currentUri;
+        }
 
-        var builder = new UriBuilder(updatedUri)
+        var builder = new UriBuilder(hostUri)
         {
             Path = currentUri.LocalPath,
 
