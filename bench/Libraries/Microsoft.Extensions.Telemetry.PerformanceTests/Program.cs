@@ -16,7 +16,9 @@ internal static class Program
     {
 #if DEBUG
         var lf = new LoggerFactory();
-        lf.ModernCodeGen_RefTypes();
+        lf.Factory = LoggerFactory.LoggerFactoryVersions.New;
+        lf.ClassicCodeGen_RefTypes();
+        lf.ClassicCodeGen_ValueTypes();
 #else
         var dontRequireSlnToRunBenchmarks = ManualConfig
             .Create(DefaultConfig.Instance)

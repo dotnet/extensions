@@ -126,7 +126,7 @@ internal sealed partial class ExtendedLogger : ILogger
             }
         }
 
-        msgState ??= MessageProps;
+        msgState ??= MessageState;
 
         var config = _factory.Config;
 

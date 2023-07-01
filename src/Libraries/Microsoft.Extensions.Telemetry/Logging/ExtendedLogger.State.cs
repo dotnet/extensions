@@ -19,7 +19,7 @@ internal sealed partial class ExtendedLogger : ILogger
     [ThreadStatic]
     private static LoggerMessageState? _loggerMessageState;
 
-    private static LoggerMessageState MessageProps
+    private static LoggerMessageState MessageState
     {
         get
         {

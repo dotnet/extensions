@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
 

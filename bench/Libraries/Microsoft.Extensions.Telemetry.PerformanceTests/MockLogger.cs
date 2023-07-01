@@ -61,6 +61,13 @@ internal sealed class MockLogger : ILogger
     private static object? ProcessItem(KeyValuePair<string, object?> item)
     {
         var o = item.Value;
+
+        if (o?.GetType() == typeof(Guid))
+        {
+            // simulate what a real exporter like OTel would do.
+            _ = o.ToString();
+        }
+
         return o;
     }
 }
