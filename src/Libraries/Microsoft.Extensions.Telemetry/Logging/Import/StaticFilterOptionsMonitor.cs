@@ -1,0 +1,25 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+// This source file was lovingly 'borrowed' from dotnet/runtime/src/libraries/Microsoft.Extensions.Logging
+#pragma warning disable R9A014 // Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
+
+using System;
+using Microsoft.Extensions.Options;
+
+namespace Microsoft.Extensions.Logging
+{
+    internal sealed class StaticFilterOptionsMonitor : IOptionsMonitor<LoggerFilterOptions>
+    {
+        public StaticFilterOptionsMonitor(LoggerFilterOptions currentValue)
+        {
+            CurrentValue = currentValue ?? throw new ArgumentNullException(nameof(currentValue));
+        }
+
+        public IDisposable? OnChange(Action<LoggerFilterOptions, string> listener) => null;
+
+        public LoggerFilterOptions Get(string? name) => CurrentValue;
+
+        public LoggerFilterOptions CurrentValue { get; }
+    }
+}

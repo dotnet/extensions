@@ -28,9 +28,11 @@ public sealed partial class LoggerMessageState : IResettable
     /// <returns>The slots to initialize with property data.</returns>
     public Span<KeyValuePair<string, object?>> AllocPropertySpace(int count)
     {
-        if (_properties.Length - NumProperties < count)
+        int avail = _properties.Length - NumProperties;
+        if (count > avail)
         {
-            var fresh = new KeyValuePair<string, object?>[count - NumProperties];
+            var need = _properties.Length + (count - avail);
+            var fresh = new KeyValuePair<string, object?>[need];
             Array.Copy(_properties, fresh, NumProperties);
             _properties = fresh;
         }
@@ -47,9 +49,11 @@ public sealed partial class LoggerMessageState : IResettable
     /// <returns>The slots to initialize with property data.</returns>
     public Span<ClassifiedProperty> AllocClassifiedPropertySpace(int count)
     {
-        if (_classifiedProperties.Length - NumClassifiedProperties < count)
+        int avail = _classifiedProperties.Length - NumClassifiedProperties;
+        if (count > avail)
         {
-            var fresh = new ClassifiedProperty[count - NumClassifiedProperties];
+            var need = _classifiedProperties.Length + (count - avail);
+            var fresh = new ClassifiedProperty[need];
             Array.Copy(_classifiedProperties, fresh, NumClassifiedProperties);
             _classifiedProperties = fresh;
         }

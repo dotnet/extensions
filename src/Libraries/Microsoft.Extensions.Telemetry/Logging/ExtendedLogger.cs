@@ -9,51 +9,120 @@ using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
 
-// NOTE: This implementation currently depends on thread-local storage. As a result,
-//       it is not resilient to logger reentrancy. Reentrancy can happen if a formatting
-//       function called by ILogger.Log ends up calling back into the logging system.
-
 #pragma warning disable CA1031
 
 internal sealed partial class ExtendedLogger : ILogger
 {
     private const string ExceptionStackTrace = "stackTrace";
 
-    private readonly ILogger _nextLogger;
-    private readonly Action<LogLevel, EventId, PropertyJoiner, Exception?, Func<PropertyJoiner, Exception?, string>> _nextLoggerLog;
-    private readonly Func<LogLevel, bool> _nextLoggerIsEnabled;
     private readonly ExtendedLoggerFactory _factory;
+    private readonly PropertyBag _bag;
+    private readonly PropertyJoiner _joiner;
 
-    public ExtendedLogger(ILogger nextLogger, ExtendedLoggerFactory factory)
+    public LoggerInformation[] Loggers { get; set; }
+    public MessageLogger[] MessageLoggers { get; set; } = Array.Empty<MessageLogger>();
+    public ScopeLogger[] ScopeLoggers { get; set; } = Array.Empty<ScopeLogger>();
+
+    public ExtendedLogger(ExtendedLoggerFactory factory, LoggerInformation[] loggers)
     {
-        _nextLogger = nextLogger;
         _factory = factory;
+        Loggers = loggers;
 
-        // get delegates to those methods to avoid the interface dispatch overhead
-        _nextLoggerLog = nextLogger.Log<PropertyJoiner>;
-        _nextLoggerIsEnabled = nextLogger.IsEnabled;
-    }
-
-    public IDisposable? BeginScope<TState>(TState state)
-        where TState : notnull
-    {
-        return _nextLogger.BeginScope(state);
-    }
-
-    public bool IsEnabled(LogLevel logLevel)
-    {
-        return _nextLoggerIsEnabled(logLevel);
+        _bag = new(_factory.Config.StaticProperties);
+        _joiner = new(_factory.Config.StaticProperties);
     }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
         if (typeof(TState) == typeof(LoggerMessageState))
         {
-            ModernPath(logLevel, eventId, (LoggerMessageState?)(object?)state, exception, (Func<LoggerMessageState, Exception?, string>)(object)formatter);
+            var msgState = (LoggerMessageState?)(object?)state;
+            if (msgState != null)
+            {
+                ModernPath(logLevel, eventId, msgState, exception, (Func<LoggerMessageState, Exception?, string>)(object)formatter);
+                return;
+            }
         }
-        else
+
+        LegacyPath<TState>(logLevel, eventId, state, exception, formatter);
+    }
+
+    public IDisposable? BeginScope<TState>(TState state)
+        where TState : notnull
+    {
+        var loggers = ScopeLoggers;
+
+        if (loggers.Length == 0)
         {
-            LegacyPath<TState>(logLevel, eventId, state, exception, formatter);
+            return NullScope.Instance;
+        }
+        else if (loggers.Length == 1)
+        {
+            return loggers[0].CreateScope(state);
+        }
+
+        var scope = new Scope(loggers.Length);
+        List<Exception>? exceptions = null;
+        for (int i = 0; i < loggers.Length; i++)
+        {
+            try
+            {
+                scope.SetDisposable(i, loggers[i].CreateScope(state));
+            }
+            catch (Exception ex)
+            {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                exceptions ??= new();
+#pragma warning restore CA1508 // Avoid dead conditional code
+                exceptions.Add(ex);
+            }
+        }
+
+        HandleExceptions(exceptions);
+
+        return scope;
+    }
+
+    public bool IsEnabled(LogLevel logLevel)
+    {
+        var loggers = MessageLoggers;
+
+        List<Exception>? exceptions = null;
+        int i = 0;
+        for (; i < loggers.Length; i++)
+        {
+            ref readonly MessageLogger loggerInfo = ref loggers[i];
+            if (!loggerInfo.IsEnabled(logLevel))
+            {
+                continue;
+            }
+
+            try
+            {
+                if (loggerInfo.Logger.IsEnabled(logLevel))
+                {
+                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                exceptions ??= new();
+#pragma warning restore CA1508 // Avoid dead conditional code
+                exceptions.Add(ex);
+            }
+        }
+
+        HandleExceptions(exceptions);
+
+        return i < loggers.Length;
+    }
+
+    private static void HandleExceptions(IEnumerable<Exception>? exceptions)
+    {
+        if (exceptions != null)
+        {
+            LoggingEventSource.Log.LogException(new AggregateException("An error occurred while writing to logger(s).", exceptions));
         }
     }
 
@@ -115,78 +184,74 @@ internal sealed partial class ExtendedLogger : ILogger
         }
     }
 
-    private void ModernPath(LogLevel logLevel, EventId eventId, LoggerMessageState? msgState, Exception? exception, Func<LoggerMessageState, Exception?, string> formatter)
+    private void ModernPath(LogLevel logLevel, EventId eventId, LoggerMessageState msgState, Exception? exception, Func<LoggerMessageState, Exception?, string> formatter)
     {
-        // presume warning/error/critical levels are enabled, to avoid the call to IsEnabled
-        if (logLevel < LogLevel.Warning)
-        {
-            if (_nextLoggerIsEnabled(logLevel))
-            {
-                return;
-            }
-        }
-
-        msgState ??= MessageState;
-
+        var loggers = MessageLoggers;
         var config = _factory.Config;
 
-        var joiner = Joiner;
+        var joiner = _joiner;
         joiner.State = msgState;
         joiner.Formatter = formatter;
-        joiner.StaticProperties = config.StaticProperties;
 
-        try
+        // redact
+        if (msgState.NumClassifiedProperties > 0)
         {
-            // redact
-            if (msgState.NumClassifiedProperties > 0)
+            var s = msgState.AllocPropertySpace(msgState.NumClassifiedProperties);
+
+            int i = 0;
+            foreach (var cp in msgState.ClassifiedProperties)
             {
-                var s = msgState.AllocPropertySpace(msgState.NumClassifiedProperties);
-
-                int i = 0;
-                foreach (var cp in msgState.ClassifiedProperties)
-                {
-                    s[i++] = new(cp.Name, config.RedactorProvider(cp.Classification).Redact(cp.Value));
-                }
+                s[i++] = new(cp.Name, config.RedactorProvider(cp.Classification).Redact(cp.Value));
             }
-
-            // enrich
-            foreach (var enricher in config.Enrichers)
-            {
-                enricher(msgState);
-            }
-
-            // one last dedicated bit of enrichment
-            if (exception != null && config.CaptureStackTraces)
-            {
-                var s = msgState.AllocPropertySpace(1);
-                s[0] = new(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
-            }
-
-            _nextLoggerLog(logLevel, eventId, joiner, exception, static (s, e) => s.Formatter(s.State, e));
         }
-        catch (Exception ex)
+
+        // enrich
+        foreach (var enricher in config.Enrichers)
         {
-            LoggingEventSource.Log.LogException(ex);
+            enricher(msgState);
         }
+
+        // one last dedicated bit of enrichment
+        if (exception != null && config.CaptureStackTraces)
+        {
+            var s = msgState.AllocPropertySpace(1);
+            s[0] = new(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+        }
+
+        List<Exception>? exceptions = null;
+        for (int i = 0; i < loggers.Length; i++)
+        {
+            ref readonly MessageLogger loggerInfo = ref loggers[i];
+            if (!loggerInfo.IsEnabled(logLevel))
+            {
+                continue;
+            }
+
+            try
+            {
+                loggerInfo.Logger.Log(logLevel, eventId, msgState, exception, formatter);
+            }
+            catch (Exception ex)
+            {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                exceptions ??= new();
+#pragma warning restore CA1508 // Avoid dead conditional code
+                exceptions.Add(ex);
+            }
+        }
+
+        HandleExceptions(exceptions);
     }
 
     private void LegacyPath<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        // presume warning/error/critical levels are enabled, to avoid the call to IsEnabled
-        if (logLevel < LogLevel.Warning)
-        {
-            if (_nextLoggerIsEnabled(logLevel))
-            {
-                return;
-            }
-        }
-
+        var loggers = MessageLoggers;
         var config = _factory.Config;
 
-        var bag = Bag;
+        var bag = _bag;
+        bag.Clear();
         bag.Formatter = formatter;
         bag.State = state;
-        bag.StaticProperties = config.StaticProperties;
 
         switch (state)
         {
@@ -206,29 +271,44 @@ internal sealed partial class ExtendedLogger : ILogger
                 break;
         }
 
-        try
+        // enrich
+        foreach (var enricher in config.Enrichers)
         {
-            // enrich
-            foreach (var enricher in config.Enrichers)
+            enricher(bag);
+        }
+
+        // one last dedicated bit of enrichment
+        if (exception != null && config.CaptureStackTraces)
+        {
+            bag.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+        }
+
+        List<Exception>? exceptions = null;
+        for (int i = 0; i < loggers.Length; i++)
+        {
+            ref readonly MessageLogger loggerInfo = ref loggers[i];
+            if (!loggerInfo.IsEnabled(logLevel))
             {
-                enricher(bag);
+                continue;
             }
 
-            // one last dedicated bit of enrichment
-            if (exception != null && config.CaptureStackTraces)
+            try
             {
-                bag.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+                loggerInfo.Logger.Log(logLevel, eventId, bag, exception, (s, e) =>
+                {
+                    var fmt = (Func<TState, Exception?, string>)s.Formatter!;
+                    return fmt((TState)s.State!, e);
+                });
             }
-
-            _nextLogger.Log(logLevel, eventId, bag, exception, static (s, e) =>
+            catch (Exception ex)
             {
-                var fmt = (Func<TState, Exception?, string>)s.Formatter!;
-                return fmt((TState)s.State!, e);
-            });
+#pragma warning disable CA1508 // Avoid dead conditional code
+                exceptions ??= new();
+#pragma warning restore CA1508 // Avoid dead conditional code
+                exceptions.Add(ex);
+            }
         }
-        catch (Exception ex)
-        {
-            LoggingEventSource.Log.LogException(ex);
-        }
+
+        HandleExceptions(exceptions);
     }
 }

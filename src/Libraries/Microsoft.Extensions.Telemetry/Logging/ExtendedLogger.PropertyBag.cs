@@ -15,13 +15,18 @@ internal sealed partial class ExtendedLogger
     /// </summary>
     internal sealed class PropertyBag : IReadOnlyList<KeyValuePair<string, object?>>, IEnrichmentPropertyBag
     {
+        public readonly KeyValuePair<string, object?>[] StaticProperties;
         public object? Formatter;
         public object? State;
         public IReadOnlyList<KeyValuePair<string, object?>> DynamicProperties = null!;
-        public KeyValuePair<string, object?>[] StaticProperties = null!;
 
         private const int PropCapacity = 16;
         private readonly List<KeyValuePair<string, object?>> _properties = new(PropCapacity);
+
+        public PropertyBag(KeyValuePair<string, object?>[] staticProperties)
+        {
+            StaticProperties = staticProperties;
+        }
 
         public void Clear()
         {
