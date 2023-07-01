@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
@@ -17,44 +15,49 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 /// Additional state to use with <see cref="ILogger.Log"/>.
 /// </summary>
 [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
-public partial class LoggerMessageState : IResettable
+[EditorBrowsable(EditorBrowsableState.Never)]
+public sealed partial class LoggerMessageState : IResettable
 {
-    private readonly PropertyBag _enrichmentPropertyBag;
-    private readonly PropertyCollector _propertyCollector;
+    private KeyValuePair<string, object?>[] _properties = Array.Empty<KeyValuePair<string, object?>>();
+    private ClassifiedProperty[] _classifiedProperties = Array.Empty<ClassifiedProperty>();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LoggerMessageState"/> class.
+    /// Allocates some room to put some properties.
     /// </summary>
-    public LoggerMessageState()
+    /// <param name="count">The amount of space to allocate.</param>
+    /// <returns>The slots to initialize with property data.</returns>
+    public Span<KeyValuePair<string, object?>> AllocPropertySpace(int count)
     {
-        _enrichmentPropertyBag = new(Properties);
-        _propertyCollector = new(Properties, ClassifiedProperties);
+        if (_properties.Length - NumProperties < count)
+        {
+            var fresh = new KeyValuePair<string, object?>[count - NumProperties];
+            Array.Copy(_properties, fresh, NumProperties);
+            _properties = fresh;
+        }
+
+        var sp = _properties.AsSpan(NumProperties, count);
+        NumProperties += count;
+        return sp;
     }
 
     /// <summary>
-    /// Adds a property to the state.
+    /// Allocates some room to put some properties.
     /// </summary>
-    /// <param name="propertyName">The name of the property to add.</param>
-    /// <param name="propertyValue">The value of the property to add.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="propertyName" /> is empty or contains exclusively whitespace,
-    /// or when a property of the same name has already been added.
-    /// </exception>
-    public void AddProperty(string propertyName, object? propertyValue)
-        => Properties.Add(new KeyValuePair<string, object?>(propertyName, propertyValue));
+    /// <param name="count">The amount of space to allocate.</param>
+    /// <returns>The slots to initialize with property data.</returns>
+    public Span<ClassifiedProperty> AllocClassifiedPropertySpace(int count)
+    {
+        if (_classifiedProperties.Length - NumClassifiedProperties < count)
+        {
+            var fresh = new ClassifiedProperty[count - NumClassifiedProperties];
+            Array.Copy(_classifiedProperties, fresh, NumClassifiedProperties);
+            _classifiedProperties = fresh;
+        }
 
-    /// <summary>
-    /// Adds a property to the state.
-    /// </summary>
-    /// <param name="propertyName">The name of the property to add.</param>
-    /// <param name="propertyValue">The value of the property to add.</param>
-    /// <param name="classification">The data classification of the property value.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="propertyName"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="propertyName" /> is empty or contains exclusively whitespace,
-    /// or when a property of the same name has already been added.
-    /// </exception>
-    public void AddProperty(string propertyName, object? propertyValue, DataClassification classification)
-        => ClassifiedProperties.Add(new(propertyName, propertyValue, classification));
+        var sp = _classifiedProperties.AsSpan(NumClassifiedProperties, count);
+        NumClassifiedProperties += count;
+        return sp;
+    }
 
     /// <summary>
     /// Resets state of this container as described in <see cref="IResettable.TryReset"/>.
@@ -64,52 +67,34 @@ public partial class LoggerMessageState : IResettable
     /// </returns>
     public bool TryReset()
     {
-        Properties.Clear();
-        ClassifiedProperties.Clear();
-        _propertyCollector.ParameterName = string.Empty;
+        Array.Clear(_properties, 0, NumProperties);
+        Array.Clear(_classifiedProperties, 0, NumClassifiedProperties);
+        NumProperties = 0;
+        NumClassifiedProperties = 0;
+        ParameterName = string.Empty;
+
         return true;
     }
 
     /// <summary>
     /// Gets the list of properties added to this instance.
     /// </summary>
-    [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "Not intended for application use")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<KeyValuePair<string, object?>> Properties { get; } = new();
+    public ReadOnlySpan<KeyValuePair<string, object?>> Properties => _properties.AsSpan(0, NumProperties);
 
     /// <summary>
-    /// Gets a list of properties which must receive redaction before being used.
+    /// Gets the list of properties which must receive redaction before being used.
     /// </summary>
-    [SuppressMessage("Design", "CA1002:Do not expose generic lists", Justification = "Not intended for application use")]
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public List<ClassifiedProperty> ClassifiedProperties { get; } = new();
+    public ReadOnlySpan<ClassifiedProperty> ClassifiedProperties => _classifiedProperties.AsSpan(0, NumClassifiedProperties);
 
     /// <summary>
-    /// Gets the property collector instance.
+    /// Gets the current number of properties in this instance.
     /// </summary>
-    /// <param name="parameterName">The name of the parameter to prefix in front of all property names inserted into the collector.</param>
-    /// <returns>The collector instance.</returns>
-    /// <remarks>
-    /// This method is used by the logger message code generator to get an instance of a collector to
-    /// use when invoking a custom property collector method.
-    /// </remarks>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public ILogPropertyCollector GetPropertyCollector(string parameterName)
-    {
-        _propertyCollector.ParameterName = parameterName;
-        return _propertyCollector;
-    }
+    public int NumProperties { get; private set; }
 
     /// <summary>
-    /// Gets an enrichment property bag.
+    /// Gets the current number of classified properties in this instance.
     /// </summary>
-    /// <remarks>
-    /// This method is used by logger implementations that receive a <see cref="LoggerMessageState" />
-    /// instance and want to use the instance as an enrichment property bag in order to harvest
-    /// properties from enrichers.
-    /// </remarks>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public IEnrichmentPropertyBag EnrichmentPropertyBag => _enrichmentPropertyBag;
+    public int NumClassifiedProperties { get; private set; }
 
     /// <summary>
     /// Returns a string representation of this object.

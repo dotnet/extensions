@@ -131,31 +131,38 @@ internal sealed partial class ExtendedLogger : ILogger
         var config = _factory.Config;
 
         var joiner = Joiner;
-        joiner.DynamicProperties = msgState;
+        joiner.State = msgState;
         joiner.Formatter = formatter;
         joiner.StaticProperties = config.StaticProperties;
 
         try
         {
             // redact
-            foreach (var cp in msgState.ClassifiedProperties)
+            if (msgState.NumClassifiedProperties > 0)
             {
-                msgState.AddProperty(cp.Name, config.RedactorProvider(cp.Classification).Redact(cp.Value));
+                var s = msgState.AllocPropertySpace(msgState.NumClassifiedProperties);
+
+                int i = 0;
+                foreach (var cp in msgState.ClassifiedProperties)
+                {
+                    s[i++] = new(cp.Name, config.RedactorProvider(cp.Classification).Redact(cp.Value));
+                }
             }
 
             // enrich
             foreach (var enricher in config.Enrichers)
             {
-                enricher(msgState.EnrichmentPropertyBag);
+                enricher(msgState);
             }
 
             // one last dedicated bit of enrichment
             if (exception != null && config.CaptureStackTraces)
             {
-                msgState.AddProperty(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+                var s = msgState.AllocPropertySpace(1);
+                s[0] = new(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
             }
 
-            _nextLoggerLog(logLevel, eventId, joiner, exception, static (s, e) => s.Formatter(s.DynamicProperties, e));
+            _nextLoggerLog(logLevel, eventId, joiner, exception, static (s, e) => s.Formatter(s.State, e));
         }
         catch (Exception ex)
         {

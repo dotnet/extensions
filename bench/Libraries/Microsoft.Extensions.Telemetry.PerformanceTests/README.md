@@ -8,29 +8,29 @@ LaunchCount=2  WarmupCount=10
 
 |                         Method |          Factory |      Mean |    Error |   StdDev |    Median |   Gen0 | Allocated |
 |------------------------------- |----------------- |----------:|---------:|---------:|----------:|-------:|----------:|
-|               Classic_RefTypes |         Original |  78.86 ns | 0.531 ns | 0.795 ns |  78.98 ns | 0.0106 |     112 B |
-|             Classic_ValueTypes |         Original |  73.63 ns | 1.270 ns | 1.900 ns |  73.89 ns | 0.0191 |     200 B |
-|   LoggerMessageDefine_RefTypes |         Original |  83.25 ns | 0.283 ns | 0.397 ns |  83.26 ns | 0.0068 |      72 B |
-| LoggerMessageDefine_ValueTypes |         Original |  66.04 ns | 0.334 ns | 0.489 ns |  66.04 ns | 0.0160 |     168 B |
-|        ClassicCodeGen_RefTypes |         Original |  84.02 ns | 0.211 ns | 0.296 ns |  83.98 ns | 0.0068 |      72 B |
-|      ClassicCodeGen_ValueTypes |         Original |  65.63 ns | 0.241 ns | 0.361 ns |  65.62 ns | 0.0160 |     168 B |
-|         ModernCodeGen_RefTypes |         Original |  52.71 ns | 0.835 ns | 1.171 ns |  53.36 ns |      - |         - |
-|       ModernCodeGen_ValueTypes |         Original |  76.57 ns | 1.674 ns | 2.454 ns |  78.00 ns | 0.0160 |     168 B |
+|               Classic_RefTypes |         Original |  79.32 ns | 0.274 ns | 0.375 ns |  79.41 ns | 0.0106 |     112 B |
+|             Classic_ValueTypes |         Original |  72.76 ns | 0.820 ns | 1.150 ns |  73.48 ns | 0.0191 |     200 B |
+|   LoggerMessageDefine_RefTypes |         Original |  83.42 ns | 0.287 ns | 0.412 ns |  83.41 ns | 0.0068 |      72 B |
+| LoggerMessageDefine_ValueTypes |         Original |  66.94 ns | 0.257 ns | 0.368 ns |  66.85 ns | 0.0160 |     168 B |
+|        ClassicCodeGen_RefTypes |         Original |  83.47 ns | 0.551 ns | 0.825 ns |  83.13 ns | 0.0068 |      72 B |
+|      ClassicCodeGen_ValueTypes |         Original |  68.47 ns | 1.345 ns | 2.013 ns |  67.71 ns | 0.0160 |     168 B |
+|         ModernCodeGen_RefTypes |         Original |  47.81 ns | 0.542 ns | 0.794 ns |  47.51 ns |      - |         - |
+|       ModernCodeGen_ValueTypes |         Original |  70.35 ns | 0.420 ns | 0.589 ns |  70.25 ns | 0.0160 |     168 B |
 
-|               Classic_RefTypes |              New | 151.98 ns | 0.455 ns | 0.637 ns | 151.84 ns | 0.0143 |     152 B |
-|             Classic_ValueTypes |              New | 140.39 ns | 2.458 ns | 3.603 ns | 139.91 ns | 0.0229 |     240 B |
-|   LoggerMessageDefine_RefTypes |              New | 250.27 ns | 1.481 ns | 2.076 ns | 249.69 ns | 0.0134 |     144 B |
-| LoggerMessageDefine_ValueTypes |              New | 197.08 ns | 1.029 ns | 1.476 ns | 197.08 ns | 0.0222 |     232 B |
-|        ClassicCodeGen_RefTypes |              New | 254.30 ns | 1.093 ns | 1.568 ns | 254.55 ns | 0.0134 |     144 B |
-|      ClassicCodeGen_ValueTypes |              New | 197.03 ns | 1.136 ns | 1.593 ns | 197.40 ns | 0.0222 |     232 B |
-|         ModernCodeGen_RefTypes |              New | 117.24 ns | 1.541 ns | 2.210 ns | 116.19 ns |      - |         - |
-|       ModernCodeGen_ValueTypes |              New | 125.47 ns | 0.375 ns | 0.526 ns | 125.38 ns | 0.0160 |     168 B |
+|               Classic_RefTypes |              New | 152.75 ns | 1.037 ns | 1.487 ns | 152.89 ns | 0.0143 |     152 B |
+|             Classic_ValueTypes |              New | 142.16 ns | 0.796 ns | 1.166 ns | 142.11 ns | 0.0229 |     240 B |
+|   LoggerMessageDefine_RefTypes |              New | 258.15 ns | 1.430 ns | 2.004 ns | 257.90 ns | 0.0134 |     144 B |
+| LoggerMessageDefine_ValueTypes |              New | 197.78 ns | 1.153 ns | 1.726 ns | 197.54 ns | 0.0222 |     232 B |
+|        ClassicCodeGen_RefTypes |              New | 261.60 ns | 0.730 ns | 1.047 ns | 261.58 ns | 0.0134 |     144 B |
+|      ClassicCodeGen_ValueTypes |              New | 200.00 ns | 0.478 ns | 0.716 ns | 199.85 ns | 0.0222 |     232 B |
+|         ModernCodeGen_RefTypes |              New | 103.86 ns | 0.327 ns | 0.470 ns | 103.79 ns |      - |         - |
+|       ModernCodeGen_ValueTypes |              New | 115.91 ns | 1.019 ns | 1.525 ns | 115.48 ns | 0.0160 |     168 B |
 
-|               Classic_RefTypes | NewWithEnrichers | 169.25 ns | 1.816 ns | 2.604 ns | 169.00 ns | 0.0143 |     152 B |
-|             Classic_ValueTypes | NewWithEnrichers | 157.14 ns | 1.819 ns | 2.490 ns | 155.73 ns | 0.0229 |     240 B |
-|   LoggerMessageDefine_RefTypes | NewWithEnrichers | 277.60 ns | 1.937 ns | 2.778 ns | 277.56 ns | 0.0134 |     144 B |
-| LoggerMessageDefine_ValueTypes | NewWithEnrichers | 219.33 ns | 0.701 ns | 0.983 ns | 219.25 ns | 0.0222 |     232 B |
-|        ClassicCodeGen_RefTypes | NewWithEnrichers | 280.07 ns | 1.598 ns | 2.292 ns | 278.96 ns | 0.0134 |     144 B |
-|      ClassicCodeGen_ValueTypes | NewWithEnrichers | 219.81 ns | 0.396 ns | 0.555 ns | 219.70 ns | 0.0222 |     232 B |
-|         ModernCodeGen_RefTypes | NewWithEnrichers | 126.74 ns | 0.947 ns | 1.296 ns | 126.90 ns |      - |         - |
-|       ModernCodeGen_ValueTypes | NewWithEnrichers | 137.05 ns | 0.637 ns | 0.872 ns | 137.50 ns | 0.0160 |     168 B |
+|               Classic_RefTypes | NewWithEnrichers | 176.60 ns | 1.399 ns | 2.093 ns | 176.44 ns | 0.0143 |     152 B |
+|             Classic_ValueTypes | NewWithEnrichers | 161.15 ns | 0.758 ns | 1.111 ns | 161.16 ns | 0.0229 |     240 B |
+|   LoggerMessageDefine_RefTypes | NewWithEnrichers | 305.36 ns | 1.035 ns | 1.549 ns | 305.52 ns | 0.0134 |     144 B |
+| LoggerMessageDefine_ValueTypes | NewWithEnrichers | 224.84 ns | 1.096 ns | 1.641 ns | 224.82 ns | 0.0222 |     232 B |
+|        ClassicCodeGen_RefTypes | NewWithEnrichers | 304.66 ns | 0.651 ns | 0.954 ns | 304.48 ns | 0.0134 |     144 B |
+|      ClassicCodeGen_ValueTypes | NewWithEnrichers | 226.04 ns | 1.015 ns | 1.488 ns | 225.82 ns | 0.0222 |     232 B |
+|         ModernCodeGen_RefTypes | NewWithEnrichers | 109.67 ns | 0.427 ns | 0.612 ns | 109.56 ns |      - |         - |
+|       ModernCodeGen_ValueTypes | NewWithEnrichers | 123.62 ns | 0.673 ns | 0.986 ns | 123.40 ns | 0.0160 |     168 B |

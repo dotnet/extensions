@@ -20,7 +20,8 @@ internal sealed partial class ExtendedLogger
         public IReadOnlyList<KeyValuePair<string, object?>> DynamicProperties = null!;
         public KeyValuePair<string, object?>[] StaticProperties = null!;
 
-        private readonly List<KeyValuePair<string, object?>> _properties = new();
+        private const int PropCapacity = 16;
+        private readonly List<KeyValuePair<string, object?>> _properties = new(PropCapacity);
 
         public void Clear()
         {
@@ -53,9 +54,10 @@ internal sealed partial class ExtendedLogger
         {
             if (DynamicProperties != null)
             {
-                foreach (var p in DynamicProperties)
+                int count = DynamicProperties.Count;
+                for (int i = 0; i < count; i++)
                 {
-                    yield return p;
+                    yield return DynamicProperties[i];
                 }
             }
 

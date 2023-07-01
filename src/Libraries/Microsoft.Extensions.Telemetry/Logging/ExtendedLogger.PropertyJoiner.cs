@@ -15,29 +15,23 @@ internal sealed partial class ExtendedLogger
     /// </summary>
     private sealed class PropertyJoiner : IReadOnlyList<KeyValuePair<string, object?>>
     {
-        public LoggerMessageState DynamicProperties = null!;
+        public LoggerMessageState State = null!;
         public KeyValuePair<string, object?>[] StaticProperties = null!;
         public Func<LoggerMessageState, Exception?, string> Formatter = null!;
 
         public KeyValuePair<string, object?> this[int index]
-        {
-            get
-            {
-                _ = Throw.IfOutOfRange(index, 0, Count);
+            => index < State.NumProperties
+                ? State.Properties[index]
+                : StaticProperties[index - State.NumProperties];
 
-                return index < DynamicProperties.Properties.Count
-                    ? DynamicProperties.Properties[index]
-                    : StaticProperties[index - DynamicProperties.Properties.Count];
-            }
-        }
-
-        public int Count => DynamicProperties.Properties.Count + StaticProperties.Length;
+        public int Count => State.NumProperties + StaticProperties.Length;
 
         public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {
-            foreach (var p in DynamicProperties.Properties)
+            var count = State.NumProperties;
+            for (int i = 0; i < count; i++)
             {
-                yield return p;
+                yield return State.Properties[i];
             }
 
             foreach (var p in StaticProperties)

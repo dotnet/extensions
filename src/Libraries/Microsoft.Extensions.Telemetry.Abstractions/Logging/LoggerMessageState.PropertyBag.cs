@@ -7,47 +7,43 @@ using Microsoft.Extensions.Telemetry.Enrichment;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
 
-public partial class LoggerMessageState
+public partial class LoggerMessageState : IEnrichmentPropertyBag
 {
-    private sealed class PropertyBag : IEnrichmentPropertyBag
+    /// <inheritdoc/>
+    void IEnrichmentPropertyBag.Add(string key, object value)
     {
-        private readonly List<KeyValuePair<string, object?>> _properties;
+        var s = AllocPropertySpace(1);
+        s[0] = new(key, value);
+    }
 
-        public PropertyBag(List<KeyValuePair<string, object?>> properties)
+    /// <inheritdoc/>
+    void IEnrichmentPropertyBag.Add(string key, string value)
+    {
+        var s = AllocPropertySpace(1);
+        s[0] = new(key, value);
+    }
+
+    /// <inheritdoc/>
+    void IEnrichmentPropertyBag.Add(ReadOnlySpan<KeyValuePair<string, object>> properties)
+    {
+        var s = AllocPropertySpace(properties.Length);
+
+        int i = 0;
+        foreach (var p in properties)
         {
-            _properties = properties;
+            s[i++] = new(p.Key, p.Value);
         }
+    }
 
-        void IEnrichmentPropertyBag.Add(string key, object value)
-        {
-            _properties.Add(new KeyValuePair<string, object?>(key, value));
-        }
+    /// <inheritdoc/>
+    void IEnrichmentPropertyBag.Add(ReadOnlySpan<KeyValuePair<string, string>> properties)
+    {
+        var s = AllocPropertySpace(properties.Length);
 
-        /// <inheritdoc/>
-        void IEnrichmentPropertyBag.Add(string key, string value)
+        int i = 0;
+        foreach (var p in properties)
         {
-            _properties.Add(new KeyValuePair<string, object?>(key, value));
-        }
-
-        /// <inheritdoc/>
-        void IEnrichmentPropertyBag.Add(ReadOnlySpan<KeyValuePair<string, object>> properties)
-        {
-            foreach (var p in properties)
-            {
-                // we're going from KVP<string, object> to KVP<string, object?> which is strictly correct, so ignore the complaint
-#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
-                _properties.Add(p);
-#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
-            }
-        }
-
-        /// <inheritdoc/>
-        void IEnrichmentPropertyBag.Add(ReadOnlySpan<KeyValuePair<string, string>> properties)
-        {
-            foreach (var p in properties)
-            {
-                _properties.Add(new KeyValuePair<string, object?>(p.Key, p.Value));
-            }
+            s[i++] = new(p.Key, p.Value);
         }
     }
 }
