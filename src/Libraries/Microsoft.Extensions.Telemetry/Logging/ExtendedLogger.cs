@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Pools;
 
@@ -99,7 +100,7 @@ internal sealed partial class ExtendedLogger : ILogger
 
             try
             {
-                if (loggerInfo.Logger.IsEnabled(logLevel))
+                if (loggerInfo.LoggerIsEnabled(logLevel))
                 {
                     break;
                 }
@@ -122,7 +123,7 @@ internal sealed partial class ExtendedLogger : ILogger
     {
         if (exceptions != null)
         {
-            LoggingEventSource.Log.LogException(new AggregateException("An error occurred while writing to logger(s).", exceptions));
+            LoggingEventSource.Log.LogException(new AggregateException("An error occurred while logging.", exceptions));
         }
     }
 
@@ -193,51 +194,61 @@ internal sealed partial class ExtendedLogger : ILogger
         joiner.State = msgState;
         joiner.Formatter = formatter;
 
-        // redact
-        if (msgState.NumClassifiedProperties > 0)
-        {
-            var s = msgState.AllocPropertySpace(msgState.NumClassifiedProperties);
-
-            int i = 0;
-            foreach (var cp in msgState.ClassifiedProperties)
-            {
-                s[i++] = new(cp.Name, config.RedactorProvider(cp.Classification).Redact(cp.Value));
-            }
-        }
-
-        // enrich
-        foreach (var enricher in config.Enrichers)
-        {
-            enricher(msgState);
-        }
-
-        // one last dedicated bit of enrichment
-        if (exception != null && config.CaptureStackTraces)
-        {
-            var s = msgState.AllocPropertySpace(1);
-            s[0] = new(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
-        }
-
         List<Exception>? exceptions = null;
-        for (int i = 0; i < loggers.Length; i++)
+        try
         {
-            ref readonly MessageLogger loggerInfo = ref loggers[i];
-            if (!loggerInfo.IsEnabled(logLevel))
+            // redact
+            if (msgState.NumClassifiedProperties > 0)
             {
-                continue;
+                var s = msgState.AllocPropertySpace(msgState.NumClassifiedProperties);
+
+                int i = 0;
+                foreach (var cp in msgState.ClassifiedProperties)
+                {
+                    s[i++] = new(cp.Name, config.RedactorProvider(cp.Classification).Redact(cp.Value));
+                }
             }
 
-            try
+            // enrich
+            foreach (var enricher in config.Enrichers)
             {
-                loggerInfo.Logger.Log(logLevel, eventId, msgState, exception, formatter);
+                enricher(msgState);
             }
-            catch (Exception ex)
+
+            // one last dedicated bit of enrichment
+            if (exception != null && config.CaptureStackTraces)
             {
-#pragma warning disable CA1508 // Avoid dead conditional code
-                exceptions ??= new();
-#pragma warning restore CA1508 // Avoid dead conditional code
-                exceptions.Add(ex);
+                var s = msgState.AllocPropertySpace(1);
+                s[0] = new(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
             }
+
+            for (int i = 0; i < loggers.Length; i++)
+            {
+                ref readonly MessageLogger loggerInfo = ref loggers[i];
+                if (!loggerInfo.IsEnabled(logLevel))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>
+                    {
+                        var fmt = s.Formatter!;
+                        return fmt(s.State!, e);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    exceptions ??= new();
+                    exceptions.Add(ex);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            exceptions ??= new();
+            exceptions.Add(ex);
         }
 
         HandleExceptions(exceptions);
@@ -256,7 +267,7 @@ internal sealed partial class ExtendedLogger : ILogger
         switch (state)
         {
             case IReadOnlyList<KeyValuePair<string, object?>> stateList:
-                bag.DynamicProperties = stateList;
+                bag.IncomingProperties = stateList;
                 break;
 
             case IEnumerable<KeyValuePair<string, object?>> stateList:
@@ -271,42 +282,48 @@ internal sealed partial class ExtendedLogger : ILogger
                 break;
         }
 
-        // enrich
-        foreach (var enricher in config.Enrichers)
-        {
-            enricher(bag);
-        }
-
-        // one last dedicated bit of enrichment
-        if (exception != null && config.CaptureStackTraces)
-        {
-            bag.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
-        }
-
         List<Exception>? exceptions = null;
-        for (int i = 0; i < loggers.Length; i++)
+        try
         {
-            ref readonly MessageLogger loggerInfo = ref loggers[i];
-            if (!loggerInfo.IsEnabled(logLevel))
+            // enrich
+            foreach (var enricher in config.Enrichers)
             {
-                continue;
+                enricher(bag);
             }
 
-            try
+            // one last dedicated bit of enrichment
+            if (exception != null && config.CaptureStackTraces)
             {
-                loggerInfo.Logger.Log(logLevel, eventId, bag, exception, (s, e) =>
+                bag.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+            }
+
+            for (int i = 0; i < loggers.Length; i++)
+            {
+                ref readonly MessageLogger loggerInfo = ref loggers[i];
+                if (!loggerInfo.IsEnabled(logLevel))
                 {
-                    var fmt = (Func<TState, Exception?, string>)s.Formatter!;
-                    return fmt((TState)s.State!, e);
-                });
+                    continue;
+                }
+
+                try
+                {
+                    loggerInfo.Logger.Log(logLevel, eventId, bag, exception, static (s, e) =>
+                    {
+                        var fmt = (Func<TState, Exception?, string>)s.Formatter!;
+                        return fmt((TState)s.State!, e);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    exceptions ??= new();
+                    exceptions.Add(ex);
+                }
             }
-            catch (Exception ex)
-            {
-#pragma warning disable CA1508 // Avoid dead conditional code
-                exceptions ??= new();
-#pragma warning restore CA1508 // Avoid dead conditional code
-                exceptions.Add(ex);
-            }
+        }
+        catch (Exception ex)
+        {
+            exceptions ??= new();
+            exceptions.Add(ex);
         }
 
         HandleExceptions(exceptions);

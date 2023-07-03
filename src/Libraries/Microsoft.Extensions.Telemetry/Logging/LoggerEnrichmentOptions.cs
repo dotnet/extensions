@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 /// <summary>
 /// Options for logging enrichment features.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 public class LoggerEnrichmentOptions
 {
     private const int MaxDefinedStackTraceLength = 32768;
@@ -47,14 +47,9 @@ public class LoggerEnrichmentOptions
     /// <value>
     /// The default value is 4096.
     /// </value>
-<<<<<<< HEAD:src/Libraries/Microsoft.Extensions.Telemetry/Logging/LoggingOptions.cs
     /// <remarks>
     /// When set to a value less than 2 KB or greater than 32 KB, an exception will be thrown.
     /// </remarks>
-    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
-    [Range(MinDefinedStackTraceLength, MaxDefinedStackTraceLength, ErrorMessage = "Maximum stack trace length should be between 2kb and 32kb")]
-=======
     [Range(MinDefinedStackTraceLength, MaxDefinedStackTraceLength)]
->>>>>>> f0179ff6dd (Introduce new extended logging model.):src/Libraries/Microsoft.Extensions.Telemetry/Logging/LoggerEnrichmentOptions.cs
     public int MaxStackTraceLength { get; set; } = DefaultStackTraceLength;
 }

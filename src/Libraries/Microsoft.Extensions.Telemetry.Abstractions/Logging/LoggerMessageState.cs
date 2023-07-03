@@ -75,7 +75,7 @@ public sealed partial class LoggerMessageState : IResettable
         Array.Clear(_classifiedProperties, 0, NumClassifiedProperties);
         NumProperties = 0;
         NumClassifiedProperties = 0;
-        ParameterName = string.Empty;
+        PropertyNamePrefix = string.Empty;
 
         return true;
     }

@@ -7,12 +7,10 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 
 public partial class LoggerMessageState : ILogPropertyCollector
 {
-    private const string Separator = "_";
-
     /// <inheritdoc />
     void ILogPropertyCollector.Add(string propertyName, object? propertyValue)
     {
-        string fullName = ParameterName.Length > 0 ? ParameterName + Separator + propertyName : propertyName;
+        string fullName = PropertyNamePrefix.Length > 0 ? PropertyNamePrefix + propertyName : propertyName;
         var s = AllocPropertySpace(1);
         s[0] = new(fullName, propertyValue);
     }
@@ -20,10 +18,15 @@ public partial class LoggerMessageState : ILogPropertyCollector
     /// <inheritdoc />
     void ILogPropertyCollector.Add(string propertyName, object? propertyValue, DataClassification classification)
     {
-        string fullName = ParameterName.Length > 0 ? ParameterName + Separator + propertyName : propertyName;
+        string fullName = PropertyNamePrefix.Length > 0 ? PropertyNamePrefix + propertyName : propertyName;
         var s = AllocClassifiedPropertySpace(1);
         s[0] = new(fullName, propertyValue, classification);
     }
 
-    internal string ParameterName { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the parameter name that is prepended to all property names added to this instance using the
+    /// <see cref="ILogPropertyCollector.Add(string, object?)"/> or <see cref="ILogPropertyCollector.Add(string, object?, DataClassification)"/>
+    /// methods.
+    /// </summary>
+    public string PropertyNamePrefix { get; set; } = string.Empty;
 }

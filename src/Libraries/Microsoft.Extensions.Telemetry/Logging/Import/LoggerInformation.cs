@@ -11,6 +11,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.Extensions.Logging
 {
@@ -23,7 +24,15 @@ namespace Microsoft.Extensions.Logging
             ProviderTypeFullName = providerTypeFullName;
             MinLevel = minLevel;
             Filter = filter;
+
+            // perform the GVM lookup once, rather than on every call.
+            LoggerIsEnabled = logger.IsEnabled;
+            LoggerLog = logger.Log<ExtendedLogger.PropertyJoiner>;
         }
+
+        public Func<LogLevel, bool> LoggerIsEnabled { get; }
+
+        public Action<LogLevel, EventId, ExtendedLogger.PropertyJoiner, Exception?, Func<ExtendedLogger.PropertyJoiner, Exception?, string>> LoggerLog { get; }
 
         public ILogger Logger { get; }
 

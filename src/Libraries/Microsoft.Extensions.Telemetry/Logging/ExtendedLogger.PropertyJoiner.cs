@@ -12,7 +12,7 @@ internal sealed partial class ExtendedLogger
     /// <summary>
     /// Takes distinct dynamic and static properties and makes 'em look like a single IReadOnlyList.
     /// </summary>
-    private sealed class PropertyJoiner : IReadOnlyList<KeyValuePair<string, object?>>
+    internal sealed class PropertyJoiner : IReadOnlyList<KeyValuePair<string, object?>>
     {
         public readonly KeyValuePair<string, object?>[] StaticProperties;
         public LoggerMessageState State = null!;

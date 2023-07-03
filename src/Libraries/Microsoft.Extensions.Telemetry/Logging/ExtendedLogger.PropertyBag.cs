@@ -18,10 +18,10 @@ internal sealed partial class ExtendedLogger
         public readonly KeyValuePair<string, object?>[] StaticProperties;
         public object? Formatter;
         public object? State;
-        public IReadOnlyList<KeyValuePair<string, object?>> DynamicProperties = null!;
+        public IReadOnlyList<KeyValuePair<string, object?>> IncomingProperties = null!;
 
-        private const int PropCapacity = 16;
-        private readonly List<KeyValuePair<string, object?>> _properties = new(PropCapacity);
+        private const int PropCapacity = 4;
+        private readonly List<KeyValuePair<string, object?>> _extraProperties = new(PropCapacity);
 
         public PropertyBag(KeyValuePair<string, object?>[] staticProperties)
         {
@@ -30,43 +30,43 @@ internal sealed partial class ExtendedLogger
 
         public void Clear()
         {
-            DynamicProperties = Array.Empty<KeyValuePair<string, object?>>();
-            _properties.Clear();
+            IncomingProperties = Array.Empty<KeyValuePair<string, object?>>();
+            _extraProperties.Clear();
         }
 
         public KeyValuePair<string, object?> this[int index]
         {
             get
             {
-                if (index < DynamicProperties.Count)
+                if (index < IncomingProperties.Count)
                 {
-                    return DynamicProperties[index];
+                    return IncomingProperties[index];
                 }
-                else if (index < DynamicProperties.Count + _properties.Count)
+                else if (index < IncomingProperties.Count + _extraProperties.Count)
                 {
-                    return _properties[index - DynamicProperties.Count];
+                    return _extraProperties[index - IncomingProperties.Count];
                 }
                 else
                 {
-                    return StaticProperties[index - DynamicProperties.Count - _properties.Count];
+                    return StaticProperties[index - IncomingProperties.Count - _extraProperties.Count];
                 }
             }
         }
 
-        public int Count => DynamicProperties.Count + _properties.Count + StaticProperties.Length;
+        public int Count => IncomingProperties.Count + _extraProperties.Count + StaticProperties.Length;
 
         public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {
-            if (DynamicProperties != null)
+            if (IncomingProperties != null)
             {
-                int count = DynamicProperties.Count;
+                int count = IncomingProperties.Count;
                 for (int i = 0; i < count; i++)
                 {
-                    yield return DynamicProperties[i];
+                    yield return IncomingProperties[i];
                 }
             }
 
-            foreach (var p in _properties)
+            foreach (var p in _extraProperties)
             {
                 yield return p;
             }
@@ -78,8 +78,8 @@ internal sealed partial class ExtendedLogger
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        public void Add(string key, object value) => _properties.Add(new KeyValuePair<string, object?>(key, value));
-        public void Add(string key, string value) => _properties.Add(new KeyValuePair<string, object?>(key, value));
+        public void Add(string key, object value) => _extraProperties.Add(new KeyValuePair<string, object?>(key, value));
+        public void Add(string key, string value) => _extraProperties.Add(new KeyValuePair<string, object?>(key, value));
 
         void IEnrichmentPropertyBag.Add(ReadOnlySpan<KeyValuePair<string, object>> properties)
         {
@@ -87,7 +87,7 @@ internal sealed partial class ExtendedLogger
             {
                 // we're going from KVP<string, object> to KVP<string, object?> which is strictly correct, so ignore the complaint
 #pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
-                _properties.Add(p);
+                _extraProperties.Add(p);
 #pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
             }
         }
@@ -96,11 +96,11 @@ internal sealed partial class ExtendedLogger
         {
             foreach (var p in properties)
             {
-                _properties.Add(new KeyValuePair<string, object?>(p.Key, p.Value));
+                _extraProperties.Add(new KeyValuePair<string, object?>(p.Key, p.Value));
             }
         }
 
-        public void AddRange(IEnumerable<KeyValuePair<string, object?>> properties) => _properties.AddRange(properties);
-        public KeyValuePair<string, object?>[] ToArray() => _properties.ToArray();
+        public void AddRange(IEnumerable<KeyValuePair<string, object?>> properties) => _extraProperties.AddRange(properties);
+        public KeyValuePair<string, object?>[] ToArray() => _extraProperties.ToArray();
     }
 }
