@@ -16,7 +16,7 @@
 
   <PropertyGroup>
     <Stage>dev</Stage>
-    <MinCodeCoverage>0</MinCodeCoverage>
+    <MinCodeCoverage>57</MinCodeCoverage>
     <MinMutationScore>10</MinMutationScore>
   </PropertyGroup>
 

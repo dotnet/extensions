@@ -9,7 +9,6 @@
   <PropertyGroup>
     <Stage>normal</Stage>
     <MinCodeCoverage>96</MinCodeCoverage>
-    <TempMinCodeCoverage>74</TempMinCodeCoverage>
     <MinMutationScore>50</MinMutationScore>
   </PropertyGroup>
 
