@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Pools;
 
@@ -260,14 +261,13 @@ internal sealed partial class ExtendedLogger : ILogger
         var config = _factory.Config;
 
         var bag = _bag;
-        bag.Clear();
         bag.Formatter = formatter;
         bag.State = state;
 
         switch (state)
         {
             case IReadOnlyList<KeyValuePair<string, object?>> stateList:
-                bag.IncomingProperties = stateList;
+                bag.SetIncomingProperties(stateList);
                 break;
 
             case IEnumerable<KeyValuePair<string, object?>> stateList:
@@ -327,5 +327,6 @@ internal sealed partial class ExtendedLogger : ILogger
         }
 
         HandleExceptions(exceptions);
+        bag.Clear();
     }
 }

@@ -32,15 +32,9 @@ internal sealed partial class ExtendedLogger
 
         public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {
-            var count = State.NumProperties;
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < Count; i++)
             {
-                yield return State.Properties[i];
-            }
-
-            foreach (var p in StaticProperties)
-            {
-                yield return p;
+                yield return this[i];
             }
         }
 

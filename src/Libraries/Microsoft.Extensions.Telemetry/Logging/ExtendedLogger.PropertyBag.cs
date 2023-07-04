@@ -18,10 +18,11 @@ internal sealed partial class ExtendedLogger
         public readonly KeyValuePair<string, object?>[] StaticProperties;
         public object? Formatter;
         public object? State;
-        public IReadOnlyList<KeyValuePair<string, object?>> IncomingProperties = null!;
 
         private const int PropCapacity = 4;
         private readonly List<KeyValuePair<string, object?>> _extraProperties = new(PropCapacity);
+        private IReadOnlyList<KeyValuePair<string, object?>> _incomingProperties = Array.Empty<KeyValuePair<string, object?>>();
+        private int _incomingPropertyCount;
 
         public PropertyBag(KeyValuePair<string, object?>[] staticProperties)
         {
@@ -30,50 +31,44 @@ internal sealed partial class ExtendedLogger
 
         public void Clear()
         {
-            IncomingProperties = Array.Empty<KeyValuePair<string, object?>>();
             _extraProperties.Clear();
+            _incomingProperties = Array.Empty<KeyValuePair<string, object?>>();
+            State = null;
+            Formatter = null;
+        }
+
+        public void SetIncomingProperties(IReadOnlyList<KeyValuePair<string, object?>> value)
+        {
+            _incomingProperties = value;
+            _incomingPropertyCount = _incomingProperties.Count;
         }
 
         public KeyValuePair<string, object?> this[int index]
         {
             get
             {
-                if (index < IncomingProperties.Count)
+                if (index < _incomingPropertyCount)
                 {
-                    return IncomingProperties[index];
+                    return _incomingProperties[index];
                 }
-                else if (index < IncomingProperties.Count + _extraProperties.Count)
+                else if (index < _incomingPropertyCount + _extraProperties.Count)
                 {
-                    return _extraProperties[index - IncomingProperties.Count];
+                    return _extraProperties[index - _incomingPropertyCount];
                 }
                 else
                 {
-                    return StaticProperties[index - IncomingProperties.Count - _extraProperties.Count];
+                    return StaticProperties[index - _incomingPropertyCount - _extraProperties.Count];
                 }
             }
         }
 
-        public int Count => IncomingProperties.Count + _extraProperties.Count + StaticProperties.Length;
+        public int Count => _incomingPropertyCount + _extraProperties.Count + StaticProperties.Length;
 
         public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {
-            if (IncomingProperties != null)
+            for (int i = 0; i < Count; i++)
             {
-                int count = IncomingProperties.Count;
-                for (int i = 0; i < count; i++)
-                {
-                    yield return IncomingProperties[i];
-                }
-            }
-
-            foreach (var p in _extraProperties)
-            {
-                yield return p;
-            }
-
-            foreach (var p in StaticProperties)
-            {
-                yield return p;
+                yield return this[i];
             }
         }
 
