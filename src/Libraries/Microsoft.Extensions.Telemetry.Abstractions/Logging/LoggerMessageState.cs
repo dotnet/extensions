@@ -91,12 +91,12 @@ public sealed partial class LoggerMessageState : IResettable
     public ReadOnlySpan<ClassifiedProperty> ClassifiedProperties => _classifiedProperties.AsSpan(0, NumClassifiedProperties);
 
     /// <summary>
-    /// Gets the current number of properties in this instance.
+    /// Gets a value indicating the number of unclassified properties currently in this instance.
     /// </summary>
     public int NumProperties { get; private set; }
 
     /// <summary>
-    /// Gets the current number of classified properties in this instance.
+    /// Gets a value indicating the number of classfieid properties currently in this instance.
     /// </summary>
     public int NumClassifiedProperties { get; private set; }
 

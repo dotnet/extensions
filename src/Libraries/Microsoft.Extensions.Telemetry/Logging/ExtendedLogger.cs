@@ -186,35 +186,28 @@ internal sealed partial class ExtendedLogger : ILogger
 
         var joiner = Joiner;
         joiner.StaticProperties = config.StaticProperties;
-        joiner.IncomingProperties = msgState;
         joiner.Formatter = formatter;
+        joiner.SetIncomingProperties(msgState);
 
         List<Exception>? exceptions = null;
         try
         {
             // redact
-            if (msgState.NumClassifiedProperties > 0)
+            foreach (var cp in msgState.ClassifiedProperties)
             {
-                var s = msgState.AllocPropertySpace(msgState.NumClassifiedProperties);
-
-                int i = 0;
-                foreach (var cp in msgState.ClassifiedProperties)
-                {
-                    s[i++] = new(cp.Name, config.RedactorProvider(cp.Classification).Redact(cp.Value));
-                }
+                joiner.Add(cp.Name, config.RedactorProvider(cp.Classification).Redact(cp.Value));
             }
 
             // enrich
             foreach (var enricher in config.Enrichers)
             {
-                enricher(msgState);
+                enricher(joiner);
             }
 
             // one last dedicated bit of enrichment
             if (exception != null && config.CaptureStackTraces)
             {
-                var s = msgState.AllocPropertySpace(1);
-                s[0] = new(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+                joiner.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
             }
 
             for (int i = 0; i < loggers.Length; i++)
@@ -230,7 +223,7 @@ internal sealed partial class ExtendedLogger : ILogger
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>
                     {
                         var fmt = s.Formatter!;
-                        return fmt(s.IncomingProperties!, e);
+                        return fmt(s.State!, e);
                     });
                 }
                 catch (Exception ex)

@@ -74,7 +74,7 @@ internal sealed partial class ExtendedLogger
         public void Add(string key, object value) => _extraProperties.Add(new KeyValuePair<string, object?>(key, value));
         public void Add(string key, string value) => _extraProperties.Add(new KeyValuePair<string, object?>(key, value));
 
-        void IEnrichmentPropertyBag.Add(ReadOnlySpan<KeyValuePair<string, object>> properties)
+        public void Add(ReadOnlySpan<KeyValuePair<string, object>> properties)
         {
             foreach (var p in properties)
             {
@@ -85,7 +85,7 @@ internal sealed partial class ExtendedLogger
             }
         }
 
-        void IEnrichmentPropertyBag.Add(ReadOnlySpan<KeyValuePair<string, string>> properties)
+        public void Add(ReadOnlySpan<KeyValuePair<string, string>> properties)
         {
             foreach (var p in properties)
             {
