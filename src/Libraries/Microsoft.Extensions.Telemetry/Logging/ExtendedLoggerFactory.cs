@@ -72,7 +72,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
             : NullRedactorProvider.Instance;
         _redactorProvider = provider.GetRedactor;
 
-        var bag = new ExtendedLogger.PropertyBag(Array.Empty<KeyValuePair<string, object?>>());
+        var bag = new ExtendedLogger.PropertyBag();
         foreach (var enricher in staticEnrichers)
         {
             enricher.Enrich(bag);

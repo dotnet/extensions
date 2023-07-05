@@ -14,21 +14,22 @@ internal sealed partial class ExtendedLogger
     /// </summary>
     internal sealed class PropertyJoiner : IReadOnlyList<KeyValuePair<string, object?>>
     {
-        public readonly KeyValuePair<string, object?>[] StaticProperties;
-        public LoggerMessageState State = null!;
-        public Func<LoggerMessageState, Exception?, string> Formatter = null!;
+        public KeyValuePair<string, object?>[]? StaticProperties;
+        public LoggerMessageState? IncomingProperties;
+        public Func<LoggerMessageState, Exception?, string>? Formatter;
 
-        public PropertyJoiner(KeyValuePair<string, object?>[] staticProperties)
+        public void Clear()
         {
-            StaticProperties = staticProperties;
+            IncomingProperties = null;
+            Formatter = null;
         }
 
         public KeyValuePair<string, object?> this[int index]
-            => index < State.NumProperties
-                ? State.Properties[index]
-                : StaticProperties[index - State.NumProperties];
+            => index < IncomingProperties!.NumProperties
+                ? IncomingProperties.Properties[index]
+                : StaticProperties![index - IncomingProperties.NumProperties];
 
-        public int Count => State.NumProperties + StaticProperties.Length;
+        public int Count => IncomingProperties!.NumProperties + StaticProperties!.Length;
 
         public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {

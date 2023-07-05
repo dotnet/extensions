@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Telemetry.Enrichment;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
@@ -15,28 +16,25 @@ internal sealed partial class ExtendedLogger
     /// </summary>
     internal sealed class PropertyBag : IReadOnlyList<KeyValuePair<string, object?>>, IEnrichmentPropertyBag
     {
-        public readonly KeyValuePair<string, object?>[] StaticProperties;
+        public KeyValuePair<string, object?>[]? StaticProperties;
         public object? Formatter;
         public object? State;
 
         private const int PropCapacity = 4;
         private readonly List<KeyValuePair<string, object?>> _extraProperties = new(PropCapacity);
-        private IReadOnlyList<KeyValuePair<string, object?>> _incomingProperties = Array.Empty<KeyValuePair<string, object?>>();
+        private IReadOnlyList<KeyValuePair<string, object?>>? _incomingProperties;
         private int _incomingPropertyCount;
-
-        public PropertyBag(KeyValuePair<string, object?>[] staticProperties)
-        {
-            StaticProperties = staticProperties;
-        }
 
         public void Clear()
         {
             _extraProperties.Clear();
-            _incomingProperties = Array.Empty<KeyValuePair<string, object?>>();
+            _incomingProperties = null;
+            _incomingPropertyCount = 0;
             State = null;
             Formatter = null;
         }
 
+        [MemberNotNull(nameof(_incomingProperties))]
         public void SetIncomingProperties(IReadOnlyList<KeyValuePair<string, object?>> value)
         {
             _incomingProperties = value;
@@ -49,7 +47,7 @@ internal sealed partial class ExtendedLogger
             {
                 if (index < _incomingPropertyCount)
                 {
-                    return _incomingProperties[index];
+                    return _incomingProperties![index];
                 }
                 else if (index < _incomingPropertyCount + _extraProperties.Count)
                 {
@@ -57,12 +55,12 @@ internal sealed partial class ExtendedLogger
                 }
                 else
                 {
-                    return StaticProperties[index - _incomingPropertyCount - _extraProperties.Count];
+                    return StaticProperties![index - _incomingPropertyCount - _extraProperties.Count];
                 }
             }
         }
 
-        public int Count => _incomingPropertyCount + _extraProperties.Count + StaticProperties.Length;
+        public int Count => _incomingPropertyCount + _extraProperties.Count + StaticProperties!.Length;
 
         public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {

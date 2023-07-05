@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Pools;
 
@@ -18,8 +16,6 @@ internal sealed partial class ExtendedLogger : ILogger
     private const string ExceptionStackTrace = "stackTrace";
 
     private readonly ExtendedLoggerFactory _factory;
-    private readonly PropertyBag _bag;
-    private readonly PropertyJoiner _joiner;
 
     public LoggerInformation[] Loggers { get; set; }
     public MessageLogger[] MessageLoggers { get; set; } = Array.Empty<MessageLogger>();
@@ -29,9 +25,6 @@ internal sealed partial class ExtendedLogger : ILogger
     {
         _factory = factory;
         Loggers = loggers;
-
-        _bag = new(_factory.Config.StaticProperties);
-        _joiner = new(_factory.Config.StaticProperties);
     }
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
@@ -191,8 +184,9 @@ internal sealed partial class ExtendedLogger : ILogger
         var loggers = MessageLoggers;
         var config = _factory.Config;
 
-        var joiner = _joiner;
-        joiner.State = msgState;
+        var joiner = Joiner;
+        joiner.StaticProperties = config.StaticProperties;
+        joiner.IncomingProperties = msgState;
         joiner.Formatter = formatter;
 
         List<Exception>? exceptions = null;
@@ -236,7 +230,7 @@ internal sealed partial class ExtendedLogger : ILogger
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>
                     {
                         var fmt = s.Formatter!;
-                        return fmt(s.State!, e);
+                        return fmt(s.IncomingProperties!, e);
                     });
                 }
                 catch (Exception ex)
@@ -253,6 +247,7 @@ internal sealed partial class ExtendedLogger : ILogger
         }
 
         HandleExceptions(exceptions);
+        joiner.Clear();
     }
 
     private void LegacyPath<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
@@ -260,7 +255,8 @@ internal sealed partial class ExtendedLogger : ILogger
         var loggers = MessageLoggers;
         var config = _factory.Config;
 
-        var bag = _bag;
+        var bag = Bag;
+        bag.StaticProperties = config.StaticProperties;
         bag.Formatter = formatter;
         bag.State = state;
 
