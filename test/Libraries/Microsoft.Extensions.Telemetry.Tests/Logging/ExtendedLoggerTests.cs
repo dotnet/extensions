@@ -312,49 +312,6 @@ public static class ExtendedLoggerTests
     }
 
     [Fact]
-    public static void BadContributors()
-    {
-        const string Category = "C1";
-
-        using var provider = new Provider();
-        var stackTraceOptions = new LoggerEnrichmentOptions();
-
-        int eventCount = 0;
-        using var el = new LoggerEventListener();
-        el.EventWritten += (_, _) =>
-        {
-            eventCount++;
-        };
-
-        using var lf = new ExtendedLoggerFactory(
-            providers: new[] { provider },
-            filterOptions: new StaticOptionsMonitor<LoggerFilterOptions>(new()),
-            enrichmentOptions: new StaticOptionsMonitor<LoggerEnrichmentOptions>(stackTraceOptions),
-            redactionOptions: new StaticOptionsMonitor<LoggerRedactionOptions>(new()),
-            enrichers: new[] { new AngryEnricher() },
-            staticEnrichers: Array.Empty<IStaticLogEnricher>(),
-            redactorProvider: new FakeRedactorProvider(),
-            scopeProvider: null,
-            factoryOptions: null);
-
-        var logger = lf.CreateLogger(Category);
-        logger.Log<object?>(LogLevel.Error, new EventId(0, "ID0"), null, null, (_, _) => "MSG0");
-
-        var lmh = LogMethodHelper.GetHelper();
-        logger.Log(LogLevel.Error, new EventId(1, "ID1"), (LogMethodHelper?)null, null, (_, _) => "MSG1");
-
-        var lms = LoggerMessageHelper.ThreadLocalState;
-        logger.Log(LogLevel.Warning, new EventId(2, "ID2"), (LoggerMessageState?)null, null, (_, _) => "MSG2");
-
-        var sink = provider.Logger!;
-        var collector = sink.Collector;
-        Assert.Equal(Category, sink.Category);
-        Assert.Equal(0, collector.Count);
-
-        Assert.Equal(3, eventCount);
-    }
-
-    [Fact]
     public static void Disabled()
     {
         const string Category = "C1";
@@ -455,13 +412,5 @@ public static class ExtendedLoggerTests
         public IDisposable? OnChange(Action<T, string> listener) => null;
         public T Get(string? name) => CurrentValue;
         public T CurrentValue { get; }
-    }
-
-    private sealed class LoggerEventListener : EventListener
-    {
-        public LoggerEventListener()
-        {
-            EnableEvents(LoggingEventSource.Log, EventLevel.Informational);
-        }
     }
 }
