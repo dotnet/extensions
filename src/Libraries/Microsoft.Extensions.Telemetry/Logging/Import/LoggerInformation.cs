@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Logging
 
         public Func<string?, string?, LogLevel, bool>? Filter { get; }
 
-        public bool IsEnabled(LogLevel level)
+        public bool IsNotFilteredOut(LogLevel level)
         {
             if (MinLevel != null && level < MinLevel)
             {

@@ -50,7 +50,6 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
                                                                       ActivityTrackingOptions.TraceFlags | ActivityTrackingOptions.TraceState | ActivityTrackingOptions.Tags
                                                                       | ActivityTrackingOptions.Baggage);
 
-
         if ((_factoryOptions.ActivityTrackingOptions & ActivityTrackingOptionsMask) != 0)
         {
             Throw.ArgumentException($"{_factoryOptions.ActivityTrackingOptions} is invalid ActivityTrackingOptions value.", nameof(factoryOptions));

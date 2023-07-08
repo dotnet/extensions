@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Logging;
@@ -54,7 +53,7 @@ public static class SerialExtendedLoggerTests
         var sink = provider.Logger!;
         var collector = sink.Collector;
         Assert.Equal(Category, sink.Category);
-        Assert.Equal(0, collector.Count);
+        Assert.Equal(3, collector.Count);
 
         Assert.Equal(3, eventCount);
     }

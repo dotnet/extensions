@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 internal sealed partial class ExtendedLogger
 {
     /// <summary>
-    /// Used to collect properties in the legacy logging path.
+    /// Used to collect properties in the modern logging path.
     /// </summary>
     internal sealed class PropertyJoiner : IReadOnlyList<KeyValuePair<string, object?>>, IEnrichmentPropertyBag
     {
@@ -92,8 +92,5 @@ internal sealed partial class ExtendedLogger
                 _extraProperties.Add(new KeyValuePair<string, object?>(p.Key, p.Value));
             }
         }
-
-        public void AddRange(IEnumerable<KeyValuePair<string, object?>> properties) => _extraProperties.AddRange(properties);
-        public KeyValuePair<string, object?>[] ToArray() => _extraProperties.ToArray();
     }
 }

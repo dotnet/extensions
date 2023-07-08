@@ -11,6 +11,14 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 
 #pragma warning disable CA1031
 
+// NOTE: This implementation uses thread local storage. As a result, it will fail if formatter code, enricher code, or
+//       redsctor code calls recursively back into the logger. Don't do that.
+//
+// NOTE: Unlike the original logger in dotnet/runtime, this logger eats exceptions thrown from invoked loggers, enrichers,
+//       and redactors, rather than forwarding the exceptions to the caller. The fact an exception occured is recorded in
+//       the event log instead. The idea is that failures in the telemetry stack should not lead to failures in the
+//       application. It's better to keep running with missing telemetry rather than crashing the process completely.
+
 internal sealed partial class ExtendedLogger : ILogger
 {
     private const string ExceptionStackTrace = "stackTrace";
@@ -87,24 +95,22 @@ internal sealed partial class ExtendedLogger : ILogger
         for (; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
-            if (!loggerInfo.IsEnabled(logLevel))
+            if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                continue;
-            }
-
-            try
-            {
-                if (loggerInfo.LoggerIsEnabled(logLevel))
+                try
                 {
-                    break;
+                    if (loggerInfo.LoggerIsEnabled(logLevel))
+                    {
+                        break;
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
+                catch (Exception ex)
+                {
 #pragma warning disable CA1508 // Avoid dead conditional code
-                exceptions ??= new();
+                    exceptions ??= new();
 #pragma warning restore CA1508 // Avoid dead conditional code
-                exceptions.Add(ex);
+                    exceptions.Add(ex);
+                }
             }
         }
 
@@ -190,34 +196,46 @@ internal sealed partial class ExtendedLogger : ILogger
         joiner.SetIncomingProperties(msgState);
 
         List<Exception>? exceptions = null;
-        try
+
+        // redact
+        foreach (var cp in msgState.ClassifiedProperties)
         {
-            // redact
-            foreach (var cp in msgState.ClassifiedProperties)
+            try
             {
                 joiner.Add(cp.Name, config.RedactorProvider(cp.Classification).Redact(cp.Value));
             }
+            catch (Exception ex)
+            {
+                exceptions ??= new();
+                exceptions.Add(ex);
+            }
+        }
 
-            // enrich
-            foreach (var enricher in config.Enrichers)
+        // enrich
+        foreach (var enricher in config.Enrichers)
+        {
+            try
             {
                 enricher(joiner);
             }
-
-            // one last dedicated bit of enrichment
-            if (exception != null && config.CaptureStackTraces)
+            catch (Exception ex)
             {
-                joiner.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+                exceptions ??= new();
+                exceptions.Add(ex);
             }
+        }
 
-            for (int i = 0; i < loggers.Length; i++)
+        // one last dedicated bit of enrichment
+        if (exception != null && config.CaptureStackTraces)
+        {
+            joiner.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+        }
+
+        for (int i = 0; i < loggers.Length; i++)
+        {
+            ref readonly MessageLogger loggerInfo = ref loggers[i];
+            if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                ref readonly MessageLogger loggerInfo = ref loggers[i];
-                if (!loggerInfo.IsEnabled(logLevel))
-                {
-                    continue;
-                }
-
                 try
                 {
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>
@@ -233,14 +251,9 @@ internal sealed partial class ExtendedLogger : ILogger
                 }
             }
         }
-        catch (Exception ex)
-        {
-            exceptions ??= new();
-            exceptions.Add(ex);
-        }
 
-        HandleExceptions(exceptions);
         joiner.Clear();
+        HandleExceptions(exceptions);
     }
 
     private void LegacyPath<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
@@ -272,28 +285,32 @@ internal sealed partial class ExtendedLogger : ILogger
         }
 
         List<Exception>? exceptions = null;
-        try
+
+        // enrich
+        foreach (var enricher in config.Enrichers)
         {
-            // enrich
-            foreach (var enricher in config.Enrichers)
+            try
             {
                 enricher(bag);
             }
-
-            // one last dedicated bit of enrichment
-            if (exception != null && config.CaptureStackTraces)
+            catch (Exception ex)
             {
-                bag.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+                exceptions ??= new();
+                exceptions.Add(ex);
             }
+        }
 
-            for (int i = 0; i < loggers.Length; i++)
+        // one last dedicated bit of enrichment
+        if (exception != null && config.CaptureStackTraces)
+        {
+            bag.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+        }
+
+        for (int i = 0; i < loggers.Length; i++)
+        {
+            ref readonly MessageLogger loggerInfo = ref loggers[i];
+            if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                ref readonly MessageLogger loggerInfo = ref loggers[i];
-                if (!loggerInfo.IsEnabled(logLevel))
-                {
-                    continue;
-                }
-
                 try
                 {
                     loggerInfo.Logger.Log(logLevel, eventId, bag, exception, static (s, e) =>
@@ -309,13 +326,8 @@ internal sealed partial class ExtendedLogger : ILogger
                 }
             }
         }
-        catch (Exception ex)
-        {
-            exceptions ??= new();
-            exceptions.Add(ex);
-        }
 
-        HandleExceptions(exceptions);
         bag.Clear();
+        HandleExceptions(exceptions);
     }
 }
