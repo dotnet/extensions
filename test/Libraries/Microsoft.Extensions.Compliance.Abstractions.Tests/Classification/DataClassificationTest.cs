@@ -68,4 +68,15 @@ public static class DataClassificationTest
         Assert.Equal(dc1.Value, (DataClassification.None | dc1).Value);
         Assert.Equal(dc1.TaxonomyName, (DataClassification.None | dc1).TaxonomyName);
     }
+
+    [Fact]
+    public static void ToStringOutput()
+    {
+        const string TaxonomyName = "MyTaxonomy";
+        const ulong Mask = 0x0123;
+
+        var dc = new DataClassification(TaxonomyName, Mask);
+
+        Assert.Equal($"{TaxonomyName}:{Mask:x}", dc.ToString());
+    }
 }

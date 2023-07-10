@@ -2,6 +2,16 @@
   "Name": "Microsoft.Extensions.Http.Resilience, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
+      "Type": "static class Microsoft.Extensions.Http.Resilience.FaultInjection.ContextExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Polly.Context Microsoft.Extensions.Http.Resilience.FaultInjection.ContextExtensions.WithCallingRequestMessage(this Polly.Context context, System.Net.Http.HttpRequestMessage request);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.Http.Resilience.Endpoint",
       "Stage": "Stable",
       "Methods": [
@@ -34,26 +44,6 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions.FallbackClientHandlerOptions();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "System.Uri? Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions.BaseFallbackUri { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpFallbackPolicyOptions Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions.FallbackPolicyOptions { get; set; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "class Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions",
       "Stage": "Stable",
       "Methods": [
@@ -64,35 +54,25 @@
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpBulkheadPolicyOptions Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.BulkheadOptions { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerStrategyOptions Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.CircuitBreakerOptions { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerPolicyOptions Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.CircuitBreakerOptions { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpRateLimiterStrategyOptions Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.RateLimiterOptions { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpTimeoutPolicyOptions Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.TimeoutOptions { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.TimeoutOptions { get; set; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Resilience.HttpBulkheadPolicyOptions : Microsoft.Extensions.Resilience.Options.BulkheadPolicyOptions",
+      "Type": "class Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerStrategyOptions : Polly.CircuitBreaker.AdvancedCircuitBreakerStrategyOptions<System.Net.Http.HttpResponseMessage>",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpBulkheadPolicyOptions.HttpBulkheadPolicyOptions();",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerPolicyOptions : Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions<System.Net.Http.HttpResponseMessage>",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerPolicyOptions.HttpCircuitBreakerPolicyOptions();",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerStrategyOptions.HttpCircuitBreakerStrategyOptions();",
           "Stage": "Stable"
         }
       ]
@@ -102,31 +82,11 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddFallbackHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions> configure);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddFallbackHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddFallbackHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, System.Action<Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions> configure);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, string pipelineIdentifier);",
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, string strategyName, System.Action<Polly.ResilienceStrategyBuilder<System.Net.Http.HttpResponseMessage>> configure);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, string strategyName, System.Action<Polly.ResilienceStrategyBuilder<System.Net.Http.HttpResponseMessage>, Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext> configure);",
           "Stage": "Stable"
         },
         {
@@ -135,6 +95,18 @@
         },
         {
           "Member": "static Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardHedgingHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
           "Stage": "Stable"
         }
       ]
@@ -176,15 +148,9 @@
         {
           "Member": "static readonly System.Predicate<System.Exception> Microsoft.Extensions.Http.Resilience.HttpClientHedgingResiliencePredicates.IsTransientHttpException",
           "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Http.Resilience.HttpClientResilienceGenerators",
-      "Stage": "Stable",
-      "Fields": [
+        },
         {
-          "Member": "static readonly System.Func<Microsoft.Extensions.Resilience.Options.RetryDelayArguments<System.Net.Http.HttpResponseMessage>, System.TimeSpan> Microsoft.Extensions.Http.Resilience.HttpClientResilienceGenerators.HandleRetryAfterHeader",
+          "Member": "static readonly System.Predicate<Polly.Outcome<System.Net.Http.HttpResponseMessage>> Microsoft.Extensions.Http.Resilience.HttpClientHedgingResiliencePredicates.IsTransientHttpOutcome",
           "Stage": "Stable"
         }
       ]
@@ -200,15 +166,9 @@
         {
           "Member": "static readonly System.Predicate<System.Net.Http.HttpResponseMessage> Microsoft.Extensions.Http.Resilience.HttpClientResiliencePredicates.IsTransientHttpFailure",
           "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.Http.Resilience.HttpFallbackPolicyOptions : Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions<System.Net.Http.HttpResponseMessage>",
-      "Stage": "Stable",
-      "Methods": [
+        },
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpFallbackPolicyOptions.HttpFallbackPolicyOptions();",
+          "Member": "static readonly System.Predicate<Polly.Outcome<System.Net.Http.HttpResponseMessage>> Microsoft.Extensions.Http.Resilience.HttpClientResiliencePredicates.IsTransientHttpOutcome",
           "Stage": "Stable"
         }
       ]
@@ -244,41 +204,65 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Resilience.HttpHedgingPolicyOptions : Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions<System.Net.Http.HttpResponseMessage>",
+      "Type": "class Microsoft.Extensions.Http.Resilience.HttpHedgingStrategyOptions : Polly.Hedging.HedgingStrategyOptions<System.Net.Http.HttpResponseMessage>",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpHedgingPolicyOptions.HttpHedgingPolicyOptions();",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpHedgingStrategyOptions.HttpHedgingStrategyOptions();",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Http.Resilience.HttpResiliencePipelineBuilderExtensions",
+      "Type": "class Microsoft.Extensions.Http.Resilience.HttpRateLimiterStrategyOptions : Polly.RateLimiting.RateLimiterStrategyOptions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpResiliencePipelineBuilderExtensions.SelectPipelineBy(this Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder builder, System.Func<System.IServiceProvider, Microsoft.Extensions.Http.Resilience.PipelineKeySelector> selectorFactory);",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpRateLimiterStrategyOptions.HttpRateLimiterStrategyOptions();",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Http.Resilience.HttpRequestMessageExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Polly.ResilienceContext? Microsoft.Extensions.Http.Resilience.HttpRequestMessageExtensions.GetResilienceContext(this System.Net.Http.HttpRequestMessage requestMessage);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpResiliencePipelineBuilderExtensions.SelectPipelineByAuthority(this Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "static void Microsoft.Extensions.Http.Resilience.HttpRequestMessageExtensions.SetResilienceContext(this System.Net.Http.HttpRequestMessage requestMessage, Polly.ResilienceContext? resilienceContext);",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Resilience.HttpRetryPolicyOptions : Microsoft.Extensions.Resilience.Options.RetryPolicyOptions<System.Net.Http.HttpResponseMessage>",
+      "Type": "static class Microsoft.Extensions.Http.Resilience.HttpResilienceStrategyBuilderExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpRetryPolicyOptions.HttpRetryPolicyOptions();",
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpResilienceStrategyBuilderExtensions.SelectStrategyBy(this Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder builder, System.Func<System.IServiceProvider, System.Func<System.Net.Http.HttpRequestMessage, string>> selectorFactory);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpResilienceStrategyBuilderExtensions.SelectStrategyByAuthority(this Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions : Polly.Retry.RetryStrategyOptions<System.Net.Http.HttpResponseMessage>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions.HttpRetryStrategyOptions();",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "bool Microsoft.Extensions.Http.Resilience.HttpRetryPolicyOptions.ShouldRetryAfterHeader { get; set; }",
+          "Member": "bool Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions.ShouldRetryAfterHeader { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -298,11 +282,37 @@
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpHedgingPolicyOptions Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.HedgingOptions { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpHedgingStrategyOptions Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.HedgingOptions { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpTimeoutPolicyOptions Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.TotalRequestTimeoutOptions { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.TotalRequestTimeoutOptions { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Http.Resilience.HttpStandardResilienceBuilderBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpStandardResilienceBuilderBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpStandardResilienceBuilderBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpStandardResilienceBuilderBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions, System.IServiceProvider> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpStandardResilienceBuilderBuilderExtensions.SelectStrategyBy(this Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder builder, System.Func<System.IServiceProvider, System.Func<System.Net.Http.HttpRequestMessage, string>> selectorFactory);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpStandardResilienceBuilderBuilderExtensions.SelectStrategyByAuthority(this Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
           "Stage": "Stable"
         }
       ]
@@ -318,59 +328,33 @@
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpTimeoutPolicyOptions Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.AttemptTimeoutOptions { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.AttemptTimeoutOptions { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpBulkheadPolicyOptions Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.BulkheadOptions { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerStrategyOptions Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.CircuitBreakerOptions { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerPolicyOptions Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.CircuitBreakerOptions { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpRateLimiterStrategyOptions Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.RateLimiterOptions { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpRetryPolicyOptions Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.RetryOptions { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.RetryOptions { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpTimeoutPolicyOptions Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.TotalRequestTimeoutOptions { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.TotalRequestTimeoutOptions { get; set; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions",
+      "Type": "class Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions : Polly.Timeout.TimeoutStrategyOptions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions, System.IServiceProvider> configure);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions.SelectPipelineBy(this Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder builder, System.Func<System.IServiceProvider, Microsoft.Extensions.Http.Resilience.PipelineKeySelector> selectorFactory);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions.SelectPipelineByAuthority(this Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.Http.Resilience.HttpTimeoutPolicyOptions : Microsoft.Extensions.Resilience.Options.TimeoutPolicyOptions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.HttpTimeoutPolicyOptions.HttpTimeoutPolicyOptions();",
+          "Member": "Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions.HttpTimeoutStrategyOptions();",
           "Stage": "Stable"
         }
       ]
@@ -386,39 +370,29 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder : Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<System.Net.Http.HttpResponseMessage>",
-      "Stage": "Stable"
-    },
-    {
-      "Type": "interface Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder",
+      "Type": "interface Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder",
       "Stage": "Stable",
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder.PipelineName { get; }",
+          "Member": "Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder.Services { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder.Services { get; }",
+          "Member": "string Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder.StrategyName { get; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Http.Resilience.IRequestRoutingStrategy",
+      "Type": "interface Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder",
       "Stage": "Stable",
-      "Methods": [
+      "Properties": [
         {
-          "Member": "bool Microsoft.Extensions.Http.Resilience.IRequestRoutingStrategy.TryGetNextRoute(out System.Uri? nextRoute);",
+          "Member": "Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder.Services { get; }",
           "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "interface Microsoft.Extensions.Http.Resilience.IRequestRoutingStrategyFactory",
-      "Stage": "Stable",
-      "Methods": [
+        },
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.IRequestRoutingStrategy Microsoft.Extensions.Http.Resilience.IRequestRoutingStrategyFactory.CreateRoutingStrategy();",
+          "Member": "string Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder.StrategyName { get; }",
           "Stage": "Stable"
         }
       ]
@@ -441,10 +415,6 @@
       "Type": "interface Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder",
       "Stage": "Stable",
       "Properties": [
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder.EndpointResiliencePipelineBuilder { get; }",
-          "Stage": "Stable"
-        },
         {
           "Member": "string Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder.Name { get; }",
           "Stage": "Stable"
@@ -476,16 +446,26 @@
       ]
     },
     {
-      "Type": "delegate string Microsoft.Extensions.Http.Resilience.PipelineKeySelector(System.Net.Http.HttpRequestMessage requestMessage)",
-      "Stage": "Stable"
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Http.Resilience.FaultInjection.PolicyContextExtensions",
-      "Stage": "Experimental",
+      "Type": "sealed class Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext",
+      "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Polly.Context Microsoft.Extensions.Http.Resilience.FaultInjection.PolicyContextExtensions.WithCallingRequestMessage(this Polly.Context context, System.Net.Http.HttpRequestMessage request);",
-          "Stage": "Experimental"
+          "Member": "void Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.EnableReloads<TOptions>(string? name = null);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.BuilderName { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.IServiceProvider Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.ServiceProvider { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.StrategyKey { get; }",
+          "Stage": "Stable"
         }
       ]
     },
@@ -536,11 +516,11 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineBy(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder builder, System.Func<System.IServiceProvider, Microsoft.Extensions.Http.Resilience.PipelineKeySelector> selectorFactory);",
+          "Member": "static Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectStrategyBy(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder builder, System.Func<System.IServiceProvider, System.Func<System.Net.Http.HttpRequestMessage, string>> selectorFactory);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "static Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectStrategyByAuthority(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
           "Stage": "Stable"
         }
       ]

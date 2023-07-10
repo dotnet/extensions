@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Compliance.Redaction;
 /// <summary>
 /// Redactor that uses xxHash3 hashing to redact data.
 /// </summary>
-public sealed class XXHash3Redactor : Redactor
+internal sealed class XXHash3Redactor : Redactor
 {
     internal const int HashSize = 16;
     internal const string Prefix = "<xxhash:";
@@ -28,7 +28,7 @@ public sealed class XXHash3Redactor : Redactor
     /// <param name="options">The options to control the redactor.</param>
     public XXHash3Redactor(IOptions<XXHash3RedactorOptions> options)
     {
-        _seed = Throw.IfMemberNull(options, options?.Value).HashSeed;
+        _seed = options.Value.HashSeed;
     }
 
     /// <inheritdoc />

@@ -148,4 +148,11 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     {
         return Combine(left, right);
     }
+
+    /// <summary>
+    /// Gets a string representation of this object.
+    /// </summary>
+    /// <returns>A string representing the object.</returns>
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    public override string ToString() => $"{TaxonomyName}:{Value:x}";
 }
