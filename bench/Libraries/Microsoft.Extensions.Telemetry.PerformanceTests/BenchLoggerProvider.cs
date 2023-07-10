@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Telemetry.Bench;
 
-internal sealed class MockLoggerProvider : ILoggerProvider
+internal sealed class BenchLoggerProvider : ILoggerProvider
 {
-    public ILogger CreateLogger(string categoryName) => new MockLogger();
+    public ILogger CreateLogger(string categoryName) => new BenchLogger();
 
     public void Dispose()
     {

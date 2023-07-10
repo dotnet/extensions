@@ -27,6 +27,8 @@ internal static class ModernCodeGen
             state,
             null, // Refer to our docs to learn how to pass exception here
             __FMT_0_RefTypes_Error);
+
+        state.Clear();
     }
 
     private static string __FMT_0_RefTypes_Error(global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageState _h, global::System.Exception? _)
@@ -59,6 +61,8 @@ internal static class ModernCodeGen
             state,
             null, // Refer to our docs to learn how to pass exception here
             __FMT_2_ValueTypes_Error);
+
+        state.Clear();
     }
 
     private static string __FMT_2_ValueTypes_Error(global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageState _h, global::System.Exception? _)

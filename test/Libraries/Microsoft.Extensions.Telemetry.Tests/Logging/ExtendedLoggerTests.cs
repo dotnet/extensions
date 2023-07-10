@@ -896,7 +896,6 @@ public static class ExtendedLoggerTests
                     a[i++] = new(kvp.Key, (string)kvp.Value!);
                 }
 
-
                 bag.Add(a.AsSpan());
             }
         }

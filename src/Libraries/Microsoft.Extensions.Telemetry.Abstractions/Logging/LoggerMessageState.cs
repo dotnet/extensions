@@ -64,19 +64,26 @@ public sealed partial class LoggerMessageState : IResettable
     }
 
     /// <summary>
-    /// Resets state of this container as described in <see cref="IResettable.TryReset"/>.
+    /// Resets state of this object to its initial condition.
     /// </summary>
-    /// <returns>
-    /// <see langword="true" /> if the object successfully reset and can be reused.
-    /// </returns>
-    public bool TryReset()
+    public void Clear()
     {
         Array.Clear(_properties, 0, NumProperties);
         Array.Clear(_classifiedProperties, 0, NumClassifiedProperties);
         NumProperties = 0;
         NumClassifiedProperties = 0;
         PropertyNamePrefix = string.Empty;
+    }
 
+    /// <summary>
+    /// Resets state of this container as described in <see cref="IResettable.TryReset"/>.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> if the object successfully reset and can be reused.
+    /// </returns>
+    bool IResettable.TryReset()
+    {
+        Clear();
         return true;
     }
 
@@ -96,7 +103,7 @@ public sealed partial class LoggerMessageState : IResettable
     public int NumProperties { get; private set; }
 
     /// <summary>
-    /// Gets a value indicating the number of classfieid properties currently in this instance.
+    /// Gets a value indicating the number of classified properties currently in this instance.
     /// </summary>
     public int NumClassifiedProperties { get; private set; }
 

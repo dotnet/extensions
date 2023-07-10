@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
+using Microsoft.Extensions.ObjectPool;
 using Xunit;
 
 namespace Microsoft.Extensions.Telemetry.Logging.Test;
@@ -26,7 +27,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(Value, lms.Properties[0].Value);
         Assert.Equal("Property Name=Value", lms.ToString());
 
-        _ = lms.TryReset();
+        _ = ((IResettable)lms).TryReset();
         Assert.Equal(0, lms.NumProperties);
         Assert.Equal(0, lms.Properties.Length);
         Assert.Equal("", lms.ToString());
@@ -80,7 +81,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(PropertyNamPrefix + PropName, lms.Properties[0].Key);
         Assert.Equal(Value, lms.Properties[0].Value);
 
-        _ = lms.TryReset();
+        lms.Clear();
         Assert.Equal(0, lms.NumProperties);
         Assert.Equal(0, lms.Properties.Length);
 
@@ -118,7 +119,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(Value, list[0].Value);
         Assert.Equal(lms.Properties.ToArray(), list.ToArray());
 
-        _ = lms.TryReset();
+        lms.Clear();
         Assert.Empty(list);
 
         lms.AllocPropertySpace(1)[0] = new(PropName, Value);
@@ -137,7 +138,7 @@ public static class LoggerMessageStateTests
         var count = 0;
         while (m.MoveNext())
         {
-            var current = (KeyValuePair<string, object?>)m.Current;
+            var current = (KeyValuePair<string, object?>)m.Current!;
             Assert.Equal(current.Key, list[count].Key);
             Assert.Equal(current.Value, list[count].Value);
             count++;

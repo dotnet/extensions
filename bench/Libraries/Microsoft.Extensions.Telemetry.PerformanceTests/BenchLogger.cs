@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Telemetry.Bench;
 /// <summary>
 /// A logger which captures the last log state logged to it.
 /// </summary>
-internal sealed class MockLogger : ILogger
+internal sealed class BenchLogger : ILogger
 {
     private sealed class Disposable : IDisposable
     {
@@ -38,7 +38,8 @@ internal sealed class MockLogger : ILogger
         {
             case IReadOnlyList<KeyValuePair<string, object?>> l:
             {
-                for (int i = 0; i < l.Count; i++)
+                int count = l.Count;
+                for (int i = 0; i < count; i++)
                 {
                     _ = ProcessItem(l[i]);
                 }

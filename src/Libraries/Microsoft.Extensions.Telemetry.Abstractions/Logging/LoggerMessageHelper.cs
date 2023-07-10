@@ -28,9 +28,14 @@ public static class LoggerMessageHelper
     {
         get
         {
-            _properties ??= new();
-            _ = _properties.TryReset();
-            return _properties;
+            var result = _properties;
+            if (result == null)
+            {
+                result = new();
+                _properties = result;
+            }
+
+            return result;
         }
     }
 

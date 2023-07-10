@@ -22,7 +22,7 @@ public static class ExtendedLoggerFactoryTests
         var factory = Utils.CreateLoggerFactory();
         factory.Dispose();
 
-        Assert.Throws<ObjectDisposedException>(() => ((ILoggerFactory)factory).AddProvider(CreateProvider()));
+        Assert.Throws<ObjectDisposedException>(() => factory.AddProvider(CreateProvider()));
     }
 
     [Fact]
@@ -305,7 +305,7 @@ public static class ExtendedLoggerFactoryTests
     {
         using var loggerProvider = new ExternalScopeLoggerProvider();
 
-        using var loggerFactory =Utils.CreateLoggerFactory(builder =>
+        using var loggerFactory = Utils.CreateLoggerFactory(builder =>
         {
             builder
                 .Configure(o => o.ActivityTrackingOptions = ActivityTrackingOptions.TraceId | ActivityTrackingOptions.Baggage | ActivityTrackingOptions.Tags)
@@ -333,7 +333,7 @@ public static class ExtendedLoggerFactoryTests
     {
         using var loggerProvider = new ExternalScopeLoggerProvider();
 
-        using var loggerFactory =Utils.CreateLoggerFactory(builder =>
+        using var loggerFactory = Utils.CreateLoggerFactory(builder =>
         {
             builder
                 .Configure(o => o.ActivityTrackingOptions = ActivityTrackingOptions.Baggage | ActivityTrackingOptions.Tags)
@@ -407,7 +407,7 @@ public static class ExtendedLoggerFactoryTests
     {
         using var loggerProvider = new ExternalScopeLoggerProvider();
 
-        using var loggerFactory =Utils.CreateLoggerFactory(builder =>
+        using var loggerFactory = Utils.CreateLoggerFactory(builder =>
         {
             builder
                 .Configure(o => o.ActivityTrackingOptions = ActivityTrackingOptions.TraceId | ActivityTrackingOptions.Baggage | ActivityTrackingOptions.Tags)
@@ -530,7 +530,7 @@ public static class ExtendedLoggerFactoryTests
         var provider = new Mock<ILoggerProvider>();
         provider.Setup(p => p.Dispose()).Callback(() => disposed = true);
 
-        var factory =Utils.CreateLoggerFactory(builder => builder.Services.AddSingleton(_ => provider.Object));
+        var factory = Utils.CreateLoggerFactory(builder => builder.Services.AddSingleton(_ => provider.Object));
         factory.Dispose();
 
         Assert.True(disposed);

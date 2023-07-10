@@ -198,11 +198,18 @@ internal sealed partial class ExtendedLogger : ILogger
         List<Exception>? exceptions = null;
 
         // redact
+        JustInTimeRedactor? jitRedactors = null;
         foreach (var cp in msgState.ClassifiedProperties)
         {
             try
             {
-                joiner.Add(cp.Name, config.RedactorProvider(cp.Classification).Redact(cp.Value));
+                var jr = JustInTimeRedactor.Get();
+                jr.Value = cp.Value;
+                jr.Redactor = config.RedactorProvider(cp.Classification);
+                jr.Next = jitRedactors;
+                jitRedactors = jr;
+
+                joiner.Add(cp.Name, jr);
             }
             catch (Exception ex)
             {
@@ -253,6 +260,15 @@ internal sealed partial class ExtendedLogger : ILogger
         }
 
         joiner.Clear();
+
+        // return the jit redactors to the pool
+        while (jitRedactors != null)
+        {
+            var next = jitRedactors.Next;
+            jitRedactors.Return();
+            jitRedactors = next;
+        }
+
         HandleExceptions(exceptions);
     }
 

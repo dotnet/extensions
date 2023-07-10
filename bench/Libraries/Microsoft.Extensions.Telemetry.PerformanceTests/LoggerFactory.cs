@@ -62,7 +62,7 @@ public class LoggerFactory
 
         serviceCollection.AddLogging(builder =>
         {
-            builder.AddProvider(new MockLoggerProvider());
+            builder.AddProvider(new BenchLoggerProvider());
 
             if (config == LoggerFactoryVersions.New || config == LoggerFactoryVersions.NewWithEnrichers)
             {

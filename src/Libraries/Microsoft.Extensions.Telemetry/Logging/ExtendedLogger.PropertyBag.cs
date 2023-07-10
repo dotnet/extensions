@@ -85,7 +85,7 @@ internal sealed partial class ExtendedLogger
             }
         }
 
-        public void IAdd(ReadOnlySpan<KeyValuePair<string, string>> properties)
+        public void Add(ReadOnlySpan<KeyValuePair<string, string>> properties)
         {
             foreach (var p in properties)
             {
