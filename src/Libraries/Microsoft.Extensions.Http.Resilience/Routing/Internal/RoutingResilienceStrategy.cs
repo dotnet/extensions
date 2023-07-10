@@ -31,7 +31,7 @@ internal sealed class RoutingResilienceStrategy : ResilienceStrategy
             Throw.InvalidOperationException("The HTTP request message was not found in the resilience context.");
         }
 
-        if (_provider == null)
+        if (_provider is null)
         {
             return await callback(context, state).ConfigureAwait(context.ContinueOnCapturedContext);
         }
