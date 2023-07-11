@@ -119,7 +119,9 @@ public class TcpEndpointHealthCheckServiceTest
 
     private static int GetFreeTcpPort()
     {
+#pragma warning disable CA2000 // Dispose objects before losing scope
         var listener = new TcpListener(IPAddress.Loopback, 0);
+#pragma warning restore CA2000 // Dispose objects before losing scope
         listener.Start();
         int port = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
