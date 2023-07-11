@@ -16,6 +16,9 @@
     <!-- This is false for local development, but set to true in the CI system -->
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">false</TreatWarningsAsErrors>
 
+    <!-- TODO: remove once https://github.com/dotnet/extensions/issues/4161 is resolved -->
+    <NoWarn>$(NoWarn);TBD</NoWarn>
+
     <!--
       TODO: to be resolved (https://github.com/dotnet/extensions/issues/4128)
 
