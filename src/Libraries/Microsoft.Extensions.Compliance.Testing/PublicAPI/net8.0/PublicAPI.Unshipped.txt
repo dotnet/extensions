@@ -1,0 +1,63 @@
+Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector
+Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector.AllRedactedData.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Compliance.Testing.RedactedData>!
+Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector.AllRedactorRequests.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Compliance.Testing.RedactorRequested>!
+Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector.FakeRedactionCollector() -> void
+Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector.LastRedactedData.get -> Microsoft.Extensions.Compliance.Testing.RedactedData
+Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector.LastRedactorRequested.get -> Microsoft.Extensions.Compliance.Testing.RedactorRequested
+Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions
+Microsoft.Extensions.Compliance.Testing.FakeRedactor
+Microsoft.Extensions.Compliance.Testing.FakeRedactor.EventCollector.get -> Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector!
+Microsoft.Extensions.Compliance.Testing.FakeRedactor.FakeRedactor(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions!>? options = null, Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector? collector = null) -> void
+Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions
+Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions.FakeRedactorOptions() -> void
+Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions.RedactionFormat.get -> string!
+Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions.RedactionFormat.set -> void
+Microsoft.Extensions.Compliance.Testing.FakeRedactorProvider
+Microsoft.Extensions.Compliance.Testing.FakeRedactorProvider.Collector.get -> Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector!
+Microsoft.Extensions.Compliance.Testing.FakeRedactorProvider.FakeRedactorProvider(Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions? options = null, Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector? eventCollector = null) -> void
+Microsoft.Extensions.Compliance.Testing.FakeRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassification classification) -> Microsoft.Extensions.Compliance.Redaction.Redactor!
+Microsoft.Extensions.Compliance.Testing.PrivateDataAttribute
+Microsoft.Extensions.Compliance.Testing.PrivateDataAttribute.PrivateDataAttribute() -> void
+Microsoft.Extensions.Compliance.Testing.PublicDataAttribute
+Microsoft.Extensions.Compliance.Testing.PublicDataAttribute.PublicDataAttribute() -> void
+Microsoft.Extensions.Compliance.Testing.RedactedData
+Microsoft.Extensions.Compliance.Testing.RedactedData.Equals(Microsoft.Extensions.Compliance.Testing.RedactedData other) -> bool
+Microsoft.Extensions.Compliance.Testing.RedactedData.Original.get -> string!
+Microsoft.Extensions.Compliance.Testing.RedactedData.Redacted.get -> string!
+Microsoft.Extensions.Compliance.Testing.RedactedData.RedactedData() -> void
+Microsoft.Extensions.Compliance.Testing.RedactedData.RedactedData(string! original, string! redacted, int sequenceNumber) -> void
+Microsoft.Extensions.Compliance.Testing.RedactedData.SequenceNumber.get -> int
+Microsoft.Extensions.Compliance.Testing.RedactorRequested
+Microsoft.Extensions.Compliance.Testing.RedactorRequested.DataClassification.get -> Microsoft.Extensions.Compliance.Classification.DataClassification
+Microsoft.Extensions.Compliance.Testing.RedactorRequested.Equals(Microsoft.Extensions.Compliance.Testing.RedactorRequested other) -> bool
+Microsoft.Extensions.Compliance.Testing.RedactorRequested.RedactorRequested() -> void
+Microsoft.Extensions.Compliance.Testing.RedactorRequested.RedactorRequested(Microsoft.Extensions.Compliance.Classification.DataClassification classification, int sequenceNumber) -> void
+Microsoft.Extensions.Compliance.Testing.RedactorRequested.SequenceNumber.get -> int
+Microsoft.Extensions.Compliance.Testing.SimpleClassifications
+Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy
+Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.None = 0 -> Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy
+Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.PrivateData = 2 -> Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy
+Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.PublicData = 1 -> Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy
+Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.Unknown = 9223372036854775808 -> Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy
+Microsoft.Extensions.Compliance.Testing.SimpleTaxonomyExtensions
+override Microsoft.Extensions.Compliance.Testing.FakeRedactor.GetRedactedLength(System.ReadOnlySpan<char> input) -> int
+override Microsoft.Extensions.Compliance.Testing.FakeRedactor.Redact(System.ReadOnlySpan<char> source, System.Span<char> destination) -> int
+override Microsoft.Extensions.Compliance.Testing.RedactedData.Equals(object? obj) -> bool
+override Microsoft.Extensions.Compliance.Testing.RedactedData.GetHashCode() -> int
+override Microsoft.Extensions.Compliance.Testing.RedactorRequested.Equals(object? obj) -> bool
+override Microsoft.Extensions.Compliance.Testing.RedactorRequested.GetHashCode() -> int
+static Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.AddFakeRedaction(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.AddFakeRedaction(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.GetFakeRedactionCollector(this System.IServiceProvider! serviceProvider) -> Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector!
+static Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section, params Microsoft.Extensions.Compliance.Classification.DataClassification[]! classifications) -> Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder!
+static Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder! builder, params Microsoft.Extensions.Compliance.Classification.DataClassification[]! classifications) -> Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder!
+static Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder! builder, System.Action<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions!>! configure, params Microsoft.Extensions.Compliance.Classification.DataClassification[]! classifications) -> Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder!
+static Microsoft.Extensions.Compliance.Testing.FakeRedactor.Create(Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions? options = null, Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector? collector = null) -> Microsoft.Extensions.Compliance.Testing.FakeRedactor!
+static Microsoft.Extensions.Compliance.Testing.RedactedData.operator !=(Microsoft.Extensions.Compliance.Testing.RedactedData left, Microsoft.Extensions.Compliance.Testing.RedactedData right) -> bool
+static Microsoft.Extensions.Compliance.Testing.RedactedData.operator ==(Microsoft.Extensions.Compliance.Testing.RedactedData left, Microsoft.Extensions.Compliance.Testing.RedactedData right) -> bool
+static Microsoft.Extensions.Compliance.Testing.RedactorRequested.operator !=(Microsoft.Extensions.Compliance.Testing.RedactorRequested left, Microsoft.Extensions.Compliance.Testing.RedactorRequested right) -> bool
+static Microsoft.Extensions.Compliance.Testing.RedactorRequested.operator ==(Microsoft.Extensions.Compliance.Testing.RedactorRequested left, Microsoft.Extensions.Compliance.Testing.RedactorRequested right) -> bool
+static Microsoft.Extensions.Compliance.Testing.SimpleClassifications.PrivateData.get -> Microsoft.Extensions.Compliance.Classification.DataClassification
+static Microsoft.Extensions.Compliance.Testing.SimpleClassifications.PublicData.get -> Microsoft.Extensions.Compliance.Classification.DataClassification
+static Microsoft.Extensions.Compliance.Testing.SimpleClassifications.TaxonomyName.get -> string!
+static Microsoft.Extensions.Compliance.Testing.SimpleTaxonomyExtensions.AsSimpleTaxonomy(this Microsoft.Extensions.Compliance.Classification.DataClassification classification) -> Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy

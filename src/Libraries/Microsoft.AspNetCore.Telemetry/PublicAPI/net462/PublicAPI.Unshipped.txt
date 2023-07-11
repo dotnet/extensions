@@ -1,0 +1,28 @@
+Microsoft.AspNetCore.Telemetry.HttpTracingExtensions
+Microsoft.AspNetCore.Telemetry.HttpTracingOptions
+Microsoft.AspNetCore.Telemetry.HttpTracingOptions.ExcludePathStartsWith.get -> System.Collections.Generic.ISet<string!>!
+Microsoft.AspNetCore.Telemetry.HttpTracingOptions.ExcludePathStartsWith.set -> void
+Microsoft.AspNetCore.Telemetry.HttpTracingOptions.HttpTracingOptions() -> void
+Microsoft.AspNetCore.Telemetry.HttpTracingOptions.IncludePath.get -> bool
+Microsoft.AspNetCore.Telemetry.HttpTracingOptions.IncludePath.set -> void
+Microsoft.AspNetCore.Telemetry.HttpTracingOptions.RequestPathParameterRedactionMode.get -> Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode
+Microsoft.AspNetCore.Telemetry.HttpTracingOptions.RequestPathParameterRedactionMode.set -> void
+Microsoft.AspNetCore.Telemetry.HttpTracingOptions.RouteParameterDataClasses.get -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Compliance.Classification.DataClassification>!
+Microsoft.AspNetCore.Telemetry.HttpTracingOptions.RouteParameterDataClasses.set -> void
+Microsoft.AspNetCore.Telemetry.IHttpTraceEnricher
+Microsoft.AspNetCore.Telemetry.IHttpTraceEnricher.Enrich(System.Diagnostics.Activity! activity, Microsoft.AspNetCore.Http.HttpRequest! request) -> void
+Microsoft.AspNetCore.Telemetry.RequestHeadersEnricherExtensions
+Microsoft.AspNetCore.Telemetry.RequestHeadersLogEnricherOptions
+Microsoft.AspNetCore.Telemetry.RequestHeadersLogEnricherOptions.HeadersDataClasses.get -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Compliance.Classification.DataClassification>!
+Microsoft.AspNetCore.Telemetry.RequestHeadersLogEnricherOptions.HeadersDataClasses.set -> void
+Microsoft.AspNetCore.Telemetry.RequestHeadersLogEnricherOptions.RequestHeadersLogEnricherOptions() -> void
+static Microsoft.AspNetCore.Telemetry.HttpTracingExtensions.AddHttpTraceEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Telemetry.IHttpTraceEnricher! enricher) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.HttpTracingExtensions.AddHttpTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder! builder, Microsoft.AspNetCore.Telemetry.IHttpTraceEnricher! enricher) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.AspNetCore.Telemetry.HttpTracingExtensions.AddHttpTraceEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.HttpTracingExtensions.AddHttpTraceEnricher<T>(this OpenTelemetry.Trace.TracerProviderBuilder! builder) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.AspNetCore.Telemetry.HttpTracingExtensions.AddHttpTracing(this OpenTelemetry.Trace.TracerProviderBuilder! builder) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.AspNetCore.Telemetry.HttpTracingExtensions.AddHttpTracing(this OpenTelemetry.Trace.TracerProviderBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.AspNetCore.Telemetry.HttpTracingExtensions.AddHttpTracing(this OpenTelemetry.Trace.TracerProviderBuilder! builder, System.Action<Microsoft.AspNetCore.Telemetry.HttpTracingOptions!>! configure) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.AspNetCore.Telemetry.RequestHeadersEnricherExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.RequestHeadersEnricherExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.RequestHeadersEnricherExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Telemetry.RequestHeadersLogEnricherOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

@@ -1,0 +1,9 @@
+Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions
+Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions.Capacity.get -> int
+Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions.Capacity.set -> void
+Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions.DependencyInjectionPoolOptions() -> void
+Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions
+static Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions.AddPooled<TService, TImplementation>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions.AddPooled<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions.ConfigurePool<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions.ConfigurePools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

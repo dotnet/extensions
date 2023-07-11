@@ -1,0 +1,4 @@
+Microsoft.Gen.Logging.LoggingGenerator
+Microsoft.Gen.Logging.LoggingGenerator.Execute(Microsoft.CodeAnalysis.GeneratorExecutionContext context) -> void
+Microsoft.Gen.Logging.LoggingGenerator.Initialize(Microsoft.CodeAnalysis.GeneratorInitializationContext context) -> void
+Microsoft.Gen.Logging.LoggingGenerator.LoggingGenerator() -> void

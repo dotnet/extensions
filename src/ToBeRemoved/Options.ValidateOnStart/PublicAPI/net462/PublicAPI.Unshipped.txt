@@ -1,0 +1,5 @@
+Microsoft.Extensions.Options.Validation.OptionsBuilderExtensions
+Microsoft.Extensions.Options.Validation.ValidateOptionsResultExtensions
+static Microsoft.Extensions.Options.Validation.OptionsBuilderExtensions.AddValidatedOptions<TOptions, TValidateOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string? name = null) -> Microsoft.Extensions.Options.OptionsBuilder<TOptions!>!
+static Microsoft.Extensions.Options.Validation.OptionsBuilderExtensions.AddValidatedOptions<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string? name = null) -> Microsoft.Extensions.Options.OptionsBuilder<TOptions!>!
+static Microsoft.Extensions.Options.Validation.ValidateOptionsResultExtensions.ThrowIfFailed(this Microsoft.Extensions.Options.ValidateOptionsResult! result) -> void

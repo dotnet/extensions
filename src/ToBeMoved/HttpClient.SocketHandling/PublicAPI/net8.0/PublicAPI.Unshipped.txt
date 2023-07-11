@@ -1,0 +1,33 @@
+Microsoft.Extensions.HttpClient.SocketHandling.HttpClientSocketHandlingExtensions
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder.ConfigureClientCertificate(System.Func<System.IServiceProvider!, System.Security.Cryptography.X509Certificates.X509Certificate2!>! clientCertificate) -> Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder!
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder.ConfigureHandler(System.Action<System.IServiceProvider!, System.Net.Http.SocketsHttpHandler!>! configure) -> Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder!
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder.ConfigureHandler(System.Action<System.Net.Http.SocketsHttpHandler!>! configure) -> Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder!
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder.ConfigureOptions(Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder!
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder.ConfigureOptions(System.Action<Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions!>! configure) -> Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder!
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder.DisableRemoteCertificateValidation() -> Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder!
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder.Name.get -> string!
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder.SocketsHttpHandlerBuilder(Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder) -> void
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.AllowAutoRedirect.get -> bool
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.AllowAutoRedirect.set -> void
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.AutomaticDecompression.get -> System.Net.DecompressionMethods
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.AutomaticDecompression.set -> void
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.ConnectTimeout.get -> System.TimeSpan
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.ConnectTimeout.set -> void
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.KeepAlivePingDelay.get -> System.TimeSpan
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.KeepAlivePingDelay.set -> void
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.KeepAlivePingTimeout.get -> System.TimeSpan
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.KeepAlivePingTimeout.set -> void
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.MaxConnectionsPerServer.get -> int
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.MaxConnectionsPerServer.set -> void
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.PooledConnectionIdleTimeout.get -> System.TimeSpan
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.PooledConnectionIdleTimeout.set -> void
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.PooledConnectionLifetime.get -> System.TimeSpan
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.PooledConnectionLifetime.set -> void
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.SocketsHttpHandlerOptions() -> void
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.UseCookies.get -> bool
+Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerOptions.UseCookies.set -> void
+static Microsoft.Extensions.HttpClient.SocketHandling.HttpClientSocketHandlingExtensions.AddSocketsHttpHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static Microsoft.Extensions.HttpClient.SocketHandling.HttpClientSocketHandlingExtensions.AddSocketsHttpHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, System.Action<Microsoft.Extensions.HttpClient.SocketHandling.SocketsHttpHandlerBuilder!>! configure) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!

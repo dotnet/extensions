@@ -1,0 +1,63 @@
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.CountersSetup
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitor
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitor.GetUtilization(System.TimeSpan window) -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder.AddPublisher<T>() -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationPublisher
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceUtilizationPublisher.PublishAsync(Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization utilization, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxResourceUtilizationCounters
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxResourceUtilizationProviderOptions
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxResourceUtilizationProviderOptions.CpuConsumptionRefreshInterval.get -> System.TimeSpan
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxResourceUtilizationProviderOptions.CpuConsumptionRefreshInterval.set -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxResourceUtilizationProviderOptions.LinuxResourceUtilizationProviderOptions() -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxResourceUtilizationProviderOptions.MemoryConsumptionRefreshInterval.get -> System.TimeSpan
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxResourceUtilizationProviderOptions.MemoryConsumptionRefreshInterval.set -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxUtilizationExtensions
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.NullUtilizationExtensions
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.CalculationPeriod.get -> System.TimeSpan
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.CalculationPeriod.set -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.CollectionWindow.get -> System.TimeSpan
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.CollectionWindow.set -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.ResourceMonitoringOptions() -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.SamplingInterval.get -> System.TimeSpan
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.SamplingInterval.set -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.SystemResources
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.SystemResources.GuaranteedCpuUnits.get -> double
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.SystemResources.GuaranteedMemoryInBytes.get -> ulong
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.SystemResources.MaximumCpuUnits.get -> double
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.SystemResources.MaximumMemoryInBytes.get -> ulong
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.SystemResources.SystemResources() -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.SystemResources.SystemResources(double guaranteedCpuUnits, double maximumCpuUnits, ulong guaranteedMemoryInBytes, ulong maximumMemoryInBytes) -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization.CpuUsedPercentage.get -> double
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization.MemoryUsedInBytes.get -> ulong
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization.MemoryUsedPercentage.get -> double
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization.SystemResources.get -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.SystemResources
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization.Utilization() -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.Utilization.Utilization(double cpuUsedPercentage, ulong memoryUsedInBytes, Microsoft.Extensions.Diagnostics.ResourceMonitoring.SystemResources systemResources) -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsCountersOptions
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsCountersOptions.CachingInterval.get -> System.TimeSpan
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsCountersOptions.CachingInterval.set -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsCountersOptions.InstanceIpAddresses.get -> System.Collections.Generic.ISet<string!>!
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsCountersOptions.InstanceIpAddresses.set -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsCountersOptions.WindowsCountersOptions() -> void
+Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.CountersSetup.PreparePerformanceCounters() -> void
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxResourceUtilizationCounters.CpuConsumptionPercentage.get -> string!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxResourceUtilizationCounters.MemoryConsumptionPercentage.get -> string!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxUtilizationExtensions.AddLinuxProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder! builder) -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxUtilizationExtensions.AddLinuxProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxUtilizationExtensions.AddLinuxProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder! builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.LinuxResourceUtilizationProviderOptions!>! configure) -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.NullUtilizationExtensions.AddNullProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder! builder) -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.AddResourceMonitoring(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.ConfigureMonitor(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.ConfigureMonitor(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder! builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions!>! configure) -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.ConfigureResourceMonitoring(this Microsoft.Extensions.Hosting.IHostBuilder! builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!>! configure) -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsCounters(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder! builder) -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsCounters(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsCounters(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder! builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsCountersOptions!>! configure) -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsPerfCounterPublisher(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder! builder) -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!
+static Microsoft.Extensions.Diagnostics.ResourceMonitoring.WindowsUtilizationExtensions.AddWindowsProvider(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder! builder) -> Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder!

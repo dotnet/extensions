@@ -1,0 +1,77 @@
+const Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.Duration = "duration" -> string!
+const Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.Host = "httpHost" -> string!
+const Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.Method = "httpMethod" -> string!
+const Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.Path = "httpPath" -> string!
+const Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.RequestBody = "httpRequestBody" -> string!
+const Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.RequestHeaderPrefix = "httpRequestHeader_" -> string!
+const Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.ResponseBody = "httpResponseBody" -> string!
+const Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.ResponseHeaderPrefix = "httpResponseHeader_" -> string!
+const Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.StatusCode = "httpStatusCode" -> string!
+const Microsoft.AspNetCore.Telemetry.RequestCheckpointConstants.ElapsedResponseProcessed = "eltrspproc" -> string!
+const Microsoft.AspNetCore.Telemetry.RequestCheckpointConstants.ElapsedTillEntryMiddleware = "eltenm" -> string!
+const Microsoft.AspNetCore.Telemetry.RequestCheckpointConstants.ElapsedTillFinished = "eltltf" -> string!
+const Microsoft.AspNetCore.Telemetry.RequestCheckpointConstants.ElapsedTillHeaders = "elthdr" -> string!
+const Microsoft.AspNetCore.Telemetry.RequestCheckpointConstants.ElapsedTillPipelineExitMiddleware = "eltexm" -> string!
+Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions
+Microsoft.AspNetCore.Telemetry.HttpLoggingServiceExtensions
+Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder
+Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder.HttpMeteringBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void
+Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.AspNetCore.Telemetry.HttpMeteringExtensions
+Microsoft.AspNetCore.Telemetry.IHttpLogEnricher
+Microsoft.AspNetCore.Telemetry.IHttpLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag! enrichmentBag, Microsoft.AspNetCore.Http.HttpRequest! request, Microsoft.AspNetCore.Http.HttpResponse! response) -> void
+Microsoft.AspNetCore.Telemetry.IIncomingRequestMetricEnricher
+Microsoft.AspNetCore.Telemetry.IIncomingRequestMetricEnricher.DimensionNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.AspNetCore.Telemetry.IncomingPathLoggingMode
+Microsoft.AspNetCore.Telemetry.IncomingPathLoggingMode.Formatted = 0 -> Microsoft.AspNetCore.Telemetry.IncomingPathLoggingMode
+Microsoft.AspNetCore.Telemetry.IncomingPathLoggingMode.Structured = 1 -> Microsoft.AspNetCore.Telemetry.IncomingPathLoggingMode
+Microsoft.AspNetCore.Telemetry.LoggingOptions
+Microsoft.AspNetCore.Telemetry.LoggingOptions.BodySizeLimit.get -> int
+Microsoft.AspNetCore.Telemetry.LoggingOptions.BodySizeLimit.set -> void
+Microsoft.AspNetCore.Telemetry.LoggingOptions.ExcludePathStartsWith.get -> System.Collections.Generic.ISet<string!>!
+Microsoft.AspNetCore.Telemetry.LoggingOptions.ExcludePathStartsWith.set -> void
+Microsoft.AspNetCore.Telemetry.LoggingOptions.LogBody.get -> bool
+Microsoft.AspNetCore.Telemetry.LoggingOptions.LogBody.set -> void
+Microsoft.AspNetCore.Telemetry.LoggingOptions.LoggingOptions() -> void
+Microsoft.AspNetCore.Telemetry.LoggingOptions.LogRequestStart.get -> bool
+Microsoft.AspNetCore.Telemetry.LoggingOptions.LogRequestStart.set -> void
+Microsoft.AspNetCore.Telemetry.LoggingOptions.RequestBodyContentTypes.get -> System.Collections.Generic.ISet<string!>!
+Microsoft.AspNetCore.Telemetry.LoggingOptions.RequestBodyContentTypes.set -> void
+Microsoft.AspNetCore.Telemetry.LoggingOptions.RequestBodyReadTimeout.get -> System.TimeSpan
+Microsoft.AspNetCore.Telemetry.LoggingOptions.RequestBodyReadTimeout.set -> void
+Microsoft.AspNetCore.Telemetry.LoggingOptions.RequestHeadersDataClasses.get -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Compliance.Classification.DataClassification>!
+Microsoft.AspNetCore.Telemetry.LoggingOptions.RequestHeadersDataClasses.set -> void
+Microsoft.AspNetCore.Telemetry.LoggingOptions.RequestPathLoggingMode.get -> Microsoft.AspNetCore.Telemetry.IncomingPathLoggingMode
+Microsoft.AspNetCore.Telemetry.LoggingOptions.RequestPathLoggingMode.set -> void
+Microsoft.AspNetCore.Telemetry.LoggingOptions.RequestPathParameterRedactionMode.get -> Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode
+Microsoft.AspNetCore.Telemetry.LoggingOptions.RequestPathParameterRedactionMode.set -> void
+Microsoft.AspNetCore.Telemetry.LoggingOptions.ResponseBodyContentTypes.get -> System.Collections.Generic.ISet<string!>!
+Microsoft.AspNetCore.Telemetry.LoggingOptions.ResponseBodyContentTypes.set -> void
+Microsoft.AspNetCore.Telemetry.LoggingOptions.ResponseHeadersDataClasses.get -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Compliance.Classification.DataClassification>!
+Microsoft.AspNetCore.Telemetry.LoggingOptions.ResponseHeadersDataClasses.set -> void
+Microsoft.AspNetCore.Telemetry.LoggingOptions.RouteParameterDataClasses.get -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Compliance.Classification.DataClassification>!
+Microsoft.AspNetCore.Telemetry.LoggingOptions.RouteParameterDataClasses.set -> void
+Microsoft.AspNetCore.Telemetry.RequestCheckpointConstants
+Microsoft.AspNetCore.Telemetry.RequestCheckpointExtensions
+Microsoft.AspNetCore.Telemetry.RequestLatencyTelemetryExtensions
+Microsoft.AspNetCore.Telemetry.RequestLatencyTelemetryOptions
+Microsoft.AspNetCore.Telemetry.RequestLatencyTelemetryOptions.LatencyDataExportTimeout.get -> System.TimeSpan
+Microsoft.AspNetCore.Telemetry.RequestLatencyTelemetryOptions.LatencyDataExportTimeout.set -> void
+Microsoft.AspNetCore.Telemetry.RequestLatencyTelemetryOptions.RequestLatencyTelemetryOptions() -> void
+static Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.DimensionNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Microsoft.AspNetCore.Telemetry.HttpLoggingServiceExtensions.AddHttpLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.HttpLoggingServiceExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.HttpLoggingServiceExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.HttpLoggingServiceExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Telemetry.LoggingOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.HttpLoggingServiceExtensions.UseHttpLoggingMiddleware(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Telemetry.HttpMeteringExtensions.AddHttpMetering(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.HttpMeteringExtensions.AddHttpMetering(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder!>? build) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.HttpMeteringExtensions.AddMetricEnricher(this Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder! builder, Microsoft.AspNetCore.Telemetry.IIncomingRequestMetricEnricher! enricher) -> Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder!
+static Microsoft.AspNetCore.Telemetry.HttpMeteringExtensions.AddMetricEnricher<T>(this Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder! builder) -> Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder!
+static Microsoft.AspNetCore.Telemetry.HttpMeteringExtensions.UseHttpMetering(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Telemetry.RequestCheckpointExtensions.AddRequestCheckpoint(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.RequestCheckpointExtensions.UseRequestCheckpoint(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Telemetry.RequestLatencyTelemetryExtensions.AddRequestLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.RequestLatencyTelemetryExtensions.AddRequestLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.RequestLatencyTelemetryExtensions.AddRequestLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Telemetry.RequestLatencyTelemetryOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Telemetry.RequestLatencyTelemetryExtensions.UseRequestLatencyTelemetry(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!

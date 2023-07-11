@@ -1,0 +1,44 @@
+abstract Microsoft.Extensions.Compliance.Redaction.Redactor.GetRedactedLength(System.ReadOnlySpan<char> input) -> int
+abstract Microsoft.Extensions.Compliance.Redaction.Redactor.Redact(System.ReadOnlySpan<char> source, System.Span<char> destination) -> int
+const Microsoft.Extensions.Compliance.Classification.DataClassification.NoneTaxonomyValue = 0 -> ulong
+const Microsoft.Extensions.Compliance.Classification.DataClassification.UnknownTaxonomyValue = 9223372036854775808 -> ulong
+Microsoft.Extensions.Compliance.Classification.DataClassification
+Microsoft.Extensions.Compliance.Classification.DataClassification.DataClassification() -> void
+Microsoft.Extensions.Compliance.Classification.DataClassification.DataClassification(string! taxonomyName, ulong value) -> void
+Microsoft.Extensions.Compliance.Classification.DataClassification.Equals(Microsoft.Extensions.Compliance.Classification.DataClassification other) -> bool
+Microsoft.Extensions.Compliance.Classification.DataClassification.TaxonomyName.get -> string!
+Microsoft.Extensions.Compliance.Classification.DataClassification.Value.get -> ulong
+Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute
+Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute.Classification.get -> Microsoft.Extensions.Compliance.Classification.DataClassification
+Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute.DataClassificationAttribute(Microsoft.Extensions.Compliance.Classification.DataClassification classification) -> void
+Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute.Notes.get -> string!
+Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute.Notes.set -> void
+Microsoft.Extensions.Compliance.Classification.NoDataClassificationAttribute
+Microsoft.Extensions.Compliance.Classification.NoDataClassificationAttribute.NoDataClassificationAttribute() -> void
+Microsoft.Extensions.Compliance.Classification.UnknownDataClassificationAttribute
+Microsoft.Extensions.Compliance.Classification.UnknownDataClassificationAttribute.UnknownDataClassificationAttribute() -> void
+Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder
+Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder.SetFallbackRedactor<T>() -> Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder!
+Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder.SetRedactor<T>(params Microsoft.Extensions.Compliance.Classification.DataClassification[]! classifications) -> Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder!
+Microsoft.Extensions.Compliance.Redaction.IRedactorProvider
+Microsoft.Extensions.Compliance.Redaction.IRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassification classification) -> Microsoft.Extensions.Compliance.Redaction.Redactor!
+Microsoft.Extensions.Compliance.Redaction.RedactionAbstractionsExtensions
+Microsoft.Extensions.Compliance.Redaction.Redactor
+Microsoft.Extensions.Compliance.Redaction.Redactor.GetRedactedLength(string? input) -> int
+Microsoft.Extensions.Compliance.Redaction.Redactor.Redact(string? source, System.Span<char> destination) -> int
+Microsoft.Extensions.Compliance.Redaction.Redactor.Redact(System.ReadOnlySpan<char> source) -> string!
+Microsoft.Extensions.Compliance.Redaction.Redactor.Redact<T>(T value, string? format = null, System.IFormatProvider? provider = null) -> string!
+Microsoft.Extensions.Compliance.Redaction.Redactor.Redact<T>(T value, System.Span<char> destination, string? format = null, System.IFormatProvider? provider = null) -> int
+Microsoft.Extensions.Compliance.Redaction.Redactor.Redactor() -> void
+override Microsoft.Extensions.Compliance.Classification.DataClassification.Equals(object? obj) -> bool
+override Microsoft.Extensions.Compliance.Classification.DataClassification.GetHashCode() -> int
+static Microsoft.Extensions.Compliance.Classification.DataClassification.Combine(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right) -> Microsoft.Extensions.Compliance.Classification.DataClassification
+static Microsoft.Extensions.Compliance.Classification.DataClassification.None.get -> Microsoft.Extensions.Compliance.Classification.DataClassification
+static Microsoft.Extensions.Compliance.Classification.DataClassification.operator !=(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right) -> bool
+static Microsoft.Extensions.Compliance.Classification.DataClassification.operator ==(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right) -> bool
+static Microsoft.Extensions.Compliance.Classification.DataClassification.operator |(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right) -> Microsoft.Extensions.Compliance.Classification.DataClassification
+static Microsoft.Extensions.Compliance.Classification.DataClassification.Unknown.get -> Microsoft.Extensions.Compliance.Classification.DataClassification
+static Microsoft.Extensions.Compliance.Redaction.RedactionAbstractionsExtensions.AppendRedacted(this System.Text.StringBuilder! stringBuilder, Microsoft.Extensions.Compliance.Redaction.Redactor! redactor, string? value) -> System.Text.StringBuilder!
+static Microsoft.Extensions.Compliance.Redaction.RedactionAbstractionsExtensions.AppendRedacted(this System.Text.StringBuilder! stringBuilder, Microsoft.Extensions.Compliance.Redaction.Redactor! redactor, System.ReadOnlySpan<char> value) -> System.Text.StringBuilder!
+virtual Microsoft.Extensions.Compliance.Redaction.Redactor.Redact(string? source) -> string!

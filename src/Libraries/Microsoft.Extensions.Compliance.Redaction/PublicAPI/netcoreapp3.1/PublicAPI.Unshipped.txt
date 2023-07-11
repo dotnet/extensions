@@ -1,0 +1,31 @@
+Microsoft.Extensions.Compliance.Redaction.ErasingRedactor
+Microsoft.Extensions.Compliance.Redaction.ErasingRedactor.ErasingRedactor() -> void
+Microsoft.Extensions.Compliance.Redaction.NullRedactor
+Microsoft.Extensions.Compliance.Redaction.NullRedactor.NullRedactor() -> void
+Microsoft.Extensions.Compliance.Redaction.NullRedactorProvider
+Microsoft.Extensions.Compliance.Redaction.NullRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassification classification) -> Microsoft.Extensions.Compliance.Redaction.Redactor!
+Microsoft.Extensions.Compliance.Redaction.NullRedactorProvider.NullRedactorProvider() -> void
+Microsoft.Extensions.Compliance.Redaction.RedactionExtensions
+Microsoft.Extensions.Compliance.Redaction.XXHash3Redactor
+Microsoft.Extensions.Compliance.Redaction.XXHash3Redactor.XXHash3Redactor(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Compliance.Redaction.XXHash3RedactorOptions!>! options) -> void
+Microsoft.Extensions.Compliance.Redaction.XXHash3RedactorOptions
+Microsoft.Extensions.Compliance.Redaction.XXHash3RedactorOptions.HashSeed.get -> ulong
+Microsoft.Extensions.Compliance.Redaction.XXHash3RedactorOptions.HashSeed.set -> void
+Microsoft.Extensions.Compliance.Redaction.XXHash3RedactorOptions.XXHash3RedactorOptions() -> void
+override Microsoft.Extensions.Compliance.Redaction.ErasingRedactor.GetRedactedLength(System.ReadOnlySpan<char> input) -> int
+override Microsoft.Extensions.Compliance.Redaction.ErasingRedactor.Redact(System.ReadOnlySpan<char> source, System.Span<char> destination) -> int
+override Microsoft.Extensions.Compliance.Redaction.NullRedactor.GetRedactedLength(System.ReadOnlySpan<char> input) -> int
+override Microsoft.Extensions.Compliance.Redaction.NullRedactor.Redact(string? source) -> string!
+override Microsoft.Extensions.Compliance.Redaction.NullRedactor.Redact(System.ReadOnlySpan<char> source, System.Span<char> destination) -> int
+override Microsoft.Extensions.Compliance.Redaction.XXHash3Redactor.GetRedactedLength(System.ReadOnlySpan<char> input) -> int
+override Microsoft.Extensions.Compliance.Redaction.XXHash3Redactor.Redact(System.ReadOnlySpan<char> source, System.Span<char> destination) -> int
+static Microsoft.Extensions.Compliance.Redaction.ErasingRedactor.Instance.get -> Microsoft.Extensions.Compliance.Redaction.ErasingRedactor!
+static Microsoft.Extensions.Compliance.Redaction.NullRedactor.Instance.get -> Microsoft.Extensions.Compliance.Redaction.NullRedactor!
+static Microsoft.Extensions.Compliance.Redaction.NullRedactorProvider.Instance.get -> Microsoft.Extensions.Compliance.Redaction.NullRedactorProvider!
+static Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.AddRedaction(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.AddRedaction(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.ConfigureRedaction(this Microsoft.Extensions.Hosting.IHostBuilder! builder) -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.ConfigureRedaction(this Microsoft.Extensions.Hosting.IHostBuilder! builder, System.Action<Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder!>! configure) -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.ConfigureRedaction(this Microsoft.Extensions.Hosting.IHostBuilder! builder, System.Action<Microsoft.Extensions.Hosting.HostBuilderContext!, Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder!>! configure) -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.SetXXHash3Redactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section, params Microsoft.Extensions.Compliance.Classification.DataClassification[]! classifications) -> Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder!
+static Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.SetXXHash3Redactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder! builder, System.Action<Microsoft.Extensions.Compliance.Redaction.XXHash3RedactorOptions!>! configure, params Microsoft.Extensions.Compliance.Classification.DataClassification[]! classifications) -> Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder!

@@ -1,0 +1,89 @@
+abstract System.Cloud.Messaging.MessageConsumer.HandleMessageProcessingFailureAsync(System.Cloud.Messaging.MessageContext! context, System.Exception! exception) -> System.Threading.Tasks.ValueTask
+abstract System.Cloud.Messaging.MessageConsumer.ProcessingStepAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+abstract System.Cloud.Messaging.MessageContext.MarkCompleteAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddMessageMiddleware<TMiddleware>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddMessageMiddleware<TMiddleware>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder, System.Func<System.IServiceProvider!, TMiddleware!>! implementationFactory) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddNamedSingleton<T>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddNamedSingleton<T>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder, string! name, System.Func<System.IServiceProvider!, T!>! implementationFactory) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddNamedSingleton<T>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder, System.Func<System.IServiceProvider!, T!>! implementationFactory) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.ConfigureMessageConsumer<TConsumer>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.ConfigureMessageConsumer<TConsumer>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder, System.Func<System.IServiceProvider!, TConsumer!>! implementationFactory) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.ConfigureMessageDestination<TDestination>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.ConfigureMessageDestination<TDestination>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder, string! name, System.Func<System.IServiceProvider!, TDestination!>! implementationFactory) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.ConfigureMessageDestination<TDestination>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder, System.Func<System.IServiceProvider!, TDestination!>! implementationFactory) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.ConfigureMessageSource<TSource>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.ConfigureMessageSource<TSource>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder, System.Func<System.IServiceProvider!, TSource!>! implementationFactory) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.ConfigureTerminalMessageDelegate(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.ConfigureTerminalMessageDelegate(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder, System.Func<System.IServiceProvider!, System.Cloud.Messaging.MessageDelegate!>! implementationFactory) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.RunConsumerAsBackgroundService(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder) -> void
+static System.Cloud.Messaging.LatencyRecorderMiddlewareExtensions.AddLatencyContextMiddleware(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.LatencyRecorderMiddlewareExtensions.AddLatencyContextMiddleware<T>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder, System.Func<System.IServiceProvider!, T!>! implementationFactory) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.LatencyRecorderMiddlewareExtensions.AddLatencyContextMiddleware<T>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder, System.Func<System.IServiceProvider!, T!>! implementationFactory, System.Func<System.IServiceProvider!, System.Collections.Generic.IEnumerable<Microsoft.Extensions.Telemetry.Latency.ILatencyDataExporter!>!>! exporterFactory) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.LatencyRecorderMiddlewareExtensions.AddLatencyRecorderMessageMiddleware(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder! pipelineBuilder, Microsoft.Extensions.Telemetry.Latency.MeasureToken successMeasureToken, Microsoft.Extensions.Telemetry.Latency.MeasureToken failureMeasureToken) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.MessageLatencyContextFeatureExtensions.SetLatencyContext(this System.Cloud.Messaging.MessageContext! context, Microsoft.Extensions.Telemetry.Latency.ILatencyContext! latencyContext) -> void
+static System.Cloud.Messaging.MessageLatencyContextFeatureExtensions.TryGetLatencyContext(this System.Cloud.Messaging.MessageContext! context, out Microsoft.Extensions.Telemetry.Latency.ILatencyContext? latencyContext) -> bool
+static System.Cloud.Messaging.MessagePostponeFeatureExtensions.PostponeAsync(this System.Cloud.Messaging.MessageContext! context, System.TimeSpan delay, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+static System.Cloud.Messaging.MessagePostponeFeatureExtensions.SetMessagePostponeFeature(this System.Cloud.Messaging.MessageContext! context, System.Cloud.Messaging.IMessagePostponeFeature! messagePostponeFeature) -> void
+static System.Cloud.Messaging.MessageVisibilityDelayFeatureExtensions.SetVisibilityDelay(this System.Cloud.Messaging.MessageContext! context, System.TimeSpan visibilityDelay) -> void
+static System.Cloud.Messaging.MessageVisibilityDelayFeatureExtensions.TryGetVisibilityDelay(this System.Cloud.Messaging.MessageContext! context, out System.Cloud.Messaging.IMessageVisibilityDelayFeature? visibilityDelay) -> bool
+static System.Cloud.Messaging.SerializedMessagePayloadFeatureExtensions.GetSerializedPayload<T>(this System.Cloud.Messaging.MessageContext! context) -> T
+static System.Cloud.Messaging.SerializedMessagePayloadFeatureExtensions.SetSerializedPayload<T>(this System.Cloud.Messaging.MessageContext! context, T payload) -> void
+static System.Cloud.Messaging.SerializedMessagePayloadFeatureExtensions.TryGetSerializedPayload<T>(this System.Cloud.Messaging.MessageContext! context, out T? payload) -> bool
+static System.Cloud.Messaging.ServiceCollectionExtensions.AddAsyncPipeline(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! pipelineName) -> System.Cloud.Messaging.IAsyncProcessingPipelineBuilder!
+static System.Cloud.Messaging.ServiceProviderExtensions.GetMessageDelegate(this System.IServiceProvider! serviceProvider, string! pipelineName) -> System.Cloud.Messaging.MessageDelegate!
+static System.Cloud.Messaging.ServiceProviderExtensions.GetMessageMiddlewares(this System.IServiceProvider! serviceProvider, string! pipelineName) -> System.Collections.Generic.IReadOnlyList<System.Cloud.Messaging.IMessageMiddleware!>!
+static System.Cloud.Messaging.ServiceProviderExtensions.GetMessageSource(this System.IServiceProvider! serviceProvider, string! pipelineName) -> System.Cloud.Messaging.IMessageSource!
+System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions
+System.Cloud.Messaging.DefaultMessageConsumer
+System.Cloud.Messaging.DefaultMessageConsumer.DefaultMessageConsumer(System.Cloud.Messaging.IMessageSource! messageSource, System.Collections.Generic.IReadOnlyList<System.Cloud.Messaging.IMessageMiddleware!>! middlewares, System.Cloud.Messaging.MessageDelegate! messageDelegate, Microsoft.Extensions.Logging.ILogger! logger) -> void
+System.Cloud.Messaging.IAsyncProcessingPipelineBuilder
+System.Cloud.Messaging.IAsyncProcessingPipelineBuilder.PipelineName.get -> string!
+System.Cloud.Messaging.IAsyncProcessingPipelineBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+System.Cloud.Messaging.IMessageDestination
+System.Cloud.Messaging.IMessageDestination.WriteAsync(System.Cloud.Messaging.MessageContext! context) -> System.Threading.Tasks.ValueTask
+System.Cloud.Messaging.IMessageMiddleware
+System.Cloud.Messaging.IMessageMiddleware.InvokeAsync(System.Cloud.Messaging.MessageContext! context, System.Cloud.Messaging.MessageDelegate! nextHandler) -> System.Threading.Tasks.ValueTask
+System.Cloud.Messaging.IMessagePostponeFeature
+System.Cloud.Messaging.IMessagePostponeFeature.PostponeAsync(System.TimeSpan delay, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+System.Cloud.Messaging.IMessageSource
+System.Cloud.Messaging.IMessageSource.ReadAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.Cloud.Messaging.MessageContext!>
+System.Cloud.Messaging.IMessageSource.Release(System.Cloud.Messaging.MessageContext! context) -> void
+System.Cloud.Messaging.IMessageVisibilityDelayFeature
+System.Cloud.Messaging.IMessageVisibilityDelayFeature.VisibilityDelay.get -> System.TimeSpan
+System.Cloud.Messaging.ISerializedMessagePayloadFeature<T>
+System.Cloud.Messaging.ISerializedMessagePayloadFeature<T>.Payload.get -> T
+System.Cloud.Messaging.LatencyRecorderMiddlewareExtensions
+System.Cloud.Messaging.MessageConsumer
+System.Cloud.Messaging.MessageConsumer.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+System.Cloud.Messaging.MessageConsumer.MessageConsumer(System.Cloud.Messaging.IMessageSource! messageSource, System.Collections.Generic.IReadOnlyList<System.Cloud.Messaging.IMessageMiddleware!>! messageMiddlewares, System.Cloud.Messaging.MessageDelegate! terminalDelegate, Microsoft.Extensions.Logging.ILogger! logger) -> void
+System.Cloud.Messaging.MessageConsumer.MessageSource.get -> System.Cloud.Messaging.IMessageSource!
+System.Cloud.Messaging.MessageConsumer.PipelineDelegate.get -> System.Cloud.Messaging.MessageDelegate!
+System.Cloud.Messaging.MessageContext
+System.Cloud.Messaging.MessageContext.AddDestinationFeature<T>(T feature) -> void
+System.Cloud.Messaging.MessageContext.AddFeature<T>(T feature) -> void
+System.Cloud.Messaging.MessageContext.AddSourceFeature<T>(T feature) -> void
+System.Cloud.Messaging.MessageContext.DestinationFeatures.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection?
+System.Cloud.Messaging.MessageContext.DestinationPayload.get -> System.ReadOnlyMemory<byte>?
+System.Cloud.Messaging.MessageContext.Features.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection!
+System.Cloud.Messaging.MessageContext.GetUTF8SourcePayloadAsString() -> string!
+System.Cloud.Messaging.MessageContext.MessageCancelledToken.get -> System.Threading.CancellationToken
+System.Cloud.Messaging.MessageContext.MessageCancelledToken.set -> void
+System.Cloud.Messaging.MessageContext.MessageContext(Microsoft.AspNetCore.Http.Features.IFeatureCollection! features, System.ReadOnlyMemory<byte> sourcePayload) -> void
+System.Cloud.Messaging.MessageContext.SetDestinationPayload(System.ReadOnlyMemory<byte> payload) -> void
+System.Cloud.Messaging.MessageContext.SourceFeatures.get -> Microsoft.AspNetCore.Http.Features.IFeatureCollection?
+System.Cloud.Messaging.MessageContext.SourcePayload.get -> System.ReadOnlyMemory<byte>
+System.Cloud.Messaging.MessageContext.TryGetUTF8DestinationPayloadAsString(out string? payload) -> bool
+System.Cloud.Messaging.MessageDelegate
+System.Cloud.Messaging.MessageLatencyContextFeatureExtensions
+System.Cloud.Messaging.MessagePostponeFeatureExtensions
+System.Cloud.Messaging.MessageVisibilityDelayFeatureExtensions
+System.Cloud.Messaging.SerializedMessagePayloadFeatureExtensions
+System.Cloud.Messaging.ServiceCollectionExtensions
+System.Cloud.Messaging.ServiceProviderExtensions
+virtual System.Cloud.Messaging.MessageConsumer.ExecuteAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+virtual System.Cloud.Messaging.MessageConsumer.FetchAndProcessMessageAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask
+virtual System.Cloud.Messaging.MessageConsumer.FetchMessageAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.Cloud.Messaging.MessageContext!>
+virtual System.Cloud.Messaging.MessageConsumer.HandleMessageProcessingCompletionAsync(System.Cloud.Messaging.MessageContext! context) -> System.Threading.Tasks.ValueTask
+virtual System.Cloud.Messaging.MessageConsumer.ProcessMessageAsync(System.Cloud.Messaging.MessageContext! context) -> System.Threading.Tasks.ValueTask
+virtual System.Cloud.Messaging.MessageConsumer.ReleaseContext(System.Cloud.Messaging.MessageContext! messageContext) -> void
+virtual System.Cloud.Messaging.MessageConsumer.ShouldStopConsumer(System.Cloud.Messaging.MessageContext! messageContext) -> bool

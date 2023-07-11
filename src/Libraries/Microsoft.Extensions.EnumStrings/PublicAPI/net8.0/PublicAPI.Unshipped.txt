@@ -1,0 +1,12 @@
+Microsoft.Extensions.EnumStrings.EnumStringsAttribute
+Microsoft.Extensions.EnumStrings.EnumStringsAttribute.EnumStringsAttribute() -> void
+Microsoft.Extensions.EnumStrings.EnumStringsAttribute.EnumStringsAttribute(System.Type! enumType) -> void
+Microsoft.Extensions.EnumStrings.EnumStringsAttribute.EnumType.get -> System.Type?
+Microsoft.Extensions.EnumStrings.EnumStringsAttribute.ExtensionClassModifiers.get -> string!
+Microsoft.Extensions.EnumStrings.EnumStringsAttribute.ExtensionClassModifiers.set -> void
+Microsoft.Extensions.EnumStrings.EnumStringsAttribute.ExtensionClassName.get -> string?
+Microsoft.Extensions.EnumStrings.EnumStringsAttribute.ExtensionClassName.set -> void
+Microsoft.Extensions.EnumStrings.EnumStringsAttribute.ExtensionMethodName.get -> string!
+Microsoft.Extensions.EnumStrings.EnumStringsAttribute.ExtensionMethodName.set -> void
+Microsoft.Extensions.EnumStrings.EnumStringsAttribute.ExtensionNamespace.get -> string?
+Microsoft.Extensions.EnumStrings.EnumStringsAttribute.ExtensionNamespace.set -> void

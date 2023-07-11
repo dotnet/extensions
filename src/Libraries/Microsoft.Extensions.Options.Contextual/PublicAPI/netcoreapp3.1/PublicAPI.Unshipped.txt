@@ -1,0 +1,33 @@
+Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions
+Microsoft.Extensions.Options.Contextual.IConfigureContextualOptions<TOptions>
+Microsoft.Extensions.Options.Contextual.IConfigureContextualOptions<TOptions>.Configure(TOptions! options) -> void
+Microsoft.Extensions.Options.Contextual.IContextualOptions<TOptions>
+Microsoft.Extensions.Options.Contextual.IContextualOptions<TOptions>.GetAsync<TContext>(in TContext context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<TOptions!>
+Microsoft.Extensions.Options.Contextual.IContextualOptionsFactory<TOptions>
+Microsoft.Extensions.Options.Contextual.IContextualOptionsFactory<TOptions>.CreateAsync<TContext>(string! name, in TContext context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<TOptions!>
+Microsoft.Extensions.Options.Contextual.ILoadContextualOptions<TOptions>
+Microsoft.Extensions.Options.Contextual.ILoadContextualOptions<TOptions>.LoadAsync<TContext>(string! name, in TContext context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<Microsoft.Extensions.Options.Contextual.IConfigureContextualOptions<TOptions!>!>
+Microsoft.Extensions.Options.Contextual.INamedContextualOptions<TOptions>
+Microsoft.Extensions.Options.Contextual.INamedContextualOptions<TOptions>.GetAsync<TContext>(string! name, in TContext context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<TOptions!>
+Microsoft.Extensions.Options.Contextual.IOptionsContext
+Microsoft.Extensions.Options.Contextual.IOptionsContext.PopulateReceiver<T>(T receiver) -> void
+Microsoft.Extensions.Options.Contextual.IOptionsContextReceiver
+Microsoft.Extensions.Options.Contextual.IOptionsContextReceiver.Receive<T>(string! key, T value) -> void
+Microsoft.Extensions.Options.Contextual.IPostConfigureContextualOptions<TOptions>
+Microsoft.Extensions.Options.Contextual.IPostConfigureContextualOptions<TOptions>.PostConfigure<TContext>(string! name, in TContext context, TOptions! options) -> void
+Microsoft.Extensions.Options.Contextual.IValidateContextualOptions<TOptions>
+Microsoft.Extensions.Options.Contextual.IValidateContextualOptions<TOptions>.Validate(string? name, TOptions! options) -> Microsoft.Extensions.Options.ValidateOptionsResult!
+Microsoft.Extensions.Options.Contextual.NullConfigureContextualOptions
+Microsoft.Extensions.Options.Contextual.OptionsContextAttribute
+Microsoft.Extensions.Options.Contextual.OptionsContextAttribute.OptionsContextAttribute() -> void
+static Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.AddContextualOptions(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.Configure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! name, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext!, TOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.Configure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! name, System.Func<Microsoft.Extensions.Options.Contextual.IOptionsContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<Microsoft.Extensions.Options.Contextual.IConfigureContextualOptions<TOptions!>!>>! loadOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.Configure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext!, TOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.Configure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Func<Microsoft.Extensions.Options.Contextual.IOptionsContext!, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<Microsoft.Extensions.Options.Contextual.IConfigureContextualOptions<TOptions!>!>>! loadOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.PostConfigure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string? name, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext!, TOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.PostConfigure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext!, TOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.PostConfigureAll<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext!, TOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.ValidateContextualOptions<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! name, System.Func<TOptions!, bool>! validate, string! failureMessage) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.ValidateContextualOptions<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Func<TOptions!, bool>! validate, string! failureMessage) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Options.Contextual.NullConfigureContextualOptions.GetInstance<TOptions>() -> Microsoft.Extensions.Options.Contextual.IConfigureContextualOptions<TOptions!>!

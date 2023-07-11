@@ -1,0 +1,25 @@
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummarizationExtensions
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary.AdditionalDetails.get -> string!
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary.Description.get -> string!
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary.Equals(Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary other) -> bool
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary.ExceptionSummary() -> void
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary.ExceptionSummary(string! exceptionType, string! description, string! additionalDetails) -> void
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary.ExceptionType.get -> string!
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder.AddProvider<T>() -> Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder!
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizer
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizer.Summarize(System.Exception! exception) -> Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummaryProvider
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummaryProvider.Describe(System.Exception! exception, out string? additionalDetails) -> int
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummaryProvider.Descriptions.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummaryProvider.SupportedExceptionTypes.get -> System.Collections.Generic.IEnumerable<System.Type!>!
+override Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary.Equals(object? obj) -> bool
+override Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary.GetHashCode() -> int
+override Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary.ToString() -> string!
+static Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummarizationExtensions.AddExceptionSummarizer(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummarizationExtensions.AddExceptionSummarizer(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummarizationExtensions.AddHttpProvider(this Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder! builder) -> Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder!
+static Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary.operator !=(Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary left, Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary right) -> bool
+static Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary.operator ==(Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary left, Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummary right) -> bool

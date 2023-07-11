@@ -1,0 +1,168 @@
+const Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherDimensions.ProcessId = "pid" -> string!
+const Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherDimensions.ThreadId = "tid" -> string!
+const Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.ApplicationName = "env_app_name" -> string!
+const Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.BuildVersion = "env_cloud_roleVer" -> string!
+const Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.DeploymentRing = "env_cloud_deploymentRing" -> string!
+const Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.EnvironmentName = "env_cloud_env" -> string!
+Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherDimensions
+Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherExtensions
+Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions
+Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions.ProcessId.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions.ProcessId.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions.ProcessLogEnricherOptions() -> void
+Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions.ThreadId.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions.ThreadId.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions
+Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions
+Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions
+Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.ApplicationName.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.ApplicationName.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.BuildVersion.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.BuildVersion.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.DeploymentRing.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.DeploymentRing.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.EnvironmentName.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.EnvironmentName.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.ServiceLogEnricherOptions() -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions
+Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.ApplicationName.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.ApplicationName.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.BuildVersion.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.BuildVersion.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.DeploymentRing.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.DeploymentRing.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.EnvironmentName.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.EnvironmentName.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.ServiceMetricEnricherOptions() -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions
+Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.ApplicationName.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.ApplicationName.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.BuildVersion.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.BuildVersion.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.DeploymentRing.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.DeploymentRing.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.EnvironmentName.get -> bool
+Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.EnvironmentName.set -> void
+Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.ServiceTraceEnricherOptions() -> void
+Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions
+Microsoft.Extensions.Telemetry.Latency.LatencyConsoleExtensions
+Microsoft.Extensions.Telemetry.Latency.LatencyContextExtensions
+Microsoft.Extensions.Telemetry.Latency.LatencyContextOptions
+Microsoft.Extensions.Telemetry.Latency.LatencyContextOptions.LatencyContextOptions() -> void
+Microsoft.Extensions.Telemetry.Latency.LatencyContextOptions.ThrowOnUnregisteredNames.get -> bool
+Microsoft.Extensions.Telemetry.Latency.LatencyContextOptions.ThrowOnUnregisteredNames.set -> void
+Microsoft.Extensions.Telemetry.LatencyConsoleOptions
+Microsoft.Extensions.Telemetry.LatencyConsoleOptions.LatencyConsoleOptions() -> void
+Microsoft.Extensions.Telemetry.LatencyConsoleOptions.OutputCheckpoints.get -> bool
+Microsoft.Extensions.Telemetry.LatencyConsoleOptions.OutputCheckpoints.set -> void
+Microsoft.Extensions.Telemetry.LatencyConsoleOptions.OutputMeasures.get -> bool
+Microsoft.Extensions.Telemetry.LatencyConsoleOptions.OutputMeasures.set -> void
+Microsoft.Extensions.Telemetry.LatencyConsoleOptions.OutputTags.get -> bool
+Microsoft.Extensions.Telemetry.LatencyConsoleOptions.OutputTags.set -> void
+Microsoft.Extensions.Telemetry.Logging.LoggerProvider
+Microsoft.Extensions.Telemetry.Logging.LoggerProvider.CreateLogger(string! categoryName) -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.Extensions.Telemetry.Logging.LoggerProvider.SetScopeProvider(Microsoft.Extensions.Logging.IExternalScopeProvider! scopeProvider) -> void
+Microsoft.Extensions.Telemetry.Logging.LoggingExtensions
+Microsoft.Extensions.Telemetry.Logging.LoggingOptions
+Microsoft.Extensions.Telemetry.Logging.LoggingOptions.IncludeScopes.get -> bool
+Microsoft.Extensions.Telemetry.Logging.LoggingOptions.IncludeScopes.set -> void
+Microsoft.Extensions.Telemetry.Logging.LoggingOptions.IncludeStackTrace.get -> bool
+Microsoft.Extensions.Telemetry.Logging.LoggingOptions.IncludeStackTrace.set -> void
+Microsoft.Extensions.Telemetry.Logging.LoggingOptions.LoggingOptions() -> void
+Microsoft.Extensions.Telemetry.Logging.LoggingOptions.MaxStackTraceLength.get -> int
+Microsoft.Extensions.Telemetry.Logging.LoggingOptions.MaxStackTraceLength.set -> void
+Microsoft.Extensions.Telemetry.Logging.LoggingOptions.UseFormattedMessage.get -> bool
+Microsoft.Extensions.Telemetry.Logging.LoggingOptions.UseFormattedMessage.set -> void
+Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions
+Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.Counters.get -> System.Collections.Generic.IDictionary<string!, System.Collections.Generic.ISet<string!>!>!
+Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.Counters.set -> void
+Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.EventCountersCollectorOptions() -> void
+Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.EventListenerRecyclingInterval.get -> System.TimeSpan
+Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.EventListenerRecyclingInterval.set -> void
+Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.IncludeRecommendedDefault.get -> bool
+Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.IncludeRecommendedDefault.set -> void
+Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.SamplingInterval.get -> System.TimeSpan
+Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.SamplingInterval.set -> void
+Microsoft.Extensions.Telemetry.Metering.EventCountersExtensions
+Microsoft.Extensions.Telemetry.Metering.MeteringOptions
+Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MaxMetricPointsPerStream.get -> int
+Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MaxMetricPointsPerStream.set -> void
+Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MaxMetricStreams.get -> int
+Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MaxMetricStreams.set -> void
+Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MeteringOptions() -> void
+Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MeterState.get -> Microsoft.Extensions.Telemetry.Metering.MeteringState
+Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MeterState.set -> void
+Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MeterStateOverrides.get -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Telemetry.Metering.MeteringState>!
+Microsoft.Extensions.Telemetry.Metering.MeteringOptions.MeterStateOverrides.set -> void
+Microsoft.Extensions.Telemetry.Metering.MeteringState
+Microsoft.Extensions.Telemetry.Metering.MeteringState.Disabled = 0 -> Microsoft.Extensions.Telemetry.Metering.MeteringState
+Microsoft.Extensions.Telemetry.Metering.MeteringState.Enabled = 1 -> Microsoft.Extensions.Telemetry.Metering.MeteringState
+Microsoft.Extensions.Telemetry.Metering.OTelMeteringExtensions
+Microsoft.Extensions.Telemetry.TelemetryExtensions
+Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions
+Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions.ParentBasedSamplerOptions() -> void
+Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions.RootSamplerType.get -> Microsoft.Extensions.Telemetry.Tracing.SamplerType
+Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions.RootSamplerType.set -> void
+Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions.TraceIdRatioBasedSamplerOptions.get -> Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions?
+Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions.TraceIdRatioBasedSamplerOptions.set -> void
+Microsoft.Extensions.Telemetry.Tracing.SamplerType
+Microsoft.Extensions.Telemetry.Tracing.SamplerType.AlwaysOff = 1 -> Microsoft.Extensions.Telemetry.Tracing.SamplerType
+Microsoft.Extensions.Telemetry.Tracing.SamplerType.AlwaysOn = 0 -> Microsoft.Extensions.Telemetry.Tracing.SamplerType
+Microsoft.Extensions.Telemetry.Tracing.SamplerType.ParentBased = 3 -> Microsoft.Extensions.Telemetry.Tracing.SamplerType
+Microsoft.Extensions.Telemetry.Tracing.SamplerType.TraceIdRatioBased = 2 -> Microsoft.Extensions.Telemetry.Tracing.SamplerType
+Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions
+Microsoft.Extensions.Telemetry.Tracing.SamplingOptions
+Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.ParentBasedSamplerOptions.get -> Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions?
+Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.ParentBasedSamplerOptions.set -> void
+Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SamplerType.get -> Microsoft.Extensions.Telemetry.Tracing.SamplerType
+Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SamplerType.set -> void
+Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SamplingOptions() -> void
+Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.TraceIdRatioBasedSamplerOptions.get -> Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions?
+Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.TraceIdRatioBasedSamplerOptions.set -> void
+Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions
+Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions.Probability.get -> double
+Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions.Probability.set -> void
+Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions.TraceIdRatioBasedSamplerOptions() -> void
+static Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherDimensions.DimensionNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherExtensions.AddProcessLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherExtensions.AddProcessLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherExtensions.AddProcessLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.DimensionNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder! builder) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder! builder, System.Action<Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions!>! configure) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions.AddTraceEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher! enricher) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions.AddTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder! builder, Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher! enricher) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions.AddTraceEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions.AddTraceEnricher<T>(this OpenTelemetry.Trace.TracerProviderBuilder! builder) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.Extensions.Telemetry.Latency.LatencyConsoleExtensions.AddConsoleLatencyDataExporter(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Latency.LatencyConsoleExtensions.AddConsoleLatencyDataExporter(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Latency.LatencyConsoleExtensions.AddConsoleLatencyDataExporter(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Telemetry.LatencyConsoleOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Latency.LatencyContextExtensions.AddLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Latency.LatencyContextExtensions.AddLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Latency.LatencyContextExtensions.AddLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Telemetry.Latency.LatencyContextOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddOpenTelemetryLogging(this Microsoft.Extensions.Logging.ILoggingBuilder! builder) -> Microsoft.Extensions.Logging.ILoggingBuilder!
+static Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddOpenTelemetryLogging(this Microsoft.Extensions.Logging.ILoggingBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Logging.ILoggingBuilder!
+static Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddOpenTelemetryLogging(this Microsoft.Extensions.Logging.ILoggingBuilder! builder, System.Action<Microsoft.Extensions.Telemetry.Logging.LoggingOptions!>! configure) -> Microsoft.Extensions.Logging.ILoggingBuilder!
+static Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddProcessor(this Microsoft.Extensions.Logging.ILoggingBuilder! builder, OpenTelemetry.BaseProcessor<OpenTelemetry.Logs.LogRecord!>! processor) -> Microsoft.Extensions.Logging.ILoggingBuilder!
+static Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddProcessor<T>(this Microsoft.Extensions.Logging.ILoggingBuilder! builder) -> Microsoft.Extensions.Logging.ILoggingBuilder!
+static Microsoft.Extensions.Telemetry.Metering.EventCountersExtensions.AddEventCounterCollector(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Metering.EventCountersExtensions.AddEventCounterCollector(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Metering.OTelMeteringExtensions.AddMetering(this OpenTelemetry.Metrics.MeterProviderBuilder! builder) -> OpenTelemetry.Metrics.MeterProviderBuilder!
+static Microsoft.Extensions.Telemetry.Metering.OTelMeteringExtensions.AddMetering(this OpenTelemetry.Metrics.MeterProviderBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! configurationSection) -> OpenTelemetry.Metrics.MeterProviderBuilder!
+static Microsoft.Extensions.Telemetry.Metering.OTelMeteringExtensions.AddMetering(this OpenTelemetry.Metrics.MeterProviderBuilder! builder, System.Action<Microsoft.Extensions.Telemetry.Metering.MeteringOptions!>! configure) -> OpenTelemetry.Metrics.MeterProviderBuilder!
+static Microsoft.Extensions.Telemetry.TelemetryExtensions.AddDownstreamDependencyMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata! downstreamDependencyMetadata) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.TelemetryExtensions.AddDownstreamDependencyMetadata<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.TelemetryExtensions.GetRequestMetadata(this System.Net.Http.HttpRequestMessage! request) -> Microsoft.Extensions.Http.Telemetry.RequestMetadata?
+static Microsoft.Extensions.Telemetry.TelemetryExtensions.GetRequestMetadata(this System.Net.HttpWebRequest! request) -> Microsoft.Extensions.Http.Telemetry.RequestMetadata?
+static Microsoft.Extensions.Telemetry.TelemetryExtensions.SetRequestMetadata(this System.Net.Http.HttpRequestMessage! request, Microsoft.Extensions.Http.Telemetry.RequestMetadata! metadata) -> void
+static Microsoft.Extensions.Telemetry.TelemetryExtensions.SetRequestMetadata(this System.Net.HttpWebRequest! request, Microsoft.Extensions.Http.Telemetry.RequestMetadata! metadata) -> void
+static Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions.AddSampling(this OpenTelemetry.Trace.TracerProviderBuilder! builder) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions.AddSampling(this OpenTelemetry.Trace.TracerProviderBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions.AddSampling(this OpenTelemetry.Trace.TracerProviderBuilder! builder, System.Action<Microsoft.Extensions.Telemetry.Tracing.SamplingOptions!>! configure) -> OpenTelemetry.Trace.TracerProviderBuilder!

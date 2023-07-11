@@ -1,0 +1,77 @@
+const Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.SequentialFixAllProvider.DocumentScopeStr = "document" -> string!
+const Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.SequentialFixAllProvider.ProjectScopeStr = "project" -> string!
+Microsoft.Extensions.ExtraAnalyzers.AsyncCallInsideUsingBlockAnalyzer
+Microsoft.Extensions.ExtraAnalyzers.AsyncCallInsideUsingBlockAnalyzer.AsyncCallInsideUsingBlockAnalyzer() -> void
+Microsoft.Extensions.ExtraAnalyzers.AsyncMethodWithoutCancellation
+Microsoft.Extensions.ExtraAnalyzers.AsyncMethodWithoutCancellation.AsyncMethodWithoutCancellation() -> void
+Microsoft.Extensions.ExtraAnalyzers.CallAnalysis.CallAnalyzer
+Microsoft.Extensions.ExtraAnalyzers.CallAnalysis.CallAnalyzer.CallAnalyzer() -> void
+Microsoft.Extensions.ExtraAnalyzers.CoalesceAnalyzer
+Microsoft.Extensions.ExtraAnalyzers.CoalesceAnalyzer.CoalesceAnalyzer() -> void
+Microsoft.Extensions.ExtraAnalyzers.ConditionalAccessAnalyzer
+Microsoft.Extensions.ExtraAnalyzers.ConditionalAccessAnalyzer.ConditionalAccessAnalyzer() -> void
+Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.ISequentialFixer
+Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.ISequentialFixer.ApplyDiagnosticFixToSyntaxNode(Microsoft.CodeAnalysis.SyntaxNode! nodeToFix, Microsoft.CodeAnalysis.Diagnostic! diagnostic) -> Microsoft.CodeAnalysis.SyntaxNode!
+Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.ISequentialFixer.GetFixableSyntaxNodeFromDiagnostic(Microsoft.CodeAnalysis.SyntaxNode! documentRoot, Microsoft.CodeAnalysis.Diagnostic! diagnostic) -> Microsoft.CodeAnalysis.SyntaxNode!
+Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.SequentialFixAllCodeAction
+Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.SequentialFixAllCodeAction.SequentialFixAllCodeAction(string! fixAllTitle, Microsoft.CodeAnalysis.CodeFixes.FixAllContext! context, System.Collections.Concurrent.ConcurrentDictionary<Microsoft.CodeAnalysis.DocumentId!, System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.Diagnostic!>>! diagsToFixGroupedByDocId, System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DocumentId!> inScopeDocumentIds) -> void
+Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.SequentialFixAllProvider
+Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.SequentialFixAllProvider.SequentialFixAllProvider() -> void
+Microsoft.Extensions.ExtraAnalyzers.LegacyLoggingFixer
+Microsoft.Extensions.ExtraAnalyzers.LegacyLoggingFixer.LegacyLoggingFixer() -> void
+Microsoft.Extensions.ExtraAnalyzers.MakeExeTypesInternalAnalyzer
+Microsoft.Extensions.ExtraAnalyzers.MakeExeTypesInternalAnalyzer.MakeExeTypesInternalAnalyzer() -> void
+Microsoft.Extensions.ExtraAnalyzers.MakeExeTypesInternalFixer
+Microsoft.Extensions.ExtraAnalyzers.MakeExeTypesInternalFixer.MakeExeTypesInternalFixer() -> void
+Microsoft.Extensions.ExtraAnalyzers.OptimizeArraysAnalyzer
+Microsoft.Extensions.ExtraAnalyzers.OptimizeArraysAnalyzer.OptimizeArraysAnalyzer() -> void
+Microsoft.Extensions.ExtraAnalyzers.StringFormatFixer
+Microsoft.Extensions.ExtraAnalyzers.StringFormatFixer.StringFormatFixer() -> void
+Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveDictionaryLookupAnalyzer
+Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveDictionaryLookupAnalyzer.UsingExcessiveDictionaryLookupAnalyzer() -> void
+Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveDictionaryLookupFixer
+Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveDictionaryLookupFixer.UsingExcessiveDictionaryLookupFixer() -> void
+Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveSetLookupAnalyzer
+Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveSetLookupAnalyzer.UsingExcessiveSetLookupAnalyzer() -> void
+Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveSetLookupFixer
+Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveSetLookupFixer.UsingExcessiveSetLookupFixer() -> void
+Microsoft.Extensions.ExtraAnalyzers.UsingToStringInLoggersAnalyzer
+Microsoft.Extensions.ExtraAnalyzers.UsingToStringInLoggersAnalyzer.UsingToStringInLoggersAnalyzer() -> void
+override Microsoft.Extensions.ExtraAnalyzers.AsyncCallInsideUsingBlockAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override Microsoft.Extensions.ExtraAnalyzers.AsyncCallInsideUsingBlockAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+override Microsoft.Extensions.ExtraAnalyzers.AsyncMethodWithoutCancellation.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override Microsoft.Extensions.ExtraAnalyzers.AsyncMethodWithoutCancellation.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+override Microsoft.Extensions.ExtraAnalyzers.CallAnalysis.CallAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override Microsoft.Extensions.ExtraAnalyzers.CallAnalysis.CallAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+override Microsoft.Extensions.ExtraAnalyzers.CoalesceAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override Microsoft.Extensions.ExtraAnalyzers.CoalesceAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+override Microsoft.Extensions.ExtraAnalyzers.ConditionalAccessAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override Microsoft.Extensions.ExtraAnalyzers.ConditionalAccessAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+override Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.SequentialFixAllCodeAction.Title.get -> string!
+override Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.SequentialFixAllProvider.GetFixAsync(Microsoft.CodeAnalysis.CodeFixes.FixAllContext! fixAllContext) -> System.Threading.Tasks.Task<Microsoft.CodeAnalysis.CodeActions.CodeAction?>!
+override Microsoft.Extensions.ExtraAnalyzers.LegacyLoggingFixer.FixableDiagnosticIds.get -> System.Collections.Immutable.ImmutableArray<string!>
+override Microsoft.Extensions.ExtraAnalyzers.LegacyLoggingFixer.GetFixAllProvider() -> Microsoft.CodeAnalysis.CodeFixes.FixAllProvider!
+override Microsoft.Extensions.ExtraAnalyzers.LegacyLoggingFixer.RegisterCodeFixesAsync(Microsoft.CodeAnalysis.CodeFixes.CodeFixContext context) -> System.Threading.Tasks.Task!
+override Microsoft.Extensions.ExtraAnalyzers.MakeExeTypesInternalAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override Microsoft.Extensions.ExtraAnalyzers.MakeExeTypesInternalAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+override Microsoft.Extensions.ExtraAnalyzers.MakeExeTypesInternalFixer.FixableDiagnosticIds.get -> System.Collections.Immutable.ImmutableArray<string!>
+override Microsoft.Extensions.ExtraAnalyzers.MakeExeTypesInternalFixer.GetFixAllProvider() -> Microsoft.CodeAnalysis.CodeFixes.FixAllProvider!
+override Microsoft.Extensions.ExtraAnalyzers.MakeExeTypesInternalFixer.RegisterCodeFixesAsync(Microsoft.CodeAnalysis.CodeFixes.CodeFixContext context) -> System.Threading.Tasks.Task!
+override Microsoft.Extensions.ExtraAnalyzers.OptimizeArraysAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override Microsoft.Extensions.ExtraAnalyzers.OptimizeArraysAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+override Microsoft.Extensions.ExtraAnalyzers.StringFormatFixer.FixableDiagnosticIds.get -> System.Collections.Immutable.ImmutableArray<string!>
+override Microsoft.Extensions.ExtraAnalyzers.StringFormatFixer.GetFixAllProvider() -> Microsoft.CodeAnalysis.CodeFixes.FixAllProvider!
+override Microsoft.Extensions.ExtraAnalyzers.StringFormatFixer.RegisterCodeFixesAsync(Microsoft.CodeAnalysis.CodeFixes.CodeFixContext context) -> System.Threading.Tasks.Task!
+override Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveDictionaryLookupAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveDictionaryLookupAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+override Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveDictionaryLookupFixer.FixableDiagnosticIds.get -> System.Collections.Immutable.ImmutableArray<string!>
+override Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveDictionaryLookupFixer.GetFixAllProvider() -> Microsoft.CodeAnalysis.CodeFixes.FixAllProvider!
+override Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveDictionaryLookupFixer.RegisterCodeFixesAsync(Microsoft.CodeAnalysis.CodeFixes.CodeFixContext context) -> System.Threading.Tasks.Task!
+override Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveSetLookupAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveSetLookupAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+override Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveSetLookupFixer.FixableDiagnosticIds.get -> System.Collections.Immutable.ImmutableArray<string!>
+override Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveSetLookupFixer.GetFixAllProvider() -> Microsoft.CodeAnalysis.CodeFixes.FixAllProvider!
+override Microsoft.Extensions.ExtraAnalyzers.UsingExcessiveSetLookupFixer.RegisterCodeFixesAsync(Microsoft.CodeAnalysis.CodeFixes.CodeFixContext context) -> System.Threading.Tasks.Task!
+override Microsoft.Extensions.ExtraAnalyzers.UsingToStringInLoggersAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override Microsoft.Extensions.ExtraAnalyzers.UsingToStringInLoggersAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+static Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.SequentialFixAllProvider.GetInstance(Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.ISequentialFixer! _) -> Microsoft.Extensions.ExtraAnalyzers.FixAllProviders.SequentialFixAllProvider!

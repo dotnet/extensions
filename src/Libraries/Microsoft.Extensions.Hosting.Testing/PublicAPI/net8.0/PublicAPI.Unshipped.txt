@@ -1,0 +1,34 @@
+Microsoft.Extensions.Hosting.Testing.FakeHost
+Microsoft.Extensions.Hosting.Testing.FakeHost.Dispose() -> void
+Microsoft.Extensions.Hosting.Testing.FakeHost.Services.get -> System.IServiceProvider!
+Microsoft.Extensions.Hosting.Testing.FakeHost.StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.Extensions.Hosting.Testing.FakeHost.StopAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.FakeHostOptions() -> void
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.FakeLogging.get -> bool
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.FakeLogging.set -> void
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.FakeRedaction.get -> bool
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.FakeRedaction.set -> void
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.ShutDownTimeout.get -> System.TimeSpan
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.ShutDownTimeout.set -> void
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.StartUpTimeout.get -> System.TimeSpan
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.StartUpTimeout.set -> void
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.TimeToLive.get -> System.TimeSpan
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.TimeToLive.set -> void
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.ValidateOnBuild.get -> bool
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.ValidateOnBuild.set -> void
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.ValidateScopes.get -> bool
+Microsoft.Extensions.Hosting.Testing.FakeHostOptions.ValidateScopes.set -> void
+Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions
+static Microsoft.Extensions.Hosting.Testing.FakeHost.CreateBuilder() -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Hosting.Testing.FakeHost.CreateBuilder(Microsoft.Extensions.Hosting.Testing.FakeHostOptions! options) -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Hosting.Testing.FakeHost.CreateBuilder(System.Action<Microsoft.Extensions.Hosting.Testing.FakeHostOptions!>! configure) -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.AddFakeLoggingOutputSink(this Microsoft.Extensions.Hosting.IHostBuilder! builder, System.Action<string!>! callback) -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.Configure(this Microsoft.Extensions.Hosting.IHostBuilder! builder, System.Action<Microsoft.Extensions.Hosting.IHostBuilder!>! configure) -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.ConfigureAppConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder! builder, params (string! key, string! value)[]! configurations) -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.ConfigureAppConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder! builder, string! key, string! value) -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.ConfigureHostConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder! builder, params (string! key, string! value)[]! configurations) -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.ConfigureHostConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder! builder, string! key, string! value) -> Microsoft.Extensions.Hosting.IHostBuilder!
+static Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.GetFakeLogCollector(this Microsoft.Extensions.Hosting.IHost! host) -> Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector!
+static Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.GetFakeRedactionCollector(this Microsoft.Extensions.Hosting.IHost! host) -> Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector!
+static Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.StartAndStopAsync(this Microsoft.Extensions.Hosting.IHostedService! service, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!

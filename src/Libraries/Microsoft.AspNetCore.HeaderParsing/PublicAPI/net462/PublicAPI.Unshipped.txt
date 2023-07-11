@@ -1,0 +1,67 @@
+abstract Microsoft.AspNetCore.HeaderParsing.HeaderParser<T>.TryParse(Microsoft.Extensions.Primitives.StringValues values, out T? result, out string? error) -> bool
+Microsoft.AspNetCore.HeaderParsing.CommonHeaders
+Microsoft.AspNetCore.HeaderParsing.HeaderKey<T>
+Microsoft.AspNetCore.HeaderParsing.HeaderKey<T>.Name.get -> string!
+Microsoft.AspNetCore.HeaderParsing.HeaderParser<T>
+Microsoft.AspNetCore.HeaderParsing.HeaderParser<T>.HeaderParser() -> void
+Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions
+Microsoft.AspNetCore.HeaderParsing.HeaderParsingFeature
+Microsoft.AspNetCore.HeaderParsing.HeaderParsingFeature.TryGetHeaderValue<T>(Microsoft.AspNetCore.HeaderParsing.HeaderKey<T>! header, out T? value) -> bool
+Microsoft.AspNetCore.HeaderParsing.HeaderParsingFeature.TryGetHeaderValue<T>(Microsoft.AspNetCore.HeaderParsing.HeaderKey<T>! header, out T? value, out Microsoft.AspNetCore.HeaderParsing.ParsingResult result) -> bool
+Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions
+Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions.DefaultMaxCachedValuesPerHeader.get -> int
+Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions.DefaultMaxCachedValuesPerHeader.set -> void
+Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions.DefaultValues.get -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Primitives.StringValues>!
+Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions.DefaultValues.set -> void
+Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions.HeaderParsingOptions() -> void
+Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions.MaxCachedValuesPerHeader.get -> System.Collections.Generic.IDictionary<string!, int>!
+Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions.MaxCachedValuesPerHeader.set -> void
+Microsoft.AspNetCore.HeaderParsing.HeaderSetup<THeader>
+Microsoft.AspNetCore.HeaderParsing.HeaderSetup<THeader>.Cacheable.get -> bool
+Microsoft.AspNetCore.HeaderParsing.HeaderSetup<THeader>.HeaderName.get -> string!
+Microsoft.AspNetCore.HeaderParsing.HeaderSetup<THeader>.HeaderSetup(string! headerName, Microsoft.AspNetCore.HeaderParsing.HeaderParser<THeader>! instance, bool cacheable = false) -> void
+Microsoft.AspNetCore.HeaderParsing.HeaderSetup<THeader>.HeaderSetup(string! headerName, System.Type! parserType, bool cacheable = false) -> void
+Microsoft.AspNetCore.HeaderParsing.HeaderSetup<THeader>.ParserInstance.get -> Microsoft.AspNetCore.HeaderParsing.HeaderParser<THeader>?
+Microsoft.AspNetCore.HeaderParsing.HeaderSetup<THeader>.ParserType.get -> System.Type?
+Microsoft.AspNetCore.HeaderParsing.HostHeaderValue
+Microsoft.AspNetCore.HeaderParsing.HostHeaderValue.Equals(Microsoft.AspNetCore.HeaderParsing.HostHeaderValue other) -> bool
+Microsoft.AspNetCore.HeaderParsing.HostHeaderValue.Host.get -> string!
+Microsoft.AspNetCore.HeaderParsing.HostHeaderValue.HostHeaderValue() -> void
+Microsoft.AspNetCore.HeaderParsing.HostHeaderValue.HostHeaderValue(string! host, int? port) -> void
+Microsoft.AspNetCore.HeaderParsing.HostHeaderValue.Port.get -> int?
+Microsoft.AspNetCore.HeaderParsing.IHeaderRegistry
+Microsoft.AspNetCore.HeaderParsing.IHeaderRegistry.Register<T>(Microsoft.AspNetCore.HeaderParsing.HeaderSetup<T>! setup) -> Microsoft.AspNetCore.HeaderParsing.HeaderKey<T>!
+Microsoft.AspNetCore.HeaderParsing.ParsingResult
+Microsoft.AspNetCore.HeaderParsing.ParsingResult.Error = 1 -> Microsoft.AspNetCore.HeaderParsing.ParsingResult
+Microsoft.AspNetCore.HeaderParsing.ParsingResult.NotFound = 2 -> Microsoft.AspNetCore.HeaderParsing.ParsingResult
+Microsoft.AspNetCore.HeaderParsing.ParsingResult.Success = 0 -> Microsoft.AspNetCore.HeaderParsing.ParsingResult
+override Microsoft.AspNetCore.HeaderParsing.HeaderKey<T>.ToString() -> string!
+override Microsoft.AspNetCore.HeaderParsing.HostHeaderValue.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.HeaderParsing.HostHeaderValue.GetHashCode() -> int
+override Microsoft.AspNetCore.HeaderParsing.HostHeaderValue.ToString() -> string!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.Accept.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<System.Collections.Generic.IReadOnlyList<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!>!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.AcceptEncoding.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<System.Collections.Generic.IReadOnlyList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.AcceptLanguage.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<System.Collections.Generic.IReadOnlyList<Microsoft.Net.Http.Headers.StringWithQualityHeaderValue!>!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.CacheControl.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<Microsoft.Net.Http.Headers.CacheControlHeaderValue!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.ContentDisposition.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<Microsoft.Net.Http.Headers.ContentDispositionHeaderValue!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.ContentType.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<Microsoft.Net.Http.Headers.MediaTypeHeaderValue!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.Cookie.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<System.Collections.Generic.IReadOnlyList<Microsoft.Net.Http.Headers.CookieHeaderValue!>!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.Date.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<System.DateTimeOffset>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.Host.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<Microsoft.AspNetCore.HeaderParsing.HostHeaderValue>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.IfMatch.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<System.Collections.Generic.IReadOnlyList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.IfModifiedSince.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<System.Collections.Generic.IReadOnlyList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.IfNoneMatch.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<System.Collections.Generic.IReadOnlyList<Microsoft.Net.Http.Headers.EntityTagHeaderValue!>!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.IfRange.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<Microsoft.Net.Http.Headers.RangeConditionHeaderValue!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.IfUnmodifiedSince.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<System.DateTimeOffset>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.Range.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<Microsoft.Net.Http.Headers.RangeHeaderValue!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.Referer.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<System.Uri!>!
+static Microsoft.AspNetCore.HeaderParsing.CommonHeaders.XForwardedFor.get -> Microsoft.AspNetCore.HeaderParsing.HeaderSetup<System.Collections.Generic.IReadOnlyList<System.Net.IPAddress!>!>!
+static Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions.AddHeaderParsing(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions.AddHeaderParsing(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions.AddHeaderParsing(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions!>! configuration) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions.GetHeaderParsing(this Microsoft.AspNetCore.Http.HttpRequest! request) -> Microsoft.AspNetCore.HeaderParsing.HeaderParsingFeature!
+static Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions.TryGetHeaderValue<T>(this Microsoft.AspNetCore.Http.HttpRequest! request, Microsoft.AspNetCore.HeaderParsing.HeaderKey<T>! header, out T? value) -> bool
+static Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions.TryGetHeaderValue<T>(this Microsoft.AspNetCore.Http.HttpRequest! request, Microsoft.AspNetCore.HeaderParsing.HeaderKey<T>! header, out T? value, out Microsoft.AspNetCore.HeaderParsing.ParsingResult result) -> bool
+static Microsoft.AspNetCore.HeaderParsing.HostHeaderValue.operator !=(Microsoft.AspNetCore.HeaderParsing.HostHeaderValue left, Microsoft.AspNetCore.HeaderParsing.HostHeaderValue right) -> bool
+static Microsoft.AspNetCore.HeaderParsing.HostHeaderValue.operator ==(Microsoft.AspNetCore.HeaderParsing.HostHeaderValue left, Microsoft.AspNetCore.HeaderParsing.HostHeaderValue right) -> bool
+static Microsoft.AspNetCore.HeaderParsing.HostHeaderValue.TryParse(string! value, out Microsoft.AspNetCore.HeaderParsing.HostHeaderValue result) -> bool

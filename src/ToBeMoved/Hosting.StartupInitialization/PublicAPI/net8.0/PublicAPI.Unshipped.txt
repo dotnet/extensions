@@ -1,0 +1,14 @@
+Microsoft.Extensions.Hosting.Testing.IStartupInitializationBuilder
+Microsoft.Extensions.Hosting.Testing.IStartupInitializationBuilder.AddInitializer(System.Func<System.IServiceProvider!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! initializer) -> Microsoft.Extensions.Hosting.Testing.IStartupInitializationBuilder!
+Microsoft.Extensions.Hosting.Testing.IStartupInitializationBuilder.AddInitializer<T>() -> Microsoft.Extensions.Hosting.Testing.IStartupInitializationBuilder!
+Microsoft.Extensions.Hosting.Testing.IStartupInitializationBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.Extensions.Hosting.Testing.IStartupInitializer
+Microsoft.Extensions.Hosting.Testing.IStartupInitializer.InitializeAsync(System.Threading.CancellationToken token) -> System.Threading.Tasks.Task!
+Microsoft.Extensions.Hosting.Testing.StartupInitializationExtensions
+Microsoft.Extensions.Hosting.Testing.StartupInitializationOptions
+Microsoft.Extensions.Hosting.Testing.StartupInitializationOptions.StartupInitializationOptions() -> void
+Microsoft.Extensions.Hosting.Testing.StartupInitializationOptions.Timeout.get -> System.TimeSpan
+Microsoft.Extensions.Hosting.Testing.StartupInitializationOptions.Timeout.set -> void
+static Microsoft.Extensions.Hosting.Testing.StartupInitializationExtensions.AddStartupInitialization(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.Hosting.Testing.IStartupInitializationBuilder!
+static Microsoft.Extensions.Hosting.Testing.StartupInitializationExtensions.AddStartupInitialization(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Hosting.Testing.IStartupInitializationBuilder!
+static Microsoft.Extensions.Hosting.Testing.StartupInitializationExtensions.AddStartupInitialization(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Hosting.Testing.StartupInitializationOptions!>! configure) -> Microsoft.Extensions.Hosting.Testing.IStartupInitializationBuilder!

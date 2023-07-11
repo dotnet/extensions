@@ -1,0 +1,5 @@
+Microsoft.Gen.ComplianceReports.ComplianceReportsGenerator
+Microsoft.Gen.ComplianceReports.ComplianceReportsGenerator.ComplianceReportsGenerator() -> void
+Microsoft.Gen.ComplianceReports.ComplianceReportsGenerator.ComplianceReportsGenerator(string? filePath) -> void
+Microsoft.Gen.ComplianceReports.ComplianceReportsGenerator.Execute(Microsoft.CodeAnalysis.GeneratorExecutionContext context) -> void
+Microsoft.Gen.ComplianceReports.ComplianceReportsGenerator.Initialize(Microsoft.CodeAnalysis.GeneratorInitializationContext context) -> void

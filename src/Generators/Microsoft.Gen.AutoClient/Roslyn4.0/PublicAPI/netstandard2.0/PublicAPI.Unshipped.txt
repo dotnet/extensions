@@ -1,0 +1,3 @@
+Microsoft.Gen.AutoClient.Generator
+Microsoft.Gen.AutoClient.Generator.Generator() -> void
+Microsoft.Gen.AutoClient.Generator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context) -> void

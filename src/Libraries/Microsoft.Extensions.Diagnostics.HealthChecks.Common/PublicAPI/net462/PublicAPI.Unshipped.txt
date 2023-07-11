@@ -1,0 +1,18 @@
+Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions
+Microsoft.Extensions.Diagnostics.HealthChecks.IManualHealthCheck
+Microsoft.Extensions.Diagnostics.HealthChecks.IManualHealthCheck.Result.get -> Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult
+Microsoft.Extensions.Diagnostics.HealthChecks.IManualHealthCheck.Result.set -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.IManualHealthCheck<T>
+Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions
+Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions.LogOnlyUnhealthy.get -> bool
+Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions.LogOnlyUnhealthy.set -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions.TelemetryHealthCheckPublisherOptions() -> void
+static Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddApplicationLifecycleHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, params string![]! tags) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
+static Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddApplicationLifecycleHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, System.Collections.Generic.IEnumerable<string!>! tags) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
+static Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddManualHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, params string![]! tags) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
+static Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddManualHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, System.Collections.Generic.IEnumerable<string!>! tags) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
+static Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.ReportHealthy(this Microsoft.Extensions.Diagnostics.HealthChecks.IManualHealthCheck! manualHealthCheck) -> void
+static Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.ReportUnhealthy(this Microsoft.Extensions.Diagnostics.HealthChecks.IManualHealthCheck! manualHealthCheck, string! reason) -> void

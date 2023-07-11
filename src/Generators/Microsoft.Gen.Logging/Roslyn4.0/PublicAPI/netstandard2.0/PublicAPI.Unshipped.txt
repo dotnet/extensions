@@ -1,0 +1,3 @@
+Microsoft.Gen.Logging.LoggingGenerator
+Microsoft.Gen.Logging.LoggingGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context) -> void
+Microsoft.Gen.Logging.LoggingGenerator.LoggingGenerator() -> void

@@ -1,0 +1,26 @@
+const Microsoft.Extensions.Diagnostics.Probes.ProbeTags.Liveness = "_probe_liveness" -> string!
+const Microsoft.Extensions.Diagnostics.Probes.ProbeTags.Readiness = "_probe_readiness" -> string!
+const Microsoft.Extensions.Diagnostics.Probes.ProbeTags.Startup = "_probe_startup" -> string!
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesExtensions
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.EndpointOptions() -> void
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.FilterChecks.get -> System.Func<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration!, bool>?
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.FilterChecks.set -> void
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.MaxPendingConnections.get -> int
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.MaxPendingConnections.set -> void
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.Period.get -> System.TimeSpan
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.Period.set -> void
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.TcpPort.get -> int
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.TcpPort.set -> void
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.KubernetesProbesOptions() -> void
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.LivenessProbe.get -> Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions!
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.LivenessProbe.set -> void
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.ReadinessProbe.get -> Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions!
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.ReadinessProbe.set -> void
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.StartupProbe.get -> Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions!
+Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.StartupProbe.set -> void
+Microsoft.Extensions.Diagnostics.Probes.ProbeTags
+static Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesExtensions.AddKubernetesProbes(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesExtensions.AddKubernetesProbes(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesExtensions.AddKubernetesProbes(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

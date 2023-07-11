@@ -1,0 +1,4 @@
+Microsoft.Gen.MeteringReports.MeteringReportsGenerator
+Microsoft.Gen.MeteringReports.MeteringReportsGenerator.Execute(Microsoft.CodeAnalysis.GeneratorExecutionContext context) -> void
+Microsoft.Gen.MeteringReports.MeteringReportsGenerator.Initialize(Microsoft.CodeAnalysis.GeneratorInitializationContext context) -> void
+Microsoft.Gen.MeteringReports.MeteringReportsGenerator.MeteringReportsGenerator() -> void

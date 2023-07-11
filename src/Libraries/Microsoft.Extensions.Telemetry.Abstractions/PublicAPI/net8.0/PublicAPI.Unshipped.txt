@@ -1,0 +1,205 @@
+const Microsoft.Extensions.Http.Telemetry.TelemetryConstants.ClientApplicationNameHeader = "X-ClientApplication" -> string!
+const Microsoft.Extensions.Http.Telemetry.TelemetryConstants.Redacted = "REDACTED" -> string!
+const Microsoft.Extensions.Http.Telemetry.TelemetryConstants.RequestMetadataKey = "R9-RequestMetadata" -> string!
+const Microsoft.Extensions.Http.Telemetry.TelemetryConstants.ServerApplicationNameHeader = "X-ServerApplication" -> string!
+const Microsoft.Extensions.Http.Telemetry.TelemetryConstants.Unknown = "unknown" -> string!
+Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode
+Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.Loose = 1 -> Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode
+Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.None = 2 -> Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode
+Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.Strict = 0 -> Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode
+Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata
+Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata.DependencyName.get -> string!
+Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata.RequestMetadata.get -> System.Collections.Generic.ISet<Microsoft.Extensions.Http.Telemetry.RequestMetadata!>!
+Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata.UniqueHostNameSuffixes.get -> System.Collections.Generic.ISet<string!>!
+Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext
+Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext.RequestMetadata.get -> Microsoft.Extensions.Http.Telemetry.RequestMetadata?
+Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext.SetRequestMetadata(Microsoft.Extensions.Http.Telemetry.RequestMetadata! metadata) -> void
+Microsoft.Extensions.Http.Telemetry.RequestMetadata
+Microsoft.Extensions.Http.Telemetry.RequestMetadata.DependencyName.get -> string!
+Microsoft.Extensions.Http.Telemetry.RequestMetadata.DependencyName.set -> void
+Microsoft.Extensions.Http.Telemetry.RequestMetadata.MethodType.get -> string!
+Microsoft.Extensions.Http.Telemetry.RequestMetadata.MethodType.set -> void
+Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestMetadata() -> void
+Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestMetadata(string! methodType, string! requestRoute, string! requestName = "unknown") -> void
+Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestName.get -> string!
+Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestName.set -> void
+Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestRoute.get -> string!
+Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestRoute.set -> void
+Microsoft.Extensions.Http.Telemetry.TelemetryConstants
+Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions
+Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag
+Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(string! key, object! value) -> void
+Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(string! key, string! value) -> void
+Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string!, object!>> properties) -> void
+Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string!, string!>> properties) -> void
+Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher
+Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag! bag) -> void
+Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher
+Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag! bag) -> void
+Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher
+Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher.Enrich(System.Diagnostics.Activity! activity) -> void
+Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher.EnrichOnActivityStart(System.Diagnostics.Activity! activity) -> void
+Microsoft.Extensions.Telemetry.Latency.Checkpoint
+Microsoft.Extensions.Telemetry.Latency.Checkpoint.Checkpoint() -> void
+Microsoft.Extensions.Telemetry.Latency.Checkpoint.Checkpoint(string! name, long elapsed, long frequency) -> void
+Microsoft.Extensions.Telemetry.Latency.Checkpoint.Elapsed.get -> long
+Microsoft.Extensions.Telemetry.Latency.Checkpoint.Equals(Microsoft.Extensions.Telemetry.Latency.Checkpoint other) -> bool
+Microsoft.Extensions.Telemetry.Latency.Checkpoint.Frequency.get -> long
+Microsoft.Extensions.Telemetry.Latency.Checkpoint.Name.get -> string!
+Microsoft.Extensions.Telemetry.Latency.CheckpointToken
+Microsoft.Extensions.Telemetry.Latency.CheckpointToken.CheckpointToken() -> void
+Microsoft.Extensions.Telemetry.Latency.CheckpointToken.CheckpointToken(string! name, int position) -> void
+Microsoft.Extensions.Telemetry.Latency.CheckpointToken.Name.get -> string!
+Microsoft.Extensions.Telemetry.Latency.CheckpointToken.Position.get -> int
+Microsoft.Extensions.Telemetry.Latency.ILatencyContext
+Microsoft.Extensions.Telemetry.Latency.ILatencyContext.AddCheckpoint(Microsoft.Extensions.Telemetry.Latency.CheckpointToken token) -> void
+Microsoft.Extensions.Telemetry.Latency.ILatencyContext.AddMeasure(Microsoft.Extensions.Telemetry.Latency.MeasureToken token, long value) -> void
+Microsoft.Extensions.Telemetry.Latency.ILatencyContext.Freeze() -> void
+Microsoft.Extensions.Telemetry.Latency.ILatencyContext.LatencyData.get -> Microsoft.Extensions.Telemetry.Latency.LatencyData
+Microsoft.Extensions.Telemetry.Latency.ILatencyContext.RecordMeasure(Microsoft.Extensions.Telemetry.Latency.MeasureToken token, long value) -> void
+Microsoft.Extensions.Telemetry.Latency.ILatencyContext.SetTag(Microsoft.Extensions.Telemetry.Latency.TagToken token, string! value) -> void
+Microsoft.Extensions.Telemetry.Latency.ILatencyContextProvider
+Microsoft.Extensions.Telemetry.Latency.ILatencyContextProvider.CreateContext() -> Microsoft.Extensions.Telemetry.Latency.ILatencyContext!
+Microsoft.Extensions.Telemetry.Latency.ILatencyContextTokenIssuer
+Microsoft.Extensions.Telemetry.Latency.ILatencyContextTokenIssuer.GetCheckpointToken(string! name) -> Microsoft.Extensions.Telemetry.Latency.CheckpointToken
+Microsoft.Extensions.Telemetry.Latency.ILatencyContextTokenIssuer.GetMeasureToken(string! name) -> Microsoft.Extensions.Telemetry.Latency.MeasureToken
+Microsoft.Extensions.Telemetry.Latency.ILatencyContextTokenIssuer.GetTagToken(string! name) -> Microsoft.Extensions.Telemetry.Latency.TagToken
+Microsoft.Extensions.Telemetry.Latency.ILatencyDataExporter
+Microsoft.Extensions.Telemetry.Latency.ILatencyDataExporter.ExportAsync(Microsoft.Extensions.Telemetry.Latency.LatencyData data, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions
+Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions.CheckpointNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions.CheckpointNames.set -> void
+Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions.LatencyContextRegistrationOptions() -> void
+Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions.MeasureNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions.MeasureNames.set -> void
+Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions.TagNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.Extensions.Telemetry.Latency.LatencyContextRegistrationOptions.TagNames.set -> void
+Microsoft.Extensions.Telemetry.Latency.LatencyData
+Microsoft.Extensions.Telemetry.Latency.LatencyData.Checkpoints.get -> System.ReadOnlySpan<Microsoft.Extensions.Telemetry.Latency.Checkpoint>
+Microsoft.Extensions.Telemetry.Latency.LatencyData.DurationTimestamp.get -> long
+Microsoft.Extensions.Telemetry.Latency.LatencyData.DurationTimestampFrequency.get -> long
+Microsoft.Extensions.Telemetry.Latency.LatencyData.LatencyData() -> void
+Microsoft.Extensions.Telemetry.Latency.LatencyData.LatencyData(System.ArraySegment<Microsoft.Extensions.Telemetry.Latency.Tag> tags, System.ArraySegment<Microsoft.Extensions.Telemetry.Latency.Checkpoint> checkpoints, System.ArraySegment<Microsoft.Extensions.Telemetry.Latency.Measure> measures, long durationTimestamp, long durationTimestampFrequency) -> void
+Microsoft.Extensions.Telemetry.Latency.LatencyData.Measures.get -> System.ReadOnlySpan<Microsoft.Extensions.Telemetry.Latency.Measure>
+Microsoft.Extensions.Telemetry.Latency.LatencyData.Tags.get -> System.ReadOnlySpan<Microsoft.Extensions.Telemetry.Latency.Tag>
+Microsoft.Extensions.Telemetry.Latency.LatencyRegistryExtensions
+Microsoft.Extensions.Telemetry.Latency.Measure
+Microsoft.Extensions.Telemetry.Latency.Measure.Equals(Microsoft.Extensions.Telemetry.Latency.Measure other) -> bool
+Microsoft.Extensions.Telemetry.Latency.Measure.Measure() -> void
+Microsoft.Extensions.Telemetry.Latency.Measure.Measure(string! name, long value) -> void
+Microsoft.Extensions.Telemetry.Latency.Measure.Name.get -> string!
+Microsoft.Extensions.Telemetry.Latency.Measure.Value.get -> long
+Microsoft.Extensions.Telemetry.Latency.MeasureToken
+Microsoft.Extensions.Telemetry.Latency.MeasureToken.MeasureToken() -> void
+Microsoft.Extensions.Telemetry.Latency.MeasureToken.MeasureToken(string! name, int position) -> void
+Microsoft.Extensions.Telemetry.Latency.MeasureToken.Name.get -> string!
+Microsoft.Extensions.Telemetry.Latency.MeasureToken.Position.get -> int
+Microsoft.Extensions.Telemetry.Latency.NullLatencyContextExtensions
+Microsoft.Extensions.Telemetry.Latency.Tag
+Microsoft.Extensions.Telemetry.Latency.Tag.Name.get -> string!
+Microsoft.Extensions.Telemetry.Latency.Tag.Tag() -> void
+Microsoft.Extensions.Telemetry.Latency.Tag.Tag(string! name, string! value) -> void
+Microsoft.Extensions.Telemetry.Latency.Tag.Value.get -> string!
+Microsoft.Extensions.Telemetry.Latency.TagToken
+Microsoft.Extensions.Telemetry.Latency.TagToken.Name.get -> string!
+Microsoft.Extensions.Telemetry.Latency.TagToken.Position.get -> int
+Microsoft.Extensions.Telemetry.Latency.TagToken.TagToken() -> void
+Microsoft.Extensions.Telemetry.Latency.TagToken.TagToken(string! name, int position) -> void
+Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector
+Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector.Add(string! propertyName, object? propertyValue) -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.EventId.get -> int
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.EventName.get -> string?
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.EventName.set -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.Level.get -> Microsoft.Extensions.Logging.LogLevel?
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute() -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(int eventId) -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(int eventId, Microsoft.Extensions.Logging.LogLevel level) -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(int eventId, Microsoft.Extensions.Logging.LogLevel level, string! message) -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(int eventId, string! message) -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(Microsoft.Extensions.Logging.LogLevel level) -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(Microsoft.Extensions.Logging.LogLevel level, string! message) -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(string! message) -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.Message.get -> string!
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.SkipEnabledCheck.get -> bool
+Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.SkipEnabledCheck.set -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodHelper
+Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Add(string! propertyName, object? propertyValue) -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.LogMethodHelper() -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.ParameterName.get -> string!
+Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.ParameterName.set -> void
+Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.TryReset() -> bool
+Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute
+Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.LogPropertiesAttribute() -> void
+Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.LogPropertiesAttribute(System.Type! providerType, string! providerMethod) -> void
+Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.OmitParameterName.get -> bool
+Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.OmitParameterName.set -> void
+Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.ProviderMethod.get -> string?
+Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.ProviderType.get -> System.Type?
+Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.SkipNullProperties.get -> bool
+Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.SkipNullProperties.set -> void
+Microsoft.Extensions.Telemetry.Logging.LogPropertyIgnoreAttribute
+Microsoft.Extensions.Telemetry.Logging.LogPropertyIgnoreAttribute.LogPropertyIgnoreAttribute() -> void
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute.CounterAttribute(params string![]! dimensions) -> void
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute.CounterAttribute(System.Type! type) -> void
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute.Dimensions.get -> string![]?
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute.Name.get -> string?
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute.Name.set -> void
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute.Type.get -> System.Type?
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.CounterAttribute(params string![]! dimensions) -> void
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.CounterAttribute(System.Type! type) -> void
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.Dimensions.get -> string![]?
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.Name.get -> string?
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.Name.set -> void
+Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.Type.get -> System.Type?
+Microsoft.Extensions.Telemetry.Metering.DimensionAttribute
+Microsoft.Extensions.Telemetry.Metering.DimensionAttribute.DimensionAttribute(string! name) -> void
+Microsoft.Extensions.Telemetry.Metering.DimensionAttribute.Name.get -> string!
+Microsoft.Extensions.Telemetry.Metering.GaugeAttribute
+Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.Dimensions.get -> string![]?
+Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.GaugeAttribute(params string![]! dimensions) -> void
+Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.GaugeAttribute(System.Type! type) -> void
+Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.Name.get -> string?
+Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.Name.set -> void
+Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.Type.get -> System.Type?
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.Dimensions.get -> string![]?
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.HistogramAttribute(params string![]! dimensions) -> void
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.HistogramAttribute(System.Type! type) -> void
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.Name.get -> string?
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.Name.set -> void
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.Type.get -> System.Type?
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Dimensions.get -> string![]?
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.HistogramAttribute(params string![]! dimensions) -> void
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.HistogramAttribute(System.Type! type) -> void
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Name.get -> string?
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Name.set -> void
+Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Type.get -> System.Type?
+Microsoft.Extensions.Telemetry.Metering.Meter<TMeterName>
+Microsoft.Extensions.Telemetry.Metering.Meter<TMeterName>.Meter() -> void
+Microsoft.Extensions.Telemetry.Metering.MeteringExtensions
+override Microsoft.Extensions.Telemetry.Latency.Checkpoint.Equals(object? obj) -> bool
+override Microsoft.Extensions.Telemetry.Latency.Checkpoint.GetHashCode() -> int
+override Microsoft.Extensions.Telemetry.Latency.Measure.Equals(object? obj) -> bool
+override Microsoft.Extensions.Telemetry.Latency.Measure.GetHashCode() -> int
+static Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher! enricher) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher! enricher) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddMetricEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Latency.Checkpoint.operator !=(Microsoft.Extensions.Telemetry.Latency.Checkpoint left, Microsoft.Extensions.Telemetry.Latency.Checkpoint right) -> bool
+static Microsoft.Extensions.Telemetry.Latency.Checkpoint.operator ==(Microsoft.Extensions.Telemetry.Latency.Checkpoint left, Microsoft.Extensions.Telemetry.Latency.Checkpoint right) -> bool
+static Microsoft.Extensions.Telemetry.Latency.LatencyRegistryExtensions.RegisterCheckpointNames(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, params string![]! names) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Latency.LatencyRegistryExtensions.RegisterMeasureNames(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, params string![]! names) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Latency.LatencyRegistryExtensions.RegisterTagNames(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, params string![]! names) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Latency.Measure.operator !=(Microsoft.Extensions.Telemetry.Latency.Measure left, Microsoft.Extensions.Telemetry.Latency.Measure right) -> bool
+static Microsoft.Extensions.Telemetry.Latency.Measure.operator ==(Microsoft.Extensions.Telemetry.Latency.Measure left, Microsoft.Extensions.Telemetry.Latency.Measure right) -> bool
+static Microsoft.Extensions.Telemetry.Latency.NullLatencyContextExtensions.AddNullLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.GetHelper() -> Microsoft.Extensions.Telemetry.Logging.LogMethodHelper!
+static Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.ReturnHelper(Microsoft.Extensions.Telemetry.Logging.LogMethodHelper! helper) -> void
+static Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.SkipEnabledCheckOptions.get -> Microsoft.Extensions.Logging.LogDefineOptions!
+static Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Stringify(System.Collections.IEnumerable? enumerable) -> string!
+static Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Stringify<TKey, TValue>(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>? enumerable) -> string!
+static Microsoft.Extensions.Telemetry.Metering.MeteringExtensions.RegisterMetering(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

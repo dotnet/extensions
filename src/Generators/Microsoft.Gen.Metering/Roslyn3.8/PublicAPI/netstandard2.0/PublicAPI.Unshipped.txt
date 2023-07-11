@@ -1,0 +1,4 @@
+Microsoft.Gen.Metering.MeteringGenerator
+Microsoft.Gen.Metering.MeteringGenerator.Execute(Microsoft.CodeAnalysis.GeneratorExecutionContext context) -> void
+Microsoft.Gen.Metering.MeteringGenerator.Initialize(Microsoft.CodeAnalysis.GeneratorInitializationContext context) -> void
+Microsoft.Gen.Metering.MeteringGenerator.MeteringGenerator() -> void

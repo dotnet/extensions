@@ -1,0 +1,4 @@
+Microsoft.Gen.AutoClient.Generator
+Microsoft.Gen.AutoClient.Generator.Execute(Microsoft.CodeAnalysis.GeneratorExecutionContext context) -> void
+Microsoft.Gen.AutoClient.Generator.Generator() -> void
+Microsoft.Gen.AutoClient.Generator.Initialize(Microsoft.CodeAnalysis.GeneratorInitializationContext context) -> void

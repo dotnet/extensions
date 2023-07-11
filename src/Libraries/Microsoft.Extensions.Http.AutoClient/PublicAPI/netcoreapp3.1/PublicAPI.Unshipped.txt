@@ -1,0 +1,63 @@
+Microsoft.Extensions.Http.AutoClient.AutoClientAttribute
+Microsoft.Extensions.Http.AutoClient.AutoClientAttribute.AutoClientAttribute(string! httpClientName) -> void
+Microsoft.Extensions.Http.AutoClient.AutoClientAttribute.AutoClientAttribute(string! httpClientName, string! customDependencyName) -> void
+Microsoft.Extensions.Http.AutoClient.AutoClientAttribute.CustomDependencyName.get -> string?
+Microsoft.Extensions.Http.AutoClient.AutoClientAttribute.HttpClientName.get -> string!
+Microsoft.Extensions.Http.AutoClient.AutoClientException
+Microsoft.Extensions.Http.AutoClient.AutoClientException.AutoClientException(string? message, string! path, Microsoft.Extensions.Http.AutoClient.AutoClientHttpError? error = null) -> void
+Microsoft.Extensions.Http.AutoClient.AutoClientException.HttpError.get -> Microsoft.Extensions.Http.AutoClient.AutoClientHttpError?
+Microsoft.Extensions.Http.AutoClient.AutoClientException.Path.get -> string!
+Microsoft.Extensions.Http.AutoClient.AutoClientException.StatusCode.get -> int?
+Microsoft.Extensions.Http.AutoClient.AutoClientHttpError
+Microsoft.Extensions.Http.AutoClient.AutoClientHttpError.AutoClientHttpError(int statusCode, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.Extensions.Primitives.StringValues>! responseHeaders, string! rawContent, string? reasonPhrase) -> void
+Microsoft.Extensions.Http.AutoClient.AutoClientHttpError.RawContent.get -> string!
+Microsoft.Extensions.Http.AutoClient.AutoClientHttpError.ReasonPhrase.get -> string?
+Microsoft.Extensions.Http.AutoClient.AutoClientHttpError.ResponseHeaders.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.Extensions.Primitives.StringValues>!
+Microsoft.Extensions.Http.AutoClient.AutoClientHttpError.StatusCode.get -> int
+Microsoft.Extensions.Http.AutoClient.AutoClientOptions
+Microsoft.Extensions.Http.AutoClient.AutoClientOptions.AutoClientOptions() -> void
+Microsoft.Extensions.Http.AutoClient.AutoClientOptions.JsonSerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
+Microsoft.Extensions.Http.AutoClient.AutoClientOptions.JsonSerializerOptions.set -> void
+Microsoft.Extensions.Http.AutoClient.BodyAttribute
+Microsoft.Extensions.Http.AutoClient.BodyAttribute.BodyAttribute() -> void
+Microsoft.Extensions.Http.AutoClient.BodyAttribute.BodyAttribute(Microsoft.Extensions.Http.AutoClient.BodyContentType contentType) -> void
+Microsoft.Extensions.Http.AutoClient.BodyAttribute.ContentType.get -> Microsoft.Extensions.Http.AutoClient.BodyContentType
+Microsoft.Extensions.Http.AutoClient.BodyContentType
+Microsoft.Extensions.Http.AutoClient.BodyContentType.ApplicationJson = 0 -> Microsoft.Extensions.Http.AutoClient.BodyContentType
+Microsoft.Extensions.Http.AutoClient.BodyContentType.TextPlain = 1 -> Microsoft.Extensions.Http.AutoClient.BodyContentType
+Microsoft.Extensions.Http.AutoClient.DeleteAttribute
+Microsoft.Extensions.Http.AutoClient.DeleteAttribute.DeleteAttribute(string! path) -> void
+Microsoft.Extensions.Http.AutoClient.DeleteAttribute.Path.get -> string!
+Microsoft.Extensions.Http.AutoClient.GetAttribute
+Microsoft.Extensions.Http.AutoClient.GetAttribute.GetAttribute(string! path) -> void
+Microsoft.Extensions.Http.AutoClient.GetAttribute.Path.get -> string!
+Microsoft.Extensions.Http.AutoClient.HeadAttribute
+Microsoft.Extensions.Http.AutoClient.HeadAttribute.HeadAttribute(string! path) -> void
+Microsoft.Extensions.Http.AutoClient.HeadAttribute.Path.get -> string!
+Microsoft.Extensions.Http.AutoClient.HeaderAttribute
+Microsoft.Extensions.Http.AutoClient.HeaderAttribute.Header.get -> string!
+Microsoft.Extensions.Http.AutoClient.HeaderAttribute.HeaderAttribute(string! header) -> void
+Microsoft.Extensions.Http.AutoClient.OptionsAttribute
+Microsoft.Extensions.Http.AutoClient.OptionsAttribute.OptionsAttribute(string! path) -> void
+Microsoft.Extensions.Http.AutoClient.OptionsAttribute.Path.get -> string!
+Microsoft.Extensions.Http.AutoClient.PatchAttribute
+Microsoft.Extensions.Http.AutoClient.PatchAttribute.PatchAttribute(string! path) -> void
+Microsoft.Extensions.Http.AutoClient.PatchAttribute.Path.get -> string!
+Microsoft.Extensions.Http.AutoClient.PostAttribute
+Microsoft.Extensions.Http.AutoClient.PostAttribute.Path.get -> string!
+Microsoft.Extensions.Http.AutoClient.PostAttribute.PostAttribute(string! path) -> void
+Microsoft.Extensions.Http.AutoClient.PutAttribute
+Microsoft.Extensions.Http.AutoClient.PutAttribute.Path.get -> string!
+Microsoft.Extensions.Http.AutoClient.PutAttribute.PutAttribute(string! path) -> void
+Microsoft.Extensions.Http.AutoClient.QueryAttribute
+Microsoft.Extensions.Http.AutoClient.QueryAttribute.Key.get -> string?
+Microsoft.Extensions.Http.AutoClient.QueryAttribute.QueryAttribute() -> void
+Microsoft.Extensions.Http.AutoClient.QueryAttribute.QueryAttribute(string! key) -> void
+Microsoft.Extensions.Http.AutoClient.RequestNameAttribute
+Microsoft.Extensions.Http.AutoClient.RequestNameAttribute.RequestNameAttribute(string! value) -> void
+Microsoft.Extensions.Http.AutoClient.RequestNameAttribute.Value.get -> string!
+Microsoft.Extensions.Http.AutoClient.StaticHeaderAttribute
+Microsoft.Extensions.Http.AutoClient.StaticHeaderAttribute.Header.get -> string!
+Microsoft.Extensions.Http.AutoClient.StaticHeaderAttribute.StaticHeaderAttribute(string! header, string! value) -> void
+Microsoft.Extensions.Http.AutoClient.StaticHeaderAttribute.Value.get -> string!
+static Microsoft.Extensions.Http.AutoClient.AutoClientHttpError.CreateAsync(System.Net.Http.HttpResponseMessage! response, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Extensions.Http.AutoClient.AutoClientHttpError!>!

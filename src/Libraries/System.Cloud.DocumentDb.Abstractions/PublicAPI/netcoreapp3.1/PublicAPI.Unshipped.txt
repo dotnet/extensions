@@ -1,0 +1,210 @@
+static readonly System.Cloud.DocumentDb.Throughput.Unlimited -> System.Cloud.DocumentDb.Throughput
+static System.Cloud.DocumentDb.PatchOperation.Add<T>(string! path, T value) -> System.Cloud.DocumentDb.PatchOperation
+static System.Cloud.DocumentDb.PatchOperation.Increment(string! path, double value) -> System.Cloud.DocumentDb.PatchOperation
+static System.Cloud.DocumentDb.PatchOperation.Increment(string! path, long value) -> System.Cloud.DocumentDb.PatchOperation
+static System.Cloud.DocumentDb.PatchOperation.Remove(string! path) -> System.Cloud.DocumentDb.PatchOperation
+static System.Cloud.DocumentDb.PatchOperation.Replace<T>(string! path, T value) -> System.Cloud.DocumentDb.PatchOperation
+static System.Cloud.DocumentDb.PatchOperation.Set<T>(string! path, T value) -> System.Cloud.DocumentDb.PatchOperation
+System.Cloud.DocumentDb.BatchItem<T>
+System.Cloud.DocumentDb.BatchItem<T>.BatchItem() -> void
+System.Cloud.DocumentDb.BatchItem<T>.BatchItem(System.Cloud.DocumentDb.BatchOperation operation, T? item = default(T?), string? id = null, string? itemVersion = null) -> void
+System.Cloud.DocumentDb.BatchItem<T>.Id.get -> string?
+System.Cloud.DocumentDb.BatchItem<T>.Item.get -> T?
+System.Cloud.DocumentDb.BatchItem<T>.ItemVersion.get -> string?
+System.Cloud.DocumentDb.BatchItem<T>.Operation.get -> System.Cloud.DocumentDb.BatchOperation
+System.Cloud.DocumentDb.BatchOperation
+System.Cloud.DocumentDb.BatchOperation.Create = 0 -> System.Cloud.DocumentDb.BatchOperation
+System.Cloud.DocumentDb.BatchOperation.Delete = 3 -> System.Cloud.DocumentDb.BatchOperation
+System.Cloud.DocumentDb.BatchOperation.Read = 1 -> System.Cloud.DocumentDb.BatchOperation
+System.Cloud.DocumentDb.BatchOperation.Replace = 2 -> System.Cloud.DocumentDb.BatchOperation
+System.Cloud.DocumentDb.BatchOperation.Upsert = 4 -> System.Cloud.DocumentDb.BatchOperation
+System.Cloud.DocumentDb.ConsistencyLevel
+System.Cloud.DocumentDb.ConsistencyLevel.BoundedStaleness = 1 -> System.Cloud.DocumentDb.ConsistencyLevel
+System.Cloud.DocumentDb.ConsistencyLevel.ConsistentPrefix = 4 -> System.Cloud.DocumentDb.ConsistencyLevel
+System.Cloud.DocumentDb.ConsistencyLevel.Eventual = 3 -> System.Cloud.DocumentDb.ConsistencyLevel
+System.Cloud.DocumentDb.ConsistencyLevel.Session = 2 -> System.Cloud.DocumentDb.ConsistencyLevel
+System.Cloud.DocumentDb.ConsistencyLevel.Strong = 0 -> System.Cloud.DocumentDb.ConsistencyLevel
+System.Cloud.DocumentDb.DatabaseClientException
+System.Cloud.DocumentDb.DatabaseClientException.DatabaseClientException() -> void
+System.Cloud.DocumentDb.DatabaseClientException.DatabaseClientException(string! message) -> void
+System.Cloud.DocumentDb.DatabaseClientException.DatabaseClientException(string! message, System.Exception! innerException) -> void
+System.Cloud.DocumentDb.DatabaseException
+System.Cloud.DocumentDb.DatabaseException.DatabaseException() -> void
+System.Cloud.DocumentDb.DatabaseException.DatabaseException(string! message) -> void
+System.Cloud.DocumentDb.DatabaseException.DatabaseException(string! message, int statusCode, int subStatusCode, System.Cloud.DocumentDb.RequestInfo requestInfo) -> void
+System.Cloud.DocumentDb.DatabaseException.DatabaseException(string! message, System.Exception! innerException) -> void
+System.Cloud.DocumentDb.DatabaseException.DatabaseException(string! message, System.Exception! innerException, int statusCode, int subStatusCode, System.Cloud.DocumentDb.RequestInfo requestInfo) -> void
+System.Cloud.DocumentDb.DatabaseException.HttpStatusCode.get -> System.Net.HttpStatusCode
+System.Cloud.DocumentDb.DatabaseException.RequestInfo.get -> System.Cloud.DocumentDb.RequestInfo
+System.Cloud.DocumentDb.DatabaseException.StatusCode.get -> int
+System.Cloud.DocumentDb.DatabaseException.SubStatusCode.get -> int
+System.Cloud.DocumentDb.DatabaseOptions
+System.Cloud.DocumentDb.DatabaseOptions.DatabaseName.get -> string!
+System.Cloud.DocumentDb.DatabaseOptions.DatabaseName.set -> void
+System.Cloud.DocumentDb.DatabaseOptions.DatabaseOptions() -> void
+System.Cloud.DocumentDb.DatabaseOptions.DefaultRegionalDatabaseName.get -> string?
+System.Cloud.DocumentDb.DatabaseOptions.DefaultRegionalDatabaseName.set -> void
+System.Cloud.DocumentDb.DatabaseOptions.Endpoint.get -> System.Uri?
+System.Cloud.DocumentDb.DatabaseOptions.Endpoint.set -> void
+System.Cloud.DocumentDb.DatabaseOptions.FailoverRegions.get -> System.Collections.Generic.IList<string!>!
+System.Cloud.DocumentDb.DatabaseOptions.FailoverRegions.set -> void
+System.Cloud.DocumentDb.DatabaseOptions.IdleTcpConnectionTimeout.get -> System.TimeSpan?
+System.Cloud.DocumentDb.DatabaseOptions.IdleTcpConnectionTimeout.set -> void
+System.Cloud.DocumentDb.DatabaseOptions.JsonSerializerOptions.get -> System.Text.Json.JsonSerializerOptions!
+System.Cloud.DocumentDb.DatabaseOptions.JsonSerializerOptions.set -> void
+System.Cloud.DocumentDb.DatabaseOptions.OverrideSerialization.get -> bool
+System.Cloud.DocumentDb.DatabaseOptions.OverrideSerialization.set -> void
+System.Cloud.DocumentDb.DatabaseOptions.PrimaryKey.get -> string?
+System.Cloud.DocumentDb.DatabaseOptions.PrimaryKey.set -> void
+System.Cloud.DocumentDb.DatabaseOptions.RegionalDatabaseOptions.get -> System.Collections.Generic.IDictionary<string!, System.Cloud.DocumentDb.RegionalDatabaseOptions!>!
+System.Cloud.DocumentDb.DatabaseOptions.RegionalDatabaseOptions.set -> void
+System.Cloud.DocumentDb.DatabaseOptions.Throughput.get -> System.Cloud.DocumentDb.Throughput
+System.Cloud.DocumentDb.DatabaseOptions.Throughput.set -> void
+System.Cloud.DocumentDb.DatabaseRetryableException
+System.Cloud.DocumentDb.DatabaseRetryableException.DatabaseRetryableException() -> void
+System.Cloud.DocumentDb.DatabaseRetryableException.DatabaseRetryableException(string! message) -> void
+System.Cloud.DocumentDb.DatabaseRetryableException.DatabaseRetryableException(string! message, System.Exception! innerException) -> void
+System.Cloud.DocumentDb.DatabaseRetryableException.DatabaseRetryableException(string! message, System.Exception! innerException, int statusCode, int subStatusCode, System.TimeSpan? retryAfter, System.Cloud.DocumentDb.RequestInfo requestInfo) -> void
+System.Cloud.DocumentDb.DatabaseRetryableException.RetryAfter.get -> System.TimeSpan
+System.Cloud.DocumentDb.DatabaseServerException
+System.Cloud.DocumentDb.DatabaseServerException.DatabaseServerException() -> void
+System.Cloud.DocumentDb.DatabaseServerException.DatabaseServerException(string! message) -> void
+System.Cloud.DocumentDb.DatabaseServerException.DatabaseServerException(string! message, int statusCode, int subStatusCode, System.Cloud.DocumentDb.RequestInfo requestInfo) -> void
+System.Cloud.DocumentDb.DatabaseServerException.DatabaseServerException(string! message, System.Exception! innerException) -> void
+System.Cloud.DocumentDb.DatabaseServerException.DatabaseServerException(string! message, System.Exception! innerException, int statusCode, int subStatusCode, System.Cloud.DocumentDb.RequestInfo requestInfo) -> void
+System.Cloud.DocumentDb.FetchMode
+System.Cloud.DocumentDb.FetchMode.FetchAll = 0 -> System.Cloud.DocumentDb.FetchMode
+System.Cloud.DocumentDb.FetchMode.FetchMaxResults = 2 -> System.Cloud.DocumentDb.FetchMode
+System.Cloud.DocumentDb.FetchMode.FetchSinglePage = 1 -> System.Cloud.DocumentDb.FetchMode
+System.Cloud.DocumentDb.IDatabaseResponse
+System.Cloud.DocumentDb.IDatabaseResponse.ContinuationToken.get -> string?
+System.Cloud.DocumentDb.IDatabaseResponse.ItemCount.get -> int
+System.Cloud.DocumentDb.IDatabaseResponse.ItemVersion.get -> string?
+System.Cloud.DocumentDb.IDatabaseResponse.RequestInfo.get -> System.Cloud.DocumentDb.RequestInfo
+System.Cloud.DocumentDb.IDatabaseResponse.Status.get -> int
+System.Cloud.DocumentDb.IDatabaseResponse.Succeeded.get -> bool
+System.Cloud.DocumentDb.IDatabaseResponse<T>
+System.Cloud.DocumentDb.IDatabaseResponse<T>.Item.get -> T?
+System.Cloud.DocumentDb.IDocumentDatabase
+System.Cloud.DocumentDb.IDocumentDatabase.ConnectAsync(bool createIfNotExists, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+System.Cloud.DocumentDb.IDocumentDatabase.CreateTableAsync(System.Cloud.DocumentDb.TableOptions! tableOptions, System.Cloud.DocumentDb.RequestOptions! requestOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<System.Cloud.DocumentDb.TableOptions!>!>!
+System.Cloud.DocumentDb.IDocumentDatabase.DeleteDatabaseAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<bool>!>!
+System.Cloud.DocumentDb.IDocumentDatabase.DeleteTableAsync(System.Cloud.DocumentDb.TableOptions! tableOptions, System.Cloud.DocumentDb.RequestOptions! requestOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<System.Cloud.DocumentDb.TableOptions!>!>!
+System.Cloud.DocumentDb.IDocumentDatabase.GetDocumentReader<TDocument>(System.Cloud.DocumentDb.TableOptions! options) -> System.Cloud.DocumentDb.IDocumentReader<TDocument>!
+System.Cloud.DocumentDb.IDocumentDatabase.GetDocumentWriter<TDocument>(System.Cloud.DocumentDb.TableOptions! options) -> System.Cloud.DocumentDb.IDocumentWriter<TDocument>!
+System.Cloud.DocumentDb.IDocumentDatabase.ReadTableSettingsAsync(System.Cloud.DocumentDb.TableOptions! tableOptions, System.Cloud.DocumentDb.RequestOptions! requestOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<System.Cloud.DocumentDb.TableOptions!>!>!
+System.Cloud.DocumentDb.IDocumentDatabase.UpdateTableSettingsAsync(System.Cloud.DocumentDb.TableOptions! tableOptions, System.Cloud.DocumentDb.RequestOptions! requestOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<bool>!>!
+System.Cloud.DocumentDb.IDocumentDatabase<TContext>
+System.Cloud.DocumentDb.IDocumentReader<TDocument>
+System.Cloud.DocumentDb.IDocumentReader<TDocument>.CountDocumentsAsync(System.Cloud.DocumentDb.QueryRequestOptions<TDocument>! options, System.Func<System.Linq.IQueryable<TDocument>!, System.Linq.IQueryable<TDocument>!>? condition, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<int>!>!
+System.Cloud.DocumentDb.IDocumentReader<TDocument>.FetchDocumentsAsync<TOutputDocument>(System.Cloud.DocumentDb.QueryRequestOptions<TDocument>! options, System.Func<System.Linq.IQueryable<TDocument>!, System.Linq.IQueryable<TOutputDocument>!>? condition, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<System.Collections.Generic.IReadOnlyList<TOutputDocument>!>!>!
+System.Cloud.DocumentDb.IDocumentReader<TDocument>.QueryDocumentsAsync(System.Cloud.DocumentDb.QueryRequestOptions<TDocument>! options, System.Cloud.DocumentDb.Query query, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<System.Collections.Generic.IReadOnlyList<TDocument>!>!>!
+System.Cloud.DocumentDb.IDocumentReader<TDocument>.ReadDocumentAsync(System.Cloud.DocumentDb.RequestOptions<TDocument>! requestOptions, string! id, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<TDocument>!>!
+System.Cloud.DocumentDb.IDocumentWriter<TDocument>
+System.Cloud.DocumentDb.IDocumentWriter<TDocument>.CreateDocumentAsync(System.Cloud.DocumentDb.RequestOptions<TDocument>! options, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<TDocument>!>!
+System.Cloud.DocumentDb.IDocumentWriter<TDocument>.DeleteDocumentAsync(System.Cloud.DocumentDb.RequestOptions<TDocument>! options, string! id, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<bool>!>!
+System.Cloud.DocumentDb.IDocumentWriter<TDocument>.ExecuteTransactionalBatchAsync(System.Cloud.DocumentDb.RequestOptions<TDocument>! requestOptions, System.Collections.Generic.IReadOnlyList<System.Cloud.DocumentDb.BatchItem<TDocument>>! itemsToPerformTransactionalBatch, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<System.Collections.Generic.IReadOnlyList<System.Cloud.DocumentDb.IDatabaseResponse<TDocument>!>!>!>!
+System.Cloud.DocumentDb.IDocumentWriter<TDocument>.InsertOrUpdateDocumentAsync(System.Cloud.DocumentDb.RequestOptions<TDocument>! options, string! id, System.Func<TDocument, TDocument>! conflictResolveFunc, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<TDocument>!>!
+System.Cloud.DocumentDb.IDocumentWriter<TDocument>.PatchDocumentAsync(System.Cloud.DocumentDb.RequestOptions<TDocument>! options, string! id, System.Collections.Generic.IReadOnlyList<System.Cloud.DocumentDb.PatchOperation>! patchOperations, string? filter, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<TDocument>!>!
+System.Cloud.DocumentDb.IDocumentWriter<TDocument>.ReplaceDocumentAsync(System.Cloud.DocumentDb.RequestOptions<TDocument>! options, string! id, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<TDocument>!>!
+System.Cloud.DocumentDb.IDocumentWriter<TDocument>.UpsertDocumentAsync(System.Cloud.DocumentDb.RequestOptions<TDocument>! options, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Cloud.DocumentDb.IDatabaseResponse<TDocument>!>!
+System.Cloud.DocumentDb.ITableLocator
+System.Cloud.DocumentDb.ITableLocator.LocateTable(in System.Cloud.DocumentDb.TableInfo options, System.Cloud.DocumentDb.RequestOptions! request) -> System.Cloud.DocumentDb.TableInfo?
+System.Cloud.DocumentDb.PatchOperation
+System.Cloud.DocumentDb.PatchOperation.OperationType.get -> System.Cloud.DocumentDb.PatchOperationType
+System.Cloud.DocumentDb.PatchOperation.PatchOperation() -> void
+System.Cloud.DocumentDb.PatchOperation.Path.get -> string!
+System.Cloud.DocumentDb.PatchOperation.Value.get -> object!
+System.Cloud.DocumentDb.PatchOperationType
+System.Cloud.DocumentDb.PatchOperationType.Add = 0 -> System.Cloud.DocumentDb.PatchOperationType
+System.Cloud.DocumentDb.PatchOperationType.Increment = 4 -> System.Cloud.DocumentDb.PatchOperationType
+System.Cloud.DocumentDb.PatchOperationType.Remove = 1 -> System.Cloud.DocumentDb.PatchOperationType
+System.Cloud.DocumentDb.PatchOperationType.Replace = 2 -> System.Cloud.DocumentDb.PatchOperationType
+System.Cloud.DocumentDb.PatchOperationType.Set = 3 -> System.Cloud.DocumentDb.PatchOperationType
+System.Cloud.DocumentDb.Query
+System.Cloud.DocumentDb.Query.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+System.Cloud.DocumentDb.Query.Query() -> void
+System.Cloud.DocumentDb.Query.Query(string! queryText) -> void
+System.Cloud.DocumentDb.Query.Query(string! queryText, System.Collections.Generic.IReadOnlyDictionary<string!, string!>! parameters) -> void
+System.Cloud.DocumentDb.Query.QueryText.get -> string!
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.ContinuationToken.get -> string?
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.ContinuationToken.set -> void
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.EnableLowPrecisionOrderBy.get -> bool?
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.EnableLowPrecisionOrderBy.set -> void
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.EnableScan.get -> bool?
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.EnableScan.set -> void
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.FetchCondition.get -> System.Cloud.DocumentDb.FetchMode
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.FetchCondition.set -> void
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.MaxBufferedItemCount.get -> int?
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.MaxBufferedItemCount.set -> void
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.MaxConcurrency.get -> int?
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.MaxConcurrency.set -> void
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.MaxResults.get -> int?
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.MaxResults.set -> void
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.QueryRequestOptions() -> void
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.ResponseContinuationTokenLimitInKb.get -> int?
+System.Cloud.DocumentDb.QueryRequestOptions<TDocument>.ResponseContinuationTokenLimitInKb.set -> void
+System.Cloud.DocumentDb.RegionalDatabaseOptions
+System.Cloud.DocumentDb.RegionalDatabaseOptions.DatabaseName.get -> string?
+System.Cloud.DocumentDb.RegionalDatabaseOptions.DatabaseName.set -> void
+System.Cloud.DocumentDb.RegionalDatabaseOptions.Endpoint.get -> System.Uri?
+System.Cloud.DocumentDb.RegionalDatabaseOptions.Endpoint.set -> void
+System.Cloud.DocumentDb.RegionalDatabaseOptions.FailoverRegions.get -> System.Collections.Generic.IList<string!>!
+System.Cloud.DocumentDb.RegionalDatabaseOptions.FailoverRegions.set -> void
+System.Cloud.DocumentDb.RegionalDatabaseOptions.PrimaryKey.get -> string?
+System.Cloud.DocumentDb.RegionalDatabaseOptions.PrimaryKey.set -> void
+System.Cloud.DocumentDb.RegionalDatabaseOptions.RegionalDatabaseOptions() -> void
+System.Cloud.DocumentDb.RequestInfo
+System.Cloud.DocumentDb.RequestInfo.Cost.get -> double?
+System.Cloud.DocumentDb.RequestInfo.Endpoint.get -> System.Uri?
+System.Cloud.DocumentDb.RequestInfo.Region.get -> string?
+System.Cloud.DocumentDb.RequestInfo.RequestInfo() -> void
+System.Cloud.DocumentDb.RequestInfo.RequestInfo(string? region = null, string? tableName = null, double? cost = null, System.Uri? endpoint = null) -> void
+System.Cloud.DocumentDb.RequestInfo.TableName.get -> string?
+System.Cloud.DocumentDb.RequestOptions
+System.Cloud.DocumentDb.RequestOptions.ConsistencyLevel.get -> System.Cloud.DocumentDb.ConsistencyLevel?
+System.Cloud.DocumentDb.RequestOptions.ConsistencyLevel.set -> void
+System.Cloud.DocumentDb.RequestOptions.ContentResponseOnWrite.get -> bool
+System.Cloud.DocumentDb.RequestOptions.ContentResponseOnWrite.set -> void
+System.Cloud.DocumentDb.RequestOptions.ItemVersion.get -> string?
+System.Cloud.DocumentDb.RequestOptions.ItemVersion.set -> void
+System.Cloud.DocumentDb.RequestOptions.PartitionKey.get -> System.Collections.Generic.IReadOnlyList<object?>?
+System.Cloud.DocumentDb.RequestOptions.PartitionKey.set -> void
+System.Cloud.DocumentDb.RequestOptions.Region.get -> string?
+System.Cloud.DocumentDb.RequestOptions.Region.set -> void
+System.Cloud.DocumentDb.RequestOptions.RequestOptions() -> void
+System.Cloud.DocumentDb.RequestOptions.SessionToken.get -> string?
+System.Cloud.DocumentDb.RequestOptions.SessionToken.set -> void
+System.Cloud.DocumentDb.RequestOptions<TDocument>
+System.Cloud.DocumentDb.RequestOptions<TDocument>.Document.get -> TDocument?
+System.Cloud.DocumentDb.RequestOptions<TDocument>.Document.set -> void
+System.Cloud.DocumentDb.RequestOptions<TDocument>.RequestOptions() -> void
+System.Cloud.DocumentDb.TableInfo
+System.Cloud.DocumentDb.TableInfo.IsLocatorRequired.get -> bool
+System.Cloud.DocumentDb.TableInfo.IsRegional.get -> bool
+System.Cloud.DocumentDb.TableInfo.PartitionIdPath.get -> string?
+System.Cloud.DocumentDb.TableInfo.TableInfo() -> void
+System.Cloud.DocumentDb.TableInfo.TableInfo(in System.Cloud.DocumentDb.TableInfo info, string? tableNameOverride = null, bool? isRegionalOverride = null) -> void
+System.Cloud.DocumentDb.TableInfo.TableInfo(System.Cloud.DocumentDb.TableOptions! options) -> void
+System.Cloud.DocumentDb.TableInfo.TableName.get -> string!
+System.Cloud.DocumentDb.TableInfo.Throughput.get -> System.Cloud.DocumentDb.Throughput
+System.Cloud.DocumentDb.TableInfo.TimeToLive.get -> System.TimeSpan
+System.Cloud.DocumentDb.TableOptions
+System.Cloud.DocumentDb.TableOptions.IsLocatorRequired.get -> bool
+System.Cloud.DocumentDb.TableOptions.IsLocatorRequired.set -> void
+System.Cloud.DocumentDb.TableOptions.IsRegional.get -> bool
+System.Cloud.DocumentDb.TableOptions.IsRegional.set -> void
+System.Cloud.DocumentDb.TableOptions.PartitionIdPath.get -> string?
+System.Cloud.DocumentDb.TableOptions.PartitionIdPath.set -> void
+System.Cloud.DocumentDb.TableOptions.TableName.get -> string!
+System.Cloud.DocumentDb.TableOptions.TableName.set -> void
+System.Cloud.DocumentDb.TableOptions.TableOptions() -> void
+System.Cloud.DocumentDb.TableOptions.Throughput.get -> System.Cloud.DocumentDb.Throughput
+System.Cloud.DocumentDb.TableOptions.Throughput.set -> void
+System.Cloud.DocumentDb.TableOptions.TimeToLive.get -> System.TimeSpan
+System.Cloud.DocumentDb.TableOptions.TimeToLive.set -> void
+System.Cloud.DocumentDb.Throughput
+System.Cloud.DocumentDb.Throughput.Throughput() -> void
+System.Cloud.DocumentDb.Throughput.Throughput(int? throughput) -> void
+System.Cloud.DocumentDb.Throughput.Value.get -> int?

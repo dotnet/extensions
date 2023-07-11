@@ -1,0 +1,23 @@
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds.DegradedUtilizationPercentage.get -> double?
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds.DegradedUtilizationPercentage.set -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds.ResourceUsageThresholds() -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds.UnhealthyUtilizationPercentage.get -> double?
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds.UnhealthyUtilizationPercentage.set -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions.CpuThresholds.get -> Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds!
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions.CpuThresholds.set -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions.MemoryThresholds.get -> Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds!
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions.MemoryThresholds.set -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions.ResourceUtilizationHealthCheckOptions() -> void
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions.SamplingWindow.get -> System.TimeSpan
+Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions.SamplingWindow.set -> void
+static Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
+static Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section, params string![]! tags) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
+static Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section, System.Collections.Generic.IEnumerable<string!>! tags) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
+static Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, params string![]! tags) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
+static Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
+static Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions!>! configure, params string![]! tags) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
+static Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckOptions!>! configure, System.Collections.Generic.IEnumerable<string!>! tags) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
+static Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilizationHealthCheckExtensions.AddResourceUtilizationHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, System.Collections.Generic.IEnumerable<string!>! tags) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!

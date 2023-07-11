@@ -1,0 +1,315 @@
+const Microsoft.Extensions.Resilience.Options.RetryPolicyOptions.InfiniteRetry = -1 -> int
+const Microsoft.Extensions.Resilience.ResilienceDimensions.DependencyName = "dep_name" -> string!
+const Microsoft.Extensions.Resilience.ResilienceDimensions.EventName = "event_name" -> string!
+const Microsoft.Extensions.Resilience.ResilienceDimensions.FailureReason = "failure_reason" -> string!
+const Microsoft.Extensions.Resilience.ResilienceDimensions.FailureSource = "failure_source" -> string!
+const Microsoft.Extensions.Resilience.ResilienceDimensions.FailureSummary = "failure_summary" -> string!
+const Microsoft.Extensions.Resilience.ResilienceDimensions.PipelineKey = "pipeline_key" -> string!
+const Microsoft.Extensions.Resilience.ResilienceDimensions.PipelineName = "pipeline_name" -> string!
+const Microsoft.Extensions.Resilience.ResilienceDimensions.PolicyName = "policy_name" -> string!
+const Microsoft.Extensions.Resilience.ResilienceDimensions.RequestName = "req_name" -> string!
+const Microsoft.Extensions.Resilience.ResilienceDimensions.ResultType = "result_type" -> string!
+Microsoft.Extensions.Resilience.FailureResultContext
+Microsoft.Extensions.Resilience.FailureResultContext.AdditionalInformation.get -> string!
+Microsoft.Extensions.Resilience.FailureResultContext.FailureReason.get -> string!
+Microsoft.Extensions.Resilience.FailureResultContext.FailureResultContext() -> void
+Microsoft.Extensions.Resilience.FailureResultContext.FailureSource.get -> string!
+Microsoft.Extensions.Resilience.FallbackScenarioTaskProvider
+Microsoft.Extensions.Resilience.FallbackScenarioTaskProvider<TResult>
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsBase
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsBase.ChaosPolicyOptionsBase() -> void
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsBase.Enabled.get -> bool
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsBase.Enabled.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsBase.FaultInjectionRate.get -> double
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsBase.FaultInjectionRate.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup.ChaosPolicyOptionsGroup() -> void
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup.CustomResultPolicyOptions.get -> Microsoft.Extensions.Resilience.FaultInjection.CustomResultPolicyOptions?
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup.CustomResultPolicyOptions.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup.ExceptionPolicyOptions.get -> Microsoft.Extensions.Resilience.FaultInjection.ExceptionPolicyOptions?
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup.ExceptionPolicyOptions.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup.HttpResponseInjectionPolicyOptions.get -> Microsoft.Extensions.Resilience.FaultInjection.HttpResponseInjectionPolicyOptions?
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup.HttpResponseInjectionPolicyOptions.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup.LatencyPolicyOptions.get -> Microsoft.Extensions.Resilience.FaultInjection.LatencyPolicyOptions?
+Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup.LatencyPolicyOptions.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.CustomResultPolicyOptions
+Microsoft.Extensions.Resilience.FaultInjection.CustomResultPolicyOptions.CustomResultKey.get -> string!
+Microsoft.Extensions.Resilience.FaultInjection.CustomResultPolicyOptions.CustomResultKey.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.CustomResultPolicyOptions.CustomResultPolicyOptions() -> void
+Microsoft.Extensions.Resilience.FaultInjection.ExceptionPolicyOptions
+Microsoft.Extensions.Resilience.FaultInjection.ExceptionPolicyOptions.ExceptionKey.get -> string!
+Microsoft.Extensions.Resilience.FaultInjection.ExceptionPolicyOptions.ExceptionKey.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.ExceptionPolicyOptions.ExceptionPolicyOptions() -> void
+Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions
+Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptions
+Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptions.ChaosPolicyOptionsGroups.get -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup!>!
+Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptions.ChaosPolicyOptionsGroups.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptions.FaultInjectionOptions() -> void
+Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder
+Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder.AddCustomResult(string! key, object! customResult) -> Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder!
+Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder.AddException(string! key, System.Exception! exception) -> Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder!
+Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder.Configure() -> Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder!
+Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder.Configure(Microsoft.Extensions.Configuration.IConfiguration! section) -> Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder!
+Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder.Configure(System.Action<Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptions!>! configureOptions) -> Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder!
+Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder.FaultInjectionOptionsBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void
+Microsoft.Extensions.Resilience.FaultInjection.FaultPolicyWeightAssignmentsOptions
+Microsoft.Extensions.Resilience.FaultInjection.FaultPolicyWeightAssignmentsOptions.FaultPolicyWeightAssignmentsOptions() -> void
+Microsoft.Extensions.Resilience.FaultInjection.FaultPolicyWeightAssignmentsOptions.WeightAssignments.get -> System.Collections.Generic.IDictionary<string!, double>!
+Microsoft.Extensions.Resilience.FaultInjection.FaultPolicyWeightAssignmentsOptions.WeightAssignments.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.HttpResponseInjectionPolicyOptions
+Microsoft.Extensions.Resilience.FaultInjection.HttpResponseInjectionPolicyOptions.HttpContentKey.get -> string?
+Microsoft.Extensions.Resilience.FaultInjection.HttpResponseInjectionPolicyOptions.HttpContentKey.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.HttpResponseInjectionPolicyOptions.HttpResponseInjectionPolicyOptions() -> void
+Microsoft.Extensions.Resilience.FaultInjection.HttpResponseInjectionPolicyOptions.StatusCode.get -> System.Net.HttpStatusCode
+Microsoft.Extensions.Resilience.FaultInjection.HttpResponseInjectionPolicyOptions.StatusCode.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.IChaosPolicyFactory
+Microsoft.Extensions.Resilience.FaultInjection.IChaosPolicyFactory.CreateCustomResultPolicy<TResult>() -> Polly.Contrib.Simmy.Outcomes.AsyncInjectOutcomePolicy<TResult>!
+Microsoft.Extensions.Resilience.FaultInjection.IChaosPolicyFactory.CreateExceptionPolicy() -> Polly.Contrib.Simmy.Outcomes.AsyncInjectOutcomePolicy!
+Microsoft.Extensions.Resilience.FaultInjection.IChaosPolicyFactory.CreateLatencyPolicy<TResult>() -> Polly.Contrib.Simmy.Latency.AsyncInjectLatencyPolicy<TResult>!
+Microsoft.Extensions.Resilience.FaultInjection.IFaultInjectionOptionsProvider
+Microsoft.Extensions.Resilience.FaultInjection.IFaultInjectionOptionsProvider.TryGetChaosPolicyOptionsGroup(string! optionsGroupName, out Microsoft.Extensions.Resilience.FaultInjection.ChaosPolicyOptionsGroup? optionsGroup) -> bool
+Microsoft.Extensions.Resilience.FaultInjection.InjectedFaultException
+Microsoft.Extensions.Resilience.FaultInjection.InjectedFaultException.InjectedFaultException() -> void
+Microsoft.Extensions.Resilience.FaultInjection.InjectedFaultException.InjectedFaultException(string! message) -> void
+Microsoft.Extensions.Resilience.FaultInjection.InjectedFaultException.InjectedFaultException(string! message, System.Exception! innerException) -> void
+Microsoft.Extensions.Resilience.FaultInjection.LatencyPolicyOptions
+Microsoft.Extensions.Resilience.FaultInjection.LatencyPolicyOptions.Latency.get -> System.TimeSpan
+Microsoft.Extensions.Resilience.FaultInjection.LatencyPolicyOptions.Latency.set -> void
+Microsoft.Extensions.Resilience.FaultInjection.LatencyPolicyOptions.LatencyPolicyOptions() -> void
+Microsoft.Extensions.Resilience.HedgedTaskProvider
+Microsoft.Extensions.Resilience.HedgedTaskProvider<TResult>
+Microsoft.Extensions.Resilience.HedgingTaskProviderArguments
+Microsoft.Extensions.Resilience.HedgingTaskProviderArguments.AttemptNumber.get -> int
+Microsoft.Extensions.Resilience.HedgingTaskProviderArguments.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.HedgingTaskProviderArguments.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.HedgingTaskProviderArguments.HedgingTaskProviderArguments() -> void
+Microsoft.Extensions.Resilience.HedgingTaskProviderArguments.HedgingTaskProviderArguments(Polly.Context! context, int attemptNumber, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>
+Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>.PipelineName.get -> string!
+Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.Extensions.Resilience.IResiliencePipelineProvider
+Microsoft.Extensions.Resilience.IResiliencePipelineProvider.GetPipeline<TResult>(string! pipelineName) -> Polly.IAsyncPolicy<TResult>!
+Microsoft.Extensions.Resilience.IResiliencePipelineProvider.GetPipeline<TResult>(string! pipelineName, string! pipelineKey) -> Polly.IAsyncPolicy<TResult>!
+Microsoft.Extensions.Resilience.Options.BackoffType
+Microsoft.Extensions.Resilience.Options.BackoffType.Constant = 1 -> Microsoft.Extensions.Resilience.Options.BackoffType
+Microsoft.Extensions.Resilience.Options.BackoffType.ExponentialWithJitter = 0 -> Microsoft.Extensions.Resilience.Options.BackoffType
+Microsoft.Extensions.Resilience.Options.BackoffType.Linear = 2 -> Microsoft.Extensions.Resilience.Options.BackoffType
+Microsoft.Extensions.Resilience.Options.BreakActionArguments
+Microsoft.Extensions.Resilience.Options.BreakActionArguments.BreakActionArguments() -> void
+Microsoft.Extensions.Resilience.Options.BreakActionArguments.BreakActionArguments(System.Exception! exception, Polly.Context! context, System.TimeSpan breakDuration, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.BreakActionArguments.BreakDuration.get -> System.TimeSpan
+Microsoft.Extensions.Resilience.Options.BreakActionArguments.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.BreakActionArguments.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.BreakActionArguments.Exception.get -> System.Exception!
+Microsoft.Extensions.Resilience.Options.BreakActionArguments<TResult>
+Microsoft.Extensions.Resilience.Options.BreakActionArguments<TResult>.BreakActionArguments() -> void
+Microsoft.Extensions.Resilience.Options.BreakActionArguments<TResult>.BreakActionArguments(Polly.DelegateResult<TResult>! result, Polly.Context! context, System.TimeSpan breakDuration, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.BreakActionArguments<TResult>.BreakDuration.get -> System.TimeSpan
+Microsoft.Extensions.Resilience.Options.BreakActionArguments<TResult>.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.BreakActionArguments<TResult>.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.BreakActionArguments<TResult>.Result.get -> Polly.DelegateResult<TResult>!
+Microsoft.Extensions.Resilience.Options.BulkheadPolicyOptions
+Microsoft.Extensions.Resilience.Options.BulkheadPolicyOptions.BulkheadPolicyOptions() -> void
+Microsoft.Extensions.Resilience.Options.BulkheadPolicyOptions.MaxConcurrency.get -> int
+Microsoft.Extensions.Resilience.Options.BulkheadPolicyOptions.MaxConcurrency.set -> void
+Microsoft.Extensions.Resilience.Options.BulkheadPolicyOptions.MaxQueuedActions.get -> int
+Microsoft.Extensions.Resilience.Options.BulkheadPolicyOptions.MaxQueuedActions.set -> void
+Microsoft.Extensions.Resilience.Options.BulkheadPolicyOptions.OnBulkheadRejectedAsync.get -> System.Func<Microsoft.Extensions.Resilience.Options.BulkheadTaskArguments, System.Threading.Tasks.Task!>!
+Microsoft.Extensions.Resilience.Options.BulkheadPolicyOptions.OnBulkheadRejectedAsync.set -> void
+Microsoft.Extensions.Resilience.Options.BulkheadTaskArguments
+Microsoft.Extensions.Resilience.Options.BulkheadTaskArguments.BulkheadTaskArguments() -> void
+Microsoft.Extensions.Resilience.Options.BulkheadTaskArguments.BulkheadTaskArguments(Polly.Context! context, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.BulkheadTaskArguments.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.BulkheadTaskArguments.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.BreakDuration.get -> System.TimeSpan
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.BreakDuration.set -> void
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.CircuitBreakerPolicyOptions() -> void
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.FailureThreshold.get -> double
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.FailureThreshold.set -> void
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.MinimumThroughput.get -> int
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.MinimumThroughput.set -> void
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.OnCircuitBreak.get -> System.Action<Microsoft.Extensions.Resilience.Options.BreakActionArguments>!
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.OnCircuitBreak.set -> void
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.OnCircuitReset.get -> System.Action<Microsoft.Extensions.Resilience.Options.ResetActionArguments>!
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.OnCircuitReset.set -> void
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.SamplingDuration.get -> System.TimeSpan
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.SamplingDuration.set -> void
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.ShouldHandleException.get -> System.Predicate<System.Exception!>!
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions.ShouldHandleException.set -> void
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions<TResult>
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions<TResult>.CircuitBreakerPolicyOptions() -> void
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions<TResult>.OnCircuitBreak.get -> System.Action<Microsoft.Extensions.Resilience.Options.BreakActionArguments<TResult>>!
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions<TResult>.OnCircuitBreak.set -> void
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions<TResult>.ShouldHandleResultAsError.get -> System.Predicate<TResult>!
+Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions<TResult>.ShouldHandleResultAsError.set -> void
+Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions
+Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions.FallbackPolicyOptions() -> void
+Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions.OnFallbackAsync.get -> System.Func<Microsoft.Extensions.Resilience.Options.FallbackTaskArguments, System.Threading.Tasks.Task!>!
+Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions.OnFallbackAsync.set -> void
+Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions.ShouldHandleException.get -> System.Predicate<System.Exception!>!
+Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions.ShouldHandleException.set -> void
+Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions<TResult>
+Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions<TResult>.FallbackPolicyOptions() -> void
+Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions<TResult>.OnFallbackAsync.get -> System.Func<Microsoft.Extensions.Resilience.Options.FallbackTaskArguments<TResult>, System.Threading.Tasks.Task!>!
+Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions<TResult>.OnFallbackAsync.set -> void
+Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions<TResult>.ShouldHandleResultAsError.get -> System.Predicate<TResult>!
+Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions<TResult>.ShouldHandleResultAsError.set -> void
+Microsoft.Extensions.Resilience.Options.FallbackScenarioTaskArguments
+Microsoft.Extensions.Resilience.Options.FallbackScenarioTaskArguments.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.FallbackScenarioTaskArguments.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.FallbackScenarioTaskArguments.FallbackScenarioTaskArguments() -> void
+Microsoft.Extensions.Resilience.Options.FallbackScenarioTaskArguments.FallbackScenarioTaskArguments(Polly.Context! context, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.FallbackTaskArguments
+Microsoft.Extensions.Resilience.Options.FallbackTaskArguments.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.FallbackTaskArguments.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.FallbackTaskArguments.Exception.get -> System.Exception!
+Microsoft.Extensions.Resilience.Options.FallbackTaskArguments.FallbackTaskArguments() -> void
+Microsoft.Extensions.Resilience.Options.FallbackTaskArguments.FallbackTaskArguments(System.Exception! exception, Polly.Context! context, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.FallbackTaskArguments<TResult>
+Microsoft.Extensions.Resilience.Options.FallbackTaskArguments<TResult>.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.FallbackTaskArguments<TResult>.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.FallbackTaskArguments<TResult>.FallbackTaskArguments() -> void
+Microsoft.Extensions.Resilience.Options.FallbackTaskArguments<TResult>.FallbackTaskArguments(Polly.DelegateResult<TResult>! result, Polly.Context! context, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.FallbackTaskArguments<TResult>.Result.get -> Polly.DelegateResult<TResult>!
+Microsoft.Extensions.Resilience.Options.HedgingDelayArguments
+Microsoft.Extensions.Resilience.Options.HedgingDelayArguments.AttemptNumber.get -> int
+Microsoft.Extensions.Resilience.Options.HedgingDelayArguments.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.HedgingDelayArguments.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.HedgingDelayArguments.HedgingDelayArguments() -> void
+Microsoft.Extensions.Resilience.Options.HedgingDelayArguments.HedgingDelayArguments(Polly.Context! context, int attemptNumber, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions.HedgingDelay.get -> System.TimeSpan
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions.HedgingDelay.set -> void
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions.HedgingDelayGenerator.get -> System.Func<Microsoft.Extensions.Resilience.Options.HedgingDelayArguments, System.TimeSpan>?
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions.HedgingDelayGenerator.set -> void
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions.HedgingPolicyOptions() -> void
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions.MaxHedgedAttempts.get -> int
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions.MaxHedgedAttempts.set -> void
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions.OnHedgingAsync.get -> System.Func<Microsoft.Extensions.Resilience.Options.HedgingTaskArguments, System.Threading.Tasks.Task!>!
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions.OnHedgingAsync.set -> void
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions.ShouldHandleException.get -> System.Predicate<System.Exception!>!
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions.ShouldHandleException.set -> void
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions<TResult>
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions<TResult>.HedgingPolicyOptions() -> void
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions<TResult>.OnHedgingAsync.get -> System.Func<Microsoft.Extensions.Resilience.Options.HedgingTaskArguments<TResult>, System.Threading.Tasks.Task!>!
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions<TResult>.OnHedgingAsync.set -> void
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions<TResult>.ShouldHandleResultAsError.get -> System.Predicate<TResult>!
+Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions<TResult>.ShouldHandleResultAsError.set -> void
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments.AttemptNumber.get -> int
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments.Exception.get -> System.Exception!
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments.HedgingTaskArguments() -> void
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments.HedgingTaskArguments(System.Exception! exception, Polly.Context! context, int attemptNumber, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments<TResult>
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments<TResult>.AttemptNumber.get -> int
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments<TResult>.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments<TResult>.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments<TResult>.HedgingTaskArguments() -> void
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments<TResult>.HedgingTaskArguments(Polly.DelegateResult<TResult>! result, Polly.Context! context, int attemptNumber, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.HedgingTaskArguments<TResult>.Result.get -> Polly.DelegateResult<TResult>!
+Microsoft.Extensions.Resilience.Options.ResetActionArguments
+Microsoft.Extensions.Resilience.Options.ResetActionArguments.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.ResetActionArguments.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.ResetActionArguments.ResetActionArguments() -> void
+Microsoft.Extensions.Resilience.Options.ResetActionArguments.ResetActionArguments(Polly.Context! context, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.RetryActionArguments
+Microsoft.Extensions.Resilience.Options.RetryActionArguments.AttemptNumber.get -> int
+Microsoft.Extensions.Resilience.Options.RetryActionArguments.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.RetryActionArguments.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.RetryActionArguments.Exception.get -> System.Exception!
+Microsoft.Extensions.Resilience.Options.RetryActionArguments.RetryActionArguments() -> void
+Microsoft.Extensions.Resilience.Options.RetryActionArguments.RetryActionArguments(System.Exception! exception, Polly.Context! context, System.TimeSpan waitingTimeInterval, int attemptNumber, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.RetryActionArguments.WaitingTimeInterval.get -> System.TimeSpan
+Microsoft.Extensions.Resilience.Options.RetryActionArguments<TResult>
+Microsoft.Extensions.Resilience.Options.RetryActionArguments<TResult>.AttemptNumber.get -> int
+Microsoft.Extensions.Resilience.Options.RetryActionArguments<TResult>.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.RetryActionArguments<TResult>.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.RetryActionArguments<TResult>.Result.get -> Polly.DelegateResult<TResult>!
+Microsoft.Extensions.Resilience.Options.RetryActionArguments<TResult>.RetryActionArguments() -> void
+Microsoft.Extensions.Resilience.Options.RetryActionArguments<TResult>.RetryActionArguments(Polly.DelegateResult<TResult>! result, Polly.Context! context, System.TimeSpan waitingTimeInterval, int attemptNumber, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.RetryActionArguments<TResult>.WaitingTimeInterval.get -> System.TimeSpan
+Microsoft.Extensions.Resilience.Options.RetryDelayArguments<TResult>
+Microsoft.Extensions.Resilience.Options.RetryDelayArguments<TResult>.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.RetryDelayArguments<TResult>.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.RetryDelayArguments<TResult>.Result.get -> Polly.DelegateResult<TResult>!
+Microsoft.Extensions.Resilience.Options.RetryDelayArguments<TResult>.RetryDelayArguments() -> void
+Microsoft.Extensions.Resilience.Options.RetryDelayArguments<TResult>.RetryDelayArguments(Polly.DelegateResult<TResult>! result, Polly.Context! context, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions.BackoffType.get -> Microsoft.Extensions.Resilience.Options.BackoffType
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions.BackoffType.set -> void
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions.BaseDelay.get -> System.TimeSpan
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions.BaseDelay.set -> void
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions.OnRetryAsync.get -> System.Func<Microsoft.Extensions.Resilience.Options.RetryActionArguments, System.Threading.Tasks.Task!>!
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions.OnRetryAsync.set -> void
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions.RetryCount.get -> int
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions.RetryCount.set -> void
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions.RetryPolicyOptions() -> void
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions.ShouldHandleException.get -> System.Predicate<System.Exception!>!
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions.ShouldHandleException.set -> void
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions<TResult>
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions<TResult>.OnRetryAsync.get -> System.Func<Microsoft.Extensions.Resilience.Options.RetryActionArguments<TResult>, System.Threading.Tasks.Task!>!
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions<TResult>.OnRetryAsync.set -> void
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions<TResult>.RetryDelayGenerator.get -> System.Func<Microsoft.Extensions.Resilience.Options.RetryDelayArguments<TResult>, System.TimeSpan>?
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions<TResult>.RetryDelayGenerator.set -> void
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions<TResult>.RetryPolicyOptions() -> void
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions<TResult>.ShouldHandleResultAsError.get -> System.Predicate<TResult>!
+Microsoft.Extensions.Resilience.Options.RetryPolicyOptions<TResult>.ShouldHandleResultAsError.set -> void
+Microsoft.Extensions.Resilience.Options.TimeoutPolicyOptions
+Microsoft.Extensions.Resilience.Options.TimeoutPolicyOptions.OnTimedOutAsync.get -> System.Func<Microsoft.Extensions.Resilience.Options.TimeoutTaskArguments, System.Threading.Tasks.Task!>!
+Microsoft.Extensions.Resilience.Options.TimeoutPolicyOptions.OnTimedOutAsync.set -> void
+Microsoft.Extensions.Resilience.Options.TimeoutPolicyOptions.TimeoutInterval.get -> System.TimeSpan
+Microsoft.Extensions.Resilience.Options.TimeoutPolicyOptions.TimeoutInterval.set -> void
+Microsoft.Extensions.Resilience.Options.TimeoutPolicyOptions.TimeoutPolicyOptions() -> void
+Microsoft.Extensions.Resilience.Options.TimeoutPolicyOptions.TimeoutStrategy.get -> Polly.Timeout.TimeoutStrategy
+Microsoft.Extensions.Resilience.Options.TimeoutPolicyOptions.TimeoutStrategy.set -> void
+Microsoft.Extensions.Resilience.Options.TimeoutTaskArguments
+Microsoft.Extensions.Resilience.Options.TimeoutTaskArguments.CancellationToken.get -> System.Threading.CancellationToken
+Microsoft.Extensions.Resilience.Options.TimeoutTaskArguments.Context.get -> Polly.Context!
+Microsoft.Extensions.Resilience.Options.TimeoutTaskArguments.TimeoutTaskArguments() -> void
+Microsoft.Extensions.Resilience.Options.TimeoutTaskArguments.TimeoutTaskArguments(Polly.Context! context, System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.Extensions.Resilience.PollyServiceCollectionExtensions
+Microsoft.Extensions.Resilience.ResilienceDimensions
+Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions
+Microsoft.Extensions.Resilience.ResilienceWrapperAttribute
+Microsoft.Extensions.Resilience.ResilienceWrapperAttribute.ResilienceWrapperAttribute() -> void
+Microsoft.Extensions.Resilience.RetryPolicyOptionsExtensions
+Microsoft.Extensions.Resilience.ServiceCollectionExtensions
+static Microsoft.Extensions.Resilience.FailureResultContext.Create(string! failureSource = "unknown", string! failureReason = "unknown", string! additionalInformation = "unknown") -> Microsoft.Extensions.Resilience.FailureResultContext
+static Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions.AddFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions.AddFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions.AddFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions.GetFaultInjectionGroupName(this Polly.Context! context) -> string?
+static Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions.WithFaultInjection(this Polly.Context! context, Microsoft.Extensions.Resilience.FaultInjection.FaultPolicyWeightAssignmentsOptions! weightAssignments) -> Polly.Context!
+static Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions.WithFaultInjection(this Polly.Context! context, string! groupName) -> Polly.Context!
+static Microsoft.Extensions.Resilience.PollyServiceCollectionExtensions.ConfigureFailureResultContext<TResult>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Func<TResult, Microsoft.Extensions.Resilience.FailureResultContext>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Resilience.ResilienceDimensions.DimensionNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddBulkheadPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddBulkheadPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddBulkheadPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Configuration.IConfigurationSection! section, System.Action<Microsoft.Extensions.Resilience.Options.BulkheadPolicyOptions!>! configure) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddBulkheadPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, System.Action<Microsoft.Extensions.Resilience.Options.BulkheadPolicyOptions!>! configure) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddCircuitBreakerPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddCircuitBreakerPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddCircuitBreakerPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Configuration.IConfigurationSection! section, System.Action<Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions<TResult>!>! configure) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddCircuitBreakerPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, System.Action<Microsoft.Extensions.Resilience.Options.CircuitBreakerPolicyOptions<TResult>!>! configure) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddFallbackPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Resilience.FallbackScenarioTaskProvider<TResult>! provider) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddFallbackPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Resilience.FallbackScenarioTaskProvider<TResult>! provider, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddFallbackPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Resilience.FallbackScenarioTaskProvider<TResult>! provider, Microsoft.Extensions.Configuration.IConfigurationSection! section, System.Action<Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions<TResult>!>! configure) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddFallbackPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Resilience.FallbackScenarioTaskProvider<TResult>! provider, System.Action<Microsoft.Extensions.Resilience.Options.FallbackPolicyOptions<TResult>!>! configure) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddHedgingPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Resilience.HedgedTaskProvider<TResult>! provider) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddHedgingPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Resilience.HedgedTaskProvider<TResult>! provider, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddHedgingPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Resilience.HedgedTaskProvider<TResult>! provider, Microsoft.Extensions.Configuration.IConfigurationSection! section, System.Action<Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions<TResult>!>! configure) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddHedgingPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Resilience.HedgedTaskProvider<TResult>! provider, System.Action<Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions<TResult>!>! configure) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddRetryPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddRetryPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddRetryPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Configuration.IConfigurationSection! section, System.Action<Microsoft.Extensions.Resilience.Options.RetryPolicyOptions<TResult>!>! configure) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddRetryPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, System.Action<Microsoft.Extensions.Resilience.Options.RetryPolicyOptions<TResult>!>! configure) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddTimeoutPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddTimeoutPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddTimeoutPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, Microsoft.Extensions.Configuration.IConfigurationSection! section, System.Action<Microsoft.Extensions.Resilience.Options.TimeoutPolicyOptions!>! configure) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.ResiliencePipelineBuilderExtensions.AddTimeoutPolicy<TResult>(this Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>! builder, string! policyName, System.Action<Microsoft.Extensions.Resilience.Options.TimeoutPolicyOptions!>! configure) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TResult>!
+static Microsoft.Extensions.Resilience.RetryPolicyOptionsExtensions.GetDelays(this Microsoft.Extensions.Resilience.Options.RetryPolicyOptions! options) -> System.Collections.Generic.IEnumerable<System.TimeSpan>!
+static Microsoft.Extensions.Resilience.ServiceCollectionExtensions.AddResiliencePipeline<TPolicyResult>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! pipelineName) -> Microsoft.Extensions.Resilience.IResiliencePipelineBuilder<TPolicyResult>!
+static readonly Microsoft.Extensions.Resilience.Options.HedgingPolicyOptions.InfiniteHedgingDelay -> System.TimeSpan

@@ -1,0 +1,88 @@
+const Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.Duration = "duration" -> string!
+const Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.Host = "httpHost" -> string!
+const Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.Method = "httpMethod" -> string!
+const Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.Path = "httpPath" -> string!
+const Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.RequestBody = "httpRequestBody" -> string!
+const Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.RequestHeaderPrefix = "httpRequestHeader_" -> string!
+const Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.ResponseBody = "httpResponseBody" -> string!
+const Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.ResponseHeaderPrefix = "httpResponseHeader_" -> string!
+const Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.StatusCode = "httpStatusCode" -> string!
+Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryExtensions
+Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryOptions
+Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryOptions.EnableDetailedLatencyBreakdown.get -> bool
+Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryOptions.EnableDetailedLatencyBreakdown.set -> void
+Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryOptions.HttpClientLatencyTelemetryOptions() -> void
+Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions
+Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions
+Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher
+Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag! enrichmentBag, System.Net.Http.HttpRequestMessage? request = null, System.Net.Http.HttpResponseMessage? response = null) -> void
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.BodyReadTimeout.get -> System.TimeSpan
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.BodyReadTimeout.set -> void
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.BodySizeLimit.get -> int
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.BodySizeLimit.set -> void
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.LogBody.get -> bool
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.LogBody.set -> void
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.LoggingOptions() -> void
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.LogRequestStart.get -> bool
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.LogRequestStart.set -> void
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestBodyContentTypes.get -> System.Collections.Generic.ISet<string!>!
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestBodyContentTypes.set -> void
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestHeadersDataClasses.get -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Compliance.Classification.DataClassification>!
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestHeadersDataClasses.set -> void
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestPathLoggingMode.get -> Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestPathLoggingMode.set -> void
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestPathParameterRedactionMode.get -> Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestPathParameterRedactionMode.set -> void
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.ResponseBodyContentTypes.get -> System.Collections.Generic.ISet<string!>!
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.ResponseBodyContentTypes.set -> void
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.ResponseHeadersDataClasses.get -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Compliance.Classification.DataClassification>!
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.ResponseHeadersDataClasses.set -> void
+Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RouteParameterDataClasses.get -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Compliance.Classification.DataClassification>!
+Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode
+Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode.Formatted = 0 -> Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode
+Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode.Structured = 1 -> Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode
+Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions
+Microsoft.Extensions.Http.Telemetry.Metering.HttpMeteringHandler
+Microsoft.Extensions.Http.Telemetry.Metering.HttpMeteringHandler.HttpMeteringHandler(Microsoft.Extensions.Telemetry.Metering.Meter<Microsoft.Extensions.Http.Telemetry.Metering.HttpMeteringHandler!>! meter, System.Collections.Generic.IEnumerable<Microsoft.Extensions.Http.Telemetry.Metering.IOutgoingRequestMetricEnricher!>! enrichers) -> void
+Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType
+Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType.ExpectedFailure = 2 -> Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType
+Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType.Failure = 1 -> Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType
+Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType.Success = 0 -> Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType
+Microsoft.Extensions.Http.Telemetry.Metering.IOutgoingRequestMetricEnricher
+Microsoft.Extensions.Http.Telemetry.Metering.IOutgoingRequestMetricEnricher.DimensionNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions
+Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingOptions
+Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingOptions.HttpClientTracingOptions() -> void
+Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingOptions.RequestPathParameterRedactionMode.get -> Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode
+Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingOptions.RequestPathParameterRedactionMode.set -> void
+Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingOptions.RouteParameterDataClasses.get -> System.Collections.Generic.IDictionary<string!, Microsoft.Extensions.Compliance.Classification.DataClassification>!
+Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingOptions.RouteParameterDataClasses.set -> void
+Microsoft.Extensions.Http.Telemetry.Tracing.IHttpClientTraceEnricher
+Microsoft.Extensions.Http.Telemetry.Tracing.IHttpClientTraceEnricher.Enrich(System.Diagnostics.Activity! activity, System.Net.Http.HttpRequestMessage? request, System.Net.Http.HttpResponseMessage? response) -> void
+Microsoft.Extensions.Http.Telemetry.Tracing.IHttpPathRedactor
+Microsoft.Extensions.Http.Telemetry.Tracing.IHttpPathRedactor.Redact(string! routeTemplate, string! httpPath, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.Extensions.Compliance.Classification.DataClassification>! parametersToRedact, out int parameterCount) -> string!
+override Microsoft.Extensions.Http.Telemetry.Metering.HttpMeteringHandler.SendAsync(System.Net.Http.HttpRequestMessage! request, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage!>!
+static Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryExtensions.AddDefaultHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryExtensions.AddDefaultHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryExtensions.AddDefaultHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.DimensionNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddDefaultHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddDefaultHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddDefaultHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddHttpClientLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, System.Action<Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions.AddDefaultHttpClientMetering(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions.AddHttpClientMetering(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions.AddHttpClientMeteringForAllHttpClients(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions.AddOutgoingRequestMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Http.Telemetry.Metering.IOutgoingRequestMetricEnricher! enricher) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions.AddOutgoingRequestMetricEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTraceEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Http.Telemetry.Tracing.IHttpClientTraceEnricher! enricher) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder! builder, Microsoft.Extensions.Http.Telemetry.Tracing.IHttpClientTraceEnricher! enricher) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTraceEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTraceEnricher<T>(this OpenTelemetry.Trace.TracerProviderBuilder! builder) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTracing(this OpenTelemetry.Trace.TracerProviderBuilder! builder) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTracing(this OpenTelemetry.Trace.TracerProviderBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> OpenTelemetry.Trace.TracerProviderBuilder!
+static Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTracing(this OpenTelemetry.Trace.TracerProviderBuilder! builder, System.Action<Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingOptions!>! configure) -> OpenTelemetry.Trace.TracerProviderBuilder!

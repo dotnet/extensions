@@ -1,0 +1,24 @@
+Microsoft.Extensions.LocalAnalyzers.ApiLifecycle.ApiLifecycleAnalyzer
+Microsoft.Extensions.LocalAnalyzers.ApiLifecycle.ApiLifecycleAnalyzer.ApiLifecycleAnalyzer() -> void
+Microsoft.Extensions.LocalAnalyzers.CallAnalysis.CallAnalyzer
+Microsoft.Extensions.LocalAnalyzers.CallAnalysis.CallAnalyzer.CallAnalyzer() -> void
+Microsoft.Extensions.LocalAnalyzers.Json.JsonParseException
+Microsoft.Extensions.LocalAnalyzers.Json.JsonParseException.Error.get -> Microsoft.Extensions.LocalAnalyzers.Json.ParsingError
+Microsoft.Extensions.LocalAnalyzers.Json.JsonParseException.JsonParseException() -> void
+Microsoft.Extensions.LocalAnalyzers.Json.JsonParseException.JsonParseException(Microsoft.Extensions.LocalAnalyzers.Json.ParsingError type, Microsoft.Extensions.LocalAnalyzers.Json.TextPosition position) -> void
+Microsoft.Extensions.LocalAnalyzers.Json.JsonParseException.JsonParseException(string! message, Microsoft.Extensions.LocalAnalyzers.Json.ParsingError error, Microsoft.Extensions.LocalAnalyzers.Json.TextPosition position) -> void
+Microsoft.Extensions.LocalAnalyzers.Json.JsonParseException.Position.get -> Microsoft.Extensions.LocalAnalyzers.Json.TextPosition
+Microsoft.Extensions.LocalAnalyzers.Json.ParsingError
+Microsoft.Extensions.LocalAnalyzers.Json.ParsingError.DuplicateObjectKeys = 2 -> Microsoft.Extensions.LocalAnalyzers.Json.ParsingError
+Microsoft.Extensions.LocalAnalyzers.Json.ParsingError.IncompleteMessage = 1 -> Microsoft.Extensions.LocalAnalyzers.Json.ParsingError
+Microsoft.Extensions.LocalAnalyzers.Json.ParsingError.InvalidOrUnexpectedCharacter = 3 -> Microsoft.Extensions.LocalAnalyzers.Json.ParsingError
+Microsoft.Extensions.LocalAnalyzers.Json.ParsingError.Unknown = 0 -> Microsoft.Extensions.LocalAnalyzers.Json.ParsingError
+Microsoft.Extensions.LocalAnalyzers.Json.TextPosition
+Microsoft.Extensions.LocalAnalyzers.Json.TextPosition.Column.get -> long
+Microsoft.Extensions.LocalAnalyzers.Json.TextPosition.Line.get -> long
+Microsoft.Extensions.LocalAnalyzers.Json.TextPosition.TextPosition() -> void
+Microsoft.Extensions.LocalAnalyzers.Json.TextPosition.TextPosition(long column, long line) -> void
+override Microsoft.Extensions.LocalAnalyzers.ApiLifecycle.ApiLifecycleAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override Microsoft.Extensions.LocalAnalyzers.ApiLifecycle.ApiLifecycleAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>
+override Microsoft.Extensions.LocalAnalyzers.CallAnalysis.CallAnalyzer.Initialize(Microsoft.CodeAnalysis.Diagnostics.AnalysisContext! context) -> void
+override Microsoft.Extensions.LocalAnalyzers.CallAnalysis.CallAnalyzer.SupportedDiagnostics.get -> System.Collections.Immutable.ImmutableArray<Microsoft.CodeAnalysis.DiagnosticDescriptor!>

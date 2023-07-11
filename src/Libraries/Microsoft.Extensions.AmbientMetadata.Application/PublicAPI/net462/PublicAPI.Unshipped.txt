@@ -1,0 +1,15 @@
+Microsoft.Extensions.AmbientMetadata.ApplicationMetadata
+Microsoft.Extensions.AmbientMetadata.ApplicationMetadata.ApplicationMetadata() -> void
+Microsoft.Extensions.AmbientMetadata.ApplicationMetadata.ApplicationName.get -> string!
+Microsoft.Extensions.AmbientMetadata.ApplicationMetadata.ApplicationName.set -> void
+Microsoft.Extensions.AmbientMetadata.ApplicationMetadata.BuildVersion.get -> string?
+Microsoft.Extensions.AmbientMetadata.ApplicationMetadata.BuildVersion.set -> void
+Microsoft.Extensions.AmbientMetadata.ApplicationMetadata.DeploymentRing.get -> string?
+Microsoft.Extensions.AmbientMetadata.ApplicationMetadata.DeploymentRing.set -> void
+Microsoft.Extensions.AmbientMetadata.ApplicationMetadata.EnvironmentName.get -> string!
+Microsoft.Extensions.AmbientMetadata.ApplicationMetadata.EnvironmentName.set -> void
+Microsoft.Extensions.AmbientMetadata.ApplicationMetadataExtensions
+static Microsoft.Extensions.AmbientMetadata.ApplicationMetadataExtensions.AddApplicationMetadata(this Microsoft.Extensions.Configuration.IConfigurationBuilder! builder, Microsoft.Extensions.Hosting.IHostEnvironment! hostEnvironment, string! sectionName = "ambientmetadata:application") -> Microsoft.Extensions.Configuration.IConfigurationBuilder!
+static Microsoft.Extensions.AmbientMetadata.ApplicationMetadataExtensions.AddApplicationMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.AmbientMetadata.ApplicationMetadataExtensions.AddApplicationMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.AmbientMetadata.ApplicationMetadata!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.AmbientMetadata.ApplicationMetadataExtensions.UseApplicationMetadata(this Microsoft.Extensions.Hosting.IHostBuilder! builder, string! sectionName = "ambientmetadata:application") -> Microsoft.Extensions.Hosting.IHostBuilder!
