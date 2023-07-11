@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Net.Http;
+using FluentAssertions;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Xunit;
 
@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Http.Resilience.Test.Resilience;
 
 #pragma warning disable CA2000 // Test class
 
-public class HttpRequestMessageExtensionsTests
+public class UriExtensionsTests
 {
     [Theory]
     [InlineData("https://initial.uri", "https://fallback-uri.com")]
@@ -22,19 +22,30 @@ public class HttpRequestMessageExtensionsTests
     [InlineData("https://initial.uri?", "https://fallback-uri.com")]
     public void ReplaceHost_ValidArguments_ShouldReplaceUri(string initialUriString, string expectedUriString)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, new Uri(initialUriString));
         var fallbackUri = new Uri("https://fallback-uri.com");
+        var initialUri = new Uri(initialUriString);
 
-        request = request.ReplaceHost(fallbackUri);
-        var expectedUri = new Uri(expectedUriString);
-        Assert.Equal(expectedUri, request.RequestUri);
+        initialUri.ReplaceHost(fallbackUri).Should().Be(new Uri(expectedUriString));
     }
 
-    [Fact]
-    public void ReplaceHost_NullUri_ShouldThrow()
+    [Theory]
+    [InlineData("https://initial.uri", "https://initial.uri", true)]
+    [InlineData("https://initial.uri:123", "https://initial.uri:123", true)]
+    [InlineData("http://initial.uri:123", "http://initial.uri:123", true)]
+    [InlineData("https://initial.uri", "https://initial.uri:123", false)]
+    [InlineData("https://initial.uri:123", "https://initial.uri:123/some-path", false)]
+    [InlineData("http://initial.uri:123", "https://initial.uri:123", false)]
+    public void ReplaceHost_TargetHostSame_ShouldReturnInitialUri(string initialUriString, string replacementUri, bool shouldBeSame)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, new Uri("https://initial.uri"));
-        Assert.Throws<ArgumentNullException>(() =>
-            request.ReplaceHost(null!));
+        var initialUri = new Uri(initialUriString);
+
+        if (shouldBeSame)
+        {
+            initialUri.ReplaceHost(new Uri(replacementUri)).Should().BeSameAs(initialUri);
+        }
+        else
+        {
+            initialUri.ReplaceHost(new Uri(replacementUri)).Should().NotBeSameAs(initialUri);
+        }
     }
 }

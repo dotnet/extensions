@@ -35,7 +35,6 @@ public abstract class HedgingTests<TBuilder> : IDisposable
     private readonly Mock<RequestRoutingStrategy> _requestRoutingStrategyMock;
     private readonly Func<RequestRoutingStrategy> _requestRoutingStrategyFactory;
     private readonly IServiceCollection _services;
-    private readonly List<string> _requests = new();
     private readonly Queue<HttpResponseMessage> _responses = new();
     private bool _failure;
 
@@ -55,6 +54,8 @@ public abstract class HedgingTests<TBuilder> : IDisposable
     }
 
     public TBuilder Builder { get; private set; }
+
+    public List<string> Requests { get; } = new();
 
     public void Dispose()
     {
@@ -109,8 +110,8 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         var response = await client.SendAsync(request, _cancellationTokenSource.Token);
         AssertNoResponse();
 
-        Assert.Single(_requests);
-        Assert.Equal("https://enpoint-1:80/some-path?query", _requests[0]);
+        Assert.Single(Requests);
+        Assert.Equal("https://enpoint-1:80/some-path?query", Requests[0]);
     }
 
     [Fact]
@@ -144,8 +145,8 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await client.SendAsync(request, _cancellationTokenSource.Token));
         Assert.Equal("Something went wrong!", exception.Message);
 
-        Assert.Equal(2, _requests.Count);
-        Assert.Equal(2, _requests.Distinct().Count());
+        Assert.Equal(2, Requests.Count);
+        Assert.Equal(2, Requests.Distinct().Count());
     }
 
     [Fact]
@@ -163,7 +164,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         using var client = CreateClientWithHandler();
 
         var result = await client.SendAsync(request, _cancellationTokenSource.Token);
-        Assert.Equal(DefaultHedgingAttempts, _requests.Count);
+        Assert.Equal(DefaultHedgingAttempts, Requests.Count);
         Assert.Equal(HttpStatusCode.ServiceUnavailable, result.StatusCode);
     }
 
@@ -183,7 +184,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         using var client = CreateClientWithHandler();
 
         var result = await client.SendAsync(request, _cancellationTokenSource.Token);
-        Assert.Equal(2, _requests.Count);
+        Assert.Equal(2, Requests.Count);
     }
 
     [Fact]
@@ -201,11 +202,11 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         using var client = CreateClientWithHandler();
 
         var result = await client.SendAsync(request, _cancellationTokenSource.Token);
-        Assert.Equal(3, _requests.Count);
+        Assert.Equal(3, Requests.Count);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        Assert.Equal("https://enpoint-1:80/some-path?query", _requests[0]);
-        Assert.Equal("https://enpoint-2:80/some-path?query", _requests[1]);
-        Assert.Equal("https://enpoint-3:80/some-path?query", _requests[2]);
+        Assert.Equal("https://enpoint-1:80/some-path?query", Requests[0]);
+        Assert.Equal("https://enpoint-2:80/some-path?query", Requests[1]);
+        Assert.Equal("https://enpoint-3:80/some-path?query", Requests[2]);
     }
 
     protected void AssertNoResponse() => Assert.Empty(_responses);
@@ -228,7 +229,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
     private Task<HttpResponseMessage> InnerHandlerFunction(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        _requests.Add(request.RequestUri!.ToString());
+        Requests.Add(request.RequestUri!.ToString());
 
         if (_failure)
         {

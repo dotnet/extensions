@@ -14,9 +14,9 @@ namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 /// </summary>
 internal sealed class RoutingResilienceStrategy : ResilienceStrategy
 {
-    private readonly Func<RequestRoutingStrategy> _provider;
+    private readonly Func<RequestRoutingStrategy>? _provider;
 
-    public RoutingResilienceStrategy(Func<RequestRoutingStrategy> provider)
+    public RoutingResilienceStrategy(Func<RequestRoutingStrategy>? provider)
     {
         _provider = provider;
     }
@@ -29,6 +29,11 @@ internal sealed class RoutingResilienceStrategy : ResilienceStrategy
         if (!context.Properties.TryGetValue(ResilienceKeys.RequestMessage, out var request))
         {
             Throw.InvalidOperationException("The HTTP request message was not found in the resilience context.");
+        }
+
+        if (_provider is null)
+        {
+            return await callback(context, state).ConfigureAwait(context.ContinueOnCapturedContext);
         }
 
         using var strategy = _provider();

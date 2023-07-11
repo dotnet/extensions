@@ -24,6 +24,7 @@ public enum HedgingClientType
     Weighted = 1 << 0,
     Ordered = 1 << 1,
     ManyRoutes = 1 << 2,
+    NoRoutes = 1 << 3,
 }
 
 internal static class HttpClientFactory
@@ -31,18 +32,16 @@ internal static class HttpClientFactory
     internal const string EmptyClient = "Empty";
     internal const string StandardClient = "Standard";
     internal const string SingleHandlerClient = "SingleHandler";
+    internal const string PrimaryEndpoint = "http://localhost1";
+    internal const string SecondaryEndpoint = "http://localhost2";
 
-    private const string HedgingEndpoint1 = "http://localhost1";
-    private const string HedgingEndpoint2 = "http://localhost2";
-
-    public static ServiceProvider InitializeServiceProvider(HedgingClientType clientType)
+    public static ServiceProvider InitializeServiceProvider(params HedgingClientType[] clientType)
     {
         var services = new ServiceCollection();
         services
             .RegisterMetering()
             .AddSingleton<IRedactorProvider>(NullRedactorProvider.Instance)
             .AddTransient<NoRemoteCallHandler>()
-            .AddHedging(clientType)
             .AddHttpClient(StandardClient, client => client.Timeout = Timeout.InfiniteTimeSpan)
             .AddStandardResilienceHandler()
             .Services
@@ -59,14 +58,24 @@ internal static class HttpClientFactory
         services.RemoveAll<ILoggerFactory>();
         services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
+        foreach (var type in clientType)
+        {
+            services.AddHedging(type);
+        }
+
         return services.BuildServiceProvider();
     }
 
-    private static IServiceCollection AddHedging(this IServiceCollection services, HedgingClientType clientType)
+    private static void AddHedging(this IServiceCollection services, HedgingClientType clientType)
     {
         var clientBuilder = services.AddHttpClient(clientType.ToString(), client => client.Timeout = Timeout.InfiniteTimeSpan);
         var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectStrategyByAuthority(SimpleClassifications.PublicData);
         _ = clientBuilder.AddHttpMessageHandler<NoRemoteCallHandler>();
+
+        if (clientType.HasFlag(HedgingClientType.NoRoutes))
+        {
+            return;
+        }
 
         int routes = clientType.HasFlag(HedgingClientType.ManyRoutes) ? 50 : 2;
 
@@ -82,11 +91,11 @@ internal static class HttpClientFactory
                         {
                             new WeightedEndpoint
                             {
-                                Uri = new Uri(HedgingEndpoint1)
+                                Uri = new Uri(PrimaryEndpoint)
                             },
                             new WeightedEndpoint
                             {
-                                Uri = new Uri(HedgingEndpoint2)
+                                Uri = new Uri(SecondaryEndpoint)
                             }
                         }
                     };
@@ -105,18 +114,16 @@ internal static class HttpClientFactory
                         {
                             new WeightedEndpoint
                             {
-                                Uri = new Uri(HedgingEndpoint1)
+                                Uri = new Uri(PrimaryEndpoint)
                             },
                             new WeightedEndpoint
                             {
-                                Uri = new Uri(HedgingEndpoint2)
+                                Uri = new Uri(SecondaryEndpoint)
                             }
                         }
                     };
                 }).ToArray();
             });
         }
-
-        return services;
     }
 }
