@@ -7,10 +7,10 @@ using Xunit;
 
 namespace Microsoft.Extensions.Compliance.Redaction.Tests;
 
-public class NullRedactorTest
+public static class NullRedactorTest
 {
     [Fact]
-    public void NullRedactor_When_Given_Empty_String_Returns_Empty_String()
+    public static void NullRedactor_When_Given_Empty_String_Returns_Empty_String()
     {
         var r = NullRedactor.Instance;
 
@@ -20,7 +20,7 @@ public class NullRedactorTest
     }
 
     [Fact]
-    public void NullRedactor_When_Given_Empty_Buffer_Returns_0_Chars_Written()
+    public static void NullRedactor_When_Given_Empty_Buffer_Returns_0_Chars_Written()
     {
         var r = NullRedactor.Instance;
 
@@ -35,7 +35,14 @@ public class NullRedactorTest
     }
 
     [Fact]
-    public void NullRedactorProvider_Returns_Always_NullRedactor()
+    public static void NullRedactor_Handles_BufferTooSmall()
+    {
+        var r = NullRedactor.Instance;
+        Assert.Throws<ArgumentException>(() => r.Redact("ABCD".AsSpan(), new char[1].AsSpan()));
+    }
+
+    [Fact]
+    public static void NullRedactorProvider_Returns_Always_NullRedactor()
     {
         var dc1 = new DataClassification("TAX", 1);
         var dc2 = new DataClassification("TAX", 2);

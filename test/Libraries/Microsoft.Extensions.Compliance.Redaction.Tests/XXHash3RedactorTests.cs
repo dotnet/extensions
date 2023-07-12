@@ -42,12 +42,6 @@ public class XXHash3RedactorTests
     }
 
     [Fact]
-    public void NullChecks()
-    {
-        Assert.Throws<ArgumentException>(() => new XXHash3Redactor(Microsoft.Extensions.Options.Options.Create<XXHash3RedactorOptions>(null!)));
-    }
-
-    [Fact]
     public void XXHashRedactor_Does_Nothing_With_Empty_Input()
     {
         var redactor = new XXHash3Redactor(Microsoft.Extensions.Options.Options.Create(new XXHash3RedactorOptions

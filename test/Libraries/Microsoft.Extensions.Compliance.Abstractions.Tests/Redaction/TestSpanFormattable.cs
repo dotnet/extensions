@@ -1,19 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET8_0_OR_GREATER
-// Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
-// and as such the API is available in .NET 8 onwards.
+#if NET6_0_OR_GREATER
 
 using System;
 
 namespace Microsoft.Extensions.Compliance.Redaction.Tests;
 
-internal sealed class FakeSpanFormattable : ISpanFormattable
+internal sealed class TestSpanFormattable : ISpanFormattable
 {
     private readonly string _value;
 
-    public FakeSpanFormattable(string value)
+    public TestSpanFormattable(string value)
     {
         _value = value;
     }

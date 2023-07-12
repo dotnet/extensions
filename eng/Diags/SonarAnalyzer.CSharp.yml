@@ -2277,7 +2277,8 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: Warning
+        Severity: None
+        Redundant: CA2002
   S2583:
     Metadata:
       Category: Major Bug

@@ -356,11 +356,11 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.WaitForMeasurementsAsync(int numMeasurements);",
+          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.WaitForMeasurementsAsync(int minCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         },
         {
-          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.WaitForMeasurementsAsync(int numMeasurements, System.TimeSpan timeout, System.TimeProvider? timeProvider = null);",
+          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.WaitForMeasurementsAsync(int minCount, System.TimeSpan timeout);",
           "Stage": "Experimental"
         }
       ],

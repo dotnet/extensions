@@ -10,11 +10,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset startTime);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset startTime, System.TimeSpan autoAdvanceAmount);",
+          "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset startDateTime);",
           "Stage": "Experimental"
         },
         {
@@ -48,8 +44,16 @@
       ],
       "Properties": [
         {
+          "Member": "System.TimeSpan Microsoft.Extensions.Time.Testing.FakeTimeProvider.AutoAdvanceAmount { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "override System.TimeZoneInfo Microsoft.Extensions.Time.Testing.FakeTimeProvider.LocalTimeZone { get; }",
           "Stage": "Stable"
+        },
+        {
+          "Member": "System.DateTimeOffset Microsoft.Extensions.Time.Testing.FakeTimeProvider.Start { get; }",
+          "Stage": "Experimental"
         },
         {
           "Member": "override long Microsoft.Extensions.Time.Testing.FakeTimeProvider.TimestampFrequency { get; }",

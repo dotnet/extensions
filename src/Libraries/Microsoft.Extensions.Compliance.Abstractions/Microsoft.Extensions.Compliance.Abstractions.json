@@ -40,6 +40,10 @@
         {
           "Member": "static bool Microsoft.Extensions.Compliance.Classification.DataClassification.operator !=(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.Compliance.Classification.DataClassification.ToString();",
+          "Stage": "Experimental"
         }
       ],
       "Fields": [
@@ -134,6 +138,54 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.Compliance.Redaction.NullRedactor : Microsoft.Extensions.Compliance.Redaction.Redactor",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Redaction.NullRedactor.NullRedactor();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.Compliance.Redaction.NullRedactor.GetRedactedLength(System.ReadOnlySpan<char> input);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.Compliance.Redaction.NullRedactor.Redact(System.ReadOnlySpan<char> source, System.Span<char> destination);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.Compliance.Redaction.NullRedactor.Redact(string? source);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.NullRedactor Microsoft.Extensions.Compliance.Redaction.NullRedactor.Instance { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Compliance.Redaction.NullRedactorProvider : Microsoft.Extensions.Compliance.Redaction.IRedactorProvider",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Redaction.NullRedactorProvider.NullRedactorProvider();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Compliance.Redaction.Redactor Microsoft.Extensions.Compliance.Redaction.NullRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.NullRedactorProvider Microsoft.Extensions.Compliance.Redaction.NullRedactorProvider.Instance { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "static class Microsoft.Extensions.Compliance.Redaction.RedactionAbstractionsExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -186,6 +238,10 @@
         {
           "Member": "int Microsoft.Extensions.Compliance.Redaction.Redactor.Redact<T>(T value, System.Span<char> destination, string? format = null, System.IFormatProvider? provider = null);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Compliance.Redaction.Redactor.TryRedact<T>(T value, System.Span<char> destination, out int charsWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider = null);",
+          "Stage": "Experimental"
         }
       ]
     },

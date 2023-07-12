@@ -41,7 +41,7 @@ public abstract class Redactor
             return string.Create(
                 length,
                 (this, (IntPtr)(&source)),
-                (destination, state) => state.Item1.Redact(*(ReadOnlySpan<char>*)state.Item2, destination));
+                static (destination, state) => state.Item1.Redact(*(ReadOnlySpan<char>*)state.Item2, destination));
 #pragma warning restore 8500
         }
 #else
@@ -102,9 +102,8 @@ public abstract class Redactor
     /// The optional format that selects the specific formatting operation performed. Refer to the
     /// documentation of the type being formatted to understand the values you can supply here.
     /// </param>
-    /// <param name="provider">Format provider to retrieve format for span formattable.</param>
+    /// <param name="provider">Format provider used to produce a string representing the value.</param>
     /// <returns>Redacted value.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     [SkipLocalsInit]
     [SuppressMessage("Minor Code Smell", "S3247:Duplicate casts should not be made", Justification = "Avoid pattern matching to improve jitted code")]
     public string Redact<T>(T value, string? format = null, IFormatProvider? provider = null)
@@ -129,7 +128,7 @@ public abstract class Redactor
                     return string.Create(
                         length,
                         (this, (IntPtr)(&formatted)),
-                        (destination, state) => state.Item1.Redact(*(ReadOnlySpan<char>*)state.Item2, destination));
+                        static (destination, state) => state.Item1.Redact(*(ReadOnlySpan<char>*)state.Item2, destination));
 #pragma warning restore 8500
                 }
             }
@@ -154,9 +153,9 @@ public abstract class Redactor
     /// The optional format string that selects the specific formatting operation performed. Refer to the
     /// documentation of the type being formatted to understand the values you can supply here.
     /// </param>
-    /// <param name="provider">Format provider to retrieve format for span formattable.</param>
+    /// <param name="provider">Format provider used to produce a string representing the value.</param>
     /// <returns>Number of characters written to the buffer.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="destination"/> is too small.</exception>
     [SkipLocalsInit]
     [SuppressMessage("Minor Code Smell", "S3247:Duplicate casts should not be made", Justification = "Avoid pattern matching to improve jitted code")]
     public int Redact<T>(T value, Span<char> destination, string? format = null, IFormatProvider? provider = null)
@@ -186,10 +185,74 @@ public abstract class Redactor
     }
 
     /// <summary>
+    /// Tries to redact potentially sensitive data.
+    /// </summary>
+    /// <typeparam name="T">Type of value to redact.</typeparam>
+    /// <param name="value">Value to redact.</param>
+    /// <param name="destination">Buffer to redact into.</param>
+    /// <param name="charsWritten">Variable that receive the number of redacted characters written to the destination buffer.</param>
+    /// <param name="format">
+    /// The format string that selects the specific formatting operation performed. Refer to the
+    /// documentation of the type being formatted to understand the values you can supply here.
+    /// </param>
+    /// <param name="provider">Format provider used to produce a string representing the value.</param>
+    /// <returns><see langword="true"/> if the destination buffer was large enough, otherwise <see langword="false"/>.</returns>
+    [SkipLocalsInit]
+    [SuppressMessage("Minor Code Smell", "S3247:Duplicate casts should not be made", Justification = "Avoid pattern matching to improve jitted code")]
+    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    public bool TryRedact<T>(T value, Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider = null)
+    {
+#if NET6_0_OR_GREATER
+        if (value is ISpanFormattable)
+        {
+            Span<char> buffer = stackalloc char[MaximumStackAllocation];
+
+            // Stryker disable all : Cannot kill the mutant because the only difference is allocating buffer on stack or renting it.
+            if (((ISpanFormattable)value).TryFormat(buffer, out var written, format, provider))
+            {
+                // Stryker enable all : Cannot kill the mutant because the only difference is allocating buffer on stack or renting it.
+                var formatted = buffer.Slice(0, written);
+
+                var rlen = GetRedactedLength(formatted);
+                if (rlen > destination.Length)
+                {
+                    charsWritten = 0;
+                    return false;
+                }
+
+                charsWritten = Redact(formatted, destination);
+                return true;
+            }
+        }
+#endif
+
+        string? str;
+        if (value is IFormattable)
+        {
+            var fmt = format.Length > 0 ? format.ToString() : string.Empty;
+            str = ((IFormattable)value).ToString(fmt, provider);
+        }
+        else
+        {
+            str = value?.ToString();
+        }
+
+        var len = GetRedactedLength(str);
+        if (len > destination.Length)
+        {
+            charsWritten = 0;
+            return false;
+        }
+
+        charsWritten = Redact(str, destination);
+        return true;
+    }
+
+    /// <summary>
     /// Gets the number of characters produced by redacting the input.
     /// </summary>
     /// <param name="input">Value to be redacted.</param>
-    /// <returns>Minimum buffer size.</returns>
+    /// <returns>The number of characters produced by redacting the input.</returns>
     public abstract int GetRedactedLength(ReadOnlySpan<char> input);
 
     /// <summary>
