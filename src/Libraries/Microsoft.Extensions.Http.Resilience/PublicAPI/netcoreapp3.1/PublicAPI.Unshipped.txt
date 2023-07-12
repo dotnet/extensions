@@ -6,7 +6,12 @@ Microsoft.Extensions.Http.Resilience.EndpointGroup
 Microsoft.Extensions.Http.Resilience.EndpointGroup.EndpointGroup() -> void
 Microsoft.Extensions.Http.Resilience.EndpointGroup.Endpoints.get -> System.Collections.Generic.IList<Microsoft.Extensions.Http.Resilience.WeightedEndpoint!>!
 Microsoft.Extensions.Http.Resilience.EndpointGroup.Endpoints.set -> void
-Microsoft.Extensions.Http.Resilience.FaultInjection.ContextExtensions
+Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions
+Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions.BaseFallbackUri.get -> System.Uri?
+Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions.BaseFallbackUri.set -> void
+Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions.FallbackClientHandlerOptions() -> void
+Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions.FallbackPolicyOptions.get -> Microsoft.Extensions.Http.Resilience.HttpFallbackPolicyOptions!
+Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions.FallbackPolicyOptions.set -> void
 Microsoft.Extensions.Http.Resilience.FaultInjection.HttpClientFaultInjectionExtensions
 Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder
 Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.AddException(string! key, System.Exception! exception) -> Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder!
@@ -17,62 +22,69 @@ Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBui
 Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.HttpFaultInjectionOptionsBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void
 Microsoft.Extensions.Http.Resilience.FaultInjection.IHttpClientChaosPolicyFactory
 Microsoft.Extensions.Http.Resilience.FaultInjection.IHttpClientChaosPolicyFactory.CreateHttpResponsePolicy() -> Polly.Contrib.Simmy.Outcomes.AsyncInjectOutcomePolicy<System.Net.Http.HttpResponseMessage!>!
+Microsoft.Extensions.Http.Resilience.FaultInjection.PolicyContextExtensions
 Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions
-Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.CircuitBreakerOptions.get -> Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerStrategyOptions!
+Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.BulkheadOptions.get -> Microsoft.Extensions.Http.Resilience.HttpBulkheadPolicyOptions!
+Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.BulkheadOptions.set -> void
+Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.CircuitBreakerOptions.get -> Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerPolicyOptions!
 Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.CircuitBreakerOptions.set -> void
 Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.HedgingEndpointOptions() -> void
-Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.RateLimiterOptions.get -> Microsoft.Extensions.Http.Resilience.HttpRateLimiterStrategyOptions!
-Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.RateLimiterOptions.set -> void
-Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.TimeoutOptions.get -> Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions!
+Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.TimeoutOptions.get -> Microsoft.Extensions.Http.Resilience.HttpTimeoutPolicyOptions!
 Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions.TimeoutOptions.set -> void
-Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerStrategyOptions
-Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerStrategyOptions.HttpCircuitBreakerStrategyOptions() -> void
+Microsoft.Extensions.Http.Resilience.HedgingHttpClientBuilderExtensions
+Microsoft.Extensions.Http.Resilience.HttpBulkheadPolicyOptions
+Microsoft.Extensions.Http.Resilience.HttpBulkheadPolicyOptions.HttpBulkheadPolicyOptions() -> void
+Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerPolicyOptions
+Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerPolicyOptions.HttpCircuitBreakerPolicyOptions() -> void
 Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions
 Microsoft.Extensions.Http.Resilience.HttpClientHedgingResiliencePredicates
+Microsoft.Extensions.Http.Resilience.HttpClientResilienceGenerators
 Microsoft.Extensions.Http.Resilience.HttpClientResiliencePredicates
-Microsoft.Extensions.Http.Resilience.HttpHedgingStrategyOptions
-Microsoft.Extensions.Http.Resilience.HttpHedgingStrategyOptions.HttpHedgingStrategyOptions() -> void
-Microsoft.Extensions.Http.Resilience.HttpRateLimiterStrategyOptions
-Microsoft.Extensions.Http.Resilience.HttpRateLimiterStrategyOptions.HttpRateLimiterStrategyOptions() -> void
-Microsoft.Extensions.Http.Resilience.HttpRequestMessageExtensions
-Microsoft.Extensions.Http.Resilience.HttpResilienceStrategyBuilderExtensions
-Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions
-Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions.HttpRetryStrategyOptions() -> void
-Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions.ShouldRetryAfterHeader.get -> bool
-Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions.ShouldRetryAfterHeader.set -> void
+Microsoft.Extensions.Http.Resilience.HttpFallbackPolicyOptions
+Microsoft.Extensions.Http.Resilience.HttpFallbackPolicyOptions.HttpFallbackPolicyOptions() -> void
+Microsoft.Extensions.Http.Resilience.HttpHedgingPolicyOptions
+Microsoft.Extensions.Http.Resilience.HttpHedgingPolicyOptions.HttpHedgingPolicyOptions() -> void
+Microsoft.Extensions.Http.Resilience.HttpResiliencePipelineBuilderExtensions
+Microsoft.Extensions.Http.Resilience.HttpRetryPolicyOptions
+Microsoft.Extensions.Http.Resilience.HttpRetryPolicyOptions.HttpRetryPolicyOptions() -> void
+Microsoft.Extensions.Http.Resilience.HttpRetryPolicyOptions.ShouldRetryAfterHeader.get -> bool
+Microsoft.Extensions.Http.Resilience.HttpRetryPolicyOptions.ShouldRetryAfterHeader.set -> void
 Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions
 Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.EndpointOptions.get -> Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions!
 Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.EndpointOptions.set -> void
-Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.HedgingOptions.get -> Microsoft.Extensions.Http.Resilience.HttpHedgingStrategyOptions!
+Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.HedgingOptions.get -> Microsoft.Extensions.Http.Resilience.HttpHedgingPolicyOptions!
 Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.HedgingOptions.set -> void
 Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.HttpStandardHedgingResilienceOptions() -> void
-Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.TotalRequestTimeoutOptions.get -> Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions!
+Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.TotalRequestTimeoutOptions.get -> Microsoft.Extensions.Http.Resilience.HttpTimeoutPolicyOptions!
 Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions.TotalRequestTimeoutOptions.set -> void
-Microsoft.Extensions.Http.Resilience.HttpStandardResilienceBuilderBuilderExtensions
 Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions
-Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.AttemptTimeoutOptions.get -> Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions!
+Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.AttemptTimeoutOptions.get -> Microsoft.Extensions.Http.Resilience.HttpTimeoutPolicyOptions!
 Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.AttemptTimeoutOptions.set -> void
-Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.CircuitBreakerOptions.get -> Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerStrategyOptions!
+Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.BulkheadOptions.get -> Microsoft.Extensions.Http.Resilience.HttpBulkheadPolicyOptions!
+Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.BulkheadOptions.set -> void
+Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.CircuitBreakerOptions.get -> Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerPolicyOptions!
 Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.CircuitBreakerOptions.set -> void
 Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.HttpStandardResilienceOptions() -> void
-Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.RateLimiterOptions.get -> Microsoft.Extensions.Http.Resilience.HttpRateLimiterStrategyOptions!
-Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.RateLimiterOptions.set -> void
-Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.RetryOptions.get -> Microsoft.Extensions.Http.Resilience.HttpRetryStrategyOptions!
+Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.RetryOptions.get -> Microsoft.Extensions.Http.Resilience.HttpRetryPolicyOptions!
 Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.RetryOptions.set -> void
-Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.TotalRequestTimeoutOptions.get -> Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions!
+Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.TotalRequestTimeoutOptions.get -> Microsoft.Extensions.Http.Resilience.HttpTimeoutPolicyOptions!
 Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions.TotalRequestTimeoutOptions.set -> void
-Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions
-Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions.HttpTimeoutStrategyOptions() -> void
-Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder
-Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder.StrategyName.get -> string!
-Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder
-Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder.StrategyName.get -> string!
+Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions
+Microsoft.Extensions.Http.Resilience.HttpTimeoutPolicyOptions
+Microsoft.Extensions.Http.Resilience.HttpTimeoutPolicyOptions.HttpTimeoutPolicyOptions() -> void
+Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder
+Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder
+Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder.PipelineName.get -> string!
+Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.Extensions.Http.Resilience.IRequestRoutingStrategy
+Microsoft.Extensions.Http.Resilience.IRequestRoutingStrategy.TryGetNextRoute(out System.Uri? nextRoute) -> bool
+Microsoft.Extensions.Http.Resilience.IRequestRoutingStrategyFactory
+Microsoft.Extensions.Http.Resilience.IRequestRoutingStrategyFactory.CreateRoutingStrategy() -> Microsoft.Extensions.Http.Resilience.IRequestRoutingStrategy!
 Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder
 Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder.Name.get -> string!
 Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder
+Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder.EndpointResiliencePipelineBuilder.get -> Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder!
 Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder.Name.get -> string!
 Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder.RoutingStrategyBuilder.get -> Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder!
 Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
@@ -80,11 +92,7 @@ Microsoft.Extensions.Http.Resilience.OrderedGroupsRoutingOptions
 Microsoft.Extensions.Http.Resilience.OrderedGroupsRoutingOptions.Groups.get -> System.Collections.Generic.IList<Microsoft.Extensions.Http.Resilience.EndpointGroup!>!
 Microsoft.Extensions.Http.Resilience.OrderedGroupsRoutingOptions.Groups.set -> void
 Microsoft.Extensions.Http.Resilience.OrderedGroupsRoutingOptions.OrderedGroupsRoutingOptions() -> void
-Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext
-Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.BuilderName.get -> string!
-Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.EnableReloads<TOptions>(string? name = null) -> void
-Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.ServiceProvider.get -> System.IServiceProvider!
-Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.StrategyKey.get -> string!
+Microsoft.Extensions.Http.Resilience.PipelineKeySelector
 Microsoft.Extensions.Http.Resilience.RoutingStrategyBuilderExtensions
 Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions
 Microsoft.Extensions.Http.Resilience.WeightedEndpoint
@@ -106,29 +114,29 @@ Microsoft.Extensions.Http.Resilience.WeightedGroupsRoutingOptions.Groups.set -> 
 Microsoft.Extensions.Http.Resilience.WeightedGroupsRoutingOptions.SelectionMode.get -> Microsoft.Extensions.Http.Resilience.WeightedGroupSelectionMode
 Microsoft.Extensions.Http.Resilience.WeightedGroupsRoutingOptions.SelectionMode.set -> void
 Microsoft.Extensions.Http.Resilience.WeightedGroupsRoutingOptions.WeightedGroupsRoutingOptions() -> void
-static Microsoft.Extensions.Http.Resilience.FaultInjection.ContextExtensions.WithCallingRequestMessage(this Polly.Context! context, System.Net.Http.HttpRequestMessage! request) -> Polly.Context!
 static Microsoft.Extensions.Http.Resilience.FaultInjection.HttpClientFaultInjectionExtensions.AddFaultInjectionPolicyHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! httpClientBuilder, string! chaosPolicyOptionsGroupName) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
 static Microsoft.Extensions.Http.Resilience.FaultInjection.HttpClientFaultInjectionExtensions.AddHttpClientFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.Http.Resilience.FaultInjection.HttpClientFaultInjectionExtensions.AddHttpClientFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfiguration! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.Http.Resilience.FaultInjection.HttpClientFaultInjectionExtensions.AddHttpClientFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.Http.Resilience.FaultInjection.HttpClientFaultInjectionExtensions.AddWeightedFaultInjectionPolicyHandlers(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! httpClientBuilder, Microsoft.Extensions.Configuration.IConfigurationSection! weightAssignmentsConfigSection) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
 static Microsoft.Extensions.Http.Resilience.FaultInjection.HttpClientFaultInjectionExtensions.AddWeightedFaultInjectionPolicyHandlers(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! httpClientBuilder, System.Action<Microsoft.Extensions.Resilience.FaultInjection.FaultPolicyWeightAssignmentsOptions!>! weightAssignmentsConfig) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, string! strategyName, System.Action<Polly.ResilienceStrategyBuilder<System.Net.Http.HttpResponseMessage!>!, Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext!>! configure) -> Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, string! strategyName, System.Action<Polly.ResilienceStrategyBuilder<System.Net.Http.HttpResponseMessage!>!>! configure) -> Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardHedgingHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder) -> Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardHedgingHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder!>! configure) -> Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions!>! configure) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpRequestMessageExtensions.GetResilienceContext(this System.Net.Http.HttpRequestMessage! requestMessage) -> Polly.ResilienceContext?
-static Microsoft.Extensions.Http.Resilience.HttpRequestMessageExtensions.SetResilienceContext(this System.Net.Http.HttpRequestMessage! requestMessage, Polly.ResilienceContext? resilienceContext) -> void
-static Microsoft.Extensions.Http.Resilience.HttpResilienceStrategyBuilderExtensions.SelectStrategyBy(this Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder! builder, System.Func<System.IServiceProvider!, System.Func<System.Net.Http.HttpRequestMessage!, string!>!>! selectorFactory) -> Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpResilienceStrategyBuilderExtensions.SelectStrategyByAuthority(this Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder! builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification) -> Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpStandardResilienceBuilderBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpStandardResilienceBuilderBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions!, System.IServiceProvider!>! configure) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpStandardResilienceBuilderBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions!>! configure) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpStandardResilienceBuilderBuilderExtensions.SelectStrategyBy(this Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder! builder, System.Func<System.IServiceProvider!, System.Func<System.Net.Http.HttpRequestMessage!, string!>!>! selectorFactory) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder!
-static Microsoft.Extensions.Http.Resilience.HttpStandardResilienceBuilderBuilderExtensions.SelectStrategyByAuthority(this Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder! builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResilienceStrategyBuilder!
+static Microsoft.Extensions.Http.Resilience.FaultInjection.PolicyContextExtensions.WithCallingRequestMessage(this Polly.Context! context, System.Net.Http.HttpRequestMessage! request) -> Polly.Context!
+static Microsoft.Extensions.Http.Resilience.HedgingHttpClientBuilderExtensions.AddStandardHedgingHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder) -> Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder!
+static Microsoft.Extensions.Http.Resilience.HedgingHttpClientBuilderExtensions.AddStandardHedgingHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder!>! configure) -> Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddFallbackHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddFallbackHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section, System.Action<Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddFallbackHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.FallbackClientHandlerOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IHttpClientBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, string! pipelineIdentifier) -> Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddStandardResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions!>! configure) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpResiliencePipelineBuilderExtensions.SelectPipelineBy(this Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder! builder, System.Func<System.IServiceProvider!, Microsoft.Extensions.Http.Resilience.PipelineKeySelector!>! selectorFactory) -> Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpResiliencePipelineBuilderExtensions.SelectPipelineByAuthority(this Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder! builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification) -> Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions!, System.IServiceProvider!>! configure) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardResilienceOptions!>! configure) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions.SelectPipelineBy(this Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder! builder, System.Func<System.IServiceProvider!, Microsoft.Extensions.Http.Resilience.PipelineKeySelector!>! selectorFactory) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder!
+static Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions.SelectPipelineByAuthority(this Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder! builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification) -> Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder!
 static Microsoft.Extensions.Http.Resilience.RoutingStrategyBuilderExtensions.ConfigureOrderedGroups(this Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder!
 static Microsoft.Extensions.Http.Resilience.RoutingStrategyBuilderExtensions.ConfigureOrderedGroups(this Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.OrderedGroupsRoutingOptions!, System.IServiceProvider!>! configure) -> Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder!
 static Microsoft.Extensions.Http.Resilience.RoutingStrategyBuilderExtensions.ConfigureOrderedGroups(this Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.OrderedGroupsRoutingOptions!>! configure) -> Microsoft.Extensions.Http.Resilience.IRoutingStrategyBuilder!
@@ -138,10 +146,11 @@ static Microsoft.Extensions.Http.Resilience.RoutingStrategyBuilderExtensions.Con
 static Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder! builder, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder!
 static Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions!, System.IServiceProvider!>! configure) -> Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder!
 static Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.Configure(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder! builder, System.Action<Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions!>! configure) -> Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder!
-static Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectStrategyBy(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder! builder, System.Func<System.IServiceProvider!, System.Func<System.Net.Http.HttpRequestMessage!, string!>!>! selectorFactory) -> Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder!
-static Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectStrategyByAuthority(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder! builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification) -> Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder!
+static Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineBy(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder! builder, System.Func<System.IServiceProvider!, Microsoft.Extensions.Http.Resilience.PipelineKeySelector!>! selectorFactory) -> Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder!
+static Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder! builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification) -> Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder!
 static readonly Microsoft.Extensions.Http.Resilience.HttpClientHedgingResiliencePredicates.IsTransientHttpException -> System.Predicate<System.Exception!>!
 static readonly Microsoft.Extensions.Http.Resilience.HttpClientHedgingResiliencePredicates.IsTransientHttpOutcome -> System.Predicate<Polly.Outcome<System.Net.Http.HttpResponseMessage!>>!
+static readonly Microsoft.Extensions.Http.Resilience.HttpClientResilienceGenerators.HandleRetryAfterHeader -> System.Func<Microsoft.Extensions.Resilience.Options.RetryDelayArguments<System.Net.Http.HttpResponseMessage!>, System.TimeSpan>!
 static readonly Microsoft.Extensions.Http.Resilience.HttpClientResiliencePredicates.IsTransientHttpException -> System.Predicate<System.Exception!>!
 static readonly Microsoft.Extensions.Http.Resilience.HttpClientResiliencePredicates.IsTransientHttpFailure -> System.Predicate<System.Net.Http.HttpResponseMessage!>!
 static readonly Microsoft.Extensions.Http.Resilience.HttpClientResiliencePredicates.IsTransientHttpOutcome -> System.Predicate<Polly.Outcome<System.Net.Http.HttpResponseMessage!>>!
