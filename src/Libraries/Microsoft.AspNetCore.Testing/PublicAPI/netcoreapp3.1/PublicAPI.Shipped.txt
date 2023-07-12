@@ -1,2 +1,8 @@
-#nullable enable
 
+#nullable enable
+Microsoft.AspNetCore.Testing.ServiceFakesExtensions
+static Microsoft.AspNetCore.Testing.ServiceFakesExtensions.CreateClient(this Microsoft.Extensions.Hosting.IHost! host, System.Net.Http.HttpMessageHandler? handler = null, System.Func<System.Uri!, bool>? addressFilter = null) -> System.Net.Http.HttpClient!
+static Microsoft.AspNetCore.Testing.ServiceFakesExtensions.GetListenUris(this Microsoft.Extensions.Hosting.IHost! host) -> System.Collections.Generic.IEnumerable<System.Uri!>!
+static Microsoft.AspNetCore.Testing.ServiceFakesExtensions.ListenHttpOnAnyPort(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Testing.ServiceFakesExtensions.ListenHttpsOnAnyPort(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder, System.Security.Cryptography.X509Certificates.X509Certificate2? sslCertificate = null) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Testing.ServiceFakesExtensions.UseTestStartup(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

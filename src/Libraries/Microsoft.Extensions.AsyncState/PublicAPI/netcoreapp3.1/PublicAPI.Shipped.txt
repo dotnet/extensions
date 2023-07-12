@@ -1,2 +1,24 @@
-#nullable enable
 
+#nullable enable
+Microsoft.Extensions.AsyncState.AsyncStateExtensions
+Microsoft.Extensions.AsyncState.AsyncStateToken
+Microsoft.Extensions.AsyncState.AsyncStateToken.AsyncStateToken() -> void
+Microsoft.Extensions.AsyncState.AsyncStateToken.Equals(Microsoft.Extensions.AsyncState.AsyncStateToken other) -> bool
+Microsoft.Extensions.AsyncState.IAsyncContext<T>
+Microsoft.Extensions.AsyncState.IAsyncContext<T>.Get() -> T?
+Microsoft.Extensions.AsyncState.IAsyncContext<T>.Set(T? context) -> void
+Microsoft.Extensions.AsyncState.IAsyncContext<T>.TryGet(out T? context) -> bool
+Microsoft.Extensions.AsyncState.IAsyncLocalContext<T>
+Microsoft.Extensions.AsyncState.IAsyncState
+Microsoft.Extensions.AsyncState.IAsyncState.Get(Microsoft.Extensions.AsyncState.AsyncStateToken token) -> object?
+Microsoft.Extensions.AsyncState.IAsyncState.Initialize() -> void
+Microsoft.Extensions.AsyncState.IAsyncState.RegisterAsyncContext() -> Microsoft.Extensions.AsyncState.AsyncStateToken
+Microsoft.Extensions.AsyncState.IAsyncState.Reset() -> void
+Microsoft.Extensions.AsyncState.IAsyncState.Set(Microsoft.Extensions.AsyncState.AsyncStateToken token, object? value) -> void
+Microsoft.Extensions.AsyncState.IAsyncState.TryGet(Microsoft.Extensions.AsyncState.AsyncStateToken token, out object? value) -> bool
+override Microsoft.Extensions.AsyncState.AsyncStateToken.Equals(object? obj) -> bool
+override Microsoft.Extensions.AsyncState.AsyncStateToken.GetHashCode() -> int
+static Microsoft.Extensions.AsyncState.AsyncStateExtensions.AddAsyncStateCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.AsyncState.AsyncStateExtensions.TryRemoveAsyncStateCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.AsyncState.AsyncStateToken.operator !=(Microsoft.Extensions.AsyncState.AsyncStateToken left, Microsoft.Extensions.AsyncState.AsyncStateToken right) -> bool
+static Microsoft.Extensions.AsyncState.AsyncStateToken.operator ==(Microsoft.Extensions.AsyncState.AsyncStateToken left, Microsoft.Extensions.AsyncState.AsyncStateToken right) -> bool

@@ -1,2 +1,15 @@
-#nullable enable
 
+#nullable enable
+Microsoft.Extensions.Time.Testing.FakeTimeProvider
+Microsoft.Extensions.Time.Testing.FakeTimeProvider.Advance(System.TimeSpan delta) -> void
+Microsoft.Extensions.Time.Testing.FakeTimeProvider.Epoch.get -> System.DateTimeOffset
+Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider() -> void
+Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset epoch) -> void
+Microsoft.Extensions.Time.Testing.FakeTimeProvider.SetLocalTimeZone(System.TimeZoneInfo! localTimeZone) -> void
+Microsoft.Extensions.Time.Testing.FakeTimeProvider.SetUtcNow(System.DateTimeOffset value) -> void
+override Microsoft.Extensions.Time.Testing.FakeTimeProvider.CreateTimer(System.Threading.TimerCallback! callback, object? state, System.TimeSpan dueTime, System.TimeSpan period) -> System.Threading.ITimer!
+override Microsoft.Extensions.Time.Testing.FakeTimeProvider.GetTimestamp() -> long
+override Microsoft.Extensions.Time.Testing.FakeTimeProvider.GetUtcNow() -> System.DateTimeOffset
+override Microsoft.Extensions.Time.Testing.FakeTimeProvider.LocalTimeZone.get -> System.TimeZoneInfo!
+override Microsoft.Extensions.Time.Testing.FakeTimeProvider.TimestampFrequency.get -> long
+override Microsoft.Extensions.Time.Testing.FakeTimeProvider.ToString() -> string!

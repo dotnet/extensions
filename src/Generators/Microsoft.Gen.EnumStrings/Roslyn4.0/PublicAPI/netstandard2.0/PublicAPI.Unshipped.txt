@@ -1,3 +1,0 @@
-Microsoft.Gen.EnumStrings.EnumStringsGenerator
-Microsoft.Gen.EnumStrings.EnumStringsGenerator.EnumStringsGenerator() -> void
-Microsoft.Gen.EnumStrings.EnumStringsGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context) -> void
