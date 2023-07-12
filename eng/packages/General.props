@@ -67,6 +67,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.23355.1" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.5.22" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="8.52.0.60960" />
     <PackageVersion Include="StyleCop.Analyzers.Unstable" Version="1.2.0.507" />
