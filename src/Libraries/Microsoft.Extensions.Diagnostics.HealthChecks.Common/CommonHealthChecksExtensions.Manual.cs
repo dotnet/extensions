@@ -16,7 +16,7 @@ public static partial class CommonHealthChecksExtensions
     /// <param name="builder">The builder to add the provider to.</param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="tags"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="tags"/> is <see langword="null" />.</exception>
     public static IHealthChecksBuilder AddManualHealthCheck(this IHealthChecksBuilder builder, params string[] tags)
         => Throw.IfNull(builder)
             .AddManualHealthCheckDependencies()
@@ -28,7 +28,7 @@ public static partial class CommonHealthChecksExtensions
     /// <param name="builder">The builder to add the provider to.</param>
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="tags"/> are <see langword="null" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="tags"/> is <see langword="null" />.</exception>
     public static IHealthChecksBuilder AddManualHealthCheck(this IHealthChecksBuilder builder, IEnumerable<string> tags)
         => Throw.IfNull(builder)
             .AddManualHealthCheckDependencies()

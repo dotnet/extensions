@@ -21,7 +21,7 @@ public static class MessageLatencyContextFeatureExtensions
     /// </remarks>
     /// <param name="context">The message context.</param>
     /// <param name="latencyContext">The latency context to store fine-grained latency for different processing steps.</param>
-    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any argument is <see langword="null"/>.</exception>
     public static void SetLatencyContext(this MessageContext context, ILatencyContext latencyContext)
     {
         _ = Throw.IfNullOrMemberNull(context, context?.Features);

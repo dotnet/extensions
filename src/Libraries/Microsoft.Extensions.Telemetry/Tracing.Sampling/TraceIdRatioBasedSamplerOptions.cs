@@ -13,9 +13,7 @@ public class TraceIdRatioBasedSamplerOptions
     /// <summary>
     /// Gets or sets the desired probability of sampling.
     /// </summary>
-    /// <remarks>
-    /// Defaults to 1.
-    /// </remarks>
+    /// <value>The default is 1.</value>
     [Range(0.0, 1.0)]
     public double Probability { get; set; } = 1.0;
 }

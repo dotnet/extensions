@@ -13,26 +13,20 @@ public class SamplingOptions
     /// <summary>
     /// Gets or sets the type of the sampler.
     /// </summary>
-    /// <remarks>
-    /// Defaults to the <see cref="SamplerType.AlwaysOn"/> sampler.
-    /// </remarks>
+    /// <value>The default is the <see cref="SamplerType.AlwaysOn" /> sampler.</value>
     public SamplerType SamplerType { get; set; } = SamplerType.AlwaysOn;
 
     /// <summary>
     /// Gets or sets options for the parent based sampler.
     /// </summary>
-    /// <remarks>
-    /// Defaults to <see langword="null"/>.
-    /// </remarks>
+    /// <value>The default is <see langword="null" />.</value>
     [ValidateObjectMembers]
     public ParentBasedSamplerOptions? ParentBasedSamplerOptions { get; set; }
 
     /// <summary>
-    /// Gets or sets options for the trace Id ratio based sampler.
+    /// Gets or sets options for the trace ID ratio-based sampler.
     /// </summary>
-    /// <remarks>
-    /// Defaults to <see langword="null"/>.
-    /// </remarks>
+    /// <value>The default is <see langword="null" />.</value>
     [ValidateObjectMembers]
     public TraceIdRatioBasedSamplerOptions? TraceIdRatioBasedSamplerOptions { get; set; }
 }

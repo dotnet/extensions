@@ -43,7 +43,7 @@ public static class SerializedMessagePayloadFeatureExtensions
     /// <typeparam name="T">Type of the serialized message payload.</typeparam>
     /// <param name="context">The message context.</param>
     /// <param name="payload">The serialized message payload.</param>
-    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any argument is <see langword="null"/>.</exception>
     public static void SetSerializedPayload<T>(this MessageContext context, T payload)
         where T : notnull
     {
@@ -58,7 +58,7 @@ public static class SerializedMessagePayloadFeatureExtensions
     /// <param name="context">The message context.</param>
     /// <param name="payload">The optional serialized message payload.</param>
     /// <returns><see cref="bool"/> and if <see langword="true"/>, a corresponding <typeparamref name="T"/> representing the serialized message payload.</returns>
-    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any argument is <see langword="null"/>.</exception>
     public static bool TryGetSerializedPayload<T>(this MessageContext context, [NotNullWhen(true)] out T? payload)
         where T : notnull
     {

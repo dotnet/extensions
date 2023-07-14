@@ -44,7 +44,7 @@ public abstract class MessageConsumer
     /// <param name="messageMiddlewares">List of middleware in the async processing pipeline.</param>
     /// <param name="terminalDelegate">Terminal message delegate.</param>
     /// <param name="logger"><see cref="Logger"/>.</param>
-    /// <exception cref="ArgumentNullException">Any of the parameters are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Any argument is <see langword="null"/>.</exception>
     protected MessageConsumer(IMessageSource messageSource, IReadOnlyList<IMessageMiddleware> messageMiddlewares, MessageDelegate terminalDelegate, ILogger logger)
     {
         MessageSource = Throw.IfNull(messageSource);
