@@ -101,7 +101,7 @@ public static class FaultInjectionExtensions
     /// The <see cref="Context"/> so that additional calls can be chained.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// Any of the parameters are <see langword="null"/>.
+    /// Any argument is <see langword="null"/>.
     /// </exception>
     public static Context WithFaultInjection(this Context context, string groupName)
     {
@@ -123,7 +123,7 @@ public static class FaultInjectionExtensions
     /// The <see cref="Context"/> so that additional calls can be chained.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// Any of the parameters are <see langword="null"/>.
+    /// Any argument is <see langword="null"/>.
     /// </exception>
     [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public static Context WithFaultInjection(this Context context, FaultPolicyWeightAssignmentsOptions weightAssignments)
@@ -146,7 +146,7 @@ public static class FaultInjectionExtensions
     /// The <see cref="ChaosPolicyOptionsGroup"/> if registered; <see langword="null"/> if it isn't.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// Any of the parameters are <see langword="null"/>.
+    /// Any argument is <see langword="null"/>.
     /// </exception>
     public static string? GetFaultInjectionGroupName(this Context context)
     {

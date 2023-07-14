@@ -62,7 +62,7 @@ public class FakeLogCollector
     /// <summary>
     /// Gets the records that are held by the collector.
     /// </summary>
-    /// <param name="clear">Setting this to <see langword="true"/> will atomically clear the set of accumulated log records.</param>
+    /// <param name="clear"><see langword="true" /> to atomically clear the set of accumulated log records; otherwise, <see langword="false" />.</param>
     /// <returns>
     /// The list of records tracked to date by the collector.
     /// </returns>

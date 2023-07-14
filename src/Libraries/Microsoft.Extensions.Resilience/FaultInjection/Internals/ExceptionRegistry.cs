@@ -21,7 +21,7 @@ internal sealed class ExceptionRegistry : IExceptionRegistry
     /// The <see cref="IOptionsMonitor{TOptions}"/> instance to retrieve <see cref="FaultInjectionExceptionOptions"/> from.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Any of the parameters are <see langword="null"/>.
+    /// Any argument is <see langword="null"/>.
     /// </exception>
     public ExceptionRegistry(IOptionsMonitor<FaultInjectionExceptionOptions> options)
     {

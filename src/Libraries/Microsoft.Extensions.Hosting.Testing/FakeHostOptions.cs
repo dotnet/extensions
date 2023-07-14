@@ -12,23 +12,25 @@ namespace Microsoft.Extensions.Hosting.Testing;
 public class FakeHostOptions
 {
     /// <summary>
-    /// Gets or sets time limit for host to start.
+    /// Gets or sets the time limit for the host to start.
     /// </summary>
-    /// <remarks>Default is 5 seconds. This limit is used if no cancellation token is used by user.</remarks>
+    /// <value>The default value is 5 seconds.</value>
+    /// <remarks>This limit is used if there's no cancellation token.</remarks>
     public TimeSpan StartUpTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
     /// <summary>
-    /// Gets or sets time limit for host to shut down.
+    /// Gets or sets the time limit for the host to shut down.
     /// </summary>
-    /// <remarks>Default is 10 seconds. This limit is used if no cancellation token is used by user.</remarks>
+    /// <value>The default value is 10 seconds.</value>
+    /// <remarks>This limit is used if there's no cancellation token.</remarks>
     public TimeSpan ShutDownTimeout { get; set; } = TimeSpan.FromSeconds(10);
 
     /// <summary>
-    /// Gets or sets time limit for host to be up.
+    /// Gets or sets the time limit for the host to be up.
     /// </summary>
+    /// <value>The default is 30 seconds.</value>
     /// <remarks>
-    /// Default is 30 seconds.
-    /// Value -1 millisecond means infinite time to live.
+    /// -1 millisecond means infinite time to live.
     /// TimeToLive is not enforced when debugging.
     /// </remarks>
     public TimeSpan TimeToLive { get; set; } = TimeSpan.FromSeconds(30);

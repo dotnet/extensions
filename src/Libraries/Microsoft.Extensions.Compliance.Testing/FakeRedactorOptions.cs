@@ -16,9 +16,9 @@ public class FakeRedactorOptions
     /// <summary>
     /// Gets or sets a value indicating how to format redacted data.
     /// </summary>
+    /// <value>The default is "{0}".</value>
     /// <remarks>
-    /// This is a composite format string that determines how redacted data looks like.
-    /// Defaults to {0}.
+    /// This is a composite format string that determines how redacted data looks.
     /// </remarks>
     [Required]
     [StringSyntax(StringSyntaxAttribute.CompositeFormat)]
