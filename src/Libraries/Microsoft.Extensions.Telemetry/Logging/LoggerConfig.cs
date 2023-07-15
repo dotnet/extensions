@@ -17,14 +17,14 @@ internal sealed class LoggerConfig
         bool captureStackTraces,
         bool useFileInfoForStackTraces,
         int maxStackTraceLength,
-        Func<DataClassification, Redactor> redactorProvider)
+        Func<DataClassification, Redactor> getRedactor)
     {
         StaticProperties = staticProperties;
         Enrichers = enrichers;
         CaptureStackTraces = captureStackTraces;
         UseFileInfoForStackTraces = useFileInfoForStackTraces;
         MaxStackTraceLength = maxStackTraceLength;
-        RedactorProvider = redactorProvider;
+        GetRedactor = getRedactor;
     }
 
     public KeyValuePair<string, object?>[] StaticProperties { get; }
@@ -32,5 +32,5 @@ internal sealed class LoggerConfig
     public bool CaptureStackTraces { get; }
     public bool UseFileInfoForStackTraces { get; }
     public int MaxStackTraceLength { get; }
-    public Func<DataClassification, Redactor> RedactorProvider { get; }
+    public Func<DataClassification, Redactor> GetRedactor { get; }
 }

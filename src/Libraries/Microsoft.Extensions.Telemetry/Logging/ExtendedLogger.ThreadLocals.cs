@@ -11,38 +11,38 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 internal sealed partial class ExtendedLogger : ILogger
 {
     [ThreadStatic]
-    private static PropertyJoiner? _joiner;
+    private static ModernPropertyJoiner? _modernJoiner;
 
     [ThreadStatic]
-    private static PropertyBag? _bag;
+    private static LegacyPropertyJoiner? _legacyJoiner;
 
-    private static PropertyJoiner Joiner
+    private static ModernPropertyJoiner ModernJoiner
     {
         get
         {
-            var joiner = _joiner;
+            var joiner = _modernJoiner;
             if (joiner == null)
             {
                 joiner = new();
-                _joiner = joiner;
+                _modernJoiner = joiner;
             }
 
             return joiner;
         }
     }
 
-    private static PropertyBag Bag
+    private static LegacyPropertyJoiner LegacyJoiner
     {
         get
         {
-            var bag = _bag;
-            if (bag == null)
+            var joiner = _legacyJoiner;
+            if (joiner == null)
             {
-                bag = new();
-                _bag = bag;
+                joiner = new();
+                _legacyJoiner = joiner;
             }
 
-            return bag;
+            return joiner;
         }
     }
 }

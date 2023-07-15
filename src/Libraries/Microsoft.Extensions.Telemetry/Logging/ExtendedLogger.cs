@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#define FAST
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -192,7 +190,7 @@ internal sealed partial class ExtendedLogger : ILogger
         var loggers = MessageLoggers;
         var config = _factory.Config;
 
-        var joiner = Joiner;
+        var joiner = ModernJoiner;
         joiner.StaticProperties = config.StaticProperties;
         joiner.Formatter = formatter;
         joiner.SetIncomingProperties(msgState);
@@ -208,7 +206,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 ref var cp = ref msgState.ClassifiedPropertyArray[i];
                 var jr = JustInTimeRedactor.Get();
                 jr.Value = cp.Value;
-                jr.Redactor = config.RedactorProvider(cp.Classification);
+                jr.Redactor = config.GetRedactor(cp.Classification);
                 jr.Next = jitRedactors;
                 jitRedactors = jr;
 
@@ -248,15 +246,11 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 try
                 {
-#if FAST
-                    loggerInfo.LoggerLog(logLevel, eventId, msgState, exception, formatter);
-#else
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>
                     {
                         var fmt = s.Formatter!;
                         return fmt(s.State!, e);
                     });
-#endif
                 }
                 catch (Exception ex)
                 {
@@ -284,26 +278,26 @@ internal sealed partial class ExtendedLogger : ILogger
         var loggers = MessageLoggers;
         var config = _factory.Config;
 
-        var bag = Bag;
-        bag.StaticProperties = config.StaticProperties;
-        bag.Formatter = formatter;
-        bag.State = state;
+        var joiner = LegacyJoiner;
+        joiner.StaticProperties = config.StaticProperties;
+        joiner.Formatter = formatter;
+        joiner.State = state;
 
         switch (state)
         {
             case IReadOnlyList<KeyValuePair<string, object?>> stateList:
-                bag.SetIncomingProperties(stateList);
+                joiner.SetIncomingProperties(stateList);
                 break;
 
             case IEnumerable<KeyValuePair<string, object?>> stateList:
-                bag.AddRange(stateList);
+                joiner.AddRange(stateList);
                 break;
 
             case null:
                 break;
 
             default:
-                bag.Add("{OriginalFormat}", state);
+                joiner.Add("{OriginalFormat}", state);
                 break;
         }
 
@@ -314,7 +308,7 @@ internal sealed partial class ExtendedLogger : ILogger
         {
             try
             {
-                enricher(bag);
+                enricher(joiner);
             }
             catch (Exception ex)
             {
@@ -326,7 +320,7 @@ internal sealed partial class ExtendedLogger : ILogger
         // one last dedicated bit of enrichment
         if (exception != null && config.CaptureStackTraces)
         {
-            bag.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+            joiner.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
         }
 
         for (int i = 0; i < loggers.Length; i++)
@@ -336,7 +330,7 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 try
                 {
-                    loggerInfo.Logger.Log(logLevel, eventId, bag, exception, static (s, e) =>
+                    loggerInfo.Logger.Log(logLevel, eventId, joiner, exception, static (s, e) =>
                     {
                         var fmt = (Func<TState, Exception?, string>)s.Formatter!;
                         return fmt((TState)s.State!, e);
@@ -350,7 +344,7 @@ internal sealed partial class ExtendedLogger : ILogger
             }
         }
 
-        bag.Clear();
+        joiner.Clear();
         HandleExceptions(exceptions);
     }
 }

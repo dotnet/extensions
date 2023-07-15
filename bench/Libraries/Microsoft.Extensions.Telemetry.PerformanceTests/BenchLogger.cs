@@ -57,7 +57,7 @@ internal sealed class BenchLogger : ILogger
                 break;
             }
         }
-   }
+    }
 
     private static object? ProcessItem(in KeyValuePair<string, object?> item)
     {

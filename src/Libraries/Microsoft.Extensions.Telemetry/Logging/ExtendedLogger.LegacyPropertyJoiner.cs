@@ -14,7 +14,7 @@ internal sealed partial class ExtendedLogger
     /// <summary>
     /// Used to collect properties in the legacy logging path.
     /// </summary>
-    internal sealed class PropertyBag : IReadOnlyList<KeyValuePair<string, object?>>, IEnrichmentPropertyBag
+    internal sealed class LegacyPropertyJoiner : IReadOnlyList<KeyValuePair<string, object?>>, IEnrichmentPropertyBag
     {
         public KeyValuePair<string, object?>[]? StaticProperties;
         public object? Formatter;

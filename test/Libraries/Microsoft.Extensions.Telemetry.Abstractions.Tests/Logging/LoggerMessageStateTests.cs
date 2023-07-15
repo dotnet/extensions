@@ -5,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
-using Microsoft.Extensions.ObjectPool;
 using Xunit;
 
 namespace Microsoft.Extensions.Telemetry.Logging.Test;
@@ -27,7 +26,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(Value, lms.PropertyArray[0].Value);
         Assert.Equal("Property Name=Value", lms.ToString());
 
-        _ = ((IResettable)lms).TryReset();
+        lms.Clear();
         Assert.Equal(0, lms.NumProperties);
         Assert.Equal("", lms.ToString());
 
