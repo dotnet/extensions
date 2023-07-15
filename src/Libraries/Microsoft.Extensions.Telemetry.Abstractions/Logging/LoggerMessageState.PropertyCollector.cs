@@ -11,16 +11,16 @@ public partial class LoggerMessageState : ILogPropertyCollector
     void ILogPropertyCollector.Add(string propertyName, object? propertyValue)
     {
         string fullName = PropertyNamePrefix.Length > 0 ? PropertyNamePrefix + propertyName : propertyName;
-        var s = AllocPropertySpace(1);
-        s[0] = new(fullName, propertyValue);
+        var index = EnsurePropertySpace(1);
+        _properties[index] = new(fullName, propertyValue);
     }
 
     /// <inheritdoc />
     void ILogPropertyCollector.Add(string propertyName, object? propertyValue, DataClassification classification)
     {
         string fullName = PropertyNamePrefix.Length > 0 ? PropertyNamePrefix + propertyName : propertyName;
-        var s = AllocClassifiedPropertySpace(1);
-        s[0] = new(fullName, propertyValue, classification);
+        var index = EnsureClassifiedPropertySpace(1);
+        _classifiedProperties[index] = new(fullName, propertyValue, classification);
     }
 
     /// <summary>

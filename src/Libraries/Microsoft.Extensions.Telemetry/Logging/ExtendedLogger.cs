@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#define FAST
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -165,7 +167,7 @@ internal sealed partial class ExtendedLogger : ILogger
 #pragma warning restore R9A044 // Assign array of literal values to a static field for improved performance
 #endif
 
-            _ = sb.Append(exception.GetType().ToString());
+            _ = sb.Append(exception.GetType());
             _ = sb.Append(": ");
             _ = sb.AppendLine(exception.Message);
             _ = sb.Append(indentStr);
@@ -199,10 +201,11 @@ internal sealed partial class ExtendedLogger : ILogger
 
         // redact
         JustInTimeRedactor? jitRedactors = null;
-        foreach (var cp in msgState.ClassifiedProperties)
+        for (int i = 0; i < msgState.NumClassifiedProperties; i++)
         {
             try
             {
+                ref var cp = ref msgState.ClassifiedPropertyArray[i];
                 var jr = JustInTimeRedactor.Get();
                 jr.Value = cp.Value;
                 jr.Redactor = config.RedactorProvider(cp.Classification);
@@ -245,11 +248,15 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 try
                 {
+#if FAST
+                    loggerInfo.LoggerLog(logLevel, eventId, msgState, exception, formatter);
+#else
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>
                     {
                         var fmt = s.Formatter!;
                         return fmt(s.State!, e);
                     });
+#endif
                 }
                 catch (Exception ex)
                 {

@@ -53,7 +53,7 @@ public class LoggerFactory
         GetLogger(LoggerFactoryVersions.NewWithEnrichers),
     };
 
-    [Params(LoggerFactoryVersions.Original, LoggerFactoryVersions.New, LoggerFactoryVersions.NewWithEnrichers)]
+    [Params(LoggerFactoryVersions.Original, LoggerFactoryVersions.New)]
     public LoggerFactoryVersions Factory;
 
     private static ILogger GetLogger(LoggerFactoryVersions config)
@@ -80,7 +80,6 @@ public class LoggerFactory
         return serviceCollection.BuildServiceProvider().GetRequiredService<ILoggerFactory>().CreateLogger("Benchmark");
     }
 
-    [Benchmark]
     public void Classic_RefTypes()
     {
         var logger = _loggers[(int)Factory];
@@ -95,7 +94,6 @@ public class LoggerFactory
             Other);
     }
 
-    [Benchmark]
     public void Classic_ValueTypes()
     {
         var logger = _loggers[(int)Factory];
@@ -107,14 +105,12 @@ public class LoggerFactory
             _guid);
     }
 
-    [Benchmark]
     public void LoggerMessageDefine_RefTypes()
     {
         var logger = _loggers[(int)Factory];
         _loggerMessage_refTypes(logger, ConnectionId, Type, StreamId, Length, Flags, Other, null);
     }
 
-    [Benchmark]
     public void LoggerMessageDefine_ValueTypes()
     {
         var logger = _loggers[(int)Factory];

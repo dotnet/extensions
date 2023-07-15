@@ -57,16 +57,16 @@ internal sealed class BenchLogger : ILogger
                 break;
             }
         }
-    }
+   }
 
-    private static object? ProcessItem(KeyValuePair<string, object?> item)
+    private static object? ProcessItem(in KeyValuePair<string, object?> item)
     {
         var o = item.Value;
 
         if (o?.GetType() == typeof(Guid))
         {
             // simulate what a real exporter like OTel would do.
-            _ = o.ToString();
+            o = o.ToString();
         }
 
         return o;

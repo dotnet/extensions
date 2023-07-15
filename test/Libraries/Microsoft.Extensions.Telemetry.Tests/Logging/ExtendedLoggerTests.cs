@@ -59,11 +59,11 @@ public static class ExtendedLoggerTests
         logger.Log(LogLevel.Error, new EventId(1, "ID1"), lmh, null, (_, _) => "MSG1");
 
         var lms = LoggerMessageHelper.ThreadLocalState;
-        var sp = lms.AllocPropertySpace(1);
-        sp[0] = new("PK2", "PV2");
+        var index = lms.EnsurePropertySpace(1);
+        lms.PropertyArray[index] = new("PK2", "PV2");
 
-        var sp2 = lms.AllocClassifiedPropertySpace(1);
-        sp2[0] = new("PK3", "PV3", SimpleClassifications.PrivateData);
+        index = lms.EnsureClassifiedPropertySpace(1);
+        lms.ClassifiedPropertyArray[index] = new("PK3", "PV3", SimpleClassifications.PrivateData);
 
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
 
@@ -132,8 +132,8 @@ public static class ExtendedLoggerTests
         logger.Log(LogLevel.Error, new EventId(1, "ID1"), lmh, null, (_, _) => "MSG1");
 
         var lms = LoggerMessageHelper.ThreadLocalState;
-        var sp = lms.AllocPropertySpace(1);
-        sp[0] = new("PK2", "PV2");
+        var index = lms.EnsurePropertySpace(1);
+        lms.PropertyArray[index] = new("PK2", "PV2");
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
 
         var sink = provider.Logger!;

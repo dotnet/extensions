@@ -22,7 +22,8 @@ internal sealed partial class ExtendedLogger
 
         private const int PropCapacity = 4;
         private readonly List<KeyValuePair<string, object?>> _extraProperties = new(PropCapacity);
-        private LoggerMessageState? _incomingProperties;
+        private KeyValuePair<string, object?>[]? _incomingProperties;
+        private int _incomingPropertiesCount;
 
         public void Clear()
         {
@@ -35,29 +36,30 @@ internal sealed partial class ExtendedLogger
         [MemberNotNull(nameof(_incomingProperties))]
         public void SetIncomingProperties(LoggerMessageState value)
         {
-            _incomingProperties = value;
+            _incomingProperties = value.PropertyArray;
+            _incomingPropertiesCount = value.NumProperties;
         }
 
         public KeyValuePair<string, object?> this[int index]
         {
             get
             {
-                if (index < _incomingProperties!.NumProperties)
+                if (index < _incomingPropertiesCount)
                 {
-                    return _incomingProperties[index];
+                    return _incomingProperties![index];
                 }
-                else if (index < _incomingProperties.NumProperties + _extraProperties.Count)
+                else if (index < _incomingPropertiesCount + _extraProperties.Count)
                 {
-                    return _extraProperties[index - _incomingProperties.NumProperties];
+                    return _extraProperties[index - _incomingPropertiesCount];
                 }
                 else
                 {
-                    return StaticProperties![index - _incomingProperties.NumProperties - _extraProperties.Count];
+                    return StaticProperties![index - _incomingPropertiesCount - _extraProperties.Count];
                 }
             }
         }
 
-        public int Count => _incomingProperties!.NumProperties + _extraProperties.Count + StaticProperties!.Length;
+        public int Count => _incomingPropertiesCount + _extraProperties.Count + StaticProperties!.Length;
 
         public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {

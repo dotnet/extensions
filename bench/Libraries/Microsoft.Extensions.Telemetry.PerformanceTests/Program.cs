@@ -12,6 +12,12 @@ internal static class Program
 {
     public static void Main(string[] args)
     {
+#if false
+        var lf = new LoggerFactory();
+        lf.Factory = LoggerFactory.LoggerFactoryVersions.Original;
+        lf.ModernCodeGen_RefTypes();
+#endif
+
         var dontRequireSlnToRunBenchmarks = ManualConfig
             .Create(DefaultConfig.Instance)
             .AddJob(Job.MediumRun.WithToolchain(InProcessEmitToolchain.Instance));

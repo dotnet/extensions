@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
@@ -16,51 +15,59 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 /// </summary>
 [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
 [EditorBrowsable(EditorBrowsableState.Never)]
-public sealed partial class LoggerMessageState : IResettable
+public sealed partial class LoggerMessageState
 {
     private KeyValuePair<string, object?>[] _properties = Array.Empty<KeyValuePair<string, object?>>();
     private ClassifiedProperty[] _classifiedProperties = Array.Empty<ClassifiedProperty>();
 
     /// <summary>
+    /// Gets the array of properties.
+    /// </summary>
+#pragma warning disable CA1819 // Properties should not return arrays
+    public KeyValuePair<string, object?>[] PropertyArray => _properties;
+
+    /// <summary>
+    /// Gets the array of classified properties.
+    /// </summary>
+    public ClassifiedProperty[] ClassifiedPropertyArray => _classifiedProperties;
+#pragma warning restore CA1819 // Properties should not return arrays
+
+    /// <summary>
     /// Allocates some room to put some properties.
     /// </summary>
     /// <param name="count">The amount of space to allocate.</param>
-    /// <returns>The slots to initialize with property data.</returns>
-    public Span<KeyValuePair<string, object?>> AllocPropertySpace(int count)
+    /// <returns>The index in the <see cref="PropertyArray"/> where to store the properties.</returns>
+    public int EnsurePropertySpace(int count)
     {
         int avail = _properties.Length - NumProperties;
         if (count > avail)
         {
             var need = _properties.Length + (count - avail);
-            var fresh = new KeyValuePair<string, object?>[need];
-            Array.Copy(_properties, fresh, NumProperties);
-            _properties = fresh;
+            Array.Resize(ref _properties, need);
         }
 
-        var sp = _properties.AsSpan(NumProperties, count);
+        var index = NumProperties;
         NumProperties += count;
-        return sp;
+        return index;
     }
 
     /// <summary>
     /// Allocates some room to put some properties.
     /// </summary>
     /// <param name="count">The amount of space to allocate.</param>
-    /// <returns>The slots to initialize with property data.</returns>
-    public Span<ClassifiedProperty> AllocClassifiedPropertySpace(int count)
+    /// <returns>The index in the <see cref="ClassifiedPropertyArray"/> where to store the classified properties.</returns>
+    public int EnsureClassifiedPropertySpace(int count)
     {
         int avail = _classifiedProperties.Length - NumClassifiedProperties;
         if (count > avail)
         {
             var need = _classifiedProperties.Length + (count - avail);
-            var fresh = new ClassifiedProperty[need];
-            Array.Copy(_classifiedProperties, fresh, NumClassifiedProperties);
-            _classifiedProperties = fresh;
+            Array.Resize(ref _classifiedProperties, need);
         }
 
-        var sp = _classifiedProperties.AsSpan(NumClassifiedProperties, count);
+        var index = NumClassifiedProperties;
         NumClassifiedProperties += count;
-        return sp;
+        return index;
     }
 
     /// <summary>
@@ -74,28 +81,6 @@ public sealed partial class LoggerMessageState : IResettable
         NumClassifiedProperties = 0;
         PropertyNamePrefix = string.Empty;
     }
-
-    /// <summary>
-    /// Resets state of this container as described in <see cref="IResettable.TryReset"/>.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true" /> if the object successfully reset and can be reused.
-    /// </returns>
-    bool IResettable.TryReset()
-    {
-        Clear();
-        return true;
-    }
-
-    /// <summary>
-    /// Gets the list of properties added to this instance.
-    /// </summary>
-    public ReadOnlySpan<KeyValuePair<string, object?>> Properties => _properties.AsSpan(0, NumProperties);
-
-    /// <summary>
-    /// Gets the list of properties which must receive redaction before being used.
-    /// </summary>
-    public ReadOnlySpan<ClassifiedProperty> ClassifiedProperties => _classifiedProperties.AsSpan(0, NumClassifiedProperties);
 
     /// <summary>
     /// Gets a value indicating the number of unclassified properties currently in this instance.
@@ -115,19 +100,19 @@ public sealed partial class LoggerMessageState : IResettable
     {
         var sb = PoolFactory.SharedStringBuilderPool.Get();
 
-        foreach (var kvp in Properties)
+        for (int i = 0; i < NumProperties; i++)
         {
             if (sb.Length > 0)
             {
                 _ = sb.Append(',');
             }
 
-            _ = sb.Append(kvp.Key);
+            _ = sb.Append(_properties[i].Key);
             _ = sb.Append('=');
-            _ = sb.Append(kvp.Value);
+            _ = sb.Append(_properties[i].Value);
         }
 
-        foreach (var kvp in ClassifiedProperties)
+        for (int i = 0; i < NumClassifiedProperties; i++)
         {
             if (sb.Length > 0)
             {
@@ -135,9 +120,9 @@ public sealed partial class LoggerMessageState : IResettable
             }
 
             // note we don't emit the value here as that could lead to a privacy incident.
-            _ = sb.Append(kvp.Name);
+            _ = sb.Append(_classifiedProperties[i].Name);
             _ = sb.Append('=');
-            _ = sb.Append(kvp.Classification.ToString());
+            _ = sb.Append(_classifiedProperties[i].Classification.ToString());
         }
 
         var result = sb.ToString();

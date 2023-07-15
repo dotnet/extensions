@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#define FAST
+
 // This source file was lovingly 'borrowed' from dotnet/runtime/src/libraries/Microsoft.Extensions.Logging
 #pragma warning disable S1128 // Unused "using" should be removed
 #pragma warning disable SA1649 // File name should match first type name
@@ -27,12 +29,20 @@ namespace Microsoft.Extensions.Logging
 
             // perform the GVM lookup once, rather than on every call.
             LoggerIsEnabled = logger.IsEnabled;
+#if FAST
+            LoggerLog = logger.Log<LoggerMessageState>;
+#else
             LoggerLog = logger.Log<ExtendedLogger.PropertyJoiner>;
+#endif
         }
 
         public Func<LogLevel, bool> LoggerIsEnabled { get; }
 
+#if FAST
+        public Action<LogLevel, EventId, LoggerMessageState, Exception?, Func<LoggerMessageState, Exception?, string>> LoggerLog { get; }
+#else
         public Action<LogLevel, EventId, ExtendedLogger.PropertyJoiner, Exception?, Func<ExtendedLogger.PropertyJoiner, Exception?, string>> LoggerLog { get; }
+#endif
 
         public ILogger Logger { get; }
 
