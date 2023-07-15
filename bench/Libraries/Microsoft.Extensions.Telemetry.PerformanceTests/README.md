@@ -6,31 +6,27 @@ Intel Core i9-10900K CPU 3.70GHz, 1 CPU, 20 logical and 10 physical cores
 Job=MediumRun  Toolchain=InProcessEmitToolchain  IterationCount=15
 LaunchCount=2  WarmupCount=10
 
-|                         Method |          Factory |      Mean |    Error |   StdDev |    Median |   Gen0 | Allocated |
-|------------------------------- |----------------- |----------:|---------:|---------:|----------:|-------:|----------:|
-|               Classic_RefTypes |         Original |  88.27 ns | 1.337 ns | 1.959 ns |  87.65 ns | 0.0106 |     112 B |
-|             Classic_ValueTypes |         Original |  89.72 ns | 0.699 ns | 1.024 ns |  89.72 ns | 0.0283 |     296 B |
-|   LoggerMessageDefine_RefTypes |         Original |  86.65 ns | 2.792 ns | 4.179 ns |  84.97 ns | 0.0068 |      72 B |
-| LoggerMessageDefine_ValueTypes |         Original |  80.61 ns | 0.762 ns | 1.092 ns |  80.58 ns | 0.0252 |     264 B |
-|        ClassicCodeGen_RefTypes |         Original |  80.05 ns | 0.589 ns | 0.863 ns |  79.93 ns | 0.0068 |      72 B |
-|      ClassicCodeGen_ValueTypes |         Original |  79.52 ns | 0.665 ns | 0.932 ns |  79.69 ns | 0.0252 |     264 B |
-|         ModernCodeGen_RefTypes |         Original |  59.34 ns | 0.508 ns | 0.745 ns |  59.02 ns |      - |         - |
-|       ModernCodeGen_ValueTypes |         Original |  77.00 ns | 1.429 ns | 2.139 ns |  77.20 ns | 0.0160 |     168 B |
-
-|               Classic_RefTypes |              New | 139.09 ns | 0.966 ns | 1.446 ns | 138.47 ns | 0.0143 |     152 B |
-|             Classic_ValueTypes |              New | 143.90 ns | 1.165 ns | 1.708 ns | 143.31 ns | 0.0319 |     336 B |
-|   LoggerMessageDefine_RefTypes |              New | 145.32 ns | 1.270 ns | 1.862 ns | 146.37 ns | 0.0136 |     144 B |
-| LoggerMessageDefine_ValueTypes |              New | 133.70 ns | 0.575 ns | 0.860 ns | 133.69 ns | 0.0312 |     328 B |
-|        ClassicCodeGen_RefTypes |              New | 144.67 ns | 0.652 ns | 0.935 ns | 144.53 ns | 0.0136 |     144 B |
-|      ClassicCodeGen_ValueTypes |              New | 132.62 ns | 1.427 ns | 2.092 ns | 133.32 ns | 0.0312 |     328 B |
-|         ModernCodeGen_RefTypes |              New |  63.74 ns | 1.477 ns | 2.071 ns |  63.34 ns |      - |         - |
-|       ModernCodeGen_ValueTypes |              New |  83.08 ns | 2.444 ns | 3.426 ns |  82.26 ns | 0.0160 |     168 B |
-
-|               Classic_RefTypes | NewWithEnrichers | 145.13 ns | 0.491 ns | 0.705 ns | 145.02 ns | 0.0143 |     152 B |
-|             Classic_ValueTypes | NewWithEnrichers | 151.56 ns | 2.216 ns | 3.248 ns | 150.42 ns | 0.0319 |     336 B |
-|   LoggerMessageDefine_RefTypes | NewWithEnrichers | 156.64 ns | 2.794 ns | 3.824 ns | 155.43 ns | 0.0136 |     144 B |
-| LoggerMessageDefine_ValueTypes | NewWithEnrichers | 137.69 ns | 1.132 ns | 1.623 ns | 138.27 ns | 0.0312 |     328 B |
-|        ClassicCodeGen_RefTypes | NewWithEnrichers | 151.18 ns | 0.679 ns | 0.973 ns | 151.18 ns | 0.0136 |     144 B |
-|      ClassicCodeGen_ValueTypes | NewWithEnrichers | 139.26 ns | 0.616 ns | 0.922 ns | 139.20 ns | 0.0312 |     328 B |
-|         ModernCodeGen_RefTypes | NewWithEnrichers |  68.12 ns | 0.661 ns | 0.949 ns |  67.86 ns |      - |         - |
-|       ModernCodeGen_ValueTypes | NewWithEnrichers |  87.37 ns | 1.709 ns | 2.452 ns |  86.45 ns | 0.0160 |     168 B |
+|               Classic_RefTypes |         Original |  86.70 ns | 2.114 ns | 3.098 ns |  87.53 ns | 0.0106 |     112 B |
+|             Classic_ValueTypes |         Original |  95.07 ns | 1.104 ns | 1.547 ns |  96.09 ns | 0.0283 |     296 B |
+|   LoggerMessageDefine_RefTypes |         Original |  80.07 ns | 1.320 ns | 1.851 ns |  80.20 ns | 0.0068 |      72 B |
+| LoggerMessageDefine_ValueTypes |         Original |  84.22 ns | 2.054 ns | 3.011 ns |  83.69 ns | 0.0252 |     264 B |
+|        ClassicCodeGen_RefTypes |         Original |  80.36 ns | 0.517 ns | 0.690 ns |  80.39 ns | 0.0068 |      72 B |
+|      ClassicCodeGen_ValueTypes |         Original |  82.33 ns | 1.197 ns | 1.678 ns |  81.97 ns | 0.0252 |     264 B |
+|         ModernCodeGen_RefTypes |         Original |  59.31 ns | 0.379 ns | 0.556 ns |  59.09 ns |      - |         - |
+|       ModernCodeGen_ValueTypes |         Original |  78.59 ns | 1.769 ns | 2.594 ns |  78.45 ns | 0.0160 |     168 B |
+|               Classic_RefTypes |              New | 138.53 ns | 0.826 ns | 1.184 ns | 138.32 ns | 0.0143 |     152 B |
+|             Classic_ValueTypes |              New | 141.50 ns | 0.658 ns | 0.984 ns | 141.33 ns | 0.0319 |     336 B |
+|   LoggerMessageDefine_RefTypes |              New | 149.70 ns | 0.953 ns | 1.398 ns | 149.51 ns | 0.0136 |     144 B |
+| LoggerMessageDefine_ValueTypes |              New | 131.45 ns | 0.656 ns | 0.920 ns | 131.74 ns | 0.0312 |     328 B |
+|        ClassicCodeGen_RefTypes |              New | 146.57 ns | 3.755 ns | 5.139 ns | 148.38 ns | 0.0136 |     144 B |
+|      ClassicCodeGen_ValueTypes |              New | 129.45 ns | 0.772 ns | 1.108 ns | 129.99 ns | 0.0312 |     328 B |
+|         ModernCodeGen_RefTypes |              New |  60.68 ns | 0.633 ns | 0.887 ns |  60.51 ns |      - |         - |
+|       ModernCodeGen_ValueTypes |              New |  80.78 ns | 0.373 ns | 0.536 ns |  80.61 ns | 0.0160 |     168 B |
+|               Classic_RefTypes | NewWithEnrichers | 144.45 ns | 0.556 ns | 0.798 ns | 144.60 ns | 0.0143 |     152 B |
+|             Classic_ValueTypes | NewWithEnrichers | 148.00 ns | 0.766 ns | 1.049 ns | 147.48 ns | 0.0319 |     336 B |
+|   LoggerMessageDefine_RefTypes | NewWithEnrichers | 148.39 ns | 1.016 ns | 1.457 ns | 147.84 ns | 0.0136 |     144 B |
+| LoggerMessageDefine_ValueTypes | NewWithEnrichers | 137.76 ns | 0.582 ns | 0.835 ns | 137.66 ns | 0.0312 |     328 B |
+|        ClassicCodeGen_RefTypes | NewWithEnrichers | 147.13 ns | 2.168 ns | 3.178 ns | 148.46 ns | 0.0136 |     144 B |
+|      ClassicCodeGen_ValueTypes | NewWithEnrichers | 135.49 ns | 0.965 ns | 1.414 ns | 134.96 ns | 0.0312 |     328 B |
+|         ModernCodeGen_RefTypes | NewWithEnrichers |  67.11 ns | 0.379 ns | 0.556 ns |  66.95 ns |      - |         - |
+|       ModernCodeGen_ValueTypes | NewWithEnrichers |  85.60 ns | 0.710 ns | 0.972 ns |  86.24 ns | 0.0160 |     168 B |

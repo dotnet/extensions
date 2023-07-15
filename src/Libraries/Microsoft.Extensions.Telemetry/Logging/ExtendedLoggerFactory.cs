@@ -71,13 +71,14 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
             : NullRedactorProvider.Instance;
         _redactorProvider = provider.GetRedactor;
 
-        var joiner = new ExtendedLogger.LegacyPropertyJoiner();
+        var props = new List<KeyValuePair<string, object?>>();
+        var bag = new ExtendedLogger.EnrichmentPropertyBag(props);
         foreach (var enricher in staticEnrichers)
         {
-            enricher.Enrich(joiner);
+            enricher.Enrich(bag);
         }
 
-        _staticProperties = joiner.ToArray();
+        _staticProperties = props.ToArray();
         Config = ComputeConfig(enrichmentOptions?.CurrentValue);
     }
 

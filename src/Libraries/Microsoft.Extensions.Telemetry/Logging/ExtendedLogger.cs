@@ -210,7 +210,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 jr.Next = jitRedactors;
                 jitRedactors = jr;
 
-                joiner.Add(cp.Name, jr);
+                joiner.PropertyBag.Add(cp.Name, jr);
             }
             catch (Exception ex)
             {
@@ -224,7 +224,7 @@ internal sealed partial class ExtendedLogger : ILogger
         {
             try
             {
-                enricher(joiner);
+                enricher(joiner.PropertyBag);
             }
             catch (Exception ex)
             {
@@ -236,7 +236,7 @@ internal sealed partial class ExtendedLogger : ILogger
         // one last dedicated bit of enrichment
         if (exception != null && config.CaptureStackTraces)
         {
-            joiner.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+            joiner.PropertyBag.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
         }
 
         for (int i = 0; i < loggers.Length; i++)
@@ -290,14 +290,14 @@ internal sealed partial class ExtendedLogger : ILogger
                 break;
 
             case IEnumerable<KeyValuePair<string, object?>> stateList:
-                joiner.AddRange(stateList);
+                joiner.PropertyBag.AddRange(stateList);
                 break;
 
             case null:
                 break;
 
             default:
-                joiner.Add("{OriginalFormat}", state);
+                joiner.PropertyBag.Add("{OriginalFormat}", state);
                 break;
         }
 
@@ -308,7 +308,7 @@ internal sealed partial class ExtendedLogger : ILogger
         {
             try
             {
-                enricher(joiner);
+                enricher(joiner.PropertyBag);
             }
             catch (Exception ex)
             {
@@ -320,7 +320,7 @@ internal sealed partial class ExtendedLogger : ILogger
         // one last dedicated bit of enrichment
         if (exception != null && config.CaptureStackTraces)
         {
-            joiner.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+            joiner.PropertyBag.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
         }
 
         for (int i = 0; i < loggers.Length; i++)
