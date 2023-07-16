@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.ObjectPool;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
@@ -15,7 +16,7 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 /// Utility type to support generated logging methods.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 public static class LoggerMessageHelper
 {
     [ThreadStatic]

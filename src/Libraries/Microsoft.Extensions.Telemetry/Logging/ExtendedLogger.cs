@@ -190,11 +190,6 @@ internal sealed partial class ExtendedLogger : ILogger
         var loggers = MessageLoggers;
         var config = _factory.Config;
 
-        var joiner = ModernJoiner;
-        joiner.StaticProperties = config.StaticProperties;
-        joiner.Formatter = formatter;
-        joiner.SetIncomingProperties(msgState);
-
         List<Exception>? exceptions = null;
 
         // redact
@@ -210,7 +205,8 @@ internal sealed partial class ExtendedLogger : ILogger
                 jr.Next = jitRedactors;
                 jitRedactors = jr;
 
-                joiner.PropertyBag.Add(cp.Name, jr);
+                var index = msgState.EnsureRedactedPropertySpace(1);
+                msgState.RedactedPropertyArray[index] = new(cp.Name, jr);
             }
             catch (Exception ex)
             {
@@ -218,6 +214,11 @@ internal sealed partial class ExtendedLogger : ILogger
                 exceptions.Add(ex);
             }
         }
+
+        var joiner = ModernJoiner;
+        joiner.StaticProperties = config.StaticProperties;
+        joiner.Formatter = formatter;
+        joiner.SetIncomingProperties(msgState);
 
         // enrich
         foreach (var enricher in config.Enrichers)

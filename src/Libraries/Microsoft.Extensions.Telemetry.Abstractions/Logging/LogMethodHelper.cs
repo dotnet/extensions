@@ -10,6 +10,7 @@ using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Telemetry.Enrichment;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
@@ -37,7 +38,7 @@ public sealed class LogMethodHelper : List<KeyValuePair<string, object?>>, ILogP
     }
 
     /// <inheritdoc/>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public void Add(string propertyName, object? propertyValue, DataClassification classification) => Add(propertyName, propertyValue);
 
     /// <summary>

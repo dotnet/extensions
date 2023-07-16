@@ -22,7 +22,9 @@ internal sealed partial class ExtendedLogger
         private const int PropCapacity = 4;
         private readonly List<KeyValuePair<string, object?>> _extraProperties = new(PropCapacity);
         private KeyValuePair<string, object?>[]? _incomingProperties;
+        private KeyValuePair<string, object?>[]? _redactedProperties;
         private int _incomingPropertiesCount;
+        private int _redactedPropertiesCount;
 
         public ModernPropertyJoiner()
         {
@@ -35,6 +37,7 @@ internal sealed partial class ExtendedLogger
         {
             _extraProperties.Clear();
             _incomingProperties = null;
+            _redactedProperties = null;
             State = null;
             Formatter = null;
         }
@@ -44,6 +47,9 @@ internal sealed partial class ExtendedLogger
         {
             _incomingProperties = value.PropertyArray;
             _incomingPropertiesCount = value.NumProperties;
+
+            _redactedProperties = value.RedactedPropertyArray;
+            _redactedPropertiesCount = value.NumRedactedProperties;
         }
 
         public KeyValuePair<string, object?> this[int index]
@@ -54,18 +60,22 @@ internal sealed partial class ExtendedLogger
                 {
                     return _incomingProperties![index];
                 }
-                else if (index < _incomingPropertiesCount + _extraProperties.Count)
+                else if (index < _incomingPropertiesCount + _redactedPropertiesCount)
                 {
-                    return _extraProperties[index - _incomingPropertiesCount];
+                    return _redactedProperties![index - _incomingPropertiesCount];
+                }
+                else if (index < _incomingPropertiesCount + _redactedPropertiesCount + _extraProperties.Count)
+                {
+                    return _extraProperties[index - _incomingPropertiesCount - _redactedPropertiesCount];
                 }
                 else
                 {
-                    return StaticProperties![index - _incomingPropertiesCount - _extraProperties.Count];
+                    return StaticProperties![index - _incomingPropertiesCount - _redactedPropertiesCount - _extraProperties.Count];
                 }
             }
         }
 
-        public int Count => _incomingPropertiesCount + _extraProperties.Count + StaticProperties!.Length;
+        public int Count => _incomingPropertiesCount + _redactedPropertiesCount + _extraProperties.Count + StaticProperties!.Length;
 
         public IEnumerator<KeyValuePair<string, object?>> GetEnumerator()
         {

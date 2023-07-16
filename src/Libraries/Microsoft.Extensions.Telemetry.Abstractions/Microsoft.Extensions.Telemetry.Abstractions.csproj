@@ -14,9 +14,13 @@
 
   <PropertyGroup>
     <Stage>normal</Stage>
-    <MinCodeCoverage>99</MinCodeCoverage>
+    <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>100</MinMutationScore>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="buildTransitive\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive\" />

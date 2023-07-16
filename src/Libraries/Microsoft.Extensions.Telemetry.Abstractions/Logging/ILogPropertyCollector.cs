@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
 
@@ -36,6 +37,6 @@ public interface ILogPropertyCollector
     /// <exception cref="ArgumentException"><paramref name="propertyName" /> is empty or contains exclusively whitespace,
     /// or when a property of the same name has already been added.
     /// </exception>
-    [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     void Add(string propertyName, object? propertyValue, DataClassification classification);
 }

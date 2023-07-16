@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
@@ -13,18 +14,24 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 /// <summary>
 /// Additional state to use with <see cref="ILogger.Log"/>.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed partial class LoggerMessageState
 {
     private KeyValuePair<string, object?>[] _properties = Array.Empty<KeyValuePair<string, object?>>();
+    private KeyValuePair<string, object?>[] _redactedProperties = Array.Empty<KeyValuePair<string, object?>>();
     private ClassifiedProperty[] _classifiedProperties = Array.Empty<ClassifiedProperty>();
+
+#pragma warning disable CA1819 // Properties should not return arrays
+    /// <summary>
+    /// Gets the array of properties.
+    /// </summary>
+    public KeyValuePair<string, object?>[] PropertyArray => _properties;
 
     /// <summary>
     /// Gets the array of properties.
     /// </summary>
-#pragma warning disable CA1819 // Properties should not return arrays
-    public KeyValuePair<string, object?>[] PropertyArray => _properties;
+    public KeyValuePair<string, object?>[] RedactedPropertyArray => _redactedProperties;
 
     /// <summary>
     /// Gets the array of classified properties.
@@ -48,6 +55,25 @@ public sealed partial class LoggerMessageState
 
         var index = NumProperties;
         NumProperties += count;
+        return index;
+    }
+
+    /// <summary>
+    /// Allocates some room to put some redacted properties.
+    /// </summary>
+    /// <param name="count">The amount of space to allocate.</param>
+    /// <returns>The index in the <see cref="RedactedPropertyArray"/> where to store the properties.</returns>
+    public int EnsureRedactedPropertySpace(int count)
+    {
+        int avail = _redactedProperties.Length - NumRedactedProperties;
+        if (count > avail)
+        {
+            var need = _redactedProperties.Length + (count - avail);
+            Array.Resize(ref _redactedProperties, need);
+        }
+
+        var index = NumRedactedProperties;
+        NumRedactedProperties += count;
         return index;
     }
 
@@ -76,8 +102,10 @@ public sealed partial class LoggerMessageState
     public void Clear()
     {
         Array.Clear(_properties, 0, NumProperties);
+        Array.Clear(_redactedProperties, 0, NumRedactedProperties);
         Array.Clear(_classifiedProperties, 0, NumClassifiedProperties);
         NumProperties = 0;
+        NumRedactedProperties = 0;
         NumClassifiedProperties = 0;
         PropertyNamePrefix = string.Empty;
     }
@@ -86,6 +114,11 @@ public sealed partial class LoggerMessageState
     /// Gets a value indicating the number of unclassified properties currently in this instance.
     /// </summary>
     public int NumProperties { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating the number of redacted properties currently in this instance.
+    /// </summary>
+    public int NumRedactedProperties { get; private set; }
 
     /// <summary>
     /// Gets a value indicating the number of classified properties currently in this instance.

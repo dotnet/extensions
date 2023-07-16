@@ -28,6 +28,14 @@ public class LatencyRegistryExtensionsTest
     }
 
     [Fact]
+    public void LatencyRegistryExtension_EmptyNames()
+    {
+        Assert.Throws<ArgumentException>(() => LatencyRegistryExtensions.RegisterCheckpointNames(new ServiceCollection(), ""));
+        Assert.Throws<ArgumentException>(() => LatencyRegistryExtensions.RegisterMeasureNames(new ServiceCollection(), ""));
+        Assert.Throws<ArgumentException>(() => LatencyRegistryExtensions.RegisterTagNames(new ServiceCollection(), ""));
+    }
+
+    [Fact]
     public void LatencyRegistryExtension_BasicFunctionality()
     {
         var services = RegisterNames(new ServiceCollection());

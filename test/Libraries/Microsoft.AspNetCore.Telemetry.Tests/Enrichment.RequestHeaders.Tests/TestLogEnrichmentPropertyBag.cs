@@ -3,29 +3,30 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Telemetry.Enrichment;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment.Test;
+namespace Microsoft.AspNetCore.Telemetry.RequestHeaders.Test;
 
-public class TestMetricEnrichmentPropertyBag : IEnrichmentPropertyBag
+public class TestLogEnrichmentPropertyBag : IEnrichmentPropertyBag
 {
-    private readonly Dictionary<string, string> _properties = new();
+    private readonly Dictionary<string, object> _properties = new();
 
-    public TestMetricEnrichmentPropertyBag(IEnumerable<KeyValuePair<string, object>>? input = null)
+    public TestLogEnrichmentPropertyBag(IEnumerable<KeyValuePair<string, object>>? input = null)
     {
         if (input != null)
         {
             foreach (var kvp in input)
             {
-                _properties.Add(kvp.Key, kvp.Value.ToString() ?? string.Empty);
+                _properties.Add(kvp.Key, kvp.Value);
             }
         }
     }
 
-    public IReadOnlyDictionary<string, string> Properties => _properties;
+    public IReadOnlyDictionary<string, object> Properties => _properties;
 
     public void Add(string key, object value)
     {
-        _properties.Add(key, value.ToString() ?? string.Empty);
+        _properties.Add(key, value);
     }
 
     public void Add(string key, string value)
@@ -37,7 +38,7 @@ public class TestMetricEnrichmentPropertyBag : IEnrichmentPropertyBag
     {
         foreach (var p in properties)
         {
-            _properties.Add(p.Key, p.Value.ToString() ?? string.Empty);
+            _properties.Add(p.Key, p.Value);
         }
     }
 
