@@ -9,13 +9,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Extensions.Telemetry.Logging;
 
-#pragma warning disable CA1822 // Mark members as static
 #pragma warning disable R9A000 // Switch to updated logging methods using the [LogMethod] attribute for additional performance.
 
 namespace Microsoft.Extensions.Telemetry.Bench;
 
 [MemoryDiagnoser]
-public class LoggerFactory
+public class ExtendedLoggerBench
 {
     private const string ConnectionId = "0x345334534678";
     private const string Type = "some string";

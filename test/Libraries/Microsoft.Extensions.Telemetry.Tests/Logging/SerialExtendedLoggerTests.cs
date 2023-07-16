@@ -25,9 +25,17 @@ public static class SerialExtendedLoggerTests
 
         int eventCount = 0;
         using var el = new LoggerEventListener();
-        el.EventWritten += (_, _) =>
+        el.EventWritten += (_, e) =>
         {
-            eventCount++;
+            var payload = e?.Payload?[0];
+            if (payload != null)
+            {
+                var s = payload.ToString();
+                if (s != null && s.Contains("I'M ANGRY"))
+                {
+                    eventCount++;
+                }
+            }
         };
 
         using var lf = new ExtendedLoggerFactory(
@@ -98,7 +106,7 @@ public static class SerialExtendedLoggerTests
     {
         public LoggerEventListener()
         {
-            EnableEvents(LoggingEventSource.Log, EventLevel.Informational);
+            EnableEvents(LoggingEventSource.Instance, EventLevel.Informational);
         }
     }
 }

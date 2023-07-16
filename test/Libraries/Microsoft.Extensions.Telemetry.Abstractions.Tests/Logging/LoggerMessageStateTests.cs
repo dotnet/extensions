@@ -78,6 +78,16 @@ public static class LoggerMessageStateTests
         Assert.Equal(PropertyNamPrefix + PropName, lms.PropertyArray[0].Key);
         Assert.Equal(Value, lms.PropertyArray[0].Value);
 
+        collector.Add(PropName, Value, SimpleClassifications.PrivateData);
+        Assert.Equal(1, lms.NumProperties);
+        Assert.Equal(PropertyNamPrefix + PropName, lms.PropertyArray[0].Key);
+        Assert.Equal(Value, lms.PropertyArray[0].Value);
+
+        Assert.Equal(1, lms.NumClassifiedProperties);
+        Assert.Equal(PropertyNamPrefix + PropName, lms.ClassifiedPropertyArray[0].Name);
+        Assert.Equal(Value, lms.ClassifiedPropertyArray[0].Value);
+        Assert.Equal(SimpleClassifications.PrivateData, lms.ClassifiedPropertyArray[0].Classification);
+
         lms.Clear();
         Assert.Equal(0, lms.NumProperties);
 

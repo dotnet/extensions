@@ -123,7 +123,7 @@ internal sealed partial class ExtendedLogger : ILogger
     {
         if (exceptions != null)
         {
-            LoggingEventSource.Log.LogException(new AggregateException("An error occurred while logging.", exceptions));
+            LoggingEventSource.Instance.LoggingException(new AggregateException("An error occurred while logging.", exceptions));
         }
     }
 
