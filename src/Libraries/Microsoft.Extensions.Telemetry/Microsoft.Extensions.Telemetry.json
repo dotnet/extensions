@@ -16,10 +16,6 @@
           "Stage": "Stable"
         },
         {
-          "Member": "System.TimeSpan Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.EventListenerRecyclingInterval { get; set; }",
-          "Stage": "Stable"
-        },
-        {
           "Member": "bool Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.IncludeRecommendedDefault { get; set; }",
           "Stage": "Experimental"
         },
