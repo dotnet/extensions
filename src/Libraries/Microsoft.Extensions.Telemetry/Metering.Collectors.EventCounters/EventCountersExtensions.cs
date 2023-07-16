@@ -53,32 +53,8 @@ public static class EventCountersExtensions
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(section);
 
-        var optionsBuilder = AddEventCounterCollectorInternal(services);
-
-#if NET7_0_OR_GREATER
-        _ = optionsBuilder.Bind(section);
-#else
-        // Regular call:
-        // optionsBuilder.Bind(section)
-
-        // Translates to:
-        // optionsBuilder.Services.Configure<EventCountersCollectorOptions>(optionsBuilder.Name, section)
-
-        // Above call to Configure<T>() contains following:
-        // services.AddSingleton<IOptionsChangeTokenSource<EventCountersCollectorOptions>>(
-        //    new ConfigurationChangeTokenSource<EventCountersCollectorOptions>(optionsBuilder.Name, section))
-
-        // services.AddSingleton<IConfigureOptions<EventCountersCollectorOptions>>(
-        //    new NamedConfigureFromConfigurationOptions<EventCountersCollectorOptions>(optionsBuilder.Name, section))
-
-        // Since NamedConfigureFromConfigurationOptions<T> calls ConfigurationBinder.Bind(),
-        // we need to use our custom version that calls custom binder with added BindToSet() method:
-        _ = services.AddSingleton<IOptionsChangeTokenSource<EventCountersCollectorOptions>>(
-            new ConfigurationChangeTokenSource<EventCountersCollectorOptions>(optionsBuilder.Name, section));
-
-        _ = services.AddSingleton<IConfigureOptions<EventCountersCollectorOptions>>(
-            new CustomConfigureNamedOptions(optionsBuilder.Name, section));
-#endif
+        _ = AddEventCounterCollectorInternal(services)
+            .Bind(section);
 
         return services;
     }
