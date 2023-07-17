@@ -1,6 +1,0 @@
-Microsoft.Extensions.Time.Testing.FakeTimeProvider.AutoAdvanceAmount.get -> System.TimeSpan
-Microsoft.Extensions.Time.Testing.FakeTimeProvider.AutoAdvanceAmount.set -> void
-Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset startDateTime) -> void
-Microsoft.Extensions.Time.Testing.FakeTimeProvider.Start.get -> System.DateTimeOffset
-*REMOVED*Microsoft.Extensions.Time.Testing.FakeTimeProvider.Epoch.get -> System.DateTimeOffset
-*REMOVED*Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset epoch) -> void

@@ -4,11 +4,7 @@
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
-
-  <PropertyGroup>
-    <UsePublicApiAnalyzers>true</UsePublicApiAnalyzers>
-  </PropertyGroup>
-
+  
   <PropertyGroup Condition="'$(RunRoslynSdlAnalyzers)' == 'True'">
     <ErrorLog>$(MSBuildProjectFullPath).$([System.Guid]::NewGuid().ToString().Substring(0,8)).sarif</ErrorLog>
   </PropertyGroup>

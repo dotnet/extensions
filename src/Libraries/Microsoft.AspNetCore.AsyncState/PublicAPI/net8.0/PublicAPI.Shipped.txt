@@ -1,4 +1,0 @@
-
-#nullable enable
-Microsoft.AspNetCore.AsyncState.AsyncStateHttpContextExtensions
-static Microsoft.AspNetCore.AsyncState.AsyncStateHttpContextExtensions.AddAsyncStateHttpContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

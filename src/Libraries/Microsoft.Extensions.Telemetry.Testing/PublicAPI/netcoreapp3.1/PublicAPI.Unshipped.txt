@@ -1,4 +1,0 @@
-Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.WaitForMeasurementsAsync(int minCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.WaitForMeasurementsAsync(int minCount, System.TimeSpan timeout) -> System.Threading.Tasks.Task!
-*REMOVED*Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.WaitForMeasurementsAsync(int numMeasurements) -> System.Threading.Tasks.Task!
-*REMOVED*Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.WaitForMeasurementsAsync(int numMeasurements, System.TimeSpan timeout, System.TimeProvider? timeProvider = null) -> System.Threading.Tasks.Task!
