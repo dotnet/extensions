@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing.Internal;
 using Microsoft.Extensions.Telemetry.Testing.Logging;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Hosting.Testing;
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.Hosting.Testing;
 /// <summary>
 /// Extension methods supporting host unit testing scenarios.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.Hosting, UrlFormat = Experiments.UrlFormat)]
 public static class HostingFakesExtensions
 {
     /// <summary>

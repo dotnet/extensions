@@ -9,6 +9,7 @@ using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Resilience;
@@ -62,7 +63,7 @@ public static class HttpStandardResilienceBuilderBuilderExtensions
     /// <param name="configure">The configure method.</param>
     /// <returns>The same builder instance.</returns>
 #pragma warning disable S3872 // Parameter names should not duplicate the names of their methods
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public static IHttpStandardResilienceStrategyBuilder Configure(this IHttpStandardResilienceStrategyBuilder builder, Action<HttpStandardResilienceOptions, IServiceProvider> configure)
 #pragma warning restore S3872 // Parameter names should not duplicate the names of their methods
     {

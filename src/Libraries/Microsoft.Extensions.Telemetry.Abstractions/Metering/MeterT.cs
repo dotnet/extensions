@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Telemetry.Metering;
 
@@ -12,13 +13,13 @@ namespace Microsoft.Extensions.Telemetry.Metering;
 /// A meter class where the meter name is derived from the specified <typeparamref name="TMeterName"/> type name.
 /// </summary>
 /// <typeparam name="TMeterName">The type whose name is used as the meter name.</typeparam>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 public class Meter<TMeterName> : Meter
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Meter{TMeterName}"/> class.
     /// </summary>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public Meter()
         : base(typeof(TMeterName).FullName!)
     {

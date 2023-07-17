@@ -49,37 +49,7 @@ internal static class DiagDescriptors
         helpLinkUri: "https://TODO/r9a000",
         isEnabledByDefault: true);
 
-    // R9A001..R9A017 are retired
-
-    public static DiagnosticDescriptor StringFormat { get; } = new(
-        id: "R9A018",
-        messageFormat: Resources.StringFormatMessage,
-        title: Resources.StringFormatTitle,
-        category: Performance,
-        description: Resources.StringFormatDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a018",
-        isEnabledByDefault: true);
-
-    public static DiagnosticDescriptor UsingExcessiveDictionaryLookup { get; } = new(
-        id: "R9A019",
-        messageFormat: Resources.UsingExcessiveDictionaryLookupMessage,
-        title: Resources.UsingExcessiveDictionaryLookupTitle,
-        category: Performance,
-        description: Resources.UsingExcessiveDictionaryLookupDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a019",
-        isEnabledByDefault: true);
-
-    public static DiagnosticDescriptor UsingExcessiveSetLookup { get; } = new(
-        id: "R9A020",
-        messageFormat: Resources.UsingExcessiveSetLookupMessage,
-        title: Resources.UsingExcessiveSetLookupTitle,
-        category: Performance,
-        description: Resources.UsingExcessiveSetLookupDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a020",
-        isEnabledByDefault: true);
+    // R9A001..R9A020 are retired
 
     public static DiagnosticDescriptor UsingToStringInLoggers { get; } = new(
         id: "R9A021",
@@ -101,17 +71,7 @@ internal static class DiagDescriptors
         helpLinkUri: "https://TODO/r9a022",
         isEnabledByDefault: true);
 
-    // R9A023..R9A028 retired
-
-    public static DiagnosticDescriptor UsingExperimentalApi { get; } = new(
-        id: "R9A029",
-        messageFormat: Resources.UsingExperimentalApiMessage,
-        title: Resources.UsingExperimentalApiTitle,
-        category: Reliability,
-        description: Resources.UsingExperimentalApiDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a029",
-        isEnabledByDefault: true);
+    // R9A023..R9A029 retired
 
     public static DiagnosticDescriptor StartsEndsWith { get; } = new(
         id: "R9A030",
@@ -189,17 +149,7 @@ internal static class DiagDescriptors
         helpLinkUri: "https://TODO/r9a043",
         isEnabledByDefault: true);
 
-    public static DiagnosticDescriptor MakeArrayStatic { get; } = new(
-        id: "R9A044",
-        messageFormat: Resources.MakeArrayStaticMessage,
-        title: Resources.MakeArrayStaticTitle,
-        category: Performance,
-        description: Resources.MakeArrayStaticDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a044",
-        isEnabledByDefault: true);
-
-    // R9A045..R9A055 retired
+    // R9A044..R9A055 retired
 
     public static DiagnosticDescriptor AsyncCallInsideUsingBlock { get; } = new(
         id: "R9A056",

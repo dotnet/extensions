@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Telemetry.Enrichment;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenTelemetry.Trace;
 
@@ -53,7 +54,7 @@ public static class TracingEnricherExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add this enricher to.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException">The argument <paramref name="services"/> is <see langword="null"/>.</exception>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static IServiceCollection AddTraceEnricher<T>(this IServiceCollection services)
         where T : class, ITraceEnricher
     {
@@ -71,7 +72,7 @@ public static class TracingEnricherExtensions
     /// <param name="enricher">Enricher to be added.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException">The argument <paramref name="services"/> or <paramref name="enricher"/> is <see langword="null" />.</exception>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static IServiceCollection AddTraceEnricher(this IServiceCollection services, ITraceEnricher enricher)
     {
         _ = Throw.IfNull(services);

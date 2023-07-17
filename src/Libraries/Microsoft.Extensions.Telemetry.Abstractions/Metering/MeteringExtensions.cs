@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Telemetry.Metering;
 
@@ -17,7 +18,7 @@ public static class MeteringExtensions
     /// </summary>
     /// <param name="services">The dependency injection container to register metering into.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static IServiceCollection RegisterMetering(this IServiceCollection services)
     {
         services.TryAdd(ServiceDescriptor.Singleton(typeof(Meter<>), typeof(Meter<>)));

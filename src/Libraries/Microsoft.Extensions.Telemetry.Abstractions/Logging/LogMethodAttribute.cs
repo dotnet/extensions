@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
 
@@ -266,7 +267,7 @@ public sealed class LogMethodAttribute : Attribute
     /// }
     /// </code>
     /// </example>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public LogMethodAttribute()
     {
         EventId = 0;

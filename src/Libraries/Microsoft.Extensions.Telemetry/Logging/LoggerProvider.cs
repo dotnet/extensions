@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Extensions.Telemetry.Internal;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 /// OpenTelemetry Logger provider class.
 /// </summary>
 [ProviderAlias("R9")]
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 public sealed class LoggerProvider : BaseProvider, ILoggerProvider, ISupportExternalScope
 {
     private const int ProcessorShutdownGracePeriodInMs = 5000;

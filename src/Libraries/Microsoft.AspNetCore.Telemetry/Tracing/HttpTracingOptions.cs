@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Telemetry;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.AspNetCore.Telemetry;
 
@@ -51,7 +52,7 @@ public class HttpTracingOptions
     /// <remarks>
     /// This property is applicable when the <see cref="IncludePath"/> option is enabled.
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>

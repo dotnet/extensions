@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="..\Common\DataClassificationStaticAnalysisCommon.cs" />
     <Compile Update="..\Common\Resources.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="Resources.resx" />
   </ItemGroup>
 

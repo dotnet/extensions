@@ -17,7 +17,6 @@ public sealed partial class CallAnalyzer : DiagnosticAnalyzer
         DiagDescriptors.StartsEndsWith,
         DiagDescriptors.LegacyLogging,
         DiagDescriptors.StaticTime,
-        DiagDescriptors.StringFormat,
         DiagDescriptors.EnumStrings,
         DiagDescriptors.ValueTuple,
         DiagDescriptors.Arrays,
@@ -41,7 +40,6 @@ public sealed partial class CallAnalyzer : DiagnosticAnalyzer
             _ = new StartsEndsWith(reg);
             _ = new StaticTime(reg);
             _ = new ValueTuple(reg);
-            _ = new StringFormat(reg);
             _ = new LegacyCollection(reg);
             _ = new Split(reg);
 
@@ -49,7 +47,6 @@ public sealed partial class CallAnalyzer : DiagnosticAnalyzer
             compilationStartContext.RegisterOperationAction(handlers.HandleInvocation, OperationKind.Invocation);
             compilationStartContext.RegisterOperationAction(handlers.HandleObjectCreation, OperationKind.ObjectCreation);
             compilationStartContext.RegisterOperationAction(handlers.HandlePropertyReference, OperationKind.PropertyReference);
-            compilationStartContext.RegisterOperationAction(handlers.HandleThrow, OperationKind.Throw);
         });
     }
 }

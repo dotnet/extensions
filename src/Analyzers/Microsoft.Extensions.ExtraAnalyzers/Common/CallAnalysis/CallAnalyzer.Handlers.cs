@@ -108,27 +108,5 @@ public partial class CallAnalyzer
                 }
             }
         }
-
-        public void HandleThrow(OperationAnalysisContext context)
-        {
-            var op = (IThrowOperation)context.Operation;
-
-            if (op.Exception is IConversionOperation convOp)
-            {
-                if (convOp.Operand is IObjectCreationOperation creationOp)
-                {
-                    if (creationOp.Type != null)
-                    {
-                        if (_state.ExceptionTypes.TryGetValue(creationOp.Type, out var handlers))
-                        {
-                            foreach (var handler in handlers)
-                            {
-                                handler(context, op);
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }

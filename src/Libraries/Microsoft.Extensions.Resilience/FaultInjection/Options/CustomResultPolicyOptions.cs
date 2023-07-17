@@ -3,13 +3,14 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Resilience.FaultInjection;
 
 /// <summary>
 /// Custom Result chaos policy options definition.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
 public class CustomResultPolicyOptions : ChaosPolicyOptionsBase
 {
     /// <summary>
@@ -20,7 +21,7 @@ public class CustomResultPolicyOptions : ChaosPolicyOptionsBase
     /// from <see cref="ICustomResultRegistry"/>.
     /// Default is set to <see cref="string.Empty"/>.
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     [Required]
     public string CustomResultKey { get; set; } = string.Empty;
 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Data.Validation;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Telemetry.Metering;
 
@@ -60,6 +61,6 @@ public class EventCountersCollectorOptions
     /// EventSource: "Microsoft-AspNetCore-Server-Kestrel", Counters:
     ///   - "connection-queue-length", "request-queue-length".
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public bool IncludeRecommendedDefault { get; set; }
 }

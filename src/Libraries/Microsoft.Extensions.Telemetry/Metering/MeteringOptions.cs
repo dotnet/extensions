@@ -3,13 +3,14 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Telemetry.Metering;
 
 /// <summary>
 /// Options for configuring metering.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 public class MeteringOptions
 {
     /// <summary>

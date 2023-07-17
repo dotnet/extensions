@@ -9,6 +9,7 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry.Testing.Metering;
@@ -17,7 +18,7 @@ namespace Microsoft.Extensions.Telemetry.Testing.Metering;
 /// Collects the measurements published from an <see cref="Instrument{T}"/> or <see cref="ObservableInstrument{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of metric data being recorded.</typeparam>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 [DebuggerDisplay("{_measurements.Count} measurements")]
 public sealed class MetricCollector<T> : IDisposable
     where T : struct

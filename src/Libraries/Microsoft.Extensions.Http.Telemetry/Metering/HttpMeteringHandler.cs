@@ -16,6 +16,7 @@ using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Telemetry;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
@@ -49,7 +50,7 @@ public class HttpMeteringHandler : DelegatingHandler
     /// </summary>
     /// <param name="meter">The meter.</param>
     /// <param name="enrichers">Enumerable of outgoing request metric enrichers.</param>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public HttpMeteringHandler(
         Meter<HttpMeteringHandler> meter,
         IEnumerable<IOutgoingRequestMetricEnricher> enrichers)

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
@@ -65,7 +66,7 @@ public static class WindowsUtilizationExtensions
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.ResourceMonitoring, UrlFormat = Experiments.UrlFormat)]
     public static IResourceMonitorBuilder AddWindowsCounters(this IResourceMonitorBuilder builder)
     {
         _ = Throw.IfNull(builder);
@@ -93,7 +94,7 @@ public static class WindowsUtilizationExtensions
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.ResourceMonitoring, UrlFormat = Experiments.UrlFormat)]
     public static IResourceMonitorBuilder AddWindowsCounters(this IResourceMonitorBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
@@ -123,7 +124,7 @@ public static class WindowsUtilizationExtensions
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.ResourceMonitoring, UrlFormat = Experiments.UrlFormat)]
     public static IResourceMonitorBuilder AddWindowsCounters(this IResourceMonitorBuilder builder, Action<WindowsCountersOptions> configure)
     {
         _ = Throw.IfNull(builder);

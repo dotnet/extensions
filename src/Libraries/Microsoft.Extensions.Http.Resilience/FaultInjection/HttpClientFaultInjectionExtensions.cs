@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.FaultInjection.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience.FaultInjection;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
@@ -147,7 +148,7 @@ public static class HttpClientFaultInjectionExtensions
     /// <returns>
     /// The <see cref="IHttpClientBuilder"/> so that additional calls can be chained.
     /// </returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public static IHttpClientBuilder AddWeightedFaultInjectionPolicyHandlers(this IHttpClientBuilder httpClientBuilder,
         Action<FaultPolicyWeightAssignmentsOptions> weightAssignmentsConfig)
     {
@@ -176,7 +177,7 @@ public static class HttpClientFaultInjectionExtensions
     /// <returns>
     /// The <see cref="IHttpClientBuilder"/> so that additional calls can be chained.
     /// </returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     [DynamicDependency(
         DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor,
         typeof(FaultPolicyWeightAssignmentsOptions))]
