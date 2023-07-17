@@ -30,7 +30,7 @@ public static class AutoActivationExtensions
     }
 
     /// <summary>
-    /// Adds an autoactivated singleton service of the type specified in TService with an implementation
+    /// Adds an auto-activated singleton service of the type specified in TService with an implementation
     /// type specified in TImplementation using the factory specified in implementationFactory
     /// to the specified <see cref="IServiceCollection"/>.
     /// </summary>
@@ -50,7 +50,7 @@ public static class AutoActivationExtensions
     }
 
     /// <summary>
-    /// Adds an autoactivated singleton service of the type specified in TService with a factory specified
+    /// Adds an auto-activated singleton service of the type specified in TService with a factory specified
     /// in implementationFactory to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
@@ -64,7 +64,7 @@ public static class AutoActivationExtensions
     }
 
     /// <summary>
-    /// Adds an autoactivated singleton service of the type specified in TService to the specified <see cref="IServiceCollection"/>.
+    /// Adds an auto-activated singleton service of the type specified in TService to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
@@ -140,7 +140,7 @@ public static class AutoActivationExtensions
     }
 
     /// <summary>
-    /// Adds an autoactivated singleton service of the type specified in serviceType to the specified
+    /// Adds an auto-activated singleton service of the type specified in serviceType to the specified
     /// <see cref="IServiceCollection"/> if the service type hasn't already been registered.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
@@ -154,7 +154,7 @@ public static class AutoActivationExtensions
     }
 
     /// <summary>
-    /// Adds an autoactivated singleton service of the type specified in serviceType with an implementation
+    /// Adds an auto-activated singleton service of the type specified in serviceType with an implementation
     /// of the type specified in implementationType to the specified <see cref="IServiceCollection"/>
     /// if the service type hasn't already been registered.
     /// </summary>
@@ -171,7 +171,7 @@ public static class AutoActivationExtensions
     }
 
     /// <summary>
-    /// Adds an autoactivated singleton service of the type specified in serviceType with a factory
+    /// Adds an auto-activated singleton service of the type specified in serviceType with a factory
     /// specified in implementationFactory to the specified <see cref="IServiceCollection"/>
     /// if the service type hasn't already been registered.
     /// </summary>
@@ -188,7 +188,7 @@ public static class AutoActivationExtensions
     }
 
     /// <summary>
-    /// Adds an autoactivated singleton service of the type specified in TService
+    /// Adds an auto-activated singleton service of the type specified in TService
     /// to the specified <see cref="IServiceCollection"/>
     /// if the service type hasn't already been registered.
     /// </summary>
@@ -203,7 +203,7 @@ public static class AutoActivationExtensions
     }
 
     /// <summary>
-    /// Adds an autoactivated singleton service of the type specified in TService with an implementation
+    /// Adds an auto-activated singleton service of the type specified in TService with an implementation
     /// type specified in TImplementation using the factory specified in implementationFactory
     /// to the specified <see cref="IServiceCollection"/>
     /// if the service type hasn't already been registered.
@@ -221,7 +221,7 @@ public static class AutoActivationExtensions
     }
 
     /// <summary>
-    /// Adds an autoactivated singleton service of the type specified in serviceType with a factory
+    /// Adds an auto-activated singleton service of the type specified in serviceType with a factory
     /// specified in implementationFactory to the specified <see cref="IServiceCollection"/>
     /// if the service type hasn't already been registered.
     /// </summary>
@@ -276,6 +276,8 @@ public static class AutoActivationExtensions
         return services;
     }
 
+    // exclude from coverage until https://github.com/microsoft/codecoverage/issues/38 is addressed
+    [ExcludeFromCodeCoverage]
     private static IServiceCollection AddHostedServiceIfNotExist(this IServiceCollection services)
     {
 #if NETFRAMEWORK

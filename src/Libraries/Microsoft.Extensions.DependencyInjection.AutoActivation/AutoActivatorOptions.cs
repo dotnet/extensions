@@ -8,5 +8,5 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 internal sealed class AutoActivatorOptions
 {
-    public HashSet<Type> AutoActivators { get; } = new HashSet<Type>();
+    public HashSet<Type> AutoActivators { get; } = new();
 }
