@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.AutoClient;
@@ -27,7 +28,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// </code>
 /// </example>
 [SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "Not applicable to this exception")]
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 public class AutoClientException : Exception
 {
     /// <summary>

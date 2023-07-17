@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.Shared.Data.Validation;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace System.Cloud.DocumentDb;
 
@@ -97,7 +98,7 @@ public class DatabaseOptions
     /// When enabled, System.Text.Json based serialization will be configured with
     /// settings defined in <see cref="JsonSerializerOptions"/>.
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.DocumentDb, UrlFormat = Experiments.UrlFormat)]
     public bool OverrideSerialization { get; set; } = true;
 
     /// <summary>

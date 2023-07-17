@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options.Validation;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Resilience.FaultInjection;
@@ -126,7 +127,7 @@ public class FaultInjectionOptionsBuilder
     /// <exception cref="ArgumentException">
     /// <paramref name="key"/> is an empty string or <see langword="null"/>.
     /// </exception>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public FaultInjectionOptionsBuilder AddCustomResult(string key, object customResult)
     {
         _ = Throw.IfNull(customResult);

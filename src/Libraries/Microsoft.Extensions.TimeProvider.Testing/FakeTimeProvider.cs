@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Time.Testing;
@@ -15,6 +16,7 @@ namespace Microsoft.Extensions.Time.Testing;
 /// <summary>
 /// A synthetic time provider used to enable deterministic behavior in tests.
 /// </summary>
+[Experimental(diagnosticId: Experiments.TimeProvider, UrlFormat = Experiments.UrlFormat)]
 public class FakeTimeProvider : TimeProvider
 {
     internal readonly HashSet<Waiter> Waiters = new();
@@ -30,7 +32,6 @@ public class FakeTimeProvider : TimeProvider
     /// This creates a provider whose time is initially set to midnight January 1st 2000.
     /// The provider is set to not automatically advance time each time it is read.
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public FakeTimeProvider()
     {
         Start = _now;
@@ -43,7 +44,6 @@ public class FakeTimeProvider : TimeProvider
     /// <remarks>
     /// The provider is set to not automatically advance time each time it is read.
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public FakeTimeProvider(DateTimeOffset startDateTime)
     {
         _ = Throw.IfLessThan(startDateTime.Ticks, 0);
@@ -55,7 +55,6 @@ public class FakeTimeProvider : TimeProvider
     /// <summary>
     /// Gets the starting date and time for this provider.
     /// </summary>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public DateTimeOffset Start { get; }
 
     /// <summary>
@@ -64,7 +63,6 @@ public class FakeTimeProvider : TimeProvider
     /// <remarks>
     /// This defaults to <see cref="TimeSpan.Zero"/>.
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public TimeSpan AutoAdvanceAmount
     {
         get => _autoAdvanceAmount;
@@ -94,7 +92,6 @@ public class FakeTimeProvider : TimeProvider
     /// Sets the date and time in the UTC time zone.
     /// </summary>
     /// <param name="value">The date and time in the UTC time zone.</param>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public void SetUtcNow(DateTimeOffset value)
     {
         lock (Waiters)
@@ -120,7 +117,6 @@ public class FakeTimeProvider : TimeProvider
     /// marches forward automatically in hardware, for the fake time provider the application is responsible for
     /// doing this explicitly by calling this method.
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public void Advance(TimeSpan delta)
     {
         _ = Throw.IfLessThan(delta.Ticks, 0);
@@ -155,7 +151,6 @@ public class FakeTimeProvider : TimeProvider
     /// Sets the local time zone.
     /// </summary>
     /// <param name="localTimeZone">The local time zone.</param>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public void SetLocalTimeZone(TimeZoneInfo localTimeZone) => _localTimeZone = localTimeZone;
 
     /// <summary>

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.ObjectPool;
@@ -15,7 +16,7 @@ namespace Microsoft.Extensions.ObjectPool;
 /// <summary>
 /// Extension methods for adding <see cref="ObjectPool{T}"/> to DI container.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.ObjectPool, UrlFormat = Experiments.UrlFormat)]
 public static class ObjectPoolServiceCollectionExtensions
 {
     /// <summary>

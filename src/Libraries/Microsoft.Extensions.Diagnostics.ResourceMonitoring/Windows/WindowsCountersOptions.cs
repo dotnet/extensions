@@ -6,13 +6,14 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Data.Validation;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 /// <summary>
 /// Options for WindowsCounters.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.ResourceMonitoring, UrlFormat = Experiments.UrlFormat)]
 public class WindowsCountersOptions
 {
     internal const int MinimumCachingInterval = 100;
@@ -33,7 +34,6 @@ public class WindowsCountersOptions
     /// <value>
     /// The default value is 5 seconds.
     /// </value>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     [TimeSpan(MinimumCachingInterval, MaximumCachingInterval)]
     public TimeSpan CachingInterval { get; set; } = DefaultCachingInterval;
 }

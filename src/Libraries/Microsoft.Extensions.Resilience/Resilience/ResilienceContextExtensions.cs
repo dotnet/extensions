@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Http.Telemetry;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
@@ -12,7 +13,7 @@ namespace Microsoft.Extensions.Resilience.Resilience;
 /// <summary>
 /// Extensions for <see cref="ResilienceContext"/>.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
 public static class ResilienceContextExtensions
 {
     private static readonly ResiliencePropertyKey<RequestMetadata?> _requestMetadataKey = new(TelemetryConstants.RequestMetadataKey);

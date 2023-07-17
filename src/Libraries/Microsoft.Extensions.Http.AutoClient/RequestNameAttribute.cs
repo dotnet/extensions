@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.AutoClient;
 
@@ -26,7 +27,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 [AttributeUsage(AttributeTargets.Method)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class RequestNameAttribute : Attribute

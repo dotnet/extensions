@@ -13,6 +13,9 @@ using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Extensions.Telemetry.Metering;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
+#if !NETFRAMEWORK
+using Microsoft.Shared.DiagnosticIds;
+#endif
 
 namespace Microsoft.Extensions.Http.Telemetry.Metering;
 
@@ -34,7 +37,7 @@ public static class HttpClientMeteringExtensions
     /// <returns>
     /// <see cref="IServiceCollection" /> instance for chaining.
     /// </returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static IServiceCollection AddHttpClientMeteringForAllHttpClients(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience.Resilience.Internal;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly.Extensions.Telemetry;
 
@@ -17,7 +18,7 @@ namespace Microsoft.Extensions.Resilience;
 /// <summary>
 /// Extension class for the Service Collection DI container.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+[Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
 public static class ResilienceServiceCollectionExtensions
 {
     /// <summary>

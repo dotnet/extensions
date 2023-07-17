@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Telemetry.Internal;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry;
@@ -25,7 +26,7 @@ public static class TelemetryExtensions
     /// </summary>
     /// <param name="request"><see cref="HttpWebRequest"/> object.</param>
     /// <param name="metadata">Metadata for the request.</param>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static void SetRequestMetadata(this HttpWebRequest request, RequestMetadata metadata)
     {
         _ = Throw.IfNull(request);
@@ -58,7 +59,7 @@ public static class TelemetryExtensions
     /// </summary>
     /// <param name="request"><see cref="HttpWebRequest"/> object.</param>
     /// <returns>Request metadata.</returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static RequestMetadata? GetRequestMetadata(this HttpWebRequest request)
     {
         _ = Throw.IfNull(request);

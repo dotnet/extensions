@@ -6,6 +6,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.Telemetry.Tracing;
 
@@ -23,7 +24,7 @@ public interface IHttpClientTraceEnricher
     /// <remarks>
     /// If your enricher fetches some information from <see cref="HttpWebRequest"/> or <see cref="HttpWebResponse"/> to enrich HTTP traces, then make sure to check it for <see langword="null"/>.
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     void Enrich(Activity activity, HttpWebRequest? webRequest, HttpWebResponse? webResponse);
 }
 

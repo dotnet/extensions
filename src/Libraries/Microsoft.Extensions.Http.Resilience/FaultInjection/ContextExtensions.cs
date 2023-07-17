@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
@@ -11,7 +12,7 @@ namespace Microsoft.Extensions.Http.Resilience.FaultInjection;
 /// <summary>
 /// Provides extension methods for <see cref="Context"/>.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
 public static class ContextExtensions
 {
     private const string CallingRequestMessage = "CallingRequestMessage";

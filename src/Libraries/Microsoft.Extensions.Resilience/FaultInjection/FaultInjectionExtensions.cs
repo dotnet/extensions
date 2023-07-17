@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
@@ -125,7 +126,7 @@ public static class FaultInjectionExtensions
     /// <exception cref="ArgumentNullException">
     /// Any argument is <see langword="null"/>.
     /// </exception>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public static Context WithFaultInjection(this Context context, FaultPolicyWeightAssignmentsOptions weightAssignments)
     {
         _ = Throw.IfNull(context);

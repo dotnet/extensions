@@ -3,13 +3,14 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.EnumStrings;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.Telemetry.Metering;
 
 /// <summary>
 /// Statuses for classifying http request result.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 [EnumStrings]
 public enum HttpRequestResultType
 {

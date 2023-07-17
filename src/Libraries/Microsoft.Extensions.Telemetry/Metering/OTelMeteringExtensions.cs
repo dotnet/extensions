@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenTelemetry.Metrics;
 
@@ -14,7 +15,7 @@ namespace Microsoft.Extensions.Telemetry.Metering;
 /// <summary>
 /// Metering extensions for OpenTelemetry based metrics.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 public static class OTelMeteringExtensions
 {
     /// <summary>
@@ -22,7 +23,7 @@ public static class OTelMeteringExtensions
     /// </summary>
     /// <param name="builder"><see cref="MeterProviderBuilder"/> instance.</param>
     /// <returns>Returns <see cref="MeterProviderBuilder"/> for chaining.</returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static MeterProviderBuilder AddMetering(
         this MeterProviderBuilder builder)
     {
@@ -35,7 +36,7 @@ public static class OTelMeteringExtensions
     /// <param name="builder"><see cref="MeterProviderBuilder"/> instance.</param>
     /// <param name="configurationSection">Configuration section that contains <see cref="MeteringOptions"/>.</param>
     /// <returns>Returns <see cref="MeterProviderBuilder"/> for chaining.</returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static MeterProviderBuilder AddMetering(
         this MeterProviderBuilder builder,
         IConfigurationSection configurationSection)
@@ -52,7 +53,7 @@ public static class OTelMeteringExtensions
     /// <param name="builder"><see cref="MeterProviderBuilder"/> instance.</param>
     /// <param name="configure">The <see cref="MeteringOptions"/> configuration delegate.</param>
     /// <returns>Returns <see cref="MeterProviderBuilder"/> for chaining.</returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static MeterProviderBuilder AddMetering(
         this MeterProviderBuilder builder,
         Action<MeteringOptions> configure)

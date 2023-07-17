@@ -1,6 +1,6 @@
 <Project>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\WarningDefinitions.cs" LinkBase="Shared" />
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\DiagnosticIds\*.cs" LinkBase="Shared\DiagnosticIds" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(InjectSharedThrow)' == 'true'">

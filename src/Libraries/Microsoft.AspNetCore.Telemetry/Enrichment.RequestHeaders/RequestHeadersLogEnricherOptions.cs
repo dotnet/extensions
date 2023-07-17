@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.AspNetCore.Telemetry;
 
@@ -20,7 +21,7 @@ public class RequestHeadersLogEnricherOptions
     /// Default value is an empty dictionary.
     /// </remarks>
     [Required]
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 #pragma warning disable CA2227 // Collection properties should be read only
     public IDictionary<string, DataClassification> HeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
 #pragma warning restore CA2227 // Collection properties should be read only

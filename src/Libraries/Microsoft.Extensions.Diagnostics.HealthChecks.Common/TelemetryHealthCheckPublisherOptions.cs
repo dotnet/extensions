@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
 /// <summary>
 /// Options for the telemetry health check publisher.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.HealthChecks, UrlFormat = Experiments.UrlFormat)]
 public class TelemetryHealthCheckPublisherOptions
 {
     /// <summary>

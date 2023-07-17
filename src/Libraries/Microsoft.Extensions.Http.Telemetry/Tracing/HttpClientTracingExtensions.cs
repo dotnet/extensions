@@ -10,6 +10,7 @@ using Microsoft.Extensions.Http.Telemetry.Tracing.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Internal;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using OpenTelemetry.Instrumentation.Http;
 using OpenTelemetry.Trace;
@@ -82,7 +83,7 @@ public static class HttpClientTracingExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add this enricher to.</param>
     /// <returns><see cref="IServiceCollection"/> for chaining.</returns>
     /// <exception cref="ArgumentNullException">The argument <paramref name="services"/> is <see langword="null"/>.</exception>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static IServiceCollection AddHttpClientTraceEnricher<T>(this IServiceCollection services)
         where T : class, IHttpClientTraceEnricher
     {
@@ -98,7 +99,7 @@ public static class HttpClientTracingExtensions
     /// <param name="enricher">Enricher to be added.</param>
     /// <returns><see cref="IServiceCollection"/> for chaining.</returns>
     /// <exception cref="ArgumentNullException">The argument <paramref name="services"/> or <paramref name="enricher"/> is <see langword="null" />.</exception>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static IServiceCollection AddHttpClientTraceEnricher(this IServiceCollection services, IHttpClientTraceEnricher enricher)
     {
         _ = Throw.IfNull(services);

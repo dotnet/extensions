@@ -4,6 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.AutoClient;
 
@@ -21,7 +22,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// });
 /// </code>
 /// </example>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 public class AutoClientOptions
 {
     /// <summary>

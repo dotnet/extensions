@@ -129,33 +129,6 @@
   <data name="LegacyLoggingTitle" xml:space="preserve">
     <value>Use source generated logging methods for improved performance</value>
   </data>
-  <data name="StringFormatDescription" xml:space="preserve">
-    <value>Identifies uses of 'String.Format' and 'StringBuilder.AppendFormat'</value>
-  </data>
-  <data name="StringFormatMessage" xml:space="preserve">
-    <value>Use 'System.Text.CompositeFormat' instead of 'string.Format' for improved performance</value>
-  </data>
-  <data name="StringFormatTitle" xml:space="preserve">
-    <value>Use 'System.Text.CompositeFormat' instead of 'string.Format' for improved performance</value>
-  </data>
-  <data name="UsingExcessiveDictionaryLookupDescription" xml:space="preserve">
-    <value>Encourages optimal use of dictionary lookup</value>
-  </data>
-  <data name="UsingExcessiveDictionaryLookupMessage" xml:space="preserve">
-    <value>Remove excessive dictionary lookups</value>
-  </data>
-  <data name="UsingExcessiveDictionaryLookupTitle" xml:space="preserve">
-    <value>Remove unnecessary dictionary lookups</value>
-  </data>
-  <data name="UsingExcessiveSetLookupDescription" xml:space="preserve">
-    <value>Encourages optimal use of set lookup</value>
-  </data>
-  <data name="UsingExcessiveSetLookupMessage" xml:space="preserve">
-    <value>Remove excessive set lookups</value>
-  </data>
-  <data name="UsingExcessiveSetLookupTitle" xml:space="preserve">
-    <value>Remove unnecessary set lookups</value>
-  </data>
   <data name="UsingToStringInLoggersDescription" xml:space="preserve">
     <value>Identifies calls to the 'ToString' method as arguments to a logging method</value>
   </data>
@@ -179,15 +152,6 @@
   </data>
   <data name="SequentialFixAllInSolution" xml:space="preserve">
     <value>Apply code fix for all issues in current solution</value>
-  </data>
-  <data name="UsingExperimentalApiDescription" xml:space="preserve">
-    <value>Indicates that code is depending on an experimental API</value>
-  </data>
-  <data name="UsingExperimentalApiTitle" xml:space="preserve">
-    <value>Using experimental API</value>
-  </data>
-  <data name="UsingExperimentalApiMessage" xml:space="preserve">
-    <value>'{0}' is experimental and is subject to change without notice</value>
   </data>
   <data name="StartsEndsWithDescription" xml:space="preserve">
     <value>When checking for a single character, prefer the character overloads of 'String.StartsWith' and 'String.EndsWith' for improved performance</value>
@@ -254,15 +218,6 @@
   </data>
   <data name="SplitTitle" xml:space="preserve">
     <value>Use 'System.MemoryExtensions.Split' for improved performance</value>
-  </data>
-  <data name="MakeArrayStaticDescription" xml:space="preserve">
-    <value>Arrays of literal values should generally be assigned to static fields in order to avoid creating them redundantly over time</value>
-  </data>
-  <data name="MakeArrayStaticMessage" xml:space="preserve">
-    <value>Assign array of literal values to a static field for improved performance</value>
-  </data>
-  <data name="MakeArrayStaticTitle" xml:space="preserve">
-    <value>Assign array of literal values to a static field for improved performance</value>
   </data>
   <data name="AsyncCallInsideUsingBlockDescription" xml:space="preserve">
     <value>When skipping the await keyword for asynchronous operations inside a using block, then a disposable object could be disposed before the asynchronous invocation finishes. This might result in incorrect behavior and very often ends with a runtime exception notifying that the code is trying to operate on a disposed object.</value>

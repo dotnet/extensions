@@ -9,6 +9,7 @@ using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Resilience;
@@ -61,7 +62,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// <param name="builder">The strategy builder.</param>
     /// <param name="configure">The configure method.</param>
     /// <returns>The same builder instance.</returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, Action<HttpStandardHedgingResilienceOptions, IServiceProvider> configure)
     {
         _ = Throw.IfNull(builder);

@@ -3,13 +3,14 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Resilience.FaultInjection;
 
 /// <summary>
 /// Class to contain fault-injection policy weight assignments.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
 public class FaultPolicyWeightAssignmentsOptions
 {
     /// <summary>

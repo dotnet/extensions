@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.AutoClient;
@@ -19,7 +20,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// When a REST API client fails, it will throw a <see cref="AutoClientException"/>.
 /// This exception contains a <see cref="AutoClientHttpError"/> instance that holds details like content, headers and status code.
 /// </remarks>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 public class AutoClientHttpError
 {
     /// <summary>

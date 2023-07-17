@@ -4,13 +4,14 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.Telemetry.Tracing;
 
 /// <summary>
 /// Interface for implementing a redaction mechanism for outgoing HTTP request paths.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 public interface IHttpPathRedactor
 {
     /// <summary>

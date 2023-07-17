@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Shared.Data.Validation;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.AspNetCore.Telemetry;
 
@@ -67,7 +68,7 @@ public class LoggingOptions
     /// <value>
     /// The default value is <see cref="HttpRouteParameterRedactionMode.Strict"/>.
     /// </value>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>
@@ -208,7 +209,7 @@ public class LoggingOptions
     /// };
     /// </code>
     /// </example>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     [Required]
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]

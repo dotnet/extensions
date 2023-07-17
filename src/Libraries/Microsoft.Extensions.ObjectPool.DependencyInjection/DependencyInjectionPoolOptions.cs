@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.ObjectPool;
 
 /// <summary>
 /// Contains configuration for pools.
 /// </summary>
-[Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+[Experimental(diagnosticId: Experiments.ObjectPool, UrlFormat = Experiments.UrlFormat)]
 public sealed class DependencyInjectionPoolOptions
 {
     internal const int DefaultCapacity = 1024;

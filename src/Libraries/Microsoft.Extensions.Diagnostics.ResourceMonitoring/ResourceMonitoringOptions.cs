@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Data.Validation;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
@@ -50,7 +51,7 @@ public class ResourceMonitoringOptions
     /// The value needs to be less than or equal to the <see cref="CollectionWindow"/>.
     /// Most importantly, this period is used to calculate <see cref="Utilization"/> instances pushed to publishers.
     /// </remarks>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.ResourceMonitoring, UrlFormat = Experiments.UrlFormat)]
     [TimeSpan(MinimumSamplingWindow, MaximumSamplingWindow)]
     public TimeSpan CalculationPeriod { get; set; } = DefaultCollectionWindow;
 }

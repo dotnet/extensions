@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Polly;
 using Polly.Contrib.Simmy.Latency;
 using Polly.Contrib.Simmy.Outcomes;
@@ -40,6 +41,6 @@ public interface IChaosPolicyFactory
     /// </summary>
     /// <typeparam name="TResult">The type of value policies created by this method will inject.</typeparam>
     /// <returns>A custom result policy, an instance of <see cref="AsyncInjectOutcomePolicy{TResult}"/>.</returns>
-    [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
+    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public AsyncInjectOutcomePolicy<TResult> CreateCustomResultPolicy<TResult>();
 }
