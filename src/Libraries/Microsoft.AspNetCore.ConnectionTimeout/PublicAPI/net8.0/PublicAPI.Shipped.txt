@@ -1,0 +1,10 @@
+
+#nullable enable
+Microsoft.AspNetCore.Connections.ConnectionTimeoutExtensions
+Microsoft.AspNetCore.Connections.ConnectionTimeoutOptions
+Microsoft.AspNetCore.Connections.ConnectionTimeoutOptions.ConnectionTimeoutOptions() -> void
+Microsoft.AspNetCore.Connections.ConnectionTimeoutOptions.Timeout.get -> System.TimeSpan
+Microsoft.AspNetCore.Connections.ConnectionTimeoutOptions.Timeout.set -> void
+static Microsoft.AspNetCore.Connections.ConnectionTimeoutExtensions.AddConnectionTimeout(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.Extensions.Configuration.IConfigurationSection! section) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Connections.ConnectionTimeoutExtensions.AddConnectionTimeout(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Connections.ConnectionTimeoutOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Connections.ConnectionTimeoutExtensions.UseConnectionTimeout(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!

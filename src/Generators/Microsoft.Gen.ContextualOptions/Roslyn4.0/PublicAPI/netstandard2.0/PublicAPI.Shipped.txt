@@ -1,0 +1,4 @@
+
+Microsoft.Gen.ContextualOptions.ContextualOptionsGenerator
+Microsoft.Gen.ContextualOptions.ContextualOptionsGenerator.ContextualOptionsGenerator() -> void
+Microsoft.Gen.ContextualOptions.ContextualOptionsGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext context) -> void

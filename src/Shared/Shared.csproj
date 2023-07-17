@@ -17,6 +17,7 @@
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
     <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UsePublicApiAnalyzers>false</UsePublicApiAnalyzers>
   </PropertyGroup>
 
   <PropertyGroup>

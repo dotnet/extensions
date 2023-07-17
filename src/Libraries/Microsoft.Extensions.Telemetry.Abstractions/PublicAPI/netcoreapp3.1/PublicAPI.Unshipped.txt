@@ -1,0 +1,1 @@
+static Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.SkipEnabledCheckOptions.get -> Microsoft.Extensions.Logging.LogDefineOptions!

@@ -7,6 +7,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Shared.targets" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Generators.targets" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\ProjectStaging.targets" />
+  <Import Project="$(RepositoryEngineeringDir)ApiCompatibility\PublicApiAnalyzer.targets" />
 
   <!-- Warning stuff -->
   <PropertyGroup>

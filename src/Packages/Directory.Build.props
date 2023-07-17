@@ -1,4 +1,6 @@
 <Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
   <PropertyGroup>
     <!-- Use TargetFrameworks since it can be overriden by .targetframeworks file -->
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
@@ -6,7 +8,6 @@
     <SkipAnalyzers>true</SkipAnalyzers>
     <DisableNETStandardCompatErrors>true</DisableNETStandardCompatErrors>
     <Api>false</Api>
+    <UsePublicApiAnalyzers>false</UsePublicApiAnalyzers>
   </PropertyGroup>
-
-  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 </Project>
