@@ -16,15 +16,6 @@ public class EventCountersCollectorOptions
 {
     private static readonly TimeSpan _defaultSamplingInterval = TimeSpan.FromSeconds(1);
 
-#if NET5_0_OR_GREATER
-    /// <remarks>
-    /// This is a work-around for this <see href="https://github.com/dotnet/runtime/issues/43985">issue</see>.
-    /// The field is intended to be used on .NET 5 only, we ship it for newer TFMs to resolve package compositional issues.
-    /// See discussion in <see href="https://domoreexp.visualstudio.com/R9/_git/SDK/pullrequest/552703"/> for additional context.
-    /// </remarks>
-    private static readonly TimeSpan _defaultEventListenerRecyclingInterval = TimeSpan.FromHours(1);
-#endif
-
     /// <summary>
     /// Gets or sets a list of EventSources and CounterNames to listen for.
     /// </summary>
@@ -71,21 +62,4 @@ public class EventCountersCollectorOptions
     /// </remarks>
     [Experimental(diagnosticId: "TBD", UrlFormat = WarningDefinitions.SharedUrlFormat)]
     public bool IncludeRecommendedDefault { get; set; }
-
-#if NET5_0_OR_GREATER
-    /// <summary>
-    /// Gets or sets the interval at which to recycle the <see cref="EventCountersListener"/>.
-    /// </summary>
-    /// <value>
-    /// The default value is 1 hour.
-    /// </value>
-    /// <remarks>
-    /// This property is a work-around for <see href="https://github.com/dotnet/runtime/issues/43985">dotnet/runtime issue 43985</see>.
-    /// It only has an effect on .NET 5, and is ignored for .NET 6 and later versions.
-    /// </remarks>
-    // The property is intended to be used on .NET 5 only, we ship it for newer TFMs to resolve package compositional issues. Refer to discussion for details:
-    // https://domoreexp.visualstudio.com/R9/_git/SDK/pullrequest/552703?_a=files&path=/src/Extensions/Metering.Collectors.EventCounters/EventCountersCollectorOptions.cs&discussionId=9983912
-    [TimeSpan("00:10:00", "06:00:00")]
-    public TimeSpan EventListenerRecyclingInterval { get; set; } = _defaultEventListenerRecyclingInterval;
-#endif
 }
