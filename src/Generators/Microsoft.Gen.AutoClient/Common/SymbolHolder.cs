@@ -17,5 +17,4 @@ internal sealed record class SymbolHolder(
     INamedTypeSymbol? RestStaticHeaderAttribute,
     INamedTypeSymbol? RestHeaderAttribute,
     INamedTypeSymbol? RestQueryAttribute,
-    INamedTypeSymbol? RestBodyAttribute,
-    INamedTypeSymbol? RestRequestNameAttribute);
+    INamedTypeSymbol? RestBodyAttribute);

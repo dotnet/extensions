@@ -2,17 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.AutoClient;
 
 /// <summary>
-/// Defines an API DELETE method.
+/// Defines an API <c>DELETE</c> method.
 /// </summary>
 /// <remarks>
-/// Marks a method within an interface annotated with <see cref="AutoClientAttribute"/> as an API DELETE method.
+/// Marks a method within an interface annotated with <see cref="AutoClientAttribute"/> as an API <c>DELETE</c> method.
 ///
 /// The return type of an API method must be a <c>Task&lt;T&gt;</c>.
 /// If T is a <see cref="string"/> and the dependency returns "text/plain" content type, the result will be the raw content of the response. Otherwise, it will be deserialized from JSON.
@@ -30,7 +28,6 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class DeleteAttribute : Attribute
 {
@@ -47,4 +44,24 @@ public sealed class DeleteAttribute : Attribute
     /// Gets the path of the request.
     /// </summary>
     public string Path { get; }
+
+    /// <summary>
+    /// Gets or sets the name to use for this request within telemetry.
+    /// </summary>
+    /// <remarks>
+    /// If this property is not provided, the request name is obtained from the method name.
+    /// If the method name ends in 'Async', the request name will exclude that.
+    /// For example, if the method is called <c>DeleteUserAsync</c>, the request name, by default, will be <c>DeleteUser</c>.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// [AutoClient("MyClient")]
+    /// interface IMyDependencyClient
+    /// {
+    ///     [Delete("/api/users/{userId}", RequestName = "RemoveUsers")]
+    ///     Task&lt;bool&gt; DeleteUserAsync(string userId, CancellationToken cancellationToken = default);
+    /// }
+    /// </code>
+    /// </example>
+    public string? RequestName { get; set; }
 }

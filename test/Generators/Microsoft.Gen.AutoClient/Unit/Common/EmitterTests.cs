@@ -24,7 +24,7 @@ public class EmitterTests
         }
 
         var (d, r) = await RoslynTestUtils.RunGenerator(
-            new Generator(),
+            new AutoClientGenerator(),
             new[]
             {
                 Assembly.GetAssembly(typeof(AutoClientAttribute))!,
@@ -36,7 +36,7 @@ public class EmitterTests
         Assert.Empty(d);
         Assert.Single(r);
 
-        var goldenClient = File.ReadAllText("GoldenFiles/Microsoft.Gen.AutoClient/Microsoft.Gen.AutoClient.Generator/AutoClients.g.cs");
+        var goldenClient = File.ReadAllText("GoldenFiles/Microsoft.Gen.AutoClient/Microsoft.Gen.AutoClient.AutoClientGenerator/AutoClients.g.cs");
         var result = r[0].SourceText.ToString();
         Assert.Equal(goldenClient, result);
     }

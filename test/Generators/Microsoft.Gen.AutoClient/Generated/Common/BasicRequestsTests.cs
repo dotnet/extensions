@@ -16,11 +16,12 @@ using Xunit;
 namespace Microsoft.Gen.AutoClient.Test;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "IDisposable inside mock setups")]
-public class BasicRequestsTests
+public class BasicRequestsTests : IDisposable
 {
     private readonly Mock<HttpMessageHandler> _handlerMock = new(MockBehavior.Strict);
     private readonly Mock<IHttpClientFactory> _factoryMock = new(MockBehavior.Strict);
     private readonly IBasicTestClient _sut;
+    private readonly ServiceProvider _provider;
 
     public BasicRequestsTests()
     {
@@ -32,26 +33,26 @@ public class BasicRequestsTests
         var services = new ServiceCollection();
         services.AddSingleton(_ => _factoryMock.Object);
         services.AddBasicTestClient();
-        var provider = services.BuildServiceProvider();
+        _provider = services.BuildServiceProvider();
 
-        _sut = provider.GetRequiredService<IBasicTestClient>();
+        _sut = _provider.GetRequiredService<IBasicTestClient>();
     }
 
     [Fact]
     public async Task DeleteRequest()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Delete &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success DELETE!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Delete &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success DELETE!")
+            });
 
         var response = await _sut.DeleteUsers();
 
@@ -62,17 +63,17 @@ public class BasicRequestsTests
     public async Task GetRequest()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success GET!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success GET!")
+            });
 
         var response = await _sut.GetUsers();
 
@@ -85,17 +86,17 @@ public class BasicRequestsTests
         var ct = new CancellationToken(true);
 
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success GET!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success GET!")
+            });
 
 #if NET5_0_OR_GREATER
         await Assert.ThrowsAsync<TaskCanceledException>(() => _sut.GetUsersWithCancellationToken(ct));
@@ -108,17 +109,17 @@ public class BasicRequestsTests
     public async Task HeadRequest()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Head &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success HEAD!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Head &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success HEAD!")
+            });
 
         var response = await _sut.HeadUsers();
 
@@ -129,17 +130,17 @@ public class BasicRequestsTests
     public async Task OptionsRequest()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Options &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success OPTIONS!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Options &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success OPTIONS!")
+            });
 
         var response = await _sut.OptionsUsers();
 
@@ -150,17 +151,17 @@ public class BasicRequestsTests
     public async Task PatchRequest()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == new HttpMethod("PATCH") &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success PATCH!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == new HttpMethod("PATCH") &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success PATCH!")
+            });
 
         var response = await _sut.PatchUsers();
 
@@ -171,17 +172,17 @@ public class BasicRequestsTests
     public async Task PostRequest()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Post &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success POST!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Post &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success POST!")
+            });
 
         var response = await _sut.PostUsers();
 
@@ -192,17 +193,17 @@ public class BasicRequestsTests
     public async Task PutRequest()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Put &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success PUT!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Put &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success PUT!")
+            });
 
         var response = await _sut.PutUsers();
 
@@ -213,17 +214,17 @@ public class BasicRequestsTests
     public async Task UnsuccessfulResponse()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.Forbidden,
-                    Content = new StringContent("Forbidden")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.Forbidden,
+                Content = new StringContent("Forbidden")
+            });
 
         var ex = await Assert.ThrowsAsync<AutoClientException>(() => _sut.GetUsers());
         Assert.Equal(403, ex.StatusCode);
@@ -235,19 +236,33 @@ public class BasicRequestsTests
     public async Task FullUrlUsesBaseAddress()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.ToString() == "https://example.com/api/users"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new StringContent("Ok")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.ToString() == "https://example.com/api/users"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("Ok")
+            });
 
         var response = await _sut.GetUsers();
 
         Assert.Equal("Ok", response);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _provider.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

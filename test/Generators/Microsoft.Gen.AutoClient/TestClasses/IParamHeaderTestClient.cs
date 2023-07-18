@@ -11,7 +11,7 @@ namespace TestClasses
     public interface IParamHeaderTestClient
     {
         [Get("/api/users")]
-        public Task<string> GetUsers([Header("X-MyHeader")] string headerValue, CancellationToken cancellationToken = default);
+        public Task<string> GetUsers([Header("X-MyHeader")] string? headerValue, CancellationToken cancellationToken = default);
 
         [Get("/api/users")]
         public Task<string> GetUsersObject([Header("X-MyHeader")] CustomObject headerValue, CancellationToken cancellationToken = default);

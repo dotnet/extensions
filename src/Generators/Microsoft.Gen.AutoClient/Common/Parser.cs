@@ -17,9 +17,12 @@ namespace Microsoft.Gen.AutoClient;
 internal sealed class Parser
 {
     private const string ReturnTypePrefix = "System.Threading.Tasks.Task<";
+    private const string RequestNamePropertyName = "RequestName";
 
     private static readonly string[] _dependencyNameTrimEndings = new[] { "Api", "Client" };
     private static readonly string[] _requestNameTrimEndings = new[] { "Async" };
+    private static readonly char[] _unsupportedCharactersStrings = new[] { '"', '\n', '\r', '\t' };
+    private static readonly char[] _unsupportedCharactersHeaderValues = new[] { '\n', '\r' };
 
     private readonly CancellationToken _cancellationToken;
     private readonly Compilation _compilation;
@@ -73,6 +76,12 @@ internal sealed class Parser
                     continue;
                 }
 
+                if (attrResult.HttpClientName.IndexOfAny(_unsupportedCharactersStrings) >= 0)
+                {
+                    Diag(DiagDescriptors.ErrorInvalidHttpClientName, typeDeclaration.GetLocation());
+                    continue;
+                }
+
                 if (typeDeclaration.Arity > 0)
                 {
                     Diag(DiagDescriptors.ErrorInterfaceIsGeneric, typeDeclaration.GetLocation());
@@ -107,6 +116,24 @@ internal sealed class Parser
                     StaticHeaders = attrResult.StaticHeaders,
                     DependencyName = attrResult.CustomDependencyName ?? GetDependencyName(className),
                 };
+
+                if (restApiType.DependencyName.IndexOfAny(_unsupportedCharactersStrings) >= 0)
+                {
+                    Diag(DiagDescriptors.ErrorInvalidDependencyName, typeDeclaration.GetLocation());
+                    continue;
+                }
+
+                if (restApiType.StaticHeaders.Any(header => header.Key.IndexOfAny(_unsupportedCharactersStrings) >= 0))
+                {
+                    Diag(DiagDescriptors.ErrorInvalidHeaderName, typeDeclaration.GetLocation());
+                    continue;
+                }
+
+                if (restApiType.StaticHeaders.Any(header => header.Value.IndexOfAny(_unsupportedCharactersHeaderValues) >= 0))
+                {
+                    Diag(DiagDescriptors.ErrorInvalidHeaderValue, typeDeclaration.GetLocation());
+                    continue;
+                }
 
                 var requestNames = new HashSet<string>();
 
@@ -400,15 +427,6 @@ internal sealed class Parser
 
                 path = methodAttribute.ConstructorArguments[0].Value as string;
             }
-            else if (attributeSymbol.Equals(symbols.RestRequestNameAttribute, SymbolEqualityComparer.Default))
-            {
-                if (methodAttribute.ConstructorArguments.Length != 1)
-                {
-                    continue;
-                }
-
-                requestName = methodAttribute.ConstructorArguments[0].Value as string;
-            }
             else if (attributeSymbol.Equals(symbols.RestStaticHeaderAttribute, SymbolEqualityComparer.Default))
             {
                 if (methodAttribute.ConstructorArguments.Length != 2)
@@ -425,6 +443,15 @@ internal sealed class Parser
                 }
 
                 staticHeaders.Add(key, value);
+            }
+
+            foreach (var a in methodAttribute.NamedArguments)
+            {
+                if (a.Key == RequestNamePropertyName)
+                {
+                    requestName = (string)a.Value.Value!;
+                    break;
+                }
             }
         }
 
@@ -497,13 +524,38 @@ internal sealed class Parser
             }
         }
 
-        if (methodAttrResult.Path != null && methodAttrResult.Path.Contains("?"))
+        if (methodAttrResult.Path != null)
         {
-            Diag(DiagDescriptors.ErrorPathWithQuery, methodSymbol.GetLocation());
+            if (methodAttrResult.Path.Contains("?"))
+            {
+                Diag(DiagDescriptors.ErrorPathWithQuery, methodSymbol.GetLocation());
+                hasErrors = true;
+            }
+            else if (methodAttrResult.Path.IndexOfAny(_unsupportedCharactersStrings) >= 0)
+            {
+                Diag(DiagDescriptors.ErrorInvalidPath, methodSymbol.GetLocation());
+                hasErrors = true;
+            }
+        }
+
+        if (methodAttrResult.StaticHeaders.Any(h => h.Key.IndexOfAny(_unsupportedCharactersStrings) >= 0))
+        {
+            Diag(DiagDescriptors.ErrorInvalidHeaderName, methodSymbol.GetLocation());
+            hasErrors = true;
+        }
+
+        if (methodAttrResult.StaticHeaders.Any(h => h.Value.IndexOfAny(_unsupportedCharactersHeaderValues) >= 0))
+        {
+            Diag(DiagDescriptors.ErrorInvalidHeaderValue, methodSymbol.GetLocation());
             hasErrors = true;
         }
 
         var requestName = methodAttrResult.RequestName ?? GetRequestName(methodSymbol.Name);
+        if (requestName.IndexOfAny(_unsupportedCharactersStrings) >= 0)
+        {
+            Diag(DiagDescriptors.ErrorInvalidRequestName, methodSymbol.GetLocation());
+            hasErrors = true;
+        }
 
         if (!requestNames.Add(requestName))
         {
@@ -597,6 +649,7 @@ internal sealed class Parser
             {
                 Name = paramName,
                 Type = paramTypeSymbol.ToDisplayString(_globalDisplayFormat),
+                Nullable = paramTypeSymbol.NullableAnnotation == NullableAnnotation.Annotated,
                 HeaderName = attrResult.HeaderName,
                 QueryKey = attrResult.QueryKey,
                 BodyType = attrResult.BodyType,

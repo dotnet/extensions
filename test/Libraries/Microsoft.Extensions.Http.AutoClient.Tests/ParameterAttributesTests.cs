@@ -33,11 +33,4 @@ public class ParameterAttributesTests
         a = new QueryAttribute("QueryKey");
         Assert.Equal("QueryKey", a.Key);
     }
-
-    [Fact]
-    public void RequestNameAttributeValue()
-    {
-        var a = new RequestNameAttribute("RequestName");
-        Assert.Equal("RequestName", a.Value);
-    }
 }

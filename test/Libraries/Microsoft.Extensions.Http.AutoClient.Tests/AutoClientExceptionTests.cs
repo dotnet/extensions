@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Http.AutoClient.Test;
 
-public class RestApiExceptionTests
+public class AutoClientExceptionTests
 {
     [Fact]
     public async Task RestApiExceptionConstructor()
