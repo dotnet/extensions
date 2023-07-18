@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.AutoActivation\DependencyInjection.AutoActivation.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Extensions.DependencyInjection.AutoActivation\Microsoft.Extensions.DependencyInjection.AutoActivation.csproj" />
   </ItemGroup>
 
   <ItemGroup>
