@@ -21,7 +21,7 @@ public interface IRedactionBuilder
     /// <typeparam name="T">Redactor type.</typeparam>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of this instance.</returns>
-    /// <exception cref="T:System.ArgumentNullException">If <paramref name="classifications" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="classifications" /> is <see langword="null" />.</exception>
     IRedactionBuilder SetRedactor<T>(params DataClassification[] classifications) where T : Redactor;
 
     /// <summary>

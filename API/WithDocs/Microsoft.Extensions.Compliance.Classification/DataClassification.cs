@@ -43,9 +43,9 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     /// <summary>
     /// Initializes a new instance of the <see cref="T:Microsoft.Extensions.Compliance.Classification.DataClassification" /> struct.
     /// </summary>
-    /// <param name="taxonomyName">Name of the taxonomy this classification belongs to.</param>
+    /// <param name="taxonomyName">The name of the taxonomy this classification belongs to.</param>
     /// <param name="value">The taxonomy-specific bit vector representing the data classes.</param>
-    /// <exception cref="T:System.ArgumentException">If bit 63, corresponding to <see cref="F:Microsoft.Extensions.Compliance.Classification.DataClassification.UnknownTaxonomyValue" /> is set in the <paramref name="value" /> value.</exception>
+    /// <exception cref="T:System.ArgumentException">Bit 63, which corresponds to <see cref="F:Microsoft.Extensions.Compliance.Classification.DataClassification.UnknownTaxonomyValue" />, is set in the <paramref name="value" /> value.</exception>
     public DataClassification(string taxonomyName, ulong value);
 
     /// <summary>
@@ -90,7 +90,7 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     /// <param name="left">The first classification to combine.</param>
     /// <param name="right">The second classification to combine.</param>
     /// <returns>A new classification object representing the combination of the two input classifications.</returns>
-    /// <exception cref="T:System.ArgumentException">if the two classifications aren't part of the same taxonomy.</exception>
+    /// <exception cref="T:System.ArgumentException">The two classifications aren't part of the same taxonomy.</exception>
     public static DataClassification Combine(DataClassification left, DataClassification right);
 
     /// <summary>
@@ -99,6 +99,12 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     /// <param name="left">The first classification to combine.</param>
     /// <param name="right">The second classification to combine.</param>
     /// <returns>A new classification object representing the combination of the two input classifications.</returns>
-    /// <exception cref="T:System.ArgumentException">if the two classifications aren't part of the same taxonomy.</exception>
+    /// <exception cref="T:System.ArgumentException">The two classifications aren't part of the same taxonomy.</exception>
     public static DataClassification operator |(DataClassification left, DataClassification right);
+
+    /// <summary>
+    /// Gets a string representation of this object.
+    /// </summary>
+    /// <returns>A string representing the object.</returns>
+    public override string ToString();
 }

@@ -20,7 +20,7 @@ public static class FakeRedactionExtensions
     /// <param name="builder">The builder to attach the redactorr to.</param>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static IRedactionBuilder SetFakeRedactor(this IRedactionBuilder builder, params DataClassification[] classifications);
 
     /// <summary>
@@ -30,7 +30,7 @@ public static class FakeRedactionExtensions
     /// <param name="configure">Configuration function.</param>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="builder" /> or <paramref name="configure" /> are <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="builder" /> or <paramref name="configure" /> are <see langword="null" />.</exception>
     public static IRedactionBuilder SetFakeRedactor(this IRedactionBuilder builder, Action<FakeRedactorOptions> configure, params DataClassification[] classifications);
 
     /// <summary>
@@ -40,7 +40,7 @@ public static class FakeRedactionExtensions
     /// <param name="section">Configuration section.</param>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="builder" /> or <paramref name="section" /> are <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="builder" /> or <paramref name="section" /> are <see langword="null" />.</exception>
     public static IRedactionBuilder SetFakeRedactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications);
 
     /// <summary>
@@ -48,7 +48,7 @@ public static class FakeRedactionExtensions
     /// </summary>
     /// <param name="services">Container used to register fake redaction classes.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="services" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="services" /> is <see langword="null" />.</exception>
     public static IServiceCollection AddFakeRedaction(this IServiceCollection services);
 
     /// <summary>
@@ -57,16 +57,16 @@ public static class FakeRedactionExtensions
     /// <param name="services">Container used to register fake redaction classes.</param>
     /// <param name="configure">Configures fake redactor.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="services" /> or <paramref name="configure" />&gt; are <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="services" /> or <paramref name="configure" />&gt; are <see langword="null" />.</exception>
     public static IServiceCollection AddFakeRedaction(this IServiceCollection services, Action<FakeRedactorOptions> configure);
 
     /// <summary>
-    /// Gets the fake redacton collector instance from the dependency injection container.
+    /// Gets the fake redactor collector instance from the dependency injection container.
     /// </summary>
-    /// <param name="serviceProvider">Container used to obtain collector instance.</param>
-    /// <returns>Obtained collector.</returns>
-    /// <exception cref="T:System.InvalidOperationException">When collector is not in the container.</exception>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="serviceProvider" /> is <see langword="null" />.</exception>
+    /// <param name="serviceProvider">The container used to obtain the collector instance.</param>
+    /// <returns>The obtained collector.</returns>
+    /// <exception cref="T:System.InvalidOperationException">The collector is not in the container.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="serviceProvider" /> is <see langword="null" />.</exception>
     /// <remarks>
     /// <see cref="T:Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector" /> should be registered and used only with fake redaction implementation.
     /// </remarks>

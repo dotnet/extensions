@@ -19,7 +19,7 @@ public static class RedactionExtensions
     /// </summary>
     /// <param name="builder"><see cref="T:Microsoft.Extensions.Hosting.IHostBuilder" /> instance.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
     public static IHostBuilder ConfigureRedaction(this IHostBuilder builder);
 
     /// <summary>
@@ -28,8 +28,8 @@ public static class RedactionExtensions
     /// <param name="builder"><see cref="T:Microsoft.Extensions.Hosting.IHostBuilder" /> instance.</param>
     /// <param name="configure">Configuration for <see cref="T:Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder" />.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="builder" /> is <see langword="null" />.</exception>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="configure" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="configure" /> is <see langword="null" />.</exception>
     public static IHostBuilder ConfigureRedaction(this IHostBuilder builder, Action<HostBuilderContext, IRedactionBuilder> configure);
 
     /// <summary>
@@ -38,8 +38,8 @@ public static class RedactionExtensions
     /// <param name="builder"><see cref="T:Microsoft.Extensions.Hosting.IHostBuilder" /> instance.</param>
     /// <param name="configure">Configuration for <see cref="T:Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder" />.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="builder" /> is <see langword="null" />.</exception>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="configure" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="builder" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="configure" /> is <see langword="null" />.</exception>
     public static IHostBuilder ConfigureRedaction(this IHostBuilder builder, Action<IRedactionBuilder> configure);
 
     /// <summary>
@@ -47,7 +47,7 @@ public static class RedactionExtensions
     /// </summary>
     /// <param name="services">Instance of <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> used to configure redaction.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="services" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="services" /> is <see langword="null" />.</exception>
     public static IServiceCollection AddRedaction(this IServiceCollection services);
 
     /// <summary>
@@ -56,8 +56,8 @@ public static class RedactionExtensions
     /// <param name="services">Instance of <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> used to configure redaction.</param>
     /// <param name="configure">Configuration function for <see cref="T:Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder" />.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="services" /> is <see langword="null" />.</exception>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="configure" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="services" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="configure" /> is <see langword="null" />.</exception>
     public static IServiceCollection AddRedaction(this IServiceCollection services, Action<IRedactionBuilder> configure);
 
     /// <summary>
@@ -67,7 +67,7 @@ public static class RedactionExtensions
     /// <param name="configure">Configuration function.</param>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">If <paramref name="builder" />, <paramref name="configure" /> or <paramref name="classifications" /> are <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="builder" />, <paramref name="configure" /> or <paramref name="classifications" /> are <see langword="null" />.</exception>
     public static IRedactionBuilder SetXXHash3Redactor(this IRedactionBuilder builder, Action<XXHash3RedactorOptions> configure, params DataClassification[] classifications);
 
     /// <summary>
@@ -77,6 +77,6 @@ public static class RedactionExtensions
     /// <param name="section">Configuration section.</param>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">If <paramref name="builder" />, <paramref name="section" /> or <paramref name="classifications" /> are <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="builder" />, <paramref name="section" /> or <paramref name="classifications" /> are <see langword="null" />.</exception>
     public static IRedactionBuilder SetXXHash3Redactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications);
 }

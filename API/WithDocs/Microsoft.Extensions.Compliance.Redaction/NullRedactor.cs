@@ -1,4 +1,4 @@
-// Assembly 'Microsoft.Extensions.Compliance.Redaction'
+// Assembly 'Microsoft.Extensions.Compliance.Abstractions'
 
 using System;
 using System.Runtime.CompilerServices;

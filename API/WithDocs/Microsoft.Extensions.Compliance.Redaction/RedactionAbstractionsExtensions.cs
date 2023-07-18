@@ -21,9 +21,9 @@ public static class RedactionAbstractionsExtensions
     /// <remarks>
     /// When the <paramref name="value" /> is <see langword="null" /> nothing will be appended to the string builder.
     /// </remarks>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="stringBuilder" /> is <see langword="null" />.</exception>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="redactor" /> is <see langword="null" />.</exception>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="value" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="stringBuilder" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="redactor" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="value" /> is <see langword="null" />.</exception>
     public static StringBuilder AppendRedacted(this StringBuilder stringBuilder, Redactor redactor, string? value);
 
     /// <summary>
@@ -33,7 +33,7 @@ public static class RedactionAbstractionsExtensions
     /// <param name="redactor">The redactor that will redact the input value.</param>
     /// <param name="value">Value to redact.</param>
     /// <returns>Returns the value of <paramref name="stringBuilder" />.</returns>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="stringBuilder" /> is <see langword="null" />.</exception>
-    /// <exception cref="T:System.ArgumentNullException">When <paramref name="redactor" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="stringBuilder" /> is <see langword="null" />.</exception>
+    /// <exception cref="T:System.ArgumentNullException"><paramref name="redactor" /> is <see langword="null" />.</exception>
     public static StringBuilder AppendRedacted(this StringBuilder stringBuilder, Redactor redactor, ReadOnlySpan<char> value);
 }

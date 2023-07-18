@@ -21,4 +21,5 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     public static bool operator !=(DataClassification left, DataClassification right);
     public static DataClassification Combine(DataClassification left, DataClassification right);
     public static DataClassification operator |(DataClassification left, DataClassification right);
+    public override string ToString();
 }
