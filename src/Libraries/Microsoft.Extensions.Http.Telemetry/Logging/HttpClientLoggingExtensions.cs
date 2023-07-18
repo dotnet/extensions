@@ -52,25 +52,23 @@ public static class HttpClientLoggingExtensions
         services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
         services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
 
-        return services.ConfigureAll<HttpClientFactoryOptions>(
-            httpClientOptions =>
-            {
-                httpClientOptions
-                .HttpMessageHandlerBuilderActions.Add(httpMessageHandlerBuilder =>
+        return services.ConfigureHttpClientDefaults(
+            static httpClientBuilder =>
+                httpClientBuilder
+                .ConfigureAdditionalHttpMessageHandlers(static (handlers, serviceProvider) =>
                 {
-                    var logger = httpMessageHandlerBuilder.Services.GetRequiredService<ILogger<HttpLoggingHandler>>();
-                    var httpRequestReader = httpMessageHandlerBuilder.Services.GetRequiredService<IHttpRequestReader>();
-                    var enrichers = httpMessageHandlerBuilder.Services.GetServices<IHttpClientLogEnricher>();
-                    var loggingOptions = httpMessageHandlerBuilder.Services.GetRequiredService<IOptions<LoggingOptions>>();
+                    var logger = serviceProvider.GetRequiredService<ILogger<HttpLoggingHandler>>();
+                    var httpRequestReader = serviceProvider.GetRequiredService<IHttpRequestReader>();
+                    var enrichers = serviceProvider.GetServices<IHttpClientLogEnricher>();
+                    var loggingOptions = serviceProvider.GetRequiredService<IOptions<LoggingOptions>>();
 
-                    if (httpMessageHandlerBuilder.AdditionalHandlers.Any(handler => handler is HttpLoggingHandler))
+                    if (handlers.Any(handler => handler is HttpLoggingHandler))
                     {
                         Throw.InvalidOperationException(HandlerAddedTwiceExceptionMessage);
                     }
 
-                    httpMessageHandlerBuilder.AdditionalHandlers.Add(new HttpLoggingHandler(logger, httpRequestReader, enrichers, loggingOptions));
-                });
-            });
+                    handlers.Add(new HttpLoggingHandler(logger, httpRequestReader, enrichers, loggingOptions));
+                }));
     }
 
     /// <summary>
@@ -146,9 +144,9 @@ public static class HttpClientLoggingExtensions
         builder.Services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
         builder.Services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
 
-        _ = builder.ConfigureHttpMessageHandlerBuilder(b =>
+        _ = builder.ConfigureAdditionalHttpMessageHandlers(static (handlers, _) =>
         {
-            if (b.AdditionalHandlers.Any(handler => handler is HttpLoggingHandler))
+            if (handlers.Any(handler => handler is HttpLoggingHandler))
             {
                 Throw.InvalidOperationException(HandlerAddedTwiceExceptionMessage);
             }

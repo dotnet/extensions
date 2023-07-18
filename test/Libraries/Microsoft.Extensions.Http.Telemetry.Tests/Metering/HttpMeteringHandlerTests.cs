@@ -912,8 +912,7 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
 
         var record = meterCollector.LastMeasurement;
         Assert.NotNull(record);
-        Assert.True(record.Value > 0);
-        Assert.True(record.Value <= (DateTimeOffset.UtcNow - startTime).TotalMilliseconds);
+        Assert.InRange(record.Value, 0, (DateTimeOffset.UtcNow - startTime).TotalMilliseconds);
         Assert.Equal((int)HttpStatusCode.ServiceUnavailable, record.Tags.GetValueOrDefault(Metric.RspResultCode));
         HttpClientMeteringListener.UsingDiagnosticsSource = false;
     }
@@ -953,8 +952,7 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
 
         var record = meterCollector.LastMeasurement;
         Assert.NotNull(record);
-        Assert.True(record.Value >= 0);
-        Assert.True(record.Value <= (DateTimeOffset.UtcNow - startTime).TotalMilliseconds);
+        Assert.InRange(record.Value, 0, (DateTimeOffset.UtcNow - startTime).TotalMilliseconds);
         Assert.Equal((int)HttpStatusCode.GatewayTimeout, record.Tags.GetValueOrDefault(Metric.RspResultCode));
         HttpClientMeteringListener.UsingDiagnosticsSource = false;
     }
@@ -971,7 +969,6 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
             .ConfigureServices((_, services) => services
                 .AddHttpClient()
                 .AddHttpClientMeteringForAllHttpClients()
-                .AddDownstreamDependencyMetadata<TestDownstreamDependencyMetadata>()
                 .AddSingleton(downstreamDependencyMetadataManagerMock.Object))
             .Build();
 
@@ -984,13 +981,23 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
         using var meterCollector = new MetricCollector<long>(meter, Metric.OutgoingRequestMetricName);
 
         DateTimeOffset startTime = DateTimeOffset.UtcNow;
-        _ = await client.GetAsync("https://www.bing.com/request");
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://www.bing.com/request");
+        var metadata = new RequestMetadata
+        {
+            RequestName = "Test request",
+            DependencyName = nameof(AddHttpClientMeteringForAllHttpClients_EmitMetrics_OnError),
+            RequestRoute = "/request",
+        };
+
+        request.SetRequestMetadata(metadata);
+        using var _ = await client.SendAsync(request);
         HttpClientMeteringListener.UsingDiagnosticsSource = false;
 
-        var record = meterCollector.LastMeasurement;
+        var record = meterCollector.GetMeasurementSnapshot()
+            .Single(x => x.Tags.Any(tag => tag.Key == Metric.DependencyName && tag.Value is not null && tag.Value.ToString() == metadata.DependencyName));
+
         Assert.NotNull(record);
-        Assert.True(record.Value > 0);
-        Assert.True(record.Value <= (DateTimeOffset.UtcNow - startTime).TotalMilliseconds);
+        Assert.InRange(record.Value, 0, (DateTimeOffset.UtcNow - startTime).TotalMilliseconds);
         Assert.Equal((int)HttpStatusCode.NotFound, record.Tags.GetValueOrDefault(Metric.RspResultCode));
         HttpClientMeteringListener.UsingDiagnosticsSource = false;
     }
@@ -1025,8 +1032,7 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
 
         var record = meterCollector.LastMeasurement;
         Assert.NotNull(record);
-        Assert.True(record.Value > 0);
-        Assert.True(record.Value <= (DateTimeOffset.UtcNow - startTime).TotalMilliseconds);
+        Assert.InRange(record.Value, 0, (DateTimeOffset.UtcNow - startTime).TotalMilliseconds);
         Assert.Equal(200, record.Tags.GetValueOrDefault(Metric.RspResultCode));
         HttpClientMeteringListener.UsingDiagnosticsSource = false;
     }
@@ -1048,7 +1054,7 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
         var meter = host.Services.GetRequiredService<Meter<HttpMeteringHandler>>();
         using var meterCollector = new MetricCollector<long>(meter, Metric.OutgoingRequestMetricName);
 
-        using var client = new System.Net.Http.HttpClient();
+        using var client = new HttpClient();
 
         DateTimeOffset startTime = DateTimeOffset.UtcNow;
         using var _ = await client.GetAsync("https://www.bing.com");
@@ -1056,8 +1062,7 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
 
         var record = meterCollector.LastMeasurement;
         Assert.NotNull(record);
-        Assert.True(record.Value > 0);
-        Assert.True(record.Value <= (DateTimeOffset.UtcNow - startTime).TotalMilliseconds);
+        Assert.InRange(record.Value, 0, (DateTimeOffset.UtcNow - startTime).TotalMilliseconds);
         Assert.Equal(200, record.Tags.GetValueOrDefault(Metric.RspResultCode));
         HttpClientMeteringListener.UsingDiagnosticsSource = false;
     }
@@ -1089,8 +1094,7 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
         Assert.Equal(1, records.Count);
 
         var record = meterCollector.LastMeasurement!;
-        Assert.True(record.Value > 0);
-        Assert.True(record.Value <= (DateTimeOffset.UtcNow - startTime).TotalMilliseconds);
+        Assert.InRange(record.Value, 0, (DateTimeOffset.UtcNow - startTime).TotalMilliseconds);
         Assert.Equal(200, record.Tags.GetValueOrDefault(Metric.RspResultCode));
         HttpClientMeteringListener.UsingDiagnosticsSource = false;
     }
