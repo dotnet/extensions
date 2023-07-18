@@ -9,7 +9,8 @@ namespace Microsoft.Shared.DiagnosticIds;
 /// Experiments supported by this repo.
 /// </summary>
 /// <remarks>
-/// When adding a new experiment, add a corresponding suppression to the root <c>Directory.Build.targets</c> file.
+/// When adding a new experiment, add a corresponding suppression to the root <c>Directory.Build.targets</c> file, and add a documentation entry to
+/// <c>docs/Experiments.md</c>.
 /// </remarks>
 internal static class Experiments
 {
