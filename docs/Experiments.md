@@ -12,24 +12,17 @@ If you use experimental APIs, you will get one of the diagnostic shown below. Th
 using such an API so that you can avoid accidentally depending on experimental features. You may suppress these diagnostics
 if desired.
 
-* `EXTEXP0001` - Resilience experiments
 
-* `EXTEXP0002` - Compliance experiments
+| Diagnostic ID     | Description |
+| :---------------- | :---------- |
+| `EXTEXP0001` | Resilience experiments |
+| `EXTEXP0002` | Compliance experiments  |
+| `EXTEXP0003` | Telemetry experiments |
+| `EXTEXP0004` | TimeProvider experiments |
+| `EXTEXP0005` | AutoClient experiments |
+| `EXTEXP0006` | AsyncState experiments |
+| `EXTEXP0007` | Health check experiments |
+| `EXTEXP0008` | Resource monitoring experiments |
+| `EXTEXP0009` | Hosting experiments |
+| `EXTEXP0010` | Object pool experiments |
 
-* `EXTEXP0003` - Telemetry experiments
-
-* `EXTEXP0004` - TimeProvider experiments
-
-* `EXTEXP0005` - AutoClient experiments
-
-* `EXTEXP0006` - AsyncState experiments
-
-* `EXTEXP0007` - Health check experiments
-
-* `EXTEXP0008` - Resource monitoring experiments
-
-* `EXTEXP0009` - Hosting experiments
-
-* `EXTEXP0010` - Object pool experiments
-
-* `EXTEXP0011` - Document database experiments
