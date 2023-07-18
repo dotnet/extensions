@@ -15,12 +15,13 @@ using Xunit;
 namespace Microsoft.Gen.AutoClient.Test;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "IDisposable inside mock setups")]
-public class PathTests
+public class PathTests : IDisposable
 {
     private readonly Mock<HttpMessageHandler> _handlerMock = new(MockBehavior.Strict);
     private readonly Mock<IHttpClientFactory> _factoryMock = new(MockBehavior.Strict);
 
     private readonly IPathTestClient _sut;
+    private readonly ServiceProvider _provider;
 
     public PathTests()
     {
@@ -32,26 +33,26 @@ public class PathTests
         var services = new ServiceCollection();
         services.AddSingleton(_ => _factoryMock.Object);
         services.AddPathTestClient();
-        var provider = services.BuildServiceProvider();
+        _provider = services.BuildServiceProvider();
 
-        _sut = provider.GetRequiredService<IPathTestClient>();
+        _sut = _provider.GetRequiredService<IPathTestClient>();
     }
 
     [Fact]
     public async Task SimplePath()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users/myUser"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users/myUser"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sut.GetUser("myUser");
 
@@ -62,20 +63,34 @@ public class PathTests
     public async Task MultiplePathParameters()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users/myTenant/myUser"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users/myTenant/3"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
-        var response = await _sut.GetUserFromTenant("myTenant", "myUser");
+        var response = await _sut.GetUserFromTenant("myTenant", 3);
 
         Assert.Equal("Success!", response);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _provider.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

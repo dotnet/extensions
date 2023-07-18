@@ -3,9 +3,7 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.AutoClient;
 
@@ -16,7 +14,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// This attribute triggers the production of REST APIs and provides information about the HTTP client and optionally the name of the dependency.
 /// It can only be applied to interfaces and their name must start with an 'I', for example <c>IMyClient</c>.
 /// This attribute must receive as a first parameter the HTTP client name to be retrieved from the <see cref="IHttpClientFactory" />.
-/// Optionally, it may receive a second attribute that will set the <c>dependency name</c> used in generated telemetry. If this value is not set, it will use the name of the interface
+/// Optionally, it may receive a second parameter that will set the <c>dependency name</c> used in generated telemetry. If this value is not set, it will use the name of the interface
 /// without the leading 'I'.
 /// If the interface name ends in 'Client' or 'Api', the dependency name will exclude that. Example: <c>IMyDependencyClient</c> would result in dependency name <c>MyDependency</c>.
 /// </remarks>
@@ -28,7 +26,6 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 [AttributeUsage(AttributeTargets.Interface)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class AutoClientAttribute : Attribute
@@ -59,7 +56,10 @@ public sealed class AutoClientAttribute : Attribute
     public string HttpClientName { get; }
 
     /// <summary>
-    /// Gets the custom dependency name of the API.
+    /// Gets the custom dependency name of the API. This is used in generated telemetry.
     /// </summary>
+    /// <remarks>
+    /// If this value is not set, then for the dependency name it will use the name of the interface without the leading 'I' with trimming 'Client' or 'Api' at the end.
+    /// </remarks>
     public string? CustomDependencyName { get; }
 }

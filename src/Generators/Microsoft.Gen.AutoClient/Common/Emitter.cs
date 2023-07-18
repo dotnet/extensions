@@ -29,7 +29,8 @@ internal sealed class Emitter : EmitterBase
     private const string HttpClient = "global::System.Net.Http.HttpClient";
     private const string IHttpClientFactory = "global::System.Net.Http.IHttpClientFactory";
     private const string CancellationToken = "global::System.Threading.CancellationToken";
-    private const string RestApiClientOptions = "global::Microsoft.Extensions.Http.AutoClient.AutoClientOptions";
+    private const string AutoClientOptions = "global::Microsoft.Extensions.Http.AutoClient.AutoClientOptions";
+    private const string AutoClientOptionsValidator = "global::Microsoft.Extensions.Http.AutoClient.AutoClientOptionsValidator";
     private const string Action = "global::System.Action";
     private const string OptionsBuilderExtensions = "global::Microsoft.Extensions.Options.Validation.OptionsBuilderExtensions";
     private const string IOptionsMonitor = "global::Microsoft.Extensions.Options.IOptionsMonitor";
@@ -38,7 +39,7 @@ internal sealed class Emitter : EmitterBase
     private const string HttpContentJsonExtensions = "global::System.Net.Http.Json.HttpContentJsonExtensions";
     private const string JsonContent = "global::System.Net.Http.Json.JsonContent";
     private const string ServiceCollectionDescriptorExtensions = "global::Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions";
-    private const string RestApiHttpError = "global::Microsoft.Extensions.Http.AutoClient.AutoClientHttpError";
+    private const string AutoClientHttpError = "global::Microsoft.Extensions.Http.AutoClient.AutoClientHttpError";
     private const string Invariant = "global::System.FormattableString.Invariant";
     private const string UriKind = "global::System.UriKind";
 
@@ -128,14 +129,14 @@ internal sealed class Emitter : EmitterBase
 
             OutLn(@$"public static {IServiceCollection} Add{restApiType.Name}(
                 this {IServiceCollection} services,
-                {Action}<{RestApiClientOptions}> configureOptions)");
+                {Action}<{AutoClientOptions}> configureOptions)");
             OutOpenBrace();
-            OutLn(@$"{OptionsBuilderExtensions}.AddValidatedOptions<{RestApiClientOptions}>(services, ""{restApiType.Name}"").Configure(configureOptions);");
+            OutLn(@$"{OptionsBuilderExtensions}.AddValidatedOptions<{AutoClientOptions}, {AutoClientOptionsValidator}>(services, ""{restApiType.Name}"").Configure(configureOptions);");
             OutLn($"{ServiceCollectionDescriptorExtensions}.TryAddSingleton<I{restApiType.Name}>(services, provider =>");
             OutOpenBrace();
             OutLn(@$"var httpClient = {ServiceProviderServiceExtensions}.GetRequiredService<{IHttpClientFactory}>(provider).CreateClient(""{restApiType.HttpClientName}"");");
-            OutLn(@$"var restAutoClientOptions = {ServiceProviderServiceExtensions}.GetRequiredService<{IOptionsMonitor}<{RestApiClientOptions}>>(provider).Get(""{restApiType.Name}"");");
-            OutLn($"return new {restApiType.Name}(httpClient, restAutoClientOptions);");
+            OutLn(@$"var autoClientOptions = {ServiceProviderServiceExtensions}.GetRequiredService<{IOptionsMonitor}<{AutoClientOptions}>>(provider).Get(""{restApiType.Name}"");");
+            OutLn($"return new {restApiType.Name}(httpClient, autoClientOptions);");
             OutCloseBraceWithExtra(");");
             OutLn($"return services;");
             OutCloseBrace();
@@ -186,7 +187,7 @@ internal sealed class Emitter : EmitterBase
                 Out(", ");
             }
 
-            Out($"{p.Type} {p.Name}");
+            Out($"{p.Type}{(p.Nullable && p.Type[p.Type.Length - 1] != '?' ? "?" : string.Empty)} {p.Name}");
 
             if (p.IsCancellationToken)
             {
@@ -259,7 +260,7 @@ internal sealed class Emitter : EmitterBase
             switch (body.BodyType)
             {
                 case BodyContentTypeParam.ApplicationJson:
-                    OutLn($@"_httpRequestMessage.Content = {JsonContent}.Create({body.Name}, _applicationJsonHeader, _restAutoClientOptions.JsonSerializerOptions);");
+                    OutLn($@"_httpRequestMessage.Content = {JsonContent}.Create({body.Name}, _applicationJsonHeader, _autoClientOptions.JsonSerializerOptions);");
                     OutLn();
                     break;
 
@@ -282,17 +283,20 @@ internal sealed class Emitter : EmitterBase
 
         foreach (var header in restApiType.StaticHeaders.OrderBy(static h => h.Key))
         {
-            OutLn(@$"_httpRequestMessage.Headers.Add(""{header.Key}"", ""{header.Value}"");");
+            OutLn(@$"_httpRequestMessage.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
         }
 
         foreach (var header in restApiMethod.StaticHeaders.OrderBy(static h => h.Key))
         {
-            OutLn(@$"_httpRequestMessage.Headers.Add(""{header.Key}"", ""{header.Value}"");");
+            OutLn(@$"_httpRequestMessage.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
         }
 
         foreach (var param in restApiMethod.AllParameters.Where(m => m.IsHeader))
         {
-            OutLn(@$"_httpRequestMessage.Headers.Add(""{param.HeaderName}"", {param.Name}?.ToString() ?? """");");
+            OutLn($"if ({param.Name} != null)");
+            OutOpenBrace();
+            OutLn(@$"_httpRequestMessage.Headers.Add(""{param.HeaderName}"", {param.Name}.ToString());");
+            OutCloseBrace();
         }
 
         OutLn();
@@ -339,7 +343,7 @@ internal sealed class Emitter : EmitterBase
 
         OutLn("if (!response.IsSuccessStatusCode)");
         OutOpenBrace();
-        OutLn($"var error = await {RestApiHttpError}.CreateAsync(response, cancellationToken).ConfigureAwait(false);");
+        OutLn($"var error = await {AutoClientHttpError}.CreateAsync(response, cancellationToken).ConfigureAwait(false);");
         OutLn($@"throw new {RestApiException}({Invariant}($""The '{{dependencyName}}' HTTP client failed with '{{response.StatusCode}}' status code.""), path, error);");
         OutCloseBrace();
 
@@ -360,11 +364,11 @@ internal sealed class Emitter : EmitterBase
         OutLn("var mediaType = response.Content.Headers.ContentType?.MediaType;");
         OutLn(@"if (mediaType == ""application/json"")");
         OutOpenBrace();
-        OutLn(@$"var deserializedResponse = await {HttpContentJsonExtensions}.ReadFromJsonAsync<TResponse>(response.Content, _restAutoClientOptions.JsonSerializerOptions, cancellationToken)
+        OutLn(@$"var deserializedResponse = await {HttpContentJsonExtensions}.ReadFromJsonAsync<TResponse>(response.Content, _autoClientOptions.JsonSerializerOptions, cancellationToken)
                     .ConfigureAwait(false);");
         OutLn("if (deserializedResponse == null)");
         OutOpenBrace();
-        OutLn($"var error = await {RestApiHttpError}.CreateAsync(response, cancellationToken).ConfigureAwait(false);");
+        OutLn($"var error = await {AutoClientHttpError}.CreateAsync(response, cancellationToken).ConfigureAwait(false);");
         OutLn($@"throw new {RestApiException}({Invariant}($""The '{{dependencyName}}' REST API failed to deserialize response.""), path, error);");
         OutCloseBrace();
         OutLn();
@@ -372,7 +376,7 @@ internal sealed class Emitter : EmitterBase
         OutCloseBrace();
 
         OutLn();
-        OutLn($"var err = await {RestApiHttpError}.CreateAsync(response, cancellationToken).ConfigureAwait(false);");
+        OutLn($"var err = await {AutoClientHttpError}.CreateAsync(response, cancellationToken).ConfigureAwait(false);");
         OutLn(@$"throw new {RestApiException}({Invariant}($""The '{{dependencyName}}' REST API returned an unsupported content type ('{{mediaType}}').""), path, err);");
 
         OutLn();
@@ -422,13 +426,13 @@ internal sealed class Emitter : EmitterBase
         }
 
         OutLn($"private readonly {HttpClient} _httpClient;");
-        OutLn($"private readonly {RestApiClientOptions} _restAutoClientOptions;");
+        OutLn($"private readonly {AutoClientOptions} _autoClientOptions;");
         OutLn();
 
-        OutLn($"public {restApiType.Name}({HttpClient} httpClient, {RestApiClientOptions} restAutoClientOptions)");
+        OutLn($"public {restApiType.Name}({HttpClient} httpClient, {AutoClientOptions} autoClientOptions)");
         OutOpenBrace();
         OutLn(@$"_httpClient = httpClient;");
-        OutLn($"_restAutoClientOptions = restAutoClientOptions;");
+        OutLn($"_autoClientOptions = autoClientOptions;");
         OutCloseBrace();
     }
 }

@@ -3,8 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.AutoClient;
 
@@ -13,7 +11,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// </summary>
 /// <remarks>
 /// Marks a method parameter as the body for the request.
-/// This attribute cannot be used with a GET or HEAD request.
+/// This attribute cannot be used with a <c>GET</c> or <c>HEAD</c> request.
 /// </remarks>
 /// <example>
 /// <code>
@@ -25,7 +23,6 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 [AttributeUsage(AttributeTargets.Parameter)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class BodyAttribute : Attribute

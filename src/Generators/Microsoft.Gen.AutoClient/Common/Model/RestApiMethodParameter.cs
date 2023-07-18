@@ -11,6 +11,7 @@ internal sealed class RestApiMethodParameter
     public string? QueryKey;
     public BodyContentTypeParam? BodyType;
     public bool IsCancellationToken;
+    public bool Nullable;
 
     public bool IsHeader => HeaderName != null;
     public bool IsQuery => QueryKey != null;

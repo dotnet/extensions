@@ -118,4 +118,40 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         title: Resources.ErrorDuplicateRequestNameTitle,
         messageFormat: Resources.ErrorDuplicateRequestNameMessage,
         category: Category);
+
+    public static DiagnosticDescriptor ErrorInvalidHttpClientName { get; } = Make(
+        id: "R9G318",
+        title: Resources.ErrorInvalidHttpClientNameTitle,
+        messageFormat: Resources.ErrorInvalidHttpClientNameMessage,
+        category: Category);
+
+    public static DiagnosticDescriptor ErrorInvalidDependencyName { get; } = Make(
+        id: "R9G319",
+        title: Resources.ErrorInvalidDependencyNameTitle,
+        messageFormat: Resources.ErrorInvalidDependencyNameMessage,
+        category: Category);
+
+    public static DiagnosticDescriptor ErrorInvalidHeaderName { get; } = Make(
+        id: "R9G320",
+        title: Resources.ErrorInvalidHeaderNameTitle,
+        messageFormat: Resources.ErrorInvalidHeaderNameMessage,
+        category: Category);
+
+    public static DiagnosticDescriptor ErrorInvalidHeaderValue { get; } = Make(
+        id: "R9G321",
+        title: Resources.ErrorInvalidHeaderValueTitle,
+        messageFormat: Resources.ErrorInvalidHeaderValueMessage,
+        category: Category);
+
+    public static DiagnosticDescriptor ErrorInvalidPath { get; } = Make(
+        id: "R9G322",
+        title: Resources.ErrorInvalidPathTitle,
+        messageFormat: Resources.ErrorInvalidPathMessage,
+        category: Category);
+
+    public static DiagnosticDescriptor ErrorInvalidRequestName { get; } = Make(
+        id: "R9G323",
+        title: Resources.ErrorInvalidRequestNameTitle,
+        messageFormat: Resources.ErrorInvalidRequestNameMessage,
+        category: Category);
 }

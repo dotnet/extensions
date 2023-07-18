@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.AutoClient;
 
@@ -22,7 +20,6 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// });
 /// </code>
 /// </example>
-[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 public class AutoClientOptions
 {
     /// <summary>

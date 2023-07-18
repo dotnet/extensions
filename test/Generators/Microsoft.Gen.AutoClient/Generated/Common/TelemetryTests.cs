@@ -17,7 +17,7 @@ namespace Microsoft.Gen.AutoClient.Test;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "IDisposable inside mock setups")]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S1067:Expressions should not be too complex", Justification = "Mock conditions")]
-public class TelemetryTests
+public class TelemetryTests : IDisposable
 {
     private readonly Mock<HttpMessageHandler> _handlerMock = new(MockBehavior.Strict);
     private readonly Mock<IHttpClientFactory> _factoryMock = new(MockBehavior.Strict);
@@ -25,6 +25,7 @@ public class TelemetryTests
     private readonly IRequestMetadataTestClient _sutClient;
     private readonly IRequestMetadataTestApi _sutApi;
     private readonly ICustomRequestMetadataTestClient _sutCustom;
+    private readonly ServiceProvider _provider;
 
     public TelemetryTests()
     {
@@ -38,31 +39,31 @@ public class TelemetryTests
         services.AddRequestMetadataTestClient();
         services.AddRequestMetadataTestApi();
         services.AddCustomRequestMetadataTestClient();
-        var provider = services.BuildServiceProvider();
+        _provider = services.BuildServiceProvider();
 
-        _sutClient = provider.GetRequiredService<IRequestMetadataTestClient>();
-        _sutApi = provider.GetRequiredService<IRequestMetadataTestApi>();
-        _sutCustom = provider.GetRequiredService<ICustomRequestMetadataTestClient>();
+        _sutClient = _provider.GetRequiredService<IRequestMetadataTestClient>();
+        _sutApi = _provider.GetRequiredService<IRequestMetadataTestApi>();
+        _sutCustom = _provider.GetRequiredService<ICustomRequestMetadataTestClient>();
     }
 
     [Fact]
     public async Task ClientDependencyComplexPath()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users/myUser?search=searchParam" &&
-                    message.GetRequestMetadata()!.RequestRoute == "/api/users/{userId}?search={search}" &&
-                    message.GetRequestMetadata()!.DependencyName == "RequestMetadataTest" &&
-                    message.GetRequestMetadata()!.RequestName == "GetUser"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users/myUser?search=searchParam" &&
+                message.GetRequestMetadata()!.RequestRoute == "/api/users/{userId}?search={search}" &&
+                message.GetRequestMetadata()!.DependencyName == "RequestMetadataTest" &&
+                message.GetRequestMetadata()!.RequestName == "GetUser"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sutClient.GetUser("myUser", "searchParam");
 
@@ -73,20 +74,20 @@ public class TelemetryTests
     public async Task ClientDependencyMethodNameAsync()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users" &&
-                    message.GetRequestMetadata()!.RequestRoute == "/api/users" &&
-                    message.GetRequestMetadata()!.DependencyName == "RequestMetadataTest" &&
-                    message.GetRequestMetadata()!.RequestName == "GetUsers"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users" &&
+                message.GetRequestMetadata()!.RequestRoute == "/api/users" &&
+                message.GetRequestMetadata()!.DependencyName == "RequestMetadataTest" &&
+                message.GetRequestMetadata()!.RequestName == "GetUsers"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sutClient.GetUsersAsync();
 
@@ -97,20 +98,20 @@ public class TelemetryTests
     public async Task ApiDependencyMethodNameAsync()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users" &&
-                    message.GetRequestMetadata()!.RequestRoute == "/api/users" &&
-                    message.GetRequestMetadata()!.DependencyName == "RequestMetadataTest" &&
-                    message.GetRequestMetadata()!.RequestName == "GetUsers"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users" &&
+                message.GetRequestMetadata()!.RequestRoute == "/api/users" &&
+                message.GetRequestMetadata()!.DependencyName == "RequestMetadataTest" &&
+                message.GetRequestMetadata()!.RequestName == "GetUsers"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sutApi.GetUsersAsync();
 
@@ -121,20 +122,20 @@ public class TelemetryTests
     public async Task CustomDependencyName()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/user" &&
-                    message.GetRequestMetadata()!.RequestRoute == "/api/user" &&
-                    message.GetRequestMetadata()!.DependencyName == "MyDependency" &&
-                    message.GetRequestMetadata()!.RequestName == "GetUser"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/user" &&
+                message.GetRequestMetadata()!.RequestRoute == "/api/user" &&
+                message.GetRequestMetadata()!.DependencyName == "MyDependency" &&
+                message.GetRequestMetadata()!.RequestName == "GetUser"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sutCustom.GetUser();
 
@@ -145,23 +146,37 @@ public class TelemetryTests
     public async Task CustomRequestName()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users" &&
-                    message.GetRequestMetadata()!.RequestRoute == "/api/users" &&
-                    message.GetRequestMetadata()!.DependencyName == "MyDependency" &&
-                    message.GetRequestMetadata()!.RequestName == "MyRequestName"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users" &&
+                message.GetRequestMetadata()!.RequestRoute == "/api/users" &&
+                message.GetRequestMetadata()!.DependencyName == "MyDependency" &&
+                message.GetRequestMetadata()!.RequestName == "MyRequestName"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sutCustom.GetUsers();
 
         Assert.Equal("Success!", response);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _provider.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

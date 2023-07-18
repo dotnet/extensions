@@ -21,7 +21,6 @@ internal static class SymbolLoader
     internal const string RestHeaderAttribute = "Microsoft.Extensions.Http.AutoClient.HeaderAttribute";
     internal const string RestQueryAttribute = "Microsoft.Extensions.Http.AutoClient.QueryAttribute";
     internal const string RestBodyAttribute = "Microsoft.Extensions.Http.AutoClient.BodyAttribute";
-    internal const string RestRequestNameAttribute = "Microsoft.Extensions.Http.AutoClient.RequestNameAttribute";
 
     internal static SymbolHolder? LoadSymbols(Compilation compilation)
     {
@@ -39,7 +38,6 @@ internal static class SymbolLoader
         var restHeaderAttribute = compilation.GetTypeByMetadataName(RestHeaderAttribute);
         var restQueryAttribute = compilation.GetTypeByMetadataName(RestQueryAttribute);
         var restBodyAttribute = compilation.GetTypeByMetadataName(RestBodyAttribute);
-        var restRequestNameAttribute = compilation.GetTypeByMetadataName(RestRequestNameAttribute);
 
         if (restApiAttribute == null)
         {
@@ -59,7 +57,6 @@ internal static class SymbolLoader
             restStaticHeaderAttribute,
             restHeaderAttribute,
             restQueryAttribute,
-            restBodyAttribute,
-            restRequestNameAttribute);
+            restBodyAttribute);
     }
 }

@@ -17,6 +17,9 @@ namespace Microsoft.Gen.AutoClient.Test;
 
 public class ParserTests
 {
+    private static readonly string[] _unsupportedCharactersStrings = new[] { "\\\"", "\\n", "\\r", "\\t" };
+    private static readonly string[] _unsupportedCharactersHeaderValues = new[] { "\\n", "\\r" };
+
     [Fact]
     public void NoSymbols()
     {
@@ -206,8 +209,7 @@ public class ParserTests
             [AutoClient(""MyClient"")]
             public interface IClient
             {
-                [RequestName(""MyRequest"")]
-                [Post(""/api/users"")]
+                [Post(""/api/users"", RequestName = ""MyRequest"")]
                 public Task<string> GetUsers(CancellationToken cancellationToken);
             }");
 
@@ -437,12 +439,151 @@ public class ParserTests
                 [Get(""/api/users"")]
                 public Task<string> GetUsers(CancellationToken token);
 
-                [Get(""/api/users"")]
-                [RequestName(""GetUsers"")]
+                [Get(""/api/users"", RequestName = ""GetUsers"")]
                 public Task<string> GetSomeUsers(CancellationToken token);
             }");
 
         Assert.Contains(DiagDescriptors.ErrorDuplicateRequestName.Id, ds.Select(x => x.Id));
+    }
+
+    [Fact]
+    public async Task InvalidHttpClientName()
+    {
+        foreach (var invalidChar in _unsupportedCharactersStrings)
+        {
+            var ds = await RunGenerator(@$"
+            [AutoClient(""MyClient{invalidChar}"")]
+            public interface IClient
+            {{
+                [Get(""/api/users"")]
+                public Task<string> GetUsers(CancellationToken token);
+            }}");
+
+            Assert.Contains(DiagDescriptors.ErrorInvalidHttpClientName.Id, ds.Select(x => x.Id));
+        }
+    }
+
+    [Fact]
+    public async Task InvalidDependencyName()
+    {
+        foreach (var invalidChar in _unsupportedCharactersStrings)
+        {
+            var ds = await RunGenerator(@$"
+            [AutoClient(""MyClient"", ""DependencyName{invalidChar}"")]
+            public interface IClient
+            {{
+                [Get(""/api/users"")]
+                public Task<string> GetUsers(CancellationToken token);
+            }}");
+
+            Assert.Contains(DiagDescriptors.ErrorInvalidDependencyName.Id, ds.Select(x => x.Id));
+        }
+    }
+
+    [Fact]
+    public async Task InvalidHeaderNameType()
+    {
+        foreach (var invalidChar in _unsupportedCharactersStrings)
+        {
+            var ds = await RunGenerator(@$"
+            [AutoClient(""MyClient"")]
+            [StaticHeader(""HeaderName{invalidChar}"", ""HeaderValue"")]
+            public interface IClient
+            {{
+                [Get(""/api/users"")]
+                public Task<string> GetUsers(CancellationToken token);
+            }}");
+
+            Assert.Contains(DiagDescriptors.ErrorInvalidHeaderName.Id, ds.Select(x => x.Id));
+        }
+    }
+
+    [Fact]
+    public async Task InvalidHeaderNameMethod()
+    {
+        foreach (var invalidChar in _unsupportedCharactersStrings)
+        {
+            var ds = await RunGenerator(@$"
+            [AutoClient(""MyClient"")]
+            public interface IClient
+            {{
+                [Get(""/api/users"")]
+                [StaticHeader(""HeaderName{invalidChar}"", ""HeaderValue"")]
+                public Task<string> GetUsers(CancellationToken token);
+            }}");
+
+            Assert.Contains(DiagDescriptors.ErrorInvalidHeaderName.Id, ds.Select(x => x.Id));
+        }
+    }
+
+    [Fact]
+    public async Task InvalidHeaderValueType()
+    {
+        foreach (var invalidChar in _unsupportedCharactersHeaderValues)
+        {
+            var ds = await RunGenerator(@$"
+            [AutoClient(""MyClient"")]
+            [StaticHeader(""HeaderName"", ""HeaderValue{invalidChar}"")]
+            public interface IClient
+            {{
+                [Get(""/api/users"")]
+                public Task<string> GetUsers(CancellationToken token);
+            }}");
+
+            Assert.Contains(DiagDescriptors.ErrorInvalidHeaderValue.Id, ds.Select(x => x.Id));
+        }
+    }
+
+    [Fact]
+    public async Task InvalidHeaderValueMethod()
+    {
+        foreach (var invalidChar in _unsupportedCharactersHeaderValues)
+        {
+            var ds = await RunGenerator(@$"
+            [AutoClient(""MyClient"")]
+            public interface IClient
+            {{
+                [Get(""/api/users"")]
+                [StaticHeader(""HeaderName"", ""HeaderValue{invalidChar}"")]
+                public Task<string> GetUsers(CancellationToken token);
+            }}");
+
+            Assert.Contains(DiagDescriptors.ErrorInvalidHeaderValue.Id, ds.Select(x => x.Id));
+        }
+    }
+
+    [Fact]
+    public async Task InvalidPath()
+    {
+        foreach (var invalidChar in _unsupportedCharactersHeaderValues)
+        {
+            var ds = await RunGenerator(@$"
+            [AutoClient(""MyClient"")]
+            public interface IClient
+            {{
+                [Get(""/api/users{invalidChar}"")]
+                public Task<string> GetUsers(CancellationToken token);
+            }}");
+
+            Assert.Contains(DiagDescriptors.ErrorInvalidPath.Id, ds.Select(x => x.Id));
+        }
+    }
+
+    [Fact]
+    public async Task InvalidRequestName()
+    {
+        foreach (var invalidChar in _unsupportedCharactersHeaderValues)
+        {
+            var ds = await RunGenerator(@$"
+            [AutoClient(""MyClient"")]
+            public interface IClient
+            {{
+                [Get(""/api/users"", RequestName = ""RequestName{invalidChar}"")]
+                public Task<string> GetUsers(CancellationToken token);
+            }}");
+
+            Assert.Contains(DiagDescriptors.ErrorInvalidRequestName.Id, ds.Select(x => x.Id));
+        }
     }
 
     private static async Task<IReadOnlyList<Diagnostic>> RunGenerator(
@@ -484,7 +625,7 @@ public class ParserTests
         }
 
         var (d, _) = await RoslynTestUtils.RunGenerator(
-            new Generator(),
+            new AutoClientGenerator(),
             refs,
             new[] { text },
             includeBaseReferences: includeBaseReferences,

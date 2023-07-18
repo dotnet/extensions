@@ -17,7 +17,7 @@ namespace Microsoft.Gen.AutoClient;
 
 [Generator]
 [ExcludeFromCodeCoverage]
-public class Generator : IIncrementalGenerator
+public class AutoClientGenerator : IIncrementalGenerator
 {
     private static readonly HashSet<string> _attributeNames = new()
     {
@@ -34,8 +34,7 @@ public class Generator : IIncrementalGenerator
         SymbolLoader.RestStaticHeaderAttribute,
         SymbolLoader.RestHeaderAttribute,
         SymbolLoader.RestQueryAttribute,
-        SymbolLoader.RestBodyAttribute,
-        SymbolLoader.RestRequestNameAttribute
+        SymbolLoader.RestBodyAttribute
     };
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -74,7 +73,7 @@ namespace Microsoft.Gen.AutoClient;
 
 [Generator]
 [ExcludeFromCodeCoverage]
-public class Generator : ISourceGenerator
+public class AutoClientGenerator : ISourceGenerator
 {
     public void Initialize(GeneratorInitializationContext context)
     {

@@ -15,12 +15,13 @@ using Xunit;
 namespace Microsoft.Gen.AutoClient.Test;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "IDisposable inside mock setups")]
-public class QueryTests
+public class QueryTests : IDisposable
 {
     private readonly Mock<HttpMessageHandler> _handlerMock = new(MockBehavior.Strict);
     private readonly Mock<IHttpClientFactory> _factoryMock = new(MockBehavior.Strict);
 
     private readonly IQueryTestClient _sut;
+    private readonly ServiceProvider _provider;
 
     public QueryTests()
     {
@@ -32,26 +33,26 @@ public class QueryTests
         var services = new ServiceCollection();
         services.AddSingleton(_ => _factoryMock.Object);
         services.AddQueryTestClient();
-        var provider = services.BuildServiceProvider();
+        _provider = services.BuildServiceProvider();
 
-        _sut = provider.GetRequiredService<IQueryTestClient>();
+        _sut = _provider.GetRequiredService<IQueryTestClient>();
     }
 
     [Fact]
     public async Task QueryFromParameter()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users?paramQuery=myValue"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users?paramQuery=myValue"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sut.GetUsers("myValue");
 
@@ -62,17 +63,17 @@ public class QueryTests
     public async Task QueryFromParameterCustom()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users?paramQueryCustom=myValue"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users?paramQueryCustom=myValue"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sut.GetUsersCustom("myValue");
 
@@ -83,17 +84,17 @@ public class QueryTests
     public async Task MultipleQueryParams()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users?paramQuery1=myValue1&paramQuery2=myValue2"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users?paramQuery1=myValue1&paramQuery2=myValue2"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sut.GetUsers2("myValue1", "myValue2");
 
@@ -104,20 +105,34 @@ public class QueryTests
     public async Task QueryParamCustomObject()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users?paramQuery=CustomObjectToString"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users?paramQuery=CustomObjectToString"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sut.GetUsersObject(new IQueryTestClient.CustomObject());
 
         Assert.Equal("Success!", response);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _provider.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

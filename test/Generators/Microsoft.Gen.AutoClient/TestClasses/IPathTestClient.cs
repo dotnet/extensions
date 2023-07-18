@@ -14,6 +14,6 @@ namespace TestClasses
         public Task<string> GetUser(string userId, CancellationToken cancellationToken = default);
 
         [Get("/api/users/{tenantId}/{userId}")]
-        public Task<string> GetUserFromTenant(string tenantId, string userId, CancellationToken cancellationToken = default);
+        public Task<string> GetUserFromTenant(string tenantId, int? userId, CancellationToken cancellationToken = default);
     }
 }

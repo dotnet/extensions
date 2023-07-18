@@ -187,6 +187,78 @@ namespace Microsoft.Gen.AutoClient {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An unsupported character was used in the dependency name.
+        /// </summary>
+        internal static string ErrorInvalidDependencyNameMessage {
+            get {
+                return ResourceManager.GetString("ErrorInvalidDependencyNameMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid dependency name.
+        /// </summary>
+        internal static string ErrorInvalidDependencyNameTitle {
+            get {
+                return ResourceManager.GetString("ErrorInvalidDependencyNameTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unsupported character was used in the header name.
+        /// </summary>
+        internal static string ErrorInvalidHeaderNameMessage {
+            get {
+                return ResourceManager.GetString("ErrorInvalidHeaderNameMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid header name.
+        /// </summary>
+        internal static string ErrorInvalidHeaderNameTitle {
+            get {
+                return ResourceManager.GetString("ErrorInvalidHeaderNameTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unsupported character was used in the header value.
+        /// </summary>
+        internal static string ErrorInvalidHeaderValueMessage {
+            get {
+                return ResourceManager.GetString("ErrorInvalidHeaderValueMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid header value.
+        /// </summary>
+        internal static string ErrorInvalidHeaderValueTitle {
+            get {
+                return ResourceManager.GetString("ErrorInvalidHeaderValueTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unsupported character was used in the HttpClient name.
+        /// </summary>
+        internal static string ErrorInvalidHttpClientNameMessage {
+            get {
+                return ResourceManager.GetString("ErrorInvalidHttpClientNameMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid HttpClient name.
+        /// </summary>
+        internal static string ErrorInvalidHttpClientNameTitle {
+            get {
+                return ResourceManager.GetString("ErrorInvalidHttpClientNameTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to API method names cannot start with _.
         /// </summary>
         internal static string ErrorInvalidMethodNameMessage {
@@ -219,6 +291,42 @@ namespace Microsoft.Gen.AutoClient {
         internal static string ErrorInvalidParameterNameTitle {
             get {
                 return ResourceManager.GetString("ErrorInvalidParameterNameTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unsupported character was used in the REST method path.
+        /// </summary>
+        internal static string ErrorInvalidPathMessage {
+            get {
+                return ResourceManager.GetString("ErrorInvalidPathMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid REST method path.
+        /// </summary>
+        internal static string ErrorInvalidPathTitle {
+            get {
+                return ResourceManager.GetString("ErrorInvalidPathTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unsupported character was used in the request name.
+        /// </summary>
+        internal static string ErrorInvalidRequestNameMessage {
+            get {
+                return ResourceManager.GetString("ErrorInvalidRequestNameMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid request name.
+        /// </summary>
+        internal static string ErrorInvalidRequestNameTitle {
+            get {
+                return ResourceManager.GetString("ErrorInvalidRequestNameTitle", resourceCulture);
             }
         }
         

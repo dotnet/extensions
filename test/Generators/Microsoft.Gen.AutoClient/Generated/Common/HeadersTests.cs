@@ -17,13 +17,14 @@ namespace Microsoft.Gen.AutoClient.Test;
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "IDisposable inside mock setups")]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Critical Code Smell", "S1067:Expressions should not be too complex", Justification = "Mock conditions")]
-public class HeadersTests
+public class HeadersTests : IDisposable
 {
     private readonly Mock<HttpMessageHandler> _handlerMock = new(MockBehavior.Strict);
     private readonly Mock<IHttpClientFactory> _factoryMock = new(MockBehavior.Strict);
 
     private readonly IStaticHeaderTestClient _sutStatic;
     private readonly IParamHeaderTestClient _sutParam;
+    private readonly ServiceProvider _provider;
 
     public HeadersTests()
     {
@@ -36,28 +37,28 @@ public class HeadersTests
         services.AddSingleton(_ => _factoryMock.Object);
         services.AddStaticHeaderTestClient();
         services.AddParamHeaderTestClient();
-        var provider = services.BuildServiceProvider();
+        _provider = services.BuildServiceProvider();
 
-        _sutStatic = provider.GetRequiredService<IStaticHeaderTestClient>();
-        _sutParam = provider.GetRequiredService<IParamHeaderTestClient>();
+        _sutStatic = _provider.GetRequiredService<IStaticHeaderTestClient>();
+        _sutParam = _provider.GetRequiredService<IParamHeaderTestClient>();
     }
 
     [Fact]
     public async Task StaticHeader()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users" &&
-                    message.Headers.GetValues("X-MyHeader").First() == "MyValue"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users" &&
+                message.Headers.GetValues("X-MyHeader").First() == "MyValue"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sutStatic.GetUsers();
 
@@ -68,22 +69,44 @@ public class HeadersTests
     public async Task StaticHeaderMultipleInMethod()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users" &&
-                    message.Headers.GetValues("X-MyHeader").First() == "MyValue" &&
-                    message.Headers.GetValues("X-MyHeader1").First() == "MyValue" &&
-                    message.Headers.GetValues("X-MyHeader2").First() == "MyValue"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users" &&
+                message.Headers.GetValues("X-MyHeader").First() == "MyValue" &&
+                message.Headers.GetValues("X-MyHeader1").First() == "MyValue" &&
+                message.Headers.GetValues("X-MyHeader2").First() == "MyValue"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sutStatic.GetUsersHeaders();
+
+        Assert.Equal("Success!", response);
+    }
+
+    [Fact]
+    public async Task StaticHeaderWithEscapedQuotes()
+    {
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users" &&
+                message.Headers.GetValues("X-MyHeader3").First() == "MyValueWith\"Escaped\"Stuff"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
+
+        var response = await _sutStatic.GetUsersHeadersEscaped();
 
         Assert.Equal("Success!", response);
     }
@@ -92,20 +115,42 @@ public class HeadersTests
     public async Task HeaderFromParameter()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users" &&
-                    message.Headers.GetValues("X-MyHeader").First() == "MyParamValue"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users" &&
+                message.Headers.GetValues("X-MyHeader").First() == "MyParamValue"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sutParam.GetUsers("MyParamValue");
+
+        Assert.Equal("Success!", response);
+    }
+
+    [Fact]
+    public async Task HeaderFromParameterNullIsExcluded()
+    {
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users" &&
+                !message.Headers.Contains("X-MyHeader")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
+
+        var response = await _sutParam.GetUsers(null);
 
         Assert.Equal("Success!", response);
     }
@@ -114,21 +159,35 @@ public class HeadersTests
     public async Task HeaderFromParameterCustomObject()
     {
         _handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
-                    message.Method == HttpMethod.Get &&
-                    message.RequestUri != null &&
-                    message.RequestUri.PathAndQuery == "/api/users" &&
-                    message.Headers.GetValues("X-MyHeader").First() == "CustomObjectToString"),
-                    ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("Success!")
-                });
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users" &&
+                message.Headers.GetValues("X-MyHeader").First() == "CustomObjectToString"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
 
         var response = await _sutParam.GetUsersObject(new IParamHeaderTestClient.CustomObject());
 
         Assert.Equal("Success!", response);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _provider.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }
