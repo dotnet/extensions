@@ -55,7 +55,7 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
     public void AddResilienceEnrichment_NoOutcome_EnsureDimensions()
     {
         Build();
-        _telemetry!.Report("dummy-event", ResilienceContext.Get(), string.Empty);
+        _telemetry!.Report(new ResilienceEvent(ResilienceEventSeverity.Information, "dummy-event"), ResilienceContext.Get(), string.Empty);
 
         Tags["failure-reason"].Should().BeNull();
         Tags["failure-source"].Should().BeNull();
@@ -81,7 +81,7 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
 
         Build();
         _telemetry!.Report(
-            "dummy-event",
+            new ResilienceEvent(ResilienceEventSeverity.Information, "dummy-event"),
             new OutcomeArguments<string, string>(ResilienceContext.Get(), Outcome.FromException<string>(new InvalidOperationException { Source = "my-source" }), string.Empty));
 
         Tags["failure-reason"].Should().Be("InvalidOperationException");
@@ -96,7 +96,7 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
 
         Build();
         _telemetry!.Report(
-            "dummy-event",
+            new ResilienceEvent(ResilienceEventSeverity.Information, "dummy-event"),
             new OutcomeArguments<string, string>(ResilienceContext.Get(), Outcome.FromResult("string-result"), string.Empty));
 
         Tags["failure-source"].Should().Be("my-source");
@@ -111,7 +111,7 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
         context.SetRequestMetadata(new RequestMetadata { RequestName = "my-req", DependencyName = "my-dep" });
 
         Build();
-        _telemetry!.Report("dummy-event", context, string.Empty);
+        _telemetry!.Report(new ResilienceEvent(ResilienceEventSeverity.Information, "dummy-event"), context, string.Empty);
 
         Tags["dep-name"].Should().Be("my-dep");
         Tags["req-name"].Should().Be("my-req");
@@ -124,7 +124,7 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
         _services.TryAddSingleton(Mock.Of<IOutgoingRequestContext>(v => v.RequestMetadata == requestMetadata));
 
         Build();
-        _telemetry!.Report("dummy-event", ResilienceContext.Get(), string.Empty);
+        _telemetry!.Report(new ResilienceEvent(ResilienceEventSeverity.Information, "dummy-event"), ResilienceContext.Get(), string.Empty);
 
         Tags["dep-name"].Should().Be("my-dep");
         Tags["req-name"].Should().Be("my-req");
