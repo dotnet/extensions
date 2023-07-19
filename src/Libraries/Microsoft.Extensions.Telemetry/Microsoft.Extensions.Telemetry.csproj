@@ -41,6 +41,7 @@
 
     <!-- In net462, we need to reference System.Net.Http as that is where HttpRequestMessage lives -->
     <Reference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net462'" />
+    <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
   </ItemGroup>
 
   <ItemGroup>
