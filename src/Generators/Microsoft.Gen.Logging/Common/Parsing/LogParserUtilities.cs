@@ -230,9 +230,7 @@ internal static class LogParserUtilities
     private static bool IsSpecialType(ITypeSymbol typeSymbol, SymbolHolder symbols)
         => typeSymbol.SpecialType != SpecialType.None ||
         typeSymbol.OriginalDefinition.SpecialType != SpecialType.None ||
-#pragma warning disable RS1024
-        symbols.IgnorePropertiesSymbols.Contains(typeSymbol);
-#pragma warning restore RS1024
+        symbols.IgnorePropertiesSymbols.Contains(typeSymbol, (IEqualityComparer<ITypeSymbol>)SymbolEqualityComparer.Default);
 
     private static bool IsObjectType(ITypeSymbol typeSymbol)
         => typeSymbol.SpecialType == SpecialType.System_Object ||
