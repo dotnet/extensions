@@ -30,7 +30,7 @@ internal sealed class ResilienceHandler : DelegatingHandler
         var created = false;
         if (request.GetResilienceContext() is not ResilienceContext context)
         {
-            context = ResilienceContext.Get();
+            context = ResilienceContext.Get(cancellationToken);
             created = true;
             request.SetResilienceContext(context);
         }

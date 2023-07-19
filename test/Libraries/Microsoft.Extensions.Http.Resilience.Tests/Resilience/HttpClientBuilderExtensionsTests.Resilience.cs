@@ -125,7 +125,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
             {
                 context.ServiceProvider.Should().NotBeNull();
                 context.BuilderName.Should().Be($"{BuilderName}-test");
-                context.StrategyKey.Should().Be("dummy-key");
+                context.InstanceName.Should().Be("dummy-key");
                 verified = true;
             })
             .SelectStrategyBy(_ => _ => "dummy-key");
@@ -151,7 +151,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         registryOptions.StrategyComparer.Equals(new HttpKey("A", "1"), new HttpKey("A", "2")).Should().BeFalse();
 
         registryOptions.BuilderNameFormatter(new HttpKey("A", "1")).Should().Be("A");
-        registryOptions.StrategyKeyFormatter(new HttpKey("A", "1")).Should().Be("1");
+        registryOptions.InstanceNameFormatter!(new HttpKey("A", "1")).Should().Be("1");
     }
 
     public enum PolicyType

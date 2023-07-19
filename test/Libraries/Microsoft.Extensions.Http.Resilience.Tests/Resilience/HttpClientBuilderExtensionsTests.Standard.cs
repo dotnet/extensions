@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Options;
@@ -17,6 +16,7 @@ using Microsoft.Extensions.Telemetry.Metering;
 using Polly;
 using Polly.Registry;
 using Polly.Retry;
+using Polly.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Resilience.Test;
@@ -128,30 +128,25 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [Fact]
     public void AddStandardResilienceHandler_EnsureCorrectStrategies()
     {
-        var called = false;
-        var builder = new ServiceCollection().AddLogging().RegisterMetering().AddHttpClient("test");
-        builder.Services.TryAddTransient(_ =>
-        {
-            return new ResilienceStrategyBuilder
-            {
-                OnCreatingStrategy = strategies =>
-                {
-                    strategies.Should().HaveCount(5);
-                    strategies[0].GetType().Name.Should().Contain("RateLimiter");
-                    strategies[1].GetType().Name.Should().Contain("Timeout");
-                    strategies[2].GetType().Name.Should().Contain("Retry");
-                    strategies[3].GetType().Name.Should().Contain("CircuitBreaker");
-                    strategies[4].GetType().Name.Should().Contain("Timeout");
+        var provider = new ServiceCollection()
+            .AddLogging()
+            .RegisterMetering()
+            .AddHttpClient("test")
+            .AddStandardResilienceHandler()
+            .Services.BuildServiceProvider()
+            .GetRequiredService<ResilienceStrategyProvider<HttpKey>>();
 
-                    called = true;
-                }
-            };
-        });
+        var descriptor = provider.GetStrategy<HttpResponseMessage>(new HttpKey("test-standard", string.Empty)).GetInnerStrategies();
 
-        builder.AddStandardResilienceHandler();
+        descriptor.Strategies.Should().HaveCount(5);
+        descriptor.HasTelemetry.Should().BeTrue();
+        descriptor.IsReloadable.Should().BeTrue();
 
-        _ = builder.Services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("test");
-        called.Should().BeTrue();
+        descriptor.Strategies[0].Options.Should().BeOfType<HttpRateLimiterStrategyOptions>();
+        descriptor.Strategies[1].Options.Should().BeOfType<HttpTimeoutStrategyOptions>();
+        descriptor.Strategies[2].Options.Should().BeOfType<HttpRetryStrategyOptions>();
+        descriptor.Strategies[3].Options.Should().BeOfType<HttpCircuitBreakerStrategyOptions>();
+        descriptor.Strategies[4].Options.Should().BeOfType<HttpTimeoutStrategyOptions>();
     }
 
     [InlineData(true)]
