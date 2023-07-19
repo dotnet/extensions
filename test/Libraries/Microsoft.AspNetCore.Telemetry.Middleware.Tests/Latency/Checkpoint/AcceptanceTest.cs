@@ -90,7 +90,7 @@ public class AcceptanceTest
 
                 app.Use((ctx, next) =>
                 {
-                    ctx.Response.Headers.Add("Server-Timing", alreadySetServerTimingHeader);
+                    ctx.Response.Headers.Append("Server-Timing", alreadySetServerTimingHeader);
 
                     return next();
                 });

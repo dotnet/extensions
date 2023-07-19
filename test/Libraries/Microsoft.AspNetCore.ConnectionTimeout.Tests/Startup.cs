@@ -26,7 +26,7 @@ public class Startup
             endpoints.MapGet("/", async context =>
             {
                 var connectionFeature = context.Features.Get<IHttpConnectionFeature>()!;
-                context.Response.Headers.Add("ConnectionId", connectionFeature!.ConnectionId);
+                context.Response.Headers.Append("ConnectionId", connectionFeature!.ConnectionId);
                 await context.Response.WriteAsync("Hello World!");
             });
         });

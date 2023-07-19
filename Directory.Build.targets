@@ -44,12 +44,6 @@
     <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>
   </PropertyGroup>
 
-  <!-- .NET 8 specific configurations (https://github.com/dotnet/extensions/issues/4126) -->
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <!-- Ignore ASP0019: Use IHeaderDictionary.Append or the indexer to append or set headers. IDictionary.Add will throw an ArgumentException when attempting to add a duplicate key  -->
-    <NoWarn>$(NoWarn);ASP0019</NoWarn>
-  </PropertyGroup>
-
   <PropertyGroup>
     <!-- Ignore RS1024: Compare symbols correctly (https://github.com/dotnet/extensions/issues/4127) -->
     <NoWarn>$(NoWarn);RS1024</NoWarn>
