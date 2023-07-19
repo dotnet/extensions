@@ -48,15 +48,17 @@ public static class HttpClientLoggingExtensions
             static httpClientBuilder =>
                 httpClientBuilder
                 .RemoveAllLoggers()
-                .AddLogger(static serviceProvider =>
-                {
-                    var logger = serviceProvider.GetRequiredService<ILogger<HttpLoggingHandler>>();
-                    var httpRequestReader = serviceProvider.GetRequiredService<IHttpRequestReader>();
-                    var enrichers = serviceProvider.GetServices<IHttpClientLogEnricher>();
-                    var loggingOptions = serviceProvider.GetRequiredService<IOptions<LoggingOptions>>();
+                .AddLogger(
+                    wrapHandlersPipeline: true,
+                    httpClientLoggerFactory: static serviceProvider =>
+                    {
+                        var logger = serviceProvider.GetRequiredService<ILogger<HttpLoggingHandler>>();
+                        var httpRequestReader = serviceProvider.GetRequiredService<IHttpRequestReader>();
+                        var enrichers = serviceProvider.GetServices<IHttpClientLogEnricher>();
+                        var loggingOptions = serviceProvider.GetRequiredService<IOptions<LoggingOptions>>();
 
-                    return new HttpClientLogger(logger, httpRequestReader, enrichers, loggingOptions);
-                }));
+                        return new HttpClientLogger(logger, httpRequestReader, enrichers, loggingOptions);
+                    }));
     }
 
     /// <summary>
@@ -222,38 +224,38 @@ public static class HttpClientLoggingExtensions
         return services;
     }
 
-    private static IHttpClientBuilder AddLoggerInternal(this IHttpClientBuilder builder)
-    {
-        return builder.AddLogger(serviceProvider =>
-        {
-            var loggingOptions = Options.Options.Create(serviceProvider
-                .GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get(builder.Name));
+    private static IHttpClientBuilder AddLoggerInternal(this IHttpClientBuilder builder, bool wrapHandlersPipeline = true)
+        => builder.AddLogger(
+            serviceProvider =>
+            {
+                var loggingOptions = Options.Options.Create(serviceProvider
+                    .GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get(builder.Name));
 
-            // We can do it the following way instead:
-            /*
-                return ActivatorUtilities.CreateInstance<HttpLoggingHandler>(
-                    serviceProvider,
-                    ActivatorUtilities.CreateInstance<HttpRequestReader>(
+                // We can do it the following way instead:
+                /*
+                    return ActivatorUtilities.CreateInstance<HttpLoggingHandler>(
                         serviceProvider,
-                        ActivatorUtilities.CreateInstance<HttpHeadersReader>(
+                        ActivatorUtilities.CreateInstance<HttpRequestReader>(
                             serviceProvider,
+                            ActivatorUtilities.CreateInstance<HttpHeadersReader>(
+                                serviceProvider,
+                                loggingOptions),
                             loggingOptions),
-                        loggingOptions),
-                    loggingOptions)
-            */
+                        loggingOptions)
+                */
 
-            var logger = serviceProvider.GetRequiredService<ILogger<HttpLoggingHandler>>();
-            var httpHeadersReader = new HttpHeadersReader(loggingOptions, serviceProvider.GetRequiredService<IHttpHeadersRedactor>());
-            var httpRequestReader = new HttpRequestReader(
-                loggingOptions,
-                serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
-                httpHeadersReader,
-                serviceProvider.GetRequiredService<IOutgoingRequestContext>(),
-                serviceProvider.GetService<IDownstreamDependencyMetadataManager>());
+                var logger = serviceProvider.GetRequiredService<ILogger<HttpLoggingHandler>>();
+                var httpHeadersReader = new HttpHeadersReader(loggingOptions, serviceProvider.GetRequiredService<IHttpHeadersRedactor>());
+                var httpRequestReader = new HttpRequestReader(
+                    loggingOptions,
+                    serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+                    httpHeadersReader,
+                    serviceProvider.GetRequiredService<IOutgoingRequestContext>(),
+                    serviceProvider.GetService<IDownstreamDependencyMetadataManager>());
 
-            var enrichers = serviceProvider.GetServices<IHttpClientLogEnricher>();
+                var enrichers = serviceProvider.GetServices<IHttpClientLogEnricher>();
 
-            return new HttpClientLogger(logger, httpRequestReader, enrichers, loggingOptions);
-        });
-    }
+                return new HttpClientLogger(logger, httpRequestReader, enrichers, loggingOptions);
+            },
+            wrapHandlersPipeline);
 }
