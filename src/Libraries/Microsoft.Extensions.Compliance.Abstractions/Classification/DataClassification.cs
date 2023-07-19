@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Compliance.Classification;
@@ -154,6 +153,5 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     /// Gets a string representation of this object.
     /// </summary>
     /// <returns>A string representing the object.</returns>
-    [Experimental(diagnosticId: Experiments.Compliance, UrlFormat = Experiments.UrlFormat)]
     public override string ToString() => $"{TaxonomyName}:{Value:x}";
 }
