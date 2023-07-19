@@ -40,7 +40,7 @@ internal sealed class AddServerTimingHeaderMiddleware : IMiddleware
                 }
                 else
                 {
-                    httpContext.Response.Headers.Add(ServerTimingHeaderName, $"reqlatency;dur={elapsedMs}");
+                    httpContext.Response.Headers.Append(ServerTimingHeaderName, $"reqlatency;dur={elapsedMs}");
                 }
             }
 
