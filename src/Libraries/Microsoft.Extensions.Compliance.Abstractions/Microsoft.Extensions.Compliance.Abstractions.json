@@ -43,7 +43,7 @@
         },
         {
           "Member": "override string Microsoft.Extensions.Compliance.Classification.DataClassification.ToString();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Fields": [
@@ -241,7 +241,7 @@
         },
         {
           "Member": "bool Microsoft.Extensions.Compliance.Redaction.Redactor.TryRedact<T>(T value, System.Span<char> destination, out int charsWritten, System.ReadOnlySpan<char> format, System.IFormatProvider? provider = null);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
