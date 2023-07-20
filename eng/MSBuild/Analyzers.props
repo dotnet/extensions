@@ -26,8 +26,8 @@
 
   <ItemGroup Condition="'$(SkipAnalyzers)' != 'true'">
     <!-- We can't use $(RepoRoot) here as slngen tool is failing to resolve it... -->
-    <ProjectReference Condition="'$(SkipExtraAnalyzers)' != 'true'" Include="$(MSBuildThisFileDirectory)\..\..\src\Analyzers\Microsoft.Extensions.ExtraAnalyzers\Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0\Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
-    <ProjectReference Condition="'$(SkipLocalAnalyzers)' != 'true'" Include="$(MSBuildThisFileDirectory)\..\..\src\Analyzers\Microsoft.Extensions.LocalAnalyzers\Microsoft.Extensions.LocalAnalyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <ProjectReference Condition="'$(SkipExtraAnalyzers)' != 'true'" Include="$(MSBuildThisFileDirectory)\..\..\src\Analyzers\Microsoft.Analyzers.Extra\Microsoft.Analyzers.Extra.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <ProjectReference Condition="'$(SkipLocalAnalyzers)' != 'true'" Include="$(MSBuildThisFileDirectory)\..\..\src\Analyzers\Microsoft.Analyzers.Local\Microsoft.Analyzers.Local.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
 </Project>

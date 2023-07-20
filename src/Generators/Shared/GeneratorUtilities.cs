@@ -2,15 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.CodeAnalysis;
-#if ROSLYN_4_0_OR_GREATER
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-#endif
 
 [assembly: System.Resources.NeutralResourcesLanguage("en-us")]
 
@@ -32,8 +30,6 @@ internal static class GeneratorUtilities
 #nullable enable
 #pragma warning disable CS1591 // Compensate for https://github.com/dotnet/roslyn/issues/54103
 ";
-
-#if ROSLYN_4_0_OR_GREATER
 
     [ExcludeFromCodeCoverage]
     public static void Initialize(
@@ -121,7 +117,6 @@ internal static class GeneratorUtilities
                 attributeType.OriginalDefinition.ToDisplayString() :
                 attributeType.ToDisplayString();
     }
-#endif
 
     /// <summary>
     /// Reports will not be generated during design time to prevent file being written on every keystroke in VS.

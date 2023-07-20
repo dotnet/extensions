@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.ExtraAnalyzers.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.Analyzers..Extra</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Analyzers\Microsoft.Analyzers.Extra\Microsoft.Analyzers.Extra.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
+    <ProjectReference Include="..\..\..\src\Generators\Microsoft.Gen.Logging\Microsoft.Gen.Logging.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+</Project>

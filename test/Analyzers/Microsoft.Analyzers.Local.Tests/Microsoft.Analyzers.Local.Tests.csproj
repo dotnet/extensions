@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.LocalAnalyzers.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.Analyzers.Local</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectSharedThrow>true</InjectSharedThrow>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Analyzers\Microsoft.Analyzers.Local\Microsoft.Analyzers.Local.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="ApiLifecycle\Data\*.json" LinkBase="ApiLifecycle\Data" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.Logging</RootNamespace>
+    <Description>Code generator to support Microsoft.Extensions.Telemetry's logging features.</Description>
+    <Workstream>Telemetry</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AnalyzerLanguage>cs</AnalyzerLanguage>
+    <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="Resources.resx" />
+    <Compile Include="..\Shared\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="Microsoft.Gen.Logging.Unit.Tests" />
+  </ItemGroup>
+</Project>

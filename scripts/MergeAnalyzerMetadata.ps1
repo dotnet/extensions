@@ -33,8 +33,8 @@ $AspNetCorePath = Join-Path -Path $DotNetPath -ChildPath packs\Microsoft.AspNetC
 
 Write-Output "Processing analyzer assemblies"
 
-& $Command $Diags analyzer merge $Artifacts\bin\Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0\Debug\netstandard2.0\Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0.dll
-& $Command $Diags analyzer merge $Artifacts\bin\Microsoft.Extensions.LocalAnalyzers\Debug\netstandard2.0\Microsoft.Extensions.LocalAnalyzers.dll
+& $Command $Diags analyzer merge $Artifacts\bin\Microsoft.Analyzers.Extra\Debug\netstandard2.0\Microsoft.Analyzers.Extra.dll
+& $Command $Diags analyzer merge $Artifacts\bin\Microsoft.Analyzers.Local\Debug\netstandard2.0\Microsoft.Analyzers.Local.dll
 & $Command $Diags analyzer merge $PackagePath\stylecop.analyzers.unstable\1.2.0.435\analyzers\dotnet\cs\StyleCop.Analyzers.dll
 & $Command $Diags analyzer merge $PackagePath\sonaranalyzer.csharp\8.52.0.60960\analyzers\SonarAnalyzer.CSharp.dll
 & $Command $Diags analyzer merge $PackagePath\microsoft.visualstudio.threading.analyzers\17.5.22\analyzers\cs\Microsoft.VisualStudio.Threading.Analyzers.dll
