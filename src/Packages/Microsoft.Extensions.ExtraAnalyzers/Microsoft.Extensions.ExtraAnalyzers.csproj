@@ -20,8 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AnalyzerReference Include="..\..\Analyzers\Microsoft.Extensions.ExtraAnalyzers\Microsoft.Extensions.ExtraAnalyzers.Roslyn3.8\Microsoft.Extensions.ExtraAnalyzers.Roslyn3.8.csproj" />
-    <AnalyzerReference Include="..\..\Analyzers\Microsoft.Extensions.ExtraAnalyzers\Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0\Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0.csproj" />
+    <AnalyzerReference Include="..\..\Analyzers\Microsoft.Analyzers.Extra\Microsoft.Analyzers.Extra.csproj" />
   </ItemGroup>
 
   <ItemGroup>

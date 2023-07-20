@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.AutoClient.Unit.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.Gen.AutoClient.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Shared\*.cs" LinkBase="Shared" />
+    <Content Include="..\TestClasses\**\*.cs" Link="TestClasses\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Http.AutoClient\Microsoft.Extensions.Http.AutoClient.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Generators\Microsoft.Gen.AutoClient\Microsoft.Gen.AutoClient.csproj" />
+    <ProjectReference Include="..\Generated\Microsoft.Gen.AutoClient.Generated.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+  </ItemGroup>
+</Project>

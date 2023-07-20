@@ -6,6 +6,4 @@
   <PropertyGroup Condition="'$(MeteringReportOutputPath)' == ''">
     <MeteringReportOutputPath>$(OutputPath)</MeteringReportOutputPath>
   </PropertyGroup>
-
-  <Import Project="$(MSBuildThisFileDirectory)/MultiTargetRoslynComponent.targets" />
 </Project>

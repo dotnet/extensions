@@ -16,8 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.EnumStrings\Roslyn3.8\Microsoft.Gen.EnumStrings.Roslyn3.8.csproj" />
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.EnumStrings\Roslyn4.0\Microsoft.Gen.EnumStrings.Roslyn4.0.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.EnumStrings\Microsoft.Gen.EnumStrings.csproj" />
   </ItemGroup>
 
   <ItemGroup>

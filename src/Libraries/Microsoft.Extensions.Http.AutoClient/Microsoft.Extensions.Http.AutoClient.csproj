@@ -20,13 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.AutoClient\Roslyn3.8\Microsoft.Gen.AutoClient.Roslyn3.8.csproj" />
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.AutoClient\Roslyn4.0\Microsoft.Gen.AutoClient.Roslyn4.0.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.AutoClient\Microsoft.Gen.AutoClient.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- This reference is not strictly needed by this package, but we include here such that
-         application using this package to invoke the auto client code generator will inherit
+         applications using this package to invoke the auto client code generator will inherit
          this reference, such that the generated code will work.
     -->
     <ProjectReference Include="../Microsoft.Extensions.Http.Telemetry/Microsoft.Extensions.Http.Telemetry.csproj" />

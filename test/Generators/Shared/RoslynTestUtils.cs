@@ -25,11 +25,7 @@ namespace Microsoft.Gen.Shared;
 
 internal static class RoslynTestUtils
 {
-#if ROSLYN_4_0_OR_GREATER
     internal const string RoslynVersion = "4.0";
-#else
-    internal const string RoslynVersion = "3.8";
-#endif
 
 #if DEBUG
     internal const string BuildType = "Debug";
@@ -274,11 +270,10 @@ internal static class RoslynTestUtils
         IIncrementalGenerator generator,
         IEnumerable<Assembly>? references,
         IEnumerable<string> sources,
-        AnalyzerConfigOptionsProvider? optionsProvider = null,
         bool includeBaseReferences = true,
         CancellationToken cancellationToken = default)
     {
-        return RunGenerator(generator, references, sources, Empty.Enumerable<string>(), optionsProvider, includeBaseReferences, cancellationToken);
+        return RunGenerator(generator, references, sources, Empty.Enumerable<string>(), includeBaseReferences, cancellationToken);
     }
 
     /// <summary>
@@ -289,14 +284,9 @@ internal static class RoslynTestUtils
         IEnumerable<Assembly>? references,
         IEnumerable<string> sources,
         IEnumerable<string> preprocessorSymbols,
-        AnalyzerConfigOptionsProvider? optionsProvider = null,
         bool includeBaseReferences = true,
         CancellationToken cancellationToken = default)
     {
-#if ROSLYN_4_0_OR_GREATER
-        preprocessorSymbols = preprocessorSymbols.Append("ROSLYN_4_0_OR_GREATER");
-#endif
-
         var proj = CreateTestProject(references, preprocessorSymbols, includeBaseReferences);
 
         var count = 0;
