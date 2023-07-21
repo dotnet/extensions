@@ -363,14 +363,14 @@ public static class MetricCollectorTests
         Assert.Throws<ObjectDisposedException>(() => collector.LastMeasurement);
         Assert.Throws<ObjectDisposedException>(() => collector.RecordObservableInstruments());
 
-        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await collector.WaitForMeasurementsAsync(1));
-        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await collector.WaitForMeasurementsAsync(1, TimeSpan.FromSeconds(1)));
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await collector.WaitForMeasurementsAsync(1).ConfigureAwait(false)).ConfigureAwait(false);
+        await Assert.ThrowsAsync<ObjectDisposedException>(async () => await collector.WaitForMeasurementsAsync(1, TimeSpan.FromSeconds(1)).ConfigureAwait(false)).ConfigureAwait(false);
 
         if (!wait.IsCompleted)
         {
             try
             {
-                await wait;
+                await wait.ConfigureAwait(false);
             }
             catch (Exception e)
             {
