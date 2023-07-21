@@ -3,14 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
-using Microsoft.Shared.Text;
 
 namespace Microsoft.Extensions.Hosting.Testing.Internal;
 
@@ -18,8 +15,6 @@ internal sealed class StartupHostedService : IHostedService
 {
     internal readonly TimeSpan Timeout;
 
-    private const string TimeoutMessageTemplate = "Exceeded maximum server initialization time of {0}. Adjust {1} or split your work into smaller chunks.";
-    private static readonly CompositeFormat _timeoutMessage = CompositeFormat.Parse(TimeoutMessageTemplate);
     private readonly TimeProvider _timeProvider;
     private IStartupInitializer[] _initializers;
 
@@ -52,7 +47,7 @@ internal sealed class StartupHostedService : IHostedService
         catch (TaskCanceledException e) when (!cancellationToken.IsCancellationRequested)
         {
             throw new TaskCanceledException(
-                message: _timeoutMessage.Format(CultureInfo.InvariantCulture, Timeout, nameof(StartupInitializationOptions)),
+                message: $"Exceeded maximum server initialization time of {Timeout}. Adjust {nameof(StartupInitializationOptions)} or split your work into smaller chunks.",
                 innerException: e);
         }
 

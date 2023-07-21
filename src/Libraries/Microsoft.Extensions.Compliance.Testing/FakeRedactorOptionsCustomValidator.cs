@@ -1,8 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Globalization;
 using Microsoft.Extensions.Options;
-using Microsoft.Shared.Text;
 using Validation = Microsoft.Extensions.Options.Validation;
 
 namespace Microsoft.Extensions.Compliance.Testing;
@@ -15,17 +16,16 @@ internal sealed class FakeRedactorOptionsCustomValidator : IValidateOptions<Fake
     {
         var builder = new ValidateOptionsResultBuilder();
 
-        if (!CompositeFormat.TryParse(options.RedactionFormat, out var compositeFormat, out var error))
+        try
         {
-            builder.AddError(
-                $"{nameof(options.RedactionFormat)} must be a valid .NET format string: {error}",
-                nameof(options.RedactionFormat));
+            _ = string.Format(CultureInfo.InvariantCulture, options.RedactionFormat, "Test");
         }
-        else if (compositeFormat.NumArgumentsNeeded > MaxNumberOfArgumentsForRedactionFormat)
+        catch (FormatException ex)
         {
             builder.AddError(
-                $"{nameof(options.RedactionFormat)} must take no more than {MaxNumberOfArgumentsForRedactionFormat} arguments. Currently found {compositeFormat.NumArgumentsNeeded}.",
+                $"{nameof(options.RedactionFormat)} must be a valid .NET format string taking 0 or 1 arguments: {ex.Message}",
                 nameof(options.RedactionFormat));
+
         }
 
         return builder.Build();
