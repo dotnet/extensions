@@ -8,9 +8,8 @@
 
   <PropertyGroup>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <InjectSharedTextFormatting>true</InjectSharedTextFormatting>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
-    <InjectSyntaxAttributeOnLegacy>true</InjectSyntaxAttributeOnLegacy>
+    <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
   </PropertyGroup>
 
   <PropertyGroup>

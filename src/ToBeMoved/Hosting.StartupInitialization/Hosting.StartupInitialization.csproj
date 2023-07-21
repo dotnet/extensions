@@ -6,7 +6,6 @@
     <Description>Provides infrastructure to execute asynchronous functions on server startups</Description>
     <Workstream>Fundamentals</Workstream>
     <Category>Application Bootstrap</Category>
-    <InjectSharedTextFormatting>true</InjectSharedTextFormatting>
     <InjectSharedDebugger>true</InjectSharedDebugger>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
   </PropertyGroup>

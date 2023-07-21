@@ -9,7 +9,6 @@
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMeteringGenerator>true</UseMeteringGenerator>
     <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
-    <InjectSharedTextFormatting>true</InjectSharedTextFormatting>
     <InjectSharedPools>true</InjectSharedPools>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
   </PropertyGroup>

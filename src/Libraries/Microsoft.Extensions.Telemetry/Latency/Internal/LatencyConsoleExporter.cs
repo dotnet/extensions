@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,8 +10,6 @@ using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Memoization;
 using Microsoft.Shared.Pools;
-using Microsoft.Shared.Text;
-using CF = Microsoft.Shared.Text.CompositeFormat;
 
 namespace Microsoft.Extensions.Telemetry.Latency.Internal;
 
@@ -18,8 +17,14 @@ internal sealed class LatencyConsoleExporter : ILatencyDataExporter
 {
     private const int MillisPerSecond = 1000;
 
-    private static readonly CF _title = CF.Parse("Latency sample #{0}: {1}ms, {2} checkpoints, {3} tags, {4} measures" + Environment.NewLine);
-    private static readonly Func<int, CF> _rows = Memoize.Function<int, CF>(nameColumnWidth => CF.Parse($"  {{0,-{nameColumnWidth}}} | {{1}}" + Environment.NewLine));
+#if NET8_0_OR_GREATER
+    private static readonly CompositeFormat _title = CompositeFormat.Parse("Latency sample #{0}: {1}ms, {2} checkpoints, {3} tags, {4} measures" + Environment.NewLine);
+    private static readonly Func<int, CompositeFormat> _rows = Memoize.Function((int nameColumnWidth) => CompositeFormat.Parse($"  {{0,-{nameColumnWidth}}} | {{1}}" + Environment.NewLine));
+#else
+    private static readonly string _title = "Latency sample #{0}: {1}ms, {2} checkpoints, {3} tags, {4} measures" + Environment.NewLine;
+    private static readonly Func<int, string> _rows = Memoize.Function((int nameColumnWidth) => $"  {{0,-{nameColumnWidth}}} | {{1}}" + Environment.NewLine);
+#endif
+
     private static readonly Func<int, string> _dashes = Memoize.Function<int, string>(num => new('-', num));
 
     private readonly bool _outputCheckpoints;
@@ -43,8 +48,8 @@ internal sealed class LatencyConsoleExporter : ILatencyDataExporter
             var cnt = Interlocked.Increment(ref _sampleCount);
 
             _ = sb.AppendFormat(
+                CultureInfo.InvariantCulture,
                 _title,
-                null,
                 cnt,
                 (double)latencyData.DurationTimestamp / latencyData.DurationTimestampFrequency * MillisPerSecond,
                 latencyData.Checkpoints.Length,
@@ -64,7 +69,7 @@ internal sealed class LatencyConsoleExporter : ILatencyDataExporter
                 for (int i = 0; i < latencyData.Checkpoints.Length; i++)
                 {
                     var c = latencyData.Checkpoints[i];
-                    _ = sb.AppendFormat(fmt, null, c.Name, (double)c.Elapsed / c.Frequency * MillisPerSecond);
+                    _ = sb.AppendFormat(CultureInfo.InvariantCulture, fmt, c.Name, (double)c.Elapsed / c.Frequency * MillisPerSecond);
                 }
             }
 
@@ -80,7 +85,7 @@ internal sealed class LatencyConsoleExporter : ILatencyDataExporter
                 for (int i = 0; i < latencyData.Tags.Length; i++)
                 {
                     var t = latencyData.Tags[i];
-                    _ = sb.AppendFormat(fmt, null, t.Name, t.Value);
+                    _ = sb.AppendFormat(CultureInfo.InvariantCulture, fmt, t.Name, t.Value);
                 }
             }
 
@@ -96,7 +101,7 @@ internal sealed class LatencyConsoleExporter : ILatencyDataExporter
                 for (int i = 0; i < latencyData.Measures.Length; i++)
                 {
                     var m = latencyData.Measures[i];
-                    _ = sb.AppendFormat(fmt, null, m.Name, m.Value);
+                    _ = sb.AppendFormat(CultureInfo.InvariantCulture, fmt, m.Name, m.Value);
                 }
             }
 
@@ -109,7 +114,11 @@ internal sealed class LatencyConsoleExporter : ILatencyDataExporter
         }
     }
 
-    private static CF StartTable(StringBuilder sb, string nameHeader, string valueHeader, int nameColumnWidth, ref bool needBlankLine)
+#if NET8_0_OR_GREATER
+    private static CompositeFormat StartTable(StringBuilder sb, string nameHeader, string valueHeader, int nameColumnWidth, ref bool needBlankLine)
+#else
+    private static string StartTable(StringBuilder sb, string nameHeader, string valueHeader, int nameColumnWidth, ref bool needBlankLine)
+#endif
     {
         if (needBlankLine)
         {
@@ -122,7 +131,7 @@ internal sealed class LatencyConsoleExporter : ILatencyDataExporter
 
         nameColumnWidth = Math.Max(nameColumnWidth, nameHeader.Length);
         var fmt = _rows(nameColumnWidth);
-        _ = sb.AppendFormat(fmt, null, nameHeader, valueHeader);
+        _ = sb.AppendFormat(CultureInfo.InvariantCulture, fmt, nameHeader, valueHeader);
 
         _ = sb.Append("  ");
         _ = sb.Append(_dashes(nameColumnWidth + 1));
