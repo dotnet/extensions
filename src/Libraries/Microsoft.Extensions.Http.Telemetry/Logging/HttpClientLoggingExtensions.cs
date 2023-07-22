@@ -146,9 +146,9 @@ public static class HttpClientLoggingExtensions
         builder.Services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
         builder.Services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
 
-        _ = builder.ConfigureHttpMessageHandlerBuilder(b =>
+        _ = builder.ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
         {
-            if (b.AdditionalHandlers.Any(handler => handler is HttpLoggingHandler))
+            if (handlers.Any(handler => handler is HttpLoggingHandler))
             {
                 Throw.InvalidOperationException(HandlerAddedTwiceExceptionMessage);
             }
