@@ -351,8 +351,8 @@ public class HttpClientLoggingExtensionsTest
             .AddFakeRedaction()
             .AddDefaultHttpClientLogging()
             .AddHttpClient("test")
-            .ConfigureHttpMessageHandlerBuilder(b =>
-                b.AdditionalHandlers.Add(Mock
+            .ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
+                handlers.Add(Mock
                     .Of<DelegatingHandler>())) // this is to kill mutants with .Any() vs. .All() calls when detecting already added delegating handlers.
             .AddHttpClientLogging().Services
             .BuildServiceProvider();
