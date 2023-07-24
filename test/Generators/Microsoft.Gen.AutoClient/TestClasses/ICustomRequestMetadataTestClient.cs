@@ -13,8 +13,7 @@ namespace TestClasses
         [Get("/api/user")]
         public Task<string> GetUser(CancellationToken cancellationToken = default);
 
-        [Get("/api/users")]
-        [RequestName("MyRequestName")]
+        [Get("/api/users", RequestName = "MyRequestName")]
         public Task<string> GetUsers(CancellationToken cancellationToken = default);
     }
 }

@@ -66,7 +66,7 @@ public class ResilienceEnrichmentBenchmark
             ResilienceContext context,
             TState state)
         {
-            _telemetry.Report("Dummy", context, "dummy-args");
+            _telemetry.Report(new ResilienceEvent(ResilienceEventSeverity.Information, "Dummy"), context, "dummy-args");
 
             return callback(context, state);
         }

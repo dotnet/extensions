@@ -84,7 +84,7 @@ public partial class AcceptanceTest
                 fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(SlashRouteProcessingTimeMs));
 
                 context.Response.ContentType = MediaTypeNames.Text.Plain;
-                context.Response.Headers.Add(HeaderNames.TransferEncoding, "chunked");
+                context.Response.Headers.Append(HeaderNames.TransferEncoding, "chunked");
                 await context.Response.WriteAsync("Server: hello!").ConfigureAwait(false);
 
                 // Writing response twice so header is sent as 'transfer chunked-encoding'

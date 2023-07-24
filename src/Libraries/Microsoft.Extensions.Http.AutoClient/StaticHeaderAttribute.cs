@@ -3,8 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.AutoClient;
 
@@ -14,7 +12,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// <remarks>
 /// Injects a static header to be sent with every request. When this attribute is applied
 /// to an interface, then it impacts every method described by the interface. Otherwise, it only
-/// applies to the method where it is applied.
+/// affects the method where it is applied.
 /// </remarks>
 /// <example>
 /// <code>
@@ -28,7 +26,6 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, AllowMultiple = true)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class StaticHeaderAttribute : Attribute

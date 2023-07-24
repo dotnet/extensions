@@ -5,10 +5,10 @@
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProviderVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.0.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.0.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.4.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.4.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.4.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)" />
@@ -43,10 +43,11 @@
     <PackageVersion Include="OpenTelemetry" Version="1.4.0" />
     <PackageVersion Include="Polly.Contrib.Simmy" Version="0.3.0" />
     <PackageVersion Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
-    <PackageVersion Include="Polly.Core" Version="8.0.0-alpha.4" />
-    <PackageVersion Include="Polly.Extensions" Version="8.0.0-alpha.4" />
-    <PackageVersion Include="Polly.RateLimiting" Version="8.0.0-alpha.4" />
-    <PackageVersion Include="Polly" Version="8.0.0-alpha.4" />
+    <PackageVersion Include="Polly.Core" Version="8.0.0-alpha.6" />
+    <PackageVersion Include="Polly.Extensions" Version="8.0.0-alpha.6" />
+    <PackageVersion Include="Polly.RateLimiting" Version="8.0.0-alpha.6" />
+    <PackageVersion Include="Polly" Version="8.0.0-alpha.6" />
+    <PackageVersion Include="Polly.Testing" Version="8.0.0-alpha.6" />
     <PackageVersion Include="System.Buffers" Version="4.5.1" />
     <PackageVersion Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
     <PackageVersion Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />

@@ -30,9 +30,9 @@ public sealed class ResilienceHandlerContext
     public string BuilderName => _context.StrategyKey.Name;
 
     /// <summary>
-    /// Gets the strategy key of the resilience strategy being built.
+    /// Gets the instance name of resilience strategy being built.
     /// </summary>
-    public string StrategyKey => _context.StrategyKey.Key;
+    public string InstanceName => _context.StrategyKey.InstanceName;
 
     /// <summary>
     /// Enables dynamic reloading of the resilience strategy whenever the <typeparamref name="TOptions"/> options are changed.

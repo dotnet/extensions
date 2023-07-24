@@ -15,10 +15,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.ComplianceReports\Roslyn3.8\Microsoft.Gen.ComplianceReports.Roslyn3.8.csproj" />
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.ComplianceReports\Roslyn4.0\Microsoft.Gen.ComplianceReports.Roslyn4.0.csproj" />
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.MeteringReports\Roslyn3.8\Microsoft.Gen.MeteringReports.Roslyn3.8.csproj" />
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.MeteringReports\Roslyn4.0\Microsoft.Gen.MeteringReports.Roslyn4.0.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.ComplianceReports\Microsoft.Gen.ComplianceReports.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.MeteringReports\Microsoft.Gen.MeteringReports.csproj" />
   </ItemGroup>
 
   <ItemGroup>

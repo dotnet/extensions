@@ -136,7 +136,7 @@ public static partial class HttpClientBuilderExtensions
         _ = services.Configure<ResilienceStrategyRegistryOptions<HttpKey>>(options =>
         {
             options.BuilderNameFormatter = key => key.Name;
-            options.StrategyKeyFormatter = key => key.Key;
+            options.InstanceNameFormatter = key => key.InstanceName;
             options.BuilderComparer = HttpKey.BuilderComparer;
         });
 

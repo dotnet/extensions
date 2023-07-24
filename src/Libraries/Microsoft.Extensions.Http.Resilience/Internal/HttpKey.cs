@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal;
 
-internal readonly record struct HttpKey(string Name, string Key)
+internal readonly record struct HttpKey(string Name, string InstanceName)
 {
     public static readonly IEqualityComparer<HttpKey> BuilderComparer = new BuilderEqualityComparer();
 

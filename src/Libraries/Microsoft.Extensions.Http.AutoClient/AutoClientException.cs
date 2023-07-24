@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.AutoClient;
@@ -21,14 +20,13 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// {
 ///     await _myClient.SendRequest();
 /// }
-/// catch (Exception ex) when (ex.StatusCode == 403)
+/// catch (AutoClientException ex) when (ex.StatusCode == 403)
 /// {
 ///     // Handle forbidden scenario
 /// }
 /// </code>
 /// </example>
 [SuppressMessage("Design", "CA1032:Implement standard exception constructors", Justification = "Not applicable to this exception")]
-[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 public class AutoClientException : Exception
 {
     /// <summary>

@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using Microsoft.Shared.DiagnosticIds;
 
 #if !NETCOREAPP3_1_OR_GREATER
 using System.Buffers;
@@ -200,7 +199,6 @@ public abstract class Redactor
     /// <returns><see langword="true"/> if the destination buffer was large enough, otherwise <see langword="false"/>.</returns>
     [SkipLocalsInit]
     [SuppressMessage("Minor Code Smell", "S3247:Duplicate casts should not be made", Justification = "Avoid pattern matching to improve jitted code")]
-    [Experimental(diagnosticId: Experiments.Compliance, UrlFormat = Experiments.UrlFormat)]
     public bool TryRedact<T>(T value, Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider = null)
     {
 #if NET6_0_OR_GREATER

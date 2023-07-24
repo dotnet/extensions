@@ -3,8 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.AutoClient;
 
@@ -24,7 +22,6 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 [AttributeUsage(AttributeTargets.Parameter)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class QueryAttribute : Attribute
@@ -33,7 +30,7 @@ public sealed class QueryAttribute : Attribute
     /// Initializes a new instance of the <see cref="QueryAttribute"/> class.
     /// </summary>
     /// <remarks>
-    /// This overloaded uses the name of the associated method parameter as the query string key.
+    /// This overload uses the name of the associated method parameter as the query string key.
     /// </remarks>
     public QueryAttribute()
     {

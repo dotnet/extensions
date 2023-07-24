@@ -18,11 +18,6 @@
   <ItemGroup Condition="'$(InjectSharedNumericExtensions)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\NumericExtensions\*.cs" LinkBase="Shared\NumericExtensions" />
   </ItemGroup>
-
-  <ItemGroup Condition="'$(InjectSharedTextFormatting)' == 'true'">
-    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\Text.Formatting\*.cs" LinkBase="Shared\Text.Formatting" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(InjectSharedDebugger)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\Debugger\*.cs" LinkBase="Shared\Debugger" />
   </ItemGroup>

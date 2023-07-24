@@ -1,17 +1,17 @@
 <Project>
   <ItemGroup Condition="'$(UseLoggingGenerator)' == 'true' and '$(BuildingSlnForDocs)' != 'true'">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.Logging\Roslyn4.0\Microsoft.Gen.Logging.Roslyn4.0.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.Logging\Microsoft.Gen.Logging.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseEnumStringsGenerator)' == 'true' and '$(BuildingSlnForDocs)' != 'true'">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.EnumStrings\Roslyn4.0\Microsoft.Gen.EnumStrings.Roslyn4.0.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.EnumStrings\Microsoft.Gen.EnumStrings.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseMeteringGenerator)' == 'true' and '$(BuildingSlnForDocs)' != 'true'">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.Metering\Roslyn4.0\Microsoft.Gen.Metering.Roslyn4.0.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.Metering\Microsoft.Gen.Metering.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseContextualOptionsGenerator)' == 'true' and '$(BuildingSlnForDocs)' != 'true'">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.ContextualOptions\Roslyn4.0\Microsoft.Gen.ContextualOptions.Roslyn4.0.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.ContextualOptions\Microsoft.Gen.ContextualOptions.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 </Project>

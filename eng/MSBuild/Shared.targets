@@ -5,13 +5,6 @@
     <InjectDiagnosticAttributesOnLegacy Condition="'$(InjectDiagnosticAttributesOnLegacy)' == ''">true</InjectDiagnosticAttributesOnLegacy>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(InjectSharedTextFormatting)' == 'true'">
-    <InjectSkipLocalsInitAttributeOnLegacy Condition="'$(InjectSkipLocalsInitAttributeOnLegacy)' == ''">true</InjectSkipLocalsInitAttributeOnLegacy>
-    <InjectStringSyntaxAttributeOnLegacy Condition="'$(InjectStringSyntaxAttributeOnLegacy)' == ''">true</InjectStringSyntaxAttributeOnLegacy>
-    <InjectSharedStringBuilderExtensions Condition="'$(InjectSharedStringBuilderExtensions)' == ''">true</InjectSharedStringBuilderExtensions>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(InjectSharedDataValidation)' == 'true'">
     <InjectCallerAttributesOnLegacy Condition="'$(InjectCallerAttributesOnLegacy)' == ''">true</InjectCallerAttributesOnLegacy>
     <InjectTrimAttributesOnLegacy Condition="'$(InjectTrimAttributesOnLegacy)' == ''">true</InjectTrimAttributesOnLegacy>

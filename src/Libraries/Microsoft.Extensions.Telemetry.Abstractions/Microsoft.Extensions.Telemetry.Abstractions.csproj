@@ -23,10 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Logging\Roslyn3.8\Microsoft.Gen.Logging.Roslyn3.8.csproj" />
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Logging\Roslyn4.0\Microsoft.Gen.Logging.Roslyn4.0.csproj" />
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Metering\Roslyn3.8\Microsoft.Gen.Metering.Roslyn3.8.csproj" />
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Metering\Roslyn4.0\Microsoft.Gen.Metering.Roslyn4.0.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Logging\Microsoft.Gen.Logging.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Metering\Microsoft.Gen.Metering.csproj" />
   </ItemGroup>
 
   <ItemGroup>

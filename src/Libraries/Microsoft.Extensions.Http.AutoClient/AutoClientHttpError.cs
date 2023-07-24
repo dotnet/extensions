@@ -2,13 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.AutoClient;
@@ -20,7 +18,6 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// When a REST API client fails, it will throw a <see cref="AutoClientException"/>.
 /// This exception contains a <see cref="AutoClientHttpError"/> instance that holds details like content, headers and status code.
 /// </remarks>
-[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 public class AutoClientHttpError
 {
     /// <summary>

@@ -2,17 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.AutoClient;
 
 /// <summary>
-/// Defines an API PUT method.
+/// Defines an API <c>PUT</c> method.
 /// </summary>
 /// <remarks>
-/// Marks a method within an interface annotated with <see cref="AutoClientAttribute"/> as an API PUT method.
+/// Marks a method within an interface annotated with <see cref="AutoClientAttribute"/> as an API <c>PUT</c> method.
 ///
 /// The return type of an API method must be a <c>Task&lt;T&gt;</c>.
 /// If T is a <see cref="string"/> and the dependency returns "text/plain" content type, the result will be the raw content of the response. Otherwise, it will be deserialized from JSON.
@@ -30,7 +28,6 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// }
 /// </code>
 /// </example>
-[Experimental(diagnosticId: Experiments.AutoClient, UrlFormat = Experiments.UrlFormat)]
 [AttributeUsage(AttributeTargets.Method)]
 public sealed class PutAttribute : Attribute
 {
@@ -47,4 +44,24 @@ public sealed class PutAttribute : Attribute
     /// Gets the path of the request.
     /// </summary>
     public string Path { get; }
+
+    /// <summary>
+    /// Gets or sets the name to use for this request within telemetry.
+    /// </summary>
+    /// <remarks>
+    /// If this property is not provided, the request name is obtained from the method name.
+    /// If the method name ends in 'Async', the request name will exclude that.
+    /// For example, if the method is called <c>InsertUserAsync</c>, the request name, by default, will be <c>InsertUser</c>.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// [AutoClient("MyClient")]
+    /// interface IMyDependencyClient
+    /// {
+    ///     [Put("/api/users/{userId}", RequestName = "InsertUser")]
+    ///     Task&lt;User&gt; InsertUserAsync(string userId, CancellationToken cancellationToken);
+    /// }
+    /// </code>
+    /// </example>
+    public string? RequestName { get; set; }
 }

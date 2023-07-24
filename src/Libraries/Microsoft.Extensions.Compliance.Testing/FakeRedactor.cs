@@ -3,11 +3,13 @@
 
 using System;
 using System.Globalization;
+#if NET8_0_OR_GREATER
+using System.Text;
+#endif
 using System.Threading;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
-using Microsoft.Shared.Text;
 
 namespace Microsoft.Extensions.Compliance.Testing;
 
@@ -16,7 +18,12 @@ namespace Microsoft.Extensions.Compliance.Testing;
 /// </summary>
 public class FakeRedactor : Redactor
 {
+#if NET8_0_OR_GREATER
     private readonly CompositeFormat _format;
+#else
+    private readonly string _format;
+#endif
+
     private int _redactedSoFar;
 
     /// <summary>
@@ -27,14 +34,32 @@ public class FakeRedactor : Redactor
     /// <summary>
     /// Initializes a new instance of the <see cref="FakeRedactor"/> class.
     /// </summary>
-    /// <param name="options">The options to control behavior of redactor.</param>
+    /// <param name="options">The options to control the redactor's behavior.</param>
     /// <param name="collector">Collects info about redacted values.</param>
     public FakeRedactor(IOptions<FakeRedactorOptions>? options = null, FakeRedactionCollector? collector = null)
     {
         var opt = options ?? Microsoft.Extensions.Options.Options.Create(new FakeRedactorOptions());
+
+        IValidateOptions<FakeRedactorOptions> validator = new FakeRedactorOptionsAutoValidator();
+        var r = validator.Validate(nameof(options), opt.Value);
+        if (r.Succeeded)
+        {
+            validator = new FakeRedactorOptionsCustomValidator();
+            r = validator.Validate(nameof(options), opt.Value);
+        }
+
+        if (r.Failed)
+        {
+            Throw.ArgumentException(nameof(options), r.ToString());
+        }
+
         EventCollector = collector ?? new FakeRedactionCollector();
 
-        _format = GetRedactionFormat(opt.Value.RedactionFormat);
+#if NET8_0_OR_GREATER
+        _format = CompositeFormat.Parse(opt.Value.RedactionFormat);
+#else
+        _format = opt.Value.RedactionFormat;
+#endif
     }
 
     /// <summary>
@@ -48,46 +73,22 @@ public class FakeRedactor : Redactor
     /// <inheritdoc/>
     public override int Redact(ReadOnlySpan<char> source, Span<char> destination)
     {
-        Throw.IfBufferTooSmall(destination.Length, GetRedactedLength(source), nameof(destination));
-
-        int charsWritten;
-
         var sourceString = source.ToString();
+        var str = string.Format(CultureInfo.InvariantCulture, _format, sourceString);
 
-        if (_format.NumArgumentsNeeded == 0)
-        {
-            _ = _format.TryFormat(destination, out charsWritten, CultureInfo.InvariantCulture, Array.Empty<object?>());
-        }
-        else
-        {
-            _ = _format.TryFormat(destination, out charsWritten, CultureInfo.InvariantCulture, sourceString);
-        }
+        Throw.IfBufferTooSmall(destination.Length, str.Length, nameof(destination));
+
+        str.AsSpan().CopyTo(destination);
 
         var order = Interlocked.Increment(ref _redactedSoFar);
+        EventCollector.Append(new RedactedData(sourceString, destination.Slice(0, str.Length).ToString(), order));
 
-        EventCollector.Append(new RedactedData(sourceString, destination.Slice(0, charsWritten).ToString(), order));
-
-        return charsWritten;
+        return str.Length;
     }
 
     /// <inheritdoc/>
     public override int GetRedactedLength(ReadOnlySpan<char> input)
     {
-        if (_format.NumArgumentsNeeded == 0)
-        {
-            return _format.Format(CultureInfo.InvariantCulture, Array.Empty<object?>()).Length;
-        }
-
-        return _format.Format(CultureInfo.InvariantCulture, input.ToString()).Length;
-    }
-
-    private static CompositeFormat GetRedactionFormat(string redactionFormat)
-    {
-        if (!CompositeFormat.TryParse(redactionFormat, out var parsed, out var error))
-        {
-            Throw.ArgumentException(nameof(FakeRedactorOptions.RedactionFormat), error);
-        }
-
-        return parsed;
+        return string.Format(CultureInfo.InvariantCulture, _format, input.ToString()).Length;
     }
 }

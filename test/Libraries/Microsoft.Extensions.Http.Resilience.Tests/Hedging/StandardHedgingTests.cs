@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
@@ -19,6 +18,8 @@ using Moq;
 using Polly;
 using Polly.Hedging;
 using Polly.Registry;
+using Polly.Testing;
+using Polly.Timeout;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Resilience.Test.Hedging;
@@ -163,41 +164,29 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     }
 
     [Fact]
-    public async Task VerifyPipeline()
+    public void VerifyPipeline()
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
-        var strategies = new List<IList<ResilienceStrategy>>();
-
-        Builder.Services.RemoveAll<ResilienceStrategyBuilder>();
-        Builder.Services.AddTransient(_ =>
-        {
-            return new ResilienceStrategyBuilder
-            {
-                OnCreatingStrategy = list => strategies.Add(list)
-            };
-        });
-        Builder.SelectStrategyByAuthority(SimpleClassifications.PublicData);
-
-        SetupRouting();
-        SetupRoutes(1);
-        AddResponse(HttpStatusCode.OK);
-
-        using var client = CreateClientWithHandler();
-        await client.SendAsync(request, CancellationToken.None);
+        var serviceProvider = Builder.Services.BuildServiceProvider();
+        var strategyProvider = serviceProvider.GetRequiredService<ResilienceStrategyProvider<HttpKey>>();
 
         // primary handler
-        strategies.Should().HaveCount(2);
-        strategies[0].Should().HaveCount(4);
-        strategies[0][0].GetType().Name.Should().Contain("Routing");
-        strategies[0][1].GetType().Name.Should().Contain("Snapshot");
-        strategies[0][2].GetType().Name.Should().Contain("Timeout");
-        strategies[0][3].GetType().Name.Should().Contain("Hedging");
+        var primary = strategyProvider.GetStrategy<HttpResponseMessage>(new HttpKey("clientId-standard-hedging", "instance")).GetInnerStrategies();
+        primary.HasTelemetry.Should().BeTrue();
+        primary.IsReloadable.Should().BeTrue();
+        primary.Strategies.Should().HaveCount(4);
+        primary.Strategies[0].StrategyType.Should().Be(typeof(RoutingResilienceStrategy));
+        primary.Strategies[1].StrategyType.Should().Be(typeof(RequestMessageSnapshotStrategy));
+        primary.Strategies[2].Options.Should().BeOfType<HttpTimeoutStrategyOptions>();
+        primary.Strategies[3].Options.Should().BeOfType<HttpHedgingStrategyOptions>();
 
         // inner handler
-        strategies[1].Should().HaveCount(3);
-        strategies[1][0].GetType().Name.Should().Contain("RateLimiter");
-        strategies[1][1].GetType().Name.Should().Contain("CircuitBreaker");
-        strategies[1][2].GetType().Name.Should().Contain("Timeout");
+        var inner = strategyProvider.GetStrategy<HttpResponseMessage>(new HttpKey("clientId-standard-hedging-endpoint", "instance")).GetInnerStrategies();
+        inner.HasTelemetry.Should().BeTrue();
+        inner.IsReloadable.Should().BeTrue();
+        inner.Strategies.Should().HaveCount(3);
+        inner.Strategies[0].Options.Should().BeOfType<HttpRateLimiterStrategyOptions>();
+        inner.Strategies[1].Options.Should().BeOfType<HttpCircuitBreakerStrategyOptions>();
+        inner.Strategies[2].Options.Should().BeOfType<HttpTimeoutStrategyOptions>();
     }
 
     [InlineData(null)]
