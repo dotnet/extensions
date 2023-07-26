@@ -31,7 +31,7 @@ public class ResilienceHandlerTest
 
         if (resilienceContextSet)
         {
-            request.SetResilienceContext(ResilienceContext.Get());
+            request.SetResilienceContext(ResilienceContextPool.Shared.Get());
         }
 
         handler.InnerHandler = new TestHandlerStub(HttpStatusCode.OK);
@@ -63,7 +63,7 @@ public class ResilienceHandlerTest
 
         if (executionContextSet)
         {
-            request.SetResilienceContext(ResilienceContext.Get());
+            request.SetResilienceContext(ResilienceContextPool.Shared.Get());
         }
 
         handler.InnerHandler = new TestHandlerStub(HttpStatusCode.OK);
@@ -91,7 +91,7 @@ public class ResilienceHandlerTest
 
         if (executionContextSet)
         {
-            request.SetResilienceContext(ResilienceContext.Get());
+            request.SetResilienceContext(ResilienceContextPool.Shared.Get());
         }
 
         handler.InnerHandler = new TestHandlerStub((r, _) =>

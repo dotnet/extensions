@@ -61,7 +61,7 @@ public class ResilienceEnrichmentBenchmark
             _telemetry = telemetry;
         }
 
-        protected override ValueTask<Outcome<TResult>> ExecuteCoreAsync<TResult, TState>(
+        protected override ValueTask<Outcome<TResult>> ExecuteCore<TResult, TState>(
             Func<ResilienceContext, TState, ValueTask<Outcome<TResult>>> callback,
             ResilienceContext context,
             TState state)
@@ -74,6 +74,5 @@ public class ResilienceEnrichmentBenchmark
 
     private class DummyOptions : ResilienceStrategyOptions
     {
-        public override string StrategyType => "Dummy";
     }
 }

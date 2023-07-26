@@ -108,8 +108,8 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     {
         var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
         var generator = options.HedgingOptions.HedgingActionGenerator;
-        var primary = ResilienceContext.Get();
-        var secondary = ResilienceContext.Get();
+        var primary = ResilienceContextPool.Shared.Get();
+        var secondary = ResilienceContextPool.Shared.Get();
         using var response = new HttpResponseMessage(HttpStatusCode.OK);
 
         var args = new HedgingActionGeneratorArguments<HttpResponseMessage>(primary, secondary, 0, _ => Outcome.FromResultAsTask(response));
