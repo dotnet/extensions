@@ -10,7 +10,7 @@ namespace Microsoft.Shared.DiagnosticIds;
 /// </summary>
 /// <remarks>
 /// When adding a new experiment, add a corresponding suppression to the root <c>Directory.Build.targets</c> file, and add a documentation entry to
-/// <c>docs/Experiments.md</c>.
+/// <c>docs/list-of-diagnostics.md</c>.
 /// </remarks>
 internal static class Experiments
 {
@@ -29,4 +29,5 @@ internal static class Experiments
     internal const string Hosting = "EXTEXP0009";
     internal const string ObjectPool = "EXTEXP0010";
     internal const string DocumentDb = "EXTEXP0011";
+    internal const string AutoActivation = "EXTEXP0012";
 }

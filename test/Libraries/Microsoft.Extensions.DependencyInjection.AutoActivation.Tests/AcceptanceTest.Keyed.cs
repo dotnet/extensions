@@ -15,20 +15,21 @@ namespace Microsoft.Extensions.DependencyInjection.Test;
 public partial class AcceptanceTest
 {
     [Fact]
-    public async Task CanAddAndActivateSingletonAsync()
+    public async Task CanAddAndActivateKeyedSingletonAsync()
     {
         var instanceCount = new InstanceCreatingCounter();
         Assert.Equal(0, instanceCount.Counter);
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(instanceCount)
-                .AddActivatedSingleton<IFakeService, FakeService>())
+                .AddActivatedKeyedSingleton<IFakeService, FakeService>(serviceKey))
             .StartAsync();
 
         Assert.Equal(1, instanceCount.Counter);
 
-        var service = host.Services.GetService<IFakeService>();
+        var service = host.Services.GetKeyedService<IFakeService>(serviceKey);
         await host.StopAsync();
 
         Assert.NotNull(service);
@@ -36,39 +37,19 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task ShouldIgnoreComponent_WhenNoAutoStartAsync()
-    {
-        var instanceCount = new InstanceCreatingCounter();
-        Assert.Equal(0, instanceCount.Counter);
-
-        using var host = await FakeHost.CreateBuilder()
-            .ConfigureServices(services => services
-                .AddSingleton<IFakeServiceCounter>(instanceCount)
-                .AddSingleton<IFakeService, FakeService>())
-            .StartAsync();
-
-        Assert.Equal(0, instanceCount.Counter);
-
-        var service = host.Services.GetService<IFakeService>();
-        await host.StopAsync();
-
-        Assert.NotNull(service);
-        Assert.Equal(1, instanceCount.Counter);
-    }
-
-    [Fact]
-    public async Task ShouldAddAndActivateOnlyOnce_WhenHasChildAsync()
+    public async Task ShouldAddAndActivateOnlyOnce_WhenHasChildAsync_Keyed()
     {
         var parentCount = new InstanceCreatingCounter();
         var childCount = new InstanceCreatingCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services.AddSingleton<IFakeServiceCounter>(childCount)
                 .AddSingleton<IFactoryServiceCounter>(parentCount)
-                .AddActivatedSingleton(typeof(IFakeService), typeof(FakeService))
-                .AddActivatedSingleton<IFactoryService, FactoryService>(sp =>
+                .AddActivatedKeyedSingleton(typeof(IFakeService), serviceKey, typeof(FakeService))
+                .AddActivatedKeyedSingleton<IFactoryService, FactoryService>(serviceKey, (sp, sk) =>
                 {
-                    return new FactoryService(sp.GetService<IFakeService>()!, sp.GetService<IFactoryServiceCounter>()!);
+                    return new FactoryService(sp.GetKeyedService<IFakeService>(sk)!, sp.GetRequiredService<IFactoryServiceCounter>());
                 }))
             .StartAsync();
         await host.StopAsync();
@@ -78,17 +59,18 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task ShouldResolveComponentsAutomaticallyAsync()
+    public async Task ShouldResolveComponentsAutomaticallyAsync_Keyed()
     {
         var parentCount = new InstanceCreatingCounter();
         var childCount = new InstanceCreatingCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(childCount)
                 .AddSingleton<IFactoryServiceCounter>(parentCount)
                 .AddSingleton<IFakeService, FakeService>()
-                .AddActivatedSingleton<IFactoryService, FactoryService>())
+                .AddActivatedKeyedSingleton<IFactoryService, FactoryService>(serviceKey))
             .StartAsync();
         await host.StopAsync();
 
@@ -97,20 +79,21 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task CanActivateEnumerableAsync()
+    public async Task CanActivateEnumerableAsync_Keyed()
     {
         var fakeServiceCount = new InstanceCreatingCounter();
         var fakeFactoryCount = new InstanceCreatingCounter();
         var anotherFakeServiceCount = new AnotherFakeServiceCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(fakeServiceCount)
                 .AddSingleton<IFakeMultipleCounter>(fakeFactoryCount)
                 .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount)
-                .AddActivatedSingleton(typeof(IFakeService), typeof(FakeService))
-                .AddActivatedSingleton(typeof(IFakeService), typeof(FakeOneMultipleService))
-                .AddActivatedSingleton(typeof(IFakeService), typeof(AnotherFakeService)))
+                .AddActivatedKeyedSingleton(typeof(IFakeService), serviceKey, typeof(FakeService))
+                .AddActivatedKeyedSingleton(typeof(IFakeService), serviceKey, typeof(FakeOneMultipleService))
+                .AddActivatedKeyedSingleton(typeof(IFakeService), serviceKey, typeof(AnotherFakeService)))
             .StartAsync();
         await host.StopAsync();
 
@@ -122,20 +105,21 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task CanActivateEnumerableAsync_WithTypeArg()
+    public async Task CanActivateEnumerableAsync_WithTypeArg_Keyed()
     {
         var fakeServiceCount = new InstanceCreatingCounter();
         var fakeFactoryCount = new InstanceCreatingCounter();
         var anotherFakeServiceCount = new AnotherFakeServiceCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(fakeServiceCount)
                 .AddSingleton<IFakeMultipleCounter>(fakeFactoryCount)
                 .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount)
-                .AddActivatedSingleton<IFakeService, FakeService>()
-                .AddActivatedSingleton<IFakeService, FakeOneMultipleService>()
-                .AddActivatedSingleton<IFakeService, AnotherFakeService>())
+                .AddActivatedKeyedSingleton<IFakeService, FakeService>(serviceKey)
+                .AddActivatedKeyedSingleton<IFakeService, FakeOneMultipleService>(serviceKey)
+                .AddActivatedKeyedSingleton<IFakeService, AnotherFakeService>(serviceKey))
             .StartAsync();
         await host.StopAsync();
 
@@ -147,17 +131,18 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task CanActivateOneServiceAsync()
+    public async Task CanActivateOneServiceAsync_Keyed()
     {
         var fakeServiceCount = new InstanceCreatingCounter();
         var anotherFakeServiceCount = new AnotherFakeServiceCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(fakeServiceCount)
                 .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount)
                 .AddSingleton<IFakeService, FakeService>()
-                .AddActivatedSingleton<IFakeService, AnotherFakeService>())
+                .AddActivatedKeyedSingleton<IFakeService, AnotherFakeService>(serviceKey))
             .StartAsync();
         await host.StopAsync();
 
@@ -166,17 +151,18 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task ShouldActivateService_WhenTypeIsSpecifiedInTypeParameterTService()
+    public async Task ShouldActivateService_WhenTypeIsSpecifiedInTypeParameterTService_Keyed()
     {
         var counter = new InstanceCreatingCounter();
         var anotherFakeServiceCount = new AnotherFakeServiceCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(counter)
                 .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount)
-                .AddActivatedSingleton<FakeService>()
-                .AddActivatedSingleton(sp => new AnotherFakeService(sp.GetService<IAnotherFakeServiceCounter>()!)))
+                .AddActivatedKeyedSingleton<FakeService>(serviceKey)
+                .AddActivatedKeyedSingleton(serviceKey, (sp, _) => new AnotherFakeService(sp.GetRequiredService<IAnotherFakeServiceCounter>())))
             .StartAsync();
         await host.StopAsync();
 
@@ -185,17 +171,18 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task ShouldActivateService_WhenTypeIsSpecifiedInParameter()
+    public async Task ShouldActivateService_WhenTypeIsSpecifiedInParameter_Keyed()
     {
         var counter = new InstanceCreatingCounter();
         var anotherFakeServiceCount = new AnotherFakeServiceCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(counter)
                 .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount)
-                .AddActivatedSingleton(typeof(FakeService))
-                .AddActivatedSingleton(typeof(AnotherFakeService), sp => new AnotherFakeService(sp.GetService<IAnotherFakeServiceCounter>()!)))
+                .AddActivatedKeyedSingleton(typeof(FakeService), serviceKey)
+                .AddActivatedKeyedSingleton(typeof(AnotherFakeService), serviceKey, (sp, _) => new AnotherFakeService(sp.GetService<IAnotherFakeServiceCounter>()!)))
             .StartAsync();
         await host.StopAsync();
 
@@ -204,14 +191,15 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task TestStopHostAsync()
+    public async Task TestStopHostAsync_Keyed()
     {
         var counter = new InstanceCreatingCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(counter)
-                .AddActivatedSingleton<IFakeService, FakeService>())
+                .AddActivatedKeyedSingleton<IFakeService, FakeService>(serviceKey))
             .StartAsync();
 
         Assert.Equal(1, counter.Counter);
@@ -219,21 +207,22 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task ShouldNotActivate_WhenServiceOfTypeSpecifiedInTypeParameter_WasAlreadyAdded()
+    public async Task ShouldNotActivate_WhenServiceOfTypeSpecifiedInTypeParameter_WasAlreadyAdded_Keyed()
     {
         var counter = new InstanceCreatingCounter();
         var anotherFakeServiceCount = new AnotherFakeServiceCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services =>
             {
                 services
                     .AddSingleton<IFakeServiceCounter>(counter)
                     .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount)
-                    .AddSingleton<FakeService>()
-                    .AddSingleton<AnotherFakeService>();
-                services.TryAddActivatedSingleton(typeof(FakeService));
-                services.TryAddActivatedSingleton(typeof(AnotherFakeService), sp => new AnotherFakeService(sp.GetService<IAnotherFakeServiceCounter>()!));
+                    .AddKeyedSingleton<FakeService>(serviceKey)
+                    .AddKeyedSingleton<AnotherFakeService>(serviceKey);
+                services.TryAddActivatedKeyedSingleton(typeof(FakeService), serviceKey);
+                services.TryAddActivatedKeyedSingleton(typeof(AnotherFakeService), serviceKey, (sp, _) => new AnotherFakeService(sp.GetService<IAnotherFakeServiceCounter>()!));
             })
             .StartAsync();
         await host.StopAsync();
@@ -243,21 +232,22 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task ShouldNotActivate_WhenServiceOfTypeSpecifiedInParameter_WasAlreadyAdded()
+    public async Task ShouldNotActivate_WhenServiceOfTypeSpecifiedInParameter_WasAlreadyAdded_Keyed()
     {
         var counter = new InstanceCreatingCounter();
         var anotherFakeServiceCount = new AnotherFakeServiceCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services =>
             {
                 services
                     .AddSingleton<IFakeServiceCounter>(counter)
                     .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount)
-                    .AddSingleton<FakeService>()
-                    .AddSingleton<AnotherFakeService>();
-                services.TryAddActivatedSingleton<FakeService>();
-                services.TryAddActivatedSingleton(sp => new AnotherFakeService(sp.GetService<IAnotherFakeServiceCounter>()!));
+                    .AddKeyedSingleton<FakeService>(serviceKey)
+                    .AddKeyedSingleton<AnotherFakeService>(serviceKey);
+                services.TryAddActivatedKeyedSingleton<FakeService>(serviceKey);
+                services.TryAddActivatedKeyedSingleton(serviceKey, (sp, _) => new AnotherFakeService(sp.GetService<IAnotherFakeServiceCounter>()!));
             })
             .StartAsync();
         await host.StopAsync();
@@ -267,19 +257,20 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task ShouldActivateOneSingleton_WhenTryAddIsCalled_WithTypeSpecifiedImplementation()
+    public async Task ShouldActivateOneSingleton_WhenTryAddIsCalled_WithTypeSpecifiedImplementation_Keyed()
     {
         var counter = new InstanceCreatingCounter();
         var anotherFakeServiceCount = new AnotherFakeServiceCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services =>
                 {
                     services
                         .AddSingleton<IFakeServiceCounter>(counter)
                         .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount);
-                    services.TryAddActivatedSingleton(typeof(IFakeService), typeof(FakeService));
-                    services.TryAddActivatedSingleton(typeof(IFakeService), typeof(AnotherFakeService));
+                    services.TryAddActivatedKeyedSingleton(typeof(IFakeService), serviceKey, typeof(FakeService));
+                    services.TryAddActivatedKeyedSingleton(typeof(IFakeService), serviceKey, typeof(AnotherFakeService));
                 })
             .StartAsync();
         await host.StopAsync();
@@ -289,19 +280,20 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task ShouldActivateOneSingleton_WhenTryAddIsCalled_WithTypeSpecifiedImplementation_WithTypeArg()
+    public async Task ShouldActivateOneSingleton_WhenTryAddIsCalled_WithTypeSpecifiedImplementation_WithTypeArg_Keyed()
     {
         var counter = new InstanceCreatingCounter();
         var anotherFakeServiceCount = new AnotherFakeServiceCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services =>
             {
                 services
                     .AddSingleton<IFakeServiceCounter>(counter)
                     .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount);
-                services.TryAddActivatedSingleton<IFakeService, FakeService>();
-                services.TryAddActivatedSingleton<IFakeService, AnotherFakeService>();
+                services.TryAddActivatedKeyedSingleton<IFakeService, FakeService>(serviceKey);
+                services.TryAddActivatedKeyedSingleton<IFakeService, AnotherFakeService>(serviceKey);
             })
             .StartAsync();
         await host.StopAsync();
@@ -311,32 +303,34 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task CanActivateSingletonAsync()
+    public async Task CanActivateSingletonAsync_Keyed()
     {
         var instanceCount = new InstanceCreatingCounter();
         Assert.Equal(0, instanceCount.Counter);
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(instanceCount)
-                .AddSingleton<IFakeService, FakeService>()
-                .ActivateSingleton<IFakeService>())
+                .AddKeyedSingleton<IFakeService, FakeService>(serviceKey)
+                .ActivateKeyedSingleton<IFakeService>(serviceKey))
             .StartAsync();
         await host.StopAsync();
 
         Assert.Equal(1, instanceCount.Counter);
 
-        var service = host.Services.GetService<IFakeService>();
+        var service = host.Services.GetKeyedService<IFakeService>(serviceKey);
 
         Assert.NotNull(service);
         Assert.Equal(1, instanceCount.Counter);
     }
 
     [Fact]
-    public async Task ActivationOfNotRegisteredType_ThrowsExceptionAsync()
+    public async Task ActivationOfNotRegisteredType_ThrowsExceptionAsync_Keyed()
     {
+        var serviceKey = new object();
         using var host = FakeHost.CreateBuilder()
-            .ConfigureServices(services => services.ActivateSingleton<IFakeService>())
+            .ConfigureServices(services => services.ActivateKeyedSingleton<IFakeService>(serviceKey))
             .Build();
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync());
@@ -345,17 +339,18 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task CanActivateEnumerableImplicitlyAddedAsync()
+    public async Task CanActivateEnumerableImplicitlyAddedAsync_Keyed()
     {
         var fakeServiceCount = new InstanceCreatingCounter();
         var fakeFactoryCount = new InstanceCreatingCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(fakeServiceCount)
                 .AddSingleton<IFakeMultipleCounter>(fakeFactoryCount)
-                .AddSingleton<IFakeService, FakeService>().ActivateSingleton(typeof(IFakeService))
-                .AddSingleton<IFakeService, FakeOneMultipleService>().ActivateSingleton(typeof(IFakeService)))
+                .AddKeyedSingleton<IFakeService, FakeService>(serviceKey).ActivateKeyedSingleton<IFakeService>(serviceKey)
+                .AddKeyedSingleton<IFakeService, FakeOneMultipleService>(serviceKey).ActivateKeyedSingleton<IFakeService>(serviceKey))
             .StartAsync();
         await host.StopAsync();
 
@@ -364,17 +359,19 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task CanActivateEnumerableImplicitlyAddedAsync_WithTypeArg()
+    public async Task CanActivateEnumerableExplicitlyAddedAsync_Keyed()
     {
         var fakeServiceCount = new InstanceCreatingCounter();
         var fakeFactoryCount = new InstanceCreatingCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(fakeServiceCount)
                 .AddSingleton<IFakeMultipleCounter>(fakeFactoryCount)
-                .AddSingleton<IFakeService, FakeService>().ActivateSingleton<IFakeService>()
-                .AddSingleton<IFakeService, FakeOneMultipleService>().ActivateSingleton<IFakeService>())
+                .AddKeyedSingleton<IFakeService, FakeService>(serviceKey)
+                .AddKeyedSingleton<IFakeService, FakeOneMultipleService>(serviceKey)
+                .ActivateKeyedSingleton<IEnumerable<IFakeService>>(serviceKey))
             .StartAsync();
         await host.StopAsync();
 
@@ -383,40 +380,21 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task CanActivateEnumerableExplicitlyAddedAsync()
-    {
-        var fakeServiceCount = new InstanceCreatingCounter();
-        var fakeFactoryCount = new InstanceCreatingCounter();
-
-        using var host = await FakeHost.CreateBuilder()
-            .ConfigureServices(services => services
-                .AddSingleton<IFakeServiceCounter>(fakeServiceCount)
-                .AddSingleton<IFakeMultipleCounter>(fakeFactoryCount)
-                .AddSingleton<IFakeService, FakeService>()
-                .AddSingleton<IFakeService, FakeOneMultipleService>()
-                .ActivateSingleton<IEnumerable<IFakeService>>())
-            .StartAsync();
-        await host.StopAsync();
-
-        Assert.Equal(1, fakeServiceCount.Counter);
-        Assert.Equal(1, fakeFactoryCount.Counter);
-    }
-
-    [Fact]
-    public async Task CanAutoActivateOpenGenericsAsEnumerableAsync()
+    public async Task CanAutoActivateOpenGenericsAsEnumerableAsync_Keyed()
     {
         var fakeServiceCount = new InstanceCreatingCounter();
         var fakeOpenGenericCount = new InstanceCreatingCounter();
 
+        var serviceKey = new object();
         using var host = await new HostBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(fakeServiceCount)
                 .AddSingleton<IFakeOpenGenericCounter>(fakeOpenGenericCount)
                 .AddTransient<PocoClass, PocoClass>()
-                .AddSingleton(typeof(IFakeOpenGenericService<PocoClass>), typeof(FakeService))
-                .AddSingleton(typeof(IFakeOpenGenericService<>), typeof(FakeOpenGenericService<>))
-                .ActivateSingleton<IEnumerable<IFakeOpenGenericService<PocoClass>>>()
-                .ActivateSingleton<IFakeOpenGenericService<DifferentPocoClass>>())
+                .AddKeyedSingleton(typeof(IFakeOpenGenericService<PocoClass>), serviceKey, typeof(FakeService))
+                .AddKeyedSingleton(typeof(IFakeOpenGenericService<>), serviceKey, typeof(FakeOpenGenericService<>))
+                .ActivateKeyedSingleton<IEnumerable<IFakeOpenGenericService<PocoClass>>>(serviceKey)
+                .ActivateKeyedSingleton<IFakeOpenGenericService<DifferentPocoClass>>(serviceKey))
             .StartAsync();
         await host.StopAsync();
 
@@ -425,19 +403,20 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task CanAutoActivateClosedGenericsAsEnumerableAsync()
+    public async Task CanAutoActivateClosedGenericsAsEnumerableAsync_Keyed()
     {
         var fakeServiceCount = new InstanceCreatingCounter();
         var fakeOpenGenericCount = new InstanceCreatingCounter();
 
+        var serviceKey = new object();
         using var host = await FakeHost.CreateBuilder()
             .ConfigureServices(services => services
                 .AddSingleton<IFakeServiceCounter>(fakeServiceCount)
                 .AddSingleton<IFakeOpenGenericCounter>(fakeOpenGenericCount)
                 .AddTransient<PocoClass, PocoClass>()
-                .AddSingleton(typeof(IFakeOpenGenericService<PocoClass>), typeof(FakeService))
-                .AddSingleton<IFakeOpenGenericService<PocoClass>, FakeOpenGenericService<PocoClass>>()
-                .ActivateSingleton<IEnumerable<IFakeOpenGenericService<PocoClass>>>())
+                .AddKeyedSingleton(typeof(IFakeOpenGenericService<PocoClass>), serviceKey, typeof(FakeService))
+                .AddKeyedSingleton<IFakeOpenGenericService<PocoClass>, FakeOpenGenericService<PocoClass>>(serviceKey)
+                .ActivateKeyedSingleton<IEnumerable<IFakeOpenGenericService<PocoClass>>>(serviceKey))
             .StartAsync();
         await host.StopAsync();
 
