@@ -16,6 +16,23 @@ namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Event ID's.")]
 internal static partial class Log
 {
+    internal const string OriginalFormat = "{OriginalFormat}";
+    internal const string OriginalFormatValue = "{httpMethod} {httpHost}/{httpPath}";
+
+    private const string RequestReadErrorMessage =
+        "An error occurred while reading the request data to fill the log record: " +
+        $"{{{HttpClientLoggingDimensions.Method}}} {{{HttpClientLoggingDimensions.Host}}}/{{{HttpClientLoggingDimensions.Path}}}";
+
+    private const string ResponseReadErrorMessage =
+        "An error occurred while reading the response data to fill the log record: " +
+        $"{{{HttpClientLoggingDimensions.Method}}} {{{HttpClientLoggingDimensions.Host}}}/{{{HttpClientLoggingDimensions.Path}}}";
+
+    private const string EnrichmentErrorMessage =
+        "An error occurred while enriching the log record: " +
+        $"{{{HttpClientLoggingDimensions.Method}}} {{{HttpClientLoggingDimensions.Host}}}/{{{HttpClientLoggingDimensions.Path}}}";
+
+    private static readonly Func<LogMethodHelper, Exception?, string> _originalFormatValueFMTFunc = OriginalFormatValueFMT;
+
     public static void OutgoingRequest(ILogger logger, LogLevel level, LogRecord record)
     {
         OutgoingRequest(logger, level, 1, nameof(OutgoingRequest), record);
@@ -26,14 +43,16 @@ internal static partial class Log
         OutgoingRequest(logger, LogLevel.Error, 2, nameof(OutgoingRequestError), record, exception);
     }
 
-    [LogMethod(LogLevel.Error, "An error occurred while enriching the log record.")]
-    public static partial void EnrichmentError(ILogger logger, Exception exception);
+    [LogMethod(LogLevel.Error, RequestReadErrorMessage)]
+    public static partial void RequestReadError(ILogger logger, Exception exception, HttpMethod httpMethod, string? httpHost, string httpPath);
 
-    [LogMethod(LogLevel.Error, "An error occurred while reading the request data into the log record.")]
-    public static partial void RequestReadError(ILogger logger, Exception exception);
+    [LogMethod(LogLevel.Error, ResponseReadErrorMessage)]
+    public static partial void ResponseReadError(ILogger logger, Exception exception, HttpMethod httpMethod, string httpHost, string httpPath);
 
-    // Using the code below to avoid every item in ILogger's logRecord State being prefixed with parameter name.
-    // To be fixed in R9 later.
+    [LogMethod(LogLevel.Error, EnrichmentErrorMessage)]
+    public static partial void EnrichmentError(ILogger logger, Exception exception, HttpMethod httpMethod, string httpHost, string httpPath);
+
+    // Using the code below instead of generated logging method because we have a custom formatter and custom tag keys for headers.
     private static void OutgoingRequest(
         ILogger logger, LogLevel level, int eventId, string eventName, LogRecord record, Exception? exception = null)
     {
@@ -43,22 +62,22 @@ internal static partial class Log
 
             collector.AddRequestHeaders(record.RequestHeaders);
             collector.AddResponseHeaders(record.ResponseHeaders);
-            collector.Add(HttpClientLoggingDimensions.Host, record.Host);
             collector.Add(HttpClientLoggingDimensions.Method, record.Method);
+            collector.Add(HttpClientLoggingDimensions.Host, record.Host);
             collector.Add(HttpClientLoggingDimensions.Path, record.Path);
             collector.Add(HttpClientLoggingDimensions.Duration, record.Duration);
 
-            if (record.StatusCode is not null)
+            if (record.StatusCode.HasValue)
             {
-                collector.Add(HttpClientLoggingDimensions.StatusCode, record.StatusCode);
+                collector.Add(HttpClientLoggingDimensions.StatusCode, record.StatusCode.Value);
             }
 
-            if (!string.IsNullOrEmpty(record.RequestBody))
+            if (record.RequestBody is not null)
             {
                 collector.Add(HttpClientLoggingDimensions.RequestBody, record.RequestBody);
             }
 
-            if (!string.IsNullOrEmpty(record.ResponseBody))
+            if (record.ResponseBody is not null)
             {
                 collector.Add(HttpClientLoggingDimensions.ResponseBody, record.ResponseBody);
             }
@@ -68,7 +87,7 @@ internal static partial class Log
                 new(eventId, eventName),
                 collector,
                 exception,
-                static (_, _) => string.Empty);
+                _originalFormatValueFMTFunc);
 
             // Stryker disable once all
             if (collector != record.EnrichmentProperties)
@@ -76,5 +95,31 @@ internal static partial class Log
                 LogMethodHelper.ReturnHelper(collector);
             }
         }
+    }
+
+    private static string OriginalFormatValueFMT(LogMethodHelper request, Exception? _)
+    {
+        int startIndex = FindStartIndex(request);
+        var httpMethod = request[startIndex].Value;
+        var httpHost = request[startIndex + 1].Value;
+        var httpPath = request[startIndex + 2].Value;
+        return FormattableString.Invariant($"{httpMethod} {httpHost}/{httpPath}");
+    }
+
+    private static int FindStartIndex(LogMethodHelper request)
+    {
+        int startIndex = 0;
+
+        foreach (var kvp in request)
+        {
+            if (kvp.Key == HttpClientLoggingDimensions.Method)
+            {
+                break;
+            }
+
+            startIndex++;
+        }
+
+        return startIndex;
     }
 }

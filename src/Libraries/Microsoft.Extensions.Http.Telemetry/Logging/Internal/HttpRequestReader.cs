@@ -73,6 +73,10 @@ internal sealed class HttpRequestReader : IHttpRequestReader
     public async Task ReadRequestAsync(LogRecord logRecord, HttpRequestMessage request,
         List<KeyValuePair<string, string>>? requestHeadersBuffer, CancellationToken cancellationToken)
     {
+        logRecord.Host = request.RequestUri?.Host ?? TelemetryConstants.Unknown;
+        logRecord.Method = request.Method;
+        logRecord.Path = GetRedactedPath(request);
+
         if (_logRequestHeaders)
         {
             _httpHeadersReader.ReadRequestHeaders(request, requestHeadersBuffer);
@@ -84,10 +88,6 @@ internal sealed class HttpRequestReader : IHttpRequestReader
             logRecord.RequestBody = await _httpRequestBodyReader.ReadAsync(request, cancellationToken)
                 .ConfigureAwait(false);
         }
-
-        logRecord.Host = request.RequestUri?.Host ?? TelemetryConstants.Unknown;
-        logRecord.Method = request.Method;
-        logRecord.Path = GetRedactedPath(request);
     }
 
     public async Task ReadResponseAsync(LogRecord logRecord, HttpResponseMessage response,

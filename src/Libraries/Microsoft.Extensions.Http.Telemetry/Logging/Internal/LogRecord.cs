@@ -50,12 +50,12 @@ internal sealed class LogRecord
     /// <summary>
     /// Gets or sets parsed request body.
     /// </summary>
-    public string RequestBody { get; set; } = string.Empty;
+    public string? RequestBody { get; set; }
 
     /// <summary>
     /// Gets or sets parsed response body.
     /// </summary>
-    public string ResponseBody { get; set; } = string.Empty;
+    public string? ResponseBody { get; set; }
 
     /// <summary>
     /// Gets or sets enrichment properties.

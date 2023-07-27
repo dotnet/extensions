@@ -22,6 +22,7 @@ internal static class LogPropertyCollectorExtensions
                     items[i].Key,
                     static (x, p) => p + x,
                     HttpClientLoggingDimensions.RequestHeaderPrefix);
+
                 props.Add(key, items[i].Value);
             }
         }
@@ -37,6 +38,7 @@ internal static class LogPropertyCollectorExtensions
                     items[i].Key,
                     static (x, p) => p + x,
                     HttpClientLoggingDimensions.ResponseHeaderPrefix);
+
                 props.Add(key, items[i].Value);
             }
         }

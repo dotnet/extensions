@@ -26,7 +26,7 @@ public class HttpClientLatencyLogEnricherTest
 
         var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object);
         Mock<IEnrichmentPropertyBag> mockEnrichmentPropertyBag = new Mock<IEnrichmentPropertyBag>();
-        enricher.Enrich(mockEnrichmentPropertyBag.Object, null, null);
+        enricher.Enrich(mockEnrichmentPropertyBag.Object, null!, null);
         mockEnrichmentPropertyBag.Verify(m => m.Add(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
     }
 
@@ -46,7 +46,7 @@ public class HttpClientLatencyLogEnricherTest
         var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object);
         Mock<IEnrichmentPropertyBag> mockEnrichmentPropertyBag = new Mock<IEnrichmentPropertyBag>();
 
-        enricher.Enrich(mockEnrichmentPropertyBag.Object, null, httpResponseMessage);
+        enricher.Enrich(mockEnrichmentPropertyBag.Object, null!, httpResponseMessage);
         mockEnrichmentPropertyBag.Verify(m => m.Add(It.Is<string>(s => s.Equals("latencyInfo")), It.Is<string>(s => s.Contains("a/b"))), Times.Once);
     }
 
@@ -68,7 +68,7 @@ public class HttpClientLatencyLogEnricherTest
         var enricher = new HttpClientLatencyLogEnricher(context, lcti.Object);
         Mock<IEnrichmentPropertyBag> mockEnrichmentPropertyBag = new Mock<IEnrichmentPropertyBag>();
 
-        enricher.Enrich(mockEnrichmentPropertyBag.Object, null, httpResponseMessage);
+        enricher.Enrich(mockEnrichmentPropertyBag.Object, null!, httpResponseMessage);
         mockEnrichmentPropertyBag.Verify(m => m.Add(It.Is<string>(s => s.Equals("latencyInfo")), It.Is<string>(s => s.Contains("a/b") && s.Contains(serverName))), Times.Once);
     }
 }

@@ -50,12 +50,12 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         _logRequestHeaders = optionsValue.RequestHeadersDataClasses.Count > 0;
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "The logger shouldn't throw")]
     public async ValueTask<object?> LogRequestStartAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
         var logRecord = _logRecordPool.Get();
 
         List<KeyValuePair<string, string>>? requestHeadersBuffer = null;
-
         if (_logRequestHeaders)
         {
             requestHeadersBuffer = _headersPool.Get();
@@ -74,7 +74,8 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         }
         catch (Exception ex)
         {
-            Log.RequestReadError(_logger, ex);
+            // If logRecord.Path wasn't set, we can't log unredacted path:
+            Log.RequestReadError(_logger, ex, request.Method, request.RequestUri?.Host, logRecord.Path);
 
             // Return back pooled objects (since we throw):
             _logRecordPool.Return(logRecord);
@@ -84,8 +85,8 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
                 _headersPool.Return(requestHeadersBuffer);
             }
 
-            // TODO: should we throw here?
-            throw;
+            // Recommendation was to swallow the exception (logger shouldn't throw), so we can't return logRecord as the state:
+            return null;
         }
     }
 
@@ -108,17 +109,17 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
 
     public object? LogRequestStart(HttpRequestMessage request)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
     }
 
     public void LogRequestStop(object? context, HttpRequestMessage request, HttpResponseMessage response, TimeSpan elapsed)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
     }
 
     public void LogRequestFailed(object? context, HttpRequestMessage request, HttpResponseMessage? response, Exception exception, TimeSpan elapsed)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
     }
 
     private static LogLevel GetLogLevel(LogRecord logRecord)
@@ -135,6 +136,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         return LogLevel.Information;
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "The logger shouldn't throw")]
     private async ValueTask LogResponseAsync(
         object? context,
         HttpRequestMessage request,
@@ -164,7 +166,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             }
 
             propertyBag = LogMethodHelper.GetHelper();
-            FillLogRecord(logRecord, propertyBag, in elapsed, request, response);
+            FillLogRecord(logRecord, propertyBag, in elapsed, request, response, exception);
 
             if (exception is null)
             {
@@ -174,6 +176,10 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             {
                 Log.OutgoingRequestError(_logger, logRecord, exception);
             }
+        }
+        catch (Exception ex)
+        {
+            Log.ResponseReadError(_logger, ex, request.Method, logRecord.Host, logRecord.Path);
         }
         finally
         {
@@ -201,17 +207,17 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         Justification = "We intentionally catch all exception types to make Telemetry code resilient to failures.")]
     private void FillLogRecord(
         LogRecord logRecord, LogMethodHelper propertyBag, in TimeSpan elapsed,
-        HttpRequestMessage request, HttpResponseMessage? response)
+        HttpRequestMessage request, HttpResponseMessage? response, Exception? exception)
     {
         foreach (var enricher in _enrichers)
         {
             try
             {
-                enricher.Enrich(propertyBag, request, response);
+                enricher.Enrich(propertyBag, request, response, exception);
             }
             catch (Exception e)
             {
-                Log.EnrichmentError(_logger, e);
+                Log.EnrichmentError(_logger, e, request.Method, logRecord.Host, logRecord.Path);
             }
         }
 

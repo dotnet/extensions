@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.Extensions.Telemetry.Enrichment;
@@ -14,8 +15,7 @@ internal class TestEnricher : IHttpClientLogEnricher
     internal readonly KeyValuePair<string, object?> KvpResponse = new("test key response", "test value");
     public LogMethodHelper EnrichmentBag => new() { KvpRequest, KvpResponse };
 
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag, HttpRequestMessage? request = null,
-        HttpResponseMessage? response = null)
+    public void Enrich(IEnrichmentPropertyBag enrichmentBag, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
     {
         if (request is not null)
         {

@@ -689,8 +689,8 @@ public class HttpLoggingHandlerTest
         var logRecords = fakeLogger.Collector.GetSnapshot();
         logRecords.Count.Should().Be(1);
 
-        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
-        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
+        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()), Times.Exactly(1));
+        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()), Times.Exactly(1));
     }
 
     [Fact]
@@ -731,8 +731,8 @@ public class HttpLoggingHandlerTest
         var logRecords = fakeLogger.Collector.GetSnapshot();
         logRecords.Count.Should().Be(2);
 
-        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
-        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
+        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()), Times.Exactly(1));
+        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()), Times.Exactly(1));
     }
 
     [Fact]
@@ -741,7 +741,7 @@ public class HttpLoggingHandlerTest
         var exception = new ArgumentNullException();
         var enricher1 = new Mock<IHttpClientLogEnricher>();
         enricher1
-            .Setup(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()))
+            .Setup(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()))
             .Throws(exception);
 
         var enricher2 = new Mock<IHttpClientLogEnricher>();
@@ -775,8 +775,8 @@ public class HttpLoggingHandlerTest
 
         Assert.Equal(nameof(Log.OutgoingRequest), logRecords[1].Id.Name);
 
-        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
-        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
+        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()), Times.Exactly(1));
+        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()), Times.Exactly(1));
     }
 
     [Fact]
@@ -785,7 +785,7 @@ public class HttpLoggingHandlerTest
         var enrichmentException = new ArgumentNullException();
         var enricher1 = new Mock<IHttpClientLogEnricher>();
         enricher1
-            .Setup(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()))
+            .Setup(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()))
             .Throws(enrichmentException)
             .Verifiable();
 
@@ -822,8 +822,8 @@ public class HttpLoggingHandlerTest
         Assert.Equal(nameof(Log.OutgoingRequestError), logRecords[1].Id.Name);
         Assert.Equal(sendAsyncException, logRecords[1].Exception);
 
-        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
-        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
+        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()), Times.Exactly(1));
+        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()), Times.Exactly(1));
     }
 
     [Fact]
