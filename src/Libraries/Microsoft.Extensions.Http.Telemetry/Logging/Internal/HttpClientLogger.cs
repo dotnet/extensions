@@ -30,12 +30,12 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
     private readonly bool _logRequestStart;
     private readonly bool _logResponseHeaders;
     private readonly bool _logRequestHeaders;
-    private ILogger<HttpLoggingHandler> _logger;
+    private ILogger<HttpClientLogger> _logger;
     private IHttpRequestReader _httpRequestReader;
     private IHttpClientLogEnricher[] _enrichers;
 
     public HttpClientLogger(
-        ILogger<HttpLoggingHandler> logger,
+        ILogger<HttpClientLogger> logger,
         IHttpRequestReader httpRequestReader,
         IEnumerable<IHttpClientLogEnricher> enrichers,
         IOptions<LoggingOptions> options)
@@ -61,14 +61,32 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             requestHeadersBuffer = _headersPool.Get();
         }
 
-        await _httpRequestReader.ReadRequestAsync(logRecord, request, requestHeadersBuffer, cancellationToken).ConfigureAwait(false);
-
-        if (_logRequestStart)
+        try
         {
-            Log.OutgoingRequest(_logger, LogLevel.Information, logRecord);
-        }
+            await _httpRequestReader.ReadRequestAsync(logRecord, request, requestHeadersBuffer, cancellationToken).ConfigureAwait(false);
 
-        return logRecord;
+            if (_logRequestStart)
+            {
+                Log.OutgoingRequest(_logger, LogLevel.Information, logRecord);
+            }
+
+            return logRecord;
+        }
+        catch (Exception ex)
+        {
+            Log.RequestReadError(_logger, ex);
+
+            // Return back pooled objects (since we throw):
+            _logRecordPool.Return(logRecord);
+
+            if (requestHeadersBuffer is not null)
+            {
+                _headersPool.Return(requestHeadersBuffer);
+            }
+
+            // TODO: should we throw here?
+            throw;
+        }
     }
 
     public async ValueTask LogRequestStopAsync(
@@ -131,41 +149,51 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             return;
         }
 
+        LogMethodHelper? propertyBag = null;
         List<KeyValuePair<string, string>>? responseHeadersBuffer = null;
-        if (response is not null)
+        try
         {
-            if (_logResponseHeaders)
+            if (response is not null)
             {
-                responseHeadersBuffer = _headersPool.Get();
+                if (_logResponseHeaders)
+                {
+                    responseHeadersBuffer = _headersPool.Get();
+                }
+
+                await _httpRequestReader.ReadResponseAsync(logRecord, response, responseHeadersBuffer, cancellationToken).ConfigureAwait(false);
             }
 
-            await _httpRequestReader.ReadResponseAsync(logRecord, response, responseHeadersBuffer, cancellationToken).ConfigureAwait(false);
+            propertyBag = LogMethodHelper.GetHelper();
+            FillLogRecord(logRecord, propertyBag, in elapsed, request, response);
+
+            if (exception is null)
+            {
+                Log.OutgoingRequest(_logger, GetLogLevel(logRecord), logRecord);
+            }
+            else
+            {
+                Log.OutgoingRequestError(_logger, logRecord, exception);
+            }
         }
-
-        var propertyBag = LogMethodHelper.GetHelper();
-        FillLogRecord(logRecord, propertyBag, in elapsed, request, response);
-
-        if (exception is null)
+        finally
         {
-            Log.OutgoingRequest(_logger, GetLogLevel(logRecord), logRecord);
-        }
-        else
-        {
-            Log.OutgoingRequestError(_logger, logRecord, exception);
-        }
+            var requestHeadersBuffer = logRecord.RequestHeaders; // Store the value first, and then return logRecord to the pool.
+            _logRecordPool.Return(logRecord);
 
-        var requestHeadersBuffer = logRecord.RequestHeaders; // Store the value first, and then return logRecord to the pool.
-        _logRecordPool.Return(logRecord);
-        LogMethodHelper.ReturnHelper(propertyBag);
+            if (propertyBag is not null)
+            {
+                LogMethodHelper.ReturnHelper(propertyBag);
+            }
 
-        if (responseHeadersBuffer is not null)
-        {
-            _headersPool.Return(responseHeadersBuffer);
-        }
+            if (responseHeadersBuffer is not null)
+            {
+                _headersPool.Return(responseHeadersBuffer);
+            }
 
-        if (requestHeadersBuffer is not null)
-        {
-            _headersPool.Return(requestHeadersBuffer);
+            if (requestHeadersBuffer is not null)
+            {
+                _headersPool.Return(requestHeadersBuffer);
+            }
         }
     }
 

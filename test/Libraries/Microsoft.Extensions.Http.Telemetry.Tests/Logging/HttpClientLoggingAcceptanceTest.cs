@@ -65,7 +65,7 @@ public class HttpClientLoggingAcceptanceTest
         var responseString = Encoding.UTF8.GetString(buffer);
 
         var collector = provider.GetFakeLogCollector();
-        var logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.Internal.HttpLoggingHandler");
+        var logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger");
         var state = logRecord.State as List<KeyValuePair<string, string>>;
         state.Should().Contain(kvp => kvp.Value == responseString);
         state.Should().Contain(kvp => kvp.Value == "Request Value");

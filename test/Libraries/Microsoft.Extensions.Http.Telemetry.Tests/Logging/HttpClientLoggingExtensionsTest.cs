@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
+using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Testing.Logging;
@@ -83,7 +84,7 @@ public class HttpClientLoggingExtensionsTest
     {
         var services = new ServiceCollection();
 
-        var provider = services
+        using var provider = services
             .AddHttpClient("test1")
             .AddHttpClientLogging(options => options.BodyReadTimeout = TimeSpan.FromSeconds(1))
             .Services
@@ -106,7 +107,7 @@ public class HttpClientLoggingExtensionsTest
     {
         var services = new ServiceCollection();
 
-        var provider = services
+        using var provider = services
             .AddHttpClient<ITestHttpClient1, TestHttpClient1>()
             .AddHttpClientLogging(options => options.BodyReadTimeout = TimeSpan.FromSeconds(1))
             .Services
@@ -129,7 +130,7 @@ public class HttpClientLoggingExtensionsTest
     {
         var services = new ServiceCollection();
 
-        var provider = services
+        using var provider = services
             .AddHttpClient("")
             .AddHttpClientLogging(o => o.RequestHeadersDataClasses.Add("test1", SimpleClassifications.PrivateData))
             .Services
@@ -313,7 +314,7 @@ public class HttpClientLoggingExtensionsTest
     [Fact]
     public async Task AddHttpClientLogging_ServiceCollection_GivenInvalidOptions_Throws()
     {
-        var provider = new ServiceCollection()
+        using var provider = new ServiceCollection()
             .AddFakeRedaction()
             .AddHttpClient()
             .AddDefaultHttpClientLogging(options =>
@@ -331,34 +332,31 @@ public class HttpClientLoggingExtensionsTest
     }
 
     [Fact]
-    public void AddHttpClientLogging_ServiceCollectionAndHttpClientBuilder_Throws()
+    public void AddHttpClientLogging_ServiceCollectionAndHttpClientBuilder_DoesntDuplicate()
     {
-        var provider = new ServiceCollection()
+        using var provider = new ServiceCollection()
             .AddFakeRedaction()
             .AddHttpClient("test")
             .AddHttpClientLogging().Services
             .AddDefaultHttpClientLogging()
             .BuildServiceProvider();
 
-        var act = () => provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
-        act.Should().Throw<InvalidOperationException>().WithMessage(HttpClientLoggingExtensions.HandlerAddedTwiceExceptionMessage);
+        EnsureSingleLogger<IHttpClientLogger>(provider);
+        EnsureSingleLogger<IHttpClientAsyncLogger>(provider);
     }
 
     [Fact]
-    public void AddHttpClientLogging_HttpClientBuilderAndServiceCollection_Throws()
+    public void AddHttpClientLogging_HttpClientBuilderAndServiceCollection_DoesntDuplicate()
     {
-        var provider = new ServiceCollection()
+        using var provider = new ServiceCollection()
             .AddFakeRedaction()
             .AddDefaultHttpClientLogging()
             .AddHttpClient("test")
-            .ConfigureAdditionalHttpMessageHandlers((handlers, _) =>
-                handlers.Add(Mock
-                    .Of<DelegatingHandler>())) // this is to kill mutants with .Any() vs. .All() calls when detecting already added delegating handlers.
             .AddHttpClientLogging().Services
             .BuildServiceProvider();
 
-        var act = () => provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
-        act.Should().Throw<InvalidOperationException>().WithMessage(HttpClientLoggingExtensions.HandlerAddedTwiceExceptionMessage);
+        EnsureSingleLogger<IHttpClientLogger>(provider);
+        EnsureSingleLogger<IHttpClientAsyncLogger>(provider);
     }
 
     [Theory]
@@ -423,7 +421,7 @@ public class HttpClientLoggingExtensionsTest
 
         _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
         var collector = sp.GetFakeLogCollector();
-        var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == "Microsoft.Extensions.Http.Telemetry.Logging.Internal.HttpLoggingHandler");
+        var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger");
 
         Assert.Empty(logRecord.Message);
         var state = logRecord.StructuredState;
@@ -480,7 +478,7 @@ public class HttpClientLoggingExtensionsTest
         httpRequestMessage.Headers.Add("ReQuEStHeAdErFirst", new List<string> { "Request Value 2", "Request Value 3" });
         var responseString = await SendRequest(namedClient1, httpRequestMessage);
         var collector = provider.GetFakeLogCollector();
-        var logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.Internal.HttpLoggingHandler");
+        var logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger");
         var state = logRecord.State as List<KeyValuePair<string, string>>;
         state.Should().Contain(kvp => kvp.Value == responseString);
         state.Should().Contain(kvp => kvp.Value == "Request Value");
@@ -495,7 +493,7 @@ public class HttpClientLoggingExtensionsTest
         httpRequestMessage2.Headers.Add("ReQuEStHeAdErSecond", new List<string> { "Request Value 2", "Request Value 3" });
         collector.Clear();
         responseString = await SendRequest(namedClient2, httpRequestMessage2);
-        logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.Internal.HttpLoggingHandler");
+        logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger");
         state = logRecord.State as List<KeyValuePair<string, string>>;
         state.Should().Contain(kvp => kvp.Value == responseString);
         state.Should().Contain(kvp => kvp.Value == "Request Value");
@@ -565,7 +563,7 @@ public class HttpClientLoggingExtensionsTest
         _ = await responseStream.ReadAsync(buffer, 0, 10000);
         var responseString = Encoding.UTF8.GetString(buffer);
 
-        var logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.Internal.HttpLoggingHandler");
+        var logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger");
         var state = logRecord.State as List<KeyValuePair<string, string>>;
         state.Should().Contain(kvp => kvp.Value == responseString);
         state.Should().Contain(kvp => kvp.Value == "Request Value");
@@ -585,7 +583,7 @@ public class HttpClientLoggingExtensionsTest
         _ = await responseStream.ReadAsync(buffer, 0, 20000);
         responseString = Encoding.UTF8.GetString(buffer);
 
-        logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.Internal.HttpLoggingHandler");
+        logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger");
         state = logRecord.State as List<KeyValuePair<string, string>>;
         state.Should().Contain(kvp => kvp.Value == responseString);
         state.Should().Contain(kvp => kvp.Value == "Request Value");
@@ -628,7 +626,7 @@ public class HttpClientLoggingExtensionsTest
         _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
 
         var collector = sp.GetFakeLogCollector();
-        var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == "Microsoft.Extensions.Http.Telemetry.Logging.Internal.HttpLoggingHandler");
+        var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger");
         var state = logRecord.State as List<KeyValuePair<string, string>>;
         state!.Single(kvp => kvp.Key == "httpPath").Value.Should().Be(redactedPath);
     }
@@ -669,7 +667,7 @@ public class HttpClientLoggingExtensionsTest
         _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
 
         var collector = sp.GetFakeLogCollector();
-        var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == "Microsoft.Extensions.Http.Telemetry.Logging.Internal.HttpLoggingHandler");
+        var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger");
         var state = logRecord.State as List<KeyValuePair<string, string>>;
         state!.Single(kvp => kvp.Key == "httpPath").Value.Should().Be(redactedPath);
     }
@@ -829,7 +827,7 @@ public class HttpClientLoggingExtensionsTest
 
         _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
         var collector = provider.GetFakeLogCollector();
-        var logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.Internal.HttpLoggingHandler");
+        var logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger");
 
         logRecord.Scopes.Should().HaveCount(0);
     }
@@ -880,8 +878,18 @@ public class HttpClientLoggingExtensionsTest
 
         _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
         var collector = provider.GetFakeLogCollector();
-        var logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.Internal.HttpLoggingHandler");
+        var logRecord = collector.GetSnapshot().Single(l => l.Category == "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger");
 
         logRecord.Scopes.Should().HaveCount(0);
+    }
+
+    private static void EnsureSingleLogger<T>(IServiceProvider serviceProvider)
+        where T : IHttpClientLogger
+    {
+        var loggers = serviceProvider.GetServices<T>();
+        loggers.Should().ContainSingle();
+
+        var keyedLoggers = serviceProvider.GetKeyedServices<T>(KeyedService.AnyKey);
+        keyedLoggers.Should().ContainSingle();
     }
 }
