@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Internal;
@@ -41,24 +40,15 @@ public static class HttpClientLoggingExtensions
             .AddHttpHeadersRedactor()
             .AddOutgoingRequestContext();
 
+        services.TryAddSingleton<HttpClientLogger>();
         services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
         services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
 
         return services.ConfigureHttpClientDefaults(
             static httpClientBuilder =>
                 httpClientBuilder
-                .RemoveAllLoggers()
-                .AddLogger(
-                    wrapHandlersPipeline: true,
-                    httpClientLoggerFactory: static serviceProvider =>
-                    {
-                        var logger = serviceProvider.GetRequiredService<ILogger<HttpLoggingHandler>>();
-                        var httpRequestReader = serviceProvider.GetRequiredService<IHttpRequestReader>();
-                        var enrichers = serviceProvider.GetServices<IHttpClientLogEnricher>();
-                        var loggingOptions = serviceProvider.GetRequiredService<IOptions<LoggingOptions>>();
-
-                        return new HttpClientLogger(logger, httpRequestReader, enrichers, loggingOptions);
-                    }));
+                    .RemoveAllLoggers()
+                    .AddLogger<HttpClientLogger>(wrapHandlersPipeline: true));
     }
 
     /// <summary>
@@ -125,19 +115,7 @@ public static class HttpClientLoggingExtensions
     {
         _ = Throw.IfNull(builder);
 
-        _ = builder.Services
-            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>(builder.Name);
-
-        _ = builder.Services
-            .AddHttpRouteProcessor()
-            .AddHttpHeadersRedactor()
-            .AddOutgoingRequestContext();
-
-        builder.Services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
-        builder.Services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
-
-        return builder.RemoveAllLoggers()
-            .AddLoggerInternal();
+        return AddNamedClientLoggingInternal(builder);
     }
 
     /// <summary>
@@ -158,20 +136,7 @@ public static class HttpClientLoggingExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        _ = builder.Services
-            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>(builder.Name)
-            .Bind(section);
-
-        _ = builder.Services
-            .AddHttpRouteProcessor()
-            .AddHttpHeadersRedactor()
-            .AddOutgoingRequestContext();
-
-        builder.Services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
-        builder.Services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
-
-        return builder.RemoveAllLoggers()
-            .AddLoggerInternal();
+        return AddNamedClientLoggingInternal(builder, options => options.Bind(section));
     }
 
     /// <summary>
@@ -192,20 +157,7 @@ public static class HttpClientLoggingExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        _ = builder.Services
-            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>(builder.Name)
-            .Configure(configure);
-
-        _ = builder.Services
-            .AddHttpRouteProcessor()
-            .AddHttpHeadersRedactor()
-            .AddOutgoingRequestContext();
-
-        builder.Services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
-        builder.Services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
-
-        return builder.RemoveAllLoggers()
-            .AddLoggerInternal();
+        return AddNamedClientLoggingInternal(builder, options => options.Configure(configure));
     }
 
     /// <summary>
@@ -224,38 +176,26 @@ public static class HttpClientLoggingExtensions
         return services;
     }
 
-    private static IHttpClientBuilder AddLoggerInternal(this IHttpClientBuilder builder, bool wrapHandlersPipeline = true)
-        => builder.AddLogger(
-            serviceProvider =>
-            {
-                var loggingOptions = Options.Options.Create(serviceProvider
-                    .GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get(builder.Name));
+    private static IHttpClientBuilder AddNamedClientLoggingInternal(IHttpClientBuilder builder, Action<OptionsBuilder<LoggingOptions>>? configureOptionsBuilder = null)
+    {
+        var optionsBuilder = builder.Services
+            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>(builder.Name);
 
-                // We can do it the following way instead:
-                /*
-                    return ActivatorUtilities.CreateInstance<HttpLoggingHandler>(
-                        serviceProvider,
-                        ActivatorUtilities.CreateInstance<HttpRequestReader>(
-                            serviceProvider,
-                            ActivatorUtilities.CreateInstance<HttpHeadersReader>(
-                                serviceProvider,
-                                loggingOptions),
-                            loggingOptions),
-                        loggingOptions)
-                */
+        configureOptionsBuilder?.Invoke(optionsBuilder);
 
-                var logger = serviceProvider.GetRequiredService<ILogger<HttpLoggingHandler>>();
-                var httpHeadersReader = new HttpHeadersReader(loggingOptions, serviceProvider.GetRequiredService<IHttpHeadersRedactor>());
-                var httpRequestReader = new HttpRequestReader(
-                    loggingOptions,
-                    serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
-                    httpHeadersReader,
-                    serviceProvider.GetRequiredService<IOutgoingRequestContext>(),
-                    serviceProvider.GetService<IDownstreamDependencyMetadataManager>());
+        _ = builder.Services
+            .AddHttpRouteProcessor()
+            .AddHttpHeadersRedactor()
+            .AddOutgoingRequestContext();
 
-                var enrichers = serviceProvider.GetServices<IHttpClientLogEnricher>();
+        builder.Services.TryAddKeyedSingleton<HttpClientLogger>(builder.Name);
+        builder.Services.TryAddKeyedSingleton<IHttpRequestReader, HttpRequestReader>(builder.Name);
+        builder.Services.TryAddKeyedSingleton<IHttpHeadersReader, HttpHeadersReader>(builder.Name);
 
-                return new HttpClientLogger(logger, httpRequestReader, enrichers, loggingOptions);
-            },
-            wrapHandlersPipeline);
+        return builder
+            .RemoveAllLoggers()
+            .AddLogger(
+                serviceProvider => serviceProvider.GetRequiredKeyedService<HttpClientLogger>(builder.Name),
+                wrapHandlersPipeline: true);
+    }
 }
