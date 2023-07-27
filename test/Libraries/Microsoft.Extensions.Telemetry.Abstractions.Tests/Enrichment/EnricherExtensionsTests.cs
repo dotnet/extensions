@@ -45,7 +45,7 @@ public class EnricherExtensionsTests
     }
 
     [Fact]
-    public void ServiceCollection_AddMultipleEnrichersSuccessfully()
+    public void ServiceCollection_AddMultipleMetricEnrichersSuccessfully()
     {
         var services = new ServiceCollection();
         services.AddMetricEnricher<EmptyEnricher>();
@@ -63,7 +63,45 @@ public class EnricherExtensionsTests
         Assert.Equal(2, enricherCount);
     }
 
-    internal class EmptyEnricher : IMetricEnricher, ILogEnricher
+    [Fact]
+    public void AddLogEnricher()
+    {
+        var services = new ServiceCollection();
+        services.AddLogEnricher<EmptyEnricher>();
+        services.AddLogEnricher(new TestEnricher());
+
+        using var provider = services.BuildServiceProvider();
+        var enrichersCollection = provider.GetServices<ILogEnricher>();
+
+        var enricherCount = 0;
+        foreach (var enricher in enrichersCollection)
+        {
+            enricherCount++;
+        }
+
+        Assert.Equal(2, enricherCount);
+    }
+
+    [Fact]
+    public void AddStaticLogEnricher()
+    {
+        var services = new ServiceCollection();
+        services.AddStaticLogEnricher<EmptyEnricher>();
+        services.AddStaticLogEnricher(new TestEnricher());
+
+        using var provider = services.BuildServiceProvider();
+        var enrichersCollection = provider.GetServices<IStaticLogEnricher>();
+
+        var enricherCount = 0;
+        foreach (var enricher in enrichersCollection)
+        {
+            enricherCount++;
+        }
+
+        Assert.Equal(2, enricherCount);
+    }
+
+    internal class EmptyEnricher : IMetricEnricher, ILogEnricher, IStaticLogEnricher
     {
         public void Enrich(IEnrichmentPropertyBag enrichmentBag)
         {
@@ -71,7 +109,7 @@ public class EnricherExtensionsTests
         }
     }
 
-    internal class TestEnricher : IMetricEnricher, ILogEnricher
+    internal class TestEnricher : IMetricEnricher, ILogEnricher, IStaticLogEnricher
     {
         public void Enrich(IEnrichmentPropertyBag enrichmentBag)
         {

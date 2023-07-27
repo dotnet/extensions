@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Extensions.Telemetry.Logging;
 using Xunit;
@@ -34,7 +35,7 @@ public static class LogMethodHelperTests
         Assert.Empty(list);
         Assert.Equal(string.Empty, list.ParameterName);
 
-        list.Add(PropName, Value);
+        list.Add(PropName, Value, DataClassification.None);
         Assert.Single(list);
         Assert.Equal(PropName, list[0].Key);
         Assert.Equal(Value, list[0].Value);

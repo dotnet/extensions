@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Telemetry.RequestHeaders.Test.Internals;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
-using Microsoft.Extensions.Telemetry.Enrichment.Test;
 using Moq;
 using Xunit;
 

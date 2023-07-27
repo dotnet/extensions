@@ -9,7 +9,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry.Enrichment;
 
-internal sealed class ServiceLogEnricher : ILogEnricher
+internal sealed class ServiceLogEnricher : IStaticLogEnricher
 {
     private readonly KeyValuePair<string, object>[] _props;
 

@@ -6,22 +6,19 @@ using System.Diagnostics.Tracing;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
 
-/// <summary>
-/// EventSource implementation for R9 logging implementation.
-/// </summary>
-[EventSource(Name = "R9-Logging-Instrumentation")]
+[EventSource(Name = "Logging-Instrumentation")]
 internal sealed class LoggingEventSource : EventSource
 {
-    public static readonly LoggingEventSource Log = new();
+    public static readonly LoggingEventSource Instance = new();
 
     [NonEvent]
-    internal void LogException(Exception ex)
+    internal void LoggingException(Exception ex)
     {
-        LogException(ex.ToString());
+        LoggingException(ex.ToString());
     }
 
-    [Event(1, Message = "Exception occurred during logging. {exception}.", Level = EventLevel.Error)]
-    private void LogException(string exception)
+    [Event(1, Message = "An exception occurred while logging: {0}.", Level = EventLevel.Error)]
+    private void LoggingException(string exception)
     {
         WriteEvent(1, exception);
     }

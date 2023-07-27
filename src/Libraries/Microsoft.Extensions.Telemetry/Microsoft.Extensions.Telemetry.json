@@ -116,74 +116,54 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LoggerProvider : OpenTelemetry.BaseProvider, Microsoft.Extensions.Logging.ILoggerProvider, System.IDisposable, Microsoft.Extensions.Logging.ISupportExternalScope",
+      "Type": "class Microsoft.Extensions.Telemetry.Logging.LoggerEnrichmentOptions",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Logging.ILogger Microsoft.Extensions.Telemetry.Logging.LoggerProvider.CreateLogger(string categoryName);",
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerEnrichmentOptions.LoggerEnrichmentOptions();",
           "Stage": "Experimental"
-        },
-        {
-          "Member": "override void Microsoft.Extensions.Telemetry.Logging.LoggerProvider.Dispose(bool disposing);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "void Microsoft.Extensions.Telemetry.Logging.LoggerProvider.SetScopeProvider(Microsoft.Extensions.Logging.IExternalScopeProvider scopeProvider);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Telemetry.Logging.LoggingExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddOpenTelemetryLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddOpenTelemetryLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Telemetry.Logging.LoggingOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddOpenTelemetryLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddProcessor(this Microsoft.Extensions.Logging.ILoggingBuilder builder, OpenTelemetry.BaseProcessor<OpenTelemetry.Logs.LogRecord> processor);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingExtensions.AddProcessor<T>(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.Telemetry.Logging.LoggingOptions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggingOptions.LoggingOptions();",
-          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LoggingOptions.IncludeScopes { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LoggingOptions.IncludeStackTrace { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "int Microsoft.Extensions.Telemetry.Logging.LoggingOptions.MaxStackTraceLength { get; set; }",
+          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LoggerEnrichmentOptions.CaptureStackTraces { get; set; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LoggingOptions.UseFormattedMessage { get; set; }",
-          "Stage": "Stable"
+          "Member": "int Microsoft.Extensions.Telemetry.Logging.LoggerEnrichmentOptions.MaxStackTraceLength { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LoggerEnrichmentOptions.UseFileInfoForStackTraces { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Logging.LoggingEnrichmentExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingEnrichmentExtensions.EnableEnrichment(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingEnrichmentExtensions.EnableEnrichment(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Telemetry.Logging.LoggerEnrichmentOptions> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingEnrichmentExtensions.EnableEnrichment(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Logging.LoggingRedactionExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Telemetry.Logging.LoggingRedactionExtensions.EnableRedaction(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
+          "Stage": "Experimental"
         }
       ]
     },
