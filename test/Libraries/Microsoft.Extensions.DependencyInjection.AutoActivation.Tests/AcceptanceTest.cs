@@ -106,6 +106,31 @@ public class AcceptanceTest
                 .AddSingleton<IFakeServiceCounter>(fakeServiceCount)
                 .AddSingleton<IFakeMultipleCounter>(fakeFactoryCount)
                 .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount)
+                .AddActivatedSingleton(typeof(IFakeService), typeof(FakeService))
+                .AddActivatedSingleton(typeof(IFakeService), typeof(FakeOneMultipleService))
+                .AddActivatedSingleton(typeof(IFakeService), typeof(AnotherFakeService)))
+            .StartAsync();
+        await host.StopAsync();
+
+        Assert.Equal(1, fakeServiceCount.Counter);
+        Assert.Equal(1, fakeFactoryCount.Counter);
+        Assert.Equal(1, anotherFakeServiceCount.Counter);
+
+        await host.StopAsync();
+    }
+
+    [Fact]
+    public async Task CanActivateEnumerableAsync_WithTypeArg()
+    {
+        var fakeServiceCount = new InstanceCreatingCounter();
+        var fakeFactoryCount = new InstanceCreatingCounter();
+        var anotherFakeServiceCount = new AnotherFakeServiceCounter();
+
+        using var host = await FakeHost.CreateBuilder()
+            .ConfigureServices(services => services
+                .AddSingleton<IFakeServiceCounter>(fakeServiceCount)
+                .AddSingleton<IFakeMultipleCounter>(fakeFactoryCount)
+                .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount)
                 .AddActivatedSingleton<IFakeService, FakeService>()
                 .AddActivatedSingleton<IFakeService, FakeOneMultipleService>()
                 .AddActivatedSingleton<IFakeService, AnotherFakeService>())
@@ -251,9 +276,31 @@ public class AcceptanceTest
                     services
                         .AddSingleton<IFakeServiceCounter>(counter)
                         .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount);
-                    services.TryAddActivatedSingleton<IFakeService, FakeService>();
+                    services.TryAddActivatedSingleton(typeof(IFakeService), typeof(FakeService));
                     services.TryAddActivatedSingleton(typeof(IFakeService), typeof(AnotherFakeService));
                 })
+            .StartAsync();
+        await host.StopAsync();
+
+        Assert.Equal(1, counter.Counter);
+        Assert.Equal(0, anotherFakeServiceCount.Counter);
+    }
+
+    [Fact]
+    public async Task ShouldActivateOneSingleton_WhenTryAddIsCalled_WithTypeSpecifiedImplementation_WithTypeArg()
+    {
+        var counter = new InstanceCreatingCounter();
+        var anotherFakeServiceCount = new AnotherFakeServiceCounter();
+
+        using var host = await FakeHost.CreateBuilder()
+            .ConfigureServices(services =>
+            {
+                services
+                    .AddSingleton<IFakeServiceCounter>(counter)
+                    .AddSingleton<IAnotherFakeServiceCounter>(anotherFakeServiceCount);
+                services.TryAddActivatedSingleton<IFakeService, FakeService>();
+                services.TryAddActivatedSingleton<IFakeService, AnotherFakeService>();
+            })
             .StartAsync();
         await host.StopAsync();
 
@@ -298,6 +345,25 @@ public class AcceptanceTest
 
     [Fact]
     public async Task CanActivateEnumerableImplicitlyAddedAsync()
+    {
+        var fakeServiceCount = new InstanceCreatingCounter();
+        var fakeFactoryCount = new InstanceCreatingCounter();
+
+        using var host = await FakeHost.CreateBuilder()
+            .ConfigureServices(services => services
+                .AddSingleton<IFakeServiceCounter>(fakeServiceCount)
+                .AddSingleton<IFakeMultipleCounter>(fakeFactoryCount)
+                .AddSingleton<IFakeService, FakeService>().Activate(typeof(IFakeService))
+                .AddSingleton<IFakeService, FakeOneMultipleService>().Activate(typeof(IFakeService)))
+            .StartAsync();
+        await host.StopAsync();
+
+        Assert.Equal(1, fakeServiceCount.Counter);
+        Assert.Equal(1, fakeFactoryCount.Counter);
+    }
+
+    [Fact]
+    public async Task CanActivateEnumerableImplicitlyAddedAsync_WithTypeArg()
     {
         var fakeServiceCount = new InstanceCreatingCounter();
         var fakeFactoryCount = new InstanceCreatingCounter();
