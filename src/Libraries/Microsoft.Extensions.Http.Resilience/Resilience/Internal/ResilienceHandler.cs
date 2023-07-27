@@ -30,7 +30,7 @@ internal sealed class ResilienceHandler : DelegatingHandler
         var created = false;
         if (request.GetResilienceContext() is not ResilienceContext context)
         {
-            context = ResilienceContext.Get(cancellationToken);
+            context = ResilienceContextPool.Shared.Get(cancellationToken);
             created = true;
             request.SetResilienceContext(context);
         }
@@ -41,8 +41,6 @@ internal sealed class ResilienceHandler : DelegatingHandler
         }
 
         context.Properties.Set(ResilienceKeys.RequestMessage, request);
-        var previousToken = context.CancellationToken;
-        context.CancellationToken = cancellationToken;
 
         try
         {
@@ -75,12 +73,8 @@ internal sealed class ResilienceHandler : DelegatingHandler
         {
             if (created)
             {
-                ResilienceContext.Return(context);
+                ResilienceContextPool.Shared.Return(context);
                 request.SetResilienceContext(null);
-            }
-            else
-            {
-                context.CancellationToken = previousToken;
             }
         }
     }

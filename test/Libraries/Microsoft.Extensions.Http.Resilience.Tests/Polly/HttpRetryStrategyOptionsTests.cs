@@ -100,19 +100,19 @@ public class HttpRetryStrategyOptionsTests
         Assert.NotNull(options.RetryDelayGenerator);
 
         var result = await options.RetryDelayGenerator(
-            new(ResilienceContext.Get(),
+            new(ResilienceContextPool.Shared.Get(),
             Outcome.FromResult(responseMessage),
             new RetryDelayArguments(0, TimeSpan.Zero)));
         Assert.Equal(result, TimeSpan.Zero);
 
         result = await options.RetryDelayGenerator(
-            new(ResilienceContext.Get(),
+            new(ResilienceContextPool.Shared.Get(),
             Outcome.FromResult<HttpResponseMessage>(null),
             new RetryDelayArguments(0, TimeSpan.Zero)));
         Assert.Equal(result, TimeSpan.Zero);
 
         result = await options.RetryDelayGenerator(
-            new(ResilienceContext.Get(),
+            new(ResilienceContextPool.Shared.Get(),
             Outcome.FromException<HttpResponseMessage>(new InvalidOperationException()),
             new RetryDelayArguments(0, TimeSpan.Zero)));
         Assert.Equal(result, TimeSpan.Zero);
@@ -131,7 +131,7 @@ public class HttpRetryStrategyOptionsTests
         };
 
         var result = await options.RetryDelayGenerator!(
-            new(ResilienceContext.Get(),
+            new(ResilienceContextPool.Shared.Get(),
             Outcome.FromResult(responseMessage),
             new RetryDelayArguments(0, TimeSpan.Zero)));
 
@@ -152,6 +152,6 @@ public class HttpRetryStrategyOptionsTests
     }
 
     private static OutcomeArguments<HttpResponseMessage, RetryPredicateArguments> CreateArgs(Outcome<HttpResponseMessage> outcome)
-        => new(ResilienceContext.Get(), outcome, new RetryPredicateArguments(0));
+        => new(ResilienceContextPool.Shared.Get(), outcome, new RetryPredicateArguments(0));
 
 }

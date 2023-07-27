@@ -17,7 +17,7 @@ public class RequestMessageSnapshotStrategyTests
     public async Task SendAsync_EnsureSnapshotAttached()
     {
         var strategy = new RequestMessageSnapshotStrategy();
-        var context = ResilienceContext.Get();
+        var context = ResilienceContextPool.Shared.Get();
         using var request = new HttpRequestMessage();
         context.Properties.Set(ResilienceKeys.RequestMessage, request);
 

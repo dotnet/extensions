@@ -28,7 +28,7 @@ public class RoutingResilienceStrategyTests
         using var request = new HttpRequestMessage();
 
         RoutingResilienceStrategy strategy = new RoutingResilienceStrategy(null);
-        var context = ResilienceContext.Get();
+        var context = ResilienceContextPool.Shared.Get();
         context.Properties.Set(ResilienceKeys.RequestMessage, request);
 
         strategy.Invoking(s => s.Execute(_ => { }, context)).Should().NotThrow();

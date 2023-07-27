@@ -38,7 +38,7 @@ public class HttpStandardResilienceOptions
     [ValidateObjectMembers]
     public HttpRateLimiterStrategyOptions RateLimiterOptions { get; set; } = new HttpRateLimiterStrategyOptions
     {
-        StrategyName = StandardStrategyNames.RateLimiter
+        Name = StandardStrategyNames.RateLimiter
     };
 
     /// <summary>
@@ -51,7 +51,7 @@ public class HttpStandardResilienceOptions
     [ValidateObjectMembers]
     public HttpTimeoutStrategyOptions TotalRequestTimeoutOptions { get; set; } = new HttpTimeoutStrategyOptions
     {
-        StrategyName = StandardStrategyNames.TotalRequestTimeout
+        Name = StandardStrategyNames.TotalRequestTimeout
     };
 
     /// <summary>
@@ -64,7 +64,7 @@ public class HttpStandardResilienceOptions
     [ValidateObjectMembers]
     public HttpRetryStrategyOptions RetryOptions { get; set; } = new HttpRetryStrategyOptions
     {
-        StrategyName = StandardStrategyNames.Retry
+        Name = StandardStrategyNames.Retry
     };
 
     /// <summary>
@@ -77,7 +77,7 @@ public class HttpStandardResilienceOptions
     [ValidateObjectMembers]
     public HttpCircuitBreakerStrategyOptions CircuitBreakerOptions { get; set; } = new HttpCircuitBreakerStrategyOptions
     {
-        StrategyName = StandardStrategyNames.CircuitBreaker
+        Name = StandardStrategyNames.CircuitBreaker
     };
 
     /// <summary>
@@ -92,6 +92,6 @@ public class HttpStandardResilienceOptions
     public HttpTimeoutStrategyOptions AttemptTimeoutOptions { get; set; } = new()
     {
         Timeout = TimeSpan.FromSeconds(10),
-        StrategyName = StandardStrategyNames.AttemptTimeout
+        Name = StandardStrategyNames.AttemptTimeout
     };
 }

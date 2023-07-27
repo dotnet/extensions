@@ -14,7 +14,7 @@ public class ResilienceContextExtensionsTests
     [Fact]
     public void GetRequestMetadata_Ok()
     {
-        var context = ResilienceContext.Get();
+        var context = ResilienceContextPool.Shared.Get();
 
         context.GetRequestMetadata().Should().BeNull();
     }
@@ -22,7 +22,7 @@ public class ResilienceContextExtensionsTests
     [Fact]
     public void SetRequestMetadata_Ok()
     {
-        var context = ResilienceContext.Get();
+        var context = ResilienceContextPool.Shared.Get();
         var metadata = new RequestMetadata();
 
         context.SetRequestMetadata(metadata);
