@@ -17,6 +17,7 @@ using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 using Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
+using Microsoft.Extensions.Http.Telemetry.Test.Logging.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Telemetry.Enrichment;
@@ -25,7 +26,6 @@ using Microsoft.Extensions.Telemetry.Testing.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Shared.Collections;
 using Moq;
-using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
@@ -51,9 +51,9 @@ public class HttpLoggingHandlerTest
     [Fact]
     public void HttpLoggingHandler_NullOptions_Throws()
     {
-        var options = Microsoft.Extensions.Options.Options.Create<LoggingOptions>(null!);
-        var act = () => new HttpLoggingHandler(
-            NullLogger<HttpLoggingHandler>.Instance,
+        var options = Options.Options.Create<LoggingOptions>(null!);
+        var act = () => new HttpClientLogger(
+            NullLogger<HttpClientLogger>.Instance,
             Mock.Of<IHttpRequestReader>(),
             Empty.Enumerable<IHttpClientLogEnricher>(),
         options);
@@ -66,7 +66,21 @@ public class HttpLoggingHandlerTest
     {
         var responseCode = _fixture.Create<HttpStatusCode>();
         using var httpResponseMessage = new HttpResponseMessage { StatusCode = responseCode };
-        using var client = HttpLoggingHandlerTest.CreateClient(httpResponseMessage);
+
+        var options = new LoggingOptions
+        {
+            BodyReadTimeout = TimeSpan.FromMinutes(5)
+        };
+
+        using var handler = new TestLoggingHandler(
+            new HttpClientLogger(
+                NullLogger<HttpClientLogger>.Instance,
+                Mock.Of<IHttpRequestReader>(),
+                Empty.Enumerable<IHttpClientLogEnricher>(),
+                Options.Options.Create(options)),
+            new TestingHandlerStub((_, _) => Task.FromResult(httpResponseMessage)));
+
+        using var client = new HttpClient(handler);
 
         var act = async () =>
             await client.SendAsync(null!, It.IsAny<CancellationToken>()).ConfigureAwait(false);
@@ -86,7 +100,24 @@ public class HttpLoggingHandlerTest
             Content = new StringContent(input, Encoding.UTF8, TextPlain)
         };
 
-        using var client = HttpLoggingHandlerTest.CreateClientWithException(exception, isLoggingEnabled: false);
+        var options = Options.Options.Create(new LoggingOptions());
+
+        var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
+        mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
+            .Returns(Redacted);
+        var headersReader = new HttpHeadersReader(options, mockHeadersRedactor.Object);
+
+        using var handler = new TestLoggingHandler(
+            new HttpClientLogger(
+                NullLogger<HttpClientLogger>.Instance,
+                new HttpRequestReader(
+                    options,
+                    GetHttpRouteFormatter(), headersReader, RequestMetadataContext),
+                Enumerable.Empty<IHttpClientLogEnricher>(),
+                options),
+            new TestingHandlerStub((_, _) => throw exception));
+
+        using var client = new HttpClient(handler);
 
         var act = async () =>
             await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
@@ -95,7 +126,7 @@ public class HttpLoggingHandlerTest
     }
 
     [Fact]
-    public async Task SendAsync_ReadRequestAsyncThrowsOperationCancelled_ThrowsOperationCancelled()
+    public async Task Logger_WhenReadRequestAsyncThrows_DoesntThrow()
     {
         using var cancellationTokenSource = new CancellationTokenSource();
 
@@ -107,12 +138,33 @@ public class HttpLoggingHandlerTest
             RequestUri = new("http://default-uri.com"),
             Content = new StringContent(input, Encoding.UTF8, TextPlain)
         };
-        using var httpClient = HttpLoggingHandlerTest.CreateClientWithOperationCanceledException(operationCanceledException);
+
+        var requestReaderMock = new Mock<IHttpRequestReader>(MockBehavior.Strict);
+        requestReaderMock.Setup(e =>
+            e.ReadRequestAsync(It.IsAny<LogRecord>(),
+                It.IsAny<HttpRequestMessage>(),
+                It.IsAny<List<KeyValuePair<string, string>>>(),
+                It.IsAny<CancellationToken>()))
+            .Throws(operationCanceledException);
+
+        var mockedRequestReader = new MockedRequestReader(requestReaderMock);
+
+        var options = Options.Options.Create(new LoggingOptions());
+
+        using var handler = new TestLoggingHandler(
+            new HttpClientLogger(
+                NullLogger<HttpClientLogger>.Instance,
+                mockedRequestReader,
+                Enumerable.Empty<IHttpClientLogEnricher>(),
+                options),
+            new TestingHandlerStub((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
+
+        using var httpClient = new HttpClient(handler);
 
         var act = async () =>
             await httpClient.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
-        await act.Should().ThrowAsync<OperationCanceledException>();
+        await act.Should().NotThrowAsync<Exception>();
     }
 
     [Fact]
@@ -161,7 +213,7 @@ public class HttpLoggingHandlerTest
         httpResponseMessage.Headers.Add(TestResponseHeader, testResponseHeaderValue);
         httpResponseMessage.Headers.Add("Header3", testRequestHeaderValue);
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions
+        var options = Options.Options.Create(new LoggingOptions
         {
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, SimpleClassifications.PrivateData }, { "Header3", SimpleClassifications.PrivateData } },
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, SimpleClassifications.PrivateData }, { "Header3", SimpleClassifications.PrivateData } },
@@ -180,26 +232,26 @@ public class HttpLoggingHandlerTest
             .Returns(Redacted);
         var headersReader = new HttpHeadersReader(options, mockHeadersRedactor.Object);
 
-        var fakeLogger = new FakeLogger<HttpLoggingHandler>(new FakeLogCollector(Microsoft.Extensions.Options.Options.Create(new FakeLogCollectorOptions())));
+        var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector(Options.Options.Create(new FakeLogCollectorOptions())));
 
-        using var handler = new HttpLoggingHandler(
+        var logger = new HttpClientLogger(
             fakeLogger,
             new HttpRequestReader(
                 options,
                 GetHttpRouteFormatter(),
                 headersReader, RequestMetadataContext),
             new List<IHttpClientLogEnricher> { testEnricher },
-            options)
-        {
-            InnerHandler = new TestingHandlerStub((_, _) =>
+            options);
+
+        using var handler = new TestLoggingHandler(
+            logger,
+            new TestingHandlerStub((_, _) =>
             {
                 fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(1000));
                 return Task.FromResult(httpResponseMessage);
-            })
-        };
-        handler.TimeProvider = fakeTimeProvider;
+            }));
 
-        using var client = new System.Net.Http.HttpClient(handler);
+        using var client = new HttpClient(handler);
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
@@ -259,7 +311,7 @@ public class HttpLoggingHandlerTest
         };
         httpResponseMessage.Headers.Add(TestResponseHeader, responseHeaderValue);
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions
+        var options = Options.Options.Create(new LoggingOptions
         {
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, SimpleClassifications.PrivateData } },
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, SimpleClassifications.PrivateData } },
@@ -273,9 +325,9 @@ public class HttpLoggingHandlerTest
             RouteParameterDataClasses = { { "userId", SimpleClassifications.PrivateData } },
         });
 
-        var fakeLogger = new FakeLogger<HttpLoggingHandler>(
+        var fakeLogger = new FakeLogger<HttpClientLogger>(
             new FakeLogCollector(
-                Microsoft.Extensions.Options.Options.Create(
+                Options.Options.Create(
                     new FakeLogCollectorOptions())));
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
@@ -285,24 +337,24 @@ public class HttpLoggingHandlerTest
 
         var headersReader = new HttpHeadersReader(options, mockHeadersRedactor.Object);
 
-        using var handler = new HttpLoggingHandler(
+        var logger = new HttpClientLogger(
             fakeLogger,
             new HttpRequestReader(
                 options,
                 GetHttpRouteFormatter(),
                 headersReader, RequestMetadataContext),
             new List<IHttpClientLogEnricher> { testEnricher },
-            options)
-        {
-            InnerHandler = new TestingHandlerStub((_, _) =>
+            options);
+
+        using var handler = new TestLoggingHandler(
+            logger,
+            new TestingHandlerStub((_, _) =>
             {
                 fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(1000));
                 return Task.FromResult(httpResponseMessage);
-            })
-        };
-        handler.TimeProvider = fakeTimeProvider;
+            }));
 
-        using var client = new System.Net.Http.HttpClient(handler);
+        using var client = new HttpClient(handler);
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
@@ -370,7 +422,7 @@ public class HttpLoggingHandlerTest
         };
         httpResponseMessage.Headers.Add(TestResponseHeader, responseHeaderValue);
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions
+        var options = Options.Options.Create(new LoggingOptions
         {
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, SimpleClassifications.PrivateData } },
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, SimpleClassifications.PrivateData } },
@@ -384,7 +436,7 @@ public class HttpLoggingHandlerTest
             RouteParameterDataClasses = { { "userId", SimpleClassifications.PrivateData } },
         });
 
-        var fakeLogger = new FakeLogger<HttpLoggingHandler>(new FakeLogCollector(Microsoft.Extensions.Options.Options.Create(new FakeLogCollectorOptions())));
+        var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector(Options.Options.Create(new FakeLogCollectorOptions())));
 
         var exception = new OperationCanceledException();
 
@@ -393,30 +445,28 @@ public class HttpLoggingHandlerTest
             .Returns(Redacted);
         var headersReader = new HttpHeadersReader(options, mockHeadersRedactor.Object);
 
-        using var handler = new HttpLoggingHandler(
-            fakeLogger,
-            new HttpRequestReader(
-                options,
-                GetHttpRouteFormatter(),
-                headersReader, RequestMetadataContext),
-            new List<IHttpClientLogEnricher> { testEnricher },
-            options)
-        {
-            InnerHandler = new TestingHandlerStub((_, _) =>
+        using var handler = new TestLoggingHandler(
+            new HttpClientLogger(
+                fakeLogger,
+                new HttpRequestReader(
+                    options,
+                    GetHttpRouteFormatter(),
+                    headersReader, RequestMetadataContext),
+                new List<IHttpClientLogEnricher> { testEnricher },
+                options),
+            new TestingHandlerStub((_, _) =>
             {
                 fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(expectedLogRecord.Duration));
                 throw exception;
-            }),
-            TimeProvider = fakeTimeProvider
-        };
+            }));
 
-        using var client = new System.Net.Http.HttpClient(handler);
+        using var client = new HttpClient(handler);
         var act = async () => await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
         await act.Should().ThrowAsync<OperationCanceledException>().ConfigureAwait(false);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
         logRecords.Count.Should().Be(1);
-        logRecords[0].Message.Should().BeEmpty();
+        logRecords[0].Message.Should().Be($"{httpRequestMessage.Method} {httpRequestMessage.RequestUri.Host}/{TelemetryConstants.Redacted}");
         logRecords[0].Exception.Should().Be(exception);
 
         var logRecord = logRecords[0].GetStructuredState();
@@ -472,7 +522,7 @@ public class HttpLoggingHandlerTest
         };
         httpResponseMessage.Headers.Add(TestResponseHeader, responseHeaderValue);
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions
+        var options = Options.Options.Create(new LoggingOptions
         {
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, SimpleClassifications.PrivateData } },
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, SimpleClassifications.PrivateData } },
@@ -486,9 +536,9 @@ public class HttpLoggingHandlerTest
             RouteParameterDataClasses = { { "userId", SimpleClassifications.PrivateData } },
         });
 
-        var fakeLogger = new FakeLogger<HttpLoggingHandler>(
+        var fakeLogger = new FakeLogger<HttpClientLogger>(
             new FakeLogCollector(
-                Microsoft.Extensions.Options.Options.Create(new FakeLogCollectorOptions())));
+                Options.Options.Create(new FakeLogCollectorOptions())));
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor
@@ -518,22 +568,19 @@ public class HttpLoggingHandlerTest
                     It.IsAny<CancellationToken>()))
             .ThrowsAsync(exception);
 
-        using var handler = new HttpLoggingHandler(
-            fakeLogger,
-            mockedRequestReader.Object,
-            new List<IHttpClientLogEnricher> { testEnricher },
-            options)
-        {
-            InnerHandler = new TestingHandlerStub((_, _) =>
+        using var handler = new TestLoggingHandler(
+            new HttpClientLogger(
+                fakeLogger,
+                mockedRequestReader.Object,
+                new List<IHttpClientLogEnricher> { testEnricher },
+                options),
+            new TestingHandlerStub((_, _) =>
             {
                 fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(1000));
                 return Task.FromResult(httpResponseMessage);
-            })
-        };
+            }));
 
-        handler.TimeProvider = fakeTimeProvider;
-
-        using var client = new System.Net.Http.HttpClient(handler);
+        using var client = new HttpClient(handler);
         var act = async () => await client
             .SendAsync(httpRequestMessage, It.IsAny<CancellationToken>())
             .ConfigureAwait(false);
@@ -597,7 +644,7 @@ public class HttpLoggingHandlerTest
         httpResponseMessage.Headers.Add(TestResponseHeader, responseHeaderValue);
         httpResponseMessage.Headers.TransferEncoding.Add(new("compress"));
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions
+        var options = Options.Options.Create(new LoggingOptions
         {
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, SimpleClassifications.PrivateData } },
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, SimpleClassifications.PrivateData } },
@@ -611,31 +658,29 @@ public class HttpLoggingHandlerTest
             RouteParameterDataClasses = { { "userId", SimpleClassifications.PrivateData } },
         });
 
-        var fakeLogger = new FakeLogger<HttpLoggingHandler>(new FakeLogCollector(Microsoft.Extensions.Options.Options.Create(new FakeLogCollectorOptions())));
+        var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector(Options.Options.Create(new FakeLogCollectorOptions())));
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
         var headersReader = new HttpHeadersReader(options, mockHeadersRedactor.Object);
 
-        using var handler = new HttpLoggingHandler(
-            fakeLogger,
-            new HttpRequestReader(
-                options,
-                GetHttpRouteFormatter(),
-                headersReader, RequestMetadataContext),
-            new List<IHttpClientLogEnricher> { testEnricher },
-            options)
-        {
-            InnerHandler = new TestingHandlerStub((_, _) =>
+        using var handler = new TestLoggingHandler(
+            new HttpClientLogger(
+                fakeLogger,
+                new HttpRequestReader(
+                    options,
+                    GetHttpRouteFormatter(),
+                    headersReader, RequestMetadataContext),
+                new List<IHttpClientLogEnricher> { testEnricher },
+                options),
+            new TestingHandlerStub((_, _) =>
             {
                 fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(1000));
                 return Task.FromResult(httpResponseMessage);
-            })
-        };
-        handler.TimeProvider = fakeTimeProvider;
+            }));
 
-        using var client = new System.Net.Http.HttpClient(handler);
+        using var client = new HttpClient(handler);
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
@@ -659,24 +704,23 @@ public class HttpLoggingHandlerTest
     {
         var enricher1 = new Mock<IHttpClientLogEnricher>();
         var enricher2 = new Mock<IHttpClientLogEnricher>();
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions());
+        var options = Options.Options.Create(new LoggingOptions());
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
-        var fakeLogger = new FakeLogger<HttpLoggingHandler>();
-        using var handler = new HttpLoggingHandler(
-            fakeLogger,
-            new HttpRequestReader(
-                options,
-                GetHttpRouteFormatter(),
-                new HttpHeadersReader(options, mockHeadersRedactor.Object), RequestMetadataContext),
-            new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object },
-            options)
-        {
-            InnerHandler = new TestingHandlerStub((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)))
-        };
+        var fakeLogger = new FakeLogger<HttpClientLogger>();
+        using var handler = new TestLoggingHandler(
+            new HttpClientLogger(
+                fakeLogger,
+                new HttpRequestReader(
+                    options,
+                    GetHttpRouteFormatter(),
+                    new HttpHeadersReader(options, mockHeadersRedactor.Object), RequestMetadataContext),
+                new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object },
+                options),
+            new TestingHandlerStub((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
 
-        using var client = new System.Net.Http.HttpClient(handler);
+        using var client = new HttpClient(handler);
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
@@ -698,27 +742,26 @@ public class HttpLoggingHandlerTest
     {
         var enricher1 = new Mock<IHttpClientLogEnricher>();
         var enricher2 = new Mock<IHttpClientLogEnricher>();
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions
+        var options = Options.Options.Create(new LoggingOptions
         {
             LogRequestStart = true
         });
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
-        var fakeLogger = new FakeLogger<HttpLoggingHandler>();
-        using var handler = new HttpLoggingHandler(
-            fakeLogger,
-            new HttpRequestReader(
-                options,
-                GetHttpRouteFormatter(),
-                new HttpHeadersReader(options, mockHeadersRedactor.Object), RequestMetadataContext),
-            new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object },
-            options)
-        {
-            InnerHandler = new TestingHandlerStub((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)))
-        };
+        var fakeLogger = new FakeLogger<HttpClientLogger>();
+        using var handler = new TestLoggingHandler(
+            new HttpClientLogger(
+                fakeLogger,
+                new HttpRequestReader(
+                    options,
+                    GetHttpRouteFormatter(),
+                    new HttpHeadersReader(options, mockHeadersRedactor.Object), RequestMetadataContext),
+                new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object },
+                options),
+            new TestingHandlerStub((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
 
-        using var client = new System.Net.Http.HttpClient(handler);
+        using var client = new HttpClient(handler);
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
@@ -745,19 +788,18 @@ public class HttpLoggingHandlerTest
             .Throws(exception);
 
         var enricher2 = new Mock<IHttpClientLogEnricher>();
-        var fakeLogger = new FakeLogger<HttpLoggingHandler>();
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions());
+        var fakeLogger = new FakeLogger<HttpClientLogger>();
+        var options = Options.Options.Create(new LoggingOptions());
         var headersReader = new HttpHeadersReader(options, new Mock<IHttpHeadersRedactor>().Object);
         var requestReader = new HttpRequestReader(options, GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
         var enrichers = new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object };
 
-        using var handler = new HttpLoggingHandler(fakeLogger, requestReader, enrichers, options)
-        {
-            InnerHandler = new TestingHandlerStub(
-                (_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)))
-        };
+        using var handler = new TestLoggingHandler(
+            new HttpClientLogger(fakeLogger, requestReader, enrichers, options),
+            new TestingHandlerStub(
+                (_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
 
-        using var client = new System.Net.Http.HttpClient(handler);
+        using var client = new HttpClient(handler);
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
@@ -790,19 +832,18 @@ public class HttpLoggingHandlerTest
             .Verifiable();
 
         var enricher2 = new Mock<IHttpClientLogEnricher>();
-        var fakeLogger = new FakeLogger<HttpLoggingHandler>();
+        var fakeLogger = new FakeLogger<HttpClientLogger>();
 
         var sendAsyncException = new OperationCanceledException();
-        using var handler = new HttpLoggingHandler(
-            fakeLogger,
-            new Mock<IHttpRequestReader>().Object,
-            new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object },
-            Microsoft.Extensions.Options.Options.Create(new LoggingOptions()))
-        {
-            InnerHandler = new TestingHandlerStub((_, _) => throw sendAsyncException)
-        };
+        using var handler = new TestLoggingHandler(
+            new HttpClientLogger(
+                fakeLogger,
+                new Mock<IHttpRequestReader>().Object,
+                new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object },
+                Options.Options.Create(new LoggingOptions())),
+            new TestingHandlerStub((_, _) => throw sendAsyncException));
 
-        using var client = new System.Net.Http.HttpClient(handler);
+        using var client = new HttpClient(handler);
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
@@ -872,7 +913,7 @@ public class HttpLoggingHandlerTest
         httpResponseMessage.Headers.Add(TestResponseHeader, responseHeaderValue);
         httpResponseMessage.Headers.TransferEncoding.Add(new("chunked"));
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions
+        var options = Options.Options.Create(new LoggingOptions
         {
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, SimpleClassifications.PrivateData } },
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, SimpleClassifications.PrivateData } },
@@ -886,31 +927,29 @@ public class HttpLoggingHandlerTest
             RouteParameterDataClasses = { { "userId", SimpleClassifications.PrivateData } },
         });
 
-        var fakeLogger = new FakeLogger<HttpLoggingHandler>(new FakeLogCollector(Microsoft.Extensions.Options.Options.Create(new FakeLogCollectorOptions())));
+        var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector(Options.Options.Create(new FakeLogCollectorOptions())));
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
         var headersReader = new HttpHeadersReader(options, mockHeadersRedactor.Object);
 
-        using var handler = new HttpLoggingHandler(
-            fakeLogger,
-            new HttpRequestReader(
-                options,
-                GetHttpRouteFormatter(),
-                headersReader, RequestMetadataContext),
-            new List<IHttpClientLogEnricher> { testEnricher },
-            options)
-        {
-            InnerHandler = new TestingHandlerStub((_, _) =>
+        using var handler = new TestLoggingHandler(
+            new HttpClientLogger(
+                fakeLogger,
+                new HttpRequestReader(
+                    options,
+                    GetHttpRouteFormatter(),
+                    headersReader, RequestMetadataContext),
+                new List<IHttpClientLogEnricher> { testEnricher },
+                options),
+            new TestingHandlerStub((_, _) =>
             {
                 fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(1000));
                 return Task.FromResult(httpResponseMessage);
-            })
-        };
-        handler.TimeProvider = fakeTimeProvider;
+            }));
 
-        using var client = new System.Net.Http.HttpClient(handler);
+        using var client = new HttpClient(handler);
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
@@ -939,125 +978,29 @@ public class HttpLoggingHandlerTest
     public async Task HttpLoggingHandler_OnDifferentHttpStatusCodes_LogsOutgoingRequestWithAppropriateLogLevel(
         int httpStatusCode, LogLevel expectedLogLevel)
     {
-        var fakeLogger = new FakeLogger<HttpLoggingHandler>(new FakeLogCollector());
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions());
+        var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector());
+        var options = Options.Options.Create(new LoggingOptions());
         var headersReader = new HttpHeadersReader(options, new Mock<IHttpHeadersRedactor>().Object);
         var requestReader = new HttpRequestReader(
             options, GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
 
-        using var handler = new HttpLoggingHandler(
-            fakeLogger, requestReader, new List<IHttpClientLogEnricher>(), options)
-        {
-            InnerHandler = new TestingHandlerStub((_, _) =>
-                Task.FromResult(new HttpResponseMessage((HttpStatusCode)httpStatusCode)))
-        };
+        using var handler = new TestLoggingHandler(
+            new HttpClientLogger(fakeLogger, requestReader, Array.Empty<IHttpClientLogEnricher>(), options),
+            new TestingHandlerStub((_, _) =>
+                Task.FromResult(new HttpResponseMessage((HttpStatusCode)httpStatusCode))));
 
-        using var client = new System.Net.Http.HttpClient(handler);
+        using var client = new HttpClient(handler);
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
             RequestUri = new($"http://default-uri.com/foo/bar"),
             Content = new StringContent("request_content", Encoding.UTF8, TextPlain)
         };
+
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var logRecord = fakeLogger.Collector.GetSnapshot().Single();
         Assert.Equal(expectedLogLevel, logRecord.Level);
-    }
-
-    private static System.Net.Http.HttpClient CreateClientWithException(
-        Exception exception,
-        bool isLoggingEnabled = true)
-    {
-        var loggerMock = new Mock<ILogger<HttpLoggingHandler>>(MockBehavior.Strict);
-        loggerMock.Setup(m => m.IsEnabled(It.IsAny<LogLevel>())).Returns(isLoggingEnabled);
-        var mockedLogger = new MockedLogger<HttpLoggingHandler>(loggerMock);
-
-        var mockHandler = new Mock<DelegatingHandler>();
-        mockHandler.Protected().Setup<Task<HttpResponseMessage>>(
-        "SendAsync",
-        ItExpr.IsAny<HttpRequestMessage>(),
-        ItExpr.IsAny<CancellationToken>()).Throws(exception);
-
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions());
-
-        var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
-        mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
-            .Returns(Redacted);
-        var headersReader = new HttpHeadersReader(options, mockHeadersRedactor.Object);
-
-#pragma warning disable CA2000 // Dispose objects before losing scope - no, it is required for the HttpClient to work properly
-        var handler = new HttpLoggingHandler(
-            mockedLogger,
-            new HttpRequestReader(
-                options,
-                GetHttpRouteFormatter(), headersReader, RequestMetadataContext),
-            Enumerable.Empty<IHttpClientLogEnricher>(),
-            options)
-        {
-            InnerHandler = mockHandler.Object
-        };
-#pragma warning restore CA2000 // Dispose objects before losing scope
-
-        var client = new System.Net.Http.HttpClient(handler);
-        return client;
-    }
-
-    private static System.Net.Http.HttpClient CreateClientWithOperationCanceledException(
-        Exception exception,
-        bool isLoggingEnabled = true)
-    {
-        var requestReaderMock = new Mock<IHttpRequestReader>(MockBehavior.Strict);
-        requestReaderMock.Setup(e =>
-            e.ReadRequestAsync(It.IsAny<LogRecord>(),
-                It.IsAny<HttpRequestMessage>(),
-It.IsAny<List<KeyValuePair<string, string>>>(),
-                It.IsAny<CancellationToken>())).Throws(exception);
-        var mockedRequestReader = new MockedRequestReader(requestReaderMock);
-
-        var loggerMock = new Mock<ILogger<HttpLoggingHandler>>();
-        loggerMock.Setup(m => m.IsEnabled(It.IsAny<LogLevel>())).Returns(isLoggingEnabled);
-        var mockedLogger = new MockedLogger<HttpLoggingHandler>(loggerMock);
-
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions());
-
-        using var handler = new HttpLoggingHandler(
-            mockedLogger,
-            mockedRequestReader,
-            Enumerable.Empty<IHttpClientLogEnricher>(),
-            options);
-
-        var client = new System.Net.Http.HttpClient(handler);
-        return client;
-    }
-
-    private static System.Net.Http.HttpClient CreateClient(
-        HttpResponseMessage httpResponseMessage,
-        LogLevel logLevel = LogLevel.Information,
-        bool isLoggingEnabled = true,
-        Action<LoggingOptions>? setupOptions = null)
-    {
-        var options = new LoggingOptions
-        {
-            BodyReadTimeout = TimeSpan.FromMinutes(5)
-        };
-
-        var loggerMock = new Mock<ILogger<HttpLoggingHandler>>(MockBehavior.Strict);
-        loggerMock.Setup(m => m.IsEnabled(logLevel)).Returns(isLoggingEnabled);
-        var logger = new MockedLogger<HttpLoggingHandler>(loggerMock);
-
-        setupOptions?.Invoke(options);
-
-        using var handler = new HttpLoggingHandler(
-            logger, Mock.Of<IHttpRequestReader>(),
-            Empty.Enumerable<IHttpClientLogEnricher>(),
-        Microsoft.Extensions.Options.Options.Create(options))
-        {
-            InnerHandler = new TestingHandlerStub((_, _) => Task.FromResult(httpResponseMessage))
-        };
-
-        var client = new System.Net.Http.HttpClient(handler);
-        return client;
     }
 
     private static IHttpRouteFormatter GetHttpRouteFormatter()
@@ -1070,5 +1013,6 @@ It.IsAny<List<KeyValuePair<string, string>>>(),
         return builder.GetService<IHttpRouteFormatter>()!;
     }
 
-    private static IOutgoingRequestContext RequestMetadataContext => new Mock<IOutgoingRequestContext>().Object;
+    private static IOutgoingRequestContext RequestMetadataContext
+        => new Mock<IOutgoingRequestContext>().Object;
 }

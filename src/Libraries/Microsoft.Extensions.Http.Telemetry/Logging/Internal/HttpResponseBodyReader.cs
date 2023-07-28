@@ -66,7 +66,7 @@ internal sealed class HttpResponseBodyReader
         RecyclableMemoryStreamManager streamManager, CancellationToken cancellationToken)
     {
 #if NET5_0_OR_GREATER
-        var streamToReadFrom = await response.Content!.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var streamToReadFrom = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #else
         var streamToReadFrom = await response.Content.ReadAsStreamAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
 #endif

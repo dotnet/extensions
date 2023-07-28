@@ -42,8 +42,8 @@ public class LogRecordPooledObjectPolicyTest
         logRecord2.StatusCode.Should().BeNull();
         logRecord2.RequestHeaders.Should().BeNull();
         logRecord2.ResponseHeaders.Should().BeNull();
-        logRecord2.RequestBody.Should().Be(string.Empty);
-        logRecord2.ResponseBody.Should().Be(string.Empty);
+        logRecord2.RequestBody.Should().BeNull();
+        logRecord2.ResponseBody.Should().BeNull();
         logRecord2.EnrichmentProperties.Should().BeNull();
     }
 }

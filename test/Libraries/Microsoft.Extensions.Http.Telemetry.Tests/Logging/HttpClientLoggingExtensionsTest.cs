@@ -423,7 +423,7 @@ public class HttpClientLoggingExtensionsTest
         var collector = sp.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger");
 
-        Assert.Empty(logRecord.Message);
+        Assert.Equal($"{httpRequestMessage.Method} {httpRequestMessage.RequestUri.Host}/{TelemetryConstants.Redacted}", logRecord.Message);
         var state = logRecord.StructuredState;
         var enricher1 = sp.GetServices<IHttpClientLogEnricher>().SingleOrDefault(enn => enn is EnricherWithCounter) as EnricherWithCounter;
         var enricher2 = sp.GetServices<IHttpClientLogEnricher>().SingleOrDefault(enn => enn is TestEnricher) as TestEnricher;

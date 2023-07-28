@@ -23,14 +23,14 @@ internal static class LogRecordExtensions
         return logRecord.EnrichmentProperties!.FirstOrDefault(kvp => kvp.Key == name).Value!.ToString()!;
     }
 
-    public static void Contains(this Dictionary<string, string?> logRecord, string key, string value)
+    public static void Contains(this IDictionary<string, string?> logRecordState, string key, string expectedValue)
     {
-        Assert.True(logRecord.ContainsKey(key));
-        Assert.Equal(value, logRecord[key]);
+        var actualValue = Assert.Contains(key, logRecordState);
+        Assert.Equal(expectedValue, actualValue);
     }
 
-    public static void NotContains(this Dictionary<string, string?> logRecord, string key)
+    public static void NotContains(this IDictionary<string, string?> logRecord, string key)
     {
-        Assert.False(logRecord.ContainsKey(key));
+        Assert.DoesNotContain(key, logRecord);
     }
 }

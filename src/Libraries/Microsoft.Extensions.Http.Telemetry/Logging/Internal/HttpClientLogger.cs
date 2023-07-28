@@ -30,6 +30,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
     private readonly bool _logRequestStart;
     private readonly bool _logResponseHeaders;
     private readonly bool _logRequestHeaders;
+    private readonly bool _pathParametersRedactionSkipped;
     private ILogger<HttpClientLogger> _logger;
     private IHttpRequestReader _httpRequestReader;
     private IHttpClientLogEnricher[] _enrichers;
@@ -48,6 +49,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         _logRequestStart = optionsValue.LogRequestStart;
         _logResponseHeaders = optionsValue.ResponseHeadersDataClasses.Count > 0;
         _logRequestHeaders = optionsValue.RequestHeadersDataClasses.Count > 0;
+        _pathParametersRedactionSkipped = optionsValue.RequestPathParameterRedactionMode == HttpRouteParameterRedactionMode.None;
     }
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "The logger shouldn't throw")]
@@ -74,10 +76,14 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         }
         catch (Exception ex)
         {
-            // If logRecord.Path wasn't set, we can't log unredacted path:
-            Log.RequestReadError(_logger, ex, request.Method, request.RequestUri?.Host, logRecord.Path);
+            // If redaction is skipped, we can log unredacted request path; otherwise use "logRecord.Path" (even though it might not be set):
+            var pathToLog = _pathParametersRedactionSkipped
+                ? request.RequestUri?.AbsolutePath
+                : logRecord.Path;
 
-            // Return back pooled objects (since we throw):
+            Log.RequestReadError(_logger, ex, request.Method, request.RequestUri?.Host, pathToLog ?? string.Empty);
+
+            // Return back pooled objects (since the logRecord wasn't fully prepared):
             _logRecordPool.Return(logRecord);
 
             if (requestHeadersBuffer is not null)
@@ -85,7 +91,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
                 _headersPool.Return(requestHeadersBuffer);
             }
 
-            // Recommendation was to swallow the exception (logger shouldn't throw), so we can't return logRecord as the state:
+            // Recommendation is to swallow the exception (logger shouldn't throw), so we don't re-throw here:
             return null;
         }
     }
@@ -147,7 +153,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
     {
         if (context is not LogRecord logRecord)
         {
-            // TODO: log an error
+            // TODO: we need to decide - log an error or try to load the log record from the context?
             return;
         }
 
@@ -179,6 +185,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         }
         catch (Exception ex)
         {
+            // Logger shouldn't throw, so we just log the exception and don't re-throw it:
             Log.ResponseReadError(_logger, ex, request.Method, logRecord.Host, logRecord.Path);
         }
         finally

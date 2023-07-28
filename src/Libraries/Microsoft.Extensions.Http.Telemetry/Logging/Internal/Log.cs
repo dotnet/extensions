@@ -12,7 +12,6 @@ namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 /// <summary>
 /// Logs <see cref="HttpRequestMessage"/>, <see cref="HttpResponseMessage"/> and the exceptions due to errors of request/response.
 /// </summary>
-[SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Workaround because Complex object logging does not support this.")]
 [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Event ID's.")]
 internal static partial class Log
 {

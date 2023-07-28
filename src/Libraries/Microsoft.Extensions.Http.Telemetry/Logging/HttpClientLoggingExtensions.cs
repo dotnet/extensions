@@ -188,14 +188,41 @@ public static class HttpClientLoggingExtensions
             .AddHttpHeadersRedactor()
             .AddOutgoingRequestContext();
 
-        builder.Services.TryAddKeyedSingleton<HttpClientLogger>(builder.Name);
-        builder.Services.TryAddKeyedSingleton<IHttpRequestReader, HttpRequestReader>(builder.Name);
-        builder.Services.TryAddKeyedSingleton<IHttpHeadersReader, HttpHeadersReader>(builder.Name);
+        /*
+        TODO: Uncomment this code once https://github.com/dotnet/runtime/issues/89447 is resolved:
+
+        builder.Services.TryAddKeyedSingleton<HttpClientLogger>(builder.Name)
+        builder.Services.TryAddKeyedSingleton<IHttpRequestReader, HttpRequestReader>(builder.Name)
+        builder.Services.TryAddKeyedSingleton<IHttpHeadersReader, HttpHeadersReader>(builder.Name)
 
         return builder
             .RemoveAllLoggers()
             .AddLogger(
                 serviceProvider => serviceProvider.GetRequiredKeyedService<HttpClientLogger>(builder.Name),
+                wrapHandlersPipeline: true)
+        */
+
+        builder.Services.TryAddActivatedSingleton<IHttpRequestReader, HttpRequestReader>();
+        builder.Services.TryAddActivatedSingleton<IHttpHeadersReader, HttpHeadersReader>();
+
+        return builder
+            .RemoveAllLoggers()
+            .AddLogger(
+                serviceProvider =>
+                {
+                    var loggingOptions = Options.Options.Create(serviceProvider
+                        .GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get(builder.Name));
+
+                    return ActivatorUtilities.CreateInstance<HttpClientLogger>(
+                        serviceProvider,
+                        ActivatorUtilities.CreateInstance<HttpRequestReader>(
+                            serviceProvider,
+                            ActivatorUtilities.CreateInstance<HttpHeadersReader>(
+                                serviceProvider,
+                                loggingOptions),
+                            loggingOptions),
+                        loggingOptions);
+                },
                 wrapHandlersPipeline: true);
     }
 }
