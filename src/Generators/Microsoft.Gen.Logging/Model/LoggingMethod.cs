@@ -11,9 +11,8 @@ namespace Microsoft.Gen.Logging.Model;
 /// </summary>
 internal sealed class LoggingMethod
 {
-    public readonly List<LoggingMethodParameter> AllParameters = new();
-    public readonly List<LoggingMethodParameter> TemplateParameters = new();
-    public readonly Dictionary<string, string> TemplateMap = new(StringComparer.OrdinalIgnoreCase);
+    public readonly List<LoggingMethodParameter> Parameters = new();
+    public readonly Dictionary<string, string> TemplateToParameterName = new(StringComparer.OrdinalIgnoreCase);
     public string Name = string.Empty;
     public string Message = string.Empty;
     public int? Level;
@@ -30,7 +29,7 @@ internal sealed class LoggingMethod
     public bool HasXmlDocumentation;
 
     public string GetParameterNameInTemplate(LoggingMethodParameter parameter)
-        => TemplateMap.TryGetValue(parameter.Name, out var value)
+        => TemplateToParameterName.TryGetValue(parameter.Name, out var value)
             ? value
             : parameter.Name;
 }

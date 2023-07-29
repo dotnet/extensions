@@ -38,7 +38,7 @@ public class LogParserUtilitiesTests
         };
 
         var diagMock = new Mock<Action<DiagnosticDescriptor, Location?, object?[]?>>();
-        var result = LogParserUtilities.ProcessLogPropertiesForParameter(null!, null!, loggerParameter, paramSymbolMock.Object, null!, diagMock.Object, null!, CancellationToken.None);
+        var result = ParsingUtilities.ProcessLogPropertiesForParameter(null!, null!, loggerParameter, paramSymbolMock.Object, null!, diagMock.Object, null!, CancellationToken.None);
 
         Assert.True(result == LogPropertiesProcessingResult.Fail);
         diagMock.Verify(
@@ -66,7 +66,7 @@ public class LogParserUtilitiesTests
             .Returns(paramTypeMock.Object);
 
         var diagMock = new Mock<Action<DiagnosticDescriptor, Location?, object?[]?>>();
-        var result = LogParserUtilities.ProcessLogPropertiesForParameter(null!, null!, new LoggingMethodParameter(), paramSymbolMock.Object, null!, diagMock.Object, null!, CancellationToken.None);
+        var result = ParsingUtilities.ProcessLogPropertiesForParameter(null!, null!, new LoggingMethodParameter(), paramSymbolMock.Object, null!, diagMock.Object, null!, CancellationToken.None);
 
         Assert.True(result == LogPropertiesProcessingResult.Fail);
         diagMock.Verify(
@@ -114,7 +114,7 @@ public class LogParserUtilitiesTests
         symbolMock.Setup(x => x.GetAttributes())
             .Returns(new[] { attributeMock.Object }.ToImmutableArray());
 
-        var result = LogParserUtilities.GetDataClassificationAttributes(symbolMock.Object, null!);
+        var result = ParsingUtilities.GetDataClassificationAttributes(symbolMock.Object, null!);
         Assert.Empty(result);
     }
 
@@ -129,7 +129,7 @@ public class LogParserUtilitiesTests
         properySymbol.SetupGet(x => x.DeclaringSyntaxReferences)
             .Returns(new[] { Mock.Of<SyntaxReference>() }.ToImmutableArray());
 
-        var identifier = LogParserUtilities.GetPropertyIdentifier(properySymbol.Object, CancellationToken.None);
+        var identifier = ParsingUtilities.GetPropertyIdentifier(properySymbol.Object, CancellationToken.None);
         Assert.Equal(PropertyName, identifier);
     }
 }

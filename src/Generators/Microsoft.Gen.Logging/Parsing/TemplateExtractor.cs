@@ -13,7 +13,7 @@ internal static class TemplateExtractor
     /// <summary>
     /// Finds the template arguments contained in the message string.
     /// </summary>
-    internal static void ExtractTemplates(string? message, IDictionary<string, string> templateMap, out ICollection<string> templatesWithAtSymbol)
+    internal static void ExtractTemplates(string? message, IDictionary<string, string> templateToParameterName, out ICollection<string> templatesWithAtSymbol)
     {
         if (string.IsNullOrEmpty(message))
         {
@@ -46,7 +46,7 @@ internal static class TemplateExtractor
                     templateName = templateName.Substring(1);
                 }
 
-                templateMap[templateName] = templateName;
+                templateToParameterName[templateName] = templateName;
                 scanIndex = closeBraceIndex + 1;
             }
         }

@@ -25,9 +25,10 @@ internal sealed class LoggingMethodParameter
     public bool IsNullable;
     public bool IsReference;
     public bool ImplementsIConvertible;
-    public bool ImplementsIFormatable;
+    public bool ImplementsIFormattable;
     public bool SkipNullProperties;
     public bool OmitParameterName;
+    public bool UsedAsTemplate;
     public string? ClassificationAttributeType;
     public List<LoggingProperty> PropertiesToLog = new();
     public LoggingPropertyProvider? LogPropertiesProvider;

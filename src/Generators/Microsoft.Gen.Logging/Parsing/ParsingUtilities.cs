@@ -13,7 +13,7 @@ using Microsoft.Gen.Shared;
 
 namespace Microsoft.Gen.Logging.Parsing;
 
-internal static class LogParserUtilities
+internal static class ParsingUtilities
 {
     private static readonly HashSet<TypeKind> _allowedParameterTypeKinds = new() { TypeKind.Class, TypeKind.Struct, TypeKind.Interface };
 
@@ -41,7 +41,7 @@ internal static class LogParserUtilities
         return false;
     }
 
-    internal static bool ImplementsIFormatable(ITypeSymbol sym, SymbolHolder symbols)
+    internal static bool ImplementsIFormattable(ITypeSymbol sym, SymbolHolder symbols)
     {
         foreach (var member in sym.GetMembers("ToString"))
         {
@@ -178,7 +178,7 @@ internal static class LogParserUtilities
         Dictionary<LoggingMethodParameter, IParameterSymbol> parameterSymbols)
     {
         var names = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var parameter in lm.AllParameters)
+        foreach (var parameter in lm.Parameters)
         {
             var parameterName = lm.GetParameterNameInTemplate(parameter);
             if (!names.Add(parameterName))
@@ -319,7 +319,7 @@ internal static class LogParserUtilities
 
                     bool isEnumerable = IsEnumerable(propertyType, symbols);
                     bool implementsIConvertible = ImplementsIConvertible(propertyType, symbols);
-                    bool implementsIFormatable = ImplementsIFormatable(propertyType, symbols);
+                    bool implementsIFormattable = ImplementsIFormattable(propertyType, symbols);
 
                     bool propertyHasComplexType =
 #pragma warning disable CA1508 // Avoid dead conditional code
@@ -384,7 +384,7 @@ internal static class LogParserUtilities
                         propertyType.IsReferenceType,
                         isEnumerable,
                         implementsIConvertible,
-                        implementsIFormatable,
+                        implementsIFormattable,
                         transitiveMembers);
 
                     result.Add(propertyToLog);
