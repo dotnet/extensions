@@ -14,15 +14,13 @@ namespace Microsoft.Gen.Logging.Emission;
 
 internal sealed partial class Emitter : EmitterBase
 {
-    private const string NullExceptionArgComment = " // Refer to our docs to learn how to pass exception here";
-
     private void GenLogMethod(LoggingMethod lm)
     {
         var logPropsDataClasses = GetLogPropertiesAttributes(lm);
         string level = GetLoggerMethodLogLevel(lm);
         string extension = lm.IsExtensionMethod ? "this " : string.Empty;
         string eventName = string.IsNullOrWhiteSpace(lm.EventName) ? $"nameof({lm.Name})" : $"\"{lm.EventName}\"";
-        (string exceptionArg, string exceptionArgComment) = GetException(lm);
+        string exceptionArg = GetException(lm);
         (string logger, bool isNullableLogger) = GetLogger(lm);
 
         if (!lm.HasXmlDocumentation)
@@ -76,7 +74,7 @@ internal sealed partial class Emitter : EmitterBase
         }
 
         var redactorProviderAccess = string.Empty;
-        var parametersToRedact = lm.AllParameters.Where(lp => lp.ClassificationAttributeType != null);
+        var parametersToRedact = lm.Parameters.Where(lp => lp.ClassificationAttributeType != null);
         if (parametersToRedact.Any() || logPropsDataClasses.Count > 0)
         {
             (string redactorProvider, bool isNullableRedactorProvider) = GetRedactorProvider(lm);
@@ -98,47 +96,50 @@ internal sealed partial class Emitter : EmitterBase
 
         Dictionary<LoggingMethodParameter, int> holderMap = new();
 
-        OutLn($"var _helper = {LogMethodHelperType}.GetHelper();");
+        var helperName = PickUniqueName("helper", lm.Parameters.Select(p => p.Name));
+        var tmpName = PickUniqueName("tmp", lm.Parameters.Select(p => p.Name));
 
-        foreach (var p in lm.AllParameters)
+        OutLn($"var {helperName} = {LogMethodHelperType}.GetHelper();");
+
+        foreach (var p in lm.Parameters)
         {
             if (!p.HasPropsProvider && !p.HasProperties && p.IsNormalParameter)
             {
-                GenHelperAdd(lm, holderMap, p, redactorProviderAccess);
+                GenHelperAdd(lm, holderMap, p, redactorProviderAccess, helperName, tmpName);
             }
         }
 
-        foreach (var p in lm.TemplateParameters)
+        foreach (var p in lm.Parameters.Where(p => p.UsedAsTemplate))
         {
             if (!holderMap.ContainsKey(p))
             {
-                GenHelperAdd(lm, holderMap, p, redactorProviderAccess);
+                GenHelperAdd(lm, holderMap, p, redactorProviderAccess, helperName, tmpName);
             }
         }
 
         if (!string.IsNullOrEmpty(lm.Message))
         {
-            OutLn($"_helper.Add(\"{{OriginalFormat}}\", \"{EscapeMessageString(lm.Message)}\");");
+            OutLn($"{helperName}.Add(\"{{OriginalFormat}}\", \"{EscapeMessageString(lm.Message)}\");");
         }
 
-        foreach (var p in lm.AllParameters)
+        foreach (var p in lm.Parameters)
         {
             if (p.HasPropsProvider)
             {
                 if (p.OmitParameterName)
                 {
-                    OutLn($"_helper.ParameterName = string.Empty;");
+                    OutLn($"{helperName}.ParameterName = string.Empty;");
                 }
                 else
                 {
-                    OutLn($"_helper.ParameterName = nameof({p.NameWithAt});");
+                    OutLn($"{helperName}.ParameterName = nameof({p.NameWithAt});");
                 }
 
-                OutLn($"{p.LogPropertiesProvider!.ContainingType}.{p.LogPropertiesProvider.MethodName}(_helper, {p.NameWithAt});");
+                OutLn($"{p.LogPropertiesProvider!.ContainingType}.{p.LogPropertiesProvider.MethodName}({helperName}, {p.NameWithAt});");
             }
             else if (p.HasProperties)
             {
-                OutLn($"_helper.ParameterName = string.Empty;");
+                OutLn($"{helperName}.ParameterName = string.Empty;");
 
                 p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
                 {
@@ -158,16 +159,16 @@ internal sealed partial class Emitter : EmitterBase
                         {
                             if (p.SkipNullProperties || accessExpression == value)
                             {
-                                OutLn($"{skipNull}_helper.Add(\"{propName}\", {value});");
+                                OutLn($"{skipNull}{helperName}.Add(\"{propName}\", {value});");
                             }
                             else
                             {
-                                OutLn($"_helper.Add(\"{propName}\", {accessExpression} != null ? {value} : null);");
+                                OutLn($"{helperName}.Add(\"{propName}\", {accessExpression} != null ? {value} : null);");
                             }
                         }
                         else
                         {
-                            OutLn($"_helper.Add(\"{propName}\", {value});");
+                            OutLn($"{helperName}.Add(\"{propName}\", {value});");
                         }
                     }
                     else
@@ -180,7 +181,7 @@ internal sealed partial class Emitter : EmitterBase
                             ? $"global::Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Stringify({accessExpression})"
                             : ts;
 
-                        OutLn($"{skipNull}_helper.Add(\"{propName}\", {value});");
+                        OutLn($"{skipNull}{helperName}.Add(\"{propName}\", {value});");
                     }
                 });
             }
@@ -202,25 +203,18 @@ internal sealed partial class Emitter : EmitterBase
             OutLn($"new(0, {eventName}),");
         }
 
-        OutLn($"_helper,");
-        OutLn($"{exceptionArg},{exceptionArgComment}");
-        OutLn($"__FUNC_{_memberCounter}_{lm.Name});");
-        Unindent();
+        OutLn($"{helperName},");
+        OutLn($"{exceptionArg},");
 
-        OutLn();
-        OutLn($"{LogMethodHelperType}.ReturnHelper(_helper);");
+        var lambdaHelperName = PickUniqueName("helper", lm.TemplateToParameterName.Select(kvp => kvp.Key));
 
-        OutCloseBrace();
-
-        OutLn();
-        OutGeneratedCodeAttribute();
-        OutLn($"private static string __FMT_{_memberCounter}_{lm.Name}(global::Microsoft.Extensions.Telemetry.Logging.LogMethodHelper _h, global::System.Exception? _)");
+        OutLn($"static ({lambdaHelperName}, _) =>");
         OutOpenBrace();
 
-        if (GenVariableAssignments(lm, holderMap))
+        if (GenVariableAssignments(lm, holderMap, lambdaHelperName))
         {
             var template = EscapeMessageString(lm.Message);
-            template = AddAtSymbolsToTemplates(template, lm.TemplateParameters);
+            template = AddAtSymbolsToTemplates(template, lm.Parameters);
             OutLn($@"return global::System.FormattableString.Invariant($""{template}"");");
         }
         else if (string.IsNullOrEmpty(lm.Message))
@@ -232,12 +226,13 @@ internal sealed partial class Emitter : EmitterBase
             OutLn($@"return ""{EscapeMessageString(lm.Message)}"";");
         }
 
-        OutCloseBrace();
+        OutCloseBraceWithExtra(");");
+        Unindent();
 
         OutLn();
-        OutGeneratedCodeAttribute();
-        OutLn($"private static readonly global::System.Func<global::Microsoft.Extensions.Telemetry.Logging.LogMethodHelper, global::System.Exception?, string>" +
-            $" __FUNC_{_memberCounter}_{lm.Name} = new(__FMT_{_memberCounter}_{lm.Name});");
+        OutLn($"{LogMethodHelperType}.ReturnHelper({helperName});");
+
+        OutCloseBrace();
 
         static bool ShouldStringify(string typeName)
         {
@@ -258,7 +253,7 @@ internal sealed partial class Emitter : EmitterBase
             {
                 return $"{arg}{question}.ToString(global::System.Globalization.CultureInfo.InvariantCulture)";
             }
-            else if (lp.ImplementsIFormatable)
+            else if (lp.ImplementsIFormattable)
             {
                 return $"{arg}{question}.ToString(null, global::System.Globalization.CultureInfo.InvariantCulture)";
             }
@@ -273,7 +268,7 @@ internal sealed partial class Emitter : EmitterBase
             {
                 return $"{arg}{question}.ToString(global::System.Globalization.CultureInfo.InvariantCulture)";
             }
-            else if (lp.ImplementsIFormatable)
+            else if (lp.ImplementsIFormattable)
             {
                 return $"{arg}{question}.ToString(null, global::System.Globalization.CultureInfo.InvariantCulture)";
             }
@@ -281,31 +276,30 @@ internal sealed partial class Emitter : EmitterBase
             return $"{arg}{question}.ToString()";
         }
 
-        static (string exceptionArg, string exceptionArgComment) GetException(LoggingMethod lm)
+        static string GetException(LoggingMethod lm)
         {
             string exceptionArg = "null";
-            string exceptionArgComment = NullExceptionArgComment;
-            foreach (var p in lm.AllParameters)
+            foreach (var p in lm.Parameters)
             {
                 if (p.IsException)
                 {
                     exceptionArg = p.Name;
-                    exceptionArgComment = string.Empty;
                     break;
                 }
             }
 
-            return (exceptionArg, exceptionArgComment);
+            return exceptionArg;
         }
 
-        bool GenVariableAssignments(LoggingMethod lm, Dictionary<LoggingMethodParameter, int> holderMap)
+        bool GenVariableAssignments(LoggingMethod lm, Dictionary<LoggingMethodParameter, int> holderMap, string lambdaHelperName)
         {
             var result = false;
 
-            foreach (var t in lm.TemplateMap)
+            var templateParameters = lm.Parameters.Where(p => p.UsedAsTemplate).ToArray();
+            foreach (var t in lm.TemplateToParameterName)
             {
                 int index = 0;
-                foreach (var p in lm.TemplateParameters)
+                foreach (var p in templateParameters)
                 {
                     if (t.Key.Equals(p.Name, StringComparison.OrdinalIgnoreCase))
                     {
@@ -316,19 +310,19 @@ internal sealed partial class Emitter : EmitterBase
                 }
 
                 // check for an index that's too big, this can happen in some cases of malformed input
-                if (index < lm.TemplateParameters.Count)
+                if (index < templateParameters.Length)
                 {
-                    var parameter = lm.TemplateParameters[index];
+                    var parameter = templateParameters[index];
                     var atSign = parameter.NeedsAtSign ? "@" : string.Empty;
                     if (parameter.PotentiallyNull)
                     {
                         const string Null = "\"(null)\"";
-                        OutLn($"var {atSign}{t.Key} = _h[{holderMap[parameter]}].Value ?? {Null};");
+                        OutLn($"var {atSign}{t.Key} = {lambdaHelperName}[{holderMap[parameter]}].Value ?? {Null};");
                         result = true;
                     }
                     else
                     {
-                        OutLn($"var {atSign}{t.Key} = _h[{holderMap[parameter]}].Value;");
+                        OutLn($"var {atSign}{t.Key} = {lambdaHelperName}[{holderMap[parameter]}].Value;");
                         result = true;
                     }
                 }
@@ -342,7 +336,7 @@ internal sealed partial class Emitter : EmitterBase
             string logger = lm.LoggerField;
             bool isNullable = lm.LoggerFieldNullable;
 
-            foreach (var p in lm.AllParameters)
+            foreach (var p in lm.Parameters)
             {
                 if (p.IsLogger)
                 {
@@ -360,7 +354,7 @@ internal sealed partial class Emitter : EmitterBase
             string redactorProvider = lm.RedactorProviderField;
             bool isNullable = lm.RedactorProviderFieldNullable;
 
-            foreach (var p in lm.AllParameters)
+            foreach (var p in lm.Parameters)
             {
                 if (p.IsRedactorProvider)
                 {
@@ -373,7 +367,7 @@ internal sealed partial class Emitter : EmitterBase
             return (redactorProvider, isNullable);
         }
 
-        void GenHelperAdd(LoggingMethod lm, Dictionary<LoggingMethodParameter, int> holderMap, LoggingMethodParameter p, string redactorProviderAccess)
+        void GenHelperAdd(LoggingMethod lm, Dictionary<LoggingMethodParameter, int> holderMap, LoggingMethodParameter p, string redactorProviderAccess, string helperName, string tmpName)
         {
             string key = $"\"{lm.GetParameterNameInTemplate(p)}\"";
 
@@ -382,9 +376,9 @@ internal sealed partial class Emitter : EmitterBase
                 var dataClassVariableName = EncodeTypeName(p.ClassificationAttributeType);
 
                 OutOpenBrace();
-                OutLn($"var _v = {ConvertToString(p, p.NameWithAt)};");
-                var value = $"_v != null ? _{dataClassVariableName}Redactor{redactorProviderAccess}.Redact(global::System.MemoryExtensions.AsSpan(_v)) : null";
-                OutLn($"_helper.Add({key}, {value});");
+                OutLn($"var {tmpName} = {ConvertToString(p, p.NameWithAt)};");
+                var value = $"{tmpName} != null ? _{dataClassVariableName}Redactor{redactorProviderAccess}.Redact(global::System.MemoryExtensions.AsSpan({tmpName})) : null";
+                OutLn($"{helperName}.Add({key}, {value});");
                 OutCloseBrace();
             }
             else
@@ -395,7 +389,7 @@ internal sealed partial class Emitter : EmitterBase
                         ? $"{p.NameWithAt} != null ? global::Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Stringify({p.NameWithAt}) : null"
                         : $"global::Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Stringify({p.NameWithAt})";
 
-                    OutLn($"_helper.Add({key}, {value});");
+                    OutLn($"{helperName}.Add({key}, {value});");
                 }
                 else
                 {
@@ -403,7 +397,7 @@ internal sealed partial class Emitter : EmitterBase
                         ? ConvertToString(p, p.NameWithAt)
                         : p.NameWithAt;
 
-                    OutLn($"_helper.Add({key}, {value});");
+                    OutLn($"{helperName}.Add({key}, {value});");
                 }
             }
 
@@ -411,10 +405,10 @@ internal sealed partial class Emitter : EmitterBase
         }
     }
 
-    private string AddAtSymbolsToTemplates(string template, List<LoggingMethodParameter> templateParameters)
+    private string AddAtSymbolsToTemplates(string template, IEnumerable<LoggingMethodParameter> parameters)
     {
         StringBuilder? stringBuilder = null;
-        foreach (var item in templateParameters)
+        foreach (var item in parameters.Where(p => p.UsedAsTemplate))
         {
             if (!item.NeedsAtSign)
             {
@@ -444,7 +438,7 @@ internal sealed partial class Emitter : EmitterBase
 
     private void GenParameters(LoggingMethod lm)
     {
-        OutEnumeration(lm.AllParameters.Select(static p =>
+        OutEnumeration(lm.Parameters.Select(static p =>
         {
             if (p.Qualifier != null)
             {
@@ -502,9 +496,9 @@ internal sealed partial class Emitter : EmitterBase
         {
             foreach (var classificationAttributeType in classificationAttributeTypes)
             {
-                var dataClassVariableName = EncodeTypeName(classificationAttributeType);
+                var classificationVariableName = EncodeTypeName(classificationAttributeType);
 
-                OutLn($"var _{dataClassVariableName}Redactor = __{dataClassVariableName}Redactor;");
+                OutLn($"var _{classificationVariableName}Redactor = __{classificationVariableName}Redactor;");
             }
         }
         else

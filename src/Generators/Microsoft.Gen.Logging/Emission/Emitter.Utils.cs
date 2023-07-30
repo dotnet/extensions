@@ -77,7 +77,7 @@ internal sealed partial class Emitter : EmitterBase
     internal static IReadOnlyCollection<string> GetLogPropertiesAttributes(LoggingMethod lm)
     {
         var result = new HashSet<string?>();
-        var parametersWithLogProps = lm.AllParameters.Where(x => x.HasProperties && !x.HasPropsProvider);
+        var parametersWithLogProps = lm.Parameters.Where(x => x.HasProperties && !x.HasPropsProvider);
         foreach (var parameter in parametersWithLogProps)
         {
             parameter.TraverseParameterPropertiesTransitively((_, property) => result.Add(property.ClassificationAttributeType));
@@ -96,7 +96,7 @@ internal sealed partial class Emitter : EmitterBase
 
         if (lm.Level == null)
         {
-            foreach (var p in lm.AllParameters)
+            foreach (var p in lm.Parameters)
             {
                 if (p.IsLogLevel)
                 {
@@ -150,4 +150,30 @@ internal sealed partial class Emitter : EmitterBase
     }
 
     internal static string EncodeTypeName(string typeName) => typeName.Replace("_", "__").Replace('.', '_');
+
+    internal static string PickUniqueName(string baseName, IEnumerable<string> potentialConflicts)
+    {
+        var name = baseName;
+        while (true)
+        {
+            bool conflict = false;
+            foreach (var potentialConflict in potentialConflicts)
+            {
+                if (name == potentialConflict)
+                {
+                    conflict = true;
+                    break;
+                }
+            }
+
+            if (!conflict)
+            {
+                return name;
+            }
+
+#pragma warning disable S1643 // Strings should not be concatenated using '+' in a loop
+            name += "_";
+#pragma warning restore S1643 // Strings should not be concatenated using '+' in a loop
+        }
+    }
 }

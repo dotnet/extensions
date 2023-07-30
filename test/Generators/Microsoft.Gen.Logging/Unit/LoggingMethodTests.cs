@@ -32,8 +32,8 @@ public class LoggingMethodTests
     {
         var p = new LoggingMethodParameter { Name = "paramName" };
         var method = new LoggingMethod();
-        method.TemplateMap[p.Name] = "Name from the map";
+        method.TemplateToParameterName[p.Name] = "Name from the map";
 
-        Assert.Equal(method.TemplateMap[p.Name], method.GetParameterNameInTemplate(p));
+        Assert.Equal(method.TemplateToParameterName[p.Name], method.GetParameterNameInTemplate(p));
     }
 }

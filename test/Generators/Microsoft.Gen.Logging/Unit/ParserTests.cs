@@ -131,17 +131,17 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task InvalidMethodName()
+    public async Task UnderscoresInMethodName()
     {
         const string Source = @"
                 partial class C
                 {
                     [LogMethod(0, LogLevel.Debug, ""M1"")]
-                    static partial void /*0+*/__M1/*-0*/(ILogger logger);
+                    static partial void __M1(ILogger logger);
                 }
             ";
 
-        await RunGenerator(Source, DiagDescriptors.InvalidLoggingMethodName);
+        await RunGenerator(Source);
     }
 
     [Fact]
@@ -201,7 +201,7 @@ public partial class ParserTests
                 }
             ";
 
-        await RunGenerator(Source, DiagDescriptors.ArgumentHasNoCorrespondingTemplate);
+        await RunGenerator(Source, DiagDescriptors.ParameterHasNoCorrespondingTemplate);
     }
 
     [Fact]
@@ -215,7 +215,7 @@ public partial class ParserTests
                 }
             ";
 
-        await RunGenerator(Source, DiagDescriptors.TemplateHasNoCorrespondingArgument);
+        await RunGenerator(Source, DiagDescriptors.TemplateHasNoCorrespondingParameter);
     }
 
     [Theory]
@@ -317,17 +317,17 @@ public partial class ParserTests
     [InlineData("_foo")]
     [InlineData("__foo")]
     [InlineData("@_foo", "_foo")]
-    public async Task InvalidParameterName(string name, string? template = null)
+    public async Task UnderscoresInParameterName(string name, string? template = null)
     {
         string source = @$"
                 partial class C
                 {{
                     [LogMethod(0, LogLevel.Debug, ""M1 {{{template ?? name}}}"")]
-                    static partial void M1(ILogger logger, string /*0+*/{name}/*-0*/);
+                    static partial void M1(ILogger logger, string {name});
                 }}
             ";
 
-        await RunGenerator(source, DiagDescriptors.InvalidLoggingMethodParameterName);
+        await RunGenerator(source);
     }
 
     [Fact]
@@ -493,7 +493,7 @@ public partial class ParserTests
                 }
             ";
 
-        await RunGenerator(Source, DiagDescriptors.MissingLoggerArgument);
+        await RunGenerator(Source, DiagDescriptors.MissingLoggerParameter);
     }
 
     [Fact]
@@ -580,7 +580,7 @@ public partial class ParserTests
                 public partial void /*3+*/M4/*-3*/(IRedactorProvider provider);
             }";
 
-        await RunGenerator(Source, DiagDescriptors.EmptyLoggingMethod, ignoreDiag: DiagDescriptors.MissingDataClassificationArgument);
+        await RunGenerator(Source, DiagDescriptors.EmptyLoggingMethod, ignoreDiag: DiagDescriptors.MissingDataClassificationParameter);
     }
 
     [Fact]
@@ -604,7 +604,7 @@ public partial class ParserTests
                 public static partial void /*3+*/M4/*-3*/(ILogger logger, IRedactorProvider provider);
             }";
 
-        await RunGenerator(Source, DiagDescriptors.EmptyLoggingMethod, ignoreDiag: DiagDescriptors.MissingDataClassificationArgument);
+        await RunGenerator(Source, DiagDescriptors.EmptyLoggingMethod, ignoreDiag: DiagDescriptors.MissingDataClassificationParameter);
     }
 
     [Fact]

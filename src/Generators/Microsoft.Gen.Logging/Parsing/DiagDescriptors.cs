@@ -10,11 +10,7 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
 {
     private const string Category = "LogMethod";
 
-    public static DiagnosticDescriptor InvalidLoggingMethodName { get; } = Make(
-        id: "R9G000",
-        title: Resources.InvalidLoggingMethodNameTitle,
-        messageFormat: Resources.InvalidLoggingMethodNameMessage,
-        category: Category);
+    // R9G000 retired
 
     public static DiagnosticDescriptor ShouldntMentionLogLevelInMessage { get; } = Make(
         id: "R9G001",
@@ -23,13 +19,7 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         category: Category,
         DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor InvalidLoggingMethodParameterName { get; } = Make(
-        id: "R9G002",
-        title: Resources.InvalidLoggingMethodParameterNameTitle,
-        messageFormat: Resources.InvalidLoggingMethodParameterNameMessage,
-        category: Category);
-
-    // R9G003 is no longer in use
+    // R9G002,R9G003 retired
 
     public static DiagnosticDescriptor MissingRequiredType { get; } = Make(
         id: "R9G004",
@@ -50,10 +40,10 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.LoggingMethodMustReturnVoidMessage,
         category: Category);
 
-    public static DiagnosticDescriptor MissingLoggerArgument { get; } = Make(
+    public static DiagnosticDescriptor MissingLoggerParameter { get; } = Make(
         id: "R9G007",
-        title: Resources.MissingLoggerArgumentTitle,
-        messageFormat: Resources.MissingLoggerArgumentMessage,
+        title: Resources.MissingLoggerParameterTitle,
+        messageFormat: Resources.MissingLoggerParameterMessage,
         category: Category);
 
     public static DiagnosticDescriptor LoggingMethodShouldBeStatic { get; } = Make(
@@ -89,16 +79,16 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         category: Category,
         DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor TemplateHasNoCorrespondingArgument { get; } = Make(
+    public static DiagnosticDescriptor TemplateHasNoCorrespondingParameter { get; } = Make(
         id: "R9G013",
-        title: Resources.TemplateHasNoCorrespondingArgumentTitle,
-        messageFormat: Resources.TemplateHasNoCorrespondingArgumentMessage,
+        title: Resources.TemplateHasNoCorrespondingParameterTitle,
+        messageFormat: Resources.TemplateHasNoCorrespondingParameterMessage,
         category: Category);
 
-    public static DiagnosticDescriptor ArgumentHasNoCorrespondingTemplate { get; } = Make(
+    public static DiagnosticDescriptor ParameterHasNoCorrespondingTemplate { get; } = Make(
         id: "R9G014",
-        title: Resources.ArgumentHasNoCorrespondingTemplateTitle,
-        messageFormat: Resources.ArgumentHasNoCorrespondingTemplateMessage,
+        title: Resources.ParameterHasNoCorrespondingTemplateTitle,
+        messageFormat: Resources.ParameterHasNoCorrespondingTemplateMessage,
         category: Category,
         DiagnosticSeverity.Info);
 
@@ -139,16 +129,16 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.MultipleDataClassificationAttributesMessage,
         category: Category);
 
-    public static DiagnosticDescriptor MissingRedactorProviderArgument { get; } = Make(
+    public static DiagnosticDescriptor MissingRedactorProviderParameter { get; } = Make(
         id: "R9G021",
-        title: Resources.MissingRedactorProviderArgumentTitle,
-        messageFormat: Resources.MissingRedactorProviderArgumentMessage,
+        title: Resources.MissingRedactorProviderParameterTitle,
+        messageFormat: Resources.MissingRedactorProviderParameterMessage,
         category: Category);
 
-    public static DiagnosticDescriptor MissingDataClassificationArgument { get; } = Make(
+    public static DiagnosticDescriptor MissingDataClassificationParameter { get; } = Make(
         id: "R9G022",
-        title: Resources.MissingDataClassificationArgumentTitle,
-        messageFormat: Resources.MissingDataClassificationArgumentMessage,
+        title: Resources.MissingDataClassificationParameterTitle,
+        messageFormat: Resources.MissingDataClassificationParameterMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 

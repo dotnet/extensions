@@ -103,7 +103,7 @@ internal sealed class Parser
                         var logPropertiesAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogPropertiesAttribute, paramSymbol);
                         if (logPropertiesAttribute is not null)
                         {
-                            var processingResult = LogParserUtilities.ProcessLogPropertiesForParameter(
+                            var processingResult = ParsingUtilities.ProcessLogPropertiesForParameter(
                                 logPropertiesAttribute,
                                 lm,
                                 lp,
@@ -128,41 +128,33 @@ internal sealed class Parser
                         }
 
                         bool forceAsTemplateParam = false;
-                        if (lp.IsLogger && lm.TemplateMap.ContainsKey(lp.Name))
+                        if (lp.IsLogger && lm.TemplateToParameterName.ContainsKey(lp.Name))
                         {
                             Diag(DiagDescriptors.ShouldntMentionLoggerInMessage, attrLoc, lp.Name);
                             forceAsTemplateParam = true;
                         }
-                        else if (lp.IsException && lm.TemplateMap.ContainsKey(lp.Name))
+                        else if (lp.IsException && lm.TemplateToParameterName.ContainsKey(lp.Name))
                         {
                             Diag(DiagDescriptors.ShouldntMentionExceptionInMessage, attrLoc, lp.Name);
                             forceAsTemplateParam = true;
                         }
-                        else if (lp.IsLogLevel && lm.TemplateMap.ContainsKey(lp.Name))
+                        else if (lp.IsLogLevel && lm.TemplateToParameterName.ContainsKey(lp.Name))
                         {
                             Diag(DiagDescriptors.ShouldntMentionLogLevelInMessage, attrLoc, lp.Name);
                             forceAsTemplateParam = true;
                         }
-                        else if (lp.IsNormalParameter && !lm.TemplateMap.ContainsKey(lp.Name) &&
+                        else if (lp.IsNormalParameter && !lm.TemplateToParameterName.ContainsKey(lp.Name) &&
                                  logPropertiesAttribute == null && !string.IsNullOrEmpty(lm.Message))
                         {
-                            Diag(DiagDescriptors.ArgumentHasNoCorrespondingTemplate, paramSymbol.GetLocation(), lp.Name);
+                            Diag(DiagDescriptors.ParameterHasNoCorrespondingTemplate, paramSymbol.GetLocation(), lp.Name);
                         }
 
-                        // "Name" property doesn't contain '@' even if there was one in the source.
-                        if (lp.Name[0] == '_')
-                        {
-                            // can't have logging method parameter names that start with _ since that can lead to conflicting symbol names
-                            // because all generated symbols start with _
-                            Diag(DiagDescriptors.InvalidLoggingMethodParameterName, paramSymbol.GetLocation());
-                        }
-
-                        lm.AllParameters.Add(lp);
+                        lm.Parameters.Add(lp);
                         if (lp.IsNormalParameter || forceAsTemplateParam)
                         {
-                            if (lm.TemplateMap.ContainsKey(lp.Name))
+                            if (lm.TemplateToParameterName.ContainsKey(lp.Name))
                             {
-                                lm.TemplateParameters.Add(lp);
+                                lp.UsedAsTemplate = true;
                             }
                         }
                     }
@@ -173,21 +165,21 @@ internal sealed class Parser
                         {
                             if (!parsingState.FoundLogger)
                             {
-                                Diag(DiagDescriptors.MissingLoggerArgument, method.ParameterList.GetLocation(), lm.Name);
+                                Diag(DiagDescriptors.MissingLoggerParameter, method.ParameterList.GetLocation(), lm.Name);
                                 keepMethod = false;
                             }
                             else if (parsingState.FoundRedactorProvider && !parsingState.FoundDataClassificationAnnotation)
                             {
-                                Diag(DiagDescriptors.MissingDataClassificationArgument, method.ParameterList.GetLocation(), lm.Name);
+                                Diag(DiagDescriptors.MissingDataClassificationParameter, method.ParameterList.GetLocation(), lm.Name);
                             }
                             else if (parsingState.FoundDataClassificationAnnotation && !parsingState.FoundRedactorProvider)
                             {
-                                Diag(DiagDescriptors.MissingRedactorProviderArgument, method.ParameterList.GetLocation());
+                                Diag(DiagDescriptors.MissingRedactorProviderParameter, method.ParameterList.GetLocation());
                                 keepMethod = false;
                             }
                             else if (parsingState.FoundRedactorProvider && parsingState.FoundCustomLogPropertiesProvider)
                             {
-                                foreach (var lp in lm.AllParameters)
+                                foreach (var lp in lm.Parameters)
                                 {
                                     if (lp.HasPropsProvider)
                                     {
@@ -254,7 +246,7 @@ internal sealed class Parser
                             }
                             else if (parsingState.FoundRedactorProvider && !parsingState.FoundDataClassificationAnnotation)
                             {
-                                Diag(DiagDescriptors.MissingDataClassificationArgument, method.GetLocation(), lm.Name);
+                                Diag(DiagDescriptors.MissingDataClassificationParameter, method.GetLocation(), lm.Name);
                             }
 
                             // Show this warning only if other checks passed
@@ -275,15 +267,15 @@ internal sealed class Parser
                         if (keepMethod &&
                             string.IsNullOrWhiteSpace(lm.Message) &&
                             !lm.EventId.HasValue &&
-                            lm.AllParameters.All(x => x.IsLogger || x.IsRedactorProvider || x.IsLogLevel))
+                            lm.Parameters.All(x => x.IsLogger || x.IsRedactorProvider || x.IsLogLevel))
                         {
                             Diag(DiagDescriptors.EmptyLoggingMethod, method.Identifier.GetLocation(), methodSymbol.Name);
                         }
 
-                        foreach (var t in lm.TemplateMap)
+                        foreach (var t in lm.TemplateToParameterName)
                         {
                             bool found = false;
-                            foreach (var p in lm.AllParameters)
+                            foreach (var p in lm.Parameters)
                             {
                                 if (t.Key.Equals(p.Name, StringComparison.OrdinalIgnoreCase))
                                 {
@@ -294,11 +286,11 @@ internal sealed class Parser
 
                             if (!found)
                             {
-                                Diag(DiagDescriptors.TemplateHasNoCorrespondingArgument, attrLoc, t.Key);
+                                Diag(DiagDescriptors.TemplateHasNoCorrespondingParameter, attrLoc, t.Key);
                             }
                         }
 
-                        LogParserUtilities.CheckMethodParametersAreUnique(lm, diagReport, parameterSymbols);
+                        ParsingUtilities.CheckMethodParametersAreUnique(lm, diagReport, parameterSymbols);
                     }
 
                     if (lt == null)
@@ -399,15 +391,9 @@ internal sealed class Parser
                 HasXmlDocumentation = HasXmlDocumentation(method),
             };
 
-            TemplateExtractor.ExtractTemplates(message, lm.TemplateMap, out var templatesWithAtSymbol);
+            TemplateExtractor.ExtractTemplates(message, lm.TemplateToParameterName, out var templatesWithAtSymbol);
 
             var keepMethod = true;
-            if (lm.Name[0] == '_')
-            {
-                // can't have logging method names that start with _ since that can lead to conflicting symbol names
-                // because the generated symbols start with _
-                Diag(DiagDescriptors.InvalidLoggingMethodName, method.Identifier.GetLocation());
-            }
 
             if (!methodSymbol.ReturnsVoid)
             {
@@ -573,9 +559,9 @@ internal sealed class Parser
             IsLogger = !parsingState.FoundLogger && ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.ILoggerSymbol, _compilation),
             IsException = !parsingState.FoundException && ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.ExceptionSymbol, _compilation),
             IsLogLevel = !parsingState.FoundLogLevel && SymbolEqualityComparer.Default.Equals(paramTypeSymbol, symbols.LogLevelSymbol),
-            IsEnumerable = LogParserUtilities.IsEnumerable(extractedType, symbols),
-            ImplementsIConvertible = LogParserUtilities.ImplementsIConvertible(paramTypeSymbol, symbols),
-            ImplementsIFormatable = LogParserUtilities.ImplementsIFormatable(paramTypeSymbol, symbols),
+            IsEnumerable = ParsingUtilities.IsEnumerable(extractedType, symbols),
+            ImplementsIConvertible = ParsingUtilities.ImplementsIConvertible(paramTypeSymbol, symbols),
+            ImplementsIFormattable = ParsingUtilities.ImplementsIFormattable(paramTypeSymbol, symbols),
 
             IsRedactorProvider = !parsingState.FoundRedactorProvider &&
                 symbols.RedactorProviderSymbol is not null &&

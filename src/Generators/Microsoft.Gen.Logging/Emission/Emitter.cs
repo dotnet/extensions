@@ -18,12 +18,10 @@ internal sealed partial class Emitter : EmitterBase
 
     private readonly StringBuilderPool _sbPool = new();
     private bool _isRedactorProviderInTheInstance;
-    private int _memberCounter;
 
     public string Emit(IEnumerable<LoggingType> logTypes, CancellationToken cancellationToken)
     {
         _isRedactorProviderInTheInstance = false;
-        _memberCounter = 0;
 
         foreach (var lt in logTypes.OrderBy(static lt => lt.Namespace + "." + lt.Name))
         {
@@ -72,7 +70,7 @@ internal sealed partial class Emitter : EmitterBase
 
         var isRedactionRequired =
             lt.Methods
-                .SelectMany(static lm => lm.AllParameters)
+                .SelectMany(static lm => lm.Parameters)
                 .Any(static lp => lp.ClassificationAttributeType != null)
             || lt.Methods
                 .SelectMany(static lm => GetLogPropertiesAttributes(lm))
@@ -81,7 +79,7 @@ internal sealed partial class Emitter : EmitterBase
         if (isRedactionRequired)
         {
             _isRedactorProviderInTheInstance = lt.Methods
-                .SelectMany(static lm => lm.AllParameters)
+                .SelectMany(static lm => lm.Parameters)
                 .All(static lp => !lp.IsRedactorProvider);
 
             if (_isRedactorProviderInTheInstance)
@@ -105,7 +103,6 @@ internal sealed partial class Emitter : EmitterBase
             }
 
             GenLogMethod(lm);
-            _memberCounter++;
         }
 
         OutCloseBrace();
@@ -129,7 +126,7 @@ internal sealed partial class Emitter : EmitterBase
 
         var logPropsDataClasses = lt.Methods.SelectMany(lm => GetLogPropertiesAttributes(lm));
         var classificationAttributeTypes = lt.Methods
-            .SelectMany(static lm => lm.AllParameters)
+            .SelectMany(static lm => lm.Parameters)
             .Where(static lp => lp.ClassificationAttributeType is not null)
             .Select(static lp => lp.ClassificationAttributeType!)
             .Concat(logPropsDataClasses)
@@ -151,7 +148,7 @@ internal sealed partial class Emitter : EmitterBase
 
         var logPropsDataClasses = lt.Methods.SelectMany(lm => GetLogPropertiesAttributes(lm));
         var classificationAttributeTypes = lt.Methods
-            .SelectMany(static lm => lm.AllParameters)
+            .SelectMany(static lm => lm.Parameters)
             .Where(static lp => lp.ClassificationAttributeType is not null)
             .Select(static lp => lp.ClassificationAttributeType!)
             .Concat(logPropsDataClasses)

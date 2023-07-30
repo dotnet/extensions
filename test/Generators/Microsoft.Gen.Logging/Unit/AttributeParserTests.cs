@@ -154,7 +154,7 @@ public class AttributeParserTests
             ");
 
         _ = Assert.Single(diagnostics);
-        Assert.Equal(DiagDescriptors.MissingLoggerArgument.Id, diagnostics[0].Id);
+        Assert.Equal(DiagDescriptors.MissingLoggerParameter.Id, diagnostics[0].Id);
     }
 
     [Theory]
@@ -169,7 +169,7 @@ public class AttributeParserTests
             }}");
 
         _ = Assert.Single(diagnostics);
-        Assert.Equal(DiagDescriptors.MissingRedactorProviderArgument.Id, diagnostics[0].Id);
+        Assert.Equal(DiagDescriptors.MissingRedactorProviderParameter.Id, diagnostics[0].Id);
     }
 
     [Theory]
@@ -231,7 +231,7 @@ public class AttributeParserTests
             ");
 
         _ = Assert.Single(diagnostics);
-        Assert.Equal(DiagDescriptors.MissingDataClassificationArgument.Id, diagnostics[0].Id);
+        Assert.Equal(DiagDescriptors.MissingDataClassificationParameter.Id, diagnostics[0].Id);
     }
 
     [Fact]
@@ -261,7 +261,7 @@ public class AttributeParserTests
             }");
 
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal(DiagDescriptors.MissingDataClassificationArgument.Id, diagnostic.Id);
+        Assert.Equal(DiagDescriptors.MissingDataClassificationParameter.Id, diagnostic.Id);
     }
 
     [Theory]

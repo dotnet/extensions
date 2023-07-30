@@ -18,7 +18,7 @@ internal sealed record LoggingProperty(
     bool IsReference,
     bool IsEnumerable,
     bool ImplementsIConvertible,
-    bool ImplementsIFormatable,
+    bool ImplementsIFormattable,
     IReadOnlyCollection<LoggingProperty> TransitiveMembers)
 {
     public string NameWithAt => NeedsAtSign ? "@" + Name : Name;

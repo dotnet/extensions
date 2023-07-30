@@ -16,6 +16,10 @@ namespace TestClasses
         // optional parameter
         [LogMethod(1, LogLevel.Debug, "{p1} {p2}")]
         internal static partial void M2(ILogger logger, string p1, string p2 = "World");
+
+        // parameter name potentially conflicting with generated symbol name
+        [LogMethod(2, LogLevel.Debug, "{helper}")]
+        internal static partial void M3(ILogger logger, string helper);
     }
 
     // test that particular method signature variations are generated correctly
