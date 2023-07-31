@@ -25,7 +25,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         PoolFactory.CreateListPool<KeyValuePair<string, string>>();
 
     private readonly ObjectPool<LogRecord> _logRecordPool =
-        PoolFactory.CreatePool(new LogRecordPooledObjectPolicy());
+        PoolFactory.CreateResettingPool<LogRecord>();
 
     private readonly bool _logRequestStart;
     private readonly bool _logResponseHeaders;

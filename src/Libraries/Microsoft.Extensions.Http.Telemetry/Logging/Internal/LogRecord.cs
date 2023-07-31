@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
@@ -10,7 +11,7 @@ namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 /// <summary>
 /// Parsed HTTP information.
 /// </summary>
-internal sealed class LogRecord
+internal sealed class LogRecord : IResettable
 {
     /// <summary>
     /// Gets or sets HTTP host.
@@ -61,4 +62,19 @@ internal sealed class LogRecord
     /// Gets or sets enrichment properties.
     /// </summary>
     public LogMethodHelper? EnrichmentProperties { get; set; }
+
+    public bool TryReset()
+    {
+        Host = string.Empty;
+        Method = null;
+        Path = string.Empty;
+        Duration = 0;
+        StatusCode = null;
+        RequestBody = null;
+        ResponseBody = null;
+        EnrichmentProperties = null;
+        RequestHeaders = null;
+        ResponseHeaders = null;
+        return true;
+    }
 }
