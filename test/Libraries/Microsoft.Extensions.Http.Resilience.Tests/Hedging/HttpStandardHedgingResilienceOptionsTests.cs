@@ -22,10 +22,10 @@ public class HttpStandardHedgingResilienceOptionsTests
         _options.TotalRequestTimeoutOptions.Timeout.Should().Be(TimeSpan.FromSeconds(30));
         _options.EndpointOptions.TimeoutOptions.Timeout.Should().Be(TimeSpan.FromSeconds(10));
 
-        _options.TotalRequestTimeoutOptions.StrategyName.Should().Be("StandardHedging-TotalRequestTimeout");
-        _options.HedgingOptions.StrategyName.Should().Be("StandardHedging-Hedging");
-        _options.EndpointOptions.CircuitBreakerOptions.StrategyName.Should().Be("StandardHedging-CircuitBreaker");
-        _options.EndpointOptions.TimeoutOptions.StrategyName.Should().Be("StandardHedging-AttemptTimeout");
-        _options.EndpointOptions.RateLimiterOptions.StrategyName.Should().Be("StandardHedging-RateLimiter");
+        _options.TotalRequestTimeoutOptions.Name.Should().Be("StandardHedging-TotalRequestTimeout");
+        _options.HedgingOptions.Name.Should().Be("StandardHedging-Hedging");
+        _options.EndpointOptions.CircuitBreakerOptions.Name.Should().Be("StandardHedging-CircuitBreaker");
+        _options.EndpointOptions.TimeoutOptions.Name.Should().Be("StandardHedging-AttemptTimeout");
+        _options.EndpointOptions.RateLimiterOptions.Name.Should().Be("StandardHedging-RateLimiter");
     }
 }

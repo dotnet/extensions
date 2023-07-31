@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Microsoft.Gen.Logging {
+namespace Microsoft.Gen.Logging.Parsing {
     using System;
     
     
@@ -61,24 +61,6 @@ namespace Microsoft.Gen.Logging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; is not referenced from the logging message.
-        /// </summary>
-        internal static string ArgumentHasNoCorrespondingTemplateMessage {
-            get {
-                return ResourceManager.GetString("ArgumentHasNoCorrespondingTemplateMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A parameter isn&apos;t referenced from the logging message.
-        /// </summary>
-        internal static string ArgumentHasNoCorrespondingTemplateTitle {
-            get {
-                return ResourceManager.GetString("ArgumentHasNoCorrespondingTemplateTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Logging method &quot;{0}&quot; doesn&apos;t have anything to be logged.
         /// </summary>
         internal static string EmptyLoggingMethodMessage {
@@ -93,42 +75,6 @@ namespace Microsoft.Gen.Logging {
         internal static string EmptyLoggingMethodTitle {
             get {
                 return ResourceManager.GetString("EmptyLoggingMethodTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Logging method names can&apos;t start with _.
-        /// </summary>
-        internal static string InvalidLoggingMethodNameMessage {
-            get {
-                return ResourceManager.GetString("InvalidLoggingMethodNameMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Logging method names can&apos;t start with an underscore.
-        /// </summary>
-        internal static string InvalidLoggingMethodNameTitle {
-            get {
-                return ResourceManager.GetString("InvalidLoggingMethodNameTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Logging method parameter names cannot start with _.
-        /// </summary>
-        internal static string InvalidLoggingMethodParameterNameMessage {
-            get {
-                return ResourceManager.GetString("InvalidLoggingMethodParameterNameMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Logging method parameter names can&apos;t start with an underscore.
-        /// </summary>
-        internal static string InvalidLoggingMethodParameterNameTitle {
-            get {
-                return ResourceManager.GetString("InvalidLoggingMethodParameterNameTitle", resourceCulture);
             }
         }
         
@@ -423,36 +369,18 @@ namespace Microsoft.Gen.Logging {
         /// <summary>
         ///   Looks up a localized string similar to One or more parameters of the logging method &quot;{0}&quot; must be annotated with a data classification attribute.
         /// </summary>
-        internal static string MissingDataClassificationArgumentMessage {
+        internal static string MissingDataClassificationParameterMessage {
             get {
-                return ResourceManager.GetString("MissingDataClassificationArgumentMessage", resourceCulture);
+                return ResourceManager.GetString("MissingDataClassificationParameterMessage", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Logging method parameters must be annotated with a data classification attribute.
         /// </summary>
-        internal static string MissingDataClassificationArgumentTitle {
+        internal static string MissingDataClassificationParameterTitle {
             get {
-                return ResourceManager.GetString("MissingDataClassificationArgumentTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to One of the parameters to a static logging method must implement the &quot;Microsoft.Extensions.Logging.ILogger&quot; interface.
-        /// </summary>
-        internal static string MissingLoggerArgumentMessage {
-            get {
-                return ResourceManager.GetString("MissingLoggerArgumentMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A static logging method must have a parameter that implements the &quot;Microsoft.Extensions.Logging.ILogger&quot; interface.
-        /// </summary>
-        internal static string MissingLoggerArgumentTitle {
-            get {
-                return ResourceManager.GetString("MissingLoggerArgumentTitle", resourceCulture);
+                return ResourceManager.GetString("MissingDataClassificationParameterTitle", resourceCulture);
             }
         }
         
@@ -475,6 +403,24 @@ namespace Microsoft.Gen.Logging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to One of the parameters to a static logging method must implement the &quot;Microsoft.Extensions.Logging.ILogger&quot; interface.
+        /// </summary>
+        internal static string MissingLoggerParameterMessage {
+            get {
+                return ResourceManager.GetString("MissingLoggerParameterMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A static logging method must have a parameter that implements the &quot;Microsoft.Extensions.Logging.ILogger&quot; interface.
+        /// </summary>
+        internal static string MissingLoggerParameterTitle {
+            get {
+                return ResourceManager.GetString("MissingLoggerParameterTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A &quot;LogLevel&quot; value must be supplied in the &quot;LoggerMethod&quot; attribute or as a parameter to the logging method.
         /// </summary>
         internal static string MissingLogLevelMessage {
@@ -493,24 +439,6 @@ namespace Microsoft.Gen.Logging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to One of the parameters to a logging method that performs redaction must implement the Microsoft.Extensions.Redaction.IRedactorProvider interface.
-        /// </summary>
-        internal static string MissingRedactorProviderArgumentMessage {
-            get {
-                return ResourceManager.GetString("MissingRedactorProviderArgumentMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A parameter to a logging method must implement the &quot;IRedactorProvider&quot; interface.
-        /// </summary>
-        internal static string MissingRedactorProviderArgumentTitle {
-            get {
-                return ResourceManager.GetString("MissingRedactorProviderArgumentTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Couldn&apos;t find a field of type &quot;Microsoft.Extensions.Redaction.IRedactorProvider&quot; in type &quot;{0}&quot;.
         /// </summary>
         internal static string MissingRedactorProviderFieldMessage {
@@ -525,6 +453,24 @@ namespace Microsoft.Gen.Logging {
         internal static string MissingRedactorProviderFieldTitle {
             get {
                 return ResourceManager.GetString("MissingRedactorProviderFieldTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to One of the parameters to a logging method that performs redaction must implement the Microsoft.Extensions.Redaction.IRedactorProvider interface.
+        /// </summary>
+        internal static string MissingRedactorProviderParameterMessage {
+            get {
+                return ResourceManager.GetString("MissingRedactorProviderParameterMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A parameter to a logging method must implement the &quot;IRedactorProvider&quot; interface.
+        /// </summary>
+        internal static string MissingRedactorProviderParameterTitle {
+            get {
+                return ResourceManager.GetString("MissingRedactorProviderParameterTitle", resourceCulture);
             }
         }
         
@@ -597,6 +543,24 @@ namespace Microsoft.Gen.Logging {
         internal static string MultipleRedactorProviderFieldsTitle {
             get {
                 return ResourceManager.GetString("MultipleRedactorProviderFieldsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; is not referenced from the logging message.
+        /// </summary>
+        internal static string ParameterHasNoCorrespondingTemplateMessage {
+            get {
+                return ResourceManager.GetString("ParameterHasNoCorrespondingTemplateMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A parameter isn&apos;t referenced from the logging message.
+        /// </summary>
+        internal static string ParameterHasNoCorrespondingTemplateTitle {
+            get {
+                return ResourceManager.GetString("ParameterHasNoCorrespondingTemplateTitle", resourceCulture);
             }
         }
         
@@ -711,18 +675,18 @@ namespace Microsoft.Gen.Logging {
         /// <summary>
         ///   Looks up a localized string similar to Template &quot;{0}&quot; is not provided as parameter to the logging method.
         /// </summary>
-        internal static string TemplateHasNoCorrespondingArgumentMessage {
+        internal static string TemplateHasNoCorrespondingParameterMessage {
             get {
-                return ResourceManager.GetString("TemplateHasNoCorrespondingArgumentMessage", resourceCulture);
+                return ResourceManager.GetString("TemplateHasNoCorrespondingParameterMessage", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The logging template has no corresponding method parameter.
         /// </summary>
-        internal static string TemplateHasNoCorrespondingArgumentTitle {
+        internal static string TemplateHasNoCorrespondingParameterTitle {
             get {
-                return ResourceManager.GetString("TemplateHasNoCorrespondingArgumentTitle", resourceCulture);
+                return ResourceManager.GetString("TemplateHasNoCorrespondingParameterTitle", resourceCulture);
             }
         }
         

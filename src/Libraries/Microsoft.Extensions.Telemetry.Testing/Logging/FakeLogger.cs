@@ -26,11 +26,11 @@ public class FakeLogger : ILogger
     /// <summary>
     /// Initializes a new instance of the <see cref="FakeLogger"/> class.
     /// </summary>
-    /// <param name="collector">Where to push all log state.</param>
+    /// <param name="collector">Where to push all log state. If this is <see langword="null"/> then a fresh collector is allocated automatically.</param>
     /// <param name="category">The logger's category, which indicates the origin of the logger and is captured in each record.</param>
     public FakeLogger(FakeLogCollector? collector = null, string? category = null)
     {
-        Collector = collector ?? new FakeLogCollector();
+        Collector = collector ?? new();
         Category = string.IsNullOrEmpty(category) ? null : category;
     }
 
@@ -50,14 +50,8 @@ public class FakeLogger : ILogger
     /// <typeparam name="TState">The type of the state to begin scope for.</typeparam>
     /// <param name="state">The identifier for the scope.</param>
     /// <returns>A disposable object that ends the logical operation scope on dispose.</returns>
-#pragma warning disable CS8633
-#pragma warning disable CS8766
-#pragma warning disable R9A049
     public IDisposable? BeginScope<TState>(TState state)
         where TState : notnull => ScopeProvider.Push(state);
-#pragma warning restore CS8633
-#pragma warning restore CS8766
-#pragma warning restore R9A049
 
     /// <summary>
     /// Creates a new log record.

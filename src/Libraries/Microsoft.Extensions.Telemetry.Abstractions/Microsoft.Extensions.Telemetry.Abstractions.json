@@ -74,6 +74,34 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LoggerMessageState : Microsoft.Extensions.ObjectPool.IResettable, Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.IEnumerable, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object?>>",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedProperty.ClassifiedProperty(string name, object? value, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedProperty.ClassifiedProperty();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedProperty.Classification { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedProperty.Name { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedProperty.Value { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.CounterAttribute : System.Attribute",
       "Stage": "Stable",
       "Methods": [
@@ -164,6 +192,14 @@
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher enricher);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddStaticLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddStaticLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Telemetry.Enrichment.IStaticLogEnricher enricher);",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -405,6 +441,10 @@
         {
           "Member": "void Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector.Add(string propertyName, object? propertyValue);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector.Add(string propertyName, object? propertyValue, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -431,6 +471,16 @@
         {
           "Member": "Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext.RequestMetadata { get; }",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.IStaticLogEnricher",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IStaticLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag bag);",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -527,6 +577,26 @@
       ]
     },
     {
+      "Type": "static class Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static string Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper.Stringify(System.Collections.IEnumerable? enumerable);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper.Stringify<TKey, TValue>(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>? enumerable);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static Microsoft.Extensions.Telemetry.Logging.LoggerMessageState Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper.ThreadLocalState { get; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute : System.Attribute",
       "Stage": "Stable",
       "Methods": [
@@ -597,6 +667,10 @@
         {
           "Member": "void Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Add(string propertyName, object? propertyValue);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Add(string propertyName, object? propertyValue, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Experimental"
         },
         {
           "Member": "static Microsoft.Extensions.Telemetry.Logging.LogMethodHelper Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.GetHelper();",

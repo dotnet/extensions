@@ -11,6 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Logging\LogEnrichmentTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Telemetry.Internal\Telemetry.Internal.Test.xunit.runner.json" CopyToOutputDirectory="PreserveNewest" TargetPath="$(AssemblyName).xunit.runner.json" />
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

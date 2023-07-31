@@ -78,27 +78,6 @@ internal static class SymbolLoader
             return null;
         }
 
-        var logMethodHelperSymbol = compilation.GetTypeByMetadataName(LogMethodHelper);
-        var enrichmentPropBagSymbol = compilation.GetTypeByMetadataName(IEnrichmentPropertyBag);
-
-        if (logMethodHelperSymbol != null)
-        {
-            bool found = false;
-            foreach (var iface in logMethodHelperSymbol.Interfaces)
-            {
-                if (SymbolEqualityComparer.Default.Equals(iface, enrichmentPropBagSymbol))
-                {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-            {
-                logMethodHelperSymbol = null;
-            }
-        }
-
         var redactorProviderSymbol = compilation.GetTypeByMetadataName(IRedactorProviderType);
         var enumerableSymbol = compilation.GetSpecialType(SpecialType.System_Collections_IEnumerable);
         var formatProviderSymbol = compilation.GetTypeByMetadataName(IFormatProviderType)!;

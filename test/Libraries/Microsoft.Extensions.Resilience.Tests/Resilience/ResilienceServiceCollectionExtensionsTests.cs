@@ -55,7 +55,7 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
     public void AddResilienceEnrichment_NoOutcome_EnsureDimensions()
     {
         Build();
-        _telemetry!.Report(new ResilienceEvent(ResilienceEventSeverity.Information, "dummy-event"), ResilienceContext.Get(), string.Empty);
+        _telemetry!.Report(new ResilienceEvent(ResilienceEventSeverity.Information, "dummy-event"), ResilienceContextPool.Shared.Get(), string.Empty);
 
         Tags["failure-reason"].Should().BeNull();
         Tags["failure-source"].Should().BeNull();
@@ -82,7 +82,7 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
         Build();
         _telemetry!.Report(
             new ResilienceEvent(ResilienceEventSeverity.Information, "dummy-event"),
-            new OutcomeArguments<string, string>(ResilienceContext.Get(), Outcome.FromException<string>(new InvalidOperationException { Source = "my-source" }), string.Empty));
+            new OutcomeArguments<string, string>(ResilienceContextPool.Shared.Get(), Outcome.FromException<string>(new InvalidOperationException { Source = "my-source" }), string.Empty));
 
         Tags["failure-reason"].Should().Be("InvalidOperationException");
         Tags["failure-summary"].Should().Be("type:desc:details");
@@ -97,7 +97,7 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
         Build();
         _telemetry!.Report(
             new ResilienceEvent(ResilienceEventSeverity.Information, "dummy-event"),
-            new OutcomeArguments<string, string>(ResilienceContext.Get(), Outcome.FromResult("string-result"), string.Empty));
+            new OutcomeArguments<string, string>(ResilienceContextPool.Shared.Get(), Outcome.FromResult("string-result"), string.Empty));
 
         Tags["failure-source"].Should().Be("my-source");
         Tags["failure-reason"].Should().Be("my-reason");
@@ -107,7 +107,7 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
     [Fact]
     public void AddResilienceEnrichment_RequestMetadata_EnsureDimensions()
     {
-        var context = ResilienceContext.Get();
+        var context = ResilienceContextPool.Shared.Get();
         context.SetRequestMetadata(new RequestMetadata { RequestName = "my-req", DependencyName = "my-dep" });
 
         Build();
@@ -124,7 +124,7 @@ public class ResilienceServiceCollectionExtensionsTests : IDisposable
         _services.TryAddSingleton(Mock.Of<IOutgoingRequestContext>(v => v.RequestMetadata == requestMetadata));
 
         Build();
-        _telemetry!.Report(new ResilienceEvent(ResilienceEventSeverity.Information, "dummy-event"), ResilienceContext.Get(), string.Empty);
+        _telemetry!.Report(new ResilienceEvent(ResilienceEventSeverity.Information, "dummy-event"), ResilienceContextPool.Shared.Get(), string.Empty);
 
         Tags["dep-name"].Should().Be("my-dep");
         Tags["req-name"].Should().Be("my-req");

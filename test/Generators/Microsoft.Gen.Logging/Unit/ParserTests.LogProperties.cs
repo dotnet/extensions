@@ -646,7 +646,7 @@ public partial class ParserTests
                 static partial void M/*0+*/(ILogger logger, [LogProperties] MyClass param)/*-0*/;
             }}";
 
-        await RunGenerator(source, DiagDescriptors.MissingRedactorProviderArgument);
+        await RunGenerator(source, DiagDescriptors.MissingRedactorProviderParameter);
     }
 
     [Theory]

@@ -47,7 +47,7 @@ public class HttpStandardHedgingResilienceOptions
     [ValidateObjectMembers]
     public HttpTimeoutStrategyOptions TotalRequestTimeoutOptions { get; set; } = new HttpTimeoutStrategyOptions
     {
-        StrategyName = StandardHedgingStrategyNames.TotalRequestTimeout
+        Name = StandardHedgingStrategyNames.TotalRequestTimeout
     };
 
     /// <summary>
@@ -60,7 +60,7 @@ public class HttpStandardHedgingResilienceOptions
     [ValidateObjectMembers]
     public HttpHedgingStrategyOptions HedgingOptions { get; set; } = new HttpHedgingStrategyOptions
     {
-        StrategyName = StandardHedgingStrategyNames.Hedging
+        Name = StandardHedgingStrategyNames.Hedging
     };
 
     /// <summary>

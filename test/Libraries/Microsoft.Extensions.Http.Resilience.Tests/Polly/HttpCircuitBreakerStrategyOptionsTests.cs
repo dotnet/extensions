@@ -31,7 +31,7 @@ public class HttpCircuitBreakerStrategyOptionsTests
     public HttpCircuitBreakerStrategyOptionsTests()
     {
         _testObject = new HttpCircuitBreakerStrategyOptions();
-        _context = ResilienceContext.Get();
+        _context = ResilienceContextPool.Shared.Get();
     }
 
     [Fact]
@@ -70,9 +70,9 @@ public class HttpCircuitBreakerStrategyOptionsTests
     }
 
     private OutcomeArguments<HttpResponseMessage, CircuitBreakerPredicateArguments> CreateArgs(Exception error)
-        => new(_context, Outcome.FromException<HttpResponseMessage>(error), new CircuitBreakerPredicateArguments());
+        => new(_context, Outcome.FromException<HttpResponseMessage>(error), default);
 
     private OutcomeArguments<HttpResponseMessage, CircuitBreakerPredicateArguments> CreateArgs(HttpResponseMessage response)
-        => new(_context, Outcome.FromResult(response), new CircuitBreakerPredicateArguments());
+        => new(_context, Outcome.FromResult(response), default);
 
 }

@@ -117,18 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InvalidLoggingMethodNameTitle" xml:space="preserve">
-    <value>Logging method names can't start with an underscore</value>
-  </data>
-  <data name="InvalidLoggingMethodNameMessage" xml:space="preserve">
-    <value>Logging method names can't start with _</value>
-  </data>
-  <data name="InvalidLoggingMethodParameterNameTitle" xml:space="preserve">
-    <value>Logging method parameter names can't start with an underscore</value>
-  </data>
-  <data name="InvalidLoggingMethodParameterNameMessage" xml:space="preserve">
-    <value>Logging method parameter names cannot start with _</value>
-  </data>
   <data name="MissingRequiredTypeTitle" xml:space="preserve">
     <value>Couldn't find a required type definition</value>
   </data>
@@ -147,10 +135,10 @@
   <data name="LoggingMethodMustReturnVoidMessage" xml:space="preserve">
     <value>Logging methods must return void</value>
   </data>
-  <data name="MissingLoggerArgumentTitle" xml:space="preserve">
+  <data name="MissingLoggerParameterTitle" xml:space="preserve">
     <value>A static logging method must have a parameter that implements the "Microsoft.Extensions.Logging.ILogger" interface</value>
   </data>
-  <data name="MissingLoggerArgumentMessage" xml:space="preserve">
+  <data name="MissingLoggerParameterMessage" xml:space="preserve">
     <value>One of the parameters to a static logging method must implement the "Microsoft.Extensions.Logging.ILogger" interface</value>
   </data>
   <data name="LoggingMethodShouldBeStaticTitle" xml:space="preserve">
@@ -183,16 +171,16 @@
   <data name="RedundantQualifierInMessageTitle" xml:space="preserve">
     <value>Redundant qualifier in the logging message</value>
   </data>
-  <data name="ArgumentHasNoCorrespondingTemplateMessage" xml:space="preserve">
+  <data name="ParameterHasNoCorrespondingTemplateMessage" xml:space="preserve">
     <value>Parameter "{0}" is not referenced from the logging message</value>
   </data>
-  <data name="ArgumentHasNoCorrespondingTemplateTitle" xml:space="preserve">
+  <data name="ParameterHasNoCorrespondingTemplateTitle" xml:space="preserve">
     <value>A parameter isn't referenced from the logging message</value>
   </data>
-  <data name="TemplateHasNoCorrespondingArgumentMessage" xml:space="preserve">
+  <data name="TemplateHasNoCorrespondingParameterMessage" xml:space="preserve">
     <value>Template "{0}" is not provided as parameter to the logging method</value>
   </data>
-  <data name="TemplateHasNoCorrespondingArgumentTitle" xml:space="preserve">
+  <data name="TemplateHasNoCorrespondingParameterTitle" xml:space="preserve">
     <value>The logging template has no corresponding method parameter</value>
   </data>
   <data name="LoggingMethodHasBodyTitle" xml:space="preserve">
@@ -237,16 +225,16 @@
   <data name="MultipleDataClassificationAttributesTitle" xml:space="preserve">
     <value>Can't have multiple data classification attributes for a single data value</value>
   </data>
-  <data name="MissingRedactorProviderArgumentMessage" xml:space="preserve">
+  <data name="MissingRedactorProviderParameterMessage" xml:space="preserve">
     <value>One of the parameters to a logging method that performs redaction must implement the Microsoft.Extensions.Redaction.IRedactorProvider interface</value>
   </data>
-  <data name="MissingRedactorProviderArgumentTitle" xml:space="preserve">
+  <data name="MissingRedactorProviderParameterTitle" xml:space="preserve">
     <value>A parameter to a logging method must implement the "IRedactorProvider" interface</value>
   </data>
-  <data name="MissingDataClassificationArgumentMessage" xml:space="preserve">
+  <data name="MissingDataClassificationParameterMessage" xml:space="preserve">
     <value>One or more parameters of the logging method "{0}" must be annotated with a data classification attribute</value>
   </data>
-  <data name="MissingDataClassificationArgumentTitle" xml:space="preserve">
+  <data name="MissingDataClassificationParameterTitle" xml:space="preserve">
     <value>Logging method parameters must be annotated with a data classification attribute</value>
   </data>
   <data name="MissingRedactorProviderFieldMessage" xml:space="preserve">

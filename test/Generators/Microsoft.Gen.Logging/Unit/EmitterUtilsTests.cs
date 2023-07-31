@@ -43,13 +43,13 @@ public class EmitterUtilsTests
         var publicDataFullName = typeof(PublicDataAttribute).FullName!;
 
         var lm = new LoggingMethod();
-        lm.AllParameters.Add(new LoggingMethodParameter
+        lm.Parameters.Add(new LoggingMethodParameter
         {
             LogPropertiesProvider = new LoggingPropertyProvider(string.Empty, string.Empty),
             PropertiesToLog = new List<LoggingProperty> { new LoggingProperty("a", "b", publicDataFullName, false, false, false, false, false, false, Array.Empty<LoggingProperty>()) }
         });
 
-        lm.AllParameters.Add(new LoggingMethodParameter
+        lm.Parameters.Add(new LoggingMethodParameter
         {
             LogPropertiesProvider = null,
             PropertiesToLog = new List<LoggingProperty> { new LoggingProperty("c", "d", publicDataFullName, false, false, false, false, false, false, Array.Empty<LoggingProperty>()) }
@@ -80,7 +80,7 @@ public class EmitterUtilsTests
             Level = null
         };
 
-        lm.AllParameters.Add(new LoggingMethodParameter
+        lm.Parameters.Add(new LoggingMethodParameter
         {
             IsLogLevel = true,
             Name = ParamName

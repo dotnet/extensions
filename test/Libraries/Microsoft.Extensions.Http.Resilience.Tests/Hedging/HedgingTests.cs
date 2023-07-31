@@ -69,7 +69,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
     {
         var key = new ResiliencePropertyKey<string>("custom-data");
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
-        var context = ResilienceContext.Get();
+        var context = ResilienceContextPool.Shared.Get();
         context.Properties.Set(key, "my-data");
         request.SetResilienceContext(context);
         var calls = 0;

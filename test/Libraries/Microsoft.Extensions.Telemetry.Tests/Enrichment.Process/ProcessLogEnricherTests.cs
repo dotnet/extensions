@@ -49,10 +49,12 @@ public class ProcessLogEnricherTests
         };
 
         var enricher = new ProcessLogEnricher(options.ToOptions());
+        var staticEnricher = new StaticProcessLogEnricher(options.ToOptions());
         var enrichedProperties = new TestLogEnrichmentPropertyBag(new List<KeyValuePair<string, object>>());
 
         // Act
         enricher.Enrich(enrichedProperties);
+        staticEnricher.Enrich(enrichedProperties);
         var enrichedState = enrichedProperties.Properties;
 
         // Assert
@@ -78,10 +80,12 @@ public class ProcessLogEnricherTests
         };
 
         var enricher = new ProcessLogEnricher(options.ToOptions());
+        var staticEnricher = new StaticProcessLogEnricher(options.ToOptions());
         var enrichedProperties = new TestLogEnrichmentPropertyBag();
 
         // Act
         enricher.Enrich(enrichedProperties);
+        staticEnricher.Enrich(enrichedProperties);
         var enrichedState = enrichedProperties.Properties;
 
         // Assert
