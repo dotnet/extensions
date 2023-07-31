@@ -29,6 +29,7 @@ internal sealed class TestLoggingHandler : DelegatingHandler
         {
             delegatingHandler.InnerHandler = innerHandler;
         }
+
         return delegatingHandler;
     }
 }
