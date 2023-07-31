@@ -38,7 +38,7 @@ internal static class TaskExtensions
     {
         var tcs = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         using (cancellationToken.Register(
-                static state => ((TaskCompletionSource<TResult>)state).SetCanceled(), tcs, false))
+                static state => ((TaskCompletionSource<TResult>)state!).SetCanceled(), tcs, false))
         {
             var t = await Task.WhenAny(task, tcs.Task).ConfigureAwait(false);
 #pragma warning disable VSTHRD103 // Call async methods when in an async method
