@@ -7,17 +7,19 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 
 public partial class LoggerMessageState : ILogPropertyCollector
 {
+    private const char Separator = '_';
+
     /// <inheritdoc />
     void ILogPropertyCollector.Add(string propertyName, object? propertyValue)
     {
-        string fullName = PropertyNamePrefix.Length > 0 ? PropertyNamePrefix + "_" + propertyName : propertyName;
+        string fullName = PropertyNamePrefix.Length > 0 ? PropertyNamePrefix + Separator + propertyName : propertyName;
         AddProperty(fullName, propertyValue);
     }
 
     /// <inheritdoc />
     void ILogPropertyCollector.Add(string propertyName, object? propertyValue, DataClassification classification)
     {
-        string fullName = PropertyNamePrefix.Length > 0 ? PropertyNamePrefix + "_" + propertyName : propertyName;
+        string fullName = PropertyNamePrefix.Length > 0 ? PropertyNamePrefix + Separator + propertyName : propertyName;
         AddClassifiedProperty(fullName, propertyValue, classification);
     }
 

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Telemetry.Enrichment;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
@@ -25,18 +24,20 @@ public partial class LoggerMessageState : IEnrichmentPropertyBag
     /// <inheritdoc/>
     void IEnrichmentPropertyBag.Add(ReadOnlySpan<KeyValuePair<string, object>> properties)
     {
+        var index = ReservePropertySpace(properties.Length);
         foreach (var p in properties)
         {
-            AddProperty(p.Key, p.Value);
+            PropertyArray[index++] = new(p.Key, p.Value);
         }
     }
 
     /// <inheritdoc/>
     void IEnrichmentPropertyBag.Add(ReadOnlySpan<KeyValuePair<string, string>> properties)
     {
+        var index = ReservePropertySpace(properties.Length);
         foreach (var p in properties)
         {
-            AddProperty(p.Key, p.Value);
+            PropertyArray[index++] = new(p.Key, p.Value);
         }
     }
 }
