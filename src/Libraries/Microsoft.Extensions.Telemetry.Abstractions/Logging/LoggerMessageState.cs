@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Pools;
@@ -44,7 +45,7 @@ public sealed partial class LoggerMessageState
     /// </summary>
     /// <param name="count">The amount of space to allocate.</param>
     /// <returns>The index in the <see cref="PropertyArray"/> where to store the properties.</returns>
-    public int EnsurePropertySpace(int count)
+    public int ReservePropertySpace(int count)
     {
         int avail = _properties.Length - NumProperties;
         if (count > avail)
@@ -63,7 +64,7 @@ public sealed partial class LoggerMessageState
     /// </summary>
     /// <param name="count">The amount of space to allocate.</param>
     /// <returns>The index in the <see cref="RedactedPropertyArray"/> where to store the properties.</returns>
-    public int EnsureRedactedPropertySpace(int count)
+    public int ReserveRedactedPropertySpace(int count)
     {
         int avail = _redactedProperties.Length - NumRedactedProperties;
         if (count > avail)
@@ -82,7 +83,7 @@ public sealed partial class LoggerMessageState
     /// </summary>
     /// <param name="count">The amount of space to allocate.</param>
     /// <returns>The index in the <see cref="ClassifiedPropertyArray"/> where to store the classified properties.</returns>
-    public int EnsureClassifiedPropertySpace(int count)
+    public int ReserveClassifiedPropertySpace(int count)
     {
         int avail = _classifiedProperties.Length - NumClassifiedProperties;
         if (count > avail)
@@ -94,6 +95,29 @@ public sealed partial class LoggerMessageState
         var index = NumClassifiedProperties;
         NumClassifiedProperties += count;
         return index;
+    }
+
+    /// <summary>
+    /// Adds a property to the array.
+    /// </summary>
+    /// <param name="name">The name of the property.</param>
+    /// <param name="value">The value.</param>
+    public void AddProperty(string name, object? value)
+    {
+        var index = ReservePropertySpace(1);
+        PropertyArray[index] = new(name, value);
+    }
+
+    /// <summary>
+    /// Adds a classified property to the array.
+    /// </summary>
+    /// <param name="name">The name of the property.</param>
+    /// <param name="value">The value.</param>
+    /// <param name="classification">The data classification of the property.</param>
+    public void AddClassifiedProperty(string name, object? value, DataClassification classification)
+    {
+        var index = ReserveClassifiedPropertySpace(1);
+        ClassifiedPropertyArray[index] = new(name, value, classification);
     }
 
     /// <summary>

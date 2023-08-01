@@ -1,10 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
+using Microsoft.Extensions.Telemetry.Enrichment;
 using Xunit;
 
 namespace Microsoft.Extensions.Telemetry.Logging.Test;
@@ -19,7 +21,7 @@ public static class LoggerMessageStateTests
 
         var lms = new LoggerMessageState();
 
-        var index = lms.EnsurePropertySpace(1);
+        var index = lms.ReservePropertySpace(1);
         lms.PropertyArray[index] = new(PropName, Value);
         Assert.Equal(1, lms.NumProperties);
         Assert.Equal(PropName, lms.PropertyArray[0].Key);
@@ -30,14 +32,14 @@ public static class LoggerMessageStateTests
         Assert.Equal(0, lms.NumProperties);
         Assert.Equal("", lms.ToString());
 
-        index = lms.EnsurePropertySpace(1);
+        index = lms.ReservePropertySpace(1);
         lms.PropertyArray[index] = new(PropName, Value);
         Assert.Equal(1, lms.NumProperties);
         Assert.Equal(PropName, lms.PropertyArray[0].Key);
         Assert.Equal(Value, lms.PropertyArray[0].Value);
         Assert.Equal("Property Name=Value", lms.ToString());
 
-        index = lms.EnsureClassifiedPropertySpace(1);
+        index = lms.ReserveClassifiedPropertySpace(1);
         lms.ClassifiedPropertyArray[index] = new(PropName, Value, SimpleClassifications.PrivateData);
         Assert.Equal(1, lms.NumProperties);
         Assert.Equal(PropName, lms.PropertyArray[0].Key);
@@ -50,7 +52,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(SimpleClassifications.PrivateData, lms.ClassifiedPropertyArray[0].Classification);
         Assert.Equal("Property Name=Value,Property Name=Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy:2", lms.ToString());
 
-        index = lms.EnsurePropertySpace(1);
+        index = lms.ReservePropertySpace(1);
         lms.PropertyArray[index] = new(PropName + "X", Value);
         Assert.Equal(2, lms.NumProperties);
         Assert.Equal(2, lms.PropertyArray.Length);
@@ -62,9 +64,36 @@ public static class LoggerMessageStateTests
     }
 
     [Fact]
+    public static void PropertyBagContract()
+    {
+        var lms = new LoggerMessageState();
+
+        var bag = (IEnrichmentPropertyBag)lms;
+
+        bag.Add("K1", "V1");
+        bag.Add("K2", (object)"V2");
+        bag.Add(new[] { new KeyValuePair<string, string>("K3", "V3") }.AsSpan());
+        bag.Add(new[] { new KeyValuePair<string, object>("K4", "V4") }.AsSpan());
+
+        Assert.Equal(4, lms.NumProperties);
+        Assert.Equal(0, lms.NumClassifiedProperties);
+        Assert.Equal(0, lms.NumRedactedProperties);
+
+        Assert.Equal("K1", lms.PropertyArray[0].Key);
+        Assert.Equal("K2", lms.PropertyArray[1].Key);
+        Assert.Equal("K3", lms.PropertyArray[2].Key);
+        Assert.Equal("K4", lms.PropertyArray[3].Key);
+
+        Assert.Equal("V1", lms.PropertyArray[0].Value);
+        Assert.Equal("V2", lms.PropertyArray[1].Value);
+        Assert.Equal("V3", lms.PropertyArray[2].Value);
+        Assert.Equal("V4", lms.PropertyArray[3].Value);
+    }
+
+    [Fact]
     public static void CollectorContract()
     {
-        const string PropertyNamPrefix = "param_name_";
+        const string PropertyNamPrefix = "param_name";
         const string PropName = "Property Name";
         const string Value = "Value";
 
@@ -75,16 +104,16 @@ public static class LoggerMessageStateTests
 
         collector.Add(PropName, Value);
         Assert.Equal(1, lms.NumProperties);
-        Assert.Equal(PropertyNamPrefix + PropName, lms.PropertyArray[0].Key);
+        Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.PropertyArray[0].Key);
         Assert.Equal(Value, lms.PropertyArray[0].Value);
 
         collector.Add(PropName, Value, SimpleClassifications.PrivateData);
         Assert.Equal(1, lms.NumProperties);
-        Assert.Equal(PropertyNamPrefix + PropName, lms.PropertyArray[0].Key);
+        Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.PropertyArray[0].Key);
         Assert.Equal(Value, lms.PropertyArray[0].Value);
 
         Assert.Equal(1, lms.NumClassifiedProperties);
-        Assert.Equal(PropertyNamPrefix + PropName, lms.ClassifiedPropertyArray[0].Name);
+        Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.ClassifiedPropertyArray[0].Name);
         Assert.Equal(Value, lms.ClassifiedPropertyArray[0].Value);
         Assert.Equal(SimpleClassifications.PrivateData, lms.ClassifiedPropertyArray[0].Classification);
 
@@ -116,7 +145,7 @@ public static class LoggerMessageStateTests
         var lms = new LoggerMessageState();
         var list = (IReadOnlyList<KeyValuePair<string, object?>>)lms;
 
-        var index = lms.EnsurePropertySpace(1);
+        var index = lms.ReservePropertySpace(1);
         lms.PropertyArray[index] = new(PropName, Value);
         Assert.Equal(1, list.Count);
         Assert.Equal(PropName, list[0].Key);
@@ -126,13 +155,13 @@ public static class LoggerMessageStateTests
         lms.Clear();
         Assert.Empty(list);
 
-        index = lms.EnsurePropertySpace(1);
+        index = lms.ReservePropertySpace(1);
         lms.PropertyArray[index] = new(PropName, Value);
         Assert.Equal(1, list.Count);
         Assert.Equal(PropName, list[0].Key);
         Assert.Equal(Value, list[0].Value);
 
-        index = lms.EnsureClassifiedPropertySpace(1);
+        index = lms.ReserveClassifiedPropertySpace(1);
         lms.ClassifiedPropertyArray[index] = new(PropName, Value, SimpleClassifications.PrivateData);
         Assert.Equal(1, list.Count);
         Assert.Equal(PropName, list[0].Key);
