@@ -157,7 +157,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             return;
         }
 
-        LogMethodHelper? propertyBag = null;
+        LoggerMessageState? loggerMessageState = null;
         List<KeyValuePair<string, string>>? responseHeadersBuffer = null;
         try
         {
@@ -171,8 +171,8 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
                 await _httpRequestReader.ReadResponseAsync(logRecord, response, responseHeadersBuffer, cancellationToken).ConfigureAwait(false);
             }
 
-            propertyBag = LogMethodHelper.GetHelper();
-            FillLogRecord(logRecord, propertyBag, in elapsed, request, response, exception);
+            loggerMessageState = LoggerMessageHelper.ThreadLocalState;
+            FillLogRecord(logRecord, loggerMessageState, in elapsed, request, response, exception);
 
             if (exception is null)
             {
@@ -192,11 +192,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         {
             var requestHeadersBuffer = logRecord.RequestHeaders; // Store the value first, and then return logRecord to the pool.
             _logRecordPool.Return(logRecord);
-
-            if (propertyBag is not null)
-            {
-                LogMethodHelper.ReturnHelper(propertyBag);
-            }
+            loggerMessageState?.Clear();
 
             if (responseHeadersBuffer is not null)
             {
@@ -213,14 +209,14 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
     [SuppressMessage("Design", "CA1031:Do not catch general exception types",
         Justification = "We intentionally catch all exception types to make Telemetry code resilient to failures.")]
     private void FillLogRecord(
-        LogRecord logRecord, LogMethodHelper propertyBag, in TimeSpan elapsed,
+        LogRecord logRecord, LoggerMessageState loggerMessageState, in TimeSpan elapsed,
         HttpRequestMessage request, HttpResponseMessage? response, Exception? exception)
     {
         foreach (var enricher in _enrichers)
         {
             try
             {
-                enricher.Enrich(propertyBag, request, response, exception);
+                enricher.Enrich(loggerMessageState, request, response, exception);
             }
             catch (Exception e)
             {
@@ -228,7 +224,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             }
         }
 
-        logRecord.EnrichmentProperties = propertyBag;
+        logRecord.EnrichmentProperties = loggerMessageState;
         logRecord.Duration = (long)elapsed.TotalMilliseconds;
     }
 }

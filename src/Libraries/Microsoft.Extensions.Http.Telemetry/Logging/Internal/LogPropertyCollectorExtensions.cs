@@ -12,35 +12,43 @@ internal static class LogPropertyCollectorExtensions
     private static readonly ConcurrentDictionary<string, string> _requestPrefixedNamesCache = new();
     private static readonly ConcurrentDictionary<string, string> _responsePrefixedNamesCache = new();
 
-    public static void AddRequestHeaders(this ILogPropertyCollector props, List<KeyValuePair<string, string>>? items)
+    /// <summary>
+    /// Adds request headers to <see cref="LoggerMessageState"/>.
+    /// </summary>
+    /// <param name="state">A <see cref="LoggerMessageState"/> to be filled.</param>
+    /// <param name="items">A list with request headers.</param>
+    /// <param name="index">Represents an index to be used when writing tags into <paramref name="state"/>.</param>
+    /// <remarks><paramref name="index"/> will be mutated to point to the next <paramref name="state"/> item.</remarks>
+    public static void AddRequestHeaders(this LoggerMessageState state, List<KeyValuePair<string, string>> items, ref int index)
     {
-        if (items is not null)
+        for (var i = 0; i < items.Count; i++)
         {
-            for (var i = 0; i < items.Count; i++)
-            {
-                var key = _requestPrefixedNamesCache.GetOrAdd(
-                    items[i].Key,
-                    static (x, p) => p + x,
-                    HttpClientLoggingDimensions.RequestHeaderPrefix);
+            var key = _requestPrefixedNamesCache.GetOrAdd(
+                items[i].Key,
+                static (x, p) => p + x,
+                HttpClientLoggingDimensions.RequestHeaderPrefix);
 
-                props.Add(key, items[i].Value);
-            }
+            state.PropertyArray[index++] = new(key, items[i].Value);
         }
     }
 
-    public static void AddResponseHeaders(this ILogPropertyCollector props, List<KeyValuePair<string, string>>? items)
+    /// <summary>
+    /// Adds response headers to <see cref="LoggerMessageState"/>.
+    /// </summary>
+    /// <param name="state">A <see cref="LoggerMessageState"/> to be filled.</param>
+    /// <param name="items">A list with response headers.</param>
+    /// <param name="index">Represents an index to be used when writing tags into <paramref name="state"/>.</param>
+    /// <remarks><paramref name="index"/> will be mutated to point to the next <paramref name="state"/> item.</remarks>
+    public static void AddResponseHeaders(this LoggerMessageState state, List<KeyValuePair<string, string>> items, ref int index)
     {
-        if (items is not null)
+        for (var i = 0; i < items.Count; i++)
         {
-            for (var i = 0; i < items.Count; i++)
-            {
-                var key = _responsePrefixedNamesCache.GetOrAdd(
-                    items[i].Key,
-                    static (x, p) => p + x,
-                    HttpClientLoggingDimensions.ResponseHeaderPrefix);
+            var key = _responsePrefixedNamesCache.GetOrAdd(
+                items[i].Key,
+                static (x, p) => p + x,
+                HttpClientLoggingDimensions.ResponseHeaderPrefix);
 
-                props.Add(key, items[i].Value);
-            }
+            state.PropertyArray[index++] = new(key, items[i].Value);
         }
     }
 }

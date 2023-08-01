@@ -61,7 +61,7 @@ internal sealed class LogRecord : IResettable
     /// <summary>
     /// Gets or sets enrichment properties.
     /// </summary>
-    public LogMethodHelper? EnrichmentProperties { get; set; }
+    public LoggerMessageState? EnrichmentProperties { get; set; }
 
     public bool TryReset()
     {

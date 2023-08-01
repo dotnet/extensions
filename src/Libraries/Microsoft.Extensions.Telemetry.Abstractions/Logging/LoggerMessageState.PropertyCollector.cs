@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 public partial class LoggerMessageState : ILogPropertyCollector
 {
     /// <inheritdoc />
-    void ILogPropertyCollector.Add(string propertyName, object? propertyValue)
+    public void Add(string propertyName, object? propertyValue)
     {
         string fullName = PropertyNamePrefix.Length > 0 ? PropertyNamePrefix + propertyName : propertyName;
         var index = EnsurePropertySpace(1);
@@ -16,7 +16,7 @@ public partial class LoggerMessageState : ILogPropertyCollector
     }
 
     /// <inheritdoc />
-    void ILogPropertyCollector.Add(string propertyName, object? propertyValue, DataClassification classification)
+    public void Add(string propertyName, object? propertyValue, DataClassification classification)
     {
         string fullName = PropertyNamePrefix.Length > 0 ? PropertyNamePrefix + propertyName : propertyName;
         var index = EnsureClassifiedPropertySpace(1);

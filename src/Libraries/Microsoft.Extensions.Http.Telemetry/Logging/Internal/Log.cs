@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
@@ -18,6 +20,8 @@ internal static partial class Log
     internal const string OriginalFormat = "{OriginalFormat}";
     internal const string OriginalFormatValue = "{httpMethod} {httpHost}/{httpPath}";
 
+    private const int MinimalPropertyCount = 5;
+
     private const string RequestReadErrorMessage =
         "An error occurred while reading the request data to fill the log record: " +
         $"{{{HttpClientLoggingDimensions.Method}}} {{{HttpClientLoggingDimensions.Host}}}/{{{HttpClientLoggingDimensions.Path}}}";
@@ -30,7 +34,7 @@ internal static partial class Log
         "An error occurred while enriching the log record: " +
         $"{{{HttpClientLoggingDimensions.Method}}} {{{HttpClientLoggingDimensions.Host}}}/{{{HttpClientLoggingDimensions.Path}}}";
 
-    private static readonly Func<LogMethodHelper, Exception?, string> _originalFormatValueFMTFunc = OriginalFormatValueFMT;
+    private static readonly Func<LoggerMessageState, Exception?, string> _originalFormatValueFMTFunc = OriginalFormatValueFMT;
 
     public static void OutgoingRequest(ILogger logger, LogLevel level, LogRecord record)
     {
@@ -55,48 +59,57 @@ internal static partial class Log
     private static void OutgoingRequest(
         ILogger logger, LogLevel level, int eventId, string eventName, LogRecord record, Exception? exception = null)
     {
-        if (logger.IsEnabled(level))
+        Debug.Assert(record.EnrichmentProperties is not null, "record.EnrichmentProperties has to be initialized");
+        if (!logger.IsEnabled(level))
         {
-            var collector = record.EnrichmentProperties ?? LogMethodHelper.GetHelper();
-
-            collector.AddRequestHeaders(record.RequestHeaders);
-            collector.AddResponseHeaders(record.ResponseHeaders);
-            collector.Add(HttpClientLoggingDimensions.Method, record.Method);
-            collector.Add(HttpClientLoggingDimensions.Host, record.Host);
-            collector.Add(HttpClientLoggingDimensions.Path, record.Path);
-            collector.Add(HttpClientLoggingDimensions.Duration, record.Duration);
-
-            if (record.StatusCode.HasValue)
-            {
-                collector.Add(HttpClientLoggingDimensions.StatusCode, record.StatusCode.Value);
-            }
-
-            if (record.RequestBody is not null)
-            {
-                collector.Add(HttpClientLoggingDimensions.RequestBody, record.RequestBody);
-            }
-
-            if (record.ResponseBody is not null)
-            {
-                collector.Add(HttpClientLoggingDimensions.ResponseBody, record.ResponseBody);
-            }
-
-            logger.Log(
-                level,
-                new(eventId, eventName),
-                collector,
-                exception,
-                _originalFormatValueFMTFunc);
-
-            // Stryker disable once all
-            if (collector != record.EnrichmentProperties)
-            {
-                LogMethodHelper.ReturnHelper(collector);
-            }
+            return;
         }
+
+        var loggerMessageState = record.EnrichmentProperties!;
+
+        var requestHeadersCount = record.RequestHeaders?.Count ?? 0;
+        var responseHeadersCount = record.ResponseHeaders?.Count ?? 0;
+
+        var index = loggerMessageState.EnsurePropertySpace(MinimalPropertyCount + requestHeadersCount + responseHeadersCount);
+        loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Method, record.Method);
+        loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Host, record.Host);
+        loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Path, record.Path);
+        loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Duration, record.Duration);
+
+        if (record.StatusCode.HasValue)
+        {
+            loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.StatusCode, record.StatusCode.Value);
+        }
+
+        if (requestHeadersCount > 0)
+        {
+            loggerMessageState.AddRequestHeaders(record.RequestHeaders!, ref index);
+        }
+
+        if (responseHeadersCount > 0)
+        {
+            loggerMessageState.AddResponseHeaders(record.ResponseHeaders!, ref index);
+        }
+
+        if (record.RequestBody is not null)
+        {
+            loggerMessageState.Add(HttpClientLoggingDimensions.RequestBody, record.RequestBody);
+        }
+
+        if (record.ResponseBody is not null)
+        {
+            loggerMessageState.Add(HttpClientLoggingDimensions.ResponseBody, record.ResponseBody);
+        }
+
+        logger.Log(
+            level,
+            new(eventId, eventName),
+            loggerMessageState,
+            exception,
+            _originalFormatValueFMTFunc);
     }
 
-    private static string OriginalFormatValueFMT(LogMethodHelper request, Exception? _)
+    private static string OriginalFormatValueFMT(LoggerMessageState request, Exception? _)
     {
         int startIndex = FindStartIndex(request);
         var httpMethod = request[startIndex].Value;
@@ -105,7 +118,7 @@ internal static partial class Log
         return FormattableString.Invariant($"{httpMethod} {httpHost}/{httpPath}");
     }
 
-    private static int FindStartIndex(LogMethodHelper request)
+    private static int FindStartIndex(LoggerMessageState request)
     {
         int startIndex = 0;
 
