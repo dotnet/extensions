@@ -59,11 +59,12 @@ public static class ExtendedLoggerTests
         logger.Log(LogLevel.Error, new EventId(1, "ID1"), lmh, null, (_, _) => "MSG1");
 
         var lms = LoggerMessageHelper.ThreadLocalState;
-        var index = lms.EnsurePropertySpace(1);
+        var index = lms.ReservePropertySpace(1);
         lms.PropertyArray[index] = new("PK2", "PV2");
 
-        index = lms.EnsureClassifiedPropertySpace(1);
+        index = lms.ReserveClassifiedPropertySpace(2);
         lms.ClassifiedPropertyArray[index] = new("PK3", "PV3", SimpleClassifications.PrivateData);
+        lms.ClassifiedPropertyArray[index + 1] = new("PK4", null, SimpleClassifications.PrivateData);
 
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
 
@@ -95,6 +96,7 @@ public static class ExtendedLoggerTests
         Assert.Equal("MSG2", snap[2].Message);
         Assert.Equal("PV2", snap[2].StructuredState!.GetValue("PK2"));
         Assert.Equal("REDACTED<PV3>", snap[2].StructuredState!.GetValue("PK3"));
+        Assert.Null(snap[2].StructuredState!.GetValue("PK4"));
         Assert.Equal("EV1", snap[2].StructuredState!.GetValue("EK1"));
         Assert.Equal("SEV1", snap[2].StructuredState!.GetValue("SEK1"));
     }
@@ -132,7 +134,7 @@ public static class ExtendedLoggerTests
         logger.Log(LogLevel.Error, new EventId(1, "ID1"), lmh, null, (_, _) => "MSG1");
 
         var lms = LoggerMessageHelper.ThreadLocalState;
-        var index = lms.EnsurePropertySpace(1);
+        var index = lms.ReservePropertySpace(1);
         lms.PropertyArray[index] = new("PK2", "PV2");
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
 

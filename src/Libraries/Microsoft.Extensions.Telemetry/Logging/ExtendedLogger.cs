@@ -199,14 +199,22 @@ internal sealed partial class ExtendedLogger : ILogger
             try
             {
                 ref var cp = ref msgState.ClassifiedPropertyArray[i];
-                var jr = JustInTimeRedactor.Get();
-                jr.Value = cp.Value;
-                jr.Redactor = config.GetRedactor(cp.Classification);
-                jr.Next = jitRedactors;
-                jitRedactors = jr;
+                if (cp.Value != null)
+                {
+                    var jr = JustInTimeRedactor.Get();
+                    jr.Value = cp.Value;
+                    jr.Redactor = config.GetRedactor(cp.Classification);
+                    jr.Next = jitRedactors;
+                    jitRedactors = jr;
 
-                var index = msgState.EnsureRedactedPropertySpace(1);
-                msgState.RedactedPropertyArray[index] = new(cp.Name, jr);
+                    var index = msgState.ReserveRedactedPropertySpace(1);
+                    msgState.RedactedPropertyArray[index] = new(cp.Name, jr);
+                }
+                else
+                {
+                    var index = msgState.ReserveRedactedPropertySpace(1);
+                    msgState.RedactedPropertyArray[index] = new(cp.Name, null);
+                }
             }
             catch (Exception ex)
             {
@@ -218,6 +226,7 @@ internal sealed partial class ExtendedLogger : ILogger
         var joiner = ModernJoiner;
         joiner.StaticProperties = config.StaticProperties;
         joiner.Formatter = formatter;
+        joiner.State = msgState;
         joiner.SetIncomingProperties(msgState);
 
         // enrich

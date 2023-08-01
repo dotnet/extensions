@@ -15,6 +15,8 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 internal sealed class JustInTimeRedactor : IResettable
 #if NET6_0_OR_GREATER
     , ISpanFormattable
+#else
+    , IFormattable
 #endif
 {
     public static JustInTimeRedactor Get() => _pool.Get();
