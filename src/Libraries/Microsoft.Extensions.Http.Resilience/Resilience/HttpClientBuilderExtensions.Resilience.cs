@@ -15,6 +15,9 @@ using Polly.Registry;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
+/// <summary>
+/// Extensions for <see cref="IHttpClientBuilder"/>.
+/// </summary>
 public static partial class HttpClientBuilderExtensions
 {
     /// <summary>

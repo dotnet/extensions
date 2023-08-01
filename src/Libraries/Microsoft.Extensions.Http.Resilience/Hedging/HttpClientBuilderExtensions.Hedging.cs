@@ -14,6 +14,9 @@ using Polly;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
+/// <summary>
+/// Extensions for <see cref="IHttpClientBuilder"/>.
+/// </summary>
 public static partial class HttpClientBuilderExtensions
 {
     internal const string StandardInnerHandlerPostfix = "standard-hedging-endpoint";
