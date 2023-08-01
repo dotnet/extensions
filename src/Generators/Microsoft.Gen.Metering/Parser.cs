@@ -11,6 +11,7 @@ using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Gen.Metering.Exceptions;
 using Microsoft.Gen.Metering.Model;
 using Microsoft.Gen.Shared;
 
@@ -629,18 +630,32 @@ internal sealed class Parser
             strongTypeAttributeParameters.IsClass = true;
         }
 
-        // Loop through all of the members of the object level and below
-        foreach (var member in strongTypeSymbol.GetMembers())
+        try
         {
-            var dimConfigs = BuildDimensionConfigs(member, strongTypeAttributeParameters.DimensionHashSet,
-                strongTypeAttributeParameters.DimensionDescriptionDictionary, symbols, _builders.GetStringBuilder());
+            var typesChain = new HashSet<ITypeSymbol>(SymbolEqualityComparer.Default);
+            _ = typesChain.Add(strongTypeSymbol); // Add itself
 
-            strongTypeAttributeParameters.StrongTypeConfigs.AddRange(dimConfigs);
+            // Loop through all of the members of the object level and below
+            foreach (var member in strongTypeSymbol.GetMembers())
+            {
+                var dimConfigs = BuildDimensionConfigs(member, typesChain, strongTypeAttributeParameters.DimensionHashSet,
+                    strongTypeAttributeParameters.DimensionDescriptionDictionary, symbols, _builders.GetStringBuilder());
+
+                strongTypeAttributeParameters.StrongTypeConfigs.AddRange(dimConfigs);
+            }
+
+            // Now that all of the current level and below dimensions are extracted, let's get any parent ones
+            strongTypeAttributeParameters.StrongTypeConfigs.AddRange(GetParentDimensionConfigs(strongTypeSymbol,
+                strongTypeAttributeParameters.DimensionHashSet, strongTypeAttributeParameters.DimensionDescriptionDictionary, symbols));
         }
-
-        // Now that all of the current level and below dimensions are extracted, let's get any parent ones
-        strongTypeAttributeParameters.StrongTypeConfigs.AddRange(GetParentDimensionConfigs(strongTypeSymbol,
-            strongTypeAttributeParameters.DimensionHashSet, strongTypeAttributeParameters.DimensionDescriptionDictionary, symbols));
+        catch (TransitiveTypeCycleException ex)
+        {
+            Diag(DiagDescriptors.ErrorDimensionTypeCycleDetected,
+                strongTypeSymbol.Locations[0],
+                strongTypeSymbol.ToDisplayString(),
+                ex.Parent.ToDisplayString(),
+                ex.NamedType.ToDisplayString());
+        }
 
         if (strongTypeAttributeParameters.StrongTypeConfigs.Count > MaxDimensions)
         {
@@ -655,12 +670,14 @@ internal sealed class Parser
     /// Called recursively to build all required StrongTypeDimensionConfigs.
     /// </summary>
     /// <param name="symbol">The Symbol being extracted.</param>
+    /// <param name="typesChain">A set of symbols in the current type chain.</param>
     /// <param name="dimensionHashSet">HashSet of all dimensions seen so far.</param>
     /// <param name="symbols">Shared symbols.</param>
     /// <param name="stringBuilder">List of all property names when walking down the object model. See StrongTypeDimensionConfigs for an example.</param>
     /// <returns>List of all StrongTypeDimensionConfigs seen so far.</returns>
     private List<StrongTypeConfig> BuildDimensionConfigs(
         ISymbol symbol,
+        ISet<ITypeSymbol> typesChain,
         HashSet<string> dimensionHashSet,
         Dictionary<string, string> dimensionDescriptionDictionary,
         SymbolHolder symbols,
@@ -783,14 +800,8 @@ internal sealed class Parser
                         });
 
                         dimensionConfigs.AddRange(
-                            WalkObjectModel(
-                                symbol,
-                                namedTypeSymbol,
-                                stringBuilder,
-                                dimensionHashSet,
-                                dimensionDescriptionDictionary,
-                                symbols,
-                                true));
+                            WalkObjectModel(symbol, typesChain, namedTypeSymbol, stringBuilder,
+                                dimensionHashSet, dimensionDescriptionDictionary, symbols, true));
 
                         return dimensionConfigs;
                     }
@@ -819,14 +830,8 @@ internal sealed class Parser
                     });
 
                     dimensionConfigs.AddRange(
-                        WalkObjectModel(
-                            symbol,
-                            namedTypeSymbol,
-                            stringBuilder,
-                            dimensionHashSet,
-                            dimensionDescriptionDictionary,
-                            symbols,
-                            false));
+                        WalkObjectModel(symbol, typesChain, namedTypeSymbol, stringBuilder,
+                            dimensionHashSet, dimensionDescriptionDictionary, symbols, false));
                 }
 
                 return dimensionConfigs;
@@ -842,15 +847,19 @@ internal sealed class Parser
             _builders.ReturnStringBuilder(stringBuilder);
         }
     }
+#pragma warning disable S107 // Methods should not have too many parameters
 
+    // we can deal with this warning later
     private List<StrongTypeConfig> WalkObjectModel(
         ISymbol parentSymbol,
+        ISet<ITypeSymbol> typesChain,
         INamedTypeSymbol namedTypeSymbol,
         StringBuilder stringBuilder,
         HashSet<string> dimensionHashSet,
         Dictionary<string, string> dimensionDescriptionDictionary,
         SymbolHolder symbols,
         bool isClass)
+#pragma warning restore S107 // Methods should not have too many parameters
     {
         var dimensionConfigs = new List<StrongTypeConfig>();
 
@@ -866,10 +875,19 @@ internal sealed class Parser
             _ = stringBuilder.Append('?');
         }
 
+        if (!typesChain.Add(namedTypeSymbol))
+        {
+            throw new TransitiveTypeCycleException(parentSymbol.ContainingSymbol, namedTypeSymbol); // Interrupt the whole traversal
+        }
+
         foreach (var member in namedTypeSymbol.GetMembers())
         {
-            dimensionConfigs.AddRange(BuildDimensionConfigs(member, dimensionHashSet, dimensionDescriptionDictionary, symbols, stringBuilder));
+            dimensionConfigs.AddRange(
+                BuildDimensionConfigs(member, typesChain, dimensionHashSet,
+                    dimensionDescriptionDictionary, symbols, stringBuilder));
         }
+
+        _ = typesChain.Remove(namedTypeSymbol);
 
         return dimensionConfigs;
     }
@@ -890,9 +908,14 @@ internal sealed class Parser
                 continue;
             }
 
+            var typesChain = new HashSet<ITypeSymbol>(SymbolEqualityComparer.Default);
+            _ = typesChain.Add(parentObjectBase); // Add itself
+
             foreach (var member in parentObjectBase.GetMembers())
             {
-                dimensionConfigs.AddRange(BuildDimensionConfigs(member, dimensionHashSet, dimensionDescriptionDictionary, symbols, _builders.GetStringBuilder()));
+                dimensionConfigs.AddRange(
+                    BuildDimensionConfigs(member, typesChain, dimensionHashSet,
+                        dimensionDescriptionDictionary, symbols, _builders.GetStringBuilder()));
             }
 
             parentObjectBase = parentObjectBase.BaseType;
