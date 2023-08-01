@@ -61,6 +61,24 @@ namespace Microsoft.Gen.Metering {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The type {0} has a cycle in its hierarchy: {1} ⇆ {2}.
+        /// </summary>
+        internal static string ErrorDimensionTypeCycleDetectedMessage {
+            get {
+                return ResourceManager.GetString("ErrorDimensionTypeCycleDetectedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A metric class has cycles in its type hierarchy.
+        /// </summary>
+        internal static string ErrorDimensionTypeCycleDetectedTitle {
+            get {
+                return ResourceManager.GetString("ErrorDimensionTypeCycleDetectedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Dimension {0} is defined more than once. Metric dimension names must be unique.
         /// </summary>
         internal static string ErrorDuplicateDimensionNameMessage {
