@@ -147,7 +147,7 @@ This sets up necessary environmental variables and opens the repository in VS Co
   * The file format is an MSBuild Binary Log. Install the [MSBuild Structured Log Viewer][msbuild-log-viewer] to view them.
 * Windows Forms uses Visual Studio MSBuild but for certain features we require the latest MSBuild from .NET Core/.NET SDK. If you are on an official version of [Visual Studio][VS-download] (i.e. not a Preview version), then you may need to enable previews for .NET Core/.NET SDKs in VS.
   * you can do this in VS under Tools->Options->Environment->Preview Features->Use previews of the .Net Core SDK (Requires restart)
-
+* When restoring packages, if you get the following message: "The SSL connection could not be established, see inner exception. Unable to read data from the transport connection", try disabling IPv6 on your network adapter.
 
 ---
 
