@@ -219,7 +219,7 @@ internal sealed class Emitter : EmitterBase
         var definePath = restApiMethod.FormatParameters.Count > 0 || !firstQuery;
         if (definePath)
         {
-            OutLn(@$"var _path = {Invariant}($""{pathSb}"");");
+            OutLn(@$"var path = {Invariant}($""{pathSb}"");");
             OutLn();
         }
 
@@ -227,7 +227,7 @@ internal sealed class Emitter : EmitterBase
 
         var requestName = restApiMethod.RequestName;
 
-        OutLn($"var _httpRequestMessage = new {HttpRequestMessage}()");
+        OutLn($"var httpRequestMessage = new {HttpRequestMessage}()");
         OutOpenBrace();
         if (restApiMethod.HttpMethod == "Patch")
         {
@@ -244,11 +244,11 @@ internal sealed class Emitter : EmitterBase
 
         if (definePath)
         {
-            OutLn($"RequestUri = new {Uri}(_path, {UriKind}.Relative),");
+            OutLn($"RequestUri = new {Uri}(path, {UriKind}.Relative),");
         }
         else
         {
-            OutLn($"RequestUri = _uri{requestName},");
+            OutLn($"RequestUri = uri{requestName},");
         }
 
         OutCloseBraceWithExtra(";");
@@ -260,16 +260,16 @@ internal sealed class Emitter : EmitterBase
             switch (body.BodyType)
             {
                 case BodyContentTypeParam.ApplicationJson:
-                    OutLn($@"_httpRequestMessage.Content = {JsonContent}.Create({body.Name}, _applicationJsonHeader, _autoClientOptions.JsonSerializerOptions);");
+                    OutLn($@"httpRequestMessage.Content = {JsonContent}.Create({body.Name}, _applicationJsonHeader, _autoClientOptions.JsonSerializerOptions);");
                     OutLn();
                     break;
 
                 case BodyContentTypeParam.TextPlain:
                     OutLn(@$"string _payload = {body.Name}.ToString() ?? """";");
                     OutPP("#if NET7_0_OR_GREATER");
-                    OutLn($@"_httpRequestMessage.Content = new {StringContent}(_payload, {Encoding}.UTF8, _textPlainHeader);");
+                    OutLn($@"httpRequestMessage.Content = new {StringContent}(_payload, {Encoding}.UTF8, _textPlainHeader);");
                     OutPP("#else");
-                    OutLn($@"_httpRequestMessage.Content = new {StringContent}(_payload, {Encoding}.UTF8, _textPlainHeader.MediaType);");
+                    OutLn($@"httpRequestMessage.Content = new {StringContent}(_payload, {Encoding}.UTF8, _textPlainHeader.MediaType);");
                     OutPP("#endif");
                     OutLn();
                     break;
@@ -279,35 +279,35 @@ internal sealed class Emitter : EmitterBase
         OutLn("try");
         OutOpenBrace();
 
-        OutLn($"{TelemetryExtensions}.SetRequestMetadata(_httpRequestMessage, _requestMetadata{requestName});");
+        OutLn($"{TelemetryExtensions}.SetRequestMetadata(httpRequestMessage, _requestMetadata{requestName});");
 
         foreach (var header in restApiType.StaticHeaders.OrderBy(static h => h.Key))
         {
-            OutLn(@$"_httpRequestMessage.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
+            OutLn(@$"httpRequestMessage.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
         }
 
         foreach (var header in restApiMethod.StaticHeaders.OrderBy(static h => h.Key))
         {
-            OutLn(@$"_httpRequestMessage.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
+            OutLn(@$"httpRequestMessage.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
         }
 
         foreach (var param in restApiMethod.AllParameters.Where(m => m.IsHeader))
         {
             OutLn($"if ({param.Name} != null)");
             OutOpenBrace();
-            OutLn(@$"_httpRequestMessage.Headers.Add(""{param.HeaderName}"", {param.Name}.ToString());");
+            OutLn(@$"httpRequestMessage.Headers.Add(""{param.HeaderName}"", {param.Name}.ToString());");
             OutCloseBrace();
         }
 
         OutLn();
-        OutLn(@$"var _response = await SendRequest<{restApiMethod.ReturnType}>(""{dependencyName}"", _requestMetadata{requestName}.RequestRoute, _httpRequestMessage, {ctParameter ?? "default"})
+        OutLn(@$"var response = await SendRequest<{restApiMethod.ReturnType}>(""{dependencyName}"", _requestMetadata{requestName}.RequestRoute, httpRequestMessage, {ctParameter ?? "default"})
                     .ConfigureAwait(false);");
 
-        OutLn($"return _response;");
+        OutLn($"return response;");
         OutCloseBrace();
         OutLn("finally");
         OutOpenBrace();
-        OutLn("_httpRequestMessage.Dispose();");
+        OutLn("httpRequestMessage.Dispose();");
         OutCloseBrace();
 
         OutCloseBrace();
@@ -412,7 +412,7 @@ internal sealed class Emitter : EmitterBase
 
             if (restApiMethod.FormatParameters.Count == 0 && !restApiMethod.AllParameters.Any(p => p.IsQuery))
             {
-                OutLn(@$"private static readonly {Uri} _uri{requestName} = new(""{restApiMethod.Path}"", {UriKind}.Relative);");
+                OutLn(@$"private static readonly {Uri} uri{requestName} = new(""{restApiMethod.Path}"", {UriKind}.Relative);");
             }
 
             OutLn(@$"private static readonly {RequestMetadata} _requestMetadata{requestName} = new()");
