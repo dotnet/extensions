@@ -60,15 +60,15 @@
     <SystemTextJsonVersion>8.0.0-rc.1.23376.11</SystemTextJsonVersion>
     <SystemRuntimeCachingVersion>8.0.0-rc.1.23376.11</SystemRuntimeCachingVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRuntimewinx64Version>8.0.0-rc.1.23381.20</MicrosoftAspNetCoreAppRuntimewinx64Version>
-    <MicrosoftAspNetCoreMvcTestingVersion>8.0.0-rc.1.23381.20</MicrosoftAspNetCoreMvcTestingVersion>
-    <MicrosoftAspNetCoreTestHostVersion>8.0.0-rc.1.23381.20</MicrosoftAspNetCoreTestHostVersion>
-    <MicrosoftExtensionsCachingStackExchangeRedisVersion>8.0.0-rc.1.23381.20</MicrosoftExtensionsCachingStackExchangeRedisVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>8.0.0-rc.1.23381.20</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>8.0.0-rc.1.23381.20</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
-    <MicrosoftExtensionsFeaturesVersion>8.0.0-rc.1.23381.20</MicrosoftExtensionsFeaturesVersion>
-    <MicrosoftExtensionsHttpPollyVersion>8.0.0-rc.1.23381.20</MicrosoftExtensionsHttpPollyVersion>
-    <MicrosoftExtensionsObjectPoolVersion>8.0.0-rc.1.23381.20</MicrosoftExtensionsObjectPoolVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>8.0.0-rc.1.23401.14</MicrosoftAspNetCoreAppRuntimewinx64Version>
+    <MicrosoftAspNetCoreMvcTestingVersion>8.0.0-rc.1.23401.14</MicrosoftAspNetCoreMvcTestingVersion>
+    <MicrosoftAspNetCoreTestHostVersion>8.0.0-rc.1.23401.14</MicrosoftAspNetCoreTestHostVersion>
+    <MicrosoftExtensionsCachingStackExchangeRedisVersion>8.0.0-rc.1.23401.14</MicrosoftExtensionsCachingStackExchangeRedisVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>8.0.0-rc.1.23401.14</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>8.0.0-rc.1.23401.14</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
+    <MicrosoftExtensionsFeaturesVersion>8.0.0-rc.1.23401.14</MicrosoftExtensionsFeaturesVersion>
+    <MicrosoftExtensionsHttpPollyVersion>8.0.0-rc.1.23401.14</MicrosoftExtensionsHttpPollyVersion>
+    <MicrosoftExtensionsObjectPoolVersion>8.0.0-rc.1.23401.14</MicrosoftExtensionsObjectPoolVersion>
   </PropertyGroup>
   <!--
 
