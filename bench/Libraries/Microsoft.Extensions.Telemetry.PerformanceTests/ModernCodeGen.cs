@@ -12,7 +12,7 @@ internal static class ModernCodeGen
     public static void RefTypes(global::Microsoft.Extensions.Logging.ILogger logger, string connectionId, string type, string streamId, string length, string flags, string other)
     {
         var state = global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper.ThreadLocalState;
-        var index = state.EnsurePropertySpace(7);
+        var index = state.ReservePropertySpace(7);
         var array = state.PropertyArray;
         array[index++] = new("connectionId", connectionId);
         array[index++] = new("type", type);
@@ -49,7 +49,7 @@ internal static class ModernCodeGen
     public static void ValueTypes(global::Microsoft.Extensions.Logging.ILogger logger, long start, long end, int options, global::System.Guid guid)
     {
         var state = global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper.ThreadLocalState;
-        var index = state.EnsurePropertySpace(5);
+        var index = state.ReservePropertySpace(5);
         var array = state.PropertyArray;
         array[index++] = new("start", start);
         array[index++] = new("end", end);

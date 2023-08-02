@@ -6,12 +6,6 @@
     <PackageTags>$(PackageTags);Testing</PackageTags>
   </PropertyGroup>
 
-  <!-- See https://github.com/dotnet/extensions/issues/4057 -->
-  <PropertyGroup>
-    <IsPackable>false</IsPackable>
-    <IsShipping>false</IsShipping>
-  </PropertyGroup>
-
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
