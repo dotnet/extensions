@@ -13,7 +13,16 @@ internal class TestEnricher : IHttpClientLogEnricher
 {
     internal readonly KeyValuePair<string, object?> KvpRequest = new("test key request", "test value");
     internal readonly KeyValuePair<string, object?> KvpResponse = new("test key response", "test value");
-    public LogMethodHelper EnrichmentBag => new() { KvpRequest, KvpResponse };
+
+    public LoggerMessageState EnrichmentBag { get; }
+
+    public TestEnricher()
+    {
+        EnrichmentBag = new();
+        var index = EnrichmentBag.ReservePropertySpace(2);
+        EnrichmentBag.PropertyArray[index++] = KvpRequest;
+        EnrichmentBag.PropertyArray[index++] = KvpResponse;
+    }
 
     public void Enrich(IEnrichmentPropertyBag enrichmentBag, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
     {

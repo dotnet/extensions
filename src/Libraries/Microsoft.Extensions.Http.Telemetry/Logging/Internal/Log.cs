@@ -70,7 +70,7 @@ internal static partial class Log
         var requestHeadersCount = record.RequestHeaders?.Count ?? 0;
         var responseHeadersCount = record.ResponseHeaders?.Count ?? 0;
 
-        var index = loggerMessageState.EnsurePropertySpace(MinimalPropertyCount + requestHeadersCount + responseHeadersCount);
+        var index = loggerMessageState.ReservePropertySpace(MinimalPropertyCount + requestHeadersCount + responseHeadersCount);
         loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Method, record.Method);
         loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Host, record.Host);
         loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Path, record.Path);
