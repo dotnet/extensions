@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Logging;
@@ -51,27 +50,26 @@ namespace TestClasses
         }
 
         [LogMethod(1, LogLevel.Debug, "No template params")]
-        public static partial void LogNoParams(ILogger logger, IRedactorProvider redactionProvider, [LogProperties] ClassToRedact classToLog);
+        public static partial void LogNoParams(ILogger logger, [LogProperties] ClassToRedact classToLog);
 
         [LogMethod(2, LogLevel.Information, "Only {StringProperty} as param")]
         public static partial void LogTwoParams(
-            ILogger logger, IRedactorProvider redactionProvider,
+            ILogger logger,
             [PrivateData] string stringProperty, [LogProperties] MyTransitiveClass? complexParam);
 
         // Default ctors:
         [LogMethod]
         public static partial void LogNoParamsDefaultCtor(ILogger logger, LogLevel level,
-            IRedactorProvider redactionProvider, [LogProperties] ClassToRedact classToLog);
+            [LogProperties] ClassToRedact classToLog);
 
         [LogMethod]
         public static partial void LogTwoParamsDefaultCtor(
-            ILogger logger, IRedactorProvider redactionProvider, LogLevel level,
+            ILogger logger, LogLevel level,
             [PrivateData] string stringProperty, [LogProperties] MyTransitiveClass? complexParam);
 
         [LogMethod(LogLevel.Debug, "User {userId} has now different status")]
         public static partial void UserAvailabilityChanged(
             this ILogger logger,
-            IRedactorProvider redactorProvider,
             [PrivateData] string userId,
             [LogProperties] ClassWithPrivateData param);
     }

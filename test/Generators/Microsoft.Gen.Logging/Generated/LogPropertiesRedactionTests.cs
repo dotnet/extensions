@@ -15,20 +15,20 @@ namespace Microsoft.Gen.Logging.Test;
 
 public class LogPropertiesRedactionTests
 {
-    private readonly FakeLogger _logger = new();
-    private readonly StarRedactorProvider _redactorProvider = new();
-
     [Fact]
     public void RedactsWhenRedactorProviderIsAvailableInTheInstance()
     {
-        var instance = new NonStaticTestClass(_logger, _redactorProvider);
+        using var logger = Utils.GetLogger();
+        var collector = logger.FakeLogCollector;
+
+        var instance = new NonStaticTestClass(logger);
         var classToRedact = new MyBaseClassToRedact();
 
         instance.LogPropertiesWithRedaction("arg0", classToRedact);
 
-        Assert.Equal(1, _logger.Collector.Count);
-        Assert.Null(_logger.LatestRecord.Exception);
-        Assert.Equal("LogProperties with redaction: ****", _logger.LatestRecord.Message);
+        Assert.Equal(1, collector.Count);
+        Assert.Null(collector.LatestRecord.Exception);
+        Assert.Equal("LogProperties with redaction: ****", collector.LatestRecord.Message);
 
         var expectedState = new Dictionary<string, string?>
         {
@@ -37,21 +37,24 @@ public class LogPropertiesRedactionTests
             ["{OriginalFormat}"] = "LogProperties with redaction: {P0}"
         };
 
-        _logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+        collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
     }
 
     [Fact]
     public void RedactsWhenDefaultAttrCtorAndRedactorProviderIsInTheInstance()
     {
-        var instance = new NonStaticTestClass(_logger, _redactorProvider);
+        using var logger = Utils.GetLogger();
+        var collector = logger.FakeLogCollector;
+
+        var instance = new NonStaticTestClass(logger);
         var classToRedact = new MyBaseClassToRedact();
 
         instance.DefaultAttrCtorLogPropertiesWithRedaction(LogLevel.Information, "arg0", classToRedact);
 
-        Assert.Equal(1, _logger.Collector.Count);
-        Assert.Null(_logger.LatestRecord.Exception);
-        Assert.Equal(LogLevel.Information, _logger.LatestRecord.Level);
-        Assert.Equal(string.Empty, _logger.LatestRecord.Message);
+        Assert.Equal(1, collector.Count);
+        Assert.Null(collector.LatestRecord.Exception);
+        Assert.Equal(LogLevel.Information, collector.LatestRecord.Level);
+        Assert.Equal(string.Empty, collector.LatestRecord.Message);
 
         var expectedState = new Dictionary<string, string?>
         {
@@ -59,19 +62,22 @@ public class LogPropertiesRedactionTests
             ["p1_StringPropertyBase"] = new('*', classToRedact.StringPropertyBase.Length),
         };
 
-        _logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+        collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
     }
 
     [Fact]
     public void RedactsWhenLogMethodIsStaticNoParams()
     {
+        using var logger = Utils.GetLogger();
+        var collector = logger.FakeLogCollector;
+
         var classToRedact = new ClassToRedact();
 
-        LogNoParams(_logger, _redactorProvider, classToRedact);
+        LogNoParams(logger, classToRedact);
 
-        Assert.Equal(1, _logger.Collector.Count);
-        Assert.Null(_logger.LatestRecord.Exception);
-        Assert.Equal("No template params", _logger.LatestRecord.Message);
+        Assert.Equal(1, collector.Count);
+        Assert.Null(collector.LatestRecord.Exception);
+        Assert.Equal("No template params", collector.LatestRecord.Message);
 
         var expectedState = new Dictionary<string, string?>
         {
@@ -86,20 +92,23 @@ public class LogPropertiesRedactionTests
             ["{OriginalFormat}"] = "No template params"
         };
 
-        _logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+        collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
     }
 
     [Fact]
     public void RedactsWhenDefaultAttrCtorAndIsStaticNoParams()
     {
+        using var logger = Utils.GetLogger();
+        var collector = logger.FakeLogCollector;
+
         var classToRedact = new ClassToRedact();
 
-        LogNoParamsDefaultCtor(_logger, LogLevel.Warning, _redactorProvider, classToRedact);
+        LogNoParamsDefaultCtor(logger, LogLevel.Warning, classToRedact);
 
-        Assert.Equal(1, _logger.Collector.Count);
-        Assert.Null(_logger.LatestRecord.Exception);
-        Assert.Equal(LogLevel.Warning, _logger.LatestRecord.Level);
-        Assert.Equal(string.Empty, _logger.LatestRecord.Message);
+        Assert.Equal(1, collector.Count);
+        Assert.Null(collector.LatestRecord.Exception);
+        Assert.Equal(LogLevel.Warning, collector.LatestRecord.Level);
+        Assert.Equal(string.Empty, collector.LatestRecord.Message);
 
         var expectedState = new Dictionary<string, string?>
         {
@@ -113,19 +122,22 @@ public class LogPropertiesRedactionTests
             ["classToLog_NoRedactionProp"] = classToRedact.NoRedactionProp,
         };
 
-        _logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+        collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
     }
 
     [Fact]
     public void RedactsWhenLogMethodIsStaticTwoParams()
     {
+        using var logger = Utils.GetLogger();
+        var collector = logger.FakeLogCollector;
+
         var classToRedact = new MyTransitiveClass();
 
-        LogTwoParams(_logger, _redactorProvider, "string_prop", classToRedact);
+        LogTwoParams(logger, "string_prop", classToRedact);
 
-        Assert.Equal(1, _logger.Collector.Count);
-        Assert.Null(_logger.LatestRecord.Exception);
-        Assert.Equal("Only *********** as param", _logger.LatestRecord.Message);
+        Assert.Equal(1, collector.Count);
+        Assert.Null(collector.LatestRecord.Exception);
+        Assert.Equal("Only *********** as param", collector.LatestRecord.Message);
 
         var expectedState = new Dictionary<string, string?>
         {
@@ -135,20 +147,23 @@ public class LogPropertiesRedactionTests
             ["{OriginalFormat}"] = "Only {StringProperty} as param"
         };
 
-        _logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+        collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
     }
 
     [Fact]
     public void RedactsWhenDefaultAttrCtorAndIsStaticTwoParams()
     {
+        using var logger = Utils.GetLogger();
+        var collector = logger.FakeLogCollector;
+
         var classToRedact = new MyTransitiveClass();
 
-        LogTwoParamsDefaultCtor(_logger, _redactorProvider, LogLevel.None, "string_prop", classToRedact);
+        LogTwoParamsDefaultCtor(logger, LogLevel.None, "string_prop", classToRedact);
 
-        Assert.Equal(1, _logger.Collector.Count);
-        Assert.Null(_logger.LatestRecord.Exception);
-        Assert.Equal(LogLevel.None, _logger.LatestRecord.Level);
-        Assert.Equal(string.Empty, _logger.LatestRecord.Message);
+        Assert.Equal(1, collector.Count);
+        Assert.Null(collector.LatestRecord.Exception);
+        Assert.Equal(LogLevel.None, collector.LatestRecord.Level);
+        Assert.Equal(string.Empty, collector.LatestRecord.Message);
 
         var expectedState = new Dictionary<string, string?>
         {
@@ -157,6 +172,6 @@ public class LogPropertiesRedactionTests
             ["complexParam_TransitiveStringProp"] = new('*', classToRedact.TransitiveStringProp.Length),
         };
 
-        _logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+        collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
     }
 }

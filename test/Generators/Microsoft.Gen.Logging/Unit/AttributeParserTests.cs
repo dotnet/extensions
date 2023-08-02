@@ -56,7 +56,7 @@ public class AttributeParserTests
                 internal static partial class C
                 {
                     [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
-                    static partial void M(ILogger logger, IRedactorProvider provider, [PrivateDataAttribute] string p0);
+                    static partial void M(ILogger logger, [PrivateDataAttribute] string p0);
                 }
             ");
 
@@ -70,7 +70,7 @@ public class AttributeParserTests
                 internal static partial class C
                 {
                     [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
-                    static partial void M(ILogger logger, IRedactorProvider provider, [PrivateData] string p0);
+                    static partial void M(ILogger logger, [PrivateData] string p0);
                 }
             ");
 
@@ -84,7 +84,7 @@ public class AttributeParserTests
                 internal static partial class C
                 {
                     [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
-                    static partial void M(ILogger logger, IRedactorProvider provider, [Test][PrivateData] string p0);
+                    static partial void M(ILogger logger, [Test][PrivateData] string p0);
                 }
             ");
 
@@ -121,7 +121,7 @@ public class AttributeParserTests
                 internal static partial class C
                 {
                     [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
-                    static partial void M(ILogger logger, IRedactorProvider provider, [PrivateData] int p0);
+                    static partial void M(ILogger logger, [PrivateData] int p0);
                 }
             ");
 
@@ -149,89 +149,12 @@ public class AttributeParserTests
                 internal static partial class C
                 {
                     [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
-                    static partial void M(IRedactorProvider provider, [PrivateData] string p0);
+                    static partial void M([PrivateData] string p0);
                 }
             ");
 
         _ = Assert.Single(diagnostics);
         Assert.Equal(DiagDescriptors.MissingLoggerParameter.Id, diagnostics[0].Id);
-    }
-
-    [Theory]
-    [InlineData("[PrivateData] string")]
-    public async Task MissingRedactorProviderStaticMethod(string type)
-    {
-        var diagnostics = await RunGenerator(@$"
-            internal static partial class C
-            {{
-                [LogMethod(0, LogLevel.Debug, ""M {{p0}}"")]
-                static partial void M(ILogger logger, {type} p0);
-            }}");
-
-        _ = Assert.Single(diagnostics);
-        Assert.Equal(DiagDescriptors.MissingRedactorProviderParameter.Id, diagnostics[0].Id);
-    }
-
-    [Theory]
-    [InlineData("[PrivateData] string")]
-    public async Task MissingRedactorProviderInstanceMethod(string type)
-    {
-        var diagnostics = await RunGenerator(@$"
-            internal partial class TestInstance
-            {{
-                private readonly ILogger _logger;
-
-                public TestInstance(ILogger logger)
-                {{
-                    _logger = logger;
-                }}
-
-                [LogMethod(0, LogLevel.Debug, ""M0 {{p0}}"")]
-                public partial void M0({type} p0);
-            }}");
-
-        _ = Assert.Single(diagnostics);
-        Assert.Equal(DiagDescriptors.MissingRedactorProviderField.Id, diagnostics[0].Id);
-    }
-
-    [Fact]
-    public async Task MultipleRedactorProviders()
-    {
-        var diagnostics = await RunGenerator(@"
-                internal partial class TestInstance
-                {
-                    private readonly ILogger _logger;
-                    private readonly IRedactorProvider _redactorProvider;
-                    private readonly IRedactorProvider _redactorProvider2;
-
-                    public TestInstance(ILogger logger, IRedactorProvider redactorProvider)
-                    {
-                        _logger = logger;
-                        _redactorProvider = redactorProvider;
-                    }
-
-                    [LogMethod(0, LogLevel.Debug, ""M0 {p0}"")]
-                    public partial void M0([PrivateData] string p0);
-                }
-            ");
-
-        _ = Assert.Single(diagnostics);
-        Assert.Equal(DiagDescriptors.MultipleRedactorProviderFields.Id, diagnostics[0].Id);
-    }
-
-    [Fact]
-    public async Task MissingDataClassificationAttributeInStatic()
-    {
-        var diagnostics = await RunGenerator(@"
-                internal static partial class C
-                {
-                    [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
-                    static partial void M(ILogger logger, IRedactorProvider provider, string p0);
-                }
-            ");
-
-        _ = Assert.Single(diagnostics);
-        Assert.Equal(DiagDescriptors.MissingDataClassificationParameter.Id, diagnostics[0].Id);
     }
 
     [Fact]
@@ -241,7 +164,7 @@ public class AttributeParserTests
                 internal static partial class C
                 {
                     [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
-                    static partial void M(ILogger logger, IRedactorProvider provider, [PublicData] string p0);
+                    static partial void M(ILogger logger, [PublicData] string p0);
                 }
             ");
 
@@ -249,30 +172,13 @@ public class AttributeParserTests
     }
 
     [Fact]
-    public async Task MissingDataClassificationAttributeInInstance()
-    {
-        var diagnostics = await RunGenerator(@"
-            partial class C
-            {
-                private ILogger _logger;
-
-                [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
-                partial void M(IRedactorProvider provider, string p0);
-            }");
-
-        var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal(DiagDescriptors.MissingDataClassificationParameter.Id, diagnostic.Id);
-    }
-
-    [Theory]
-    [InlineData("[PrivateData] string")]
-    public async Task MethodNotStatic(string type)
+    public async Task MethodNotStatic()
     {
         var diagnostics = await RunGenerator(@$"
             internal partial class C
             {{
                 [LogMethod(0, LogLevel.Debug, ""M {{p0}}"")]
-                partial void M(ILogger logger, IRedactorProvider provider, {type} p0);
+                partial void M(ILogger logger, [PrivateData] string p0);
             }}");
 
         _ = Assert.Single(diagnostics);

@@ -17,11 +17,10 @@ namespace Microsoft.Gen.Logging.Test;
 public class LogParserUtilitiesTests
 {
     [Theory]
-    [InlineData(false, false, false, true)]
-    [InlineData(false, false, true, false)]
-    [InlineData(false, true, false, false)]
-    [InlineData(true, false, false, false)]
-    public void ShouldSkipLoggingMethodWhenParameterIsSpecial(bool isLogger, bool isRedactorProvider, bool isException, bool isLogLevel)
+    [InlineData(false, false, true)]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, false)]
+    public void ShouldSkipLoggingMethodWhenParameterIsSpecial(bool isLogger, bool isException, bool isLogLevel)
     {
         const string ParamName = "param name";
 
@@ -32,7 +31,6 @@ public class LogParserUtilitiesTests
         var loggerParameter = new LoggingMethodParameter
         {
             IsLogger = isLogger,
-            IsRedactorProvider = isRedactorProvider,
             IsException = isException,
             IsLogLevel = isLogLevel
         };

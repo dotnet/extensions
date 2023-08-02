@@ -22,5 +22,7 @@
     <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Testing\Microsoft.Extensions.Telemetry.Testing.csproj" />
     <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Testing\Microsoft.Extensions.Compliance.Testing.csproj"  />
+    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Redaction\Microsoft.Extensions.Compliance.Redaction.csproj"  />
+    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
   </ItemGroup>  
 </Project>

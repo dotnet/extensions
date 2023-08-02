@@ -18,7 +18,6 @@ internal sealed class LoggingMethodParameter
     public string? Qualifier;
     public bool NeedsAtSign;
     public bool IsLogger;
-    public bool IsRedactorProvider;
     public bool IsException;
     public bool IsLogLevel;
     public bool IsEnumerable;
@@ -42,9 +41,9 @@ internal sealed class LoggingMethodParameter
 
     // A parameter flagged as 'normal' is not going to be taken care of specially as an argument to ILogger.Log
     // but instead is supposed to be taken as a normal parameter.
-    public bool IsNormalParameter => !IsLogger && !IsRedactorProvider && !IsException && !IsLogLevel;
+    public bool IsNormalParameter => !IsLogger && !IsException && !IsLogLevel;
 
     public bool HasProperties => PropertiesToLog.Count > 0;
     public bool HasPropsProvider => LogPropertiesProvider is not null;
-    public bool PotentiallyNull => (IsReference && !IsLogger && !IsRedactorProvider) || IsNullable;
+    public bool PotentiallyNull => (IsReference && !IsLogger) || IsNullable;
 }

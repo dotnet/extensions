@@ -58,11 +58,8 @@ internal sealed class Parser
                 LoggingType? lt = null;
                 string nspace = string.Empty;
                 string? loggerField = null;
-                string? redactorProviderField = null;
                 bool loggerFieldNullable = false;
-                bool redactorProviderFieldNullable = false;
                 IFieldSymbol? secondLoggerField = null;
-                IFieldSymbol? secondRedactorProviderField = null;
 
                 ids.Clear();
                 foreach (var method in typeDec.Members.Where(m => m.IsKind(SyntaxKind.MethodDeclaration)).Cast<MethodDeclarationSyntax>())
@@ -168,25 +165,6 @@ internal sealed class Parser
                                 Diag(DiagDescriptors.MissingLoggerParameter, method.ParameterList.GetLocation(), lm.Name);
                                 keepMethod = false;
                             }
-                            else if (parsingState.FoundRedactorProvider && !parsingState.FoundDataClassificationAnnotation)
-                            {
-                                Diag(DiagDescriptors.MissingDataClassificationParameter, method.ParameterList.GetLocation(), lm.Name);
-                            }
-                            else if (parsingState.FoundDataClassificationAnnotation && !parsingState.FoundRedactorProvider)
-                            {
-                                Diag(DiagDescriptors.MissingRedactorProviderParameter, method.ParameterList.GetLocation());
-                                keepMethod = false;
-                            }
-                            else if (parsingState.FoundRedactorProvider && parsingState.FoundCustomLogPropertiesProvider)
-                            {
-                                foreach (var lp in lm.Parameters)
-                                {
-                                    if (lp.HasPropsProvider)
-                                    {
-                                        Diag(DiagDescriptors.LogPropertiesProviderWithRedaction, parameterSymbols[lp].GetLocation(), lp.Name);
-                                    }
-                                }
-                            }
                         }
                         else
                         {
@@ -214,45 +192,8 @@ internal sealed class Parser
                                 }
                             }
 
-                            if (!parsingState.FoundRedactorProvider && parsingState.FoundDataClassificationAnnotation)
-                            {
-                                if (symbols.RedactorProviderSymbol == null)
-                                {
-                                    // nothing to do if this type isn't available
-                                    Diag(DiagDescriptors.MissingRequiredType, method.GetLocation(), SymbolLoader.IRedactorProviderType);
-                                    return Array.Empty<LoggingType>();
-                                }
-
-                                if (redactorProviderField == null)
-                                {
-                                    (redactorProviderField, secondRedactorProviderField, redactorProviderFieldNullable) = FindField(sm, typeDec, symbols.RedactorProviderSymbol);
-                                }
-
-                                if (secondRedactorProviderField != null)
-                                {
-                                    Diag(DiagDescriptors.MultipleRedactorProviderFields, secondRedactorProviderField.GetLocation(), typeDec.Identifier.Text);
-                                    keepMethod = false;
-                                }
-                                else if (redactorProviderField == null)
-                                {
-                                    Diag(DiagDescriptors.MissingRedactorProviderField, method.GetLocation(), typeDec.Identifier.Text);
-                                    keepMethod = false;
-                                }
-                                else
-                                {
-                                    lm.RedactorProviderField = redactorProviderField;
-                                    lm.RedactorProviderFieldNullable = redactorProviderFieldNullable;
-                                }
-                            }
-                            else if (parsingState.FoundRedactorProvider && !parsingState.FoundDataClassificationAnnotation)
-                            {
-                                Diag(DiagDescriptors.MissingDataClassificationParameter, method.GetLocation(), lm.Name);
-                            }
-
                             // Show this warning only if other checks passed
-                            if (keepMethod &&
-                                parsingState.FoundLogger &&
-                                (!parsingState.FoundDataClassificationAnnotation || parsingState.FoundRedactorProvider))
+                            if (keepMethod && parsingState.FoundLogger)
                             {
                                 Diag(DiagDescriptors.LoggingMethodShouldBeStatic, method.Identifier.GetLocation());
                             }
@@ -267,7 +208,7 @@ internal sealed class Parser
                         if (keepMethod &&
                             string.IsNullOrWhiteSpace(lm.Message) &&
                             !lm.EventId.HasValue &&
-                            lm.Parameters.All(x => x.IsLogger || x.IsRedactorProvider || x.IsLogLevel))
+                            lm.Parameters.All(x => x.IsLogger || x.IsLogLevel))
                         {
                             Diag(DiagDescriptors.EmptyLoggingMethod, method.Identifier.GetLocation(), methodSymbol.Name);
                         }
@@ -562,14 +503,9 @@ internal sealed class Parser
             IsEnumerable = ParsingUtilities.IsEnumerable(extractedType, symbols),
             ImplementsIConvertible = ParsingUtilities.ImplementsIConvertible(paramTypeSymbol, symbols),
             ImplementsIFormattable = ParsingUtilities.ImplementsIFormattable(paramTypeSymbol, symbols),
-
-            IsRedactorProvider = !parsingState.FoundRedactorProvider &&
-                symbols.RedactorProviderSymbol is not null &&
-                ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.RedactorProviderSymbol!, _compilation)
         };
 
         parsingState.FoundLogger |= lp.IsLogger;
-        parsingState.FoundRedactorProvider |= lp.IsRedactorProvider;
         parsingState.FoundException |= lp.IsException;
         parsingState.FoundLogLevel |= lp.IsLogLevel;
 
@@ -631,7 +567,6 @@ internal sealed class Parser
 
     private record struct MethodParsingState(
         bool FoundLogger,
-        bool FoundRedactorProvider,
         bool FoundException,
         bool FoundLogLevel,
         bool FoundDataClassificationAnnotation,

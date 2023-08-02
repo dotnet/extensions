@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -14,15 +13,12 @@ namespace Microsoft.Gen.Logging.Emission;
 
 internal sealed partial class Emitter : EmitterBase
 {
-    private const string LogMethodHelperType = "global::Microsoft.Extensions.Telemetry.Logging.LogMethodHelper";
+    private const string LoggerMessageHelperType = "global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper";
 
     private readonly StringBuilderPool _sbPool = new();
-    private bool _isRedactorProviderInTheInstance;
 
     public string Emit(IEnumerable<LoggingType> logTypes, CancellationToken cancellationToken)
     {
-        _isRedactorProviderInTheInstance = false;
-
         foreach (var lt in logTypes.OrderBy(static lt => lt.Namespace + "." + lt.Name))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -69,24 +65,11 @@ internal sealed partial class Emitter : EmitterBase
         OutOpenBrace();
 
         var isRedactionRequired =
-            lt.Methods
-                .SelectMany(static lm => lm.Parameters)
-                .Any(static lp => lp.ClassificationAttributeType != null)
-            || lt.Methods
-                .SelectMany(static lm => GetLogPropertiesAttributes(lm))
-                .Any();
+            lt.Methods.SelectMany(static lm => lm.Parameters).Any(static lp => lp.ClassificationAttributeType != null)
+            || lt.Methods.SelectMany(static lm => GetLogPropertiesAttributes(lm)).Any();
 
         if (isRedactionRequired)
         {
-            _isRedactorProviderInTheInstance = lt.Methods
-                .SelectMany(static lm => lm.Parameters)
-                .All(static lp => !lp.IsRedactorProvider);
-
-            if (_isRedactorProviderInTheInstance)
-            {
-                GenRedactorProperties(lt);
-            }
-
             GenAttributeClassifications(lt);
         }
 
@@ -135,62 +118,9 @@ internal sealed partial class Emitter : EmitterBase
         foreach (var classificationAttributeType in classificationAttributeTypes.OrderBy(static x => x))
         {
             var attrClassificationFieldName = GetAttributeClassification(classificationAttributeType);
-
             OutGeneratedCodeAttribute();
             OutLn($"private static readonly Microsoft.Extensions.Compliance.Classification.DataClassification {attrClassificationFieldName} = new {classificationAttributeType}().Classification;");
             OutLn();
-        }
-    }
-
-    private void GenRedactorProperties(LoggingType lt)
-    {
-        const string RedactorType = "global::Microsoft.Extensions.Compliance.Redaction.Redactor";
-
-        var logPropsDataClasses = lt.Methods.SelectMany(lm => GetLogPropertiesAttributes(lm));
-        var classificationAttributeTypes = lt.Methods
-            .SelectMany(static lm => lm.Parameters)
-            .Where(static lp => lp.ClassificationAttributeType is not null)
-            .Select(static lp => lp.ClassificationAttributeType!)
-            .Concat(logPropsDataClasses)
-            .Distinct();
-
-        var redactorProviderVariableName = lt.Methods
-            .Select(static lm => lm.RedactorProviderField)
-            .Distinct()
-            .Single();
-
-        var first = true;
-        foreach (var classificationAttributeType in classificationAttributeTypes.OrderBy(static x => x))
-        {
-            var classificationVariableName = EncodeTypeName(classificationAttributeType);
-            var attrClassificationFieldName = GetAttributeClassification(classificationAttributeType);
-
-            if (first)
-            {
-                first = false;
-            }
-            else
-            {
-                OutLn();
-            }
-
-            OutGeneratedCodeAttribute();
-            OutLn($"private {RedactorType}? ___{classificationVariableName}Redactor;");
-            OutLn();
-
-            OutGeneratedCodeAttribute();
-            OutLn($"private {RedactorType} __{classificationVariableName}Redactor");
-            OutLn($"{{");
-            OutLn($"    get");
-            OutLn($"    {{");
-            OutLn($"        if (___{classificationVariableName}Redactor == null)");
-            OutLn($"        {{");
-            OutLn($"            ___{classificationVariableName}Redactor = {redactorProviderVariableName}?.GetRedactor({attrClassificationFieldName});");
-            OutLn($"        }}");
-            OutLn();
-            OutLn($"        return ___{classificationVariableName}Redactor!;");
-            OutLn($"    }}");
-            OutLn($"}}");
         }
     }
 }

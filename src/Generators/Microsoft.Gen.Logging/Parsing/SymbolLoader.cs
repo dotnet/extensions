@@ -14,11 +14,9 @@ internal static class SymbolLoader
     internal const string LogPropertyIgnoreAttribute = "Microsoft.Extensions.Telemetry.Logging.LogPropertyIgnoreAttribute";
     internal const string ILogPropertyCollectorType = "Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector";
     internal const string ILoggerType = "Microsoft.Extensions.Logging.ILogger";
-    internal const string IRedactorProviderType = "Microsoft.Extensions.Compliance.Redaction.IRedactorProvider";
     internal const string LogLevelType = "Microsoft.Extensions.Logging.LogLevel";
     internal const string ExceptionType = "System.Exception";
     internal const string DataClassificationAttribute = "Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute";
-    internal const string LogMethodHelper = "Microsoft.Extensions.Telemetry.Logging.LogMethodHelper";
     internal const string IEnrichmentPropertyBag = "Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag";
     internal const string IFormatProviderType = "System.IFormatProvider";
 
@@ -78,7 +76,6 @@ internal static class SymbolLoader
             return null;
         }
 
-        var redactorProviderSymbol = compilation.GetTypeByMetadataName(IRedactorProviderType);
         var enumerableSymbol = compilation.GetSpecialType(SpecialType.System_Collections_IEnumerable);
         var formatProviderSymbol = compilation.GetTypeByMetadataName(IFormatProviderType)!;
 
@@ -100,7 +97,6 @@ internal static class SymbolLoader
             logPropertyIgnoreAttributeSymbol,
             logPropertyCollectorSymbol,
             loggerSymbol,
-            redactorProviderSymbol,
             logLevelSymbol,
             exceptionSymbol,
             ignorePropsSymbols,

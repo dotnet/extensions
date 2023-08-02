@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Numerics;
 using FluentAssertions;
@@ -42,14 +43,10 @@ public class LogPropertiesTests
 
         Assert.Equal(1, _logger.Collector.Count);
 
-        Assert.Equal("myProps_P5", _logger.LatestRecord.StructuredState![7].Key);
-        Assert.Equal("[\"1\",\"2\",\"3\"]", _logger.LatestRecord.StructuredState[7].Value);
-
-        Assert.Equal("myProps_P6", _logger.LatestRecord.StructuredState[8].Key);
-        Assert.Equal("[\"4\",\"5\",\"6\"]", _logger.LatestRecord.StructuredState[8].Value);
-
-        Assert.Equal("myProps_P7", _logger.LatestRecord.StructuredState[9].Key);
-        Assert.Equal("{\"Seven\"=\"7\",\"Eight\"=\"8\",\"Nine\"=\"9\"}", _logger.LatestRecord.StructuredState[9].Value);
+        var ss = _logger.LatestRecord.StructuredState!.ToDictionary(x => x.Key, x => x.Value);
+        Assert.Equal("[\"1\",\"2\",\"3\"]", ss["myProps_P5"]);
+        Assert.Equal("[\"4\",\"5\",\"6\"]", ss["myProps_P6"]);
+        Assert.Equal("{\"Seven\"=\"7\",\"Eight\"=\"8\",\"Nine\"=\"9\"}", ss["myProps_P7"]);
     }
 
     [Fact]
@@ -65,10 +62,8 @@ public class LogPropertiesTests
 
         var state = _logger.LatestRecord.StructuredState!;
         Assert.Equal(2, state.Count);
-        Assert.Equal("P0", state[0].Key);
-        Assert.Equal(props.P0.ToString(CultureInfo.InvariantCulture), state[0].Value);
-        Assert.Equal("P1", state[1].Key);
-        Assert.Equal(props.P1, state[1].Value);
+        Assert.Equal(props.P0.ToString(CultureInfo.InvariantCulture), state!.GetValue("P0"));
+        Assert.Equal(props.P1, state!.GetValue("P1"));
     }
 
     [Fact]
@@ -84,10 +79,8 @@ public class LogPropertiesTests
 
         var state = _logger.LatestRecord.StructuredState!;
         Assert.Equal(2, state.Count);
-        Assert.Equal("P0", state[0].Key);
-        Assert.Equal(props.P0.ToString(CultureInfo.InvariantCulture), state[0].Value);
-        Assert.Equal("P1", state[1].Key);
-        Assert.Equal(props.P1, state[1].Value);
+        Assert.Equal(props.P0.ToString(CultureInfo.InvariantCulture), state!.GetValue("P0"));
+        Assert.Equal(props.P1, state!.GetValue("P1"));
     }
 
     [Fact]
@@ -130,50 +123,29 @@ public class LogPropertiesTests
         Assert.Equal(19, state.Count);
 #endif
 
-        Assert.Equal("p_P0", state[0].Key);
-        Assert.Equal(props.P0.ToString(CultureInfo.InvariantCulture), state[0].Value);
-        Assert.Equal("p_P1", state[1].Key);
-        Assert.Equal(props.P1.ToString(CultureInfo.InvariantCulture), state[1].Value);
-        Assert.Equal("p_P2", state[2].Key);
-        Assert.Equal(props.P2.ToString(null, CultureInfo.InvariantCulture), state[2].Value);
-        Assert.Equal("p_P3", state[3].Key);
-        Assert.Equal(props.P3.ToString(), state[3].Value);
-        Assert.Equal("p_P4", state[4].Key);
-        Assert.Equal(props.P4.ToString(), state[4].Value);
-        Assert.Equal("p_P5", state[5].Key);
-        Assert.Equal(props.P5.ToString(), state[5].Value);
-        Assert.Equal("p_P6", state[6].Key);
-        Assert.Equal(props.P6.ToString(), state[6].Value);
-        Assert.Equal("p_P7", state[7].Key);
-        Assert.Equal(props.P7.ToString(), state[7].Value);
-        Assert.Equal("p_P8", state[8].Key);
-        Assert.Equal(props.P8.ToString(), state[8].Value);
-        Assert.Equal("p_P9", state[9].Key);
-        Assert.Equal(props.P9.ToString(), state[9].Value);
-        Assert.Equal("p_P10", state[10].Key);
-        Assert.Equal(props.P10.ToString(CultureInfo.InvariantCulture), state[10].Value);
-        Assert.Equal("p_P11", state[11].Key);
-        Assert.Equal(props.P11.ToString(CultureInfo.InvariantCulture), state[11].Value);
-        Assert.Equal("p_P12", state[12].Key);
-        Assert.Equal(props.P12.ToString(), state[12].Value);
-        Assert.Equal("p_P13", state[13].Key);
-        Assert.Equal(props.P13.ToString(), state[13].Value);
-        Assert.Equal("p_P14", state[14].Key);
-        Assert.Equal(props.P14.ToString(), state[14].Value);
-        Assert.Equal("p_P15", state[15].Key);
-        Assert.Equal(props.P15.ToString(), state[15].Value);
-        Assert.Equal("p_P16", state[16].Key);
-        Assert.Equal(props.P16.ToString(), state[16].Value);
-        Assert.Equal("p_P17", state[17].Key);
-        Assert.Equal(props.P17.ToString(), state[17].Value);
-        Assert.Equal("p_P18", state[18].Key);
-        Assert.Equal(props.P18.ToString(), state[18].Value);
+        Assert.Equal(props.P0.ToString(CultureInfo.InvariantCulture), state!.GetValue("p_P0"));
+        Assert.Equal(props.P1.ToString(CultureInfo.InvariantCulture), state!.GetValue("p_P1"));
+        Assert.Equal(props.P2.ToString(null, CultureInfo.InvariantCulture), state!.GetValue("p_P2"));
+        Assert.Equal(props.P3.ToString(), state!.GetValue("p_P3"));
+        Assert.Equal(props.P4.ToString(), state!.GetValue("p_P4"));
+        Assert.Equal(props.P5.ToString(), state!.GetValue("p_P5"));
+        Assert.Equal(props.P6.ToString(), state!.GetValue("p_P6"));
+        Assert.Equal(props.P7.ToString(), state!.GetValue("p_P7"));
+        Assert.Equal(props.P8.ToString(), state!.GetValue("p_P8"));
+        Assert.Equal(props.P9.ToString(), state!.GetValue("p_P9"));
+        Assert.Equal(props.P10.ToString(CultureInfo.InvariantCulture), state!.GetValue("p_P10"));
+        Assert.Equal(props.P11.ToString(CultureInfo.InvariantCulture), state!.GetValue("p_P11"));
+        Assert.Equal(props.P12.ToString(), state!.GetValue("p_P12"));
+        Assert.Equal(props.P13.ToString(), state!.GetValue("p_P13"));
+        Assert.Equal(props.P14.ToString(), state!.GetValue("p_P14"));
+        Assert.Equal(props.P15.ToString(), state!.GetValue("p_P15"));
+        Assert.Equal(props.P16.ToString(), state!.GetValue("p_P16"));
+        Assert.Equal(props.P17.ToString(), state!.GetValue("p_P17"));
+        Assert.Equal(props.P18.ToString(), state!.GetValue("p_P18"));
 
 #if NET6_0_OR_GREATER
-        Assert.Equal("p_P19", state[19].Key);
-        Assert.Equal(props.P19.ToString(CultureInfo.InvariantCulture), state[19].Value);
-        Assert.Equal("p_P20", state[20].Key);
-        Assert.Equal(props.P20.ToString(CultureInfo.InvariantCulture), state[20].Value);
+        Assert.Equal(props.P19.ToString(CultureInfo.InvariantCulture), state!.GetValue("p_P19"));
+        Assert.Equal(props.P20.ToString(CultureInfo.InvariantCulture), state!.GetValue("p_P20"));
 #endif
 
     }
@@ -181,7 +153,8 @@ public class LogPropertiesTests
     [Fact]
     public void LogPropertiesNullHandling()
     {
-        var provider = new StarRedactorProvider();
+        using var logger = Utils.GetLogger();
+        var collector = logger.FakeLogCollector;
 
         var props = new LogPropertiesNullHandlingExtensions.MyProps
         {
@@ -191,26 +164,24 @@ public class LogPropertiesTests
             P3 = null,
         };
 
-        LogPropertiesNullHandlingExtensions.M0(_logger, provider, props);
-        Assert.Equal(5, _logger.LatestRecord.StructuredState!.Count);
-        Assert.Equal("p_P0", _logger.LatestRecord.StructuredState[0].Key);
-        Assert.Null(_logger.LatestRecord.StructuredState[0].Value);
-        Assert.Equal("p_P1", _logger.LatestRecord.StructuredState[1].Key);
-        Assert.Null(_logger.LatestRecord.StructuredState[1].Value);
-        Assert.Equal("p_P2", _logger.LatestRecord.StructuredState[2].Key);
-        Assert.Equal(props.P2.ToString(null, CultureInfo.InvariantCulture), _logger.LatestRecord.StructuredState[2].Value);
-        Assert.Equal("p_P3", _logger.LatestRecord.StructuredState[3].Key);
-        Assert.Null(_logger.LatestRecord.StructuredState[3].Value);
-        Assert.Equal("p_P4", _logger.LatestRecord.StructuredState[4].Key);
-        Assert.Null(_logger.LatestRecord.StructuredState[4].Value);
-        Assert.Equal(1, _logger.Collector.Count);
+        LogPropertiesNullHandlingExtensions.M0(logger, props);
+        Assert.Equal(5, collector.LatestRecord.StructuredState!.Count);
 
-        _logger.Collector.Clear();
-        LogPropertiesNullHandlingExtensions.M1(_logger, provider, props);
-        Assert.Equal(1, _logger.LatestRecord.StructuredState!.Count);
-        Assert.Equal("p_P2", _logger.LatestRecord.StructuredState[0].Key);
-        Assert.Equal(props.P2.ToString(null, CultureInfo.InvariantCulture), _logger.LatestRecord.StructuredState[0].Value);
-        Assert.Equal(1, _logger.Collector.Count);
+        var ss = collector.LatestRecord.StructuredState!.ToDictionary(x => x.Key, x => x.Value);
+        Assert.Null(ss["p_P0"]);
+        Assert.Null(ss["p_P1"]);
+        Assert.Equal(props.P2.ToString(null, CultureInfo.InvariantCulture), ss["p_P2"]);
+        Assert.Null(ss["p_P3"]);
+        Assert.Null(ss["p_P4"]);
+        Assert.Equal(1, collector.Count);
+
+        collector.Clear();
+        LogPropertiesNullHandlingExtensions.M1(logger, props);
+        Assert.Equal(1, collector.LatestRecord.StructuredState!.Count);
+
+        ss = collector.LatestRecord.StructuredState!.ToDictionary(x => x.Key, x => x.Value);
+        Assert.Equal(props.P2.ToString(null, CultureInfo.InvariantCulture), ss["p_P2"]);
+        Assert.Equal(1, collector.Count);
     }
 
     [Fact]
@@ -333,7 +304,7 @@ public class LogPropertiesTests
         const string StringParamValue = "Value for a string";
 
         var classToLog = new ClassToLog { MyIntProperty = 0 };
-        new NonStaticTestClass(_logger, null!).LogProperties(StringParamValue, classToLog);
+        new NonStaticTestClass(_logger).LogProperties(StringParamValue, classToLog);
 
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;

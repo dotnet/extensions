@@ -15,7 +15,6 @@ internal sealed record class SymbolHolder(
     INamedTypeSymbol? LogPropertyIgnoreAttribute,
     INamedTypeSymbol ILogPropertyCollectorSymbol,
     INamedTypeSymbol ILoggerSymbol,
-    INamedTypeSymbol? RedactorProviderSymbol,
     INamedTypeSymbol LogLevelSymbol,
     INamedTypeSymbol ExceptionSymbol,
     HashSet<INamedTypeSymbol> IgnorePropertiesSymbols,

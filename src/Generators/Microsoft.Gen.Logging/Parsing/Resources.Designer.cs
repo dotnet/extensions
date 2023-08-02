@@ -367,24 +367,6 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to One or more parameters of the logging method &quot;{0}&quot; must be annotated with a data classification attribute.
-        /// </summary>
-        internal static string MissingDataClassificationParameterMessage {
-            get {
-                return ResourceManager.GetString("MissingDataClassificationParameterMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Logging method parameters must be annotated with a data classification attribute.
-        /// </summary>
-        internal static string MissingDataClassificationParameterTitle {
-            get {
-                return ResourceManager.GetString("MissingDataClassificationParameterTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Couldn&apos;t find a field of type &quot;Microsoft.Extensions.Logging.ILogger&quot; in type &quot;{0}&quot;.
         /// </summary>
         internal static string MissingLoggerFieldMessage {
@@ -439,42 +421,6 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Couldn&apos;t find a field of type &quot;Microsoft.Extensions.Redaction.IRedactorProvider&quot; in type &quot;{0}&quot;.
-        /// </summary>
-        internal static string MissingRedactorProviderFieldMessage {
-            get {
-                return ResourceManager.GetString("MissingRedactorProviderFieldMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Couldn&apos;t find a field of type &quot;Microsoft.Extensions.Redaction.IRedactorProvider&quot;.
-        /// </summary>
-        internal static string MissingRedactorProviderFieldTitle {
-            get {
-                return ResourceManager.GetString("MissingRedactorProviderFieldTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to One of the parameters to a logging method that performs redaction must implement the Microsoft.Extensions.Redaction.IRedactorProvider interface.
-        /// </summary>
-        internal static string MissingRedactorProviderParameterMessage {
-            get {
-                return ResourceManager.GetString("MissingRedactorProviderParameterMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A parameter to a logging method must implement the &quot;IRedactorProvider&quot; interface.
-        /// </summary>
-        internal static string MissingRedactorProviderParameterTitle {
-            get {
-                return ResourceManager.GetString("MissingRedactorProviderParameterTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Couldn&apos;t find a definition for required type &quot;{0}&quot;.
         /// </summary>
         internal static string MissingRequiredTypeMessage {
@@ -525,24 +471,6 @@ namespace Microsoft.Gen.Logging.Parsing {
         internal static string MultipleLoggerFieldsTitle {
             get {
                 return ResourceManager.GetString("MultipleLoggerFieldsTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Found multiple fields of type &quot;Microsoft.Extensions.Redaction.IRedactorProvider&quot; in type &quot;{0}&quot;.
-        /// </summary>
-        internal static string MultipleRedactorProviderFieldsMessage {
-            get {
-                return ResourceManager.GetString("MultipleRedactorProviderFieldsMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Multiple fields of type &quot;Microsoft.Extensions.Redaction.IRedactorProvider&quot; were found.
-        /// </summary>
-        internal static string MultipleRedactorProviderFieldsTitle {
-            get {
-                return ResourceManager.GetString("MultipleRedactorProviderFieldsTitle", resourceCulture);
             }
         }
         
