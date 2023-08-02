@@ -259,42 +259,6 @@ namespace Microsoft.Gen.AutoClient {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to API method names cannot start with _.
-        /// </summary>
-        internal static string ErrorInvalidMethodNameMessage {
-            get {
-                return ResourceManager.GetString("ErrorInvalidMethodNameMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to API method names can&apos;t start with an underscore.
-        /// </summary>
-        internal static string ErrorInvalidMethodNameTitle {
-            get {
-                return ResourceManager.GetString("ErrorInvalidMethodNameTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to API parameter names cannot start with _.
-        /// </summary>
-        internal static string ErrorInvalidParameterNameMessage {
-            get {
-                return ResourceManager.GetString("ErrorInvalidParameterNameMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to API parameter names can&apos;t start with an underscore.
-        /// </summary>
-        internal static string ErrorInvalidParameterNameTitle {
-            get {
-                return ResourceManager.GetString("ErrorInvalidParameterNameTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to An unsupported character was used in the REST method path.
         /// </summary>
         internal static string ErrorInvalidPathMessage {
