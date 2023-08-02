@@ -88,6 +88,22 @@ internal sealed class Emitter : EmitterBase
         return pathTemplateSb.ToString();
     }
 
+    private static string PickUniqueName(string baseName, HashSet<string> potentialConflicts)
+    {
+        var name = baseName;
+        while (true)
+        {
+            if (!potentialConflicts.Contains(name))
+            {
+                return name;
+            }
+
+#pragma warning disable S1643 // Strings should not be concatenated using '+' in a loop
+            name += "_";
+#pragma warning restore S1643 // Strings should not be concatenated using '+' in a loop
+        }
+    }
+
     private void GenTypeByNamespace(string nspace, IEnumerable<RestApiType> restApiTypes, CancellationToken cancellationToken)
     {
         OutLn();
@@ -148,32 +164,43 @@ internal sealed class Emitter : EmitterBase
 
     private void GenType(RestApiType restApiType)
     {
-        GetRestApiMethods(restApiType);
-        OutLn();
-    }
-
-    private void GetRestApiMethods(RestApiType restApiType)
-    {
         OutGeneratedCodeAttribute();
-
         OutLn($"{restApiType.Modifiers} {restApiType.Keyword} {restApiType.Name} {restApiType.Constraints} : I{restApiType.Name}");
         OutOpenBrace();
 
-        EmitClassVariablesAndConstructor(restApiType);
+        var namesInScope = new HashSet<string>(restApiType.Methods.Select(m => m.MethodName));
+        _ = namesInScope.Add(restApiType.Name);
+
+        foreach (var m in restApiType.Methods)
+        {
+            foreach (var p in m.AllParameters)
+            {
+                _ = namesInScope.Add(p.Name);
+            }
+        }
+
+        var staticsName = PickUniqueName("Statics", namesInScope);
+        var httpClientName = PickUniqueName("_httpClient", namesInScope);
+        var optionsName = PickUniqueName("_autoClientOptions", namesInScope);
+        var httpRequestMessageName = PickUniqueName("httpRequestMessage", namesInScope);
+
+        EmitStatics(restApiType, staticsName);
+        EmitClassVariablesAndConstructor(restApiType, httpClientName, optionsName);
 
         var dependencyName = restApiType.DependencyName;
 
         foreach (var restApiMethod in restApiType.Methods.OrderBy(static x => x.MethodName))
         {
-            GetRestApiMethod(restApiMethod, restApiType, dependencyName);
+            GenRestApiMethod(restApiMethod, restApiType, dependencyName, optionsName, staticsName, httpRequestMessageName);
         }
 
-        EmitSendRequestMethod();
+        EmitSendRequestMethod(httpClientName, optionsName);
 
         OutCloseBrace();
+        OutLn();
     }
 
-    private void GetRestApiMethod(RestApiMethod restApiMethod, RestApiType restApiType, string dependencyName)
+    private void GenRestApiMethod(RestApiMethod restApiMethod, RestApiType restApiType, string dependencyName, string optionsName, string staticsName, string httpRequestMessageName)
     {
         string? ctParameter = null;
 
@@ -217,17 +244,11 @@ internal sealed class Emitter : EmitterBase
         }
 
         var definePath = restApiMethod.FormatParameters.Count > 0 || !firstQuery;
-        if (definePath)
-        {
-            OutLn(@$"var _path = {Invariant}($""{pathSb}"");");
-            OutLn();
-        }
-
         var body = restApiMethod.AllParameters.FirstOrDefault(m => m.IsBody);
 
         var requestName = restApiMethod.RequestName;
 
-        OutLn($"var _httpRequestMessage = new {HttpRequestMessage}()");
+        OutLn($"var {httpRequestMessageName} = new {HttpRequestMessage}()");
         OutOpenBrace();
         if (restApiMethod.HttpMethod == "Patch")
         {
@@ -244,11 +265,11 @@ internal sealed class Emitter : EmitterBase
 
         if (definePath)
         {
-            OutLn($"RequestUri = new {Uri}(_path, {UriKind}.Relative),");
+            OutLn($"RequestUri = new {Uri}({Invariant}($\"{pathSb}\"), {UriKind}.Relative),");
         }
         else
         {
-            OutLn($"RequestUri = _uri{requestName},");
+            OutLn($"RequestUri = {staticsName}.Uri{requestName},");
         }
 
         OutCloseBraceWithExtra(";");
@@ -260,16 +281,15 @@ internal sealed class Emitter : EmitterBase
             switch (body.BodyType)
             {
                 case BodyContentTypeParam.ApplicationJson:
-                    OutLn($@"_httpRequestMessage.Content = {JsonContent}.Create({body.Name}, _applicationJsonHeader, _autoClientOptions.JsonSerializerOptions);");
+                    OutLn($@"{httpRequestMessageName}.Content = {JsonContent}.Create({body.Name}, {staticsName}.ApplicationJsonHeader, {optionsName}.JsonSerializerOptions);");
                     OutLn();
                     break;
 
                 case BodyContentTypeParam.TextPlain:
-                    OutLn(@$"string _payload = {body.Name}.ToString() ?? """";");
                     OutPP("#if NET7_0_OR_GREATER");
-                    OutLn($@"_httpRequestMessage.Content = new {StringContent}(_payload, {Encoding}.UTF8, _textPlainHeader);");
+                    OutLn($@"{httpRequestMessageName}.Content = new {StringContent}({body.Name}.ToString() ?? """", {Encoding}.UTF8, {staticsName}.TextPlainHeader);");
                     OutPP("#else");
-                    OutLn($@"_httpRequestMessage.Content = new {StringContent}(_payload, {Encoding}.UTF8, _textPlainHeader.MediaType);");
+                    OutLn($@"{httpRequestMessageName}.Content = new {StringContent}({body.Name}.ToString() ?? """", {Encoding}.UTF8, {staticsName}.TextPlainHeader.MediaType);");
                     OutPP("#endif");
                     OutLn();
                     break;
@@ -279,41 +299,41 @@ internal sealed class Emitter : EmitterBase
         OutLn("try");
         OutOpenBrace();
 
-        OutLn($"{TelemetryExtensions}.SetRequestMetadata(_httpRequestMessage, _requestMetadata{requestName});");
+        OutLn($"{TelemetryExtensions}.SetRequestMetadata({httpRequestMessageName}, {staticsName}.RequestMetadata{requestName});");
 
         foreach (var header in restApiType.StaticHeaders.OrderBy(static h => h.Key))
         {
-            OutLn(@$"_httpRequestMessage.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
+            OutLn(@$"{httpRequestMessageName}.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
         }
 
         foreach (var header in restApiMethod.StaticHeaders.OrderBy(static h => h.Key))
         {
-            OutLn(@$"_httpRequestMessage.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
+            OutLn(@$"{httpRequestMessageName}.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
         }
 
         foreach (var param in restApiMethod.AllParameters.Where(m => m.IsHeader))
         {
             OutLn($"if ({param.Name} != null)");
             OutOpenBrace();
-            OutLn(@$"_httpRequestMessage.Headers.Add(""{param.HeaderName}"", {param.Name}.ToString());");
+            OutLn(@$"{httpRequestMessageName}.Headers.Add(""{param.HeaderName}"", {param.Name}.ToString());");
             OutCloseBrace();
         }
 
         OutLn();
-        OutLn(@$"var _response = await SendRequest<{restApiMethod.ReturnType}>(""{dependencyName}"", _requestMetadata{requestName}.RequestRoute, _httpRequestMessage, {ctParameter ?? "default"})
+        OutLn(@$"return await SendRequest<{restApiMethod.ReturnType}>" +
+            $@"(""{dependencyName}"", {staticsName}.RequestMetadata{requestName}.RequestRoute, {httpRequestMessageName}, {ctParameter ?? "default"})
                     .ConfigureAwait(false);");
 
-        OutLn($"return _response;");
         OutCloseBrace();
         OutLn("finally");
         OutOpenBrace();
-        OutLn("_httpRequestMessage.Dispose();");
+        OutLn($"{httpRequestMessageName}.Dispose();");
         OutCloseBrace();
 
         OutCloseBrace();
     }
 
-    private void EmitSendRequestMethod()
+    private void EmitSendRequestMethod(string httpClientName, string optionsName)
     {
         OutLn();
 
@@ -329,7 +349,7 @@ internal sealed class Emitter : EmitterBase
         OutOpenBrace();
 
         OutLn();
-        OutLn("var response = await _httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);");
+        OutLn($"var response = await {httpClientName}.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);");
         OutLn();
 
         OutLn($"if (typeof(TResponse) == typeof({HttpResponseMessage}))");
@@ -364,7 +384,7 @@ internal sealed class Emitter : EmitterBase
         OutLn("var mediaType = response.Content.Headers.ContentType?.MediaType;");
         OutLn(@"if (mediaType == ""application/json"")");
         OutOpenBrace();
-        OutLn(@$"var deserializedResponse = await {HttpContentJsonExtensions}.ReadFromJsonAsync<TResponse>(response.Content, _autoClientOptions.JsonSerializerOptions, cancellationToken)
+        OutLn(@$"var deserializedResponse = await {HttpContentJsonExtensions}.ReadFromJsonAsync<TResponse>(response.Content, {optionsName}.JsonSerializerOptions, cancellationToken)
                     .ConfigureAwait(false);");
         OutLn("if (deserializedResponse == null)");
         OutOpenBrace();
@@ -389,15 +409,18 @@ internal sealed class Emitter : EmitterBase
         OutCloseBrace();
     }
 
-    private void EmitClassVariablesAndConstructor(RestApiType restApiType)
+    private void EmitStatics(RestApiType restApiType, string staticsName)
     {
-        OutLn(@$"private static readonly {MediaTypeHeaderValue} _applicationJsonHeader = new(""application/json"")");
+        OutLn($"private static class {staticsName}");
+        OutOpenBrace();
+
+        OutLn(@$"public static readonly {MediaTypeHeaderValue} ApplicationJsonHeader = new(""application/json"")");
         OutOpenBrace();
         OutLn($@"CharSet = {Encoding}.UTF8.WebName");
         OutCloseBraceWithExtra(";");
         OutLn();
 
-        OutLn(@$"private static readonly {MediaTypeHeaderValue} _textPlainHeader = new(""text/plain"")");
+        OutLn(@$"public static readonly {MediaTypeHeaderValue} TextPlainHeader = new(""text/plain"")");
         OutOpenBrace();
         OutLn($@"CharSet = {Encoding}.UTF8.WebName");
         OutCloseBraceWithExtra(";");
@@ -412,10 +435,10 @@ internal sealed class Emitter : EmitterBase
 
             if (restApiMethod.FormatParameters.Count == 0 && !restApiMethod.AllParameters.Any(p => p.IsQuery))
             {
-                OutLn(@$"private static readonly {Uri} _uri{requestName} = new(""{restApiMethod.Path}"", {UriKind}.Relative);");
+                OutLn(@$"public static readonly {Uri} Uri{requestName} = new(""{restApiMethod.Path}"", {UriKind}.Relative);");
             }
 
-            OutLn(@$"private static readonly {RequestMetadata} _requestMetadata{requestName} = new()");
+            OutLn(@$"public static readonly {RequestMetadata} RequestMetadata{requestName} = new()");
             OutOpenBrace();
             OutLn(@$"DependencyName = ""{dependencyName}"",");
             OutLn(@$"RequestName = ""{requestName}"",");
@@ -425,14 +448,19 @@ internal sealed class Emitter : EmitterBase
             OutLn();
         }
 
-        OutLn($"private readonly {HttpClient} _httpClient;");
-        OutLn($"private readonly {AutoClientOptions} _autoClientOptions;");
+        OutCloseBrace();
+    }
+
+    private void EmitClassVariablesAndConstructor(RestApiType restApiType, string httpClientName, string optionsName)
+    {
+        OutLn($"private readonly {HttpClient} {httpClientName};");
+        OutLn($"private readonly {AutoClientOptions} {optionsName};");
         OutLn();
 
         OutLn($"public {restApiType.Name}({HttpClient} httpClient, {AutoClientOptions} autoClientOptions)");
         OutOpenBrace();
-        OutLn(@$"_httpClient = httpClient;");
-        OutLn($"_autoClientOptions = autoClientOptions;");
+        OutLn(@$"{httpClientName} = httpClient;");
+        OutLn($"{optionsName} = autoClientOptions;");
         OutCloseBrace();
     }
 }
