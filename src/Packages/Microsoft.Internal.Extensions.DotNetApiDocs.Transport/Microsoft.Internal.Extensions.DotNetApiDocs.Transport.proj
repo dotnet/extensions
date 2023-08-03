@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
     <PropertyGroup>
-        <TargetFramework>$(NetCoreAppCurrent)-$(TargetOS)</TargetFramework>
+        <TargetFramework>$(LatestTargetFramework)</TargetFramework>
         <IsShipping>false</IsShipping>
         <!-- Reference the outputs to have them available as build outputs. -->
         <NoTargetsDoNotReferenceOutputAssemblies>false</NoTargetsDoNotReferenceOutputAssemblies>
@@ -10,7 +10,7 @@
         <IncludeSymbols>false</IncludeSymbols>
         <EnablePackageValidation>false</EnablePackageValidation>
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-        <PackageDescription>Internal transport package to provide dotnet-api-docs with the reference assemblies and compiler generated documentation files from dotnet/runtime.</PackageDescription>
+        <PackageDescription>Internal transport package to provide dotnet-api-docs with the reference assemblies and compiler generated documentation files from dotnet/extensions.</PackageDescription>
         <NoWarn>$(NoWarn);NU5128;NU5131</NoWarn>
         <BuildProjectReferences Condition="'$(NoBuild)' == 'true'">false</BuildProjectReferences>
         <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeProjectReferenceCompilerGeneratedSecondaryOutputInPackage</TargetsForTfmSpecificContentInPackage>
@@ -18,8 +18,7 @@
 
     <ItemGroup>
         <!-- Requires Private=true to calculate ReferenceCopyLocalPaths items. -->
-        <ProjectReference Include="$(LibrariesProjectRoot)sfx-src.proj;
-                               $(LibrariesProjectRoot)oob-src.proj"
+        <ProjectReference Include="$(LibrariesProjectRoot)\*\*.*proj"
             PrivateAssets="all"
             Private="true" />
     </ItemGroup>
@@ -29,12 +28,8 @@
         DependsOnTargets="BuildOnlySettings;ResolveReferences">
         <ItemGroup>
 
-            <!-- Exclude private assemblies and Microsoft.Bcl.* which are pure type forwards on .NETCoreApp. -->
-            <ProjectReferenceCopyLocalPathNonPrivate Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('IsPrivateAssembly', 'false'))"
-                Condition="!$([System.String]::new('%(Filename)').StartsWith('Microsoft.Bcl.'))" />
-
-            <ReferenceAssemblyFile Include="@(ProjectReferenceCopyLocalPathNonPrivate->WithMetadataValue('Extension', '.dll')->Metadata('ReferenceAssembly'))" />
-            <CompilerGeneratedXmlDocFile Include="@(ProjectReferenceCopyLocalPathNonPrivate->WithMetadataValue('UseCompilerGeneratedDocXmlFile', 'true')->WithMetadataValue('Extension', '.xml'))" />
+            <ReferenceAssemblyFile Include="@(ReferenceCopyLocalPaths->WithMetadataValue('Extension', '.dll')->Metadata('ReferenceAssembly'))" />
+            <CompilerGeneratedXmlDocFile Include="@(ReferenceCopyLocalPaths->WithMetadataValue('GenerateDocumentationFile', 'true')->WithMetadataValue('Extension', '.xml'))" />
             <TfmSpecificPackageFile Include="@(ReferenceAssemblyFile);
                                        @(CompilerGeneratedXmlDocFile)"
                 PackagePath="ref\$(NetCoreAppCurrent)\" />
