@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
@@ -20,7 +19,7 @@ internal static partial class Log
     internal const string OriginalFormat = "{OriginalFormat}";
     internal const string OriginalFormatValue = "{httpMethod} {httpHost}/{httpPath}";
 
-    private const int MinimalPropertyCount = 5;
+    private const int MinimalPropertyCount = 4;
 
     private const string RequestReadErrorMessage =
         "An error occurred while reading the request data to fill the log record: " +
@@ -59,18 +58,19 @@ internal static partial class Log
     private static void OutgoingRequest(
         ILogger logger, LogLevel level, int eventId, string eventName, LogRecord record, Exception? exception = null)
     {
-        Debug.Assert(record.EnrichmentProperties is not null, "record.EnrichmentProperties has to be initialized");
         if (!logger.IsEnabled(level))
         {
             return;
         }
 
-        var loggerMessageState = record.EnrichmentProperties!;
+        // EnrichmentProperties is null when we log request's start:
+        var loggerMessageState = record.EnrichmentProperties ?? LoggerMessageHelper.ThreadLocalState;
 
+        var statusCodePropertyCount = record.StatusCode.HasValue ? 1 : 0;
         var requestHeadersCount = record.RequestHeaders?.Count ?? 0;
         var responseHeadersCount = record.ResponseHeaders?.Count ?? 0;
 
-        var index = loggerMessageState.ReservePropertySpace(MinimalPropertyCount + requestHeadersCount + responseHeadersCount);
+        var index = loggerMessageState.ReservePropertySpace(MinimalPropertyCount + statusCodePropertyCount + requestHeadersCount + responseHeadersCount);
         loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Method, record.Method);
         loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Host, record.Host);
         loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Path, record.Path);
@@ -107,6 +107,11 @@ internal static partial class Log
             loggerMessageState,
             exception,
             _originalFormatValueFMTFunc);
+
+        if (record.EnrichmentProperties is null)
+        {
+            loggerMessageState.Clear();
+        }
     }
 
     private static string OriginalFormatValueFMT(LoggerMessageState request, Exception? _)

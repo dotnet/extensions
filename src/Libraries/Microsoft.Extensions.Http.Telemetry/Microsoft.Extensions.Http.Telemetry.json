@@ -252,7 +252,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag enrichmentBag, System.Net.Http.HttpRequestMessage? request = null, System.Net.Http.HttpResponseMessage? response = null);",
+          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag enrichmentBag, System.Net.Http.HttpRequestMessage request, System.Net.Http.HttpResponseMessage? response = null, Exception? exception = null);",
           "Stage": "Stable"
         }
       ]

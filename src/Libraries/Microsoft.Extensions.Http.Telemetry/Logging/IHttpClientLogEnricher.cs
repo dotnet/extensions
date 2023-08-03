@@ -20,6 +20,6 @@ public interface IHttpClientLogEnricher
     /// <param name="response"><see cref="HttpResponseMessage"/> object associated with the outgoing HTTP request.</param>
     /// <param name="exception">An optional <see cref="Exception"/> that was thrown within the outgoing HTTP request processing.</param>
     // TODO: adding a new parameter to the interface method is a breaking change. Pay additional attention to this during review.
-    // Alternatively, we can decide to add another overload instead.
+    // Alternatively, we can decide to add another overload instead - where exception in not nullable.
     void Enrich(IEnrichmentPropertyBag enrichmentBag, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null);
 }

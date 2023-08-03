@@ -13,19 +13,26 @@ internal class TestEnricher : IHttpClientLogEnricher
 {
     internal readonly KeyValuePair<string, object?> KvpRequest = new("test key request", "test value");
     internal readonly KeyValuePair<string, object?> KvpResponse = new("test key response", "test value");
+    private readonly bool _throwOnEnrich;
 
     public LoggerMessageState EnrichmentBag { get; }
 
-    public TestEnricher()
+    public TestEnricher(bool throwOnEnrich = false)
     {
         EnrichmentBag = new();
         var index = EnrichmentBag.ReservePropertySpace(2);
         EnrichmentBag.PropertyArray[index++] = KvpRequest;
         EnrichmentBag.PropertyArray[index++] = KvpResponse;
+        _throwOnEnrich = throwOnEnrich;
     }
 
     public void Enrich(IEnrichmentPropertyBag enrichmentBag, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
     {
+        if (_throwOnEnrich)
+        {
+            throw new NotSupportedException("Synthetic exception from enricher");
+        }
+
         if (request is not null)
         {
             enrichmentBag.Add(KvpRequest.Key, KvpRequest.Value!);
