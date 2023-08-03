@@ -17,6 +17,7 @@
     <Compile Include="..\Shared\EmitterBase.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\GeneratorUtilities.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\ParserUtilities.cs" LinkBase="Shared" />
+    <Compile Include="..\Microsoft.Gen.Metering\Exceptions\*.cs" LinkBase="Microsoft.Gen.Metering" />
     <Compile Include="..\Microsoft.Gen.Metering\Model\*.cs" LinkBase="Microsoft.Gen.Metering" />
     <Compile Include="..\Microsoft.Gen.Metering\Parser.cs" LinkBase="Microsoft.Gen.Metering" />
     <Compile Include="..\Microsoft.Gen.Metering\StrongTypeAttributeParameters.cs" LinkBase="Microsoft.Gen.Metering" />

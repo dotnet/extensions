@@ -456,14 +456,6 @@ internal sealed class Parser
     {
         var hasErrors = false;
 
-        if (methodSymbol.Name[0] == '_')
-        {
-            // can't have method names that start with _ since that can lead to conflicting symbol names
-            // because the generated symbols start with _
-            Diag(DiagDescriptors.ErrorInvalidMethodName, methodSymbol.GetLocation());
-            hasErrors = true;
-        }
-
         if (methodSymbol.Arity > 0)
         {
             // we don't currently support generic methods
@@ -579,14 +571,6 @@ internal sealed class Parser
             if (paramTypeSymbol is IErrorTypeSymbol)
             {
                 // semantic problem, just bail quietly
-                hasErrors = true;
-            }
-
-            if (paramName[0] == '_')
-            {
-                // can't have method parameter names that start with _ since that can lead to conflicting symbol names
-                // because all generated symbols start with _
-                Diag(DiagDescriptors.ErrorInvalidParameterName, paramSymbol.Locations[0]);
                 hasErrors = true;
             }
 

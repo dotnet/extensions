@@ -231,20 +231,6 @@ public class ParserTests
     }
 
     [Fact]
-    public async Task InvalidMethodName()
-    {
-        var ds = await RunGenerator(@"
-            [AutoClient(""MyClient"")]
-            public interface IClient
-            {
-                [Get(""/api/users"")]
-                public Task<string> _GetUsers(CancellationToken cancellationToken);
-            }");
-
-        Assert.Contains(DiagDescriptors.ErrorInvalidMethodName.Id, ds.Select(x => x.Id));
-    }
-
-    [Fact]
     public async Task GenericMethodUnsupported()
     {
         var ds = await RunGenerator(@"
@@ -298,20 +284,6 @@ public class ParserTests
             }");
 
         Assert.Contains(DiagDescriptors.ErrorMissingMethodAttribute.Id, ds.Select(x => x.Id));
-    }
-
-    [Fact]
-    public async Task InvalidParameterName()
-    {
-        var ds = await RunGenerator(@"
-            [AutoClient(""MyClient"")]
-            public interface IClient
-            {
-                [Get(""/api/users"")]
-                public Task<string> GetUsers(string _param, CancellationToken cancellationToken);
-            }");
-
-        Assert.Contains(DiagDescriptors.ErrorInvalidParameterName.Id, ds.Select(x => x.Id));
     }
 
     [Fact]

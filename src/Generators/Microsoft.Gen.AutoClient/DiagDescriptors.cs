@@ -53,17 +53,7 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.ErrorStaticMethodMessage,
         category: Category);
 
-    public static DiagnosticDescriptor ErrorInvalidMethodName { get; } = Make(
-        id: "R9G308",
-        title: Resources.ErrorInvalidMethodNameTitle,
-        messageFormat: Resources.ErrorInvalidMethodNameMessage,
-        category: Category);
-
-    public static DiagnosticDescriptor ErrorInvalidParameterName { get; } = Make(
-        id: "R9G309",
-        title: Resources.ErrorInvalidParameterNameTitle,
-        messageFormat: Resources.ErrorInvalidParameterNameMessage,
-        category: Category);
+    // R9G308..R9G309 retired
 
     public static DiagnosticDescriptor ErrorMissingMethodAttribute { get; } = Make(
         id: "R9G310",

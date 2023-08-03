@@ -125,4 +125,10 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         title: Resources.ErrorXmlNotLoadedCorrectlyTitle,
         messageFormat: Resources.ErrorXmlNotLoadedCorrectlyMessage,
         category: Category);
+
+    public static DiagnosticDescriptor ErrorDimensionTypeCycleDetected { get; } = Make(
+        id: "R9G071",
+        title: Resources.ErrorDimensionTypeCycleDetectedTitle,
+        messageFormat: Resources.ErrorDimensionTypeCycleDetectedMessage,
+        category: Category);
 }
