@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Telemetry.Enrichment;
 
 internal sealed class ServiceLogEnricher : IStaticLogEnricher
 {
-    private readonly KeyValuePair<string, object>[] _props;
+    private readonly KeyValuePair<string, object>[] _tags;
 
     public ServiceLogEnricher(
         IOptions<ServiceLogEnricherOptions> options,
@@ -20,10 +20,10 @@ internal sealed class ServiceLogEnricher : IStaticLogEnricher
         var enricherOptions = Throw.IfMemberNull(options, options.Value);
         var applicationMetadata = Throw.IfMemberNull(metadata, metadata.Value);
 
-        _props = Initialize(enricherOptions, applicationMetadata);
+        _tags = Initialize(enricherOptions, applicationMetadata);
     }
 
-    public void Enrich(IEnrichmentPropertyBag enrichmentPropertyBag) => enrichmentPropertyBag.Add(_props);
+    public void Enrich(IEnrichmentTagCollector collector) => collector.Add(_tags);
 
     private static KeyValuePair<string, object>[] Initialize(ServiceLogEnricherOptions enricherOptions, ApplicationMetadata applicationMetadata)
     {
@@ -31,22 +31,22 @@ internal sealed class ServiceLogEnricher : IStaticLogEnricher
 
         if (enricherOptions.ApplicationName)
         {
-            l.Add(new(ServiceEnricherDimensions.ApplicationName, applicationMetadata.ApplicationName));
+            l.Add(new(ServiceEnricherTags.ApplicationName, applicationMetadata.ApplicationName));
         }
 
         if (enricherOptions.EnvironmentName)
         {
-            l.Add(new(ServiceEnricherDimensions.EnvironmentName, applicationMetadata.EnvironmentName));
+            l.Add(new(ServiceEnricherTags.EnvironmentName, applicationMetadata.EnvironmentName));
         }
 
         if (enricherOptions.DeploymentRing && applicationMetadata.DeploymentRing is not null)
         {
-            l.Add(new(ServiceEnricherDimensions.DeploymentRing, applicationMetadata.DeploymentRing));
+            l.Add(new(ServiceEnricherTags.DeploymentRing, applicationMetadata.DeploymentRing));
         }
 
         if (enricherOptions.BuildVersion && applicationMetadata.BuildVersion is not null)
         {
-            l.Add(new(ServiceEnricherDimensions.BuildVersion, applicationMetadata.BuildVersion));
+            l.Add(new(ServiceEnricherTags.BuildVersion, applicationMetadata.BuildVersion));
         }
 
         return l.ToArray();

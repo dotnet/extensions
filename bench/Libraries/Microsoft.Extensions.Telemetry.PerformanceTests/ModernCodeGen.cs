@@ -13,14 +13,14 @@ internal static class ModernCodeGen
     {
         var state = global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper.ThreadLocalState;
 
-        _ = state.ReservePropertySpace(7);
-        state.PropertyArray[6] = new("connectionId", connectionId);
-        state.PropertyArray[5] = new("type", type);
-        state.PropertyArray[4] = new("streamId", streamId);
-        state.PropertyArray[3] = new("length", length);
-        state.PropertyArray[2] = new("flags", flags);
-        state.PropertyArray[1] = new("other", other);
-        state.PropertyArray[0] = new("{OriginalFormat}", "Connection id '{connectionId}' received {type} frame for stream ID {streamId} with length {length} and flags {flags} and {other}");
+        _ = state.ReserveTagSpace(7);
+        state.TagArray[6] = new("connectionId", connectionId);
+        state.TagArray[5] = new("type", type);
+        state.TagArray[4] = new("streamId", streamId);
+        state.TagArray[3] = new("length", length);
+        state.TagArray[2] = new("flags", flags);
+        state.TagArray[1] = new("other", other);
+        state.TagArray[0] = new("{OriginalFormat}", "Connection id '{connectionId}' received {type} frame for stream ID {streamId} with length {length} and flags {flags} and {other}");
 
         logger.Log(
             global::Microsoft.Extensions.Logging.LogLevel.Error,
@@ -29,12 +29,12 @@ internal static class ModernCodeGen
             null,
             static (s, _) =>
             {
-                var connectionId = s.PropertyArray[6].Value ?? "(null)";
-                var type = s.PropertyArray[5].Value ?? "(null)";
-                var streamId = s.PropertyArray[4].Value ?? "(null)";
-                var length = s.PropertyArray[3].Value ?? "(null)";
-                var flags = s.PropertyArray[2].Value ?? "(null)";
-                var other = s.PropertyArray[1].Value ?? "(null)";
+                var connectionId = s.TagArray[6].Value ?? "(null)";
+                var type = s.TagArray[5].Value ?? "(null)";
+                var streamId = s.TagArray[4].Value ?? "(null)";
+                var length = s.TagArray[3].Value ?? "(null)";
+                var flags = s.TagArray[2].Value ?? "(null)";
+                var other = s.TagArray[1].Value ?? "(null)";
                 return global::System.FormattableString.Invariant($"Connection id '{connectionId}' received {type} frame for stream ID {streamId} with length {length} and flags {flags} and {other}");
             });
 
@@ -48,12 +48,12 @@ internal static class ModernCodeGen
     {
         var state = global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper.ThreadLocalState;
 
-        _ = state.ReservePropertySpace(5);
-        state.PropertyArray[4] = new("start", start);
-        state.PropertyArray[3] = new("end", end);
-        state.PropertyArray[2] = new("options", options);
-        state.PropertyArray[1] = new("guid", guid.ToString());
-        state.PropertyArray[0] = new("{OriginalFormat}", "Range [{start}..{end}], options {options}, guid {guid}");
+        _ = state.ReserveTagSpace(5);
+        state.TagArray[4] = new("start", start);
+        state.TagArray[3] = new("end", end);
+        state.TagArray[2] = new("options", options);
+        state.TagArray[1] = new("guid", guid.ToString());
+        state.TagArray[0] = new("{OriginalFormat}", "Range [{start}..{end}], options {options}, guid {guid}");
 
         logger.Log(
             global::Microsoft.Extensions.Logging.LogLevel.Error,
@@ -62,10 +62,10 @@ internal static class ModernCodeGen
             null,
             static (s, _) =>
             {
-                var start = s.PropertyArray[4].Value;
-                var end = s.PropertyArray[3].Value;
-                var options = s.PropertyArray[2].Value;
-                var guid = s.PropertyArray[1].Value;
+                var start = s.TagArray[4].Value;
+                var end = s.TagArray[3].Value;
+                var options = s.TagArray[2].Value;
+                var guid = s.TagArray[1].Value;
                 return global::System.FormattableString.Invariant($"Range [{start}..{end}], options {options}, guid {guid}");
             });
 

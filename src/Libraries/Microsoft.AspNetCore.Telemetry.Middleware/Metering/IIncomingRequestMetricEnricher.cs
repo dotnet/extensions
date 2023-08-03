@@ -14,5 +14,5 @@ public interface IIncomingRequestMetricEnricher : IMetricEnricher
     /// <summary>
     /// Gets a list of dimension names to enrich incoming request metrics.
     /// </summary>
-    IReadOnlyList<string> DimensionNames { get; }
+    IReadOnlyList<string> TagNames { get; }
 }

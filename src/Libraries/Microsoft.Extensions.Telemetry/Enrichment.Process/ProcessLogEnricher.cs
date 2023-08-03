@@ -25,7 +25,7 @@ internal sealed class ProcessLogEnricher : ILogEnricher
         _threadIdEnabled = enricherOptions.ThreadId;
     }
 
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag)
+    public void Enrich(IEnrichmentTagCollector collector)
     {
         if (_threadIdEnabled)
         {
@@ -33,7 +33,7 @@ internal sealed class ProcessLogEnricher : ILogEnricher
             _threadId ??= Environment.CurrentManagedThreadId.ToInvariantString();
 #pragma warning restore S2696 // Instance members should not write to "static" fields
 
-            enrichmentBag.Add(ProcessEnricherDimensions.ThreadId, _threadId);
+            collector.Add(ProcessEnricherTagNames.ThreadId, _threadId);
         }
     }
 }

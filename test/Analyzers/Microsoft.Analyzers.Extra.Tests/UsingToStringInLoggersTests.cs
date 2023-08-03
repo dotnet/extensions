@@ -16,7 +16,7 @@ public class UsingToStringInLoggersTests
     public static IEnumerable<Assembly> References => new[]
     {
         Assembly.GetAssembly(typeof(LogMethodAttribute))!,
-        Assembly.GetAssembly(typeof(IEnrichmentPropertyBag))!,
+        Assembly.GetAssembly(typeof(IEnrichmentTagCollector))!,
         Assembly.GetAssembly(typeof(Microsoft.Extensions.Logging.LogLevel))!,
     };
 

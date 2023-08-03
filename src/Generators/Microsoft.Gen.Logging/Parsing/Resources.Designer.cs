@@ -295,78 +295,6 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Property provider method &quot;{0}&quot; in type &quot;{1}&quot; is not accessible, increase its visibility.
-        /// </summary>
-        internal static string LogPropertiesProviderMethodInaccessibleMessage {
-            get {
-                return ResourceManager.GetString("LogPropertiesProviderMethodInaccessibleMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Property provider method is inaccessible.
-        /// </summary>
-        internal static string LogPropertiesProviderMethodInaccessibleTitle {
-            get {
-                return ResourceManager.GetString("LogPropertiesProviderMethodInaccessibleTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Property provider method &quot;{0}&quot; in type &quot;{1}&quot; doesn&apos;t have a signature compatible with &quot;{2}&quot;.
-        /// </summary>
-        internal static string LogPropertiesProviderMethodInvalidSignatureMessage {
-            get {
-                return ResourceManager.GetString("LogPropertiesProviderMethodInvalidSignatureMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Property provider method has an invalid signature.
-        /// </summary>
-        internal static string LogPropertiesProviderMethodInvalidSignatureTitle {
-            get {
-                return ResourceManager.GetString("LogPropertiesProviderMethodInvalidSignatureTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Could not find property provider method &quot;{0}&quot; in type &quot;{1}&quot;.
-        /// </summary>
-        internal static string LogPropertiesProviderMethodNotFoundMessage {
-            get {
-                return ResourceManager.GetString("LogPropertiesProviderMethodNotFoundMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Property provider method not found.
-        /// </summary>
-        internal static string LogPropertiesProviderMethodNotFoundTitle {
-            get {
-                return ResourceManager.GetString("LogPropertiesProviderMethodNotFoundTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; has a custom property provider and hence will not be redacted.
-        /// </summary>
-        internal static string LogPropertiesProviderWithRedactionMessage {
-            get {
-                return ResourceManager.GetString("LogPropertiesProviderWithRedactionMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Parameters with a custom property provider are not subject to redaciton.
-        /// </summary>
-        internal static string LogPropertiesProviderWithRedactionTitle {
-            get {
-                return ResourceManager.GetString("LogPropertiesProviderWithRedactionTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Couldn&apos;t find a field of type &quot;Microsoft.Extensions.Logging.ILogger&quot; in type &quot;{0}&quot;.
         /// </summary>
         internal static string MissingLoggerFieldMessage {
@@ -597,6 +525,78 @@ namespace Microsoft.Gen.Logging.Parsing {
         internal static string ShouldntReuseEventNamesTitle {
             get {
                 return ResourceManager.GetString("ShouldntReuseEventNamesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag provider method &quot;{0}&quot; in type &quot;{1}&quot; is not accessible, increase its visibility.
+        /// </summary>
+        internal static string TagProviderMethodInaccessibleMessage {
+            get {
+                return ResourceManager.GetString("TagProviderMethodInaccessibleMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag provider method is inaccessible.
+        /// </summary>
+        internal static string TagProviderMethodInaccessibleTitle {
+            get {
+                return ResourceManager.GetString("TagProviderMethodInaccessibleTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Property provider method &quot;{0}&quot; in type &quot;{1}&quot; doesn&apos;t have a signature compatible with &quot;{2}&quot;.
+        /// </summary>
+        internal static string TagProviderMethodInvalidSignatureMessage {
+            get {
+                return ResourceManager.GetString("TagProviderMethodInvalidSignatureMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Property provider method has an invalid signature.
+        /// </summary>
+        internal static string TagProviderMethodInvalidSignatureTitle {
+            get {
+                return ResourceManager.GetString("TagProviderMethodInvalidSignatureTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find tag provider method &quot;{0}&quot; in type &quot;{1}&quot;.
+        /// </summary>
+        internal static string TagProviderMethodNotFoundMessage {
+            get {
+                return ResourceManager.GetString("TagProviderMethodNotFoundMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag provider method not found.
+        /// </summary>
+        internal static string TagProviderMethodNotFoundTitle {
+            get {
+                return ResourceManager.GetString("TagProviderMethodNotFoundTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; has a custom tag provider and hence will not be redacted.
+        /// </summary>
+        internal static string TagProviderWithRedactionMessage {
+            get {
+                return ResourceManager.GetString("TagProviderWithRedactionMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameters with a custom tag provider are not subject to redaciton.
+        /// </summary>
+        internal static string TagProviderWithRedactionTitle {
+            get {
+                return ResourceManager.GetString("TagProviderWithRedactionTitle", resourceCulture);
             }
         }
         

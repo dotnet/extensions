@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 /// Holds a summary of an exception for use in telemetry.
 /// </summary>
 /// <remarks>
-/// Metric dimensions typically support a limited number of distinct values, and as such they are not suitable
+/// Metric tags typically support a limited number of distinct values, and as such they are not suitable
 /// to represent values which are highly variable, such as the result of <see cref="Exception.ToString"/>.
 /// An exception summary represents a low-cardinality version of an exception's information, suitable for such
 /// cases. The summary never includes sensitive information.

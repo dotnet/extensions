@@ -10,8 +10,8 @@ internal class SameDefaultDimEnricher : IOutgoingRequestMetricEnricher
 {
     public IReadOnlyList<string> DimensionNames => new[] { "req_host" };
 
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag)
+    public void Enrich(IEnrichmentTagCollector collector)
     {
-        enrichmentBag.Add("req_host", "req_host_value");
+        collector.Add("req_host", "req_host_value");
     }
 }

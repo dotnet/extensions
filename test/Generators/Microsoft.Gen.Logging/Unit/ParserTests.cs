@@ -378,7 +378,7 @@ public partial class ParserTests
                     public class LogMethodAttribute : System.Attribute {}
                     public class LogPropertiesAttribute : System.Attribute {}
                     public class LogPropertyIgnoreAttribute : System.Attribute {}
-                    public class ILogPropertyCollector {}
+                    public class ITagCollector {}
                     public class LogMethodHelper { }
                 }
                 partial class C
@@ -749,7 +749,7 @@ public partial class ParserTests
             {
                 Assembly.GetAssembly(typeof(ILogger))!,
                 Assembly.GetAssembly(typeof(LogMethodAttribute))!,
-                Assembly.GetAssembly(typeof(IEnrichmentPropertyBag))!,
+                Assembly.GetAssembly(typeof(IEnrichmentTagCollector))!,
                 Assembly.GetAssembly(typeof(DataClassification))!,
                 Assembly.GetAssembly(typeof(PrivateDataAttribute))!,
             };

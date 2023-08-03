@@ -66,10 +66,10 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.ErrorMethodHasBodyMessage,
         category: Category);
 
-    public static DiagnosticDescriptor ErrorInvalidDimensionNames { get; } = Make(
+    public static DiagnosticDescriptor ErrorInvalidTagNames { get; } = Make(
         id: "R9G060",
-        title: Resources.ErrorInvalidDimensionNamesMessage,
-        messageFormat: Resources.ErrorInvalidDimensionNamesTitle,
+        title: Resources.ErrorInvalidTagNamesMessage,
+        messageFormat: Resources.ErrorInvalidTagNamesTitle,
         category: Category);
 
     public static DiagnosticDescriptor ErrorNotStaticMethod { get; } = Make(
@@ -78,22 +78,22 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.ErrorNotStaticMethodMessage,
         category: Category);
 
-    public static DiagnosticDescriptor ErrorDuplicateDimensionName { get; } = Make(
+    public static DiagnosticDescriptor ErrorDuplicateTagName { get; } = Make(
         id: "R9G063",
-        title: Resources.ErrorDuplicateDimensionNameTitle,
-        messageFormat: Resources.ErrorDuplicateDimensionNameMessage,
+        title: Resources.ErrorDuplicateTagNameTitle,
+        messageFormat: Resources.ErrorDuplicateTagNameMessage,
         category: Category);
 
-    public static DiagnosticDescriptor ErrorInvalidDimensionType { get; } = Make(
+    public static DiagnosticDescriptor ErrorInvalidTagNameType { get; } = Make(
         id: "R9G064",
-        title: Resources.ErrorInvalidDimensionTypeTitle,
-        messageFormat: Resources.ErrorInvalidDimensionTypeMessage,
+        title: Resources.ErrorInvalidTagTypeTitle,
+        messageFormat: Resources.ErrorInvalidTagTypeMessage,
         category: Category);
 
-    public static DiagnosticDescriptor ErrorTooManyDimensions { get; } = Make(
+    public static DiagnosticDescriptor ErrorTooManyTagNames { get; } = Make(
         id: "R9G065",
-        title: Resources.ErrorTooManyDimensionsTitle,
-        messageFormat: Resources.ErrorTooManyDimensionsMessage,
+        title: Resources.ErrorTooManyTagNamesTitle,
+        messageFormat: Resources.ErrorTooManyTagNamesMessage,
         category: Category);
 
     public static DiagnosticDescriptor ErrorInvalidAttributeGenericType { get; } = Make(
@@ -126,9 +126,9 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.ErrorXmlNotLoadedCorrectlyMessage,
         category: Category);
 
-    public static DiagnosticDescriptor ErrorDimensionTypeCycleDetected { get; } = Make(
+    public static DiagnosticDescriptor ErrorTagTypeCycleDetected { get; } = Make(
         id: "R9G071",
-        title: Resources.ErrorDimensionTypeCycleDetectedTitle,
-        messageFormat: Resources.ErrorDimensionTypeCycleDetectedMessage,
+        title: Resources.ErrorTagTypeCycleDetectedTitle,
+        messageFormat: Resources.ErrorTagTypeCycleDetectedMessage,
         category: Category);
 }

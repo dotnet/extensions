@@ -40,7 +40,7 @@ public class HttpMeteringHandler : DelegatingHandler
 
     private readonly Histogram<long> _outgoingRequestMetric;
     private readonly IOutgoingRequestMetricEnricher[] _requestEnrichers;
-    private readonly ObjectPool<MetricEnrichmentPropertyBag> _propertyBagPool = PoolFactory.CreateResettingPool<MetricEnrichmentPropertyBag>();
+    private readonly ObjectPool<MetricEnrichmentTagCollector> _propertyBagPool = PoolFactory.CreateResettingPool<MetricEnrichmentTagCollector>();
     private readonly IOutgoingRequestContext? _requestMetadataContext;
     private readonly IDownstreamDependencyMetadataManager? _downstreamDependencyMetadataManager;
     private readonly int _enrichersCount;

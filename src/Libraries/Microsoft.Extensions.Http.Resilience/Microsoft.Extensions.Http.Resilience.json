@@ -460,11 +460,11 @@
           "Stage": "Stable"
         },
         {
-          "Member": "System.IServiceProvider Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.ServiceProvider { get; }",
+          "Member": "string Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.InstanceName { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.StrategyKey { get; }",
+          "Member": "System.IServiceProvider Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.ServiceProvider { get; }",
           "Stage": "Stable"
         }
       ]

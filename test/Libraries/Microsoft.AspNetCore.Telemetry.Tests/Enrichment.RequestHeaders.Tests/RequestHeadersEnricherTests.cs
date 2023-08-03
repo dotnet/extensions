@@ -60,7 +60,7 @@ public class RequestHeadersEnricherTests
         };
 
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
-        var enrichedProperties = new TestLogEnrichmentPropertyBag();
+        var enrichedProperties = new TestLogEnrichmentTagCollector();
 
         // Act
         enricher.Enrich(enrichedProperties);
@@ -91,7 +91,7 @@ public class RequestHeadersEnricherTests
 
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), redactorProviderMock.Object);
 
-        var enrichedProperties = new TestLogEnrichmentPropertyBag();
+        var enrichedProperties = new TestLogEnrichmentTagCollector();
 
         // Act
         enricher.Enrich(enrichedProperties);
@@ -121,7 +121,7 @@ public class RequestHeadersEnricherTests
             .Returns(FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "REDACTED:{0}" }));
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), redactorProviderMock.Object);
 
-        var enrichedProperties = new TestLogEnrichmentPropertyBag();
+        var enrichedProperties = new TestLogEnrichmentTagCollector();
 
         // Act
         enricher.Enrich(enrichedProperties);
@@ -147,7 +147,7 @@ public class RequestHeadersEnricherTests
         };
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
 
-        var enrichedProperties = new TestLogEnrichmentPropertyBag();
+        var enrichedProperties = new TestLogEnrichmentTagCollector();
 
         // Act
         enricher.Enrich(enrichedProperties);
@@ -174,7 +174,7 @@ public class RequestHeadersEnricherTests
         };
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
 
-        var enrichedProperties = new TestLogEnrichmentPropertyBag();
+        var enrichedProperties = new TestLogEnrichmentTagCollector();
 
         // Act
         enricher.Enrich(enrichedProperties);
@@ -202,7 +202,7 @@ public class RequestHeadersEnricherTests
 
         var enricher = new RequestHeadersLogEnricher(accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
 
-        var enrichedProperties = new TestLogEnrichmentPropertyBag();
+        var enrichedProperties = new TestLogEnrichmentTagCollector();
 
         // Act
         enricher.Enrich(enrichedProperties);
@@ -235,7 +235,7 @@ public class RequestHeadersEnricherTests
 
         var enricher = new RequestHeadersLogEnricher(accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
 
-        var enrichedProperties = new TestLogEnrichmentPropertyBag();
+        var enrichedProperties = new TestLogEnrichmentTagCollector();
 
         // Act
         enricher.Enrich(enrichedProperties);

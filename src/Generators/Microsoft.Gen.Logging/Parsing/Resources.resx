@@ -249,19 +249,19 @@
   <data name="LogPropertiesCycleDetectedTitle" xml:space="preserve">
     <value>Logging method parameter type has cycles in its type hierarchy</value>
   </data>
-  <data name="LogPropertiesProviderMethodInaccessibleMessage" xml:space="preserve">
-    <value>Property provider method "{0}" in type "{1}" is not accessible, increase its visibility</value>
+  <data name="TagProviderMethodInaccessibleMessage" xml:space="preserve">
+    <value>Tag provider method "{0}" in type "{1}" is not accessible, increase its visibility</value>
   </data>
-  <data name="LogPropertiesProviderMethodInaccessibleTitle" xml:space="preserve">
-    <value>Property provider method is inaccessible</value>
+  <data name="TagProviderMethodInaccessibleTitle" xml:space="preserve">
+    <value>Tag provider method is inaccessible</value>
   </data>
-  <data name="LogPropertiesProviderMethodNotFoundMessage" xml:space="preserve">
-    <value>Could not find property provider method "{0}" in type "{1}"</value>
+  <data name="TagProviderMethodNotFoundMessage" xml:space="preserve">
+    <value>Could not find tag provider method "{0}" in type "{1}"</value>
   </data>
-  <data name="LogPropertiesProviderMethodNotFoundTitle" xml:space="preserve">
-    <value>Property provider method not found</value>
+  <data name="TagProviderMethodNotFoundTitle" xml:space="preserve">
+    <value>Tag provider method not found</value>
   </data>
-  <data name="LogPropertiesProviderMethodInvalidSignatureTitle" xml:space="preserve">
+  <data name="TagProviderMethodInvalidSignatureTitle" xml:space="preserve">
     <value>Property provider method has an invalid signature</value>
   </data>
   <data name="LoggingMethodParameterRefKindMessage" xml:space="preserve">
@@ -270,11 +270,11 @@
   <data name="LoggingMethodParameterRefKindTitle" xml:space="preserve">
     <value>Logging method parameters can't have "ref" or "out" modifiers</value>
   </data>
-  <data name="LogPropertiesProviderWithRedactionMessage" xml:space="preserve">
-    <value>Parameter "{0}" has a custom property provider and hence will not be redacted</value>
+  <data name="TagProviderWithRedactionMessage" xml:space="preserve">
+    <value>Parameter "{0}" has a custom tag provider and hence will not be redacted</value>
   </data>
-  <data name="LogPropertiesProviderWithRedactionTitle" xml:space="preserve">
-    <value>Parameters with a custom property provider are not subject to redaciton</value>
+  <data name="TagProviderWithRedactionTitle" xml:space="preserve">
+    <value>Parameters with a custom tag provider are not subject to redaciton</value>
   </data>
   <data name="ShouldntReuseEventNamesMessage" xml:space="preserve">
     <value>Multiple logging methods are using event name "{0}" in type "{1}"</value>
@@ -300,7 +300,7 @@
   <data name="EmptyLoggingMethodMessage" xml:space="preserve">
     <value>Logging method "{0}" doesn't have anything to be logged</value>
   </data>
-  <data name="LogPropertiesProviderMethodInvalidSignatureMessage" xml:space="preserve">
+  <data name="TagProviderMethodInvalidSignatureMessage" xml:space="preserve">
     <value>Property provider method "{0}" in type "{1}" doesn't have a signature compatible with "{2}"</value>
   </data>
   <data name="TemplateStartsWithAtSymbolMessage" xml:space="preserve">

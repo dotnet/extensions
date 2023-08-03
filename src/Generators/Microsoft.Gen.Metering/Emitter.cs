@@ -179,7 +179,7 @@ internal sealed class Emitter : EmitterBase
                 throw new NotSupportedException($"Instrument type '{metricMethod.InstrumentKind}' is not supported to generate metric");
         }
 
-        var tagListInit = metricMethod.DimensionsKeys.Count != 0 ||
+        var tagListInit = metricMethod.TagKeys.Count != 0 ||
                           metricMethod.StrongTypeConfigs.Count != 0;
 
         var accessModifier = metricMethod.MetricTypeModifiers.Contains("public")
@@ -199,15 +199,15 @@ internal sealed class Emitter : EmitterBase
 
         OutIndent();
         Out($"    public void {recordStatement}({metricValueType} value");
-        GenDimensionsParameters(metricMethod);
+        GenTagsParameters(metricMethod);
         Out(")");
         OutLn();
 
         OutLn($"    {{");
 
-        const int MaxDimensionsWithoutEnabledCheck = 8;
-        if (metricMethod.DimensionsKeys.Count > MaxDimensionsWithoutEnabledCheck ||
-            metricMethod.StrongTypeConfigs.Count > MaxDimensionsWithoutEnabledCheck)
+        const int MaxTagsWithoutEnabledCheck = 8;
+        if (metricMethod.TagKeys.Count > MaxTagsWithoutEnabledCheck ||
+            metricMethod.StrongTypeConfigs.Count > MaxTagsWithoutEnabledCheck)
         {
             OutLn($"        if (!_{objectName}.Enabled)");
             OutLn($"        {{");
@@ -216,7 +216,7 @@ internal sealed class Emitter : EmitterBase
             OutLn();
         }
 
-        if (metricMethod.IsDimensionTypeClass)
+        if (metricMethod.IsTagTypeClass)
         {
             OutLn($"        if (o == null)");
             OutLn($"        {{");
@@ -231,7 +231,7 @@ internal sealed class Emitter : EmitterBase
             Indent();
             OutLn("var tagList = new global::System.Diagnostics.TagList");
             OutOpenBrace();
-            GenDimensionsTagList(metricMethod);
+            GenTagList(metricMethod);
             Unindent();
             OutLn("};");
             Unindent();
@@ -290,13 +290,13 @@ internal sealed class Emitter : EmitterBase
         OutLn();
     }
 
-    private void GenDimensionsTagList(MetricMethod metricMethod)
+    private void GenTagList(MetricMethod metricMethod)
     {
         if (string.IsNullOrEmpty(metricMethod.StrongTypeObjectName))
         {
-            foreach (var dimension in metricMethod.DimensionsKeys)
+            foreach (var tagName in metricMethod.TagKeys)
             {
-                var paramName = GetSanitizedParamName(dimension);
+                var paramName = GetSanitizedParamName(tagName);
                 OutLn($"new global::System.Collections.Generic.KeyValuePair<string, object?>(\"{paramName}\", {paramName}),");
             }
         }
@@ -319,18 +319,18 @@ internal sealed class Emitter : EmitterBase
                     ? "o." + paramInvoke
                     : "o." + config.Path + "." + paramInvoke;
 
-                OutLn($"new global::System.Collections.Generic.KeyValuePair<string, object?>(\"{config.DimensionName}\", {access}),");
+                OutLn($"new global::System.Collections.Generic.KeyValuePair<string, object?>(\"{config.TagName}\", {access}),");
             }
         }
     }
 
-    private void GenDimensionsParameters(MetricMethod metricMethod)
+    private void GenTagsParameters(MetricMethod metricMethod)
     {
         if (string.IsNullOrEmpty(metricMethod.StrongTypeObjectName))
         {
-            foreach (var dimension in metricMethod.DimensionsKeys)
+            foreach (var tagName in metricMethod.TagKeys)
             {
-                var paramName = GetSanitizedParamName(dimension);
+                var paramName = GetSanitizedParamName(tagName);
                 Out($", object? {paramName}");
             }
         }

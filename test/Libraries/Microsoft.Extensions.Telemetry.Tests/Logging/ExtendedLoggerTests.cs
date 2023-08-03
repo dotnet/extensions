@@ -59,12 +59,12 @@ public static class ExtendedLoggerTests
         logger.Log(LogLevel.Error, new EventId(1, "ID1"), lmh, null, (_, _) => "MSG1");
 
         var lms = LoggerMessageHelper.ThreadLocalState;
-        var index = lms.ReservePropertySpace(1);
-        lms.PropertyArray[index] = new("PK2", "PV2");
+        var index = lms.ReserveTagSpace(1);
+        lms.TagArray[index] = new("PK2", "PV2");
 
-        index = lms.ReserveClassifiedPropertySpace(2);
-        lms.ClassifiedPropertyArray[index] = new("PK3", "PV3", SimpleClassifications.PrivateData);
-        lms.ClassifiedPropertyArray[index + 1] = new("PK4", null, SimpleClassifications.PrivateData);
+        index = lms.ReserveClassifiedTagSpace(2);
+        lms.ClassifiedTagArray[index] = new("PK3", "PV3", SimpleClassifications.PrivateData);
+        lms.ClassifiedTagArray[index + 1] = new("PK4", null, SimpleClassifications.PrivateData);
 
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
 
@@ -134,8 +134,8 @@ public static class ExtendedLoggerTests
         logger.Log(LogLevel.Error, new EventId(1, "ID1"), lmh, null, (_, _) => "MSG1");
 
         var lms = LoggerMessageHelper.ThreadLocalState;
-        var index = lms.ReservePropertySpace(1);
-        lms.PropertyArray[index] = new("PK2", "PV2");
+        var index = lms.ReserveTagSpace(1);
+        lms.TagArray[index] = new("PK2", "PV2");
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
 
         var sink = provider.Logger!;
@@ -862,7 +862,7 @@ public static class ExtendedLoggerTests
             _values = values;
         }
 
-        public void Enrich(IEnrichmentPropertyBag enrichmentPropertyBag)
+        public void Enrich(IEnrichmentTagCollector enrichmentPropertyBag)
         {
             foreach (var kvp in _values)
             {
@@ -882,12 +882,12 @@ public static class ExtendedLoggerTests
             _objectVersion = objectVersion;
         }
 
-        public void Enrich(IEnrichmentPropertyBag bag)
+        public void Enrich(IEnrichmentTagCollector collector)
         {
             if (_objectVersion)
             {
                 var p = (KeyValuePair<string, object>[])(object)_values;
-                bag.Add(p.AsSpan());
+                collector.Add(p.AsSpan());
             }
             else
             {
@@ -898,7 +898,7 @@ public static class ExtendedLoggerTests
                     a[i++] = new(kvp.Key, (string)kvp.Value!);
                 }
 
-                bag.Add(a.AsSpan());
+                collector.Add(a.AsSpan());
             }
         }
     }

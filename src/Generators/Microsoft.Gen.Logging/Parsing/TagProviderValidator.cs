@@ -8,14 +8,14 @@ using Microsoft.Gen.Shared;
 
 namespace Microsoft.Gen.Logging.Parsing;
 
-internal static class LogPropertiesProviderValidator
+internal static class TagProviderValidator
 {
     internal delegate void DiagCallback(DiagnosticDescriptor desc, Location? loc, params object?[]? args);
 
     public static IMethodSymbol? Validate(
         ITypeSymbol providerType,
         string? providerMethodName,
-        ITypeSymbol logPropertyCollectorType,
+        ITypeSymbol tagCollectorType,
         ITypeSymbol complexObjType,
         DiagCallback diagCallback,
         Location? attrLocation,
@@ -41,7 +41,7 @@ internal static class LogPropertiesProviderValidator
                     && IsParameterCountValid(method)
                     && method.Parameters[0].RefKind == RefKind.None
                     && method.Parameters[1].RefKind == RefKind.None
-                    && SymbolEqualityComparer.Default.Equals(logPropertyCollectorType, method.Parameters[0].Type)
+                    && SymbolEqualityComparer.Default.Equals(tagCollectorType, method.Parameters[0].Type)
                     && complexObjType.IsAssignableTo(method.Parameters[1].Type, comp))
 #pragma warning restore S1067 // Expressions should not be too complex
                 {
@@ -50,22 +50,22 @@ internal static class LogPropertiesProviderValidator
                         return method;
                     }
 
-                    diagCallback(DiagDescriptors.LogPropertiesProviderMethodInaccessible, attrLocation, providerMethodName, providerType.ToString());
+                    diagCallback(DiagDescriptors.TagProviderMethodInaccessible, attrLocation, providerMethodName, providerType.ToString());
                     return null;
                 }
             }
 
             if (visitedLoop)
             {
-                diagCallback(DiagDescriptors.LogPropertiesProviderMethodInvalidSignature, attrLocation,
+                diagCallback(DiagDescriptors.TagProviderMethodInvalidSignature, attrLocation,
                     providerMethodName,
                     providerType.ToString(),
-                    $"static void {providerMethodName}(ILogPropertyCollector, {complexObjType.Name})");
+                    $"static void {providerMethodName}(ITagCollector, {complexObjType.Name})");
                 return null;
             }
         }
 
-        diagCallback(DiagDescriptors.LogPropertiesProviderMethodNotFound, attrLocation, providerMethodName, providerType.ToString());
+        diagCallback(DiagDescriptors.TagProviderMethodNotFound, attrLocation, providerMethodName, providerType.ToString());
         return null;
     }
 

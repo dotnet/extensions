@@ -36,28 +36,28 @@ internal static partial class Log
     {
         if (logger.IsEnabled(level))
         {
-            var collector = record.EnrichmentProperties ?? LogMethodHelper.GetHelper();
+            var collector = record.EnrichmentTags ?? LogMethodHelper.GetHelper();
 
             collector.AddRequestHeaders(record.RequestHeaders);
             collector.AddResponseHeaders(record.ResponseHeaders);
-            collector.Add(HttpClientLoggingDimensions.Host, record.Host);
-            collector.Add(HttpClientLoggingDimensions.Method, record.Method);
-            collector.Add(HttpClientLoggingDimensions.Path, record.Path);
-            collector.Add(HttpClientLoggingDimensions.Duration, record.Duration);
+            collector.Add(HttpClientLoggingTagNames.Host, record.Host);
+            collector.Add(HttpClientLoggingTagNames.Method, record.Method);
+            collector.Add(HttpClientLoggingTagNames.Path, record.Path);
+            collector.Add(HttpClientLoggingTagNames.Duration, record.Duration);
 
             if (record.StatusCode is not null)
             {
-                collector.Add(HttpClientLoggingDimensions.StatusCode, record.StatusCode);
+                collector.Add(HttpClientLoggingTagNames.StatusCode, record.StatusCode);
             }
 
             if (!string.IsNullOrEmpty(record.RequestBody))
             {
-                collector.Add(HttpClientLoggingDimensions.RequestBody, record.RequestBody);
+                collector.Add(HttpClientLoggingTagNames.RequestBody, record.RequestBody);
             }
 
             if (!string.IsNullOrEmpty(record.ResponseBody))
             {
-                collector.Add(HttpClientLoggingDimensions.ResponseBody, record.ResponseBody);
+                collector.Add(HttpClientLoggingTagNames.ResponseBody, record.ResponseBody);
             }
 
             logger.Log(
@@ -68,7 +68,7 @@ internal static partial class Log
                 static (_, _) => string.Empty);
 
             // Stryker disable once all
-            if (collector != record.EnrichmentProperties)
+            if (collector != record.EnrichmentTags)
             {
                 LogMethodHelper.ReturnHelper(collector);
             }

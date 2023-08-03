@@ -200,7 +200,7 @@ public class AttributeParserTests
 
         var loggerAssembly = Assembly.GetAssembly(typeof(ILogger));
         var logMethodAssembly = Assembly.GetAssembly(typeof(LogMethodAttribute));
-        var enrichmentAssembly = Assembly.GetAssembly(typeof(IEnrichmentPropertyBag));
+        var enrichmentAssembly = Assembly.GetAssembly(typeof(IEnrichmentTagCollector));
         var dataClassificationAssembly = Assembly.GetAssembly(typeof(DataClassification));
         var simpleDataClassificationAssembly = Assembly.GetAssembly(typeof(PrivateDataAttribute));
         var redactorProviderAssembly = Assembly.GetAssembly(typeof(IRedactorProvider));

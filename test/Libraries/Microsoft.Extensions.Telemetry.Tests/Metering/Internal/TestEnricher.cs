@@ -7,8 +7,8 @@ namespace Microsoft.Extensions.Telemetry.Metering.Test.Internal;
 
 internal class TestEnricher : IMetricEnricher
 {
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag)
+    public void Enrich(IEnrichmentTagCollector collector)
     {
-        enrichmentBag.Add("testKey", "testValue");
+        collector.Add("testKey", "testValue");
     }
 }

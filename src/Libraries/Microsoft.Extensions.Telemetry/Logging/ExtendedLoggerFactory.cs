@@ -22,8 +22,8 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private readonly IDisposable? _filterOptionsChangeTokenRegistration;
     private readonly LoggerFactoryOptions _factoryOptions;
     private readonly IDisposable? _enrichmentOptionsChangeTokenRegistration;
-    private readonly Action<IEnrichmentPropertyBag>[] _enrichers;
-    private readonly KeyValuePair<string, object?>[] _staticProperties;
+    private readonly Action<IEnrichmentTagCollector>[] _enrichers;
+    private readonly KeyValuePair<string, object?>[] _staticTags;
     private readonly Func<DataClassification, Redactor> _redactorProvider;
     private volatile bool _disposed;
     private LoggerFilterOptions _filterOptions;
@@ -63,7 +63,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         _filterOptionsChangeTokenRegistration = filterOptions.OnChange(RefreshFilters);
         RefreshFilters(filterOptions.CurrentValue);
 
-        _enrichers = enrichers.Select<ILogEnricher, Action<IEnrichmentPropertyBag>>(e => e.Enrich).ToArray();
+        _enrichers = enrichers.Select<ILogEnricher, Action<IEnrichmentTagCollector>>(e => e.Enrich).ToArray();
         _enrichmentOptionsChangeTokenRegistration = enrichmentOptions?.OnChange(UpdateStackTraceOptions);
 
         var provider = redactionOptions != null && redactorProvider != null
@@ -71,14 +71,14 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
             : NullRedactorProvider.Instance;
         _redactorProvider = provider.GetRedactor;
 
-        var props = new List<KeyValuePair<string, object?>>();
-        var bag = new ExtendedLogger.EnrichmentPropertyBag(props);
+        var tags = new List<KeyValuePair<string, object?>>();
+        var collector = new ExtendedLogger.EnrichmentTagCollector(tags);
         foreach (var enricher in staticEnrichers)
         {
-            enricher.Enrich(bag);
+            enricher.Enrich(collector);
         }
 
-        _staticProperties = props.ToArray();
+        _staticTags = tags.ToArray();
         Config = ComputeConfig(enrichmentOptions?.CurrentValue);
     }
 
@@ -252,8 +252,8 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private LoggerConfig ComputeConfig(LoggerEnrichmentOptions? enrichmentOptions)
     {
         return enrichmentOptions == null
-            ? new(Array.Empty<KeyValuePair<string, object?>>(), Array.Empty<Action<IEnrichmentPropertyBag>>(), false, false, 0, _redactorProvider)
-            : new(_staticProperties, _enrichers, enrichmentOptions.CaptureStackTraces, enrichmentOptions.UseFileInfoForStackTraces, enrichmentOptions.MaxStackTraceLength, _redactorProvider);
+            ? new(Array.Empty<KeyValuePair<string, object?>>(), Array.Empty<Action<IEnrichmentTagCollector>>(), false, false, 0, _redactorProvider)
+            : new(_staticTags, _enrichers, enrichmentOptions.CaptureStackTraces, enrichmentOptions.UseFileInfoForStackTraces, enrichmentOptions.MaxStackTraceLength, _redactorProvider);
     }
 
     private void UpdateStackTraceOptions(LoggerEnrichmentOptions enrichmentOptions) => Config = ComputeConfig(enrichmentOptions);

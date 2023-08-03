@@ -9,9 +9,9 @@ namespace Microsoft.Extensions.Resilience.FaultInjection;
 internal static partial class Metric
 {
     [Counter(
-        FaultInjectionEventMeterDimensions.FaultInjectionGroupName,
-        FaultInjectionEventMeterDimensions.FaultType,
-        FaultInjectionEventMeterDimensions.InjectedValue,
+        FaultInjectionEventMeterTagNames.FaultInjectionGroupName,
+        FaultInjectionEventMeterTagNames.FaultType,
+        FaultInjectionEventMeterTagNames.InjectedValue,
         Name = @"R9\Resilience\FaultInjection\InjectedFaults")]
     public static partial FaultInjectionMetricCounter CreateFaultInjectionMetricCounter(Meter meter);
 }

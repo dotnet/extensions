@@ -94,11 +94,11 @@ internal static class ParsingUtilities
             paramTypeSymbol = ((INamedTypeSymbol)paramTypeSymbol).TypeArguments[0];
         }
 
-        var isObjectWithPropsProvider = IsObjectType(paramTypeSymbol) &&
+        var isObjectWithTagProvider = IsObjectType(paramTypeSymbol) &&
             !logPropertiesAttribute.ConstructorArguments.IsDefaultOrEmpty;
 
         if (!isRegularType ||
-            (IsSpecialType(paramTypeSymbol, symbols) && !isObjectWithPropsProvider))
+            (IsSpecialType(paramTypeSymbol, symbols) && !isObjectWithTagProvider))
         {
             Diag(DiagDescriptors.InvalidTypeToLogProperties, paramSymbol.GetLocation(), paramTypeSymbol.ToDisplayString());
             return LogPropertiesProcessingResult.Fail;
@@ -109,10 +109,10 @@ internal static class ParsingUtilities
         // is there a custom property provider?
         if (providerType != null)
         {
-            var providerMethod = LogPropertiesProviderValidator.Validate(
+            var providerMethod = TagProviderValidator.Validate(
                 providerType,
                 providerMethodName,
-                symbols.ILogPropertyCollectorSymbol,
+                symbols.ITagCollectorSymbol,
                 paramTypeSymbol,
                 Diag,
                 logPropertiesAttribute.ApplicationSyntaxReference!.GetSyntax(token).GetLocation(),
@@ -120,8 +120,8 @@ internal static class ParsingUtilities
 
             if (providerMethod is not null)
             {
-                lp.LogPropertiesProvider =
-                    new LoggingPropertyProvider(
+                lp.TagProvider =
+                    new TagProvider(
                         providerMethod.Name,
                         providerType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
 

@@ -117,11 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ErrorDuplicateDimensionNameMessage" xml:space="preserve">
-    <value>Dimension {0} is defined more than once. Metric dimension names must be unique</value>
+  <data name="ErrorDuplicateTagNameMessage" xml:space="preserve">
+    <value>Tag name {0} is defined more than once. Metric tag names must be unique</value>
   </data>
-  <data name="ErrorDuplicateDimensionNameTitle" xml:space="preserve">
-    <value>A strong type object contains duplicate dimension names</value>
+  <data name="ErrorDuplicateTagNameTitle" xml:space="preserve">
+    <value>A strong type object contains duplicate tag names</value>
   </data>
   <data name="ErrorGaugeNotSupportedMessage" xml:space="preserve">
     <value>Gauge is not supported yet by metering generator</value>
@@ -135,17 +135,17 @@
   <data name="ErrorInvalidAttributeGenericTypeTitle" xml:space="preserve">
     <value>A metering attribute type argument is invalid</value>
   </data>
-  <data name="ErrorInvalidDimensionNamesMessage" xml:space="preserve">
-    <value>Dimension names should contain alphanumeric characters and only allowed symbols</value>
+  <data name="ErrorInvalidTagNamesMessage" xml:space="preserve">
+    <value>Tag names should contain alphanumeric characters and only allowed symbols</value>
   </data>
-  <data name="ErrorInvalidDimensionNamesTitle" xml:space="preserve">
-    <value>Dimension names should only contain alphanumeric characters and allowed symbols</value>
+  <data name="ErrorInvalidTagNamesTitle" xml:space="preserve">
+    <value>Tag names should only contain alphanumeric characters and allowed symbols</value>
   </data>
-  <data name="ErrorInvalidDimensionTypeMessage" xml:space="preserve">
-    <value>Invalid dimension type. Valid types are string and enum</value>
+  <data name="ErrorInvalidTagTypeMessage" xml:space="preserve">
+    <value>Invalid tag name type. Valid types are string and enum</value>
   </data>
-  <data name="ErrorInvalidDimensionTypeTitle" xml:space="preserve">
-    <value>A metric class contains an invalid dimension type</value>
+  <data name="ErrorInvalidTagTypeTitle" xml:space="preserve">
+    <value>A metric class contains an invalid tag name type</value>
   </data>
   <data name="ErrorInvalidMethodNameMessage" xml:space="preserve">
     <value>Metric method names cannot start with _</value>
@@ -219,11 +219,11 @@
   <data name="ErrorNotStaticMethodTitle" xml:space="preserve">
     <value>Metric methods must be static</value>
   </data>
-  <data name="ErrorTooManyDimensionsMessage" xml:space="preserve">
-    <value>The type {0} has too many dimensions</value>
+  <data name="ErrorTooManyTagNamesMessage" xml:space="preserve">
+    <value>The type {0} has too many tag names</value>
   </data>
-  <data name="ErrorTooManyDimensionsTitle" xml:space="preserve">
-    <value>A metric class contains too many dimensions</value>
+  <data name="ErrorTooManyTagNamesTitle" xml:space="preserve">
+    <value>A metric class contains too many tag names</value>
   </data>
   <data name="ErrorXmlNotLoadedCorrectlyTitle" xml:space="preserve">
     <value>Xml comment was not parsed correctly</value>
@@ -231,10 +231,10 @@
   <data name="ErrorXmlNotLoadedCorrectlyMessage" xml:space="preserve">
     <value>Xml comment was not parsed correctly, exception {0} was thrown</value>
   </data>
-  <data name="ErrorDimensionTypeCycleDetectedMessage" xml:space="preserve">
+  <data name="ErrorTagTypeCycleDetectedMessage" xml:space="preserve">
     <value>The type {0} has a cycle in its hierarchy: {1} ⇆ {2}</value>
   </data>
-  <data name="ErrorDimensionTypeCycleDetectedTitle" xml:space="preserve">
+  <data name="ErrorTagTypeCycleDetectedTitle" xml:space="preserve">
     <value>A metric class has cycles in its type hierarchy</value>
   </data>
 </root>

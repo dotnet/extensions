@@ -7,19 +7,29 @@ using System.Collections.Generic;
 namespace Microsoft.Extensions.Telemetry.Enrichment;
 
 /// <summary>
-/// Constants used for enrichment dimensions.
+/// Constants used for enrichment tags.
 /// </summary>
-public static class ProcessEnricherDimensions
+public static class ServiceEnricherTags
 {
     /// <summary>
-    /// Process ID.
+    /// Application name.
     /// </summary>
-    public const string ProcessId = "pid";
+    public const string ApplicationName = "env_app_name";
 
     /// <summary>
-    /// Thread ID.
+    /// Environment name.
     /// </summary>
-    public const string ThreadId = "tid";
+    public const string EnvironmentName = "env_cloud_env";
+
+    /// <summary>
+    /// Deployment ring.
+    /// </summary>
+    public const string DeploymentRing = "env_cloud_deploymentRing";
+
+    /// <summary>
+    /// Build version.
+    /// </summary>
+    public const string BuildVersion = "env_cloud_roleVer";
 
     /// <summary>
     /// Gets a list of all dimension names.
@@ -28,7 +38,9 @@ public static class ProcessEnricherDimensions
     public static IReadOnlyList<string> DimensionNames { get; } =
         Array.AsReadOnly(new[]
         {
-            ProcessId,
-            ThreadId
+            ApplicationName,
+            EnvironmentName,
+            BuildVersion,
+            DeploymentRing
         });
 }

@@ -13,8 +13,8 @@ namespace Microsoft.Extensions.Telemetry.Enrichment;
 public interface IStaticLogEnricher
 {
     /// <summary>
-    /// Called to generate properties for a log record.
+    /// Called to collect tags for a log record.
     /// </summary>
-    /// <param name="bag">Where the enricher puts the properties it is producing.</param>
-    void Enrich(IEnrichmentPropertyBag bag);
+    /// <param name="collector">Where the enricher puts the tags it is producing.</param>
+    void Enrich(IEnrichmentTagCollector collector);
 }

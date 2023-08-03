@@ -41,7 +41,7 @@ public class EmitterTests
             {
                 Assembly.GetAssembly(typeof(ILogger))!,
                 Assembly.GetAssembly(typeof(LogMethodAttribute))!,
-                Assembly.GetAssembly(typeof(IEnrichmentPropertyBag))!,
+                Assembly.GetAssembly(typeof(IEnrichmentTagCollector))!,
                 Assembly.GetAssembly(typeof(DataClassification))!,
                 Assembly.GetAssembly(typeof(IRedactorProvider))!,
                 Assembly.GetAssembly(typeof(PrivateDataAttribute))!,

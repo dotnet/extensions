@@ -2,63 +2,6 @@
   "Name": "Microsoft.AspNetCore.Telemetry.Middleware, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions",
-      "Stage": "Stable",
-      "Fields": [
-        {
-          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.Duration",
-          "Stage": "Stable",
-          "Value": "duration"
-        },
-        {
-          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.Host",
-          "Stage": "Stable",
-          "Value": "httpHost"
-        },
-        {
-          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.Method",
-          "Stage": "Stable",
-          "Value": "httpMethod"
-        },
-        {
-          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.Path",
-          "Stage": "Stable",
-          "Value": "httpPath"
-        },
-        {
-          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.RequestBody",
-          "Stage": "Stable",
-          "Value": "httpRequestBody"
-        },
-        {
-          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.RequestHeaderPrefix",
-          "Stage": "Stable",
-          "Value": "httpRequestHeader_"
-        },
-        {
-          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.ResponseBody",
-          "Stage": "Stable",
-          "Value": "httpResponseBody"
-        },
-        {
-          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.ResponseHeaderPrefix",
-          "Stage": "Stable",
-          "Value": "httpResponseHeader_"
-        },
-        {
-          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.StatusCode",
-          "Stage": "Stable",
-          "Value": "httpStatusCode"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.AspNetCore.Telemetry.HttpLoggingDimensions.DimensionNames { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.AspNetCore.Telemetry.HttpLoggingServiceExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -80,6 +23,63 @@
         },
         {
           "Member": "static Microsoft.AspNetCore.Builder.IApplicationBuilder Microsoft.AspNetCore.Telemetry.HttpLoggingServiceExtensions.UseHttpLoggingMiddleware(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.AspNetCore.Telemetry.HttpLoggingTagNames",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingTagNames.Duration",
+          "Stage": "Stable",
+          "Value": "duration"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingTagNames.Host",
+          "Stage": "Stable",
+          "Value": "httpHost"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingTagNames.Method",
+          "Stage": "Stable",
+          "Value": "httpMethod"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingTagNames.Path",
+          "Stage": "Stable",
+          "Value": "httpPath"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingTagNames.RequestBody",
+          "Stage": "Stable",
+          "Value": "httpRequestBody"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingTagNames.RequestHeaderPrefix",
+          "Stage": "Stable",
+          "Value": "httpRequestHeader_"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingTagNames.ResponseBody",
+          "Stage": "Stable",
+          "Value": "httpResponseBody"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingTagNames.ResponseHeaderPrefix",
+          "Stage": "Stable",
+          "Value": "httpResponseHeader_"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Telemetry.HttpLoggingTagNames.StatusCode",
+          "Stage": "Stable",
+          "Value": "httpStatusCode"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.AspNetCore.Telemetry.HttpLoggingTagNames.DimensionNames { get; }",
           "Stage": "Stable"
         }
       ]
@@ -131,7 +131,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.AspNetCore.Telemetry.IHttpLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag enrichmentBag, Microsoft.AspNetCore.Http.HttpRequest request, Microsoft.AspNetCore.Http.HttpResponse response);",
+          "Member": "void Microsoft.AspNetCore.Telemetry.IHttpLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector, Microsoft.AspNetCore.Http.HttpRequest request, Microsoft.AspNetCore.Http.HttpResponse response);",
           "Stage": "Stable"
         }
       ]
@@ -141,7 +141,7 @@
       "Stage": "Stable",
       "Properties": [
         {
-          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.AspNetCore.Telemetry.IIncomingRequestMetricEnricher.DimensionNames { get; }",
+          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.AspNetCore.Telemetry.IIncomingRequestMetricEnricher.TagNames { get; }",
           "Stage": "Stable"
         }
       ]

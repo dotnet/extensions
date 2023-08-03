@@ -4,15 +4,15 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging;
+namespace Microsoft.AspNetCore.Telemetry;
 
 /// <summary>
-/// Constants used for HTTP client logging dimensions.
+/// Constants used for incoming HTTP request logging tags.
 /// </summary>
-public static class HttpClientLoggingDimensions
+public static class HttpLoggingTagNames
 {
     /// <summary>
-    /// HTTP Request duration.
+    /// HTTP Request duration in milliseconds.
     /// </summary>
     public const string Duration = "duration";
 
@@ -32,16 +32,6 @@ public static class HttpClientLoggingDimensions
     public const string Path = "httpPath";
 
     /// <summary>
-    /// HTTP Request Body.
-    /// </summary>
-    public const string RequestBody = "httpRequestBody";
-
-    /// <summary>
-    /// HTTP Response Body.
-    /// </summary>
-    public const string ResponseBody = "httpResponseBody";
-
-    /// <summary>
     /// HTTP Request Headers prefix.
     /// </summary>
     public const string RequestHeaderPrefix = "httpRequestHeader_";
@@ -50,6 +40,16 @@ public static class HttpClientLoggingDimensions
     /// HTTP Response Headers prefix.
     /// </summary>
     public const string ResponseHeaderPrefix = "httpResponseHeader_";
+
+    /// <summary>
+    /// HTTP Request Body.
+    /// </summary>
+    public const string RequestBody = "httpRequestBody";
+
+    /// <summary>
+    /// HTTP Response Body.
+    /// </summary>
+    public const string ResponseBody = "httpResponseBody";
 
     /// <summary>
     /// HTTP Status Code.
@@ -67,10 +67,10 @@ public static class HttpClientLoggingDimensions
             Host,
             Method,
             Path,
-            RequestBody,
             RequestHeaderPrefix,
-            ResponseBody,
             ResponseHeaderPrefix,
+            RequestBody,
+            ResponseBody,
             StatusCode
         });
 }

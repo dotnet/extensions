@@ -8,7 +8,7 @@ namespace TestClasses
 {
 #pragma warning disable SA1402 // File may only contain a single type
 
-    internal static partial class LogPropertiesProviderExtensions
+    internal static partial class TagProviderExtensions
     {
         [LogMethod(int.MaxValue, LogLevel.Warning, "Custom provided properties for {Param}.")]
         internal static partial void LogMethodCustomPropsProvider(
@@ -47,7 +47,7 @@ namespace TestClasses
 
     internal static class CustomProvider
     {
-        public static void ProvideProperties(ILogPropertyCollector list, ClassToLog? param)
+        public static void ProvideProperties(ITagCollector list, ClassToLog? param)
         {
             // This condition is here only for testing purposes:
             if (param is null)
@@ -59,19 +59,19 @@ namespace TestClasses
             list.Add("Custom_property_name", param.MyStringProperty);
         }
 
-        public static void ProvideOtherProperties(ILogPropertyCollector list, ClassToLog? param)
+        public static void ProvideOtherProperties(ITagCollector list, ClassToLog? param)
         {
             list.Add("Another_property_name", param?.MyStringProperty?.ToUpperInvariant());
             list.Add(nameof(ClassToLog.MyIntProperty) + "_test", param?.MyIntProperty);
         }
 
-        public static void ProvideForStruct(ILogPropertyCollector list, StructToLog param)
+        public static void ProvideForStruct(ITagCollector list, StructToLog param)
         {
             list.Add(nameof(ClassToLog.MyIntProperty), param.MyIntProperty);
             list.Add("Custom_property_name", param.MyStringProperty);
         }
 
-        public static void ProvideForInterface(ILogPropertyCollector list, IInterfaceToLog param)
+        public static void ProvideForInterface(ITagCollector list, IInterfaceToLog param)
         {
             list.Add(nameof(ClassToLog.MyIntProperty), param.MyIntProperty);
             list.Add("Custom_property_name", param.MyStringProperty);

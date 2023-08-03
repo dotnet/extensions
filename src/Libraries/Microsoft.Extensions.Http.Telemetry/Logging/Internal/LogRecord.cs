@@ -60,5 +60,5 @@ internal sealed class LogRecord
     /// <summary>
     /// Gets or sets enrichment properties.
     /// </summary>
-    public LogMethodHelper? EnrichmentProperties { get; set; }
+    public LogMethodHelper? EnrichmentTags { get; set; }
 }

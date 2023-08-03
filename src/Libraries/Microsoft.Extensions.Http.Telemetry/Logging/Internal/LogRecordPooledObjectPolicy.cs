@@ -18,7 +18,7 @@ internal sealed class LogRecordPooledObjectPolicy : PooledObjectPolicy<LogRecord
         record.StatusCode = null;
         record.RequestBody = string.Empty;
         record.ResponseBody = string.Empty;
-        record.EnrichmentProperties = null;
+        record.EnrichmentTags = null;
         record.RequestHeaders = null;
         record.ResponseHeaders = null;
         return true;

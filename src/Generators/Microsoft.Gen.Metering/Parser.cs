@@ -19,10 +19,10 @@ namespace Microsoft.Gen.Metering;
 
 internal sealed class Parser
 {
-    private const int MaxDimensions = 20;
+    private const int MaxTagNames = 20;
 
     private static readonly Regex _regex = new("^[A-Z]+[A-za-z0-9]*$", RegexOptions.Compiled);
-    private static readonly Regex _regexDimensionNames = new("^[A-Za-z]+[A-Za-z0-9_.:-]*$", RegexOptions.Compiled);
+    private static readonly Regex _regexTagNames = new("^[A-Za-z]+[A-Za-z0-9_.:-]*$", RegexOptions.Compiled);
     private static readonly SymbolDisplayFormat _typeSymbolFormat =
         SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
             SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
@@ -197,11 +197,11 @@ internal sealed class Parser
         }
     }
 
-    private static bool AreDimensionKeyNamesValid(MetricMethod metricMethod)
+    private static bool AreTagNamesValid(MetricMethod metricMethod)
     {
-        foreach (string? dynDim in metricMethod.DimensionsKeys)
+        foreach (string? dynDim in metricMethod.TagKeys)
         {
-            if (!_regexDimensionNames.IsMatch(dynDim))
+            if (!_regexTagNames.IsMatch(dynDim))
             {
                 return false;
             }
@@ -253,9 +253,9 @@ internal sealed class Parser
         return (InstrumentKind.None, null);
     }
 
-    private static bool TryGetDimensionNameFromAttribute(ISymbol symbol, SymbolHolder symbols, out string dimensionName)
+    private static bool TryGetTagNameFromAttribute(ISymbol symbol, SymbolHolder symbols, out string tagName)
     {
-        var attributeData = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.DimensionAttribute, symbol);
+        var attributeData = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.TagNameAttribute, symbol);
 
         if (attributeData is not null
             && !attributeData.ConstructorArguments.IsDefaultOrEmpty
@@ -265,21 +265,21 @@ internal sealed class Parser
 
             if (!string.IsNullOrWhiteSpace(ctorArg0))
             {
-                dimensionName = ctorArg0!;
+                tagName = ctorArg0!;
                 return true;
             }
         }
 
-        dimensionName = string.Empty;
+        tagName = string.Empty;
         return false;
     }
 
-    private (string metricName, HashSet<string> dimensions, Dictionary<string, string> dimensionDescriptions) ExtractAttributeParameters(
+    private (string metricName, HashSet<string> tagNames, Dictionary<string, string> dimensionDescriptions) ExtractAttributeParameters(
         AttributeData attribute,
         SemanticModel semanticModel)
     {
-        var dimensionHashSet = new HashSet<string>();
-        var dimensionDescriptionMap = new Dictionary<string, string>();
+        var tagHashSet = new HashSet<string>();
+        var tagDescriptionMap = new Dictionary<string, string>();
         string metricNameFromAttribute = string.Empty;
         if (!attribute.NamedArguments.IsDefaultOrEmpty)
         {
@@ -316,7 +316,7 @@ internal sealed class Parser
                         continue;
                     }
 
-                    _ = dimensionHashSet.Add(value);
+                    _ = tagHashSet.Add(value);
                 }
             }
         }
@@ -327,11 +327,11 @@ internal sealed class Parser
         {
             foreach (var arg in syntax.ArgumentList.Arguments)
             {
-                GetDimensionDescription(arg, semanticModel, dimensionDescriptionMap);
+                GetTagDescription(arg, semanticModel, tagDescriptionMap);
             }
         }
 
-        return (metricNameFromAttribute, dimensionHashSet, dimensionDescriptionMap);
+        return (metricNameFromAttribute, tagHashSet, tagDescriptionMap);
     }
 
     private string GetSymbolXmlCommentSummary(ISymbol symbol)
@@ -364,10 +364,10 @@ internal sealed class Parser
         }
     }
 
-    private void GetDimensionDescription(
+    private void GetTagDescription(
         AttributeArgumentSyntax arg,
         SemanticModel semanticModel,
-        Dictionary<string, string> dimensionDescriptionDictionary)
+        Dictionary<string, string> tagDescriptionDictionary)
     {
         if (arg.NameEquals != null)
         {
@@ -385,7 +385,7 @@ internal sealed class Parser
         var xmlDefinition = GetSymbolXmlCommentSummary(symbol);
         if (!string.IsNullOrEmpty(xmlDefinition))
         {
-            dimensionDescriptionDictionary.Add(fieldSymbol.ConstantValue.ToString(), xmlDefinition);
+            tagDescriptionDictionary.Add(fieldSymbol.ConstantValue.ToString(), xmlDefinition);
         }
     }
 
@@ -436,7 +436,7 @@ internal sealed class Parser
         else
         {
             var parameters = ExtractAttributeParameters(methodAttribute, semanticModel);
-            (strongTypeAttrParams.MetricNameFromAttribute, strongTypeAttrParams.DimensionHashSet, strongTypeAttrParams.DimensionDescriptionDictionary) = parameters;
+            (strongTypeAttrParams.MetricNameFromAttribute, strongTypeAttrParams.TagHashSet, strongTypeAttrParams.TagDescriptionDictionary) = parameters;
         }
 
         string metricNameFromMethod = methodSymbol.ReturnType.Name;
@@ -447,15 +447,15 @@ internal sealed class Parser
             MetricName = string.IsNullOrWhiteSpace(strongTypeAttrParams.MetricNameFromAttribute) ? metricNameFromMethod : strongTypeAttrParams.MetricNameFromAttribute,
             InstrumentKind = instrumentKind,
             GenericType = genericType.ToDisplayString(_genericTypeSymbolFormat),
-            DimensionsKeys = strongTypeAttrParams.DimensionHashSet,
+            TagKeys = strongTypeAttrParams.TagHashSet,
             IsExtensionMethod = methodSymbol.IsExtensionMethod,
             Modifiers = methodSyntax.Modifiers.ToString(),
             MetricTypeName = methodSymbol.ReturnType.ToDisplayString(), // Roslyn doesn't know this type yet, no need to use a format here
             StrongTypeConfigs = strongTypeAttrParams.StrongTypeConfigs,
             StrongTypeObjectName = strongTypeAttrParams.StrongTypeObjectName,
-            IsDimensionTypeClass = strongTypeAttrParams.IsClass,
+            IsTagTypeClass = strongTypeAttrParams.IsClass,
             MetricTypeModifiers = typeDeclaration.Modifiers.ToString(),
-            DimensionDescriptionDictionary = strongTypeAttrParams.DimensionDescriptionDictionary
+            TagDescriptionDictionary = strongTypeAttrParams.TagDescriptionDictionary
         };
 
         var xmlDefinition = GetSymbolXmlCommentSummary(methodSymbol);
@@ -514,9 +514,9 @@ internal sealed class Parser
             keepMethod = false;
         }
 
-        if (!AreDimensionKeyNamesValid(metricMethod))
+        if (!AreTagNamesValid(metricMethod))
         {
-            Diag(DiagDescriptors.ErrorInvalidDimensionNames, methodSymbol.GetLocation());
+            Diag(DiagDescriptors.ErrorInvalidTagNames, methodSymbol.GetLocation());
             keepMethod = false;
         }
 
@@ -638,28 +638,28 @@ internal sealed class Parser
             // Loop through all of the members of the object level and below
             foreach (var member in strongTypeSymbol.GetMembers())
             {
-                var dimConfigs = BuildDimensionConfigs(member, typesChain, strongTypeAttributeParameters.DimensionHashSet,
-                    strongTypeAttributeParameters.DimensionDescriptionDictionary, symbols, _builders.GetStringBuilder());
+                var tagConfigs = BuildTagConfigs(member, typesChain, strongTypeAttributeParameters.TagHashSet,
+                    strongTypeAttributeParameters.TagDescriptionDictionary, symbols, _builders.GetStringBuilder());
 
-                strongTypeAttributeParameters.StrongTypeConfigs.AddRange(dimConfigs);
+                strongTypeAttributeParameters.StrongTypeConfigs.AddRange(tagConfigs);
             }
 
             // Now that all of the current level and below dimensions are extracted, let's get any parent ones
-            strongTypeAttributeParameters.StrongTypeConfigs.AddRange(GetParentDimensionConfigs(strongTypeSymbol,
-                strongTypeAttributeParameters.DimensionHashSet, strongTypeAttributeParameters.DimensionDescriptionDictionary, symbols));
+            strongTypeAttributeParameters.StrongTypeConfigs.AddRange(GetParentTagConfigs(strongTypeSymbol,
+                strongTypeAttributeParameters.TagHashSet, strongTypeAttributeParameters.TagDescriptionDictionary, symbols));
         }
         catch (TransitiveTypeCycleException ex)
         {
-            Diag(DiagDescriptors.ErrorDimensionTypeCycleDetected,
+            Diag(DiagDescriptors.ErrorTagTypeCycleDetected,
                 strongTypeSymbol.Locations[0],
                 strongTypeSymbol.ToDisplayString(),
                 ex.Parent.ToDisplayString(),
                 ex.NamedType.ToDisplayString());
         }
 
-        if (strongTypeAttributeParameters.StrongTypeConfigs.Count > MaxDimensions)
+        if (strongTypeAttributeParameters.StrongTypeConfigs.Count > MaxTagNames)
         {
-            Diag(DiagDescriptors.ErrorTooManyDimensions, strongTypeSymbol.Locations[0]);
+            Diag(DiagDescriptors.ErrorTooManyTagNames, strongTypeSymbol.Locations[0]);
         }
 
         strongTypeAttributeParameters.StrongTypeObjectName = constructorArg.Value.ToString();
@@ -671,19 +671,19 @@ internal sealed class Parser
     /// </summary>
     /// <param name="symbol">The Symbol being extracted.</param>
     /// <param name="typesChain">A set of symbols in the current type chain.</param>
-    /// <param name="dimensionHashSet">HashSet of all dimensions seen so far.</param>
+    /// <param name="tagHashSet">HashSet of all dimensions seen so far.</param>
     /// <param name="symbols">Shared symbols.</param>
     /// <param name="stringBuilder">List of all property names when walking down the object model. See StrongTypeDimensionConfigs for an example.</param>
     /// <returns>List of all StrongTypeDimensionConfigs seen so far.</returns>
-    private List<StrongTypeConfig> BuildDimensionConfigs(
+    private List<StrongTypeConfig> BuildTagConfigs(
         ISymbol symbol,
         ISet<ITypeSymbol> typesChain,
-        HashSet<string> dimensionHashSet,
-        Dictionary<string, string> dimensionDescriptionDictionary,
+        HashSet<string> tagHashSet,
+        Dictionary<string, string> tagDescriptionDictionary,
         SymbolHolder symbols,
         StringBuilder stringBuilder)
     {
-        var dimensionConfigs = new List<StrongTypeConfig>();
+        var tagConfigs = new List<StrongTypeConfig>();
 
         TypeKind kind;
         SpecialType specialType;
@@ -691,7 +691,7 @@ internal sealed class Parser
 
         if (symbol.IsImplicitlyDeclared)
         {
-            return dimensionConfigs;
+            return tagConfigs;
         }
 
         switch (symbol.Kind)
@@ -714,7 +714,7 @@ internal sealed class Parser
 
             default:
                 _builders.ReturnStringBuilder(stringBuilder);
-                return dimensionConfigs;
+                return tagConfigs;
         }
 
         // This one is to properly cover "Nullable<T>" cases:
@@ -727,64 +727,64 @@ internal sealed class Parser
         {
             if (kind == TypeKind.Enum)
             {
-                var name = TryGetDimensionNameFromAttribute(symbol, symbols, out var dimensionName)
-                    ? dimensionName
+                var name = TryGetTagNameFromAttribute(symbol, symbols, out var tagName)
+                    ? tagName
                     : symbol.Name;
 
-                if (!dimensionHashSet.Add(name))
+                if (!tagHashSet.Add(name))
                 {
-                    Diag(DiagDescriptors.ErrorDuplicateDimensionName, symbol.Locations[0], symbol.Name);
+                    Diag(DiagDescriptors.ErrorDuplicateTagName, symbol.Locations[0], symbol.Name);
                 }
                 else
                 {
-                    dimensionConfigs.Add(new StrongTypeConfig
+                    tagConfigs.Add(new StrongTypeConfig
                     {
                         Name = symbol.Name,
                         Path = stringBuilder.ToString(),
-                        DimensionName = name,
+                        TagName = name,
                         StrongTypeMetricObjectType = StrongTypeMetricObjectType.Enum
                     });
 
                     var xmlDefinition = GetSymbolXmlCommentSummary(symbol);
                     if (!string.IsNullOrEmpty(xmlDefinition))
                     {
-                        dimensionDescriptionDictionary.Add(string.IsNullOrEmpty(dimensionName) ? symbol.Name : dimensionName, xmlDefinition);
+                        tagDescriptionDictionary.Add(string.IsNullOrEmpty(tagName) ? symbol.Name : tagName, xmlDefinition);
                     }
                 }
 
-                return dimensionConfigs;
+                return tagConfigs;
             }
 
             if (kind == TypeKind.Class)
             {
                 if (specialType == SpecialType.System_String)
                 {
-                    var name = TryGetDimensionNameFromAttribute(symbol, symbols, out var dimensionName)
-                        ? dimensionName
+                    var name = TryGetTagNameFromAttribute(symbol, symbols, out var tagName)
+                        ? tagName
                         : symbol.Name;
 
-                    if (!dimensionHashSet.Add(name))
+                    if (!tagHashSet.Add(name))
                     {
-                        Diag(DiagDescriptors.ErrorDuplicateDimensionName, symbol.Locations[0], symbol.Name);
+                        Diag(DiagDescriptors.ErrorDuplicateTagName, symbol.Locations[0], symbol.Name);
                     }
                     else
                     {
-                        dimensionConfigs.Add(new StrongTypeConfig
+                        tagConfigs.Add(new StrongTypeConfig
                         {
                             Name = symbol.Name,
                             Path = stringBuilder.ToString(),
-                            DimensionName = name,
+                            TagName = name,
                             StrongTypeMetricObjectType = StrongTypeMetricObjectType.String
                         });
 
                         var xmlDefinition = GetSymbolXmlCommentSummary(symbol);
                         if (!string.IsNullOrEmpty(xmlDefinition))
                         {
-                            dimensionDescriptionDictionary.Add(string.IsNullOrEmpty(dimensionName) ? symbol.Name : dimensionName, xmlDefinition);
+                            tagDescriptionDictionary.Add(string.IsNullOrEmpty(tagName) ? symbol.Name : tagName, xmlDefinition);
                         }
                     }
 
-                    return dimensionConfigs;
+                    return tagConfigs;
                 }
                 else if (specialType == SpecialType.None)
                 {
@@ -792,24 +792,24 @@ internal sealed class Parser
                     {
                         // User defined class, first add into dimensionConfigs, then walk the object model
 
-                        dimensionConfigs.Add(new StrongTypeConfig
+                        tagConfigs.Add(new StrongTypeConfig
                         {
                             Name = symbol.Name,
                             Path = stringBuilder.ToString(),
                             StrongTypeMetricObjectType = StrongTypeMetricObjectType.Class
                         });
 
-                        dimensionConfigs.AddRange(
+                        tagConfigs.AddRange(
                             WalkObjectModel(symbol, typesChain, namedTypeSymbol, stringBuilder,
-                                dimensionHashSet, dimensionDescriptionDictionary, symbols, true));
+                                tagHashSet, tagDescriptionDictionary, symbols, true));
 
-                        return dimensionConfigs;
+                        return tagConfigs;
                     }
                 }
                 else
                 {
-                    Diag(DiagDescriptors.ErrorInvalidDimensionType, symbol.Locations[0]);
-                    return dimensionConfigs;
+                    Diag(DiagDescriptors.ErrorInvalidTagNameType, symbol.Locations[0]);
+                    return tagConfigs;
                 }
             }
 
@@ -817,29 +817,29 @@ internal sealed class Parser
             {
                 if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
                 {
-                    Diag(DiagDescriptors.ErrorInvalidDimensionType, symbol.Locations[0]);
+                    Diag(DiagDescriptors.ErrorInvalidTagNameType, symbol.Locations[0]);
                 }
                 else
                 {
                     // User defined struct. First add into dimensionConfigs, then walk down the rest of the struct.
-                    dimensionConfigs.Add(new StrongTypeConfig
+                    tagConfigs.Add(new StrongTypeConfig
                     {
                         Name = symbol.Name,
                         Path = stringBuilder.ToString(),
                         StrongTypeMetricObjectType = StrongTypeMetricObjectType.Struct
                     });
 
-                    dimensionConfigs.AddRange(
+                    tagConfigs.AddRange(
                         WalkObjectModel(symbol, typesChain, namedTypeSymbol, stringBuilder,
-                            dimensionHashSet, dimensionDescriptionDictionary, symbols, false));
+                            tagHashSet, tagDescriptionDictionary, symbols, false));
                 }
 
-                return dimensionConfigs;
+                return tagConfigs;
             }
             else
             {
-                Diag(DiagDescriptors.ErrorInvalidDimensionType, symbol.Locations[0]);
-                return dimensionConfigs;
+                Diag(DiagDescriptors.ErrorInvalidTagNameType, symbol.Locations[0]);
+                return tagConfigs;
             }
         }
         finally
@@ -855,13 +855,13 @@ internal sealed class Parser
         ISet<ITypeSymbol> typesChain,
         INamedTypeSymbol namedTypeSymbol,
         StringBuilder stringBuilder,
-        HashSet<string> dimensionHashSet,
-        Dictionary<string, string> dimensionDescriptionDictionary,
+        HashSet<string> tagHashSet,
+        Dictionary<string, string> tagDescriptionDictionary,
         SymbolHolder symbols,
         bool isClass)
 #pragma warning restore S107 // Methods should not have too many parameters
     {
-        var dimensionConfigs = new List<StrongTypeConfig>();
+        var tagConfigs = new List<StrongTypeConfig>();
 
         if (stringBuilder.Length != 0)
         {
@@ -882,23 +882,23 @@ internal sealed class Parser
 
         foreach (var member in namedTypeSymbol.GetMembers())
         {
-            dimensionConfigs.AddRange(
-                BuildDimensionConfigs(member, typesChain, dimensionHashSet,
-                    dimensionDescriptionDictionary, symbols, stringBuilder));
+            tagConfigs.AddRange(
+                BuildTagConfigs(member, typesChain, tagHashSet,
+                    tagDescriptionDictionary, symbols, stringBuilder));
         }
 
         _ = typesChain.Remove(namedTypeSymbol);
 
-        return dimensionConfigs;
+        return tagConfigs;
     }
 
-    private List<StrongTypeConfig> GetParentDimensionConfigs(
+    private List<StrongTypeConfig> GetParentTagConfigs(
         ITypeSymbol symbol,
-        HashSet<string> dimensionHashSet,
-        Dictionary<string, string> dimensionDescriptionDictionary,
+        HashSet<string> tagHashSet,
+        Dictionary<string, string> tagDescriptionDictionary,
         SymbolHolder symbols)
     {
-        var dimensionConfigs = new List<StrongTypeConfig>();
+        var tagConfigs = new List<StrongTypeConfig>();
         INamedTypeSymbol? parentObjectBase = symbol.BaseType;
 
         do
@@ -913,15 +913,15 @@ internal sealed class Parser
 
             foreach (var member in parentObjectBase.GetMembers())
             {
-                dimensionConfigs.AddRange(
-                    BuildDimensionConfigs(member, typesChain, dimensionHashSet,
-                        dimensionDescriptionDictionary, symbols, _builders.GetStringBuilder()));
+                tagConfigs.AddRange(
+                    BuildTagConfigs(member, typesChain, tagHashSet,
+                        tagDescriptionDictionary, symbols, _builders.GetStringBuilder()));
             }
 
             parentObjectBase = parentObjectBase.BaseType;
         }
         while (parentObjectBase?.BaseType != null);
 
-        return dimensionConfigs;
+        return tagConfigs;
     }
 }

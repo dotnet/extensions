@@ -9,8 +9,8 @@ namespace Microsoft.Extensions.Telemetry.Enrichment;
 public interface IMetricEnricher
 {
     /// <summary>
-    /// Called to generate properties for metrics.
+    /// Called to collect tags for metrics.
     /// </summary>
-    /// <param name="bag">Where the enricher puts the properties it is producing.</param>
-    void Enrich(IEnrichmentPropertyBag bag);
+    /// <param name="collector">Where the enricher puts the tags it is producing.</param>
+    void Enrich(IEnrichmentTagCollector collector);
 }

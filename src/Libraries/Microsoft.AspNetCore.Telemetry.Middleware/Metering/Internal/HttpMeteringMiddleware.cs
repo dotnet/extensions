@@ -28,7 +28,7 @@ internal sealed class HttpMeteringMiddleware : IMiddleware
 
     private readonly Histogram<long>? _incomingRequestMetric;
     private readonly IIncomingRequestMetricEnricher[]? _requestMetricEnrichers;
-    private readonly ObjectPool<MetricEnrichmentPropertyBag> _propertyBagPool = PoolFactory.CreateResettingPool<MetricEnrichmentPropertyBag>();
+    private readonly ObjectPool<MetricEnrichmentTagCollector> _propertyBagPool = PoolFactory.CreateResettingPool<MetricEnrichmentTagCollector>();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpMeteringMiddleware"/> class.
@@ -43,7 +43,7 @@ internal sealed class HttpMeteringMiddleware : IMiddleware
         foreach (var enricher in requestMetricEnrichers)
         {
             enrichersCount++;
-            dimensionsCount += enricher.DimensionNames.Count;
+            dimensionsCount += enricher.TagNames.Count;
         }
 
         if (dimensionsCount > MaxCustomDimensionsCount + StandardDimensionsCount)
@@ -69,7 +69,7 @@ internal sealed class HttpMeteringMiddleware : IMiddleware
             foreach (var enricher in requestMetricEnrichers)
             {
                 _requestMetricEnrichers[enricherIndex++] = enricher;
-                foreach (var dimensionName in enricher.DimensionNames)
+                foreach (var dimensionName in enricher.TagNames)
                 {
                     if (!dimensionsSet.Add(dimensionName))
                     {

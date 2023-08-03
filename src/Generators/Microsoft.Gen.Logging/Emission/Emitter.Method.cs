@@ -76,7 +76,7 @@ internal sealed partial class Emitter : EmitterBase
         var stateName = PickUniqueName("state", lm.Parameters.Select(p => p.Name));
 
         OutLn($"var {stateName} = {LoggerMessageHelperType}.ThreadLocalState;");
-        GenPropertyLoads(lm, stateName, out int numReservedUnclassifiedProps, out int numReservedClassifiedProps);
+        GenPropertyLoads(lm, stateName, out int numReservedUnclassifiedTags, out int numReservedClassifiedTags);
 
         OutLn();
         OutLn($"{logger}.Log(");
@@ -101,7 +101,7 @@ internal sealed partial class Emitter : EmitterBase
         OutLn($"static ({lambdaStateName}, {exceptionLambdaName}) =>");
         OutOpenBrace();
 
-        if (GenVariableAssignments(lm, lambdaStateName, numReservedUnclassifiedProps, numReservedClassifiedProps))
+        if (GenVariableAssignments(lm, lambdaStateName, numReservedUnclassifiedTags, numReservedClassifiedTags))
         {
             var template = EscapeMessageString(lm.Message);
             template = AddAtSymbolsToTemplates(template, lm.Parameters);
@@ -195,13 +195,13 @@ internal sealed partial class Emitter : EmitterBase
                 return true;
             }
 
-            return p.IsNormalParameter && !p.HasPropsProvider && !p.HasProperties;
+            return p.IsNormalParameter && !p.HasTagProvider && !p.HasProperties;
         }
 
-        void GenPropertyLoads(LoggingMethod lm, string stateName, out int numReservedUnclassifiedProps, out int numReservedClassifiedProps)
+        void GenPropertyLoads(LoggingMethod lm, string stateName, out int numReservedUnclassifiedTags, out int numReservedClassifiedTags)
         {
-            int numUnclassifiedProps = 0;
-            int numClassifiedProps = 0;
+            int numUnclassifiedTags = 0;
+            int numClassifiedTags = 0;
 
             foreach (var p in lm.Parameters)
             {
@@ -209,11 +209,11 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     if (p.HasDataClassification)
                     {
-                        numClassifiedProps++;
+                        numClassifiedTags++;
                     }
                     else
                     {
-                        numUnclassifiedProps++;
+                        numUnclassifiedTags++;
                     }
                 }
 
@@ -223,11 +223,11 @@ internal sealed partial class Emitter : EmitterBase
                     {
                         if (member.HasDataClassification)
                         {
-                            numClassifiedProps++;
+                            numClassifiedTags++;
                         }
                         else
                         {
-                            numUnclassifiedProps++;
+                            numUnclassifiedTags++;
                         }
                     });
                 }
@@ -235,17 +235,17 @@ internal sealed partial class Emitter : EmitterBase
 
             if (!string.IsNullOrEmpty(lm.Message))
             {
-                numUnclassifiedProps++;
+                numUnclassifiedTags++;
             }
 
-            numReservedUnclassifiedProps = numUnclassifiedProps;
-            numReservedClassifiedProps = numClassifiedProps;
+            numReservedUnclassifiedTags = numUnclassifiedTags;
+            numReservedClassifiedTags = numClassifiedTags;
 
-            if (numReservedUnclassifiedProps > 0)
+            if (numReservedUnclassifiedTags > 0)
             {
                 OutLn();
-                OutLn($"_ = {stateName}.ReservePropertySpace({numReservedUnclassifiedProps});");
-                int count = numReservedUnclassifiedProps;
+                OutLn($"_ = {stateName}.ReserveTagSpace({numReservedUnclassifiedTags});");
+                int count = numReservedUnclassifiedTags;
                 foreach (var p in lm.Parameters)
                 {
                     if (NeedsASlot(p) && !p.HasDataClassification)
@@ -266,7 +266,7 @@ internal sealed partial class Emitter : EmitterBase
                                 : p.NameWithAt;
                         }
 
-                        OutLn($"{stateName}.PropertyArray[{--count}] = new({key}, {value});");
+                        OutLn($"{stateName}.TagArray[{--count}] = new({key}, {value});");
                     }
                 }
 
@@ -289,7 +289,7 @@ internal sealed partial class Emitter : EmitterBase
                                     ? $"{LoggerMessageHelperType}.Stringify({accessExpression})"
                                     : ts;
 
-                                OutLn($"{stateName}.PropertyArray[{--count}] = new(\"{propName}\", {value});");
+                                OutLn($"{stateName}.TagArray[{--count}] = new(\"{propName}\", {value});");
                             }
                         });
                     }
@@ -297,15 +297,15 @@ internal sealed partial class Emitter : EmitterBase
 
                 if (!string.IsNullOrEmpty(lm.Message))
                 {
-                    OutLn($"{stateName}.PropertyArray[{--count}] = new(\"{{OriginalFormat}}\", \"{EscapeMessageString(lm.Message)}\");");
+                    OutLn($"{stateName}.TagArray[{--count}] = new(\"{{OriginalFormat}}\", \"{EscapeMessageString(lm.Message)}\");");
                 }
             }
 
-            if (numReservedClassifiedProps > 0)
+            if (numReservedClassifiedTags > 0)
             {
                 OutLn();
-                OutLn($"_ = {stateName}.ReserveClassifiedPropertySpace({numReservedClassifiedProps});");
-                int count = numReservedClassifiedProps;
+                OutLn($"_ = {stateName}.ReserveClassifiedTagSpace({numReservedClassifiedTags});");
+                int count = numReservedClassifiedTags;
                 foreach (var p in lm.Parameters)
                 {
                     if (NeedsASlot(p) && p.HasDataClassification)
@@ -317,7 +317,7 @@ internal sealed partial class Emitter : EmitterBase
                             ? ConvertToString(p, p.NameWithAt)
                             : p.NameWithAt;
 
-                        OutLn($"{stateName}.ClassifiedPropertyArray[{--count}] = new({key}, {value}, {classification});");
+                        OutLn($"{stateName}.ClassifiedTagArray[{--count}] = new({key}, {value}, {classification});");
                     }
                 }
 
@@ -335,7 +335,7 @@ internal sealed partial class Emitter : EmitterBase
                                 var value = ConvertPropertyToString(member, accessExpression);
                                 var classification = $"_{EncodeTypeName(member.ClassificationAttributeType!)}_Classification";
 
-                                OutLn($"{stateName}.ClassifiedPropertyArray[{--count}] = new(\"{propName}\", {value}, {classification});");
+                                OutLn($"{stateName}.ClassifiedTagArray[{--count}] = new(\"{propName}\", {value}, {classification});");
                             }
                         });
                     }
@@ -363,7 +363,7 @@ internal sealed partial class Emitter : EmitterBase
                                 ? $"if ({value} != null) "
                                 : string.Empty;
 
-                            OutLn($"{skipNull}{stateName}.AddProperty(\"{propName}\", {value});");
+                            OutLn($"{skipNull}{stateName}.AddTag(\"{propName}\", {value});");
                         }
                         else
                         {
@@ -377,32 +377,32 @@ internal sealed partial class Emitter : EmitterBase
                                 ? $"if ({value} != null) "
                                 : string.Empty;
 
-                            OutLn($"{skipNull}{stateName}.AddClassifiedProperty(\"{propName}\", {value}, {classification});");
+                            OutLn($"{skipNull}{stateName}.AddClassifiedTag(\"{propName}\", {value}, {classification});");
                         }
                     });
                 }
 
-                if (p.HasPropsProvider)
+                if (p.HasTagProvider)
                 {
                     if (p.OmitParameterName)
                     {
-                        OutLn($"{stateName}.PropertyNamePrefix = string.Empty;");
+                        OutLn($"{stateName}.TagNamePrefix = string.Empty;");
                     }
                     else
                     {
-                        OutLn($"{stateName}.PropertyNamePrefix = nameof({p.NameWithAt});");
+                        OutLn($"{stateName}.TagNamePrefix = nameof({p.NameWithAt});");
                     }
 
-                    OutLn($"{p.LogPropertiesProvider!.ContainingType}.{p.LogPropertiesProvider.MethodName}({stateName}, {p.NameWithAt});");
+                    OutLn($"{p.TagProvider!.ContainingType}.{p.TagProvider.MethodName}({stateName}, {p.NameWithAt});");
                 }
             }
         }
 
-        bool GenVariableAssignments(LoggingMethod lm, string lambdaStateName, int numReservedUnclassifiedProps, int numReservedClassifiedProps)
+        bool GenVariableAssignments(LoggingMethod lm, string lambdaStateName, int numReservedUnclassifiedTags, int numReservedClassifiedTags)
         {
             bool generatedAssignments = false;
 
-            int index = numReservedUnclassifiedProps - 1;
+            int index = numReservedUnclassifiedTags - 1;
             foreach (var p in lm.Parameters)
             {
                 if (NeedsASlot(p) && !p.HasDataClassification)
@@ -415,11 +415,11 @@ internal sealed partial class Emitter : EmitterBase
                         if (p.PotentiallyNull)
                         {
                             const string Null = "\"(null)\"";
-                            OutLn($"var {atSign}{key} = {lambdaStateName}.PropertyArray[{index}].Value ?? {Null};");
+                            OutLn($"var {atSign}{key} = {lambdaStateName}.TagArray[{index}].Value ?? {Null};");
                         }
                         else
                         {
-                            OutLn($"var {atSign}{key} = {lambdaStateName}.PropertyArray[{index}].Value;");
+                            OutLn($"var {atSign}{key} = {lambdaStateName}.TagArray[{index}].Value;");
                         }
 
                         generatedAssignments = true;
@@ -429,7 +429,7 @@ internal sealed partial class Emitter : EmitterBase
                 }
             }
 
-            index = numReservedClassifiedProps - 1;
+            index = numReservedClassifiedTags - 1;
             foreach (var p in lm.Parameters)
             {
                 if (NeedsASlot(p) && p.HasDataClassification)
@@ -442,11 +442,11 @@ internal sealed partial class Emitter : EmitterBase
                         if (p.PotentiallyNull)
                         {
                             const string Null = "\"(null)\"";
-                            OutLn($"var {atSign}{key} = {lambdaStateName}.RedactedPropertyArray[{index}].Value ?? {Null};");
+                            OutLn($"var {atSign}{key} = {lambdaStateName}.RedactedTagArray[{index}].Value ?? {Null};");
                         }
                         else
                         {
-                            OutLn($"var {atSign}{key} = {lambdaStateName}.RedactedPropertyArray[{index}].Value;");
+                            OutLn($"var {atSign}{key} = {lambdaStateName}.RedactedTagArray[{index}].Value;");
                         }
 
                         generatedAssignments = true;
