@@ -25,7 +25,7 @@ public class AcceptanceTests
     private static readonly Uri _unreachableRequestUri = new("https://we.wont.hit.this.doman.anyway");
 
     [Fact]
-    public async Task AddHttpClientLogEnricher_WhenNullEnricher_SkipsNullEnrichers()
+    public async Task AddHttpClientLogEnricher_WhenNullEnricherRegistered_SkipsNullEnrichers()
     {
         await using var sp = new ServiceCollection()
             .AddFakeLogging()
@@ -163,6 +163,7 @@ public class AcceptanceTests
             Method = HttpMethod.Get,
             RequestUri = _unreachableRequestUri,
         };
+
         httpRequestMessage.Headers.Add("requestHeader", "Request Value");
         httpRequestMessage.Headers.Add("ReQuEStHeAdErFirst", new List<string> { "Request Value 2", "Request Value 3" });
         var responseString = await SendRequest(namedClient1, httpRequestMessage);
@@ -178,6 +179,7 @@ public class AcceptanceTests
             Method = HttpMethod.Get,
             RequestUri = _unreachableRequestUri,
         };
+
         httpRequestMessage2.Headers.Add("requestHeader", "Request Value");
         httpRequestMessage2.Headers.Add("ReQuEStHeAdErSecond", new List<string> { "Request Value 2", "Request Value 3" });
         collector.Clear();
@@ -189,11 +191,12 @@ public class AcceptanceTests
         state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
     }
 
-    private static async Task<string> SendRequest(System.Net.Http.HttpClient httpClient, HttpRequestMessage httpRequestMessage)
+    private static async Task<string> SendRequest(HttpClient httpClient, HttpRequestMessage httpRequestMessage)
     {
-        var content = await httpClient
+        using var content = await httpClient
             .SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead)
             .ConfigureAwait(false);
+
         var responseStream = await content.Content.ReadAsStreamAsync();
         var buffer = new byte[32768];
         _ = await responseStream.ReadAsync(buffer, 0, 32768);
@@ -353,7 +356,7 @@ public class AcceptanceTests
             RequestRoute = "/v1/unit/{unitId}/users/{userId}"
         });
 
-        _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+        using var _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
 
         var collector = sp.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);
@@ -568,5 +571,59 @@ public class AcceptanceTests
         var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
 
         logRecord.Scopes.Should().HaveCount(0);
+    }
+
+    [Theory]
+    [InlineData(4_096)]
+    [InlineData(8_192)]
+    [InlineData(16_384)]
+    [InlineData(32_768)]
+    [InlineData(315_883)]
+    public async Task HttpClientLoggingHandler_LogsBodyDataUpToSpecifiedLimit(int limit)
+    {
+        await using var provider = new ServiceCollection()
+             .AddFakeLogging()
+             .AddFakeRedaction()
+             .AddHttpClient(nameof(HttpClientLoggingHandler_LogsBodyDataUpToSpecifiedLimit))
+             .AddHttpClientLogging(x =>
+             {
+                 x.ResponseHeadersDataClasses.Add("ResponseHeader", SimpleClassifications.PrivateData);
+                 x.RequestHeadersDataClasses.Add("RequestHeader", SimpleClassifications.PrivateData);
+                 x.RequestHeadersDataClasses.Add("RequestHeader2", SimpleClassifications.PrivateData);
+                 x.RequestBodyContentTypes.Add("application/json");
+                 x.ResponseBodyContentTypes.Add("application/json");
+                 x.BodySizeLimit = limit;
+                 x.LogBody = true;
+             })
+             .Services
+             .BlockRemoteCall()
+             .BuildServiceProvider();
+
+        var client = provider
+             .GetRequiredService<IHttpClientFactory>()
+             .CreateClient(nameof(HttpClientLoggingHandler_LogsBodyDataUpToSpecifiedLimit));
+
+        using var httpRequestMessage = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = _unreachableRequestUri,
+        };
+
+        httpRequestMessage.Headers.Add("requestHeader", "Request Value");
+        httpRequestMessage.Headers.Add("ReQuEStHeAdEr2", new List<string> { "Request Value 2", "Request Value 3" });
+
+        var content = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+        var responseStream = await content.Content.ReadAsStreamAsync();
+        var length = (int)responseStream.Length > limit ? limit : (int)responseStream.Length;
+        var buffer = new byte[length];
+        _ = await responseStream.ReadAsync(buffer, 0, length);
+        var responseString = Encoding.UTF8.GetString(buffer);
+
+        var collector = provider.GetFakeLogCollector();
+        var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
+        var state = logRecord.StructuredState;
+        state.Should().Contain(kvp => kvp.Value == responseString);
+        state.Should().Contain(kvp => kvp.Value == "Request Value");
+        state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
     }
 }

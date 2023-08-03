@@ -30,7 +30,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
 
-public class HttpLoggingHandlerTest
+public class HttpClientLoggerTest
 {
     private const string TestRequestHeader = "RequestHeader";
     private const string TestResponseHeader = "ResponseHeader";
@@ -43,7 +43,7 @@ public class HttpLoggingHandlerTest
 
     private readonly Fixture _fixture;
 
-    public HttpLoggingHandlerTest()
+    public HttpClientLoggerTest()
     {
         _fixture = new();
     }
