@@ -18,6 +18,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Testing.Logging;
 using Moq;
@@ -27,6 +28,8 @@ namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
 
 public class HttpClientLoggingExtensionsTest
 {
+    private static readonly Uri _unreachableRequestUri = new("https://we.wont.hit.this.doman.anyway");
+
     private readonly Fixture _fixture;
 
     public HttpClientLoggingExtensionsTest()
@@ -398,10 +401,44 @@ public class HttpClientLoggingExtensionsTest
     }
 
     [Fact]
+    public async Task AddHttpClientLogEnricher_WhenNullEnricher_SkipsNullEnrichers()
+    {
+        await using var sp = new ServiceCollection()
+            .AddFakeLogging()
+            .AddFakeRedaction()
+            .AddDefaultHttpClientLogging()
+            .AddHttpClientLogEnricher<EnricherWithCounter>()
+            .AddSingleton<IHttpClientLogEnricher>(static _ => null!)
+            .BlockRemoteCall()
+            .BuildServiceProvider();
+
+        using var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("testClient");
+        using var httpRequestMessage = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = _unreachableRequestUri,
+        };
+
+        using var _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+        var collector = sp.GetFakeLogCollector();
+        var logRecord = Assert.Single(collector.GetSnapshot(), logRecord => logRecord.Category == "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger");
+
+        // No error should be logged:
+        Assert.Equal(LogLevel.Information, logRecord.Level);
+        Assert.Equal($"{httpRequestMessage.Method} {httpRequestMessage.RequestUri.Host}/{TelemetryConstants.Redacted}", logRecord.Message);
+
+        var enrichers = sp.GetServices<IHttpClientLogEnricher>().ToList();
+        var nullEnricher = Assert.Single(enrichers, x => x is null);
+        Assert.Null(nullEnricher);
+
+        var enricher = Assert.Single(enrichers, x => x is not null);
+        var testEnricher = Assert.IsType<EnricherWithCounter>(enricher);
+        Assert.Equal(1, testEnricher.TimesCalled);
+    }
+
+    [Fact]
     public async Task AddHttpClientLogging_ServiceCollectionAndEnrichers_EnrichesLogsWithAllEnrichers()
     {
-        const string RequestPath = "https://we.wont.hit.this.dd22anyway.com";
-
         await using var sp = new ServiceCollection()
             .AddFakeLogging()
             .AddFakeRedaction()
@@ -416,7 +453,7 @@ public class HttpClientLoggingExtensionsTest
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
-            RequestUri = new Uri(RequestPath),
+            RequestUri = _unreachableRequestUri,
         };
 
         _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
@@ -438,8 +475,6 @@ public class HttpClientLoggingExtensionsTest
     [Fact]
     public async Task AddHttpClientLogging_WithNamedHttpClients_WorksCorrectly()
     {
-        const string RequestPath = "https://we.wont.hit.this.dd22anyway.com";
-
         await using var provider = new ServiceCollection()
              .AddFakeLogging()
              .AddFakeRedaction()
@@ -472,7 +507,7 @@ public class HttpClientLoggingExtensionsTest
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
-            RequestUri = new Uri(RequestPath),
+            RequestUri = _unreachableRequestUri,
         };
         httpRequestMessage.Headers.Add("requestHeader", "Request Value");
         httpRequestMessage.Headers.Add("ReQuEStHeAdErFirst", new List<string> { "Request Value 2", "Request Value 3" });
@@ -487,7 +522,7 @@ public class HttpClientLoggingExtensionsTest
         using var httpRequestMessage2 = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
-            RequestUri = new Uri(RequestPath),
+            RequestUri = _unreachableRequestUri,
         };
         httpRequestMessage2.Headers.Add("requestHeader", "Request Value");
         httpRequestMessage2.Headers.Add("ReQuEStHeAdErSecond", new List<string> { "Request Value 2", "Request Value 3" });
@@ -514,8 +549,6 @@ public class HttpClientLoggingExtensionsTest
     [Fact]
     public async Task AddHttpClientLogging_WithTypedHttpClients_WorksCorrectly()
     {
-        const string RequestPath = "https://we.wont.hit.this.dd22anyway.com";
-
         await using var provider = new ServiceCollection()
             .AddFakeLogging()
             .AddFakeRedaction()
@@ -552,8 +585,9 @@ public class HttpClientLoggingExtensionsTest
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
-            RequestUri = new Uri(RequestPath),
+            RequestUri = _unreachableRequestUri,
         };
+
         httpRequestMessage.Headers.Add("requestHeader", "Request Value");
         httpRequestMessage.Headers.Add("ReQuEStHeAdEr2", new List<string> { "Request Value 2", "Request Value 3" });
         var content = await firstClient!.SendRequest(httpRequestMessage).ConfigureAwait(false);
@@ -572,8 +606,9 @@ public class HttpClientLoggingExtensionsTest
         using var httpRequestMessage2 = new HttpRequestMessage
         {
             Method = HttpMethod.Get,
-            RequestUri = new Uri(RequestPath),
+            RequestUri = _unreachableRequestUri,
         };
+
         httpRequestMessage2.Headers.Add("requestHeader", "Request Value");
         httpRequestMessage2.Headers.Add("ReQuEStHeAdEr2", new List<string> { "Request Value 2", "Request Value 3" });
         collector.Clear();
@@ -812,7 +847,6 @@ public class HttpClientLoggingExtensionsTest
     [Fact]
     public async Task AddHttpClientLogging_DisablesNetScope()
     {
-        const string RequestPath = "https://we.wont.hit.this.dd22anyway.com";
         await using var provider = new ServiceCollection()
              .AddFakeLogging()
              .AddFakeRedaction()
@@ -821,9 +855,10 @@ public class HttpClientLoggingExtensionsTest
              .Services
              .BlockRemoteCall()
              .BuildServiceProvider();
+
         var options = provider.GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get("test");
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
-        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(RequestPath));
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _unreachableRequestUri);
 
         _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
         var collector = provider.GetFakeLogCollector();
@@ -835,7 +870,6 @@ public class HttpClientLoggingExtensionsTest
     [Fact]
     public async Task AddHttpClientLogging_CallFromOtherClient_HasBuiltInLogging()
     {
-        const string RequestPath = "https://we.wont.hit.this.dd22anyway.com";
         await using var provider = new ServiceCollection()
              .AddFakeLogging()
              .AddFakeRedaction()
@@ -848,9 +882,9 @@ public class HttpClientLoggingExtensionsTest
              .BuildServiceProvider();
 
         // The test client has AddHttpClientLogging. The normal client doesn't.
-        // The normal client should still log via the builtin HTTP logging.
+        // The normal client should still log via the built-in HTTP logging.
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("normal");
-        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(RequestPath));
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _unreachableRequestUri);
 
         _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
         var collector = provider.GetFakeLogCollector();
@@ -864,7 +898,6 @@ public class HttpClientLoggingExtensionsTest
     [Fact]
     public async Task AddDefaultHttpClientLogging_DisablesNetScope()
     {
-        const string RequestPath = "https://we.wont.hit.this.dd22anyway.com";
         await using var provider = new ServiceCollection()
              .AddFakeLogging()
              .AddFakeRedaction()
@@ -874,7 +907,7 @@ public class HttpClientLoggingExtensionsTest
              .BuildServiceProvider();
         var options = provider.GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get("test");
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
-        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(RequestPath));
+        using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _unreachableRequestUri);
 
         _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
         var collector = provider.GetFakeLogCollector();

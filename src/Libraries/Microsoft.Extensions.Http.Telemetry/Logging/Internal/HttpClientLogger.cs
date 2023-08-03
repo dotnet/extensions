@@ -43,7 +43,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
     {
         _logger = logger;
         _httpRequestReader = httpRequestReader;
-        _enrichers = enrichers.ToArray();
+        _enrichers = enrichers.Where(static x => x is not null).ToArray();
         var optionsValue = Throw.IfMemberNull(options, options.Value);
 
         _logRequestStart = optionsValue.LogRequestStart;
@@ -153,7 +153,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
     {
         if (context is not LogRecord logRecord)
         {
-            // TODO: we need to decide - log an error or try to load the log record from the context?
+            // TODO: we need to decide - log an error or try to fill a new log record from the context?
             return;
         }
 
@@ -220,7 +220,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             }
             catch (Exception e)
             {
-                Log.EnrichmentError(_logger, e, request.Method, logRecord.Host, logRecord.Path);
+                Log.EnrichmentError(_logger, e, enricher.GetType().FullName, request.Method, logRecord.Host, logRecord.Path);
             }
         }
 

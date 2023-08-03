@@ -31,7 +31,7 @@ internal static partial class Log
         $"{{{HttpClientLoggingDimensions.Method}}} {{{HttpClientLoggingDimensions.Host}}}/{{{HttpClientLoggingDimensions.Path}}}";
 
     private const string EnrichmentErrorMessage =
-        "An error occurred while enriching the log record: " +
+        "An error occurred in enricher '{enricherType}' while enriching the log record: " +
         $"{{{HttpClientLoggingDimensions.Method}}} {{{HttpClientLoggingDimensions.Host}}}/{{{HttpClientLoggingDimensions.Path}}}";
 
     private static readonly Func<LoggerMessageState, Exception?, string> _originalFormatValueFMTFunc = OriginalFormatValueFMT;
@@ -53,7 +53,7 @@ internal static partial class Log
     public static partial void ResponseReadError(ILogger logger, Exception exception, HttpMethod httpMethod, string httpHost, string httpPath);
 
     [LogMethod(LogLevel.Error, EnrichmentErrorMessage)]
-    public static partial void EnrichmentError(ILogger logger, Exception exception, HttpMethod httpMethod, string httpHost, string httpPath);
+    public static partial void EnrichmentError(ILogger logger, Exception exception, string? enricherType, HttpMethod httpMethod, string httpHost, string httpPath);
 
     // Using the code below instead of generated logging method because we have a custom formatter and custom tag keys for headers.
     private static void OutgoingRequest(
