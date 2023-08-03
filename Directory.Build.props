@@ -114,6 +114,10 @@
     <UseVSTestRunner>true</UseVSTestRunner>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <LibrariesProjectRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src', 'Libraries'))</LibrariesProjectRoot>
+  </PropertyGroup>
+
   <!-- Common properties -->
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Analyzers.props" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Packaging.props" />
