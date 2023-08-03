@@ -74,29 +74,29 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LoggerMessageState : Microsoft.Extensions.ObjectPool.IResettable, Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.IEnumerable, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object?>>",
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LoggerMessageState : Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.IEnumerable, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Telemetry.Logging.ITagCollector",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedProperty.ClassifiedProperty(string name, object? value, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedTag.ClassifiedTag(string name, object? value, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
           "Stage": "Experimental"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedProperty.ClassifiedProperty();",
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedTag.ClassifiedTag();",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedProperty.Classification { get; }",
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedTag.Classification { get; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "string Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedProperty.Name { get; }",
+          "Member": "string Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedTag.Name { get; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "object? Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedProperty.Value { get; }",
+          "Member": "object? Microsoft.Extensions.Telemetry.Logging.LoggerMessageState.ClassifiedTag.Value { get; }",
           "Stage": "Experimental"
         }
       ]
@@ -106,7 +106,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.CounterAttribute.CounterAttribute(params string[] dimensions);",
+          "Member": "Microsoft.Extensions.Telemetry.Metering.CounterAttribute.CounterAttribute(params string[] tagNames);",
           "Stage": "Stable"
         },
         {
@@ -116,11 +116,11 @@
       ],
       "Properties": [
         {
-          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.CounterAttribute.Dimensions { get; }",
+          "Member": "string? Microsoft.Extensions.Telemetry.Metering.CounterAttribute.Name { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.Telemetry.Metering.CounterAttribute.Name { get; set; }",
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.CounterAttribute.TagNames { get; }",
           "Stage": "Stable"
         },
         {
@@ -134,7 +134,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.CounterAttribute(params string[] dimensions);",
+          "Member": "Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.CounterAttribute(params string[] tagNames);",
           "Stage": "Stable"
         },
         {
@@ -144,31 +144,15 @@
       ],
       "Properties": [
         {
-          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.Dimensions { get; }",
-          "Stage": "Stable"
-        },
-        {
           "Member": "string? Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.Name { get; set; }",
           "Stage": "Stable"
         },
         {
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.TagNames { get; }",
+          "Stage": "Stable"
+        },
+        {
           "Member": "System.Type? Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.Type { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.DimensionAttribute : System.Attribute",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.DimensionAttribute.DimensionAttribute(string name);",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "string Microsoft.Extensions.Telemetry.Metering.DimensionAttribute.Name { get; }",
           "Stage": "Stable"
         }
       ]
@@ -208,7 +192,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.GaugeAttribute(params string[] dimensions);",
+          "Member": "Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.GaugeAttribute(params string[] tagNames);",
           "Stage": "Stable"
         },
         {
@@ -218,11 +202,11 @@
       ],
       "Properties": [
         {
-          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.Dimensions { get; }",
+          "Member": "string? Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.Name { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.Name { get; set; }",
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.TagNames { get; }",
           "Stage": "Stable"
         },
         {
@@ -236,7 +220,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.HistogramAttribute(params string[] dimensions);",
+          "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.HistogramAttribute(params string[] tagNames);",
           "Stage": "Stable"
         },
         {
@@ -246,11 +230,11 @@
       ],
       "Properties": [
         {
-          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.Dimensions { get; }",
+          "Member": "string? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.Name { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.Name { get; set; }",
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.TagNames { get; }",
           "Stage": "Stable"
         },
         {
@@ -264,7 +248,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.HistogramAttribute(params string[] dimensions);",
+          "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.HistogramAttribute(params string[] tagNames);",
           "Stage": "Stable"
         },
         {
@@ -274,11 +258,11 @@
       ],
       "Properties": [
         {
-          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Dimensions { get; }",
+          "Member": "string? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Name { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Name { get; set; }",
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.TagNames { get; }",
           "Stage": "Stable"
         },
         {
@@ -333,23 +317,23 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag",
+      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(string key, object value);",
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector.Add(string tagName, object tagValue);",
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(string key, string value);",
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector.Add(string tagName, string tagValue);",
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string, object>> properties);",
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string, object>> tags);",
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string, string>> properties);",
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string, string>> tags);",
           "Stage": "Stable"
         }
       ]
@@ -429,22 +413,8 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag bag);",
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector);",
           "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "interface Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "void Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector.Add(string propertyName, object? propertyValue);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "void Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector.Add(string propertyName, object? propertyValue, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
-          "Stage": "Experimental"
         }
       ]
     },
@@ -453,7 +423,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag bag);",
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector);",
           "Stage": "Stable"
         }
       ]
@@ -479,7 +449,21 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IStaticLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag bag);",
+          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IStaticLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "interface Microsoft.Extensions.Telemetry.Logging.ITagCollector",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Logging.ITagCollector.Add(string tagName, object? tagValue);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Telemetry.Logging.ITagCollector.Add(string tagName, object? tagValue, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
           "Stage": "Experimental"
         }
       ]
@@ -657,7 +641,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LogMethodHelper : System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector, Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag, Microsoft.Extensions.ObjectPool.IResettable",
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LogMethodHelper : System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Telemetry.Logging.ITagCollector, Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector, Microsoft.Extensions.ObjectPool.IResettable",
       "Stage": "Stable",
       "Methods": [
         {
@@ -665,11 +649,11 @@
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Add(string propertyName, object? propertyValue);",
+          "Member": "void Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Add(string tagName, object? tagValue);",
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Add(string propertyName, object? propertyValue, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "void Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Add(string tagName, object? tagValue, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
           "Stage": "Experimental"
         },
         {
@@ -896,6 +880,22 @@
         },
         {
           "Member": "string Microsoft.Extensions.Telemetry.Latency.Tag.Value { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.TagNameAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Metering.TagNameAttribute.TagNameAttribute(string name);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Metering.TagNameAttribute.Name { get; }",
           "Stage": "Stable"
         }
       ]

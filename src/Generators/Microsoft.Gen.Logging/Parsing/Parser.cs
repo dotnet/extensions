@@ -116,7 +116,7 @@ internal sealed class Parser
                             }
                             else
                             {
-                                parsingState.FoundCustomLogPropertiesProvider |= lp.HasPropsProvider;
+                                parsingState.FoundCustomLogPropertiesProvider |= lp.HasTagProvider;
                                 if (processingResult == LogPropertiesProcessingResult.SucceededWithRedaction)
                                 {
                                     parsingState.FoundDataClassificationAnnotation = true;

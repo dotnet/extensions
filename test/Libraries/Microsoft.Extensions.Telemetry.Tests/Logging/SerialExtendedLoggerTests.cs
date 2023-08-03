@@ -84,7 +84,7 @@ public static class SerialExtendedLoggerTests
 
     private sealed class AngryEnricher : ILogEnricher, IStaticLogEnricher
     {
-        public void Enrich(IEnrichmentPropertyBag enrichmentPropertyBag)
+        public void Enrich(IEnrichmentTagCollector enrichmentPropertyBag)
         {
             throw new InvalidOperationException("I'M ANGRY!");
         }

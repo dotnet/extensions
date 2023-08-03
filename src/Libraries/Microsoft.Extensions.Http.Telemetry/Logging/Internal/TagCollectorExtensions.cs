@@ -7,12 +7,12 @@ using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 
-internal static class LogPropertyCollectorExtensions
+internal static class TagCollectorExtensions
 {
     private static readonly ConcurrentDictionary<string, string> _requestPrefixedNamesCache = new();
     private static readonly ConcurrentDictionary<string, string> _responsePrefixedNamesCache = new();
 
-    public static void AddRequestHeaders(this ILogPropertyCollector props, List<KeyValuePair<string, string>>? items)
+    public static void AddRequestHeaders(this ITagCollector tags, List<KeyValuePair<string, string>>? items)
     {
         if (items is not null)
         {
@@ -21,13 +21,13 @@ internal static class LogPropertyCollectorExtensions
                 var key = _requestPrefixedNamesCache.GetOrAdd(
                     items[i].Key,
                     static (x, p) => p + x,
-                    HttpClientLoggingDimensions.RequestHeaderPrefix);
-                props.Add(key, items[i].Value);
+                    HttpClientLoggingTagNames.RequestHeaderPrefix);
+                tags.Add(key, items[i].Value);
             }
         }
     }
 
-    public static void AddResponseHeaders(this ILogPropertyCollector props, List<KeyValuePair<string, string>>? items)
+    public static void AddResponseHeaders(this ITagCollector collector, List<KeyValuePair<string, string>>? items)
     {
         if (items is not null)
         {
@@ -36,8 +36,8 @@ internal static class LogPropertyCollectorExtensions
                 var key = _responsePrefixedNamesCache.GetOrAdd(
                     items[i].Key,
                     static (x, p) => p + x,
-                    HttpClientLoggingDimensions.ResponseHeaderPrefix);
-                props.Add(key, items[i].Value);
+                    HttpClientLoggingTagNames.ResponseHeaderPrefix);
+                collector.Add(key, items[i].Value);
             }
         }
     }

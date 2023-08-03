@@ -7,7 +7,7 @@ using System.Diagnostics;
 namespace Microsoft.Extensions.Telemetry.Logging;
 
 /// <summary>
-/// Indicates that a property should not be logged.
+/// Indicates that a tag should not be logged.
 /// </summary>
 /// <seealso cref="LogMethodAttribute"/>.
 [AttributeUsage(AttributeTargets.Property)]

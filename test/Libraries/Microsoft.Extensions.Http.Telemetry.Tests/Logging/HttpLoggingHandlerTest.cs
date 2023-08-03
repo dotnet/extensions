@@ -34,8 +34,8 @@ public class HttpLoggingHandlerTest
 {
     private const string TestRequestHeader = "RequestHeader";
     private const string TestResponseHeader = "ResponseHeader";
-    private const string TestExpectedRequestHeaderKey = $"{HttpClientLoggingDimensions.RequestHeaderPrefix}{TestRequestHeader}";
-    private const string TestExpectedResponseHeaderKey = $"{HttpClientLoggingDimensions.ResponseHeaderPrefix}{TestResponseHeader}";
+    private const string TestExpectedRequestHeaderKey = $"{HttpClientLoggingTagNames.RequestHeaderPrefix}{TestRequestHeader}";
+    private const string TestExpectedResponseHeaderKey = $"{HttpClientLoggingTagNames.ResponseHeaderPrefix}{TestResponseHeader}";
 
     private const string TextPlain = "text/plain";
 
@@ -127,8 +127,8 @@ public class HttpLoggingHandlerTest
 
         var testEnricher = new TestEnricher();
 
-        var testSharedRequestHeaderKey = $"{HttpClientLoggingDimensions.RequestHeaderPrefix}Header3";
-        var testSharedResponseHeaderKey = $"{HttpClientLoggingDimensions.ResponseHeaderPrefix}Header3";
+        var testSharedRequestHeaderKey = $"{HttpClientLoggingTagNames.RequestHeaderPrefix}Header3";
+        var testSharedResponseHeaderKey = $"{HttpClientLoggingTagNames.ResponseHeaderPrefix}Header3";
 
         var expectedLogRecord = new LogRecord
         {
@@ -141,7 +141,7 @@ public class HttpLoggingHandlerTest
             RequestHeaders = new() { new(TestExpectedRequestHeaderKey, Redacted), new(testSharedRequestHeaderKey, Redacted) },
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            EnrichmentProperties = testEnricher.EnrichmentBag
+            EnrichmentTags = testEnricher.EnrichmentCollector
         };
 
         using var httpRequestMessage = new HttpRequestMessage
@@ -206,13 +206,13 @@ public class HttpLoggingHandlerTest
         logRecords.Count.Should().Be(1);
 
         var logRecord = logRecords[0].GetStructuredState();
-        logRecord.Contains(HttpClientLoggingDimensions.Host, expectedLogRecord.Host);
-        logRecord.Contains(HttpClientLoggingDimensions.Method, expectedLogRecord.Method.ToString());
-        logRecord.Contains(HttpClientLoggingDimensions.Path, TelemetryConstants.Redacted);
-        logRecord.Contains(HttpClientLoggingDimensions.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
-        logRecord.Contains(HttpClientLoggingDimensions.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
-        logRecord.Contains(HttpClientLoggingDimensions.RequestBody, expectedLogRecord.RequestBody);
-        logRecord.Contains(HttpClientLoggingDimensions.ResponseBody, expectedLogRecord.ResponseBody);
+        logRecord.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
+        logRecord.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
+        logRecord.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
+        logRecord.Contains(HttpClientLoggingTagNames.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
+        logRecord.Contains(HttpClientLoggingTagNames.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
+        logRecord.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
+        logRecord.Contains(HttpClientLoggingTagNames.ResponseBody, expectedLogRecord.ResponseBody);
         logRecord.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders[0].Value);
         logRecord.Contains(TestExpectedResponseHeaderKey, expectedLogRecord.ResponseHeaders[0].Value);
         logRecord.Contains(testSharedResponseHeaderKey, expectedLogRecord.ResponseHeaders[1].Value);
@@ -241,7 +241,7 @@ public class HttpLoggingHandlerTest
             RequestHeaders = new() { new(TestRequestHeader, Redacted) },
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            EnrichmentProperties = testEnricher.EnrichmentBag
+            EnrichmentTags = testEnricher.EnrichmentCollector
         };
 
         using var httpRequestMessage = new HttpRequestMessage
@@ -309,22 +309,22 @@ public class HttpLoggingHandlerTest
         logRecords.Count.Should().Be(2);
 
         var logRecordRequest = logRecords[0].GetStructuredState();
-        logRecordRequest.Contains(HttpClientLoggingDimensions.Host, expectedLogRecord.Host);
-        logRecordRequest.Contains(HttpClientLoggingDimensions.Method, expectedLogRecord.Method.ToString());
-        logRecordRequest.Contains(HttpClientLoggingDimensions.Path, TelemetryConstants.Redacted);
-        logRecordRequest.Contains(HttpClientLoggingDimensions.RequestBody, expectedLogRecord.RequestBody);
-        logRecordRequest.NotContains(HttpClientLoggingDimensions.StatusCode);
+        logRecordRequest.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
+        logRecordRequest.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
+        logRecordRequest.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
+        logRecordRequest.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
+        logRecordRequest.NotContains(HttpClientLoggingTagNames.StatusCode);
         logRecordRequest.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
         logRecordRequest.NotContains(testEnricher.KvpRequest.Key);
 
         var logRecordFull = logRecords[1].GetStructuredState();
-        logRecordFull.Contains(HttpClientLoggingDimensions.Host, expectedLogRecord.Host);
-        logRecordFull.Contains(HttpClientLoggingDimensions.Method, expectedLogRecord.Method.ToString());
-        logRecordFull.Contains(HttpClientLoggingDimensions.Path, TelemetryConstants.Redacted);
-        logRecordFull.Contains(HttpClientLoggingDimensions.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
-        logRecordFull.Contains(HttpClientLoggingDimensions.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
-        logRecordFull.Contains(HttpClientLoggingDimensions.RequestBody, expectedLogRecord.RequestBody);
-        logRecordFull.Contains(HttpClientLoggingDimensions.ResponseBody, expectedLogRecord.ResponseBody);
+        logRecordFull.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
+        logRecordFull.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
+        logRecordFull.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
+        logRecordFull.Contains(HttpClientLoggingTagNames.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
+        logRecordFull.Contains(HttpClientLoggingTagNames.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
+        logRecordFull.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
+        logRecordFull.Contains(HttpClientLoggingTagNames.ResponseBody, expectedLogRecord.ResponseBody);
         logRecordFull.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
         logRecordFull.Contains(TestExpectedResponseHeaderKey, expectedLogRecord.ResponseHeaders.FirstOrDefault().Value);
         logRecordFull.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
@@ -352,7 +352,7 @@ public class HttpLoggingHandlerTest
             RequestHeaders = new() { new(TestRequestHeader, Redacted) },
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            EnrichmentProperties = testEnricher.EnrichmentBag
+            EnrichmentTags = testEnricher.EnrichmentCollector
         };
 
         using var httpRequestMessage = new HttpRequestMessage
@@ -420,17 +420,17 @@ public class HttpLoggingHandlerTest
         logRecords[0].Exception.Should().Be(exception);
 
         var logRecord = logRecords[0].GetStructuredState();
-        logRecord.Contains(HttpClientLoggingDimensions.Host, expectedLogRecord.Host);
-        logRecord.Contains(HttpClientLoggingDimensions.Method, expectedLogRecord.Method.ToString());
-        logRecord.Contains(HttpClientLoggingDimensions.Path, TelemetryConstants.Redacted);
-        logRecord.Contains(HttpClientLoggingDimensions.RequestBody, expectedLogRecord.RequestBody);
-        logRecord.NotContains(HttpClientLoggingDimensions.ResponseBody);
-        logRecord.NotContains(HttpClientLoggingDimensions.StatusCode);
+        logRecord.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
+        logRecord.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
+        logRecord.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
+        logRecord.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
+        logRecord.NotContains(HttpClientLoggingTagNames.ResponseBody);
+        logRecord.NotContains(HttpClientLoggingTagNames.StatusCode);
         logRecord.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
-        logRecord.Should().NotContain(kvp => kvp.Key.StartsWith(HttpClientLoggingDimensions.ResponseHeaderPrefix));
+        logRecord.Should().NotContain(kvp => kvp.Key.StartsWith(HttpClientLoggingTagNames.ResponseHeaderPrefix));
         logRecord.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
         logRecord.NotContains(testEnricher.KvpResponse.Key);
-        logRecord.Contains(HttpClientLoggingDimensions.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
+        logRecord.Contains(HttpClientLoggingTagNames.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
     }
 
     [Fact(Skip = "Flaky test, see https://github.com/dotnet/r9/issues/372")]
@@ -454,7 +454,7 @@ public class HttpLoggingHandlerTest
             RequestHeaders = new() { new(TestRequestHeader, Redacted) },
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            EnrichmentProperties = testEnricher.EnrichmentBag
+            EnrichmentTags = testEnricher.EnrichmentCollector
         };
 
         using var httpRequestMessage = new HttpRequestMessage
@@ -544,17 +544,17 @@ public class HttpLoggingHandlerTest
         logRecords[0].Exception.Should().Be(exception);
 
         var logRecord = logRecords[0].GetStructuredState();
-        logRecord.Contains(HttpClientLoggingDimensions.Host, expectedLogRecord.Host);
-        logRecord.Contains(HttpClientLoggingDimensions.Method, expectedLogRecord.Method.ToString());
-        logRecord.Contains(HttpClientLoggingDimensions.Path, TelemetryConstants.Redacted);
-        logRecord.Contains(HttpClientLoggingDimensions.RequestBody, expectedLogRecord.RequestBody);
-        logRecord.NotContains(HttpClientLoggingDimensions.ResponseBody);
-        logRecord.NotContains(HttpClientLoggingDimensions.StatusCode);
+        logRecord.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
+        logRecord.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
+        logRecord.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
+        logRecord.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
+        logRecord.NotContains(HttpClientLoggingTagNames.ResponseBody);
+        logRecord.NotContains(HttpClientLoggingTagNames.StatusCode);
         logRecord.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
-        logRecord.Should().NotContain(kvp => kvp.Key.StartsWith(HttpClientLoggingDimensions.ResponseHeaderPrefix));
+        logRecord.Should().NotContain(kvp => kvp.Key.StartsWith(HttpClientLoggingTagNames.ResponseHeaderPrefix));
         logRecord.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
         logRecord.Contains(testEnricher.KvpResponse.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpResponse.Key));
-        logRecord.Contains(HttpClientLoggingDimensions.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
+        logRecord.Contains(HttpClientLoggingTagNames.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -578,7 +578,7 @@ public class HttpLoggingHandlerTest
             RequestHeaders = new() { new(TestRequestHeader, Redacted) },
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            EnrichmentProperties = testEnricher.EnrichmentBag,
+            EnrichmentTags = testEnricher.EnrichmentCollector,
         };
 
         using var httpRequestMessage = new HttpRequestMessage
@@ -642,13 +642,13 @@ public class HttpLoggingHandlerTest
         logRecords.Count.Should().Be(1);
 
         var logRecord = logRecords[0].GetStructuredState();
-        logRecord.Contains(HttpClientLoggingDimensions.Host, expectedLogRecord.Host);
-        logRecord.Contains(HttpClientLoggingDimensions.Method, expectedLogRecord.Method.ToString());
-        logRecord.Contains(HttpClientLoggingDimensions.Path, TelemetryConstants.Redacted);
-        logRecord.Contains(HttpClientLoggingDimensions.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
-        logRecord.Contains(HttpClientLoggingDimensions.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
-        logRecord.Contains(HttpClientLoggingDimensions.RequestBody, expectedLogRecord.RequestBody);
-        logRecord.Contains(HttpClientLoggingDimensions.ResponseBody, expectedLogRecord.ResponseBody);
+        logRecord.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
+        logRecord.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
+        logRecord.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
+        logRecord.Contains(HttpClientLoggingTagNames.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
+        logRecord.Contains(HttpClientLoggingTagNames.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
+        logRecord.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
+        logRecord.Contains(HttpClientLoggingTagNames.ResponseBody, expectedLogRecord.ResponseBody);
         logRecord.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
         logRecord.Contains(TestExpectedResponseHeaderKey, expectedLogRecord.ResponseHeaders.FirstOrDefault().Value);
         logRecord.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
@@ -689,8 +689,8 @@ public class HttpLoggingHandlerTest
         var logRecords = fakeLogger.Collector.GetSnapshot();
         logRecords.Count.Should().Be(1);
 
-        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
-        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
+        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
+        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
     }
 
     [Fact]
@@ -731,8 +731,8 @@ public class HttpLoggingHandlerTest
         var logRecords = fakeLogger.Collector.GetSnapshot();
         logRecords.Count.Should().Be(2);
 
-        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
-        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
+        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
+        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
     }
 
     [Fact]
@@ -741,7 +741,7 @@ public class HttpLoggingHandlerTest
         var exception = new ArgumentNullException();
         var enricher1 = new Mock<IHttpClientLogEnricher>();
         enricher1
-            .Setup(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()))
+            .Setup(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()))
             .Throws(exception);
 
         var enricher2 = new Mock<IHttpClientLogEnricher>();
@@ -775,8 +775,8 @@ public class HttpLoggingHandlerTest
 
         Assert.Equal(nameof(Log.OutgoingRequest), logRecords[1].Id.Name);
 
-        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
-        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
+        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
+        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
     }
 
     [Fact]
@@ -785,7 +785,7 @@ public class HttpLoggingHandlerTest
         var enrichmentException = new ArgumentNullException();
         var enricher1 = new Mock<IHttpClientLogEnricher>();
         enricher1
-            .Setup(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()))
+            .Setup(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()))
             .Throws(enrichmentException)
             .Verifiable();
 
@@ -822,8 +822,8 @@ public class HttpLoggingHandlerTest
         Assert.Equal(nameof(Log.OutgoingRequestError), logRecords[1].Id.Name);
         Assert.Equal(sendAsyncException, logRecords[1].Exception);
 
-        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
-        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentPropertyBag>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
+        enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
+        enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Exactly(1));
     }
 
     [Fact]
@@ -847,7 +847,7 @@ public class HttpLoggingHandlerTest
             RequestHeaders = new() { new(TestExpectedRequestHeaderKey, Redacted) },
             RequestBody = requestInput,
             ResponseBody = responseInput,
-            EnrichmentProperties = testEnricher.EnrichmentBag
+            EnrichmentTags = testEnricher.EnrichmentCollector
         };
 
         using var requestContent = new StreamContent(new NotSeekableStream(new(Encoding.UTF8.GetBytes(requestInput))));
@@ -917,13 +917,13 @@ public class HttpLoggingHandlerTest
         logRecords.Count.Should().Be(1);
 
         var logRecord = logRecords[0].GetStructuredState();
-        logRecord.Contains(HttpClientLoggingDimensions.Host, expectedLogRecord.Host);
-        logRecord.Contains(HttpClientLoggingDimensions.Method, expectedLogRecord.Method.ToString());
-        logRecord.Contains(HttpClientLoggingDimensions.Path, TelemetryConstants.Redacted);
-        logRecord.Contains(HttpClientLoggingDimensions.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
-        logRecord.Contains(HttpClientLoggingDimensions.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
-        logRecord.Contains(HttpClientLoggingDimensions.RequestBody, expectedLogRecord.RequestBody);
-        logRecord.Contains(HttpClientLoggingDimensions.ResponseBody, expectedLogRecord.ResponseBody);
+        logRecord.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
+        logRecord.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
+        logRecord.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
+        logRecord.Contains(HttpClientLoggingTagNames.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
+        logRecord.Contains(HttpClientLoggingTagNames.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
+        logRecord.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
+        logRecord.Contains(HttpClientLoggingTagNames.ResponseBody, expectedLogRecord.ResponseBody);
         logRecord.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
         logRecord.Contains(TestExpectedResponseHeaderKey, expectedLogRecord.ResponseHeaders.FirstOrDefault().Value);
         logRecord.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));

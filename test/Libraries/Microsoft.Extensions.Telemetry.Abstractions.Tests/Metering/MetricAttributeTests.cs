@@ -16,7 +16,7 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.Type);
-        Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.Dimensions);
+        Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.TagNames);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
@@ -29,7 +29,7 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.Type);
-        Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.Dimensions);
+        Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.TagNames);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
@@ -42,7 +42,7 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.Type);
-        Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.Dimensions);
+        Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.TagNames);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
@@ -55,7 +55,7 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.Type);
-        Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.Dimensions);
+        Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.TagNames);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
@@ -68,7 +68,7 @@ public class MetricAttributeTests
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
         Assert.Null(attribute.Type);
-        Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.Dimensions);
+        Assert.Equal(new[] { "d1", "d2", "d3" }, attribute.TagNames);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
@@ -77,12 +77,12 @@ public class MetricAttributeTests
     [Fact]
     public void TestStrongTypeCounterAttribute()
     {
-        var attribute = new CounterAttribute(typeof(DimensionsTest));
+        var attribute = new CounterAttribute(typeof(TagNameTest));
 
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
-        Assert.Null(attribute.Dimensions);
-        Assert.Equal(typeof(DimensionsTest), attribute.Type);
+        Assert.Null(attribute.TagNames);
+        Assert.Equal(typeof(TagNameTest), attribute.Type);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
@@ -91,12 +91,12 @@ public class MetricAttributeTests
     [Fact]
     public void TestStrongTypeHistogramAttribute()
     {
-        var attribute = new HistogramAttribute(typeof(DimensionsTest));
+        var attribute = new HistogramAttribute(typeof(TagNameTest));
 
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
-        Assert.Null(attribute.Dimensions);
-        Assert.Equal(typeof(DimensionsTest), attribute.Type);
+        Assert.Null(attribute.TagNames);
+        Assert.Equal(typeof(TagNameTest), attribute.Type);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
@@ -105,12 +105,12 @@ public class MetricAttributeTests
     [Fact]
     public void TestStrongTypeCounterAttributeT()
     {
-        var attribute = new CounterAttribute<byte>(typeof(DimensionsTest));
+        var attribute = new CounterAttribute<byte>(typeof(TagNameTest));
 
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
-        Assert.Null(attribute.Dimensions);
-        Assert.Equal(typeof(DimensionsTest), attribute.Type);
+        Assert.Null(attribute.TagNames);
+        Assert.Equal(typeof(TagNameTest), attribute.Type);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
@@ -119,12 +119,12 @@ public class MetricAttributeTests
     [Fact]
     public void TestStrongTypeHistogramAttributeT()
     {
-        var attribute = new HistogramAttribute<byte>(typeof(DimensionsTest));
+        var attribute = new HistogramAttribute<byte>(typeof(TagNameTest));
 
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
-        Assert.Null(attribute.Dimensions);
-        Assert.Equal(typeof(DimensionsTest), attribute.Type);
+        Assert.Null(attribute.TagNames);
+        Assert.Equal(typeof(TagNameTest), attribute.Type);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
@@ -133,27 +133,27 @@ public class MetricAttributeTests
     [Fact]
     public void TestStrongTypeGaugeAttribute()
     {
-        var attribute = new GaugeAttribute(typeof(DimensionsTest));
+        var attribute = new GaugeAttribute(typeof(TagNameTest));
 
         Assert.NotNull(attribute);
         Assert.Null(attribute.Name);
-        Assert.Null(attribute.Dimensions);
-        Assert.Equal(typeof(DimensionsTest), attribute.Type);
+        Assert.Null(attribute.TagNames);
+        Assert.Equal(typeof(TagNameTest), attribute.Type);
 
         attribute.Name = MyMetric;
         Assert.Equal(MyMetric, attribute.Name);
     }
 
     [Fact]
-    public void TestDimensionAttribute()
+    public void TestTagNameAttribute()
     {
-        var attribute = new DimensionAttribute("testName");
+        var attribute = new TagNameAttribute("testName");
 
         Assert.NotNull(attribute);
         Assert.Equal("testName", attribute.Name);
     }
 
-    public class DimensionsTest
+    public class TagNameTest
     {
         public string? D1 { get; set; }
         public string? D2 { get; set; }

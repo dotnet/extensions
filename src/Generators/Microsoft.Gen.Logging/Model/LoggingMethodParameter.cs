@@ -30,7 +30,7 @@ internal sealed class LoggingMethodParameter
     public bool UsedAsTemplate;
     public string? ClassificationAttributeType;
     public List<LoggingProperty> PropertiesToLog = new();
-    public LoggingPropertyProvider? LogPropertiesProvider;
+    public TagProvider? TagProvider;
 
     public string NameWithAt => NeedsAtSign ? "@" + Name : Name;
 
@@ -45,6 +45,6 @@ internal sealed class LoggingMethodParameter
 
     public bool HasDataClassification => ClassificationAttributeType != null;
     public bool HasProperties => PropertiesToLog.Count > 0;
-    public bool HasPropsProvider => LogPropertiesProvider is not null;
+    public bool HasTagProvider => TagProvider is not null;
     public bool PotentiallyNull => (IsReference && !IsLogger) || IsNullable;
 }

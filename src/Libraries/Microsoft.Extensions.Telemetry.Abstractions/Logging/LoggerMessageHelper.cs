@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 public static class LoggerMessageHelper
 {
     [ThreadStatic]
-    private static LoggerMessageState? _properties;
+    private static LoggerMessageState? _state;
 
     /// <summary>
     /// Gets a thread-local instance of this type.
@@ -29,11 +29,11 @@ public static class LoggerMessageHelper
     {
         get
         {
-            var result = _properties;
+            var result = _state;
             if (result == null)
             {
                 result = new();
-                _properties = result;
+                _state = result;
             }
 
             return result;

@@ -14,8 +14,8 @@ public class ProcessEnricherDimensionsTests
     [Fact]
     public void GetDimensionNames_ReturnsAnArrayOfDimensionNames()
     {
-        IReadOnlyList<string> dimensions = ProcessEnricherDimensions.DimensionNames;
-        string[] expectedDimensions = GetStringConstants(typeof(ProcessEnricherDimensions));
+        IReadOnlyList<string> dimensions = ProcessEnricherTagNames.DimensionNames;
+        string[] expectedDimensions = GetStringConstants(typeof(ProcessEnricherTagNames));
         dimensions.Should().BeEquivalentTo(expectedDimensions);
     }
 

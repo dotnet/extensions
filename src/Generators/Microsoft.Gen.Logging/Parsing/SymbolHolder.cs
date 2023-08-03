@@ -13,7 +13,7 @@ internal sealed record class SymbolHolder(
     INamedTypeSymbol LogMethodAttribute,
     INamedTypeSymbol LogPropertiesAttribute,
     INamedTypeSymbol? LogPropertyIgnoreAttribute,
-    INamedTypeSymbol ILogPropertyCollectorSymbol,
+    INamedTypeSymbol ITagCollectorSymbol,
     INamedTypeSymbol ILoggerSymbol,
     INamedTypeSymbol LogLevelSymbol,
     INamedTypeSymbol ExceptionSymbol,

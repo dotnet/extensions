@@ -399,11 +399,11 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector",
+      "Type": "interface Microsoft.Extensions.Telemetry.Logging.ITagCollector",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector.Add(string propertyName, object? propertyValue);",
+          "Member": "void Microsoft.Extensions.Telemetry.Logging.ITagCollector.Add(string propertyName, object? propertyValue);",
           "Stage": "Stable"
         }
       ]
@@ -587,7 +587,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LogMethodHelper : System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector, Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag, Microsoft.Extensions.ObjectPool.IResettable",
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LogMethodHelper : System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Telemetry.Logging.ITagCollector, Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag, Microsoft.Extensions.ObjectPool.IResettable",
       "Stage": "Stable",
       "Methods": [
         {

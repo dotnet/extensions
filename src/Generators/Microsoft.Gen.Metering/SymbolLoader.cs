@@ -12,7 +12,7 @@ internal static class SymbolLoader
     internal const string GaugeAttribute = "Microsoft.Extensions.Telemetry.Metering.GaugeAttribute";
     internal const string CounterAttribute = "Microsoft.Extensions.Telemetry.Metering.CounterAttribute";
     internal const string HistogramAttribute = "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute";
-    internal const string DimensionAttribute = "Microsoft.Extensions.Telemetry.Metering.DimensionAttribute";
+    internal const string TagNameAttribute = "Microsoft.Extensions.Telemetry.Metering.TagNameAttribute";
     internal const string MeterClass = "System.Diagnostics.Metrics.Meter";
 
     internal static SymbolHolder? LoadSymbols(Compilation compilation)
@@ -32,7 +32,7 @@ internal static class SymbolLoader
         var counterTAttribute = compilation.GetTypeByMetadataName(CounterTAttribute);
         var histogramTAttribute = compilation.GetTypeByMetadataName(HistogramTAttribute);
         var gaugeAttribute = compilation.GetTypeByMetadataName(GaugeAttribute);
-        var dimensionAttribute = compilation.GetTypeByMetadataName(DimensionAttribute);
+        var tagNameAttribute = compilation.GetTypeByMetadataName(TagNameAttribute);
         var longType = compilation.GetSpecialType(SpecialType.System_Int64);
 
         return new(
@@ -43,6 +43,6 @@ internal static class SymbolLoader
             histogramTAttribute,
             gaugeAttribute,
             longType,
-            dimensionAttribute);
+            tagNameAttribute);
     }
 }

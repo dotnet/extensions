@@ -12,14 +12,14 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 internal sealed class LoggerConfig
 {
     public LoggerConfig(
-        KeyValuePair<string, object?>[] staticProperties,
-        Action<IEnrichmentPropertyBag>[] enrichers,
+        KeyValuePair<string, object?>[] staticTags,
+        Action<IEnrichmentTagCollector>[] enrichers,
         bool captureStackTraces,
         bool useFileInfoForStackTraces,
         int maxStackTraceLength,
         Func<DataClassification, Redactor> getRedactor)
     {
-        StaticProperties = staticProperties;
+        StaticTags = staticTags;
         Enrichers = enrichers;
         CaptureStackTraces = captureStackTraces;
         UseFileInfoForStackTraces = useFileInfoForStackTraces;
@@ -27,8 +27,8 @@ internal sealed class LoggerConfig
         GetRedactor = getRedactor;
     }
 
-    public KeyValuePair<string, object?>[] StaticProperties { get; }
-    public Action<IEnrichmentPropertyBag>[] Enrichers { get; }
+    public KeyValuePair<string, object?>[] StaticTags { get; }
+    public Action<IEnrichmentTagCollector>[] Enrichers { get; }
     public bool CaptureStackTraces { get; }
     public bool UseFileInfoForStackTraces { get; }
     public int MaxStackTraceLength { get; }

@@ -50,7 +50,7 @@ public class ProcessLogEnricherTests
 
         var enricher = new ProcessLogEnricher(options.ToOptions());
         var staticEnricher = new StaticProcessLogEnricher(options.ToOptions());
-        var enrichedProperties = new TestLogEnrichmentPropertyBag(new List<KeyValuePair<string, object>>());
+        var enrichedProperties = new TestLogEnrichmentTagCollector(new List<KeyValuePair<string, object>>());
 
         // Act
         enricher.Enrich(enrichedProperties);
@@ -60,12 +60,12 @@ public class ProcessLogEnricherTests
         // Assert
         if (options.ThreadId)
         {
-            Assert.Equal(Thread.CurrentThread.ManagedThreadId.ToString(CultureInfo.InvariantCulture), enrichedState[ProcessEnricherDimensions.ThreadId]);
+            Assert.Equal(Thread.CurrentThread.ManagedThreadId.ToString(CultureInfo.InvariantCulture), enrichedState[ProcessEnricherTagNames.ThreadId]);
         }
 
         if (options.ProcessId)
         {
-            Assert.Equal(_processId.ToString(CultureInfo.InvariantCulture), enrichedState[ProcessEnricherDimensions.ProcessId]);
+            Assert.Equal(_processId.ToString(CultureInfo.InvariantCulture), enrichedState[ProcessEnricherTagNames.ProcessId]);
         }
     }
 
@@ -81,7 +81,7 @@ public class ProcessLogEnricherTests
 
         var enricher = new ProcessLogEnricher(options.ToOptions());
         var staticEnricher = new StaticProcessLogEnricher(options.ToOptions());
-        var enrichedProperties = new TestLogEnrichmentPropertyBag();
+        var enrichedProperties = new TestLogEnrichmentTagCollector();
 
         // Act
         enricher.Enrich(enrichedProperties);
@@ -89,7 +89,7 @@ public class ProcessLogEnricherTests
         var enrichedState = enrichedProperties.Properties;
 
         // Assert
-        Assert.False(enrichedState.ContainsKey(ProcessEnricherDimensions.ProcessId));
-        Assert.False(enrichedState.ContainsKey(ProcessEnricherDimensions.ThreadId));
+        Assert.False(enrichedState.ContainsKey(ProcessEnricherTagNames.ProcessId));
+        Assert.False(enrichedState.ContainsKey(ProcessEnricherTagNames.ThreadId));
     }
 }

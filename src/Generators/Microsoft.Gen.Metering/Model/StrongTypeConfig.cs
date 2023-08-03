@@ -37,6 +37,6 @@ internal sealed class StrongTypeConfig
 {
     public string Path = string.Empty;
     public string Name = string.Empty;
-    public string DimensionName = string.Empty;
+    public string TagName = string.Empty;
     public StrongTypeMetricObjectType StrongTypeMetricObjectType { get; set; }
 }

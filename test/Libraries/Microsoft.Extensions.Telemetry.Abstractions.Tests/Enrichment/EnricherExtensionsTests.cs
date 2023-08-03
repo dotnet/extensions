@@ -103,7 +103,7 @@ public class EnricherExtensionsTests
 
     internal class EmptyEnricher : IMetricEnricher, ILogEnricher, IStaticLogEnricher
     {
-        public void Enrich(IEnrichmentPropertyBag enrichmentBag)
+        public void Enrich(IEnrichmentTagCollector collector)
         {
             // intentionally left empty
         }
@@ -111,9 +111,9 @@ public class EnricherExtensionsTests
 
     internal class TestEnricher : IMetricEnricher, ILogEnricher, IStaticLogEnricher
     {
-        public void Enrich(IEnrichmentPropertyBag enrichmentBag)
+        public void Enrich(IEnrichmentTagCollector collector)
         {
-            enrichmentBag.Add("testKey", "testValue");
+            collector.Add("testKey", "testValue");
         }
     }
 }

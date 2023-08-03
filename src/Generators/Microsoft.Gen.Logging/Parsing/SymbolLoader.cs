@@ -12,7 +12,7 @@ internal static class SymbolLoader
     internal const string LogMethodAttribute = "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute";
     internal const string LogPropertiesAttribute = "Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute";
     internal const string LogPropertyIgnoreAttribute = "Microsoft.Extensions.Telemetry.Logging.LogPropertyIgnoreAttribute";
-    internal const string ILogPropertyCollectorType = "Microsoft.Extensions.Telemetry.Logging.ILogPropertyCollector";
+    internal const string ITagCollectorType = "Microsoft.Extensions.Telemetry.Logging.ITagCollector";
     internal const string ILoggerType = "Microsoft.Extensions.Logging.ILogger";
     internal const string LogLevelType = "Microsoft.Extensions.Logging.LogLevel";
     internal const string ExceptionType = "System.Exception";
@@ -52,7 +52,7 @@ internal static class SymbolLoader
         var logLevelSymbol = compilation.GetTypeByMetadataName(LogLevelType);
         var logMethodAttributeSymbol = compilation.GetTypeByMetadataName(LogMethodAttribute);
         var logPropertiesAttributeSymbol = compilation.GetTypeByMetadataName(LogPropertiesAttribute);
-        var logPropertyCollectorSymbol = compilation.GetTypeByMetadataName(ILogPropertyCollectorType);
+        var tagCollectorSymbol = compilation.GetTypeByMetadataName(ITagCollectorType);
         var logPropertyIgnoreAttributeSymbol = compilation.GetTypeByMetadataName(LogPropertyIgnoreAttribute);
         var dataClassificationAttribute = compilation.GetTypeByMetadataName(DataClassificationAttribute);
 
@@ -61,7 +61,7 @@ internal static class SymbolLoader
             || logLevelSymbol == null
             || logMethodAttributeSymbol == null
             || logPropertiesAttributeSymbol == null
-            || logPropertyCollectorSymbol == null
+            || tagCollectorSymbol == null
             || logPropertyIgnoreAttributeSymbol == null)
         {
             // nothing to do if these types aren't available
@@ -95,7 +95,7 @@ internal static class SymbolLoader
             logMethodAttributeSymbol,
             logPropertiesAttributeSymbol,
             logPropertyIgnoreAttributeSymbol,
-            logPropertyCollectorSymbol,
+            tagCollectorSymbol,
             loggerSymbol,
             logLevelSymbol,
             exceptionSymbol,

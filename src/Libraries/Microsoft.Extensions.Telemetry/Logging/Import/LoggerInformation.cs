@@ -27,12 +27,12 @@ namespace Microsoft.Extensions.Logging
 
             // perform the GVM lookup once, rather than on every call.
             LoggerIsEnabled = logger.IsEnabled;
-            LoggerLog = logger.Log<ExtendedLogger.ModernPropertyJoiner>;
+            LoggerLog = logger.Log<ExtendedLogger.ModernTagJoiner>;
         }
 
         public Func<LogLevel, bool> LoggerIsEnabled { get; }
 
-        public Action<LogLevel, EventId, ExtendedLogger.ModernPropertyJoiner, Exception?, Func<ExtendedLogger.ModernPropertyJoiner, Exception?, string>> LoggerLog { get; }
+        public Action<LogLevel, EventId, ExtendedLogger.ModernTagJoiner, Exception?, Func<ExtendedLogger.ModernTagJoiner, Exception?, string>> LoggerLog { get; }
 
         public ILogger Logger { get; }
 

@@ -121,7 +121,7 @@ public partial class ParserTests
             }");
 
         _ = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorInvalidDimensionNames.Id, d[0].Id);
+        Assert.Equal(DiagDescriptors.ErrorInvalidTagNames.Id, d[0].Id);
     }
 
     [Fact]
@@ -135,7 +135,7 @@ public partial class ParserTests
             }");
 
         _ = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorInvalidDimensionNames.Id, d[0].Id);
+        Assert.Equal(DiagDescriptors.ErrorInvalidTagNames.Id, d[0].Id);
     }
 
     [Fact]

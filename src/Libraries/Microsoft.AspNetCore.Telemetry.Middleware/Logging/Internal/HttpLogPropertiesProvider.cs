@@ -11,20 +11,20 @@ internal static class HttpLogPropertiesProvider
     private static readonly ConcurrentDictionary<string, string> _requestPrefixedNamesCache = new();
     private static readonly ConcurrentDictionary<string, string> _responsePrefixedNamesCache = new();
 
-    public static void GetProperties(LogMethodHelper props, IncomingRequestLogRecord logRecord)
+    public static void GetTags(LogMethodHelper helper, IncomingRequestLogRecord logRecord)
     {
-        props.Add(HttpLoggingDimensions.Method, logRecord.Method);
-        props.Add(HttpLoggingDimensions.Host, logRecord.Host);
-        props.Add(HttpLoggingDimensions.Path, logRecord.Path);
+        helper.Add(HttpLoggingTagNames.Method, logRecord.Method);
+        helper.Add(HttpLoggingTagNames.Host, logRecord.Host);
+        helper.Add(HttpLoggingTagNames.Path, logRecord.Path);
 
         if (logRecord.Duration.HasValue)
         {
-            props.Add(HttpLoggingDimensions.Duration, logRecord.Duration.Value);
+            helper.Add(HttpLoggingTagNames.Duration, logRecord.Duration.Value);
         }
 
         if (logRecord.StatusCode.HasValue)
         {
-            props.Add(HttpLoggingDimensions.StatusCode, logRecord.StatusCode.Value);
+            helper.Add(HttpLoggingTagNames.StatusCode, logRecord.StatusCode.Value);
         }
 
         if (logRecord.PathParameters is not null)
@@ -32,18 +32,18 @@ internal static class HttpLogPropertiesProvider
             for (int i = 0; i < logRecord.PathParametersCount; i++)
             {
                 var p = logRecord.PathParameters[i];
-                props.Add(p.Name, p.Value);
+                helper.Add(p.Name, p.Value);
             }
         }
 
         if (logRecord.RequestBody is not null)
         {
-            props.Add(HttpLoggingDimensions.RequestBody, logRecord.RequestBody);
+            helper.Add(HttpLoggingTagNames.RequestBody, logRecord.RequestBody);
         }
 
         if (logRecord.ResponseBody is not null)
         {
-            props.Add(HttpLoggingDimensions.ResponseBody, logRecord.ResponseBody);
+            helper.Add(HttpLoggingTagNames.ResponseBody, logRecord.ResponseBody);
         }
 
         if (logRecord.RequestHeaders is not null)
@@ -52,8 +52,8 @@ internal static class HttpLogPropertiesProvider
             for (int i = 0; i < count; i++)
             {
                 var header = logRecord.RequestHeaders[i];
-                var prefixedName = _requestPrefixedNamesCache.GetOrAdd(header.Key, static x => HttpLoggingDimensions.RequestHeaderPrefix + x);
-                props.Add(prefixedName, header.Value);
+                var prefixedName = _requestPrefixedNamesCache.GetOrAdd(header.Key, static x => HttpLoggingTagNames.RequestHeaderPrefix + x);
+                helper.Add(prefixedName, header.Value);
             }
         }
 
@@ -63,8 +63,8 @@ internal static class HttpLogPropertiesProvider
             for (int i = 0; i < count; i++)
             {
                 var header = logRecord.ResponseHeaders[i];
-                var prefixedName = _responsePrefixedNamesCache.GetOrAdd(header.Key, static x => HttpLoggingDimensions.ResponseHeaderPrefix + x);
-                props.Add(prefixedName, header.Value);
+                var prefixedName = _responsePrefixedNamesCache.GetOrAdd(header.Key, static x => HttpLoggingTagNames.ResponseHeaderPrefix + x);
+                helper.Add(prefixedName, header.Value);
             }
         }
     }

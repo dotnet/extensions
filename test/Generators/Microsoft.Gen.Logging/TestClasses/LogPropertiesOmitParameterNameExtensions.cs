@@ -37,7 +37,7 @@ namespace TestClasses
 
         internal static class MyPropsProvider
         {
-            public static void ProvideProperties(ILogPropertyCollector list, MyProps? param)
+            public static void ProvideProperties(ITagCollector list, MyProps? param)
             {
                 list.Add(nameof(MyProps.P0), param?.P0);
                 list.Add("Custom_property_name", param?.P1);

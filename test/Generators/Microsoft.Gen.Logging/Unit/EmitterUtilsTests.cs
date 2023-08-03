@@ -45,13 +45,13 @@ public class EmitterUtilsTests
         var lm = new LoggingMethod();
         lm.Parameters.Add(new LoggingMethodParameter
         {
-            LogPropertiesProvider = new LoggingPropertyProvider(string.Empty, string.Empty),
+            TagProvider = new TagProvider(string.Empty, string.Empty),
             PropertiesToLog = new List<LoggingProperty> { new LoggingProperty("a", "b", publicDataFullName, false, false, false, false, false, false, Array.Empty<LoggingProperty>()) }
         });
 
         lm.Parameters.Add(new LoggingMethodParameter
         {
-            LogPropertiesProvider = null,
+            TagProvider = null,
             PropertiesToLog = new List<LoggingProperty> { new LoggingProperty("c", "d", publicDataFullName, false, false, false, false, false, false, Array.Empty<LoggingProperty>()) }
         });
 

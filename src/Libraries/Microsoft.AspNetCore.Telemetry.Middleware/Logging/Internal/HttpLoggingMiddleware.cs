@@ -233,8 +233,8 @@ internal sealed class HttpLoggingMiddleware : IMiddleware
         const int StatusCodeOnException = 0;
         const int LowestUnsuccessfulStatusCode = 400;
 
-        // Don't get an enrichment bag for "RequestStart" log record:
-        var enrichmentBag = isRequestStart || _enrichers.Length == 0
+        // Don't get a tag collector for "RequestStart" log record:
+        var collector = isRequestStart || _enrichers.Length == 0
             ? null
             : LogMethodHelper.GetHelper();
 
@@ -265,11 +265,11 @@ internal sealed class HttpLoggingMiddleware : IMiddleware
                 _responseHeadersReader.Read(context.Response.Headers, responseHeaders);
             }
 
-            FillLogRecord(logRecord, context, enrichmentBag);
+            FillLogRecord(logRecord, context, collector);
 
             if (isRequestStart)
             {
-                // Don't emit both status code and duration dimensions on request start:
+                // Don't emit both status code and duration tags on request start:
                 logRecord.Duration = null;
                 logRecord.StatusCode = null;
             }
@@ -302,9 +302,9 @@ internal sealed class HttpLoggingMiddleware : IMiddleware
                 logRecord.PathParameters = null;
             }
 
-            if (enrichmentBag != null)
+            if (collector != null)
             {
-                LogMethodHelper.ReturnHelper(enrichmentBag);
+                LogMethodHelper.ReturnHelper(collector);
                 logRecord.EnrichmentPropertyBag = null;
             }
 
@@ -380,7 +380,7 @@ internal sealed class HttpLoggingMiddleware : IMiddleware
     private void FillLogRecord(
         IncomingRequestLogRecord logRecord,
         HttpContext context,
-        LogMethodHelper? enrichmentBag)
+        LogMethodHelper? collector)
     {
         var request = context.Request;
         var response = context.Response;
@@ -435,15 +435,15 @@ internal sealed class HttpLoggingMiddleware : IMiddleware
         logRecord.StatusCode = response.StatusCode;
         logRecord.Host = request.Host.Value;
 
-        if (enrichmentBag != null)
+        if (collector != null)
         {
             foreach (var enricher in _enrichers)
             {
-                enricher.Enrich(enrichmentBag, request, response);
+                enricher.Enrich(collector, request, response);
             }
         }
 
-        logRecord.EnrichmentPropertyBag = enrichmentBag;
+        logRecord.EnrichmentPropertyBag = collector;
     }
 
     private bool ShouldExcludePath(string path)

@@ -162,24 +162,24 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
     // Skipping R9G030
     // Skipping R9G031
 
-    public static DiagnosticDescriptor LogPropertiesProviderMethodNotFound { get; } = Make(
+    public static DiagnosticDescriptor TagProviderMethodNotFound { get; } = Make(
         id: "R9G032",
-        title: Resources.LogPropertiesProviderMethodNotFoundTitle,
-        messageFormat: Resources.LogPropertiesProviderMethodNotFoundMessage,
+        title: Resources.TagProviderMethodNotFoundTitle,
+        messageFormat: Resources.TagProviderMethodNotFoundMessage,
         category: Category);
 
     // Skipping R9G033
 
-    public static DiagnosticDescriptor LogPropertiesProviderMethodInaccessible { get; } = Make(
+    public static DiagnosticDescriptor TagProviderMethodInaccessible { get; } = Make(
         id: "R9G034",
-        title: Resources.LogPropertiesProviderMethodInaccessibleTitle,
-        messageFormat: Resources.LogPropertiesProviderMethodInaccessibleMessage,
+        title: Resources.TagProviderMethodInaccessibleTitle,
+        messageFormat: Resources.TagProviderMethodInaccessibleMessage,
         category: Category);
 
-    public static DiagnosticDescriptor LogPropertiesProviderMethodInvalidSignature { get; } = Make(
+    public static DiagnosticDescriptor TagProviderMethodInvalidSignature { get; } = Make(
         id: "R9G035",
-        title: Resources.LogPropertiesProviderMethodInvalidSignatureTitle,
-        messageFormat: Resources.LogPropertiesProviderMethodInvalidSignatureMessage,
+        title: Resources.TagProviderMethodInvalidSignatureTitle,
+        messageFormat: Resources.TagProviderMethodInvalidSignatureMessage,
         category: Category);
 
     // Skipping R9G036
@@ -193,8 +193,8 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
 
     public static DiagnosticDescriptor LogPropertiesProviderWithRedaction { get; } = Make(
         id: "R9G039",
-        title: Resources.LogPropertiesProviderWithRedactionTitle,
-        messageFormat: Resources.LogPropertiesProviderWithRedactionMessage,
+        title: Resources.TagProviderWithRedactionTitle,
+        messageFormat: Resources.TagProviderWithRedactionMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 

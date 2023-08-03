@@ -14,9 +14,9 @@ public class ServiceEnricherDimensionsTests
     [Fact]
     public void GetDimensionNames_ReturnsAnArrayOfDimensionNames()
     {
-        IReadOnlyList<string> dimensions = ServiceEnricherDimensions.DimensionNames;
+        IReadOnlyList<string> dimensions = ServiceEnricherTags.DimensionNames;
 
-        string[] expectedDimensions = GetStringConstants(typeof(ServiceEnricherDimensions));
+        string[] expectedDimensions = GetStringConstants(typeof(ServiceEnricherTags));
 
         dimensions.Should().BeEquivalentTo(expectedDimensions);
     }

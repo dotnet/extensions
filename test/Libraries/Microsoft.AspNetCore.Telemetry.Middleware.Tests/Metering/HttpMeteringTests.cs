@@ -570,10 +570,10 @@ public class HttpMeteringTests
 
     private HttpMeteringMiddleware SetupMockMiddleware(Meter<HttpMeteringMiddleware> meter, IEnumerable<IIncomingRequestMetricEnricher> requestMetricEnrichers)
     {
-        var propertyBagPoolMock = new Mock<ObjectPool<MetricEnrichmentPropertyBag>>();
+        var propertyBagPoolMock = new Mock<ObjectPool<MetricEnrichmentTagCollector>>();
         propertyBagPoolMock
            .Setup(o => o.Get())
-           .Returns(new MetricEnrichmentPropertyBag());
+           .Returns(new MetricEnrichmentTagCollector());
 
         IServiceCollection services = new ServiceCollection();
         services.AddSingleton(meter);

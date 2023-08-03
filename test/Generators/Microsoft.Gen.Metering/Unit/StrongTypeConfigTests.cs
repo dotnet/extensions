@@ -14,6 +14,6 @@ public class StrongTypeConfigTests
         var instance = new StrongTypeConfig();
         Assert.Empty(instance.Name);
         Assert.Empty(instance.Path);
-        Assert.Empty(instance.DimensionName);
+        Assert.Empty(instance.TagName);
     }
 }

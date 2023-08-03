@@ -72,47 +72,47 @@ public class ServiceLogEnricherTests
         };
 
         var enricher = new ServiceLogEnricher(options.ToOptions(), serviceOptions.ToOptions());
-        var enrichedProperties = new TestLogEnrichmentPropertyBag();
+        var enrichedProperties = new TestLogEnrichmentTagCollector();
 
         // Act
         enricher.Enrich(enrichedProperties);
-        var enrichedState = enrichedProperties.Properties;
+        var enrichedState = enrichedProperties.Tags;
 
         // Assert
         if (appName)
         {
-            Assert.Equal(AppName, enrichedState[ServiceEnricherDimensions.ApplicationName]);
+            Assert.Equal(AppName, enrichedState[ServiceEnricherTags.ApplicationName]);
         }
         else
         {
-            Assert.False(enrichedState.ContainsKey(ServiceEnricherDimensions.ApplicationName));
+            Assert.False(enrichedState.ContainsKey(ServiceEnricherTags.ApplicationName));
         }
 
         if (envName)
         {
-            Assert.Equal(EnvironmentName, enrichedState[ServiceEnricherDimensions.EnvironmentName]);
+            Assert.Equal(EnvironmentName, enrichedState[ServiceEnricherTags.EnvironmentName]);
         }
         else
         {
-            Assert.False(enrichedState.ContainsKey(ServiceEnricherDimensions.EnvironmentName));
+            Assert.False(enrichedState.ContainsKey(ServiceEnricherTags.EnvironmentName));
         }
 
         if (buildVer && buildVersion != null)
         {
-            Assert.Equal(BuildVersion, enrichedState[ServiceEnricherDimensions.BuildVersion]);
+            Assert.Equal(BuildVersion, enrichedState[ServiceEnricherTags.BuildVersion]);
         }
         else
         {
-            Assert.False(enrichedState.ContainsKey(ServiceEnricherDimensions.BuildVersion));
+            Assert.False(enrichedState.ContainsKey(ServiceEnricherTags.BuildVersion));
         }
 
         if (depRing && deploymentRing != null)
         {
-            Assert.Equal(DeploymentRing, enrichedState[ServiceEnricherDimensions.DeploymentRing]);
+            Assert.Equal(DeploymentRing, enrichedState[ServiceEnricherTags.DeploymentRing]);
         }
         else
         {
-            Assert.False(enrichedState.ContainsKey(ServiceEnricherDimensions.DeploymentRing));
+            Assert.False(enrichedState.ContainsKey(ServiceEnricherTags.DeploymentRing));
         }
     }
 }

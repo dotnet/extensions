@@ -9,8 +9,8 @@ namespace Microsoft.Gen.Metering;
 internal sealed class StrongTypeAttributeParameters
 {
     public string MetricNameFromAttribute = string.Empty;
-    public HashSet<string> DimensionHashSet = new();
-    public Dictionary<string, string> DimensionDescriptionDictionary = new();
+    public HashSet<string> TagHashSet = new();
+    public Dictionary<string, string> TagDescriptionDictionary = new();
     public List<StrongTypeConfig> StrongTypeConfigs = new();
     public string StrongTypeObjectName = string.Empty;
     public bool IsClass;

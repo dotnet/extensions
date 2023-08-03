@@ -133,7 +133,7 @@ public partial class AcceptanceTest
             },
             validateRequestState: state =>
             {
-                Assert.Equal(expectedHttpPath, state[HttpLoggingDimensions.Path]);
+                Assert.Equal(expectedHttpPath, state[HttpLoggingTagNames.Path]);
             });
     }
 
@@ -171,7 +171,7 @@ public partial class AcceptanceTest
             }),
             validateRequestState: state =>
             {
-                Assert.Equal(httpRoute, state[HttpLoggingDimensions.Path]);
+                Assert.Equal(httpRoute, state[HttpLoggingTagNames.Path]);
 
                 if (controller != null)
                 {

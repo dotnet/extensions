@@ -49,7 +49,7 @@ public class ServiceTraceEnricherTests
         };
 
         var enricher = new ServiceTraceEnricher(options.ToOptions(), serviceOptions.ToOptions());
-        var enrichedProperties = new TestLogEnrichmentPropertyBag();
+        var enrichedProperties = new TestLogEnrichmentTagCollector();
         using var activity = new Activity("test");
 
         // Act
@@ -57,10 +57,10 @@ public class ServiceTraceEnricherTests
         var enrichedState = activity.Tags.ToDictionary(static x => x.Key, static x => x.Value);
 
         // Assert
-        Assert.Equal(AppName, enrichedState[ServiceEnricherDimensions.ApplicationName]);
-        Assert.Equal(EnvironmentName, enrichedState[ServiceEnricherDimensions.EnvironmentName]);
-        Assert.Equal(BuildVersion, enrichedState[ServiceEnricherDimensions.BuildVersion]);
-        Assert.Equal(DeploymentRing, enrichedState[ServiceEnricherDimensions.DeploymentRing]);
+        Assert.Equal(AppName, enrichedState[ServiceEnricherTags.ApplicationName]);
+        Assert.Equal(EnvironmentName, enrichedState[ServiceEnricherTags.EnvironmentName]);
+        Assert.Equal(BuildVersion, enrichedState[ServiceEnricherTags.BuildVersion]);
+        Assert.Equal(DeploymentRing, enrichedState[ServiceEnricherTags.DeploymentRing]);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class ServiceTraceEnricherTests
         };
 
         var enricher = new ServiceTraceEnricher(options.ToOptions(), serviceOptions.ToOptions());
-        var enrichedProperties = new TestLogEnrichmentPropertyBag();
+        var enrichedProperties = new TestLogEnrichmentTagCollector();
         using var activity = new Activity("test");
 
         // Act
@@ -90,9 +90,9 @@ public class ServiceTraceEnricherTests
         IReadOnlyDictionary<string, string?> enrichedState = activity.Tags.ToDictionary(static x => x.Key, static x => x.Value);
 
         // Assert
-        Assert.DoesNotContain<string, string?>(ServiceEnricherDimensions.ApplicationName, enrichedState);
-        Assert.DoesNotContain<string, string?>(ServiceEnricherDimensions.EnvironmentName, enrichedState);
-        Assert.DoesNotContain<string, string?>(ServiceEnricherDimensions.BuildVersion, enrichedState);
-        Assert.DoesNotContain<string, string?>(ServiceEnricherDimensions.DeploymentRing, enrichedState);
+        Assert.DoesNotContain<string, string?>(ServiceEnricherTags.ApplicationName, enrichedState);
+        Assert.DoesNotContain<string, string?>(ServiceEnricherTags.EnvironmentName, enrichedState);
+        Assert.DoesNotContain<string, string?>(ServiceEnricherTags.BuildVersion, enrichedState);
+        Assert.DoesNotContain<string, string?>(ServiceEnricherTags.DeploymentRing, enrichedState);
     }
 }

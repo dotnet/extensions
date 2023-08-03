@@ -40,28 +40,28 @@ public static class LogMethodHelperTests
         Assert.Equal(PropName, list[0].Key);
         Assert.Equal(Value, list[0].Value);
 
-        var bag = (IEnrichmentPropertyBag)list;
+        var collector = (IEnrichmentTagCollector)list;
 
         _ = list.TryReset();
-        bag.Add(PropName, Value);
+        collector.Add(PropName, Value);
         Assert.Single(list);
         Assert.Equal(PropName, list[0].Key);
         Assert.Equal(Value, list[0].Value);
 
         _ = list.TryReset();
-        bag.Add(PropName, (object)Value);
+        collector.Add(PropName, (object)Value);
         Assert.Single(list);
         Assert.Equal(PropName, list[0].Key);
         Assert.Equal(Value, list[0].Value);
 
         _ = list.TryReset();
-        bag.Add(new[] { new KeyValuePair<string, object>(PropName, Value) }.AsSpan());
+        collector.Add(new[] { new KeyValuePair<string, object>(PropName, Value) }.AsSpan());
         Assert.Single(list);
         Assert.Equal(PropName, list[0].Key);
         Assert.Equal(Value, list[0].Value);
 
         _ = list.TryReset();
-        bag.Add(new[] { new KeyValuePair<string, string>(PropName, Value) }.AsSpan());
+        collector.Add(new[] { new KeyValuePair<string, string>(PropName, Value) }.AsSpan());
         Assert.Single(list);
         Assert.Equal(PropName, list[0].Key);
         Assert.Equal(Value, list[0].Value);

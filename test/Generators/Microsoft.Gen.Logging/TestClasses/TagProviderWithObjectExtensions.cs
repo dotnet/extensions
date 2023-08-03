@@ -8,7 +8,7 @@ namespace TestClasses
 {
 #pragma warning disable SA1402 // File may only contain a single type
 
-    internal static partial class LogPropertiesProviderWithObjectExtensions
+    internal static partial class TagProviderWithObjectExtensions
     {
         [LogMethod(int.MaxValue, LogLevel.Warning, "Custom provided properties for {Param}.")]
         internal static partial void OneParam(
@@ -25,7 +25,7 @@ namespace TestClasses
 
     internal static class CustomProviderWithObject
     {
-        public static void ProvideProperties(ILogPropertyCollector list, object? param)
+        public static void ProvideProperties(ITagCollector list, object? param)
         {
             // This condition is here only for testing purposes:
             if (param is null)
@@ -36,7 +36,7 @@ namespace TestClasses
             list.Add(nameof(object.ToString), param + " ProvidePropertiesCall");
         }
 
-        public static void ProvideOtherProperties(ILogPropertyCollector list, object? param)
+        public static void ProvideOtherProperties(ITagCollector list, object? param)
         {
             list.Add(nameof(object.ToString), param + " ProvideOtherPropertiesCall");
             list.Add("Type", param?.GetType());

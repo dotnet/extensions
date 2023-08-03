@@ -30,7 +30,7 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
         _enricherInvoked = tokenIssuer.GetCheckpointToken(HttpCheckpoints.EnricherInvoked);
     }
 
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag, HttpRequestMessage? request = null, HttpResponseMessage? response = null)
+    public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage? request = null, HttpResponseMessage? response = null)
     {
         if (response != null)
         {
@@ -48,7 +48,7 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
                 AppendCheckpoints(lc, stringBuilder);
             }
 
-            enrichmentBag.Add("latencyInfo", stringBuilder.ToString());
+            collector.Add("latencyInfo", stringBuilder.ToString());
 
             _builderPool.Return(stringBuilder);
         }

@@ -75,11 +75,11 @@ public partial class AcceptanceTest
                 var state = logRecord.StructuredState!;
 
                 Assert.DoesNotContain(state, x => x.Key == QueryParamName);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Host && !string.IsNullOrEmpty(x.Value));
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Path && x.Value == redactedPath);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.StatusCode && x.Value == responseStatus);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Method && x.Value == HttpMethod.Get.ToString());
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Duration &&
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == redactedPath);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Get.ToString());
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Duration &&
                     x.Value != null &&
                     int.Parse(x.Value, CultureInfo.InvariantCulture) == ControllerProcessingTimeMs);
             });
@@ -113,11 +113,11 @@ public partial class AcceptanceTest
                 Assert.Single(state, x => x.Key == UserIdParamName && x.Value == redactedUserId);
                 Assert.Single(state, x => x.Key == NoDataClassParamName && x.Value == TelemetryConstants.Redacted);
                 Assert.DoesNotContain(state, x => x.Key == QueryParamName);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Host && !string.IsNullOrEmpty(x.Value));
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Path && x.Value == ActionRouteTemplate);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.StatusCode && x.Value == responseStatus);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Method && x.Value == HttpMethod.Get.ToString());
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Duration &&
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == ActionRouteTemplate);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Get.ToString());
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Duration &&
                     x.Value != null &&
                     int.Parse(x.Value, CultureInfo.InvariantCulture) == ControllerProcessingTimeMs);
             });
@@ -164,12 +164,12 @@ public partial class AcceptanceTest
                 }
 
                 Assert.DoesNotContain(state, x => x.Key == QueryParamName);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Host && !string.IsNullOrEmpty(x.Value));
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
                 var expectedPath = routeParameterRedactionModeNone ? $"/api/users/{UserId}/{NoDataClassParamValue}" : ActionRouteTemplate;
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Path && x.Value == expectedPath);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.StatusCode && x.Value == responseStatus);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Method && x.Value == HttpMethod.Get.ToString());
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Duration &&
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == expectedPath);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Get.ToString());
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Duration &&
                     x.Value != null &&
                     int.Parse(x.Value, CultureInfo.InvariantCulture) == ControllerProcessingTimeMs);
             });
@@ -200,11 +200,11 @@ public partial class AcceptanceTest
                 var state = logRecord.StructuredState!;
 
                 Assert.DoesNotContain(state, x => x.Key == QueryParamName);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Host && !string.IsNullOrEmpty(x.Value));
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Path && x.Value == $"/api/users/testUserId/someTestData");
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.StatusCode && x.Value == responseStatus);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Method && x.Value == HttpMethod.Get.ToString());
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Duration &&
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == $"/api/users/testUserId/someTestData");
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Get.ToString());
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Duration &&
                     x.Value != null &&
                     int.Parse(x.Value, CultureInfo.InvariantCulture) == ControllerProcessingTimeMs);
             });
@@ -243,10 +243,10 @@ public partial class AcceptanceTest
                 var expectedPath = routeParameterRedactionModeNone ? RequestPath : TelemetryConstants.Unknown;
 
                 Assert.DoesNotContain(state, x => x.Key == QueryParamName);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Host && !string.IsNullOrEmpty(x.Value));
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Path && x.Value == expectedPath);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.StatusCode && x.Value == responseStatus);
-                Assert.Single(state, x => x.Key == HttpLoggingDimensions.Method && x.Value == HttpMethod.Get.ToString());
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == expectedPath);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Get.ToString());
             });
     }
 }

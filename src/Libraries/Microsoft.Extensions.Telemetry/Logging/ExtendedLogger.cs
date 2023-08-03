@@ -194,11 +194,11 @@ internal sealed partial class ExtendedLogger : ILogger
 
         // redact
         JustInTimeRedactor? jitRedactors = null;
-        for (int i = 0; i < msgState.NumClassifiedProperties; i++)
+        for (int i = 0; i < msgState.NumClassifiedTags; i++)
         {
             try
             {
-                ref var cp = ref msgState.ClassifiedPropertyArray[i];
+                ref var cp = ref msgState.ClassifiedTagArray[i];
                 if (cp.Value != null)
                 {
                     var jr = JustInTimeRedactor.Get();
@@ -207,13 +207,13 @@ internal sealed partial class ExtendedLogger : ILogger
                     jr.Next = jitRedactors;
                     jitRedactors = jr;
 
-                    var index = msgState.ReserveRedactedPropertySpace(1);
-                    msgState.RedactedPropertyArray[index] = new(cp.Name, jr);
+                    var index = msgState.ReserveRedactedTagSpace(1);
+                    msgState.RedactedTagArray[index] = new(cp.Name, jr);
                 }
                 else
                 {
-                    var index = msgState.ReserveRedactedPropertySpace(1);
-                    msgState.RedactedPropertyArray[index] = new(cp.Name, null);
+                    var index = msgState.ReserveRedactedTagSpace(1);
+                    msgState.RedactedTagArray[index] = new(cp.Name, null);
                 }
             }
             catch (Exception ex)
@@ -224,17 +224,17 @@ internal sealed partial class ExtendedLogger : ILogger
         }
 
         var joiner = ModernJoiner;
-        joiner.StaticProperties = config.StaticProperties;
+        joiner.StaticTags = config.StaticTags;
         joiner.Formatter = formatter;
         joiner.State = msgState;
-        joiner.SetIncomingProperties(msgState);
+        joiner.SetIncomingTags(msgState);
 
         // enrich
         foreach (var enricher in config.Enrichers)
         {
             try
             {
-                enricher(joiner.PropertyBag);
+                enricher(joiner.EnrichmentTagCollector);
             }
             catch (Exception ex)
             {
@@ -246,7 +246,7 @@ internal sealed partial class ExtendedLogger : ILogger
         // one last dedicated bit of enrichment
         if (exception != null && config.CaptureStackTraces)
         {
-            joiner.PropertyBag.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+            joiner.EnrichmentTagCollector.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
         }
 
         for (int i = 0; i < loggers.Length; i++)
@@ -289,25 +289,25 @@ internal sealed partial class ExtendedLogger : ILogger
         var config = _factory.Config;
 
         var joiner = LegacyJoiner;
-        joiner.StaticProperties = config.StaticProperties;
+        joiner.StaticTags = config.StaticTags;
         joiner.Formatter = formatter;
         joiner.State = state;
 
         switch (state)
         {
             case IReadOnlyList<KeyValuePair<string, object?>> stateList:
-                joiner.SetIncomingProperties(stateList);
+                joiner.SetIncomingTags(stateList);
                 break;
 
             case IEnumerable<KeyValuePair<string, object?>> stateList:
-                joiner.PropertyBag.AddRange(stateList);
+                joiner.EnrichmentTagCollector.AddRange(stateList);
                 break;
 
             case null:
                 break;
 
             default:
-                joiner.PropertyBag.Add("{OriginalFormat}", state);
+                joiner.EnrichmentTagCollector.Add("{OriginalFormat}", state);
                 break;
         }
 
@@ -318,7 +318,7 @@ internal sealed partial class ExtendedLogger : ILogger
         {
             try
             {
-                enricher(joiner.PropertyBag);
+                enricher(joiner.EnrichmentTagCollector);
             }
             catch (Exception ex)
             {
@@ -330,7 +330,7 @@ internal sealed partial class ExtendedLogger : ILogger
         // one last dedicated bit of enrichment
         if (exception != null && config.CaptureStackTraces)
         {
-            joiner.PropertyBag.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+            joiner.EnrichmentTagCollector.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
         }
 
         for (int i = 0; i < loggers.Length; i++)
