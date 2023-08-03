@@ -23,9 +23,7 @@ internal sealed class LoggingMethod
     public bool IsStatic;
     public string Modifiers = string.Empty;
     public string LoggerField = "_logger";
-    public string RedactorProviderField = "_redactorProvider";
     public bool LoggerFieldNullable;
-    public bool RedactorProviderFieldNullable;
     public bool HasXmlDocumentation;
 
     public string GetParameterNameInTemplate(LoggingMethodParameter parameter)

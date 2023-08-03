@@ -129,30 +129,7 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.MultipleDataClassificationAttributesMessage,
         category: Category);
 
-    public static DiagnosticDescriptor MissingRedactorProviderParameter { get; } = Make(
-        id: "R9G021",
-        title: Resources.MissingRedactorProviderParameterTitle,
-        messageFormat: Resources.MissingRedactorProviderParameterMessage,
-        category: Category);
-
-    public static DiagnosticDescriptor MissingDataClassificationParameter { get; } = Make(
-        id: "R9G022",
-        title: Resources.MissingDataClassificationParameterTitle,
-        messageFormat: Resources.MissingDataClassificationParameterMessage,
-        category: Category,
-        DiagnosticSeverity.Warning);
-
-    public static DiagnosticDescriptor MissingRedactorProviderField { get; } = Make(
-        id: "R9G023",
-        title: Resources.MissingRedactorProviderFieldTitle,
-        messageFormat: Resources.MissingRedactorProviderFieldMessage,
-        category: Category);
-
-    public static DiagnosticDescriptor MultipleRedactorProviderFields { get; } = Make(
-        id: "R9G024",
-        title: Resources.MultipleRedactorProviderFieldsTitle,
-        messageFormat: Resources.MultipleRedactorProviderFieldsMessage,
-        category: Category);
+    // R9G021..R9G024 retired
 
     public static DiagnosticDescriptor InvalidTypeToLogProperties { get; } = Make(
         id: "R9G025",

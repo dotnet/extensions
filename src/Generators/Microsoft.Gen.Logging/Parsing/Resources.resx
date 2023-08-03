@@ -225,30 +225,6 @@
   <data name="MultipleDataClassificationAttributesTitle" xml:space="preserve">
     <value>Can't have multiple data classification attributes for a single data value</value>
   </data>
-  <data name="MissingRedactorProviderParameterMessage" xml:space="preserve">
-    <value>One of the parameters to a logging method that performs redaction must implement the Microsoft.Extensions.Redaction.IRedactorProvider interface</value>
-  </data>
-  <data name="MissingRedactorProviderParameterTitle" xml:space="preserve">
-    <value>A parameter to a logging method must implement the "IRedactorProvider" interface</value>
-  </data>
-  <data name="MissingDataClassificationParameterMessage" xml:space="preserve">
-    <value>One or more parameters of the logging method "{0}" must be annotated with a data classification attribute</value>
-  </data>
-  <data name="MissingDataClassificationParameterTitle" xml:space="preserve">
-    <value>Logging method parameters must be annotated with a data classification attribute</value>
-  </data>
-  <data name="MissingRedactorProviderFieldMessage" xml:space="preserve">
-    <value>Couldn't find a field of type "Microsoft.Extensions.Redaction.IRedactorProvider" in type "{0}"</value>
-  </data>
-  <data name="MissingRedactorProviderFieldTitle" xml:space="preserve">
-    <value>Couldn't find a field of type "Microsoft.Extensions.Redaction.IRedactorProvider"</value>
-  </data>
-  <data name="MultipleRedactorProviderFieldsMessage" xml:space="preserve">
-    <value>Found multiple fields of type "Microsoft.Extensions.Redaction.IRedactorProvider" in type "{0}"</value>
-  </data>
-  <data name="MultipleRedactorProviderFieldsTitle" xml:space="preserve">
-    <value>Multiple fields of type "Microsoft.Extensions.Redaction.IRedactorProvider" were found</value>
-  </data>
   <data name="InvalidTypeToLogPropertiesMessage" xml:space="preserve">
     <value>Can't log properties of parameters of type "{0}"</value>
   </data>

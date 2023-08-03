@@ -606,7 +606,6 @@ public partial class ParserTests
     public async Task MultipleDataClassificationAttributes()
     {
         const string Source = @"
-            using Microsoft.Extensions.Compliance.Redaction;
             using Microsoft.Extensions.Compliance.Testing;
 
             class MyClass
@@ -619,34 +618,10 @@ public partial class ParserTests
             internal static partial class C
             {
                 [LogMethod(0, LogLevel.Debug, ""Only {A}"")]
-                static partial void M(ILogger logger, IRedactorProvider provider, [FeedbackData] string a, [LogProperties] MyClass param);
+                static partial void M(ILogger logger, [FeedbackData] string a, [LogProperties] MyClass param);
             }";
 
         await RunGenerator(Source, DiagDescriptors.MultipleDataClassificationAttributes);
-    }
-
-    [Theory]
-    [InlineData("[PrivateData]", "string")]
-    [InlineData("[PrivateData]", "int")]
-    public async Task MissingRedactorProvider(string attribute, string type)
-    {
-        string source = @$"
-            using Microsoft.Extensions.Compliance.Redaction;
-            using Microsoft.Extensions.Compliance.Testing;
-
-            class MyClass
-            {{
-                {attribute}
-                public {type} A {{ get; set; }}
-            }}
-
-            internal static partial class C
-            {{
-                [LogMethod(0, LogLevel.Debug, ""Template..."")]
-                static partial void M/*0+*/(ILogger logger, [LogProperties] MyClass param)/*-0*/;
-            }}";
-
-        await RunGenerator(source, DiagDescriptors.MissingRedactorProviderParameter);
     }
 
     [Theory]

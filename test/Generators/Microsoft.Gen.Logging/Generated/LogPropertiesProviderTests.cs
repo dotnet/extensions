@@ -50,7 +50,7 @@ public class LogPropertiesProviderTests
         const string StringParamValue = "Value for a string";
 
         var classToLog = new ClassToLog { MyIntProperty = 0 };
-        new NonStaticTestClass(_logger, null!).LogPropertiesWithProvider(StringParamValue, classToLog);
+        new NonStaticTestClass(_logger).LogPropertiesWithProvider(StringParamValue, classToLog);
 
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
@@ -75,7 +75,7 @@ public class LogPropertiesProviderTests
         const string StringParamValue = "Value for a string";
 
         var classToLog = new ClassToLog { MyIntProperty = ushort.MaxValue };
-        new NonStaticTestClass(_logger, null!).DefaultAttrCtorLogPropertiesWithProvider(LogLevel.Debug, StringParamValue, classToLog);
+        new NonStaticTestClass(_logger).DefaultAttrCtorLogPropertiesWithProvider(LogLevel.Debug, StringParamValue, classToLog);
 
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;

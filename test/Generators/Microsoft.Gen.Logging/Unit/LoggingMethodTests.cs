@@ -16,7 +16,6 @@ public class LoggingMethodTests
         Assert.Empty(instance.Message);
         Assert.Empty(instance.Modifiers);
         Assert.Equal("_logger", instance.LoggerField);
-        Assert.Equal("_redactorProvider", instance.RedactorProviderField);
     }
 
     [Fact]
