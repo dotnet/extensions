@@ -43,6 +43,7 @@ internal sealed class LoggingMethodParameter
     // but instead is supposed to be taken as a normal parameter.
     public bool IsNormalParameter => !IsLogger && !IsException && !IsLogLevel;
 
+    public bool HasDataClassification => ClassificationAttributeType != null;
     public bool HasProperties => PropertiesToLog.Count > 0;
     public bool HasPropsProvider => LogPropertiesProvider is not null;
     public bool PotentiallyNull => (IsReference && !IsLogger) || IsNullable;

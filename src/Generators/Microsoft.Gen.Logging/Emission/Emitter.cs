@@ -65,7 +65,7 @@ internal sealed partial class Emitter : EmitterBase
         OutOpenBrace();
 
         var isRedactionRequired =
-            lt.Methods.SelectMany(static lm => lm.Parameters).Any(static lp => lp.ClassificationAttributeType != null)
+            lt.Methods.SelectMany(static lm => lm.Parameters).Any(static lp => lp.HasDataClassification)
             || lt.Methods.SelectMany(static lm => GetLogPropertiesAttributes(lm)).Any();
 
         if (isRedactionRequired)

@@ -21,6 +21,7 @@ internal sealed record LoggingProperty(
     bool ImplementsIFormattable,
     IReadOnlyCollection<LoggingProperty> TransitiveMembers)
 {
+    public bool HasDataClassification => ClassificationAttributeType != null;
     public string NameWithAt => NeedsAtSign ? "@" + Name : Name;
     public bool PotentiallyNull => IsReference || IsNullable;
 }

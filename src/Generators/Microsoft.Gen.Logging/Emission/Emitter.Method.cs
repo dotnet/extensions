@@ -207,7 +207,7 @@ internal sealed partial class Emitter : EmitterBase
             {
                 if (NeedsASlot(p))
                 {
-                    if (p.ClassificationAttributeType != null)
+                    if (p.HasDataClassification)
                     {
                         numClassifiedProps++;
                     }
@@ -221,7 +221,7 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     p.TraverseParameterPropertiesTransitively((_, member) =>
                     {
-                        if (member.ClassificationAttributeType != null)
+                        if (member.HasDataClassification)
                         {
                             numClassifiedProps++;
                         }
@@ -248,26 +248,25 @@ internal sealed partial class Emitter : EmitterBase
                 int count = numReservedUnclassifiedProps;
                 foreach (var p in lm.Parameters)
                 {
-                    if (NeedsASlot(p) && p.ClassificationAttributeType == null)
+                    if (NeedsASlot(p) && !p.HasDataClassification)
                     {
                         var key = $"\"{lm.GetParameterNameInTemplate(p)}\"";
+                        string value;
 
                         if (p.IsEnumerable)
                         {
-                            var value = p.PotentiallyNull
+                            value = p.PotentiallyNull
                                 ? $"{p.NameWithAt} != null ? {LoggerMessageHelperType}.Stringify({p.NameWithAt}) : null"
                                 : $"{LoggerMessageHelperType}.Stringify({p.NameWithAt})";
-
-                            OutLn($"{stateName}.PropertyArray[{--count}] = new({key}, {value});");
                         }
                         else
                         {
-                            var value = ShouldStringify(p.Type)
+                            value = ShouldStringify(p.Type)
                                 ? ConvertToString(p, p.NameWithAt)
                                 : p.NameWithAt;
-
-                            OutLn($"{stateName}.PropertyArray[{--count}] = new({key}, {value});");
                         }
+
+                        OutLn($"{stateName}.PropertyArray[{--count}] = new({key}, {value});");
                     }
                 }
 
@@ -277,7 +276,7 @@ internal sealed partial class Emitter : EmitterBase
                     {
                         p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
                         {
-                            if (member.ClassificationAttributeType == null)
+                            if (!member.HasDataClassification)
                             {
                                 var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
                                 var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
@@ -309,10 +308,10 @@ internal sealed partial class Emitter : EmitterBase
                 int count = numReservedClassifiedProps;
                 foreach (var p in lm.Parameters)
                 {
-                    if (NeedsASlot(p) && p.ClassificationAttributeType != null)
+                    if (NeedsASlot(p) && p.HasDataClassification)
                     {
                         var key = $"\"{lm.GetParameterNameInTemplate(p)}\"";
-                        var classification = $"_{EncodeTypeName(p.ClassificationAttributeType)}_Classification";
+                        var classification = $"_{EncodeTypeName(p.ClassificationAttributeType!)}_Classification";
 
                         var value = ShouldStringify(p.Type)
                             ? ConvertToString(p, p.NameWithAt)
@@ -328,13 +327,13 @@ internal sealed partial class Emitter : EmitterBase
                     {
                         p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
                         {
-                            if (member.ClassificationAttributeType != null)
+                            if (member.HasDataClassification)
                             {
                                 var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
                                 var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
                                 var value = ConvertPropertyToString(member, accessExpression);
-                                var classification = $"_{EncodeTypeName(member.ClassificationAttributeType)}_Classification";
+                                var classification = $"_{EncodeTypeName(member.ClassificationAttributeType!)}_Classification";
 
                                 OutLn($"{stateName}.ClassifiedPropertyArray[{--count}] = new(\"{propName}\", {value}, {classification});");
                             }
@@ -349,7 +348,7 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
                     {
-                        if (member.ClassificationAttributeType == null)
+                        if (!member.HasDataClassification)
                         {
                             var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
                             var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
@@ -372,7 +371,7 @@ internal sealed partial class Emitter : EmitterBase
                             var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
                             var value = ConvertPropertyToString(member, accessExpression);
-                            var classification = $"_{EncodeTypeName(member.ClassificationAttributeType)}_Classification";
+                            var classification = $"_{EncodeTypeName(member.ClassificationAttributeType!)}_Classification";
 
                             var skipNull = member.PotentiallyNull
                                 ? $"if ({value} != null) "
@@ -406,7 +405,7 @@ internal sealed partial class Emitter : EmitterBase
             int index = numReservedUnclassifiedProps - 1;
             foreach (var p in lm.Parameters)
             {
-                if (NeedsASlot(p) && p.ClassificationAttributeType == null)
+                if (NeedsASlot(p) && !p.HasDataClassification)
                 {
                     if (p.UsedAsTemplate)
                     {
@@ -433,7 +432,7 @@ internal sealed partial class Emitter : EmitterBase
             index = numReservedClassifiedProps - 1;
             foreach (var p in lm.Parameters)
             {
-                if (NeedsASlot(p) && p.ClassificationAttributeType != null)
+                if (NeedsASlot(p) && p.HasDataClassification)
                 {
                     if (p.UsedAsTemplate)
                     {
