@@ -19,7 +19,7 @@ public class LogRecordPoolingTest
         var testObject = new Fixture().Create<LogRecord>();
         testObject.RequestHeaders!.Add(new KeyValuePair<string, string>("key1", "value1"));
         testObject.ResponseHeaders!.Add(new KeyValuePair<string, string>("key2", "value2"));
-        testObject.EnrichmentTags!.Add("key3", "value3");
+        testObject.EnrichmentTags!.AddTag("key3", "value3");
 
         var logRecord1 = pool.Get();
         logRecord1.Host = testObject.Host;

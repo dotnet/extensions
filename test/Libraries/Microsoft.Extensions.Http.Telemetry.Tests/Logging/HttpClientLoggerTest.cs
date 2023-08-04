@@ -193,7 +193,7 @@ public class HttpClientLoggerTest
             RequestHeaders = new() { new(TestExpectedRequestHeaderKey, Redacted), new(testSharedRequestHeaderKey, Redacted) },
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            EnrichmentTags = testEnricher.EnrichmentCollector
+            EnrichmentTags = testEnricher.EnrichmentBag
         };
 
         using var httpRequestMessage = new HttpRequestMessage
@@ -293,7 +293,7 @@ public class HttpClientLoggerTest
             RequestHeaders = new() { new(TestRequestHeader, Redacted) },
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            EnrichmentTags = testEnricher.EnrichmentCollector
+            EnrichmentTags = testEnricher.EnrichmentBag
         };
 
         using var httpRequestMessage = new HttpRequestMessage
@@ -404,7 +404,7 @@ public class HttpClientLoggerTest
             RequestHeaders = new() { new(TestRequestHeader, Redacted) },
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            EnrichmentTags = testEnricher.EnrichmentCollector
+            EnrichmentTags = testEnricher.EnrichmentBag
         };
 
         using var httpRequestMessage = new HttpRequestMessage
@@ -504,7 +504,7 @@ public class HttpClientLoggerTest
             RequestHeaders = new() { new(TestRequestHeader, Redacted) },
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            EnrichmentTags = testEnricher.EnrichmentCollector
+            EnrichmentTags = testEnricher.EnrichmentBag
         };
 
         using var httpRequestMessage = new HttpRequestMessage
@@ -625,7 +625,7 @@ public class HttpClientLoggerTest
             RequestHeaders = new() { new(TestRequestHeader, Redacted) },
             RequestBody = requestContent,
             ResponseBody = responseContent,
-            EnrichmentTags = testEnricher.EnrichmentCollector,
+            EnrichmentTags = testEnricher.EnrichmentBag,
         };
 
         using var httpRequestMessage = new HttpRequestMessage
@@ -888,7 +888,7 @@ public class HttpClientLoggerTest
             RequestHeaders = new() { new(TestExpectedRequestHeaderKey, Redacted) },
             RequestBody = requestInput,
             ResponseBody = responseInput,
-            EnrichmentTags = testEnricher.EnrichmentCollector
+            EnrichmentTags = testEnricher.EnrichmentBag
         };
 
         using var requestContent = new StreamContent(new NotSeekableStream(new(Encoding.UTF8.GetBytes(requestInput))));

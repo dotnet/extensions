@@ -7,7 +7,6 @@ using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 
-// TODO: rename the file
 internal static class LoggerMessageStateExtensions
 {
     private static readonly ConcurrentDictionary<string, string> _requestPrefixedNamesCache = new();
@@ -29,7 +28,7 @@ internal static class LoggerMessageStateExtensions
                 static (x, p) => p + x,
                 HttpClientLoggingTagNames.RequestHeaderPrefix);
 
-            state.PropertyArray[index++] = new(key, items[i].Value);
+            state.TagArray[index++] = new(key, items[i].Value);
         }
     }
 
@@ -49,7 +48,7 @@ internal static class LoggerMessageStateExtensions
                 static (x, p) => p + x,
                 HttpClientLoggingTagNames.ResponseHeaderPrefix);
 
-            state.PropertyArray[index++] = new(key, items[i].Value);
+            state.TagArray[index++] = new(key, items[i].Value);
         }
     }
 }

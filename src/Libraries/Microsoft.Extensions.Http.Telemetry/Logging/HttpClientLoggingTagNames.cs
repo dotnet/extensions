@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Microsoft.Extensions.Http.Telemetry.Logging;
 
 /// <summary>
-/// Constants used for HTTP client logging dimensions.
+/// Constants used for HTTP client logging tags.
 /// </summary>
 public static class HttpClientLoggingTagNames
 {
@@ -60,6 +60,7 @@ public static class HttpClientLoggingTagNames
     /// Gets a list of all dimension names.
     /// </summary>
     /// <returns>A read-only <see cref="IReadOnlyList{String}"/> of all dimension names.</returns>
+    // TODO: should we rename Dimensions to Tags here?
     public static IReadOnlyList<string> DimensionNames { get; } =
         Array.AsReadOnly(new[]
         {

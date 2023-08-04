@@ -224,7 +224,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             }
         }
 
-        logRecord.EnrichmentProperties = loggerMessageState;
+        logRecord.EnrichmentTags = loggerMessageState;
         logRecord.Duration = (long)elapsed.TotalMilliseconds;
     }
 }

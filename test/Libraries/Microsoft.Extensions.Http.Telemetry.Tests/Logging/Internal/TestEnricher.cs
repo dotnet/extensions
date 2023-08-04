@@ -20,13 +20,13 @@ internal class TestEnricher : IHttpClientLogEnricher
     public TestEnricher(bool throwOnEnrich = false)
     {
         EnrichmentBag = new();
-        var index = EnrichmentBag.ReservePropertySpace(2);
-        EnrichmentBag.PropertyArray[index++] = KvpRequest;
-        EnrichmentBag.PropertyArray[index++] = KvpResponse;
+        var index = EnrichmentBag.ReserveTagSpace(2);
+        EnrichmentBag.TagArray[index++] = KvpRequest;
+        EnrichmentBag.TagArray[index++] = KvpResponse;
         _throwOnEnrich = throwOnEnrich;
     }
 
-    public void Enrich(IEnrichmentTagCollector enrichmentBag, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
+    public void Enrich(IEnrichmentTagCollector tagCollector, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
     {
         if (_throwOnEnrich)
         {
@@ -35,12 +35,12 @@ internal class TestEnricher : IHttpClientLogEnricher
 
         if (request is not null)
         {
-            collector.Add(KvpRequest.Key, KvpRequest.Value!);
+            tagCollector.Add(KvpRequest.Key, KvpRequest.Value!);
         }
 
         if (response is not null)
         {
-            collector.Add(KvpResponse.Key, KvpResponse.Value!);
+            tagCollector.Add(KvpResponse.Key, KvpResponse.Value!);
         }
     }
 }

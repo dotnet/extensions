@@ -23,15 +23,15 @@ internal static partial class Log
 
     private const string RequestReadErrorMessage =
         "An error occurred while reading the request data to fill the log record: " +
-        $"{{{HttpClientLoggingDimensions.Method}}} {{{HttpClientLoggingDimensions.Host}}}/{{{HttpClientLoggingDimensions.Path}}}";
+        $"{{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}/{{{HttpClientLoggingTagNames.Path}}}";
 
     private const string ResponseReadErrorMessage =
         "An error occurred while reading the response data to fill the log record: " +
-        $"{{{HttpClientLoggingDimensions.Method}}} {{{HttpClientLoggingDimensions.Host}}}/{{{HttpClientLoggingDimensions.Path}}}";
+        $"{{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}/{{{HttpClientLoggingTagNames.Path}}}";
 
     private const string EnrichmentErrorMessage =
         "An error occurred in enricher '{enricherType}' while enriching the log record: " +
-        $"{{{HttpClientLoggingDimensions.Method}}} {{{HttpClientLoggingDimensions.Host}}}/{{{HttpClientLoggingDimensions.Path}}}";
+        $"{{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}/{{{HttpClientLoggingTagNames.Path}}}";
 
     private static readonly Func<LoggerMessageState, Exception?, string> _originalFormatValueFMTFunc = OriginalFormatValueFMT;
 
@@ -70,15 +70,15 @@ internal static partial class Log
         var requestHeadersCount = record.RequestHeaders?.Count ?? 0;
         var responseHeadersCount = record.ResponseHeaders?.Count ?? 0;
 
-        var index = loggerMessageState.ReservePropertySpace(MinimalPropertyCount + statusCodePropertyCount + requestHeadersCount + responseHeadersCount);
-        loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Method, record.Method);
-        loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Host, record.Host);
-        loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Path, record.Path);
-        loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.Duration, record.Duration);
+        var index = loggerMessageState.ReserveTagSpace(MinimalPropertyCount + statusCodePropertyCount + requestHeadersCount + responseHeadersCount);
+        loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Method, record.Method);
+        loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Host, record.Host);
+        loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Path, record.Path);
+        loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Duration, record.Duration);
 
         if (record.StatusCode.HasValue)
         {
-            loggerMessageState.PropertyArray[index++] = new(HttpClientLoggingDimensions.StatusCode, record.StatusCode.Value);
+            loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.StatusCode, record.StatusCode.Value);
         }
 
         if (requestHeadersCount > 0)
@@ -93,12 +93,12 @@ internal static partial class Log
 
         if (record.RequestBody is not null)
         {
-            loggerMessageState.Add(HttpClientLoggingDimensions.RequestBody, record.RequestBody);
+            loggerMessageState.AddTag(HttpClientLoggingTagNames.RequestBody, record.RequestBody);
         }
 
         if (record.ResponseBody is not null)
         {
-            loggerMessageState.Add(HttpClientLoggingDimensions.ResponseBody, record.ResponseBody);
+            loggerMessageState.AddTag(HttpClientLoggingTagNames.ResponseBody, record.ResponseBody);
         }
 
         logger.Log(
@@ -129,7 +129,7 @@ internal static partial class Log
 
         foreach (var kvp in request)
         {
-            if (kvp.Key == HttpClientLoggingDimensions.Method)
+            if (kvp.Key == HttpClientLoggingTagNames.Method)
             {
                 break;
             }
