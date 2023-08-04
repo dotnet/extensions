@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -301,18 +302,18 @@ public static class AutoActivationExtensions
     private static void TryAddAndActivate<TService>(this IServiceCollection services, ServiceDescriptor descriptor)
         where TService : class
     {
-        if (services.Any(d => d.ServiceType == descriptor.ServiceType))
+        if (services.Any(d => d.ServiceType == descriptor.ServiceType && d.ServiceKey == descriptor.ServiceKey))
         {
             return;
         }
 
-        services.Add(descriptor);
+        services.TryAdd(descriptor);
         _ = services.Activate<TService>();
     }
 
     private static void TryAddAndActivate(this IServiceCollection services, ServiceDescriptor descriptor)
     {
-        if (services.Any(d => d.ServiceType == descriptor.ServiceType))
+        if (services.Any(d => d.ServiceType == descriptor.ServiceType && d.ServiceKey == descriptor.ServiceKey))
         {
             return;
         }
