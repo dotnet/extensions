@@ -307,7 +307,7 @@ public static class AutoActivationExtensions
             return;
         }
 
-        services.TryAdd(descriptor);
+        services.Add(descriptor);
         _ = services.Activate<TService>();
     }
 
