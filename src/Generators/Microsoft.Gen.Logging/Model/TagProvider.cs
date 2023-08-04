@@ -6,6 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Gen.Logging.Model;
 
 [ExcludeFromCodeCoverage]
-internal sealed record class LoggingPropertyProvider(
+internal sealed record class TagProvider(
     string MethodName,
     string ContainingType);

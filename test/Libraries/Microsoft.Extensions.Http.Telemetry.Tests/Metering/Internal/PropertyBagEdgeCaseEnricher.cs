@@ -11,8 +11,8 @@ internal class PropertyBagEdgeCaseEnricher : IOutgoingRequestMetricEnricher
     public IReadOnlyList<string> DimensionNames => new[] { "non_null_object_property" };
     private readonly object _stringObj = "test_val";
 
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag)
+    public void Enrich(IEnrichmentTagCollector collector)
     {
-        enrichmentBag.Add("non_null_object_property", _stringObj);
+        collector.Add("non_null_object_property", _stringObj);
     }
 }

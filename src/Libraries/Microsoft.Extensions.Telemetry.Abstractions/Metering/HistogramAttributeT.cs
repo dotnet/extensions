@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Telemetry.Metering;
 /// <item>Must return <c>metricName</c> as the type. A class with that name will be generated.</item>
 /// <item>Must not be generic.</item>
 /// <item>Must have <c>System.Diagnostics.Metrics.Meter</c> as first parameter.</item>
-/// <item>Must have all the keys provided in <c>staticDimensions</c> as string type parameters.</item>
+/// <item>Must have all the keys provided in <c>staticTags</c> as string type parameters.</item>
 /// </list>
 /// </remarks>
 /// <example>
@@ -42,16 +42,16 @@ public sealed class HistogramAttribute<T> : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="HistogramAttribute{T}"/> class.
     /// </summary>
-    /// <param name="dimensions">variable array of dimension names.</param>
-    public HistogramAttribute(params string[] dimensions)
+    /// <param name="tagNames">variable array of tag names.</param>
+    public HistogramAttribute(params string[] tagNames)
     {
-        Dimensions = dimensions;
+        TagNames = tagNames;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HistogramAttribute{T}"/> class.
     /// </summary>
-    /// <param name="type">A type providing the metric dimensions. The dimensions are taken from the type's public fields and properties.</param>
+    /// <param name="type">A type providing the metric tag names. The tag values are taken from the type's public fields and properties.</param>
     public HistogramAttribute(Type type)
     {
         Type = type;
@@ -79,12 +79,12 @@ public sealed class HistogramAttribute<T> : Attribute
     public string? Name { get; set; }
 
     /// <summary>
-    /// Gets the metric's dimensions.
+    /// Gets the metric's tag names.
     /// </summary>
-    public string[]? Dimensions { get; }
+    public string[]? TagNames { get; }
 
     /// <summary>
-    /// Gets the type that supplies metric dimensions.
+    /// Gets the type that supplies metric tag values.
     /// </summary>
     public Type? Type { get; }
 }

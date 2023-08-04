@@ -37,10 +37,10 @@ public class FaultInjectionTelemetryHandlerTests
 
         Assert.NotNull(latest);
         Assert.Equal(1, latest.Value);
-        Assert.Equal(GroupName, latest.Tags[FaultInjectionEventMeterDimensions.FaultInjectionGroupName]);
-        Assert.Equal(FaultType, latest.Tags[FaultInjectionEventMeterDimensions.FaultType]);
-        Assert.Equal(InjectedValue, latest.Tags[FaultInjectionEventMeterDimensions.InjectedValue]);
-        Assert.Equal(HttpContentKey, latest.Tags[FaultInjectionEventMeterDimensions.HttpContentKey]);
+        Assert.Equal(GroupName, latest.Tags[FaultInjectionEventMeterTagNames.FaultInjectionGroupName]);
+        Assert.Equal(FaultType, latest.Tags[FaultInjectionEventMeterTagNames.FaultType]);
+        Assert.Equal(InjectedValue, latest.Tags[FaultInjectionEventMeterTagNames.InjectedValue]);
+        Assert.Equal(HttpContentKey, latest.Tags[FaultInjectionEventMeterTagNames.HttpContentKey]);
 
         var entries = logger.Collector.GetSnapshot();
         entries.Should().HaveCount(1);
@@ -72,9 +72,9 @@ public class FaultInjectionTelemetryHandlerTests
 
         Assert.NotNull(latest);
         Assert.Equal(1, latest.Value);
-        Assert.Equal(GroupName, latest.Tags[FaultInjectionEventMeterDimensions.FaultInjectionGroupName]);
-        Assert.Equal(FaultType, latest.Tags[FaultInjectionEventMeterDimensions.FaultType]);
-        Assert.Equal(InjectedValue, latest.Tags[FaultInjectionEventMeterDimensions.InjectedValue]);
-        Assert.Equal(HttpContentKey, latest.Tags[FaultInjectionEventMeterDimensions.HttpContentKey]);
+        Assert.Equal(GroupName, latest.Tags[FaultInjectionEventMeterTagNames.FaultInjectionGroupName]);
+        Assert.Equal(FaultType, latest.Tags[FaultInjectionEventMeterTagNames.FaultType]);
+        Assert.Equal(InjectedValue, latest.Tags[FaultInjectionEventMeterTagNames.InjectedValue]);
+        Assert.Equal(HttpContentKey, latest.Tags[FaultInjectionEventMeterTagNames.HttpContentKey]);
     }
 }

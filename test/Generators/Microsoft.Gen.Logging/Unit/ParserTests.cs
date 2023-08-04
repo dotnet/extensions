@@ -378,7 +378,7 @@ public partial class ParserTests
                     public class LogMethodAttribute : System.Attribute {}
                     public class LogPropertiesAttribute : System.Attribute {}
                     public class LogPropertyIgnoreAttribute : System.Attribute {}
-                    public class ILogPropertyCollector {}
+                    public class ITagCollector {}
                     public class LogMethodHelper { }
                 }
                 partial class C
@@ -525,22 +525,6 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task NoILoggerFieldWithRedactionProvider()
-    {
-        const string Source = @"
-            using Microsoft.Extensions.Compliance.Redaction;
-            using Microsoft.Extensions.Compliance.Testing;
-
-            internal partial class C
-            {
-                [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
-                partial void /*0+*/M/*-0*/(IRedactorProvider provider, [PrivateData] string p0);
-            }";
-
-        await RunGenerator(Source, DiagDescriptors.MissingLoggerField);
-    }
-
-    [Fact]
     public async Task MultipleILoggerFields()
     {
         const string Source = @"
@@ -561,8 +545,6 @@ public partial class ParserTests
     public async Task InstanceEmptyLoggingMethod()
     {
         const string Source = @"
-            using Microsoft.Extensions.Compliance.Redaction;
-
             partial class C
             {
                 public ILogger _logger;
@@ -572,23 +554,15 @@ public partial class ParserTests
 
                 [LogMethod(LogLevel.Debug)]
                 public partial void /*1+*/M2/*-1*/();
-
-                [LogMethod]
-                public partial void /*2+*/M3/*-2*/(LogLevel level, IRedactorProvider provider);
-
-                [LogMethod(LogLevel.Debug)]
-                public partial void /*3+*/M4/*-3*/(IRedactorProvider provider);
             }";
 
-        await RunGenerator(Source, DiagDescriptors.EmptyLoggingMethod, ignoreDiag: DiagDescriptors.MissingDataClassificationParameter);
+        await RunGenerator(Source, DiagDescriptors.EmptyLoggingMethod);
     }
 
     [Fact]
     public async Task StaticEmptyLoggingMethod()
     {
         const string Source = @"
-            using Microsoft.Extensions.Compliance.Redaction;
-
             partial class C
             {
                 [LogMethod]
@@ -596,15 +570,9 @@ public partial class ParserTests
 
                 [LogMethod(LogLevel.Debug)]
                 public static partial void /*1+*/M2/*-1*/(ILogger logger);
-
-                [LogMethod]
-                public static partial void /*2+*/M3/*-2*/(ILogger logger, LogLevel level, IRedactorProvider provider);
-
-                [LogMethod(LogLevel.Debug)]
-                public static partial void /*3+*/M4/*-3*/(ILogger logger, IRedactorProvider provider);
             }";
 
-        await RunGenerator(Source, DiagDescriptors.EmptyLoggingMethod, ignoreDiag: DiagDescriptors.MissingDataClassificationParameter);
+        await RunGenerator(Source, DiagDescriptors.EmptyLoggingMethod);
     }
 
     [Fact]
@@ -781,7 +749,7 @@ public partial class ParserTests
             {
                 Assembly.GetAssembly(typeof(ILogger))!,
                 Assembly.GetAssembly(typeof(LogMethodAttribute))!,
-                Assembly.GetAssembly(typeof(IEnrichmentPropertyBag))!,
+                Assembly.GetAssembly(typeof(IEnrichmentTagCollector))!,
                 Assembly.GetAssembly(typeof(DataClassification))!,
                 Assembly.GetAssembly(typeof(PrivateDataAttribute))!,
             };

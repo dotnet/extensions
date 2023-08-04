@@ -63,8 +63,8 @@ internal static partial class Log
             return;
         }
 
-        // EnrichmentProperties is null when we log request's start:
-        var loggerMessageState = record.EnrichmentProperties ?? LoggerMessageHelper.ThreadLocalState;
+        // EnrichmentTags is null when we log request's start:
+        var loggerMessageState = record.EnrichmentTags ?? LoggerMessageHelper.ThreadLocalState;
 
         var statusCodePropertyCount = record.StatusCode.HasValue ? 1 : 0;
         var requestHeadersCount = record.RequestHeaders?.Count ?? 0;
@@ -108,7 +108,7 @@ internal static partial class Log
             exception,
             _originalFormatValueFMTFunc);
 
-        if (record.EnrichmentProperties is null)
+        if (record.EnrichmentTags is null)
         {
             loggerMessageState.Clear();
         }

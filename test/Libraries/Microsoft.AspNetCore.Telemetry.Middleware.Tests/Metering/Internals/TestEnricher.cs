@@ -8,39 +8,39 @@ namespace Microsoft.AspNetCore.Telemetry;
 
 public class TestEnricher : IIncomingRequestMetricEnricher
 {
-    private readonly List<string> _dimensionNames = new();
-    private readonly int _numDimensions;
+    private readonly List<string> _tagNames = new();
+    private readonly int _numTags;
     private readonly string _prefix;
 
     public TestEnricher()
     {
-        _numDimensions = 1;
+        _numTags = 1;
         _prefix = string.Empty;
 
-        for (int i = 1; i <= _numDimensions; i++)
+        for (int i = 1; i <= _numTags; i++)
         {
-            _dimensionNames.Add($"test_property_{_prefix}{i}");
+            _tagNames.Add($"test_property_{_prefix}{i}");
         }
     }
 
     public TestEnricher(int numDimensions, string prefix = "")
     {
-        _numDimensions = numDimensions;
+        _numTags = numDimensions;
         _prefix = prefix;
 
-        for (int i = 1; i <= _numDimensions; i++)
+        for (int i = 1; i <= _numTags; i++)
         {
-            _dimensionNames.Add($"test_property_{_prefix}{i}");
+            _tagNames.Add($"test_property_{_prefix}{i}");
         }
     }
 
-    public IReadOnlyList<string> DimensionNames => _dimensionNames;
+    public IReadOnlyList<string> TagNames => _tagNames;
 
-    public void Enrich(IEnrichmentPropertyBag bag)
+    public void Enrich(IEnrichmentTagCollector collector)
     {
-        for (int i = 1; i <= _numDimensions; i++)
+        for (int i = 1; i <= _numTags; i++)
         {
-            bag.Add($"test_property_{_prefix}{i}", $"test_value_{_prefix}{i}");
+            collector.Add($"test_property_{_prefix}{i}", $"test_value_{_prefix}{i}");
         }
     }
 }

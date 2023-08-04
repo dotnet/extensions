@@ -77,7 +77,7 @@ internal sealed partial class Emitter : EmitterBase
     internal static IReadOnlyCollection<string> GetLogPropertiesAttributes(LoggingMethod lm)
     {
         var result = new HashSet<string?>();
-        var parametersWithLogProps = lm.Parameters.Where(x => x.HasProperties && !x.HasPropsProvider);
+        var parametersWithLogProps = lm.Parameters.Where(x => x.HasProperties && !x.HasTagProvider);
         foreach (var parameter in parametersWithLogProps)
         {
             parameter.TraverseParameterPropertiesTransitively((_, property) => result.Add(property.ClassificationAttributeType));

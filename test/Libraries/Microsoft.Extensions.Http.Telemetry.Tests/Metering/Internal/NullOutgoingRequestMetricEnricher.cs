@@ -10,8 +10,8 @@ internal class NullOutgoingRequestMetricEnricher : IOutgoingRequestMetricEnriche
 {
     public IReadOnlyList<string> DimensionNames => null!;
 
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag)
+    public void Enrich(IEnrichmentTagCollector collector)
     {
-        enrichmentBag.Add(null!, null!);
+        collector.Add(null!, null!);
     }
 }

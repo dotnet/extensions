@@ -39,7 +39,7 @@ internal static partial class Log
             try
             {
                 collector.ParameterName = string.Empty;
-                HttpLogPropertiesProvider.GetProperties(collector, req);
+                HttpLogPropertiesProvider.GetTags(collector, req);
 
                 collector.Add(OriginalFormat, OriginalFormatValue);
                 logger.Log(
@@ -69,7 +69,7 @@ internal static partial class Log
             try
             {
                 collector.ParameterName = string.Empty;
-                HttpLogPropertiesProvider.GetProperties(collector, req);
+                HttpLogPropertiesProvider.GetTags(collector, req);
 
                 collector.Add(OriginalFormat, OriginalFormatValue);
                 logger.Log(
@@ -148,7 +148,7 @@ internal static partial class Log
 
         foreach (var kvp in request)
         {
-            if (kvp.Key == HttpLoggingDimensions.Method)
+            if (kvp.Key == HttpLoggingTagNames.Method)
             {
                 break;
             }

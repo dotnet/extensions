@@ -3,7 +3,7 @@
 
 namespace Microsoft.Extensions.Resilience.Resilience.Internal;
 
-internal static class ResilienceDimensions
+internal static class ResilienceTagNames
 {
     public const string FailureSource = "failure-source";
 

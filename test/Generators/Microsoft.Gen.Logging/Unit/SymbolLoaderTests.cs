@@ -20,7 +20,7 @@ public class SymbolLoaderTests
     [InlineData(SymbolLoader.ILoggerType)]
     [InlineData(SymbolLoader.ExceptionType, true)]
     [InlineData(SymbolLoader.LogPropertiesAttribute)]
-    [InlineData(SymbolLoader.ILogPropertyCollectorType)]
+    [InlineData(SymbolLoader.ITagCollectorType)]
     [InlineData(SymbolLoader.LogPropertyIgnoreAttribute)]
     public void Loader_ReturnsNull_WhenTypeIsUnavailable(string type, bool callbackShouldBeCalled = false)
     {

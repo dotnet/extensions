@@ -33,8 +33,8 @@ public class LoggingMethodParameterTests
 
         var lp = new LoggingMethodParameter
         {
-            LogPropertiesProvider = setLogPropertiesProvider
-                ? new LoggingPropertyProvider(string.Empty, string.Empty)
+            TagProvider = setLogPropertiesProvider
+                ? new TagProvider(string.Empty, string.Empty)
                 : null
         };
 
@@ -45,7 +45,7 @@ public class LoggingMethodParameterTests
 
         Assert.Equal(expectedParamIsInTemplate, lp.IsNormalParameter);
         Assert.Equal(expectedParamHasProperties, lp.HasProperties);
-        Assert.Equal(expectedParamHasPropsProvider, lp.HasPropsProvider);
+        Assert.Equal(expectedParamHasPropsProvider, lp.HasTagProvider);
     }
 
     [Fact]

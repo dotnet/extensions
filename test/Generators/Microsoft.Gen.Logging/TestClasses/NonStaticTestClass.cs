@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Logging;
@@ -12,12 +11,10 @@ namespace TestClasses
     public partial class NonStaticTestClass
     {
         private readonly ILogger _logger;
-        private readonly IRedactorProvider _redactorProvider;
 
-        public NonStaticTestClass(ILogger logger, IRedactorProvider redactorProvider)
+        public NonStaticTestClass(ILogger logger)
         {
             _logger = logger;
-            _redactorProvider = redactorProvider;
         }
 
         [LogMethod(0, LogLevel.Debug, "M0 {p0}")]

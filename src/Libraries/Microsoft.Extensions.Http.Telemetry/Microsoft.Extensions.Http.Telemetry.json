@@ -36,63 +36,6 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions",
-      "Stage": "Stable",
-      "Fields": [
-        {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.Duration",
-          "Stage": "Stable",
-          "Value": "duration"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.Host",
-          "Stage": "Stable",
-          "Value": "httpHost"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.Method",
-          "Stage": "Stable",
-          "Value": "httpMethod"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.Path",
-          "Stage": "Stable",
-          "Value": "httpPath"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.RequestBody",
-          "Stage": "Stable",
-          "Value": "httpRequestBody"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.RequestHeaderPrefix",
-          "Stage": "Stable",
-          "Value": "httpRequestHeader_"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.ResponseBody",
-          "Stage": "Stable",
-          "Value": "httpResponseBody"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.ResponseHeaderPrefix",
-          "Stage": "Stable",
-          "Value": "httpResponseHeader_"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.StatusCode",
-          "Stage": "Stable",
-          "Value": "httpStatusCode"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingDimensions.DimensionNames { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -122,6 +65,63 @@
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions> configure);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.Duration",
+          "Stage": "Stable",
+          "Value": "duration"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.Host",
+          "Stage": "Stable",
+          "Value": "httpHost"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.Method",
+          "Stage": "Stable",
+          "Value": "httpMethod"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.Path",
+          "Stage": "Stable",
+          "Value": "httpPath"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.RequestBody",
+          "Stage": "Stable",
+          "Value": "httpRequestBody"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.RequestHeaderPrefix",
+          "Stage": "Stable",
+          "Value": "httpRequestHeader_"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.ResponseBody",
+          "Stage": "Stable",
+          "Value": "httpResponseBody"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.ResponseHeaderPrefix",
+          "Stage": "Stable",
+          "Value": "httpResponseHeader_"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.StatusCode",
+          "Stage": "Stable",
+          "Value": "httpStatusCode"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.DimensionNames { get; }",
           "Stage": "Stable"
         }
       ]
@@ -252,7 +252,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag enrichmentBag, System.Net.Http.HttpRequestMessage request, System.Net.Http.HttpResponseMessage? response = null, System.Exception? exception = null);",
+          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector, System.Net.Http.HttpRequestMessage request, System.Net.Http.HttpResponseMessage? response = null, System.Exception? exception = null);",
           "Stage": "Stable"
         }
       ]

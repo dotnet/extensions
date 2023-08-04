@@ -10,19 +10,19 @@ namespace Microsoft.Extensions.Telemetry.Enrichment;
 /// <summary>
 /// Allows enrichers to report enrichment properties.
 /// </summary>
-public interface IEnrichmentPropertyBag
+public interface IEnrichmentTagCollector
 {
     /// <summary>
-    /// Add a property in form of a key/value pair to the bag of enrichment properties.
+    /// Adds a tag in form of a key/value pair.
     /// </summary>
-    /// <param name="key">Enrichment property key.</param>
-    /// <param name="value">Enrichment property value.</param>
-    /// <exception cref="ArgumentException"><paramref name="key"/> is an empty string.</exception>
+    /// <param name="tagName">Enrichment property key.</param>
+    /// <param name="tagValue">Enrichment property value.</param>
+    /// <exception cref="ArgumentException"><paramref name="tagName"/> is an empty string.</exception>
     /// <exception cref="ArgumentNullException">
-    /// Either <paramref name="key"/> or <paramref name="value"/> is <see langword="null" />.
+    /// Either <paramref name="tagName"/> or <paramref name="tagValue"/> is <see langword="null" />.
     /// </exception>
     /// <remarks>
-    /// For log enrichment, <paramref name="value"/> is serialized as per the rules below:
+    /// For log enrichment, <paramref name="tagValue"/> is serialized as per the rules below:
     /// <list type="bullet">
     /// <listheader>
     ///    <term>Primitive types</term>
@@ -45,31 +45,31 @@ public interface IEnrichmentPropertyBag
     ///     <description>converted to <see cref="string"/> as is and serialized.</description>
     ///  </item>
     /// </list>
-    /// For metric enrichment, <paramref name="value"/> is converted to <see cref="string"/> format using <see cref="object.ToString()"/> method.
+    /// For metric enrichment, <paramref name="tagValue"/> is converted to <see cref="string"/> format using <see cref="object.ToString()"/> method.
     /// </remarks>
-    void Add(string key, object value);
+    void Add(string tagName, object tagValue);
 
     /// <summary>
-    /// Add a property in form of a key/value pair to the bag of enrichment properties.
+    /// Adds a tag in form of a key/value pair.
     /// </summary>
-    /// <param name="key">Enrichment property key.</param>
-    /// <param name="value">Enrichment property value.</param>
-    /// <exception cref="ArgumentException"><paramref name="key"/> is an empty string.</exception>
+    /// <param name="tagName">Enrichment property key.</param>
+    /// <param name="tagValue">Enrichment property value.</param>
+    /// <exception cref="ArgumentException"><paramref name="tagName"/> is an empty string.</exception>
     /// <exception cref="ArgumentNullException">
-    /// Either <paramref name="key"/> or <paramref name="value"/> is <see langword="null" />.
+    /// Either <paramref name="tagName"/> or <paramref name="tagValue"/> is <see langword="null" />.
     /// </exception>
-    void Add(string key, string value);
+    void Add(string tagName, string tagValue);
 
     /// <summary>
-    /// Adds a series of properties to the bag of enrichment properties.
+    /// Adds a series of tags.
     /// </summary>
-    /// <param name="properties">The properties to add.</param>
+    /// <param name="tags">The tags to add.</param>
     /// <remarks>Refer to the <see cref="Add(string, object)"/> overload for a description of the serialization semantics.</remarks>
-    void Add(ReadOnlySpan<KeyValuePair<string, object>> properties);
+    void Add(ReadOnlySpan<KeyValuePair<string, object>> tags);
 
     /// <summary>
-    /// Adds a series of properties to the bag of enrichment properties.
+    /// Adds a series of tags.
     /// </summary>
-    /// <param name="properties">The properties to add.</param>
-    void Add(ReadOnlySpan<KeyValuePair<string, string>> properties);
+    /// <param name="tags">The tags to add.</param>
+    void Add(ReadOnlySpan<KeyValuePair<string, string>> tags);
 }

@@ -32,11 +32,11 @@ internal sealed class StaticProcessLogEnricher : IStaticLogEnricher
         }
     }
 
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag)
+    public void Enrich(IEnrichmentTagCollector collector)
     {
         if (_processId != null)
         {
-            enrichmentBag.Add(ProcessEnricherDimensions.ProcessId, _processId);
+            collector.Add(ProcessEnricherTagNames.ProcessId, _processId);
         }
     }
 }

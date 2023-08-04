@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.Telemetry;
 
 public class PropertyBagEdgeCaseEnricher : IIncomingRequestMetricEnricher
 {
-    public IReadOnlyList<string> DimensionNames => new[] { "non_null_object_property" };
+    public IReadOnlyList<string> TagNames => new[] { "non_null_object_property" };
     private readonly object _stringObj = "test_val";
 
-    public void Enrich(IEnrichmentPropertyBag bag)
+    public void Enrich(IEnrichmentTagCollector collector)
     {
-        bag.Add("non_null_object_property", _stringObj);
+        collector.Add("non_null_object_property", _stringObj);
     }
 }

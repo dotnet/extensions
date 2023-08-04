@@ -8,8 +8,8 @@ namespace Microsoft.Gen.Metering.Model;
 internal sealed class MetricMethod
 {
     public readonly List<MetricParameter> AllParameters = new();
-    public HashSet<string> DimensionsKeys = new();
-    public Dictionary<string, string> DimensionDescriptionDictionary = new();
+    public HashSet<string> TagKeys = new();
+    public Dictionary<string, string> TagDescriptionDictionary = new();
     public string? Name;
     public string? MetricName;
     public string? XmlDefinition;
@@ -21,5 +21,5 @@ internal sealed class MetricMethod
     public string GenericType = string.Empty;
     public List<StrongTypeConfig> StrongTypeConfigs = new(); // Used for strong type creation only
     public string? StrongTypeObjectName; // Used for strong type creation only
-    public bool IsDimensionTypeClass; // Used for strong type creation only
+    public bool IsTagTypeClass; // Used for strong type creation only
 }

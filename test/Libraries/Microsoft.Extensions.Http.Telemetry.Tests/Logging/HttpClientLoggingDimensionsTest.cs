@@ -13,8 +13,8 @@ public class HttpClientLoggingDimensionsTest
     [Fact]
     public void GetDimensionNames_ReturnsAnArrayOfDimensionNames()
     {
-        var actualDimensions = HttpClientLoggingDimensions.DimensionNames;
-        var expectedDimensions = GetStringConstants(typeof(HttpClientLoggingDimensions));
+        var actualDimensions = HttpClientLoggingTagNames.DimensionNames;
+        var expectedDimensions = GetStringConstants(typeof(HttpClientLoggingTagNames));
 
         actualDimensions.Should().BeEquivalentTo(expectedDimensions);
     }

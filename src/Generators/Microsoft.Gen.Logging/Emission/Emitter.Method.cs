@@ -20,7 +20,7 @@ internal sealed partial class Emitter : EmitterBase
         string level = GetLoggerMethodLogLevel(lm);
         string extension = lm.IsExtensionMethod ? "this " : string.Empty;
         string eventName = string.IsNullOrWhiteSpace(lm.EventName) ? $"nameof({lm.Name})" : $"\"{lm.EventName}\"";
-        string exceptionArg = GetException(lm);
+        (string exceptionArg, string exceptionLambdaName) = GetException(lm);
         (string logger, bool isNullableLogger) = GetLogger(lm);
 
         if (!lm.HasXmlDocumentation)
@@ -73,122 +73,12 @@ internal sealed partial class Emitter : EmitterBase
             OutLn();
         }
 
-        var redactorProviderAccess = string.Empty;
-        var parametersToRedact = lm.Parameters.Where(lp => lp.ClassificationAttributeType != null);
-        if (parametersToRedact.Any() || logPropsDataClasses.Count > 0)
-        {
-            (string redactorProvider, bool isNullableRedactorProvider) = GetRedactorProvider(lm);
-            if (isNullableRedactorProvider)
-            {
-                redactorProviderAccess = "?";
-            }
+        var stateName = PickUniqueName("state", lm.Parameters.Select(p => p.Name));
 
-            var classifications = parametersToRedact
-                .Select(static p => p.ClassificationAttributeType)
-                .Concat(logPropsDataClasses)
-                .Distinct()
-                .Where(static p => p != null)
-                .Select(static p => p!);
-
-            GenRedactorsFetchingCode(_isRedactorProviderInTheInstance, classifications, redactorProvider, isNullableRedactorProvider);
-            OutLn();
-        }
-
-        Dictionary<LoggingMethodParameter, int> holderMap = new();
-
-        var helperName = PickUniqueName("helper", lm.Parameters.Select(p => p.Name));
-        var tmpName = PickUniqueName("tmp", lm.Parameters.Select(p => p.Name));
-
-        OutLn($"var {helperName} = {LogMethodHelperType}.GetHelper();");
-
-        foreach (var p in lm.Parameters)
-        {
-            if (!p.HasPropsProvider && !p.HasProperties && p.IsNormalParameter)
-            {
-                GenHelperAdd(lm, holderMap, p, redactorProviderAccess, helperName, tmpName);
-            }
-        }
-
-        foreach (var p in lm.Parameters.Where(p => p.UsedAsTemplate))
-        {
-            if (!holderMap.ContainsKey(p))
-            {
-                GenHelperAdd(lm, holderMap, p, redactorProviderAccess, helperName, tmpName);
-            }
-        }
-
-        if (!string.IsNullOrEmpty(lm.Message))
-        {
-            OutLn($"{helperName}.Add(\"{{OriginalFormat}}\", \"{EscapeMessageString(lm.Message)}\");");
-        }
-
-        foreach (var p in lm.Parameters)
-        {
-            if (p.HasPropsProvider)
-            {
-                if (p.OmitParameterName)
-                {
-                    OutLn($"{helperName}.ParameterName = string.Empty;");
-                }
-                else
-                {
-                    OutLn($"{helperName}.ParameterName = nameof({p.NameWithAt});");
-                }
-
-                OutLn($"{p.LogPropertiesProvider!.ContainingType}.{p.LogPropertiesProvider.MethodName}({helperName}, {p.NameWithAt});");
-            }
-            else if (p.HasProperties)
-            {
-                OutLn($"{helperName}.ParameterName = string.Empty;");
-
-                p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
-                {
-                    var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
-                    var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
-
-                    var skipNull = p.SkipNullProperties && member.PotentiallyNull
-                        ? $"if ({accessExpression} != null) "
-                        : string.Empty;
-
-                    if (member.ClassificationAttributeType != null)
-                    {
-                        var stringifiedProperty = ConvertPropertyToString(member, accessExpression);
-                        var value = $"_{EncodeTypeName(member.ClassificationAttributeType)}Redactor{redactorProviderAccess}.Redact(global::System.MemoryExtensions.AsSpan({stringifiedProperty}))";
-
-                        if (member.PotentiallyNull)
-                        {
-                            if (p.SkipNullProperties || accessExpression == value)
-                            {
-                                OutLn($"{skipNull}{helperName}.Add(\"{propName}\", {value});");
-                            }
-                            else
-                            {
-                                OutLn($"{helperName}.Add(\"{propName}\", {accessExpression} != null ? {value} : null);");
-                            }
-                        }
-                        else
-                        {
-                            OutLn($"{helperName}.Add(\"{propName}\", {value});");
-                        }
-                    }
-                    else
-                    {
-                        var ts = ShouldStringify(member.Type)
-                            ? ConvertPropertyToString(member, accessExpression)
-                            : accessExpression;
-
-                        var value = member.IsEnumerable
-                            ? $"global::Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Stringify({accessExpression})"
-                            : ts;
-
-                        OutLn($"{skipNull}{helperName}.Add(\"{propName}\", {value});");
-                    }
-                });
-            }
-        }
+        OutLn($"var {stateName} = {LoggerMessageHelperType}.ThreadLocalState;");
+        GenPropertyLoads(lm, stateName, out int numReservedUnclassifiedTags, out int numReservedClassifiedTags);
 
         OutLn();
-
         OutLn($"{logger}.Log(");
 
         Indent();
@@ -203,15 +93,15 @@ internal sealed partial class Emitter : EmitterBase
             OutLn($"new(0, {eventName}),");
         }
 
-        OutLn($"{helperName},");
+        OutLn($"{stateName},");
         OutLn($"{exceptionArg},");
 
-        var lambdaHelperName = PickUniqueName("helper", lm.TemplateToParameterName.Select(kvp => kvp.Key));
+        var lambdaStateName = PickUniqueName("s", lm.TemplateToParameterName.Select(kvp => kvp.Key));
 
-        OutLn($"static ({lambdaHelperName}, _) =>");
+        OutLn($"static ({lambdaStateName}, {exceptionLambdaName}) =>");
         OutOpenBrace();
 
-        if (GenVariableAssignments(lm, holderMap, lambdaHelperName))
+        if (GenVariableAssignments(lm, lambdaStateName, numReservedUnclassifiedTags, numReservedClassifiedTags))
         {
             var template = EscapeMessageString(lm.Message);
             template = AddAtSymbolsToTemplates(template, lm.Parameters);
@@ -230,8 +120,7 @@ internal sealed partial class Emitter : EmitterBase
         Unindent();
 
         OutLn();
-        OutLn($"{LogMethodHelperType}.ReturnHelper({helperName});");
-
+        OutLn($"{stateName}.Clear();");
         OutCloseBrace();
 
         static bool ShouldStringify(string typeName)
@@ -276,59 +165,298 @@ internal sealed partial class Emitter : EmitterBase
             return $"{arg}{question}.ToString()";
         }
 
-        static string GetException(LoggingMethod lm)
+        static (string exceptionArg, string exceptionLambdaArg) GetException(LoggingMethod lm)
         {
             string exceptionArg = "null";
+            string exceptionLambdaArg = "_";
+
             foreach (var p in lm.Parameters)
             {
                 if (p.IsException)
                 {
                     exceptionArg = p.Name;
+
+                    if (p.UsedAsTemplate)
+                    {
+                        exceptionLambdaArg = lm.GetParameterNameInTemplate(p);
+                    }
+
                     break;
                 }
             }
 
-            return exceptionArg;
+            return (exceptionArg, exceptionLambdaArg);
         }
 
-        bool GenVariableAssignments(LoggingMethod lm, Dictionary<LoggingMethodParameter, int> holderMap, string lambdaHelperName)
+        static bool NeedsASlot(LoggingMethodParameter p)
         {
-            var result = false;
-
-            var templateParameters = lm.Parameters.Where(p => p.UsedAsTemplate).ToArray();
-            foreach (var t in lm.TemplateToParameterName)
+            if (p.UsedAsTemplate && !p.IsException)
             {
-                int index = 0;
-                foreach (var p in templateParameters)
-                {
-                    if (t.Key.Equals(p.Name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        break;
-                    }
+                return true;
+            }
 
-                    index++;
-                }
+            return p.IsNormalParameter && !p.HasTagProvider && !p.HasProperties;
+        }
 
-                // check for an index that's too big, this can happen in some cases of malformed input
-                if (index < templateParameters.Length)
+        void GenPropertyLoads(LoggingMethod lm, string stateName, out int numReservedUnclassifiedTags, out int numReservedClassifiedTags)
+        {
+            int numUnclassifiedTags = 0;
+            int numClassifiedTags = 0;
+
+            foreach (var p in lm.Parameters)
+            {
+                if (NeedsASlot(p))
                 {
-                    var parameter = templateParameters[index];
-                    var atSign = parameter.NeedsAtSign ? "@" : string.Empty;
-                    if (parameter.PotentiallyNull)
+                    if (p.HasDataClassification)
                     {
-                        const string Null = "\"(null)\"";
-                        OutLn($"var {atSign}{t.Key} = {lambdaHelperName}[{holderMap[parameter]}].Value ?? {Null};");
-                        result = true;
+                        numClassifiedTags++;
                     }
                     else
                     {
-                        OutLn($"var {atSign}{t.Key} = {lambdaHelperName}[{holderMap[parameter]}].Value;");
-                        result = true;
+                        numUnclassifiedTags++;
+                    }
+                }
+
+                if (p.HasProperties && !p.SkipNullProperties)
+                {
+                    p.TraverseParameterPropertiesTransitively((_, member) =>
+                    {
+                        if (member.HasDataClassification)
+                        {
+                            numClassifiedTags++;
+                        }
+                        else
+                        {
+                            numUnclassifiedTags++;
+                        }
+                    });
+                }
+            }
+
+            if (!string.IsNullOrEmpty(lm.Message))
+            {
+                numUnclassifiedTags++;
+            }
+
+            numReservedUnclassifiedTags = numUnclassifiedTags;
+            numReservedClassifiedTags = numClassifiedTags;
+
+            if (numReservedUnclassifiedTags > 0)
+            {
+                OutLn();
+                OutLn($"_ = {stateName}.ReserveTagSpace({numReservedUnclassifiedTags});");
+                int count = numReservedUnclassifiedTags;
+                foreach (var p in lm.Parameters)
+                {
+                    if (NeedsASlot(p) && !p.HasDataClassification)
+                    {
+                        var key = $"\"{lm.GetParameterNameInTemplate(p)}\"";
+                        string value;
+
+                        if (p.IsEnumerable)
+                        {
+                            value = p.PotentiallyNull
+                                ? $"{p.NameWithAt} != null ? {LoggerMessageHelperType}.Stringify({p.NameWithAt}) : null"
+                                : $"{LoggerMessageHelperType}.Stringify({p.NameWithAt})";
+                        }
+                        else
+                        {
+                            value = ShouldStringify(p.Type)
+                                ? ConvertToString(p, p.NameWithAt)
+                                : p.NameWithAt;
+                        }
+
+                        OutLn($"{stateName}.TagArray[{--count}] = new({key}, {value});");
+                    }
+                }
+
+                foreach (var p in lm.Parameters)
+                {
+                    if (p.HasProperties && !p.SkipNullProperties)
+                    {
+                        p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
+                        {
+                            if (!member.HasDataClassification)
+                            {
+                                var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
+                                var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
+
+                                var ts = ShouldStringify(member.Type)
+                                    ? ConvertPropertyToString(member, accessExpression)
+                                    : accessExpression;
+
+                                var value = member.IsEnumerable
+                                    ? $"{LoggerMessageHelperType}.Stringify({accessExpression})"
+                                    : ts;
+
+                                OutLn($"{stateName}.TagArray[{--count}] = new(\"{propName}\", {value});");
+                            }
+                        });
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(lm.Message))
+                {
+                    OutLn($"{stateName}.TagArray[{--count}] = new(\"{{OriginalFormat}}\", \"{EscapeMessageString(lm.Message)}\");");
+                }
+            }
+
+            if (numReservedClassifiedTags > 0)
+            {
+                OutLn();
+                OutLn($"_ = {stateName}.ReserveClassifiedTagSpace({numReservedClassifiedTags});");
+                int count = numReservedClassifiedTags;
+                foreach (var p in lm.Parameters)
+                {
+                    if (NeedsASlot(p) && p.HasDataClassification)
+                    {
+                        var key = $"\"{lm.GetParameterNameInTemplate(p)}\"";
+                        var classification = $"_{EncodeTypeName(p.ClassificationAttributeType!)}_Classification";
+
+                        var value = ShouldStringify(p.Type)
+                            ? ConvertToString(p, p.NameWithAt)
+                            : p.NameWithAt;
+
+                        OutLn($"{stateName}.ClassifiedTagArray[{--count}] = new({key}, {value}, {classification});");
+                    }
+                }
+
+                foreach (var p in lm.Parameters)
+                {
+                    if (p.HasProperties && !p.SkipNullProperties)
+                    {
+                        p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
+                        {
+                            if (member.HasDataClassification)
+                            {
+                                var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
+                                var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
+
+                                var value = ConvertPropertyToString(member, accessExpression);
+                                var classification = $"_{EncodeTypeName(member.ClassificationAttributeType!)}_Classification";
+
+                                OutLn($"{stateName}.ClassifiedTagArray[{--count}] = new(\"{propName}\", {value}, {classification});");
+                            }
+                        });
                     }
                 }
             }
 
-            return result;
+            foreach (var p in lm.Parameters)
+            {
+                if (p.HasProperties && p.SkipNullProperties)
+                {
+                    p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
+                    {
+                        if (!member.HasDataClassification)
+                        {
+                            var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
+                            var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
+
+                            var ts = ShouldStringify(member.Type)
+                                ? ConvertPropertyToString(member, accessExpression)
+                                : accessExpression;
+
+                            var value = member.IsEnumerable ? $"{LoggerMessageHelperType}.Stringify({accessExpression})" : ts;
+
+                            var skipNull = member.PotentiallyNull && !member.IsEnumerable
+                                ? $"if ({value} != null) "
+                                : string.Empty;
+
+                            OutLn($"{skipNull}{stateName}.AddTag(\"{propName}\", {value});");
+                        }
+                        else
+                        {
+                            var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
+                            var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
+
+                            var value = ConvertPropertyToString(member, accessExpression);
+                            var classification = $"_{EncodeTypeName(member.ClassificationAttributeType!)}_Classification";
+
+                            var skipNull = member.PotentiallyNull
+                                ? $"if ({value} != null) "
+                                : string.Empty;
+
+                            OutLn($"{skipNull}{stateName}.AddClassifiedTag(\"{propName}\", {value}, {classification});");
+                        }
+                    });
+                }
+
+                if (p.HasTagProvider)
+                {
+                    if (p.OmitParameterName)
+                    {
+                        OutLn($"{stateName}.TagNamePrefix = string.Empty;");
+                    }
+                    else
+                    {
+                        OutLn($"{stateName}.TagNamePrefix = nameof({p.NameWithAt});");
+                    }
+
+                    OutLn($"{p.TagProvider!.ContainingType}.{p.TagProvider.MethodName}({stateName}, {p.NameWithAt});");
+                }
+            }
+        }
+
+        bool GenVariableAssignments(LoggingMethod lm, string lambdaStateName, int numReservedUnclassifiedTags, int numReservedClassifiedTags)
+        {
+            bool generatedAssignments = false;
+
+            int index = numReservedUnclassifiedTags - 1;
+            foreach (var p in lm.Parameters)
+            {
+                if (NeedsASlot(p) && !p.HasDataClassification)
+                {
+                    if (p.UsedAsTemplate)
+                    {
+                        var key = lm.GetParameterNameInTemplate(p);
+
+                        var atSign = p.NeedsAtSign ? "@" : string.Empty;
+                        if (p.PotentiallyNull)
+                        {
+                            const string Null = "\"(null)\"";
+                            OutLn($"var {atSign}{key} = {lambdaStateName}.TagArray[{index}].Value ?? {Null};");
+                        }
+                        else
+                        {
+                            OutLn($"var {atSign}{key} = {lambdaStateName}.TagArray[{index}].Value;");
+                        }
+
+                        generatedAssignments = true;
+                    }
+
+                    index--;
+                }
+            }
+
+            index = numReservedClassifiedTags - 1;
+            foreach (var p in lm.Parameters)
+            {
+                if (NeedsASlot(p) && p.HasDataClassification)
+                {
+                    if (p.UsedAsTemplate)
+                    {
+                        var key = lm.GetParameterNameInTemplate(p);
+
+                        var atSign = p.NeedsAtSign ? "@" : string.Empty;
+                        if (p.PotentiallyNull)
+                        {
+                            const string Null = "\"(null)\"";
+                            OutLn($"var {atSign}{key} = {lambdaStateName}.RedactedTagArray[{index}].Value ?? {Null};");
+                        }
+                        else
+                        {
+                            OutLn($"var {atSign}{key} = {lambdaStateName}.RedactedTagArray[{index}].Value;");
+                        }
+
+                        generatedAssignments = true;
+                    }
+
+                    index--;
+                }
+            }
+
+            return generatedAssignments;
         }
 
         static (string name, bool isNullable) GetLogger(LoggingMethod lm)
@@ -347,61 +475,6 @@ internal sealed partial class Emitter : EmitterBase
             }
 
             return (logger, isNullable);
-        }
-
-        static (string name, bool isNullable) GetRedactorProvider(LoggingMethod lm)
-        {
-            string redactorProvider = lm.RedactorProviderField;
-            bool isNullable = lm.RedactorProviderFieldNullable;
-
-            foreach (var p in lm.Parameters)
-            {
-                if (p.IsRedactorProvider)
-                {
-                    redactorProvider = p.Name;
-                    isNullable = p.IsNullable;
-                    break;
-                }
-            }
-
-            return (redactorProvider, isNullable);
-        }
-
-        void GenHelperAdd(LoggingMethod lm, Dictionary<LoggingMethodParameter, int> holderMap, LoggingMethodParameter p, string redactorProviderAccess, string helperName, string tmpName)
-        {
-            string key = $"\"{lm.GetParameterNameInTemplate(p)}\"";
-
-            if (p.ClassificationAttributeType != null)
-            {
-                var dataClassVariableName = EncodeTypeName(p.ClassificationAttributeType);
-
-                OutOpenBrace();
-                OutLn($"var {tmpName} = {ConvertToString(p, p.NameWithAt)};");
-                var value = $"{tmpName} != null ? _{dataClassVariableName}Redactor{redactorProviderAccess}.Redact(global::System.MemoryExtensions.AsSpan({tmpName})) : null";
-                OutLn($"{helperName}.Add({key}, {value});");
-                OutCloseBrace();
-            }
-            else
-            {
-                if (p.IsEnumerable)
-                {
-                    var value = p.PotentiallyNull
-                        ? $"{p.NameWithAt} != null ? global::Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Stringify({p.NameWithAt}) : null"
-                        : $"global::Microsoft.Extensions.Telemetry.Logging.LogMethodHelper.Stringify({p.NameWithAt})";
-
-                    OutLn($"{helperName}.Add({key}, {value});");
-                }
-                else
-                {
-                    var value = ShouldStringify(p.Type)
-                        ? ConvertToString(p, p.NameWithAt)
-                        : p.NameWithAt;
-
-                    OutLn($"{helperName}.Add({key}, {value});");
-                }
-            }
-
-            holderMap.Add(p, holderMap.Count);
         }
     }
 
@@ -483,40 +556,6 @@ internal sealed partial class Emitter : EmitterBase
         finally
         {
             _sbPool.ReturnStringBuilder(localStringBuilder);
-        }
-    }
-
-    private void GenRedactorsFetchingCode(
-        bool isRedactorProviderInTheInstance,
-        IEnumerable<string> classificationAttributeTypes,
-        string redactorProvider,
-        bool isNullableRedactorProvider)
-    {
-        if (isRedactorProviderInTheInstance)
-        {
-            foreach (var classificationAttributeType in classificationAttributeTypes)
-            {
-                var classificationVariableName = EncodeTypeName(classificationAttributeType);
-
-                OutLn($"var _{classificationVariableName}Redactor = __{classificationVariableName}Redactor;");
-            }
-        }
-        else
-        {
-            foreach (var classificationAttributeType in classificationAttributeTypes)
-            {
-                var classificationVariableName = EncodeTypeName(classificationAttributeType);
-                var attrClassificationFieldName = GetAttributeClassification(classificationAttributeType);
-
-                if (isNullableRedactorProvider)
-                {
-                    OutLn($"var _{classificationVariableName}Redactor = {redactorProvider}?.GetRedactor({attrClassificationFieldName});");
-                }
-                else
-                {
-                    OutLn($"var _{classificationVariableName}Redactor = {redactorProvider}.GetRedactor({attrClassificationFieldName});");
-                }
-            }
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
 
 internal class EmptyEnricher : IHttpClientLogEnricher
 {
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
+    public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
     {
         // intentionally left empty.
     }

@@ -112,7 +112,7 @@ namespace TestClasses
         public string? Dim1;
         public HistogramOperations OperationsEnum { get; set; }
 
-        [Dimension("Enum2")]
+        [TagName("Enum2")]
         public HistogramOperations OperationsEnum2 { get; set; }
 
         public HistogramChildDimensions? ChildDimensionsObject { get; set; }
@@ -136,7 +136,7 @@ namespace TestClasses
     {
         public string? Dim2 { get; set; }
 
-        [Dimension("dim2FromAttribute")]
+        [TagName("dim2FromAttribute")]
         public string? SomeDim;
     }
 
@@ -144,7 +144,7 @@ namespace TestClasses
     {
         public string Dim4Struct { get; set; }
 
-        [Dimension("Dim5FromAttribute")]
+        [TagName("Dim5FromAttribute")]
         public string Dim5Struct { get; set; }
     }
 
@@ -152,7 +152,7 @@ namespace TestClasses
     {
         public string? Dim3 { get; set; }
 
-        [Dimension("Dim3FromAttribute")]
+        [TagName("Dim3FromAttribute")]
         public string? SomeDim { get; set; }
     }
 
@@ -160,15 +160,15 @@ namespace TestClasses
     {
         public string? Dim1 { get; set; }
 
-        [Dimension("DimInField")]
+        [TagName("DimInField")]
         public string? DimInField;
 
-        [Dimension("Dim2_FromAttribute")]
+        [TagName("Dim2_FromAttribute")]
         public string? Dim2 { get; set; }
 
         public HistogramOperations Operations { get; set; }
 
-        [Dimension("Operations_FromAttribute")]
+        [TagName("Operations_FromAttribute")]
         public HistogramOperations Operations2 { get; set; }
     }
 #pragma warning restore SA1402 // File may only contain a single type

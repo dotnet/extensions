@@ -11,12 +11,12 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 internal sealed partial class ExtendedLogger : ILogger
 {
     [ThreadStatic]
-    private static ModernPropertyJoiner? _modernJoiner;
+    private static ModernTagJoiner? _modernJoiner;
 
     [ThreadStatic]
-    private static LegacyPropertyJoiner? _legacyJoiner;
+    private static LegacyTagJoiner? _legacyJoiner;
 
-    private static ModernPropertyJoiner ModernJoiner
+    private static ModernTagJoiner ModernJoiner
     {
         get
         {
@@ -31,7 +31,7 @@ internal sealed partial class ExtendedLogger : ILogger
         }
     }
 
-    private static LegacyPropertyJoiner LegacyJoiner
+    private static LegacyTagJoiner LegacyJoiner
     {
         get
         {

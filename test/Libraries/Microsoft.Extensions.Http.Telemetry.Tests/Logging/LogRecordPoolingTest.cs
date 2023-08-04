@@ -19,7 +19,7 @@ public class LogRecordPoolingTest
         var testObject = new Fixture().Create<LogRecord>();
         testObject.RequestHeaders!.Add(new KeyValuePair<string, string>("key1", "value1"));
         testObject.ResponseHeaders!.Add(new KeyValuePair<string, string>("key2", "value2"));
-        testObject.EnrichmentProperties!.Add("key3", "value3");
+        testObject.EnrichmentTags!.Add("key3", "value3");
 
         var logRecord1 = pool.Get();
         logRecord1.Host = testObject.Host;
@@ -31,7 +31,7 @@ public class LogRecordPoolingTest
         logRecord1.ResponseHeaders = testObject.ResponseHeaders;
         logRecord1.RequestBody = testObject.RequestBody;
         logRecord1.ResponseBody = testObject.ResponseBody;
-        logRecord1.EnrichmentProperties = testObject.EnrichmentProperties;
+        logRecord1.EnrichmentTags = testObject.EnrichmentTags;
         pool.Return(logRecord1);
 
         var logRecord2 = pool.Get();
@@ -44,6 +44,6 @@ public class LogRecordPoolingTest
         logRecord2.ResponseHeaders.Should().BeNull();
         logRecord2.RequestBody.Should().BeNull();
         logRecord2.ResponseBody.Should().BeNull();
-        logRecord2.EnrichmentProperties.Should().BeNull();
+        logRecord2.EnrichmentTags.Should().BeNull();
     }
 }

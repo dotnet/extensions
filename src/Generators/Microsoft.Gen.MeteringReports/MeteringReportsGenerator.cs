@@ -85,8 +85,8 @@ public class MeteringReportsGenerator : ISourceGenerator
                     MetricName: meteringMethod.MetricName ?? "(Missing Name)",
                     Summary: meteringMethod.XmlDefinition ?? "(Missing Summary)",
                     Kind: meteringMethod.InstrumentKind,
-                    Dimensions: meteringMethod.DimensionsKeys,
-                    DimensionsDescriptions: meteringMethod.DimensionDescriptionDictionary))
+                    Dimensions: meteringMethod.TagKeys,
+                    DimensionsDescriptions: meteringMethod.TagDescriptionDictionary))
                 .ToArray()));
 
         return reportedMetrics.ToArray();

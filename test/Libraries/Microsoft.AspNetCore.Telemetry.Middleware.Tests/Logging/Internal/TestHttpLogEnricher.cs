@@ -14,9 +14,9 @@ internal sealed class TestHttpLogEnricher : IHttpLogEnricher
     internal const string Key2 = "MyEnrichedProperty_2";
     internal const double Value2 = 1.75;
 
-    public void Enrich(IEnrichmentPropertyBag bag, HttpRequest request, HttpResponse response)
+    public void Enrich(IEnrichmentTagCollector collector, HttpRequest request, HttpResponse response)
     {
-        bag.Add(Key1, Value1);
-        bag.Add(Key2, Value2);
+        collector.Add(Key1, Value1);
+        collector.Add(Key2, Value2);
     }
 }

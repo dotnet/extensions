@@ -10,26 +10,26 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 public sealed partial class LoggerMessageState : IReadOnlyList<KeyValuePair<string, object?>>
 {
     /// <inheritdoc/>
-    public KeyValuePair<string, object?> this[int index] => _properties[Throw.IfOutOfRange(index, 0, NumProperties)];
+    public KeyValuePair<string, object?> this[int index] => _tags[Throw.IfOutOfRange(index, 0, NumTags)];
 
     /// <inheritdoc/>
-    int IReadOnlyCollection<KeyValuePair<string, object?>>.Count => NumProperties;
+    int IReadOnlyCollection<KeyValuePair<string, object?>>.Count => NumTags;
 
     /// <inheritdoc/>
     IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator()
     {
-        for (int i = 0; i < NumProperties; i++)
+        for (int i = 0; i < NumTags; i++)
         {
-            yield return _properties[i];
+            yield return _tags[i];
         }
     }
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator()
     {
-        for (int i = 0; i < NumProperties; i++)
+        for (int i = 0; i < NumTags; i++)
         {
-            yield return _properties[i];
+            yield return _tags[i];
         }
     }
 }

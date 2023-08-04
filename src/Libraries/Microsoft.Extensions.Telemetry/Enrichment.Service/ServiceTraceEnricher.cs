@@ -47,22 +47,22 @@ internal sealed class ServiceTraceEnricher : ITraceEnricher
     {
         if (_appName is not null)
         {
-            _ = activity.AddTag(ServiceEnricherDimensions.ApplicationName, _appName);
+            _ = activity.AddTag(ServiceEnricherTags.ApplicationName, _appName);
         }
 
         if (_envName is not null)
         {
-            _ = activity.AddTag(ServiceEnricherDimensions.EnvironmentName, _envName);
+            _ = activity.AddTag(ServiceEnricherTags.EnvironmentName, _envName);
         }
 
         if (_buildVersion is not null)
         {
-            _ = activity.AddTag(ServiceEnricherDimensions.BuildVersion, _buildVersion);
+            _ = activity.AddTag(ServiceEnricherTags.BuildVersion, _buildVersion);
         }
 
         if (_deploymentRing is not null)
         {
-            _ = activity.AddTag(ServiceEnricherDimensions.DeploymentRing, _deploymentRing);
+            _ = activity.AddTag(ServiceEnricherTags.DeploymentRing, _deploymentRing);
         }
     }
 

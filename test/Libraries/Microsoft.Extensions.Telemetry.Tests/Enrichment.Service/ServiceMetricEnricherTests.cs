@@ -68,31 +68,31 @@ public class ServiceMetricEnricherTests
         };
 
         var enricher = new ServiceMetricEnricher(options.ToOptions(), serviceOptions.ToOptions());
-        var enrichedProperties = new TestMetricEnrichmentPropertyBag();
+        var enrichedProperties = new TestMetricEnrichmentTagCollector();
 
         // Act
         enricher.Enrich(enrichedProperties);
-        var enrichedState = enrichedProperties.Properties;
+        var enrichedState = enrichedProperties.Tags;
 
         // Assert
         if (options.ApplicationName)
         {
-            Assert.Equal(AppName, enrichedState[ServiceEnricherDimensions.ApplicationName]);
+            Assert.Equal(AppName, enrichedState[ServiceEnricherTags.ApplicationName]);
         }
 
         if (options.EnvironmentName)
         {
-            Assert.Equal(EnvironmentName, enrichedState[ServiceEnricherDimensions.EnvironmentName]);
+            Assert.Equal(EnvironmentName, enrichedState[ServiceEnricherTags.EnvironmentName]);
         }
 
         if (options.BuildVersion)
         {
-            Assert.Equal(BuildVersion, enrichedState[ServiceEnricherDimensions.BuildVersion]);
+            Assert.Equal(BuildVersion, enrichedState[ServiceEnricherTags.BuildVersion]);
         }
 
         if (options.DeploymentRing)
         {
-            Assert.Equal(DeploymentRing, enrichedState[ServiceEnricherDimensions.DeploymentRing]);
+            Assert.Equal(DeploymentRing, enrichedState[ServiceEnricherTags.DeploymentRing]);
         }
     }
 
@@ -115,16 +115,16 @@ public class ServiceMetricEnricherTests
         };
 
         var enricher = new ServiceMetricEnricher(options.ToOptions(), serviceOptions.ToOptions());
-        var enrichedProperties = new TestMetricEnrichmentPropertyBag();
+        var enrichedProperties = new TestMetricEnrichmentTagCollector();
 
         // Act
         enricher.Enrich(enrichedProperties);
-        var enrichedState = enrichedProperties.Properties;
+        var enrichedState = enrichedProperties.Tags;
 
         // Assert
-        Assert.False(enrichedState.ContainsKey(ServiceEnricherDimensions.ApplicationName));
-        Assert.False(enrichedState.ContainsKey(ServiceEnricherDimensions.EnvironmentName));
-        Assert.False(enrichedState.ContainsKey(ServiceEnricherDimensions.BuildVersion));
-        Assert.False(enrichedState.ContainsKey(ServiceEnricherDimensions.DeploymentRing));
+        Assert.False(enrichedState.ContainsKey(ServiceEnricherTags.ApplicationName));
+        Assert.False(enrichedState.ContainsKey(ServiceEnricherTags.EnvironmentName));
+        Assert.False(enrichedState.ContainsKey(ServiceEnricherTags.BuildVersion));
+        Assert.False(enrichedState.ContainsKey(ServiceEnricherTags.DeploymentRing));
     }
 }

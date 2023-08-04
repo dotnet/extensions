@@ -71,7 +71,7 @@ public class EmitterTests
                     MetricName = "UnknownMetric",
                     MetricTypeName = "UnknownMetric",
                     InstrumentKind = (InstrumentKind)instrumentKind,
-                    DimensionsKeys = { "Dim1" },
+                    TagKeys = { "Dim1" },
                     IsExtensionMethod = false,
                     Modifiers = "static partial",
                     AllParameters =

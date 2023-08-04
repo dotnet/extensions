@@ -61,38 +61,20 @@ namespace Microsoft.Gen.Metering {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The type {0} has a cycle in its hierarchy: {1} ⇆ {2}.
+        ///   Looks up a localized string similar to Tag name {0} is defined more than once. Metric tag names must be unique.
         /// </summary>
-        internal static string ErrorDimensionTypeCycleDetectedMessage {
+        internal static string ErrorDuplicateTagNameMessage {
             get {
-                return ResourceManager.GetString("ErrorDimensionTypeCycleDetectedMessage", resourceCulture);
+                return ResourceManager.GetString("ErrorDuplicateTagNameMessage", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A metric class has cycles in its type hierarchy.
+        ///   Looks up a localized string similar to A strong type object contains duplicate tag names.
         /// </summary>
-        internal static string ErrorDimensionTypeCycleDetectedTitle {
+        internal static string ErrorDuplicateTagNameTitle {
             get {
-                return ResourceManager.GetString("ErrorDimensionTypeCycleDetectedTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Dimension {0} is defined more than once. Metric dimension names must be unique.
-        /// </summary>
-        internal static string ErrorDuplicateDimensionNameMessage {
-            get {
-                return ResourceManager.GetString("ErrorDuplicateDimensionNameMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A strong type object contains duplicate dimension names.
-        /// </summary>
-        internal static string ErrorDuplicateDimensionNameTitle {
-            get {
-                return ResourceManager.GetString("ErrorDuplicateDimensionNameTitle", resourceCulture);
+                return ResourceManager.GetString("ErrorDuplicateTagNameTitle", resourceCulture);
             }
         }
         
@@ -129,42 +111,6 @@ namespace Microsoft.Gen.Metering {
         internal static string ErrorInvalidAttributeGenericTypeTitle {
             get {
                 return ResourceManager.GetString("ErrorInvalidAttributeGenericTypeTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Dimension names should contain alphanumeric characters and only allowed symbols.
-        /// </summary>
-        internal static string ErrorInvalidDimensionNamesMessage {
-            get {
-                return ResourceManager.GetString("ErrorInvalidDimensionNamesMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Dimension names should only contain alphanumeric characters and allowed symbols.
-        /// </summary>
-        internal static string ErrorInvalidDimensionNamesTitle {
-            get {
-                return ResourceManager.GetString("ErrorInvalidDimensionNamesTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid dimension type. Valid types are string and enum.
-        /// </summary>
-        internal static string ErrorInvalidDimensionTypeMessage {
-            get {
-                return ResourceManager.GetString("ErrorInvalidDimensionTypeMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A metric class contains an invalid dimension type.
-        /// </summary>
-        internal static string ErrorInvalidDimensionTypeTitle {
-            get {
-                return ResourceManager.GetString("ErrorInvalidDimensionTypeTitle", resourceCulture);
             }
         }
         
@@ -277,6 +223,42 @@ namespace Microsoft.Gen.Metering {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tag names should contain alphanumeric characters and only allowed symbols.
+        /// </summary>
+        internal static string ErrorInvalidTagNamesMessage {
+            get {
+                return ResourceManager.GetString("ErrorInvalidTagNamesMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag names should only contain alphanumeric characters and allowed symbols.
+        /// </summary>
+        internal static string ErrorInvalidTagNamesTitle {
+            get {
+                return ResourceManager.GetString("ErrorInvalidTagNamesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid tag name type. Valid types are string and enum.
+        /// </summary>
+        internal static string ErrorInvalidTagTypeMessage {
+            get {
+                return ResourceManager.GetString("ErrorInvalidTagTypeMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A metric class contains an invalid tag name type.
+        /// </summary>
+        internal static string ErrorInvalidTagTypeTitle {
+            get {
+                return ResourceManager.GetString("ErrorInvalidTagTypeTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Metric methods cannot have a body.
         /// </summary>
         internal static string ErrorMethodHasBodyMessage {
@@ -385,20 +367,38 @@ namespace Microsoft.Gen.Metering {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The type {0} has too many dimensions.
+        ///   Looks up a localized string similar to The type {0} has a cycle in its hierarchy: {1} ⇆ {2}.
         /// </summary>
-        internal static string ErrorTooManyDimensionsMessage {
+        internal static string ErrorTagTypeCycleDetectedMessage {
             get {
-                return ResourceManager.GetString("ErrorTooManyDimensionsMessage", resourceCulture);
+                return ResourceManager.GetString("ErrorTagTypeCycleDetectedMessage", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A metric class contains too many dimensions.
+        ///   Looks up a localized string similar to A metric class has cycles in its type hierarchy.
         /// </summary>
-        internal static string ErrorTooManyDimensionsTitle {
+        internal static string ErrorTagTypeCycleDetectedTitle {
             get {
-                return ResourceManager.GetString("ErrorTooManyDimensionsTitle", resourceCulture);
+                return ResourceManager.GetString("ErrorTagTypeCycleDetectedTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The type {0} has too many tag names.
+        /// </summary>
+        internal static string ErrorTooManyTagNamesMessage {
+            get {
+                return ResourceManager.GetString("ErrorTooManyTagNamesMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A metric class contains too many tag names.
+        /// </summary>
+        internal static string ErrorTooManyTagNamesTitle {
+            get {
+                return ResourceManager.GetString("ErrorTooManyTagNamesTitle", resourceCulture);
             }
         }
         

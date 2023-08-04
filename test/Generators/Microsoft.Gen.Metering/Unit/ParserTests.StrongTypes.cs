@@ -60,17 +60,17 @@ public partial class ParserTests
     {
         // This test should return no errors.
         var d = await RunGenerator(@"
-            public class DimensionsTest : ParentDimensions
+            public class TagNamesTest : ParentTagNames
             {
                 public string? test1 { get; set; }
 
-                [Dimension(""test1_FromAttribute"")]
+                [TagName(""test1_FromAttribute"")]
                 public string? test1_WithAttribute { get; set; }
 
-                [Dimension(""operations_FromAttribute"")]
+                [TagName(""operations_FromAttribute"")]
                 public Operations operations {get;set;}
 
-                public ChildDimensions? ChildDimensions1 { get; set; }
+                public ChildTagNames? ChildTagNames1 { get; set; }
 
                 public void Method()
                 {
@@ -84,43 +84,43 @@ public partial class ParserTests
                 Operation1 = 1,
             }
 
-            public class ParentDimensions
+            public class ParentTagNames
             {
-                [Dimension(""parentDimension_FromAttribute"")]
+                [TagName(""parentTagName_FromAttribute"")]
                 public string? ParentOperationNameWithAttribute { get;set; }
 
                 public string? ParentOperationName { get;set; }
 
-                public DimensionsStruct ChildDimensionsStruct { get; set; }
+                public TagNamesStruct ChildTagNamesStruct { get; set; }
             }
 
-            public class ChildDimensions
+            public class ChildTagNames
             {
-                [Dimension(""test2_FromAttribute"")]
+                [TagName(""test2_FromAttribute"")]
                 public string test2_WithAttribute { get; set; }
 
                 public string test2 { get; set; }
 
-                [Dimension(""test1_FromAttribute_In_Child1"")]
+                [TagName(""test1_FromAttribute_In_Child1"")]
                 public string? test1 { get; set; }
 
-                public ChildDimensions2? ChildDimensions2 { get; set;}
+                public ChildTagNames2? ChildTagNames2 { get; set;}
             }
 
-            public class ChildDimensions2
+            public class ChildTagNames2
             {
-                [Dimension(""test3_FromAttribute"")]
+                [TagName(""test3_FromAttribute"")]
                 public string test3_WithAttribute { get; set; }
 
                 public string test3 { get; set; }
 
-                [Dimension(""test1_FromAttribute_In_Child2"")]
+                [TagName(""test1_FromAttribute_In_Child2"")]
                 public string? test1 { get; set; }
             }
 
-            public struct DimensionsStruct
+            public struct TagNamesStruct
             {
-                [Dimension(""testStruct_FromAttribute"")]
+                [TagName(""testStruct_FromAttribute"")]
                 public string testStruct_WithAttribute { get; set; }
 
                 public string testStruct { get; set; }
@@ -128,7 +128,7 @@ public partial class ParserTests
 
             public static partial class MetricClass
             {
-                [Histogram(typeof(DimensionsTest), Name=""TotalCountTest"")]
+                [Histogram(typeof(TagNamesTest), Name=""TotalCountTest"")]
                 public static partial TotalCount CreateTotalCountCounter(Meter meter);
             }");
 
@@ -140,16 +140,16 @@ public partial class ParserTests
     {
         // This test should return no errors.
         var d = await RunGenerator(@"
-            public struct DimensionsTest
+            public struct TagNamesTest
             {
-                [Dimension(""test1_FromAttribute"")]
+                [TagName(""test1_FromAttribute"")]
                 public string? test1_WithAttribute { get; set; }
                 public string? test1 { get; set; }
             }
 
             public static partial class MetricClass
             {
-                [Histogram(typeof(DimensionsTest))]
+                [Histogram(typeof(TagNamesTest))]
                 public static partial TotalCount CreateTotalCountCounter(Meter meter);
             }");
 
@@ -206,15 +206,15 @@ public partial class ParserTests
     {
         // This test should return no errors.
         var d = await RunGenerator(@"
-            public class DimensionsTest : ParentDimensions
+            public class TagNamesTest : ParentTagNames
             {
-                [Dimension(""test1_FromAttribute"")]
+                [TagName(""test1_FromAttribute"")]
                 public string? test1 { get; set; }
 
-                [Dimension(""Operations_FromAttribute"")]
+                [TagName(""Operations_FromAttribute"")]
                 public Operations operations {get;set;}
 
-                public ChildDimensions? ChildDimensions1 { get; set; }
+                public ChildTagNames? ChildTagNames1 { get; set; }
 
                 public void Method()
                 {
@@ -228,30 +228,30 @@ public partial class ParserTests
                 Operation1 = 1,
             }
 
-            public class ParentDimensions
+            public class ParentTagNames
             {
-                [Dimension(""parentDimension_FromAttribute"")]
+                [TagName(""parentTagName_FromAttribute"")]
                 public string? ParentOperationNameWithAttribute { get;set; }
 
                 public string? ParentOperationName { get;set; }
 
-                public DimensionsStruct ChildDimensionsStruct { get; set; }
+                public TagNamesStruct ChildTagNamesStruct { get; set; }
             }
 
-            public class ChildDimensions
+            public class ChildTagNames
             {
-                [Dimension(""test2_FromAttribute"")]
+                [TagName(""test2_FromAttribute"")]
                 public string test2_WithAttribute { get; set; }
 
                 public string test2 { get; set; }
 
-                [Dimension(""test1_FromAttribute_In_Child1"")]
+                [TagName(""test1_FromAttribute_In_Child1"")]
                 public string? test1 { get; set; }
             }
 
-            public struct DimensionsStruct
+            public struct TagNamesStruct
             {
-                [Dimension(""testStruct_FromAttribute"")]
+                [TagName(""testStruct_FromAttribute"")]
                 public string testStruct_WithAttribute { get; set; }
 
                 public string testStruct { get; set; }
@@ -259,7 +259,7 @@ public partial class ParserTests
 
             public static partial class MetricClass
             {
-                [Counter(typeof(DimensionsTest), Name=""TotalCountTest"")]
+                [Counter(typeof(TagNamesTest), Name=""TotalCountTest"")]
                 public static partial TotalCount CreateTotalCountCounter(Meter meter);
             }");
 
@@ -273,17 +273,17 @@ public partial class ParserTests
         internal static partial class Metric
         {
             /// <summary>
-            /// Dimension1 description.
+            /// TagName1 description.
             /// </summary>
             public const string Dim1 = ""Dim1"";
 
             /// <summary>
-            /// DescribedDimensionCounter description.
+            /// DescribedTagNameCounter description.
             /// </summary>
             /// <param name=""meter""></param>
             /// <returns></returns>
-            [Counter(DescripedDimensions.Dimension1, Dim1)]
-            public static partial DescribedDimensionCounter CreatePublicCounter(Meter meter);
+            [Counter(DescripedTagNames.TagName1, Dim1)]
+            public static partial DescribedTagNameCounter CreatePublicCounter(Meter meter);
 
             /// <summary>
             /// DimenisonDefinedInMetricClass description.
@@ -291,49 +291,49 @@ public partial class ParserTests
             public const string DimenisonDefinedInMetricClass = ""DimenisonDefinedInMetricClass"";
 
             /// <summary>
-            /// DescribedDimensionHistogram description.
+            /// DescribedTagNameHistogram description.
             /// </summary>
             /// <param name=""meter""></param>
             /// <returns></returns>
-            [Histogram(DescripedDimensions.Dimension2, DimenisonDefinedInMetricClass)]
-            public static partial DescribedDimensionHistogram CreatePublicHistogram(Meter meter);
+            [Histogram(DescripedTagNames.TagName2, DimenisonDefinedInMetricClass)]
+            public static partial DescribedTagNameHistogram CreatePublicHistogram(Meter meter);
 
             /// <summary>
-            /// StrongTypeCounterWithDescripedDimension description.
+            /// StrongTypeCounterWithDescripedTagName description.
             /// </summary>
             /// <param name=""meter""></param>
             /// <returns></returns>
-            [Counter(typeof(DimensionForStrongTypes), Name = ""MyStrongTypeMetricWithDescription"")]
-            public static partial StrongTypeCounterWithDescripedDimension CreateStrongTypeCounterWithDescibedDimensions(Meter meter);
+            [Counter(typeof(TagNameForStrongTypes), Name = ""MyStrongTypeMetricWithDescription"")]
+            public static partial StrongTypeCounterWithDescripedTagName CreateStrongTypeCounterWithDescibedTagNames(Meter meter);
         }
 
         /// <summary>
-        /// DescripedDimensions class description.
+        /// DescripedTagNames class description.
         /// </summary>
-        internal static class DescripedDimensions
+        internal static class DescripedTagNames
         {
             /// <summary>
-            /// Dimension1 in class description.
+            /// TagName1 in class description.
             /// </summary>
-            public const string Dimension1 = ""Dimension1"";
+            public const string TagName1 = ""TagName1"";
 
             /// <summary>
-            /// Dimension2 description.
+            /// TagName2 description.
             /// </summary>
-            public const string Dimension2 = ""Dimension2"";
+            public const string TagName2 = ""TagName2"";
 
             /// <summary>
-            /// Dimension3 description.
+            /// TagName3 description.
             /// </summary>
-            public const string Dimension3 = ""Dimension3"";
+            public const string TagName3 = ""TagName3"";
         }
 
-        public class DimensionForStrongTypes
+        public class TagNameForStrongTypes
         {
             /// <summary>
-            /// Gets or sets anotherDimension.
+            /// Gets or sets anotherTagName.
             /// </summary>
-            public string? AnotherDimension { get; set; }
+            public string? AnotherTagName { get; set; }
 
             /// <summary>
             /// Gets or sets MetricEnum.
@@ -343,18 +343,18 @@ public partial class ParserTests
             /// <summary>
             /// Gets or sets MetricEnum2.
             /// </summary>
-            [Dimension(""Enum2"")]
+            [TagName(""Enum2"")]
             public MetricOperations MetricEnum2 { get; set; }
 
             /// <summary>
-            /// Gets or sets ChildDimensionsClass.
+            /// Gets or sets ChildTagNamesClass.
             /// </summary>
-            public ChildClassDimensionForStrongTypes? ChildDimensionsClass { get; set; }
+            public ChildClassTagNameForStrongTypes? ChildTagNamesClass { get; set; }
 
             /// <summary>
-            ///  Gets or sets ChildDimensionsStruct.
+            ///  Gets or sets ChildTagNamesStruct.
             /// </summary>
-            public DimensionForStrongTypesDimensionsStruct ChildDimensionsStruct { get; set; }
+            public TagNameForStrongTypesTagNamesStruct ChildTagNamesStruct { get; set; }
         }
 
         public enum MetricOperations
@@ -363,7 +363,7 @@ public partial class ParserTests
             Operation1 = 1,
         }
 
-        public class ChildClassDimensionForStrongTypes
+        public class ChildClassTagNameForStrongTypes
         {
             /// <summary>
             /// Gets or sets Dim2.
@@ -373,11 +373,11 @@ public partial class ParserTests
             /// <summary>
             /// Gets or sets SomeDim.
             /// </summary>
-            [Dimension(""dim2FromAttribute"")]
+            [TagName(""dim2FromAttribute"")]
             public string? SomeDim;
         }
 
-        public struct DimensionForStrongTypesDimensionsStruct
+        public struct TagNameForStrongTypesTagNamesStruct
         {
             /// <summary>
             /// Gets or sets Dim4Struct.
@@ -387,7 +387,7 @@ public partial class ParserTests
             /// <summary>
             /// Gets or sets Dim5Struct.
             /// </summary>
-            [Dimension(""Dim5FromAttribute"")]
+            [TagName(""Dim5FromAttribute"")]
             public string Dim5Struct { get; set; }
         }");
 
@@ -399,7 +399,7 @@ public partial class ParserTests
     {
         // This test should return no errors.
         var d = await RunGenerator(@"
-            public class DimensionsTest : ParentDimensions
+            public class TagNamesTest : ParentTagNames
             {
                 /// <summary>
                 /// test1 description.
@@ -409,19 +409,19 @@ public partial class ParserTests
                 /// <summary>
                 /// test1_FromAttribute description.
                 /// </summary>
-                [Dimension(""test1_FromAttribute"")]
+                [TagName(""test1_FromAttribute"")]
                 public string? test1_WithAttribute { get; set; }
 
                 /// <summary>
                 /// operations_FromAttribute description.
                 /// </summary>
-                [Dimension(""operations_FromAttribute"")]
+                [TagName(""operations_FromAttribute"")]
                 public Operations operations {get;set;}
 
                 /// <summary>
-                /// ChildDimensions1 description.
+                /// ChildTagNames1 description.
                 /// </summary>
-                public ChildDimensions? ChildDimensions1 { get; set; }
+                public ChildTagNames? ChildTagNames1 { get; set; }
 
                 public void Method()
                 {
@@ -435,12 +435,12 @@ public partial class ParserTests
                 Operation1 = 1,
             }
 
-            public class ParentDimensions
+            public class ParentTagNames
             {
                 /// <summary>
-                /// parentDimension_FromAttribute description.
+                /// parentTagName_FromAttribute description.
                 /// </summary>
-                [Dimension(""parentDimension_FromAttribute"")]
+                [TagName(""parentTagName_FromAttribute"")]
                 public string? ParentOperationNameWithAttribute { get;set; }
 
                 /// <summary>
@@ -448,15 +448,15 @@ public partial class ParserTests
                 /// </summary>
                 public string? ParentOperationName { get;set; }
 
-                public DimensionsStruct ChildDimensionsStruct { get; set; }
+                public TagNamesStruct ChildTagNamesStruct { get; set; }
             }
 
-            public class ChildDimensions
+            public class ChildTagNames
             {
                 /// <summary>
                 /// test2_WithAttribute description.
                 /// </summary>
-                [Dimension(""test2_FromAttribute"")]
+                [TagName(""test2_FromAttribute"")]
                 public string test2_WithAttribute { get; set; }
 
                 /// <summary>
@@ -467,18 +467,18 @@ public partial class ParserTests
                 /// <summary>
                 /// test1_FromAttribute_In_Child1 description.
                 /// </summary>
-                [Dimension(""test1_FromAttribute_In_Child1"")]
+                [TagName(""test1_FromAttribute_In_Child1"")]
                 public string? test1 { get; set; }
 
-                public ChildDimensions2? ChildDimensions2 { get; set;}
+                public ChildTagNames2? ChildTagNames2 { get; set;}
             }
 
-            public class ChildDimensions2
+            public class ChildTagNames2
             {
                 /// <summary>
                 /// test3_FromAttribute description.
                 /// </summary>
-                [Dimension(""test3_FromAttribute"")]
+                [TagName(""test3_FromAttribute"")]
                 public string test3_WithAttribute { get; set; }
 
                 /// <summary>
@@ -489,16 +489,16 @@ public partial class ParserTests
                 /// <summary>
                 /// test1_FromAttribute_In_Child2 description.
                 /// </summary>
-                [Dimension(""test1_FromAttribute_In_Child2"")]
+                [TagName(""test1_FromAttribute_In_Child2"")]
                 public string? test1 { get; set; }
             }
 
-            public struct DimensionsStruct
+            public struct TagNamesStruct
             {
                 /// <summary>
                 /// testStruct_WithAttribute description.
                 /// </summary>
-                [Dimension(""testStruct_FromAttribute"")]
+                [TagName(""testStruct_FromAttribute"")]
                 public string testStruct_WithAttribute { get; set; }
 
                 /// <summary>
@@ -509,7 +509,7 @@ public partial class ParserTests
 
             public static partial class MetricClass
             {
-                [Histogram(typeof(DimensionsTest), Name=""TotalCountTest"")]
+                [Histogram(typeof(TagNamesTest), Name=""TotalCountTest"")]
                 public static partial TestHistogram CreateTestHistogram(Meter meter);
             }");
 

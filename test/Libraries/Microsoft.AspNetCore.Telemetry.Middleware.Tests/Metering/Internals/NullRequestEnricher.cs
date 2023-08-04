@@ -9,10 +9,10 @@ namespace Microsoft.AspNetCore.Telemetry;
 
 internal class NullRequestEnricher : IIncomingRequestMetricEnricher
 {
-    public IReadOnlyList<string> DimensionNames => Empty.ReadOnlyList<string>();
+    public IReadOnlyList<string> TagNames => Empty.ReadOnlyList<string>();
 
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag)
+    public void Enrich(IEnrichmentTagCollector collector)
     {
-        enrichmentBag.Add(null!, null!);
+        collector.Add(null!, null!);
     }
 }

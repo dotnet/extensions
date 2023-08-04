@@ -12,11 +12,11 @@ internal sealed class BenchEnricher : IHttpClientLogEnricher
     private const string Key = "Performance in R9";
     private const string Value = "is paramount.";
 
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
+    public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
     {
         if (request is not null)
         {
-            enrichmentBag.Add(Key, Value);
+            collector.Add(Key, Value);
         }
     }
 }

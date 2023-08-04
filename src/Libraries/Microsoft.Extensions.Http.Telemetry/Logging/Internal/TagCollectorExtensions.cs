@@ -7,7 +7,8 @@ using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 
-internal static class LogPropertyCollectorExtensions
+// TODO: rename the file
+internal static class LoggerMessageStateExtensions
 {
     private static readonly ConcurrentDictionary<string, string> _requestPrefixedNamesCache = new();
     private static readonly ConcurrentDictionary<string, string> _responsePrefixedNamesCache = new();
@@ -26,7 +27,7 @@ internal static class LogPropertyCollectorExtensions
             var key = _requestPrefixedNamesCache.GetOrAdd(
                 items[i].Key,
                 static (x, p) => p + x,
-                HttpClientLoggingDimensions.RequestHeaderPrefix);
+                HttpClientLoggingTagNames.RequestHeaderPrefix);
 
             state.PropertyArray[index++] = new(key, items[i].Value);
         }
@@ -46,7 +47,7 @@ internal static class LogPropertyCollectorExtensions
             var key = _responsePrefixedNamesCache.GetOrAdd(
                 items[i].Key,
                 static (x, p) => p + x,
-                HttpClientLoggingDimensions.ResponseHeaderPrefix);
+                HttpClientLoggingTagNames.ResponseHeaderPrefix);
 
             state.PropertyArray[index++] = new(key, items[i].Value);
         }

@@ -12,35 +12,33 @@ internal static class ModernCodeGen
     public static void RefTypes(global::Microsoft.Extensions.Logging.ILogger logger, string connectionId, string type, string streamId, string length, string flags, string other)
     {
         var state = global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper.ThreadLocalState;
-        var index = state.ReservePropertySpace(7);
-        var array = state.PropertyArray;
-        array[index++] = new("connectionId", connectionId);
-        array[index++] = new("type", type);
-        array[index++] = new("streamId", streamId);
-        array[index++] = new("length", length);
-        array[index++] = new("flags", flags);
-        array[index++] = new("other", other);
-        array[index] = new("{OriginalFormat}", "Connection id '{connectionId}' received {type} frame for stream ID {streamId} with length {length} and flags {flags} and {other}");
+
+        _ = state.ReserveTagSpace(7);
+        state.TagArray[6] = new("connectionId", connectionId);
+        state.TagArray[5] = new("type", type);
+        state.TagArray[4] = new("streamId", streamId);
+        state.TagArray[3] = new("length", length);
+        state.TagArray[2] = new("flags", flags);
+        state.TagArray[1] = new("other", other);
+        state.TagArray[0] = new("{OriginalFormat}", "Connection id '{connectionId}' received {type} frame for stream ID {streamId} with length {length} and flags {flags} and {other}");
 
         logger.Log(
             global::Microsoft.Extensions.Logging.LogLevel.Error,
             new global::Microsoft.Extensions.Logging.EventId(0, nameof(RefTypes)),
             state,
-            null, // Refer to our docs to learn how to pass exception here
-            __FMT_0_RefTypes_Error);
+            null,
+            static (s, _) =>
+            {
+                var connectionId = s.TagArray[6].Value ?? "(null)";
+                var type = s.TagArray[5].Value ?? "(null)";
+                var streamId = s.TagArray[4].Value ?? "(null)";
+                var length = s.TagArray[3].Value ?? "(null)";
+                var flags = s.TagArray[2].Value ?? "(null)";
+                var other = s.TagArray[1].Value ?? "(null)";
+                return global::System.FormattableString.Invariant($"Connection id '{connectionId}' received {type} frame for stream ID {streamId} with length {length} and flags {flags} and {other}");
+            });
 
         state.Clear();
-    }
-
-    private static string __FMT_0_RefTypes_Error(global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageState _h, global::System.Exception? _)
-    {
-        var connectionId = _h.PropertyArray[0].Value ?? "(null)";
-        var type = _h.PropertyArray[1].Value ?? "(null)";
-        var streamId = _h.PropertyArray[2].Value ?? "(null)";
-        var length = _h.PropertyArray[3].Value ?? "(null)";
-        var flags = _h.PropertyArray[4].Value ?? "(null)";
-        var other = _h.PropertyArray[5].Value ?? "(null)";
-        return global::System.FormattableString.Invariant($"Connection id '{connectionId}' received {type} frame for stream ID {streamId} with length {length} and flags {flags} and {other}");
     }
 
     /// <summary>
@@ -49,30 +47,28 @@ internal static class ModernCodeGen
     public static void ValueTypes(global::Microsoft.Extensions.Logging.ILogger logger, long start, long end, int options, global::System.Guid guid)
     {
         var state = global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper.ThreadLocalState;
-        var index = state.ReservePropertySpace(5);
-        var array = state.PropertyArray;
-        array[index++] = new("start", start);
-        array[index++] = new("end", end);
-        array[index++] = new("options", options);
-        array[index++] = new("guid", guid.ToString());
-        array[index] = new("{OriginalFormat}", "Range [{start}..{end}], options {options}, guid {guid}");
+
+        _ = state.ReserveTagSpace(5);
+        state.TagArray[4] = new("start", start);
+        state.TagArray[3] = new("end", end);
+        state.TagArray[2] = new("options", options);
+        state.TagArray[1] = new("guid", guid.ToString());
+        state.TagArray[0] = new("{OriginalFormat}", "Range [{start}..{end}], options {options}, guid {guid}");
 
         logger.Log(
             global::Microsoft.Extensions.Logging.LogLevel.Error,
             new global::Microsoft.Extensions.Logging.EventId(0, nameof(ValueTypes)),
             state,
-            null, // Refer to our docs to learn how to pass exception here
-            __FMT_2_ValueTypes_Error);
+            null,
+            static (s, _) =>
+            {
+                var start = s.TagArray[4].Value;
+                var end = s.TagArray[3].Value;
+                var options = s.TagArray[2].Value;
+                var guid = s.TagArray[1].Value;
+                return global::System.FormattableString.Invariant($"Range [{start}..{end}], options {options}, guid {guid}");
+            });
 
         state.Clear();
-    }
-
-    private static string __FMT_2_ValueTypes_Error(global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageState _h, global::System.Exception? _)
-    {
-        var start = _h.PropertyArray[0].Value;
-        var end = _h.PropertyArray[1].Value;
-        var options = _h.PropertyArray[2].Value;
-        var guid = _h.PropertyArray[3].Value;
-        return global::System.FormattableString.Invariant($"Range [{start}..{end}], options {options}, guid {guid}");
     }
 }

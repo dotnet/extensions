@@ -256,28 +256,6 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherDimensions",
-      "Stage": "Stable",
-      "Fields": [
-        {
-          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherDimensions.ProcessId",
-          "Stage": "Stable",
-          "Value": "pid"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherDimensions.ThreadId",
-          "Stage": "Stable",
-          "Value": "tid"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherDimensions.DimensionNames { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -291,6 +269,28 @@
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherExtensions.AddProcessLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherTagNames",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherTagNames.ProcessId",
+          "Stage": "Stable",
+          "Value": "pid"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherTagNames.ThreadId",
+          "Stage": "Stable",
+          "Value": "tid"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherTagNames.DimensionNames { get; }",
           "Stage": "Stable"
         }
       ]
@@ -390,38 +390,6 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions",
-      "Stage": "Stable",
-      "Fields": [
-        {
-          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.ApplicationName",
-          "Stage": "Stable",
-          "Value": "env_app_name"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.BuildVersion",
-          "Stage": "Stable",
-          "Value": "env_cloud_roleVer"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.DeploymentRing",
-          "Stage": "Stable",
-          "Value": "env_cloud_deploymentRing"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.EnvironmentName",
-          "Stage": "Stable",
-          "Value": "env_cloud_env"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherDimensions.DimensionNames { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -459,6 +427,38 @@
         },
         {
           "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherTags",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherTags.ApplicationName",
+          "Stage": "Stable",
+          "Value": "env_app_name"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherTags.BuildVersion",
+          "Stage": "Stable",
+          "Value": "env_cloud_roleVer"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherTags.DeploymentRing",
+          "Stage": "Stable",
+          "Value": "env_cloud_deploymentRing"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherTags.EnvironmentName",
+          "Stage": "Stable",
+          "Value": "env_cloud_env"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherTags.DimensionNames { get; }",
           "Stage": "Stable"
         }
       ]

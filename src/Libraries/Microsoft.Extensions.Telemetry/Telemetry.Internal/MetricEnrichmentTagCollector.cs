@@ -10,9 +10,9 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Telemetry.Internal;
 
 /// <summary>
-/// Canonical implementation of a metric enrichment property bag.
+/// Canonical implementation of a metric enrichment tag collector.
 /// </summary>
-internal sealed class MetricEnrichmentPropertyBag : List<KeyValuePair<string, string>>, IEnrichmentPropertyBag, IResettable
+internal sealed class MetricEnrichmentTagCollector : List<KeyValuePair<string, string>>, IEnrichmentTagCollector, IResettable
 {
     /// <inheritdoc/>
     public void Add(string key, object value)

@@ -61,7 +61,7 @@ internal sealed class LogRecord : IResettable
     /// <summary>
     /// Gets or sets enrichment properties.
     /// </summary>
-    public LoggerMessageState? EnrichmentProperties { get; set; }
+    public LoggerMessageState? EnrichmentTags { get; set; }
 
     public bool TryReset()
     {
@@ -72,7 +72,7 @@ internal sealed class LogRecord : IResettable
         StatusCode = null;
         RequestBody = null;
         ResponseBody = null;
-        EnrichmentProperties = null;
+        EnrichmentTags = null;
         RequestHeaders = null;
         ResponseHeaders = null;
         return true;

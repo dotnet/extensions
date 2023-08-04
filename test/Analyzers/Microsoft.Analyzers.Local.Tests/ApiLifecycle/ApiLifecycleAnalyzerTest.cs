@@ -98,7 +98,7 @@ public class ApiLifecycleAnalyzerTest
         Assembly.GetAssembly(typeof(IDistributedCache))!,
         Assembly.GetAssembly(typeof(Microsoft.Extensions.ObjectPool.ObjectPool))!,
         Assembly.GetAssembly(typeof(IBufferWriter<>))!,
-        Assembly.GetAssembly(typeof(ILogPropertyCollector))!,
+        Assembly.GetAssembly(typeof(ITagCollector))!,
         Assembly.GetAssembly(typeof(Microsoft.Extensions.Logging.ILogger))!,
     };
 

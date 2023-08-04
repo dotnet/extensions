@@ -26,7 +26,7 @@ internal class TestEnricher : IHttpClientLogEnricher
         _throwOnEnrich = throwOnEnrich;
     }
 
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
+    public void Enrich(IEnrichmentTagCollector enrichmentBag, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
     {
         if (_throwOnEnrich)
         {
@@ -35,12 +35,12 @@ internal class TestEnricher : IHttpClientLogEnricher
 
         if (request is not null)
         {
-            enrichmentBag.Add(KvpRequest.Key, KvpRequest.Value!);
+            collector.Add(KvpRequest.Key, KvpRequest.Value!);
         }
 
         if (response is not null)
         {
-            enrichmentBag.Add(KvpResponse.Key, KvpResponse.Value!);
+            collector.Add(KvpResponse.Key, KvpResponse.Value!);
         }
     }
 }

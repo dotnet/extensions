@@ -261,7 +261,7 @@ public partial class ParserTests
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), {methodName})/*-0*/] MyClass p1);
             }}";
 
-        await RunGenerator(source, DiagDescriptors.LogPropertiesProviderMethodNotFound);
+        await RunGenerator(source, DiagDescriptors.TagProviderMethodNotFound);
     }
 
     [Fact]
@@ -275,11 +275,11 @@ public partial class ParserTests
 
             static class Provider
             {
-                public static void Provide1(ILogPropertyCollector props, MyClass? value)
+                public static void Provide1(ITagCollector props, MyClass? value)
                 {
                 }
 
-                public static void Provide2(ILogPropertyCollector props, MyClass? value, int a)
+                public static void Provide2(ITagCollector props, MyClass? value, int a)
                 {
                 }
             }
@@ -290,7 +290,7 @@ public partial class ParserTests
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide))/*-0*/] MyClass p1);
             }";
 
-        await RunGenerator(Source, DiagDescriptors.LogPropertiesProviderMethodNotFound);
+        await RunGenerator(Source, DiagDescriptors.TagProviderMethodNotFound);
     }
 
     [Fact]
@@ -304,7 +304,7 @@ public partial class ParserTests
 
             static class Provider
             {
-                public static void Provide<T>(ILogPropertyCollector props, MyClass? value)
+                public static void Provide<T>(ITagCollector props, MyClass? value)
                 {
                 }
             }
@@ -315,7 +315,7 @@ public partial class ParserTests
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide))/*-0*/] MyClass p1);
             }";
 
-        await RunGenerator(Source, DiagDescriptors.LogPropertiesProviderMethodInvalidSignature);
+        await RunGenerator(Source, DiagDescriptors.TagProviderMethodInvalidSignature);
     }
 
     [Fact]
@@ -336,11 +336,11 @@ public partial class ParserTests
 
             static class Provider
             {
-                public static void Provide1(ILogPropertyCollector props, MyClass? value) {}
-                public static void Provide2(ILogPropertyCollector props, BaseClass value) {}
-                public static void Provide3(ILogPropertyCollector props, IFoo value) {}
-                public static void Provide4(ILogPropertyCollector props, MyClass value, object o = null) {}
-                public static void Provide5(ILogPropertyCollector props, MyClass value) {}
+                public static void Provide1(ITagCollector props, MyClass? value) {}
+                public static void Provide2(ITagCollector props, BaseClass value) {}
+                public static void Provide3(ITagCollector props, IFoo value) {}
+                public static void Provide4(ITagCollector props, MyClass value, object o = null) {}
+                public static void Provide5(ITagCollector props, MyClass value) {}
             }
 
             partial class C
@@ -361,13 +361,13 @@ public partial class ParserTests
                 static partial void M5(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide5))/*-0*/] MyClass? p1);
             }";
 
-        await RunGenerator(Source, DiagDescriptors.LogPropertiesProviderMethodInvalidSignature);
+        await RunGenerator(Source, DiagDescriptors.TagProviderMethodInvalidSignature);
     }
 
     [Theory]
     [InlineData("")]
-    [InlineData("ILogPropertyCollector props")]
-    [InlineData("ILogPropertyCollector props, MyClass? value, int a")]
+    [InlineData("ITagCollector props")]
+    [InlineData("ITagCollector props, MyClass? value, int a")]
     public async Task LogPropertiesProviderMethodParamsCount(string paramsList)
     {
         string source = @$"
@@ -389,7 +389,7 @@ public partial class ParserTests
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide))/*-0*/] MyClass p1);
             }}";
 
-        await RunGenerator(source, DiagDescriptors.LogPropertiesProviderMethodInvalidSignature);
+        await RunGenerator(source, DiagDescriptors.TagProviderMethodInvalidSignature);
     }
 
     [Theory]
@@ -411,7 +411,7 @@ public partial class ParserTests
 
             static class Provider
             {{
-                public static void Provide({listModifier} ILogPropertyCollector props, {valueModifier} MyClass? value)
+                public static void Provide({listModifier} ITagCollector props, {valueModifier} MyClass? value)
                 {{
                 }}
             }}
@@ -422,14 +422,14 @@ public partial class ParserTests
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide))/*-0*/] MyClass p1);
             }}";
 
-        await RunGenerator(source, DiagDescriptors.LogPropertiesProviderMethodInvalidSignature);
+        await RunGenerator(source, DiagDescriptors.TagProviderMethodInvalidSignature);
     }
 
     [Theory]
     [CombinatorialData]
     public async Task LogPropertiesProviderMethodParamsInvalidType(
-        [CombinatorialValues("ILogPropertyCollector", "MyClass?", "int", "object", "string", "DateTime")] string listType,
-        [CombinatorialValues("ILogPropertyCollector", "int", "string", "DateTime")] string valueType)
+        [CombinatorialValues("ITagCollector", "MyClass?", "int", "object", "string", "DateTime")] string listType,
+        [CombinatorialValues("ITagCollector", "int", "string", "DateTime")] string valueType)
     {
         string source = @$"
             class MyClass
@@ -450,7 +450,7 @@ public partial class ParserTests
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide))/*-0*/] MyClass p1);
             }}";
 
-        await RunGenerator(source, DiagDescriptors.LogPropertiesProviderMethodInvalidSignature);
+        await RunGenerator(source, DiagDescriptors.TagProviderMethodInvalidSignature);
     }
 
     [Theory]
@@ -466,7 +466,7 @@ public partial class ParserTests
 
             static class Provider
             {{
-                {methodModifier} static void Provide(ILogPropertyCollector props, MyClass? value)
+                {methodModifier} static void Provide(ITagCollector props, MyClass? value)
                 {{
                     return 0;
                 }}
@@ -478,7 +478,7 @@ public partial class ParserTests
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide))/*-0*/] MyClass p1);
             }}";
 
-        await RunGenerator(source, DiagDescriptors.LogPropertiesProviderMethodInaccessible);
+        await RunGenerator(source, DiagDescriptors.TagProviderMethodInaccessible);
     }
 
     [Theory]
@@ -606,7 +606,6 @@ public partial class ParserTests
     public async Task MultipleDataClassificationAttributes()
     {
         const string Source = @"
-            using Microsoft.Extensions.Compliance.Redaction;
             using Microsoft.Extensions.Compliance.Testing;
 
             class MyClass
@@ -619,34 +618,10 @@ public partial class ParserTests
             internal static partial class C
             {
                 [LogMethod(0, LogLevel.Debug, ""Only {A}"")]
-                static partial void M(ILogger logger, IRedactorProvider provider, [FeedbackData] string a, [LogProperties] MyClass param);
+                static partial void M(ILogger logger, [FeedbackData] string a, [LogProperties] MyClass param);
             }";
 
         await RunGenerator(Source, DiagDescriptors.MultipleDataClassificationAttributes);
-    }
-
-    [Theory]
-    [InlineData("[PrivateData]", "string")]
-    [InlineData("[PrivateData]", "int")]
-    public async Task MissingRedactorProvider(string attribute, string type)
-    {
-        string source = @$"
-            using Microsoft.Extensions.Compliance.Redaction;
-            using Microsoft.Extensions.Compliance.Testing;
-
-            class MyClass
-            {{
-                {attribute}
-                public {type} A {{ get; set; }}
-            }}
-
-            internal static partial class C
-            {{
-                [LogMethod(0, LogLevel.Debug, ""Template..."")]
-                static partial void M/*0+*/(ILogger logger, [LogProperties] MyClass param)/*-0*/;
-            }}";
-
-        await RunGenerator(source, DiagDescriptors.MissingRedactorProviderParameter);
     }
 
     [Theory]
@@ -668,7 +643,7 @@ public partial class ParserTests
 
                 struct MyInterface {{ }}
 
-                public static void Provide(ILogPropertyCollector props, {type} value)
+                public static void Provide(ITagCollector props, {type} value)
                 {{
                 }}
 
@@ -721,7 +696,7 @@ public partial class ParserTests
         string source = @$"
             internal static partial class C
             {{
-                public static void Provide(ILogPropertyCollector props, {type} value)
+                public static void Provide(ITagCollector props, {type} value)
                 {{
                 }}
 

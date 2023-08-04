@@ -31,7 +31,7 @@ public partial class ParserTests
 
         Assert.NotNull(d);
         var diag = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorDimensionTypeCycleDetected.Id, diag.Id);
+        Assert.Equal(DiagDescriptors.ErrorTagTypeCycleDetected.Id, diag.Id);
         Assert.Contains("Test.TypeB ⇆ Test.TypeA", diag.GetMessage());
     }
 
@@ -61,7 +61,7 @@ public partial class ParserTests
 
         Assert.NotNull(d);
         var diag = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorDimensionTypeCycleDetected.Id, diag.Id);
+        Assert.Equal(DiagDescriptors.ErrorTagTypeCycleDetected.Id, diag.Id);
         Assert.Contains("Test.TypeC ⇆ Test.TypeB", diag.GetMessage());
     }
 
@@ -92,7 +92,7 @@ public partial class ParserTests
 
         Assert.NotNull(d);
         var diag = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorDimensionTypeCycleDetected.Id, diag.Id);
+        Assert.Equal(DiagDescriptors.ErrorTagTypeCycleDetected.Id, diag.Id);
         Assert.Contains("Test.Transitive ⇆ Test.Interim", diag.GetMessage());
     }
 
@@ -113,7 +113,7 @@ public partial class ParserTests
 
         Assert.NotNull(d);
         var diag = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorDimensionTypeCycleDetected.Id, diag.Id);
+        Assert.Equal(DiagDescriptors.ErrorTagTypeCycleDetected.Id, diag.Id);
         Assert.Contains("System.Guid ⇆ System.Guid", diag.GetMessage());
     }
 
@@ -234,7 +234,7 @@ public partial class ParserTests
             }");
 
         _ = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorDuplicateDimensionName.Id, d[0].Id);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, d[0].Id);
     }
 
     [Fact]
@@ -261,7 +261,7 @@ public partial class ParserTests
             }");
 
         _ = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorDuplicateDimensionName.Id, d[0].Id);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, d[0].Id);
     }
 
     [Fact]
@@ -292,7 +292,7 @@ public partial class ParserTests
             }");
 
         _ = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorDuplicateDimensionName.Id, d[0].Id);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, d[0].Id);
     }
 
     [Fact]
@@ -323,7 +323,7 @@ public partial class ParserTests
             }");
 
         _ = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorDuplicateDimensionName.Id, d[0].Id);
+        Assert.Equal(DiagDescriptors.ErrorDuplicateTagName.Id, d[0].Id);
     }
 
     [Theory]
@@ -377,7 +377,7 @@ public partial class ParserTests
             }}");
 
         _ = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorInvalidDimensionType.Id, d[0].Id);
+        Assert.Equal(DiagDescriptors.ErrorInvalidTagNameType.Id, d[0].Id);
     }
 
     [Fact]
@@ -403,6 +403,6 @@ public partial class ParserTests
         var d = await RunGenerator(sb.ToString());
 
         _ = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorTooManyDimensions.Id, d[0].Id);
+        Assert.Equal(DiagDescriptors.ErrorTooManyTagNames.Id, d[0].Id);
     }
 }

@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.Gen.Logging.Test;
 
-public class LogPropertiesProviderTests
+public class TagProviderTests
 {
     private readonly FakeLogger _logger = new();
 
@@ -26,7 +26,7 @@ public class LogPropertiesProviderTests
     public void LogsWithObject()
     {
         object obj = new ClassToBeLogged();
-        LogPropertiesProviderWithObjectExtensions.OneParam(_logger, obj);
+        TagProviderWithObjectExtensions.OneParam(_logger, obj);
 
         Assert.Equal(1, _logger.Collector.Count);
 
@@ -50,7 +50,7 @@ public class LogPropertiesProviderTests
         const string StringParamValue = "Value for a string";
 
         var classToLog = new ClassToLog { MyIntProperty = 0 };
-        new NonStaticTestClass(_logger, null!).LogPropertiesWithProvider(StringParamValue, classToLog);
+        new NonStaticTestClass(_logger).LogPropertiesWithProvider(StringParamValue, classToLog);
 
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
@@ -75,7 +75,7 @@ public class LogPropertiesProviderTests
         const string StringParamValue = "Value for a string";
 
         var classToLog = new ClassToLog { MyIntProperty = ushort.MaxValue };
-        new NonStaticTestClass(_logger, null!).DefaultAttrCtorLogPropertiesWithProvider(LogLevel.Debug, StringParamValue, classToLog);
+        new NonStaticTestClass(_logger).DefaultAttrCtorLogPropertiesWithProvider(LogLevel.Debug, StringParamValue, classToLog);
 
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
@@ -98,7 +98,7 @@ public class LogPropertiesProviderTests
     public void LogsWhenDefaultAttrCtorInStaticClass()
     {
         var classToLog = new ClassToLog { MyIntProperty = ushort.MaxValue };
-        LogPropertiesProviderExtensions.DefaultAttributeCtor(_logger, LogLevel.Trace, classToLog);
+        TagProviderExtensions.DefaultAttributeCtor(_logger, LogLevel.Trace, classToLog);
 
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
@@ -169,7 +169,7 @@ public class LogPropertiesProviderTests
     [Fact]
     public void LogsWithNullObject()
     {
-        LogPropertiesProviderWithObjectExtensions.OneParam(_logger, null!);
+        TagProviderWithObjectExtensions.OneParam(_logger, null!);
 
         Assert.Equal(1, _logger.Collector.Count);
 
@@ -189,7 +189,7 @@ public class LogPropertiesProviderTests
     [Fact]
     public void LogsWhenNullStronglyTypedObject()
     {
-        LogPropertiesProviderExtensions.LogMethodCustomPropsProvider(_logger, null!);
+        TagProviderExtensions.LogMethodCustomPropsProvider(_logger, null!);
 
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
@@ -209,7 +209,7 @@ public class LogPropertiesProviderTests
     public void LogsWhenNonNullStronglyTypedObject()
     {
         var classToLog = new ClassToLog { MyIntProperty = 0 };
-        LogPropertiesProviderExtensions.LogMethodCustomPropsProvider(_logger, classToLog);
+        TagProviderExtensions.LogMethodCustomPropsProvider(_logger, classToLog);
 
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
@@ -231,7 +231,7 @@ public class LogPropertiesProviderTests
     public void LogsWhenStruct()
     {
         var structToLog = new StructToLog { MyIntProperty = 0 };
-        LogPropertiesProviderExtensions.LogMethodCustomPropsProviderStruct(_logger, structToLog);
+        TagProviderExtensions.LogMethodCustomPropsProviderStruct(_logger, structToLog);
 
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
@@ -252,7 +252,7 @@ public class LogPropertiesProviderTests
     public void LogsWhenInterface()
     {
         IInterfaceToLog interfaceToLog = new InterfaceImpl { MyIntProperty = 0 };
-        LogPropertiesProviderExtensions.LogMethodCustomPropsProviderInterface(_logger, interfaceToLog);
+        TagProviderExtensions.LogMethodCustomPropsProviderInterface(_logger, interfaceToLog);
 
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
@@ -273,7 +273,7 @@ public class LogPropertiesProviderTests
     public void LogsWhenProviderCombinedWithLogProperties()
     {
         var classToLog = new ClassToLog { MyIntProperty = 0 };
-        LogPropertiesProviderExtensions.LogMethodCombinePropsProvider(_logger, classToLog, classToLog);
+        TagProviderExtensions.LogMethodCombinePropsProvider(_logger, classToLog, classToLog);
 
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
@@ -299,7 +299,7 @@ public class LogPropertiesProviderTests
 
         var classToLog1 = new ClassToLog { MyIntProperty = 1 };
         var classToLog2 = new ClassToLog { MyIntProperty = -1 };
-        LogPropertiesProviderExtensions.LogMethodCustomPropsProviderTwoParams(_logger, StringParamValue, classToLog1, classToLog2);
+        TagProviderExtensions.LogMethodCustomPropsProviderTwoParams(_logger, StringParamValue, classToLog1, classToLog2);
 
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
@@ -321,7 +321,7 @@ public class LogPropertiesProviderTests
         // Changing object and logging again to test that IResettable for props provider works correctly:
         classToLog1.MyIntProperty = int.MaxValue;
         classToLog2.MyIntProperty = int.MinValue;
-        LogPropertiesProviderExtensions.LogMethodCustomPropsProviderTwoParams(_logger, StringParamValue, classToLog1, classToLog2);
+        TagProviderExtensions.LogMethodCustomPropsProviderTwoParams(_logger, StringParamValue, classToLog1, classToLog2);
 
         Assert.Equal(2, _logger.Collector.Count);
         expectedState["param_MyIntProperty"] = classToLog1.MyIntProperty.ToInvariantString();
@@ -336,7 +336,7 @@ public class LogPropertiesProviderTests
 
         object obj1 = new ClassToBeLogged();
         object obj2 = new ClassToBeLogged();
-        LogPropertiesProviderWithObjectExtensions.TwoParams(_logger, StringParamValue, obj1, obj2);
+        TagProviderWithObjectExtensions.TwoParams(_logger, StringParamValue, obj1, obj2);
 
         Assert.Equal(1, _logger.Collector.Count);
 
@@ -361,7 +361,7 @@ public class LogPropertiesProviderTests
     {
         const string StringParamValue = "ValueForAString";
 
-        LogPropertiesProviderWithObjectExtensions.TwoParams(_logger, StringParamValue, null!, null!);
+        TagProviderWithObjectExtensions.TwoParams(_logger, StringParamValue, null!, null!);
 
         Assert.Equal(1, _logger.Collector.Count);
 

@@ -129,30 +129,7 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.MultipleDataClassificationAttributesMessage,
         category: Category);
 
-    public static DiagnosticDescriptor MissingRedactorProviderParameter { get; } = Make(
-        id: "R9G021",
-        title: Resources.MissingRedactorProviderParameterTitle,
-        messageFormat: Resources.MissingRedactorProviderParameterMessage,
-        category: Category);
-
-    public static DiagnosticDescriptor MissingDataClassificationParameter { get; } = Make(
-        id: "R9G022",
-        title: Resources.MissingDataClassificationParameterTitle,
-        messageFormat: Resources.MissingDataClassificationParameterMessage,
-        category: Category,
-        DiagnosticSeverity.Warning);
-
-    public static DiagnosticDescriptor MissingRedactorProviderField { get; } = Make(
-        id: "R9G023",
-        title: Resources.MissingRedactorProviderFieldTitle,
-        messageFormat: Resources.MissingRedactorProviderFieldMessage,
-        category: Category);
-
-    public static DiagnosticDescriptor MultipleRedactorProviderFields { get; } = Make(
-        id: "R9G024",
-        title: Resources.MultipleRedactorProviderFieldsTitle,
-        messageFormat: Resources.MultipleRedactorProviderFieldsMessage,
-        category: Category);
+    // R9G021..R9G024 retired
 
     public static DiagnosticDescriptor InvalidTypeToLogProperties { get; } = Make(
         id: "R9G025",
@@ -185,24 +162,24 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
     // Skipping R9G030
     // Skipping R9G031
 
-    public static DiagnosticDescriptor LogPropertiesProviderMethodNotFound { get; } = Make(
+    public static DiagnosticDescriptor TagProviderMethodNotFound { get; } = Make(
         id: "R9G032",
-        title: Resources.LogPropertiesProviderMethodNotFoundTitle,
-        messageFormat: Resources.LogPropertiesProviderMethodNotFoundMessage,
+        title: Resources.TagProviderMethodNotFoundTitle,
+        messageFormat: Resources.TagProviderMethodNotFoundMessage,
         category: Category);
 
     // Skipping R9G033
 
-    public static DiagnosticDescriptor LogPropertiesProviderMethodInaccessible { get; } = Make(
+    public static DiagnosticDescriptor TagProviderMethodInaccessible { get; } = Make(
         id: "R9G034",
-        title: Resources.LogPropertiesProviderMethodInaccessibleTitle,
-        messageFormat: Resources.LogPropertiesProviderMethodInaccessibleMessage,
+        title: Resources.TagProviderMethodInaccessibleTitle,
+        messageFormat: Resources.TagProviderMethodInaccessibleMessage,
         category: Category);
 
-    public static DiagnosticDescriptor LogPropertiesProviderMethodInvalidSignature { get; } = Make(
+    public static DiagnosticDescriptor TagProviderMethodInvalidSignature { get; } = Make(
         id: "R9G035",
-        title: Resources.LogPropertiesProviderMethodInvalidSignatureTitle,
-        messageFormat: Resources.LogPropertiesProviderMethodInvalidSignatureMessage,
+        title: Resources.TagProviderMethodInvalidSignatureTitle,
+        messageFormat: Resources.TagProviderMethodInvalidSignatureMessage,
         category: Category);
 
     // Skipping R9G036
@@ -216,8 +193,8 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
 
     public static DiagnosticDescriptor LogPropertiesProviderWithRedaction { get; } = Make(
         id: "R9G039",
-        title: Resources.LogPropertiesProviderWithRedactionTitle,
-        messageFormat: Resources.LogPropertiesProviderWithRedactionMessage,
+        title: Resources.TagProviderWithRedactionTitle,
+        messageFormat: Resources.TagProviderWithRedactionMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 

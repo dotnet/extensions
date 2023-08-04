@@ -14,6 +14,10 @@
           "Stage": "Stable"
         },
         {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.AddActivatedSingleton<TService, TImplementation>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.AddActivatedSingleton<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Func<System.IServiceProvider, TService> implementationFactory);",
           "Stage": "Stable"
         },
@@ -23,10 +27,6 @@
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.AddActivatedSingleton(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Type serviceType);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.AddActivatedSingleton<TService, TImplementation>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {

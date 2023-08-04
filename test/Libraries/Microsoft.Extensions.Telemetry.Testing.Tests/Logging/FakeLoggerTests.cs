@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Testing.Logging;
@@ -84,15 +85,11 @@ public class FakeLoggerTests
 
         Assert.Equal(1, logger.Collector.Count);
 
-        var stateList = (List<KeyValuePair<string, string>>)logger.LatestRecord.State!;
-        Assert.Equal("K0", stateList[0].Key);
-        Assert.Equal("V0", stateList[0].Value);
-        Assert.Equal("K1", stateList[1].Key);
-        Assert.Equal("V1", stateList[1].Value);
-        Assert.Equal("K2", stateList[2].Key);
-        Assert.Null(stateList[2].Value);
-        Assert.Equal("K3", stateList[3].Key);
-        Assert.Equal("[\"0\",\"1\",\"2\"]", stateList[3].Value);
+        var ss = logger.LatestRecord.StructuredState!.ToDictionary(x => x.Key, x => x.Value);
+        Assert.Equal("V0", ss["K0"]);
+        Assert.Equal("V1", ss["K1"]);
+        Assert.Null(ss["K2"]);
+        Assert.Equal("[\"0\",\"1\",\"2\"]", ss["K3"]);
 
         logger = new FakeLogger();
         logger.Log<object?>(LogLevel.Error, new EventId(0), null, null, (_, _) => "MESSAGE");
@@ -100,11 +97,9 @@ public class FakeLoggerTests
 
         logger = new FakeLogger();
         TestLog.Hello(logger, "Bob");
-        var ss = logger.LatestRecord.StructuredState!;
-        Assert.Equal("name", ss[0].Key);
-        Assert.Equal("Bob", ss[0].Value);
-        Assert.Equal("{OriginalFormat}", ss[1].Key);
-        Assert.Equal("Hello {name}", ss[1].Value);
+        ss = logger.LatestRecord.StructuredState!.ToDictionary(x => x.Key, x => x.Value);
+        Assert.Equal("Bob", ss["name"]);
+        Assert.Equal("Hello {name}", ss["{OriginalFormat}"]);
     }
 
     [Fact]

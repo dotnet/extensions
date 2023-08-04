@@ -8,10 +8,10 @@ namespace Microsoft.AspNetCore.Telemetry;
 
 public class SameDefaultDimEnricher : IIncomingRequestMetricEnricher
 {
-    public IReadOnlyList<string> DimensionNames => new[] { "req_host" };
+    public IReadOnlyList<string> TagNames => new[] { "req_host" };
 
-    public void Enrich(IEnrichmentPropertyBag bag)
+    public void Enrich(IEnrichmentTagCollector collector)
     {
-        bag.Add("req_host", "req_host_value");
+        collector.Add("req_host", "req_host_value");
     }
 }

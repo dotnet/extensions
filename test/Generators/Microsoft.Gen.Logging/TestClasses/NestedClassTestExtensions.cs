@@ -19,7 +19,7 @@ namespace TestClasses
         {
             internal static partial class NestedClass
             {
-                [LogMethod(8, LogLevel.Debug, "M8")]
+                [LogMethod(8, LogLevel.Error, "M8")]
                 public static partial void M8(ILogger logger);
             }
         }

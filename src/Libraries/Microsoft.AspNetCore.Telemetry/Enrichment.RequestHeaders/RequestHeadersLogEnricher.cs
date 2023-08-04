@@ -43,7 +43,7 @@ internal sealed class RequestHeadersLogEnricher : ILogEnricher
         }
     }
 
-    public void Enrich(IEnrichmentPropertyBag enrichmentBag)
+    public void Enrich(IEnrichmentTagCollector collector)
     {
         if (_httpContextAccessor.HttpContext?.Request == null)
         {
@@ -65,7 +65,7 @@ internal sealed class RequestHeadersLogEnricher : ILogEnricher
                 {
                     var redactor = _redactorProvider!.GetRedactor(header.Value);
                     var redacted = redactor.Redact(headerValue);
-                    enrichmentBag.Add(header.Key, redacted);
+                    collector.Add(header.Key, redacted);
                 }
             }
         }

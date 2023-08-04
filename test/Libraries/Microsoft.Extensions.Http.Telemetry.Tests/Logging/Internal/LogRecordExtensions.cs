@@ -20,7 +20,7 @@ internal static class LogRecordExtensions
 
     public static string GetEnrichmentProperty(this LogRecord logRecord, string name)
     {
-        return logRecord.EnrichmentProperties!.FirstOrDefault(kvp => kvp.Key == name).Value!.ToString()!;
+        return logRecord.EnrichmentTags!.FirstOrDefault(kvp => kvp.Key == name).Value!.ToString()!;
     }
 
     public static void Contains(this IDictionary<string, string?> logRecordState, string key, string expectedValue)
