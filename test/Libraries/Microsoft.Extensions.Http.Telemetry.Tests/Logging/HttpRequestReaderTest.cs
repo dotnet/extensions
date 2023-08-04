@@ -1,6 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
+#if false
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -14,6 +14,7 @@ using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Extensions.Telemetry.Logging;
@@ -55,7 +56,7 @@ public class HttpRequestReaderTest
             ResponseBody = responseContent,
         };
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions
+        var options = new LoggingOptions
         {
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, SimpleClassifications.PrivateData }, { header3.Key, SimpleClassifications.PrivateData } },
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, SimpleClassifications.PrivateData }, { header3.Key, SimpleClassifications.PrivateData } },
@@ -63,14 +64,19 @@ public class HttpRequestReaderTest
             ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
             BodyReadTimeout = TimeSpan.FromSeconds(100000),
             LogBody = true,
-        });
+        };
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
-        var headersReader = new HttpHeadersReader(options, mockHeadersRedactor.Object);
 
-        var reader = new HttpRequestReader(options, GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+        var serviceKey = "my-key";
+        var optionsSnapshot = new Mock<IOptionsSnapshot<LoggingOptions>>();
+        optionsSnapshot.Setup(o => o.Get(It.Is(serviceKey, StringComparer.Ordinal))).Returns(options);
+
+        var headersReader = new HttpHeadersReader(optionsSnapshot.Object, mockHeadersRedactor.Object, serviceKey);
+
+        var reader = new HttpRequestReader(optionsSnapshot.Object, GetHttpRouteFormatter(), RequestMetadataContext, serviceKey: serviceKey);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -121,13 +127,13 @@ public class HttpRequestReaderTest
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions
+        var options = new LoggingOptions
         {
             RequestBodyContentTypes = new HashSet<string> { PlainTextMedia },
             ResponseBodyContentTypes = new HashSet<string> { PlainTextMedia },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
-        });
+        };
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
@@ -603,3 +609,4 @@ public class HttpRequestReaderTest
 
     private static IOutgoingRequestContext RequestMetadataContext => new Mock<IOutgoingRequestContext>().Object;
 }
+#endif

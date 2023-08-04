@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Compliance.Classification;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry;
 using Microsoft.Extensions.Telemetry.Internal;
@@ -40,34 +41,36 @@ internal sealed class HttpRequestReader : IHttpRequestReader
     private readonly IDownstreamDependencyMetadataManager? _downstreamDependencyMetadataManager;
 
     public HttpRequestReader(
-        IOptions<LoggingOptions> options,
+        IOptionsSnapshot<LoggingOptions> optionsSnapshot,
         IHttpRouteFormatter routeFormatter,
-        IHttpHeadersReader httpHeadersReader,
         IOutgoingRequestContext requestMetadataContext,
-        IDownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null)
+        IServiceProvider serviceProvider,
+        IDownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null,
+        [ServiceKey] string? serviceKey = null)
     {
-        var optionsValue = Throw.IfMemberNull(options, options.Value);
+        var options = optionsSnapshot.GetKeyedOrDefault(serviceKey);
+        _outgoingPathLogMode = Throw.IfOutOfRange(options.RequestPathLoggingMode);
+        _httpHeadersReader = serviceProvider.GetRequiredKeyedServiceOrDefault<IHttpHeadersReader>(serviceKey);
+
         _routeFormatter = routeFormatter;
-        _outgoingPathLogMode = Throw.IfOutOfRange(optionsValue.RequestPathLoggingMode);
-        _httpHeadersReader = httpHeadersReader;
         _requestMetadataContext = requestMetadataContext;
         _downstreamDependencyMetadataManager = downstreamDependencyMetadataManager;
 
-        _defaultSensitiveParameters = optionsValue.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
+        _defaultSensitiveParameters = options.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
 
-        if (optionsValue.LogBody)
+        if (options.LogBody)
         {
-            _logRequestBody = optionsValue.RequestBodyContentTypes.Count > 0;
-            _logResponseBody = optionsValue.ResponseBodyContentTypes.Count > 0;
+            _logRequestBody = options.RequestBodyContentTypes.Count > 0;
+            _logResponseBody = options.ResponseBodyContentTypes.Count > 0;
         }
 
-        _logRequestHeaders = optionsValue.RequestHeadersDataClasses.Count > 0;
-        _logResponseHeaders = optionsValue.ResponseHeadersDataClasses.Count > 0;
+        _logRequestHeaders = options.RequestHeadersDataClasses.Count > 0;
+        _logResponseHeaders = options.ResponseHeadersDataClasses.Count > 0;
 
         _httpRequestBodyReader = new HttpRequestBodyReader(options);
         _httpResponseBodyReader = new HttpResponseBodyReader(options);
 
-        _routeParameterRedactionMode = optionsValue.RequestPathParameterRedactionMode;
+        _routeParameterRedactionMode = options.RequestPathParameterRedactionMode;
     }
 
     public async Task ReadRequestAsync(LogRecord logRecord, HttpRequestMessage request,

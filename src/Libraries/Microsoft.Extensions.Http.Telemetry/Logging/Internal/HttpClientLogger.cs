@@ -8,13 +8,13 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Logging;
-using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging;
@@ -37,19 +37,20 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
 
     public HttpClientLogger(
         ILogger<HttpClientLogger> logger,
-        IHttpRequestReader httpRequestReader,
         IEnumerable<IHttpClientLogEnricher> enrichers,
-        IOptions<LoggingOptions> options)
+        IOptionsSnapshot<LoggingOptions> optionsSnapshot,
+        IServiceProvider serviceProvider,
+        [ServiceKey] string? serviceKey = null)
     {
         _logger = logger;
-        _httpRequestReader = httpRequestReader;
+        _httpRequestReader = serviceProvider.GetRequiredKeyedServiceOrDefault<IHttpRequestReader>(serviceKey);
         _enrichers = enrichers.Where(static x => x is not null).ToArray();
-        var optionsValue = Throw.IfMemberNull(options, options.Value);
+        var options = optionsSnapshot.GetKeyedOrDefault(serviceKey);
 
-        _logRequestStart = optionsValue.LogRequestStart;
-        _logResponseHeaders = optionsValue.ResponseHeadersDataClasses.Count > 0;
-        _logRequestHeaders = optionsValue.RequestHeadersDataClasses.Count > 0;
-        _pathParametersRedactionSkipped = optionsValue.RequestPathParameterRedactionMode == HttpRouteParameterRedactionMode.None;
+        _logRequestStart = options.LogRequestStart;
+        _logResponseHeaders = options.ResponseHeadersDataClasses.Count > 0;
+        _logRequestHeaders = options.RequestHeadersDataClasses.Count > 0;
+        _pathParametersRedactionSkipped = options.RequestPathParameterRedactionMode == HttpRouteParameterRedactionMode.None;
     }
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "The logger shouldn't throw")]

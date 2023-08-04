@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Internal;
 using Moq;
 using Xunit;
@@ -17,21 +18,17 @@ namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
 public class HttpHeadersReaderTest
 {
     [Fact]
-    public void HttpHeadersReader_WhenAnyArgumentIsNull_Throws()
-    {
-        var options = Microsoft.Extensions.Options.Options.Create((LoggingOptions)null!);
-        var act = () => new HttpHeadersReader(options, Mock.Of<IHttpHeadersRedactor>());
-        act.Should().Throw<ArgumentException>();
-    }
-
-    [Fact]
     public void HttpHeadersReader_WhenEmptyHeaders_DoesNothing()
     {
         using var httpRequest = new HttpRequestMessage();
         using var httpResponse = new HttpResponseMessage();
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions());
+        var options = new LoggingOptions();
 
-        var headersReader = new HttpHeadersReader(options, Mock.Of<IHttpHeadersRedactor>());
+        var optionsSnapshot = new Mock<IOptionsSnapshot<LoggingOptions>>();
+        optionsSnapshot.SetupGet(o => o.Value)
+            .Returns(options);
+
+        var headersReader = new HttpHeadersReader(optionsSnapshot.Object, Mock.Of<IHttpHeadersRedactor>());
         var buffer = new List<KeyValuePair<string, string>>();
 
         headersReader.ReadRequestHeaders(httpRequest, buffer);
@@ -54,7 +51,7 @@ public class HttpHeadersReaderTest
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), SimpleClassifications.PublicData))
             .Returns<IEnumerable<string>, DataClassification>((x, _) => string.Join(",", x));
 
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions
+        var options = new LoggingOptions
         {
             RequestHeadersDataClasses = new Dictionary<string, DataClassification>
             {
@@ -67,9 +64,13 @@ public class HttpHeadersReaderTest
                 { "Header4", SimpleClassifications.PublicData },
                 { "hEaDeR7", SimpleClassifications.PrivateData }
             },
-        });
+        };
 
-        var headersReader = new HttpHeadersReader(options, mockHeadersRedactor.Object);
+        var optionsSnapshot = new Mock<IOptionsSnapshot<LoggingOptions>>();
+        optionsSnapshot.SetupGet(o => o.Value)
+            .Returns(options);
+
+        var headersReader = new HttpHeadersReader(optionsSnapshot.Object, mockHeadersRedactor.Object);
         var buffer = new List<KeyValuePair<string, string>>();
 
         headersReader.ReadRequestHeaders(httpRequest, buffer);
@@ -110,8 +111,13 @@ public class HttpHeadersReaderTest
     [Fact]
     public void HttpHeadersReader_WhenBufferIsNull_DoesNothing()
     {
-        var options = Microsoft.Extensions.Options.Options.Create(new LoggingOptions());
-        var headersReader = new HttpHeadersReader(options, Mock.Of<IHttpHeadersRedactor>());
+        var options = new LoggingOptions();
+
+        var optionsSnapshot = new Mock<IOptionsSnapshot<LoggingOptions>>();
+        optionsSnapshot.SetupGet(o => o.Value)
+            .Returns(options);
+
+        var headersReader = new HttpHeadersReader(optionsSnapshot.Object, Mock.Of<IHttpHeadersRedactor>());
         List<KeyValuePair<string, string>>? responseBuffer = null;
 
         using var httpRequest = new HttpRequestMessage();

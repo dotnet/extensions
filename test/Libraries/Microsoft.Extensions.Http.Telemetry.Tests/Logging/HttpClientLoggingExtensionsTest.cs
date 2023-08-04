@@ -329,31 +329,41 @@ public class HttpClientLoggingExtensionsTest
     }
 
     [Fact]
-    public void AddHttpClientLogging_ServiceCollectionAndHttpClientBuilder_DoesntDuplicate()
+    public void AddHttpClientLogging_ServiceCollectionAndHttpClientBuilder_DoesNotDuplicate()
     {
+        const string ClientName = "test";
+
         using var provider = new ServiceCollection()
             .AddFakeRedaction()
-            .AddHttpClient("test")
-            .AddHttpClientLogging().Services
-            .AddDefaultHttpClientLogging()
+            .AddHttpClient(ClientName)
+            .AddHttpClientLogging(x =>
+            {
+                x.BodySizeLimit = 100500;
+                x.RequestHeadersDataClasses.Add(ClientName, SimpleClassifications.PublicData);
+            }).Services
+            .AddDefaultHttpClientLogging(x =>
+            {
+                x.BodySizeLimit = 347;
+                x.RequestHeadersDataClasses.Add("default", SimpleClassifications.PrivateData);
+            })
             .BuildServiceProvider();
 
-        EnsureSingleLogger<IHttpClientLogger>(provider);
-        EnsureSingleLogger<IHttpClientAsyncLogger>(provider);
+        EnsureSingleLogger<HttpClientLogger>(provider, ClientName);
     }
 
     [Fact]
-    public void AddHttpClientLogging_HttpClientBuilderAndServiceCollection_DoesntDuplicate()
+    public void AddHttpClientLogging_HttpClientBuilderAndServiceCollection_DoesNotDuplicate()
     {
+        const string ClientName = "test";
+
         using var provider = new ServiceCollection()
             .AddFakeRedaction()
             .AddDefaultHttpClientLogging()
-            .AddHttpClient("test")
+            .AddHttpClient(ClientName)
             .AddHttpClientLogging().Services
             .BuildServiceProvider();
 
-        EnsureSingleLogger<IHttpClientLogger>(provider);
-        EnsureSingleLogger<IHttpClientAsyncLogger>(provider);
+        EnsureSingleLogger<HttpClientLogger>(provider, ClientName);
     }
 
     [Theory]
@@ -394,13 +404,13 @@ public class HttpClientLoggingExtensionsTest
         Assert.NotNull(httpClient);
     }
 
-    private static void EnsureSingleLogger<T>(IServiceProvider serviceProvider)
+    private static void EnsureSingleLogger<T>(IServiceProvider serviceProvider, string serviceKey)
         where T : IHttpClientLogger
     {
         var loggers = serviceProvider.GetServices<T>();
         loggers.Should().ContainSingle();
 
-        var keyedLoggers = serviceProvider.GetKeyedServices<T>(KeyedService.AnyKey);
+        var keyedLoggers = serviceProvider.GetKeyedServices<T>(serviceKey);
         keyedLoggers.Should().ContainSingle();
     }
 }
