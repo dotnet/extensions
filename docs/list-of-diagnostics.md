@@ -25,4 +25,5 @@ if desired.
 | `EXTEXP0008` | Resource monitoring experiments |
 | `EXTEXP0009` | Hosting experiments |
 | `EXTEXP0010` | Object pool experiments |
-
+| `EXTEXP0011` | Document database experiments |
+| `EXTEXP0012` | Auto-activation experiments |
