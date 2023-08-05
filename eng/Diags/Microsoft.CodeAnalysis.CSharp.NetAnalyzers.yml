@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.CodeAnalysis.CSharp.NetAnalyzers
-  Version: 8.0.8.26002
+  Version: 8.0.8.35701
 Diagnostics:
   CA1001:
     Metadata:
@@ -426,7 +426,7 @@ Diagnostics:
     Metadata:
       Category: Performance
       Title: Use literals where appropriate
-      Description: A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at run?time.
+      Description: A field is declared static and read-only (Shared and ReadOnly in Visual Basic), and is initialized by using a value that is computable at compile time. Because the value that is assigned to the targeted field is computable at compile time, change the declaration to a const (Const in Visual Basic) field so that the value is computed at compile time instead of at runtime.
       HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802
       CustomTags:
       - PortedFromFxCop
@@ -533,6 +533,63 @@ Diagnostics:
       Description: The parameter expects a constant for optimal performance.
       HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857
       CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA1865:
+    Metadata:
+      Category: Performance
+      Title: Use char overload
+      Description: The char overload is a better performing overload than a string with a single char.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1865
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1866:
+    Metadata:
+      Category: Performance
+      Title: Use char overload
+      Description: The char overload is a better performing overload than a string with a single char.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1866
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1867:
+    Metadata:
+      Category: Performance
+      Title: Use char overload
+      Description: The char overload is a better performing overload than a string with a single char.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1867
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA1508:
+    Metadata:
+      Category: Maintainability
+      Title: Avoid dead conditional code
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508
+      CustomTags:
+      - Dataflow
       - Telemetry
       - EnabledRuleInAggressiveMode
       DefaultSeverity: Warning

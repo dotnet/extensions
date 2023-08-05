@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.AspNetCore.Components.Analyzers
-  Version: 7.0.423.11903
+  Version: 8.0.23.35902
 Diagnostics:
   BL0001:
     Metadata:

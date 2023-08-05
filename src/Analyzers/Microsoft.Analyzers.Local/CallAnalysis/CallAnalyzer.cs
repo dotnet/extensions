@@ -33,12 +33,10 @@ public sealed partial class CallAnalyzer : DiagnosticAnalyzer
             _ = new Throws(reg);
 
             var handlers = new Handlers(state);
-#pragma warning disable R9A044
             compilationStartContext.RegisterOperationAction(handlers.HandleInvocation, OperationKind.Invocation);
             compilationStartContext.RegisterOperationAction(handlers.HandleObjectCreation, OperationKind.ObjectCreation);
             compilationStartContext.RegisterOperationAction(handlers.HandlePropertyReference, OperationKind.PropertyReference);
             compilationStartContext.RegisterOperationAction(handlers.HandleThrow, OperationKind.Throw);
-#pragma warning restore R9A044
         });
     }
 }

@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.Extensions.LocalAnalyzers.CallAnalysis;
 
 /// <summary>
-/// Recommends using R9's Throws class.
+/// Recommends using Throw helpers.
 /// </summary>
 internal sealed class Throws
 {
@@ -19,13 +19,6 @@ internal sealed class Throws
         "System.ArgumentException",
         "System.ArgumentNullException",
         "System.ArgumentOutOfRangeException",
-
-        // temporarily disabled in order to roll out analyzer updates without changing
-        // the rest of the source base. I'll start enabling the new analyzers and fixing
-        // all the warnings in subsequent prs.
-#if TURNED_OFF_FOR_ANALYZER_ROLLOUT
-        "System.InvalidOperationException",
-#endif
     };
 
     public Throws(CallAnalyzer.Registrar reg)

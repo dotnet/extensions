@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.CodeAnalysis;
 
 [assembly: System.Resources.NeutralResourcesLanguage("en-us")]
@@ -39,84 +40,70 @@ internal static class DiagDescriptors
     /// </summary>
     private const string Privacy = nameof(Privacy);
 
-    public static DiagnosticDescriptor ThrowsExpression { get; } = new(
-        id: "R9A014",
+    public static DiagnosticDescriptor ThrowsExpression { get; } = Make(
+        id: "LA0000",
         messageFormat: Resources.ThrowsExpressionMessage,
         title: Resources.ThrowsExpressionTitle,
         category: Performance,
         description: Resources.ThrowsExpressionDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a014",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor ThrowsStatement { get; } = new(
-        id: "R9A015",
+    public static DiagnosticDescriptor ThrowsStatement { get; } = Make(
+        id: "LA0001",
         messageFormat: Resources.ThrowsStatementMessage,
         title: Resources.ThrowsStatementTitle,
         category: Performance,
         description: Resources.ThrowsStatementDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a015",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor ToInvariantString { get; } = new(
-        id: "R9A036",
+    public static DiagnosticDescriptor ToInvariantString { get; } = Make(
+        id: "LA0002",
         messageFormat: Resources.ToInvariantStringMessage,
         title: Resources.ToInvariantStringTitle,
         category: Performance,
         description: Resources.ToInvariantStringDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a036",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor NewSymbolsMustBeMarkedExperimental { get; } = new(
-        id: "R9A049",
+    public static DiagnosticDescriptor NewSymbolsMustBeMarkedExperimental { get; } = Make(
+        id: "LA0003",
         messageFormat: Resources.NewSymbolsMustBeMarkedExperimentalMessage,
         title: Resources.NewSymbolsMustBeMarkedExperimentalTitle,
         category: Correctness,
         description: Resources.NewSymbolsMustBeMarkedExperimentalDescription,
-        defaultSeverity: DiagnosticSeverity.Hidden,
-        helpLinkUri: "https://TODO/r9a049",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor ExperimentalSymbolsCantBeMarkedObsolete { get; } = new(
-        id: "R9A050",
+    public static DiagnosticDescriptor ExperimentalSymbolsCantBeMarkedObsolete { get; } = Make(
+        id: "LA0004",
         messageFormat: Resources.ExperimentalSymbolsCantBeMarkedObsoleteMessage,
         title: Resources.ExperimentalSymbolsCantBeMarkedObsoleteTitle,
         category: Correctness,
         description: Resources.ExperimentalSymbolsCantBeMarkedObsoleteDescription,
-        defaultSeverity: DiagnosticSeverity.Hidden,
-        helpLinkUri: "https://TODO/r9a050",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor PublishedSymbolsCantBeMarkedExperimental { get; } = new(
-        id: "R9A051",
+    public static DiagnosticDescriptor PublishedSymbolsCantBeMarkedExperimental { get; } = Make(
+        id: "LA0005",
         messageFormat: Resources.PublishedSymbolsCantBeMarkedExperimentalMessage,
         title: Resources.PublishedSymbolsCantBeMarkedExperimentalTitle,
         category: Correctness,
         description: Resources.PublishedSymbolsCantBeMarkedExperimentalDescription,
-        defaultSeverity: DiagnosticSeverity.Hidden,
-        helpLinkUri: "https://TODO/r9a051",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor PublishedSymbolsCantBeDeleted { get; } = new(
-        id: "R9A052",
+    public static DiagnosticDescriptor PublishedSymbolsCantBeDeleted { get; } = Make(
+        id: "LA0006",
         messageFormat: Resources.PublishedSymbolsCantBeDeletedMessage,
         title: Resources.PublishedSymbolsCantBeDeletedTitle,
         category: Correctness,
         description: Resources.PublishedSymbolsCantBeDeletedDescription,
-        defaultSeverity: DiagnosticSeverity.Hidden,
-        helpLinkUri: "https://TODO/r9a052",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor PublishedSymbolsCantChange { get; } = new(
-        id: "R9A055",
+    public static DiagnosticDescriptor PublishedSymbolsCantChange { get; } = Make(
+        id: "LA0007",
         messageFormat: Resources.PublishedSymbolsCantChangeMessage,
         title: Resources.PublishedSymbolsCantChangedTitle,
         category: Correctness,
         description: Resources.PublishedSymbolsCantChangeDescription,
-        defaultSeverity: DiagnosticSeverity.Hidden,
-        helpLinkUri: "https://TODO/r9a055",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
+    private static DiagnosticDescriptor Make(string id, string title, string description, string messageFormat, string category, DiagnosticSeverity defaultSeverity)
+        => new(id, title, messageFormat, category, defaultSeverity, true, description);
 }

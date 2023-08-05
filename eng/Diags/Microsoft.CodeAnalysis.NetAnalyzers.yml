@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.CodeAnalysis.NetAnalyzers
-  Version: 8.0.8.26002
+  Version: 8.0.8.35701
 Diagnostics:
   CA1000:
     Metadata:
@@ -3906,7 +3906,7 @@ Diagnostics:
     Attributes:
       general:
         Severity: None
-        Comment: Use R9 logging model instead
+        Comment: Use the code generated model instead.
   CA2253:
     Metadata:
       Category: Usage
@@ -4222,7 +4222,8 @@ Diagnostics:
     Attributes:
       general:
         Severity: None
-        Redundant: R9A013
+      performance:
+        Redundant: Warning
   CA2259:
     Metadata:
       Category: Usage
@@ -4329,7 +4330,7 @@ Diagnostics:
     Metadata:
       Category: Performance
       Title: Avoid constant arrays as arguments
-      Description: Constant arrays passed as arguments are not reused which implies a performance overhead. Consider extracting them to 'static readonly' fields to improve performance.
+      Description: Constant arrays passed as arguments are not reused when called repeatedly, which implies a new array is created each time. Consider extracting them to 'static readonly' fields to improve performance if the passed array is not mutated within the called method.
       HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861
       CustomTags:
       - Telemetry
@@ -4429,7 +4430,9 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: Suggestion
+        Severity: None
+      performance:
+        Severity: Warning
   CA1859:
     Metadata:
       Category: Performance
@@ -4443,7 +4446,9 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: Suggestion
+        Severity: None
+      performance:
+        Severity: Warning
   CA1858:
     Metadata:
       Category: Performance
@@ -4457,4 +4462,99 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA2261:
+    Metadata:
+      Category: Usage
+      Title: Do not use ConfigureAwaitOptions.SuppressThrowing with Task<TResult>
+      Description: The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task<TResult>.  To use it with a Task<TResult>, first cast to the base Task.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  CA1868:
+    Metadata:
+      Category: Performance
+      Title: Unnecessary call to 'Contains(item)'
+      Description: Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1868
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
         Severity: Suggestion
+      performance:
+        Severity: Warning
+  CA1864:
+    Metadata:
+      Category: Performance
+      Title: Prefer the 'IDictionary.TryAdd(TKey, TValue)' method
+      Description: Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+      performance:
+        Severity: Warning
+  CA1862:
+    Metadata:
+      Category: Performance
+      Title: Prefer using 'StringComparer' to perform case-insensitive string comparisons
+      Description: Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1863:
+    Metadata:
+      Category: Performance
+      Title: Use 'CompositeFormat'
+      Description: Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1863
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  CA1001:
+    Metadata:
+      Category: Design
+      Title: Types that own disposable fields should be disposable
+      Description: A class declares and implements an instance field that is a System.IDisposable type, and the class does not implement IDisposable. A class that declares an IDisposable field indirectly owns an unmanaged resource and should implement the IDisposable interface.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
+    Attributes:
+      general:
+        Severity: Warning

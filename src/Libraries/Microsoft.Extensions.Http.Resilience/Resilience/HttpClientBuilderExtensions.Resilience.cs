@@ -110,7 +110,7 @@ public static partial class HttpClientBuilderExtensions
         _ = provider(request);
     }
 
-    private static IHttpResilienceStrategyBuilder AddHttpResilienceStrategy(
+    private static HttpResilienceStrategyBuilder AddHttpResilienceStrategy(
         this IHttpClientBuilder builder,
         string name,
         Action<ResilienceStrategyBuilder<HttpResponseMessage>, ResilienceHandlerContext> configure)
@@ -122,7 +122,7 @@ public static partial class HttpClientBuilderExtensions
 
         ConfigureHttpServices(builder.Services);
 
-        return new HttpResilienceStrategyBuilder(strategyName, builder.Services);
+        return new(strategyName, builder.Services);
     }
 
     private static void ConfigureHttpServices(IServiceCollection services)

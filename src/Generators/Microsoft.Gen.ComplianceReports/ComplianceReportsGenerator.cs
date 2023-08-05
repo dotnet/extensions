@@ -88,11 +88,9 @@ public sealed class ComplianceReportsGenerator : ISourceGenerator
             }
         }
 
-#pragma warning disable R9A017 // Switch to an asynchronous method for increased performance.
         _ = Directory.CreateDirectory(_directory);
 
         // Write report as JSON file.
         File.WriteAllText(Path.Combine(_directory, _fileName), report);
-#pragma warning restore R9A017 // Switch to an asynchronous method for increased performance.
     }
 }

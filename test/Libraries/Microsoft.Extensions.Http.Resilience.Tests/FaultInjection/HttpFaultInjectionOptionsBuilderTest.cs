@@ -45,7 +45,7 @@ public class HttpFaultInjectionOptionsBuilderTest
         using var provider = services.BuildServiceProvider();
         var result = provider.GetRequiredService<IOptions<FaultInjectionOptions>>().Value;
         Assert.IsAssignableFrom<FaultInjectionOptions>(result);
-        Assert.NotNull(result.ChaosPolicyOptionsGroups?["OptionsGroupTest"]);
+        Assert.NotNull(result.ChaosPolicyOptionsGroups["OptionsGroupTest"]);
     }
 
     [Fact]

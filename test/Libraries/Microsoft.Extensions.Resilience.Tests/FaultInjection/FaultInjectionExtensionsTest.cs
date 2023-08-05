@@ -112,7 +112,7 @@ public class FaultInjectionExtensionsTest
 
         var chaosPolicyConfigProviderOptions = serviceProvider.GetRequiredService<IOptions<FaultInjectionOptions>>().Value;
         Assert.IsAssignableFrom<FaultInjectionOptions>(chaosPolicyConfigProviderOptions);
-        Assert.NotNull(chaosPolicyConfigProviderOptions.ChaosPolicyOptionsGroups?["OptionsGroupTest"]);
+        Assert.NotNull(chaosPolicyConfigProviderOptions.ChaosPolicyOptionsGroups["OptionsGroupTest"]);
 
         var faultInjectionExceptionOptions1 = serviceProvider.GetRequiredService<IOptionsMonitor<FaultInjectionExceptionOptions>>().Get(testExceptionKey1);
         Assert.IsAssignableFrom<FaultInjectionExceptionOptions>(faultInjectionExceptionOptions1);

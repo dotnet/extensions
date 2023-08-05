@@ -13,12 +13,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Telemetry.Metering;
 
-#pragma warning disable R9A033 // Replace uses of 'Enum.GetName' and 'Enum.ToString' with the '[EnumStrings]' code generator for improved performance
+#pragma warning disable EA0006 // Replace uses of 'Enum.GetName' and 'Enum.ToString' with the '[EnumStrings]' code generator for improved performance
 
 namespace Microsoft.Extensions.Http.Resilience.Bench;
 
 [Flags]
-[SuppressMessage("Performance", "R9A031:Make types declared in an executable internal", Justification = "Needs to be public for BenchmarkDotNet consumption")]
+[SuppressMessage("Performance", "EA0004:Make types declared in an executable internal", Justification = "Needs to be public for BenchmarkDotNet consumption")]
 public enum HedgingClientType
 {
     Weighted = 1 << 0,

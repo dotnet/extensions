@@ -125,12 +125,12 @@ internal static partial class Log
     [LogMethod(4, LogLevel.Error, ReadingResponseBodyError)]
     public static partial void ErrorReadingResponseBody(this ILogger logger, Exception ex);
 
-#pragma warning disable R9G001
+#pragma warning disable LOGGEN000
     [LogMethod(5, LogLevel.Warning,
         $"HttpLogging middleware is injected into application pipeline, but {nameof(LogLevel)} '{{logLevel}}' is disabled in logger. " +
         "Remove {methodName}() call from pipeline configuration in that case.")]
     public static partial void MiddlewareIsMisused(this ILogger logger, LogLevel logLevel, string methodName);
-#pragma warning restore R9G001
+#pragma warning restore LOGGEN000
 
     private static string OriginalFormatValueFMT(IncomingRequestStruct request, Exception? _)
     {

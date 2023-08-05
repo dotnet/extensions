@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.Extensions.ExtraAnalyzers.CallAnalysis;
 
 /// <summary>
-/// Recommends R9's string split functionality instead of String.Split.
+/// Recommends allocation-free string split functionality instead of String.Split.
 /// </summary>
 internal sealed class Split
 {

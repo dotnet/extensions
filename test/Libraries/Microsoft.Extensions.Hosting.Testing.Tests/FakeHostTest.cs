@@ -85,9 +85,7 @@ public class FakeHostTest
 #pragma warning disable CA2000
         var sut = new FakeHost(hostMock.Object, new FakeHostOptions { StartUpTimeout = TimeSpan.FromMilliseconds(-1) });
 #pragma warning restore CA2000
-#pragma warning disable R9A056 // Fire-and-forget async call inside a 'using' block
         _ = sut.StartAsync(cancellationTokenSource.Token);
-#pragma warning restore R9A056 // Fire-and-forget async call inside a 'using' block
 
         Assert.False(receivedToken.IsCancellationRequested);
         cancellationTokenSource.Cancel();
@@ -147,9 +145,7 @@ public class FakeHostTest
 #pragma warning disable CA2000
         var sut = new FakeHost(hostMock.Object, new FakeHostOptions { StartUpTimeout = TimeSpan.FromMilliseconds(-1) });
 #pragma warning restore CA2000
-#pragma warning disable R9A056 // Fire-and-forget async call inside a 'using' block
         _ = sut.StopAsync(cancellationTokenSource.Token);
-#pragma warning restore R9A056 // Fire-and-forget async call inside a 'using' block
 
         Assert.False(receivedToken.IsCancellationRequested);
         cancellationTokenSource.Cancel();

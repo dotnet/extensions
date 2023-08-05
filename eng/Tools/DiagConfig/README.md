@@ -19,7 +19,7 @@ Here's an example diagnostic:
 
 ```yaml
 Diagnostics:
-  R9A001:
+  EA0001:
     Metadata:
       Category: Performance
       Title: Switch to `Microsoft.IO.RecyclableMemoryStream` for additional performance.

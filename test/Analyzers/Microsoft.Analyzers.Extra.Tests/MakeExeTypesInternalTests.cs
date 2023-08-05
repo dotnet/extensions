@@ -79,7 +79,7 @@ namespace Example
     public static async Task Disqualification()
     {
         const string Source = @"
-#pragma warning disable R9A031
+#pragma warning disable EA0004
 namespace Xunit
 {
     public sealed class FactAttribute : System.Attribute {}
@@ -102,8 +102,8 @@ namespace MessagePack
     [System.AttributeUsage(System.AttributeTargets.Class)]
     public sealed class MessagePackObjectAttribute : System.Attribute {}
 }
+#pragma warning restore EA0004
 
-#pragma warning restore R9A031
 namespace Example
 {
     using Xunit;

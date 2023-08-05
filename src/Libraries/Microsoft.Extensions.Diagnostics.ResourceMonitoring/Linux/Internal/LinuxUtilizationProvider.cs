@@ -4,7 +4,6 @@
 using System;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Metering;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 
@@ -34,8 +33,6 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     public LinuxUtilizationProvider(IOptions<LinuxResourceUtilizationProviderOptions> options, LinuxUtilizationParser parser,
         Meter<LinuxUtilizationProvider> meter, IOperatingSystem os, TimeProvider? timeProvider = null)
     {
-        _ = Throw.IfMemberNull(options, options?.Value);
-
         if (!os.IsLinux)
         {
             throw new NotSupportedException($"Method 'AddLinuxProvider' was used on '{Environment.OSVersion.Platform}' while it was expected to run on Linux.");

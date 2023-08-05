@@ -9,8 +9,6 @@ namespace TestClasses
 {
     [SuppressMessage("Usage", "CA1801:Review unused parameters",
         Justification = "Method body is source generated where the parameters will be used")]
-    [SuppressMessage("Readability", "R9A046:Source generated metrics (fast metrics) should be located in 'Metric' class",
-        Justification = "Metering generator tests")]
     internal static partial class HistogramTestExtensions
     {
         [Histogram]

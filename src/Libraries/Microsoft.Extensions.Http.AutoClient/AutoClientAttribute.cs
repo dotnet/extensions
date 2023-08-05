@@ -43,7 +43,7 @@ public sealed class AutoClientAttribute : Attribute
     /// Initializes a new instance of the <see cref="AutoClientAttribute"/> class.
     /// </summary>
     /// <param name="httpClientName">The name of the HTTP client to be retrieved from <see cref="IHttpClientFactory" />.</param>
-    /// <param name="customDependencyName">The dependency name override to be used with R9 Telemetry.</param>
+    /// <param name="customDependencyName">The dependency name override to use.</param>
     public AutoClientAttribute(string httpClientName, string customDependencyName)
     {
         HttpClientName = httpClientName;

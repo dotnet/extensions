@@ -9,8 +9,6 @@ namespace PublicMetering
 {
     [SuppressMessage("Usage", "CA1801:Review unused parameters",
         Justification = "For testing emitter for classes without namespace")]
-    [SuppressMessage("Readability", "R9A046:Source generated metrics (fast metrics) should be located in 'Metric' class",
-        Justification = "Metering generator tests")]
     public static partial class PublicMetricInstruments
     {
         [Counter]

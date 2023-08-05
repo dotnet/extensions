@@ -75,7 +75,7 @@ internal sealed class RequestLatencyTelemetryMiddleware : IMiddleware
         return next.Invoke(context);
     }
 
-    [SuppressMessage("Resilience", "R9A061:The async method doesn't support cancellation", Justification = "The time limit is enforced inside of the method")]
+    [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "The time limit is enforced inside of the method")]
     private async Task ExportAsync(LatencyData latencyData)
     {
         var tokenSource = _cancellationTokenSourcePool.Get();

@@ -20,7 +20,7 @@ internal sealed class Emitter : EmitterBase
     {
     }
 
-    [SuppressMessage("Performance", "R9A036:Use 'Microsoft.Extensions.Text.NumericExtensions.ToInvariantString' for improved performance", Justification = "Can't use that in a generator")]
+    [SuppressMessage("Performance", "LA0002:Use 'Microsoft.Extensions.Text.NumericExtensions.ToInvariantString' for improved performance", Justification = "Can't use that in a generator")]
     public string Emit(IReadOnlyCollection<ClassifiedType> classifiedTypes, string assemblyName)
     {
         OutObject(() =>
