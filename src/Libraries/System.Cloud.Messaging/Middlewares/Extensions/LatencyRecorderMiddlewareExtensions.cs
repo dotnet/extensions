@@ -53,8 +53,8 @@ public static class LatencyRecorderMiddlewareExtensions
         _ = Throw.IfNull(implementationFactory);
         _ = Throw.IfNull(exporterFactory);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton<IMessageMiddleware>(pipelineBuilder.PipelineName,
-                sp => new LatencyContextProviderMiddleware(implementationFactory(sp), exporterFactory(sp)));
+        _ = pipelineBuilder.Services.AddKeyedSingleton<IMessageMiddleware>(pipelineBuilder.PipelineName,
+                (sp, _) => new LatencyContextProviderMiddleware(implementationFactory(sp), exporterFactory(sp)));
         return pipelineBuilder;
     }
 
@@ -73,8 +73,8 @@ public static class LatencyRecorderMiddlewareExtensions
         _ = Throw.IfNull(pipelineBuilder);
         _ = Throw.IfNull(implementationFactory);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton<IMessageMiddleware>(pipelineBuilder.PipelineName,
-                sp => new LatencyContextMiddleware(implementationFactory(sp)));
+        _ = pipelineBuilder.Services.AddKeyedSingleton<IMessageMiddleware>(pipelineBuilder.PipelineName,
+                (sp, _) => new LatencyContextMiddleware(implementationFactory(sp)));
         return pipelineBuilder;
     }
 
@@ -101,7 +101,7 @@ public static class LatencyRecorderMiddlewareExtensions
         _ = Throw.IfNull(successMeasureToken);
         _ = Throw.IfNull(failureMeasureToken);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton<IMessageMiddleware>(pipelineBuilder.PipelineName, sp => new LatencyRecorderMiddleware(successMeasureToken, failureMeasureToken));
+        _ = pipelineBuilder.Services.AddKeyedSingleton<IMessageMiddleware>(pipelineBuilder.PipelineName, (_, _) => new LatencyRecorderMiddleware(successMeasureToken, failureMeasureToken));
         return pipelineBuilder;
     }
 }

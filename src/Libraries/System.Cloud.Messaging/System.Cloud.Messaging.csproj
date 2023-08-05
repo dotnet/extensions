@@ -21,7 +21,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ToBeMoved\DependencyInjection.NamedService\DependencyInjection.NamedService.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
   </ItemGroup>
 
