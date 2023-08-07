@@ -48,20 +48,20 @@ try {
 
     Copy-Item -Path $DiagToolPath -Destination $tempDir
 
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.Analyzers.Extra.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.Analyzers.Local.dll
-    & .\DiagConfig.exe $Diags analyzer merge StyleCop.Analyzers.dll
-    & .\DiagConfig.exe $Diags analyzer merge SonarAnalyzer.CSharp.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.VisualStudio.Threading.Analyzers.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.VisualStudio.Threading.Analyzers.CSharp.dll
-    & .\DiagConfig.exe $Diags analyzer merge xunit.analyzers.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.CodeAnalysis.CodeStyle.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.CodeAnalysis.CSharp.CodeStyle.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.CodeAnalysis.NetAnalyzers.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
-    & .\DiagConfig.exe $Diags analyzer merge ILlink.RoslynAnalyzer.dll
-#    & .\DiagConfig.exe $Diags analyzer merge Microsoft.AspNetCore.App.Analyzers.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.AspNetCore.Components.Analyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.Analyzers.Extra.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.Analyzers.Local.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge StyleCop.Analyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge SonarAnalyzer.CSharp.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.VisualStudio.Threading.Analyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.VisualStudio.Threading.Analyzers.CSharp.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge xunit.analyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.CodeAnalysis.CodeStyle.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.CodeAnalysis.CSharp.CodeStyle.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.CodeAnalysis.NetAnalyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge ILlink.RoslynAnalyzer.dll
+#    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.AspNetCore.App.Analyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.AspNetCore.Components.Analyzers.dll
 } finally {
     Pop-Location
     Remove-Item -Path $tempDir -Recurse
