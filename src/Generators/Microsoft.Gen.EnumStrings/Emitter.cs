@@ -11,7 +11,7 @@ using Microsoft.Gen.Shared;
 
 namespace Microsoft.Gen.EnumStrings;
 
-#pragma warning disable R9A036 // Use 'Microsoft.Extensions.Text.NumericExtensions.ToInvariantString' for improved performance
+#pragma warning disable LA0002 // Use 'Microsoft.Extensions.Text.NumericExtensions.ToInvariantString' for improved performance
 #pragma warning disable S109 // Magic numbers should not be used
 
 // Stryker disable all

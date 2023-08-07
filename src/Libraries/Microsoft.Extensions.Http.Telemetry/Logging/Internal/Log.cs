@@ -30,7 +30,6 @@ internal static partial class Log
     public static partial void EnrichmentError(ILogger logger, Exception exception);
 
     // Using the code below to avoid every item in ILogger's logRecord State being prefixed with parameter name.
-    // To be fixed in R9 later.
     private static void OutgoingRequest(
         ILogger logger, LogLevel level, int eventId, string eventName, LogRecord record, Exception? exception = null)
     {

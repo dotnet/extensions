@@ -6,6 +6,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- disable Published symbols cannot be deleted to maintain compatibility" because we have different APIs for different TFMs -->
+    <NoWarn Condition="'$(TargetFramework)' == 'net462'">$(NoWarn);LA0006</NoWarn>
+
     <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMeteringGenerator>true</UseMeteringGenerator>

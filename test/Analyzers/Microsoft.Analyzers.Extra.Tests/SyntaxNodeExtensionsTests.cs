@@ -188,7 +188,7 @@ public class SyntaxNodeExtensionsTests
         var memberaccess = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, console, writeline);
         var expression = SyntaxFactory.InvocationExpression(memberaccess, SyntaxFactory.ArgumentList());
 
-        Assert.Equal(writeline.ToString(), expression?.GetExpressionName()?.ToString());
+        Assert.Equal(writeline.ToString(), expression.GetExpressionName()?.ToString());
     }
 
     [Fact]
@@ -198,6 +198,6 @@ public class SyntaxNodeExtensionsTests
         var memberbind = SyntaxFactory.MemberBindingExpression(SyntaxFactory.ParseToken("."), b);
         var expression = SyntaxFactory.InvocationExpression(memberbind);
 
-        Assert.Equal(b.ToString(), expression?.GetExpressionName()?.ToString());
+        Assert.Equal(b.ToString(), expression.GetExpressionName()?.ToString());
     }
 }

@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: xunit.analyzers
-  Version: 1.0.0
+  Version: 1.1.0
 Diagnostics:
   xUnit1000:
     Metadata:

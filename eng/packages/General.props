@@ -63,7 +63,7 @@
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" />
-    <PackageVersion Include="YamlDotNet" Version="13.1.1" />
+    <PackageVersion Include="YamlDotNet" Version="12.0.0" />
   </ItemGroup>
 
   <ItemGroup>

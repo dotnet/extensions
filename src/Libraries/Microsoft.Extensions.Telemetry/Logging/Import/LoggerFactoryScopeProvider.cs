@@ -17,7 +17,6 @@
 #pragma warning disable S2551 // Lock on a dedicated object instance instead
 #pragma warning disable SA1204 // Static elements should appear before instance elements
 #pragma warning disable SA1402 // File may only contain a single type
-#pragma warning disable R9A015
 
 using System;
 using System.Text;
@@ -25,6 +24,7 @@ using System.Threading;
 using System.Collections;
 using System.Diagnostics;
 using System.Collections.Generic;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging
 {
@@ -192,7 +192,7 @@ namespace Microsoft.Extensions.Logging
                 {
                     if (index >= Count)
                     {
-                        throw new ArgumentOutOfRangeException(nameof(index));
+                        Throw.ArgumentOutOfRangeException(nameof(index));
                     }
 
                     return _items[index];

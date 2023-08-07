@@ -61,7 +61,7 @@ namespace TestClasses
 
         public static void ProvideOtherProperties(ITagCollector list, ClassToLog? param)
         {
-            list.Add("Another_property_name", param?.MyStringProperty?.ToUpperInvariant());
+            list.Add("Another_property_name", param?.MyStringProperty.ToUpperInvariant());
             list.Add(nameof(ClassToLog.MyIntProperty) + "_test", param?.MyIntProperty);
         }
 

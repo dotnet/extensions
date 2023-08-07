@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.Cloud.Messaging;
@@ -15,6 +14,5 @@ namespace System.Cloud.Messaging;
 /// </remarks>
 /// <param name="context">The message context.</param>
 /// <returns><see cref="ValueTask"/>.</returns>
-[SuppressMessage("Resilience", "R9A061:The async method doesn't support cancellation", Justification = $"{nameof(MessageContext)} has {nameof(CancellationToken)}")]
 [SuppressMessage("Naming", "CA1711:Identifiers should not have incorrect suffix", Justification = "Similar to RequestDelegate in ASP.NET.")]
 public delegate ValueTask MessageDelegate(MessageContext context);

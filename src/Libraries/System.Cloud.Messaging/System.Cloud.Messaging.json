@@ -6,23 +6,23 @@
       "Stage": "Experimental",
       "Methods": [
         {
+          "Member": "static System.Cloud.Messaging.IAsyncProcessingPipelineBuilder System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddKeyedSingleton<T>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder pipelineBuilder);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Cloud.Messaging.IAsyncProcessingPipelineBuilder System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddKeyedSingleton<T>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder pipelineBuilder, System.Func<System.IServiceProvider, T> implementationFactory);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Cloud.Messaging.IAsyncProcessingPipelineBuilder System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddKeyedSingleton<T>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder pipelineBuilder, string name, System.Func<System.IServiceProvider, T> implementationFactory);",
+          "Stage": "Experimental"
+        },
+        {
           "Member": "static System.Cloud.Messaging.IAsyncProcessingPipelineBuilder System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddMessageMiddleware<TMiddleware>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder pipelineBuilder);",
           "Stage": "Experimental"
         },
         {
           "Member": "static System.Cloud.Messaging.IAsyncProcessingPipelineBuilder System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddMessageMiddleware<TMiddleware>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder pipelineBuilder, System.Func<System.IServiceProvider, TMiddleware> implementationFactory);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static System.Cloud.Messaging.IAsyncProcessingPipelineBuilder System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddNamedSingleton<T>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder pipelineBuilder);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static System.Cloud.Messaging.IAsyncProcessingPipelineBuilder System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddNamedSingleton<T>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder pipelineBuilder, System.Func<System.IServiceProvider, T> implementationFactory);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static System.Cloud.Messaging.IAsyncProcessingPipelineBuilder System.Cloud.Messaging.AsyncProcessingPipelineBuilderExtensions.AddNamedSingleton<T>(this System.Cloud.Messaging.IAsyncProcessingPipelineBuilder pipelineBuilder, string name, System.Func<System.IServiceProvider, T> implementationFactory);",
           "Stage": "Experimental"
         },
         {

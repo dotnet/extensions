@@ -335,7 +335,7 @@ namespace {details.TargetNamespace}
     /// <summary>
     /// Given a LoggerExtensions method invocation, produce a parameter list for the corresponding generated logging method.
     /// </summary>
-    private static IReadOnlyList<SyntaxNode> MakeParameterList(
+    private static List<SyntaxNode> MakeParameterList(
         FixDetails details,
         IInvocationOperation invocationOp,
         SyntaxGenerator gen)
@@ -401,7 +401,7 @@ namespace {details.TargetNamespace}
     /// <summary>
     /// Given a LoggerExtensions method invocation, produce an argument list in the shape of a corresponding generated logging method.
     /// </summary>
-    private static IReadOnlyList<ITypeSymbol> MakeArgumentList(FixDetails details, IInvocationOperation invocationOp)
+    private static List<ITypeSymbol> MakeArgumentList(FixDetails details, IInvocationOperation invocationOp)
     {
         var args = new List<ITypeSymbol>
         {

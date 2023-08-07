@@ -9,8 +9,6 @@ namespace NestedRecordClass.Metering
 {
     [SuppressMessage("Usage", "CA1801:Review unused parameters",
         Justification = "For testing emitter for records")]
-    [SuppressMessage("Readability", "R9A046:Source generated metrics (fast metrics) should be located in 'Metric' class",
-        Justification = "Metering generator tests")]
     public static partial class TopLevelRecordClass
     {
         public partial record class InstrumentsInNestedRecordClass(string Address)

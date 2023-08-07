@@ -27,7 +27,7 @@ public static class SerialExtendedLoggerTests
         using var el = new LoggerEventListener();
         el.EventWritten += (_, e) =>
         {
-            var payload = e?.Payload?[0];
+            var payload = e.Payload?[0];
             if (payload != null)
             {
                 var s = payload.ToString();

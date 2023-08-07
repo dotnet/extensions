@@ -15,10 +15,10 @@ namespace TestClasses
         [LogMethod(1, LogLevel.Debug, "M1 {ex2}")]
         public static partial void M1(Exception ex1, ILogger logger, Exception ex2);
 
-#pragma warning disable R9G012 // Don't include a template for ex in the logging message
+#pragma warning disable LOGGEN009 // Don't include a template for ex in the logging message
         [LogMethod(2, LogLevel.Debug, "M2 {arg1}: {ex}")]
         public static partial void M2(ILogger logger, string arg1, Exception ex);
-#pragma warning restore R9G012
+#pragma warning restore LOGGEN009
 
         [LogMethod]
         public static partial void M3(Exception ex, ILogger logger, LogLevel level);

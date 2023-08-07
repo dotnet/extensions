@@ -3,7 +3,6 @@
     <RootNamespace>Microsoft.Extensions.Http.Resilience</RootNamespace>
     <Description>Resilience mechanisms for HTTP Client.</Description>
     <Workstream>Resilience</Workstream>
-    <NoWarn>$(NoWarn);R9A049</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-#pragma warning disable R9A043
-
 namespace Microsoft.Extensions.LocalAnalyzers.ApiLifecycle;
 
 internal static class Utils

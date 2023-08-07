@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Telemetry.Http.Logging;
 /// Intercepts data being written to stream and writes its copy to another data structure.
 /// </summary>
 /// <remarks>
-/// Copied from <see href="https://github.com/dotnet/aspnetcore/blob/main/src/Middleware/HttpLogging/src/ResponseBufferingStream.cs">ASP .NET</see> and adjusted to R9 needs.
+/// Copied from <see href="https://github.com/dotnet/aspnetcore/blob/main/src/Middleware/HttpLogging/src/ResponseBufferingStream.cs">ASP .NET</see> and adjusted for current needs.
 /// </remarks>
 internal sealed class ResponseInterceptingStream : Stream, IHttpResponseBodyFeature
 {

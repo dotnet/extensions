@@ -22,7 +22,7 @@ public class ResourceHealthCheckTest
                 0.1,
                 0UL,
                 1000UL,
-                null!,
+                new ResourceUsageThresholds(),
                 "",
             },
             new object[]

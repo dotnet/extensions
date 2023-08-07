@@ -19,8 +19,6 @@ internal sealed class NoRemoteCallHandler : DelegatingHandler
         _data = data;
     }
 
-    [SuppressMessage("Performance", "R9A017:Switch to an asynchronous method for increased performance.",
-        Justification = "No async overload for `Directory.GetFiles`.")]
     [SuppressMessage("Performance Analysis", "CPR120:File.ReadAllXXX should be replaced by using a StreamReader to avoid adding objects to the large object heap (LOH).",
         Justification = "We can live with it here")]
     public static NoRemoteCallHandler Create(string fileName)
