@@ -2,6 +2,8 @@
   <PropertyGroup>
     <RootNamespace>Microsoft.AspNetCore.AsyncState.Test</RootNamespace>
     <Description>Unit tests for Microsoft.AspNetCore.AsyncState.</Description>
+    <!-- Setting IsTrimmable to true so that the ILLink Analyzers are also used in this project. -->
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,4 +13,13 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
+
+  <!-- This target will simply print out the full path to all of the Analyzers that get passed to the compiler each
+  time this project gets built. This is called from MergeAnalyzerMetadata.ps1 script in order to generate the
+  right config files. For more info, please check out the MergeAnalyzerMetadata.ps1 script in the scripts folder
+  located on the root of the repo. -->
+  <Target Name="GetAnalyzersPassedToCompiler" 
+          DependsOnTargets="ResolveReferences">
+    <Message Importance="High" Text="Analyzers: @(Analyzer->'%(FullPath)', ',')" />
+  </Target>
 </Project>
