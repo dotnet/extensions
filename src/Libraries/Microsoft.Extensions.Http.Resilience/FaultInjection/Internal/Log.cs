@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.Extensions.Http.Resilience.FaultInjection.Internal;
 
 internal static partial class Log
 {
-    [LogMethod(0, LogLevel.Information,
+    [LoggerMessage(0, LogLevel.Information,
         "Fault-injection group name: {groupName}. " +
         "Fault type: {faultType}. " +
         "Injected value: {injectedValue}. " +

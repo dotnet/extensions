@@ -23,7 +23,7 @@ namespace TestClasses
             public IDictionary<string, int>? P7 { get; set; }
         }
 
-        [LogMethod(0, LogLevel.Debug, "{p0}")]
+        [LoggerMessage(0, LogLevel.Debug, "{p0}")]
         public static partial void LogFunc(ILogger logger, string p0, [LogProperties] MyProps myProps);
     }
 }

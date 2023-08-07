@@ -39,7 +39,7 @@ namespace TestClasses
 #endif
         }
 
-        [LogMethod(0, LogLevel.Debug)]
+        [LoggerMessage(LogLevel.Debug)]
         public static partial void M0(ILogger logger, [LogProperties] MyProps p);
     }
 }

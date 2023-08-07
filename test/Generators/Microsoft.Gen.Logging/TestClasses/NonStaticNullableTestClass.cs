@@ -3,7 +3,6 @@
 
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace TestClasses
 {
@@ -16,7 +15,7 @@ namespace TestClasses
             _logger = logger;
         }
 
-        [LogMethod(2, LogLevel.Debug, "M2 {p0} {p1} {p2}")]
+        [LoggerMessage(2, LogLevel.Debug, "M2 {p0} {p1} {p2}")]
         public partial void M2([PrivateData] string p0, [PrivateData] string p1, [PrivateData] string p2);
     }
 }

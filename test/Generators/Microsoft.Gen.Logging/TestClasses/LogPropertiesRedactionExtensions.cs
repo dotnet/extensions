@@ -49,25 +49,25 @@ namespace TestClasses
             public string TransitiveStringProp { get; set; } = "TransitiveStringProp";
         }
 
-        [LogMethod(1, LogLevel.Debug, "No template params")]
+        [LoggerMessage(1, LogLevel.Debug, "No template params")]
         public static partial void LogNoParams(ILogger logger, [LogProperties] ClassToRedact classToLog);
 
-        [LogMethod(2, LogLevel.Information, "Only {StringProperty} as param")]
+        [LoggerMessage(2, LogLevel.Information, "Only {StringProperty} as param")]
         public static partial void LogTwoParams(
             ILogger logger,
             [PrivateData] string stringProperty, [LogProperties] MyTransitiveClass? complexParam);
 
         // Default ctors:
-        [LogMethod]
+        [LoggerMessage]
         public static partial void LogNoParamsDefaultCtor(ILogger logger, LogLevel level,
             [LogProperties] ClassToRedact classToLog);
 
-        [LogMethod]
+        [LoggerMessage]
         public static partial void LogTwoParamsDefaultCtor(
             ILogger logger, LogLevel level,
             [PrivateData] string stringProperty, [LogProperties] MyTransitiveClass? complexParam);
 
-        [LogMethod(LogLevel.Debug, "User {userId} has now different status")]
+        [LoggerMessage(LogLevel.Debug, "User {userId} has now different status")]
         public static partial void UserAvailabilityChanged(
             this ILogger logger,
             [PrivateData] string userId,

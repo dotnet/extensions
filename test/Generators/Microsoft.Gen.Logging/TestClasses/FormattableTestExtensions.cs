@@ -9,10 +9,10 @@ namespace TestClasses
 {
     internal static partial class FormattableTestExtensions
     {
-        [LogMethod(0, LogLevel.Error, "Method1 {p1}")]
+        [LoggerMessage(0, LogLevel.Error, "Method1 {p1}")]
         public static partial void Method1(ILogger logger, Formattable p1);
 
-        [LogMethod(1, LogLevel.Error, "Method2")]
+        [LoggerMessage(1, LogLevel.Error, "Method2")]
         public static partial void Method2(ILogger logger, [LogProperties] ComplexObj p1);
 
         internal class Formattable : IFormattable

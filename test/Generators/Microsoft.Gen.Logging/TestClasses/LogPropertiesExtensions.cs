@@ -192,7 +192,7 @@ namespace TestClasses
             public LeafTransitiveBaseClass? TransitiveProp { get; set; }
         }
 
-        [LogMethod(0, LogLevel.Debug, "Only {classToLog_StringProperty_1} as param")]
+        [LoggerMessage(0, LogLevel.Debug, "Only {classToLog_StringProperty_1} as param")]
         public static partial void LogFunc(ILogger logger, string classToLog_StringProperty_1, [LogProperties] MyDerivedClass classToLog);
 
         internal class ClassAsParam
@@ -205,22 +205,22 @@ namespace TestClasses
                     .ToString("D", CultureInfo.InvariantCulture);
         }
 
-        [LogMethod(1, LogLevel.Information, "Both {StringProperty} and {ComplexParam} as params")]
+        [LoggerMessage(1, LogLevel.Information, "Both {StringProperty} and {ComplexParam} as params")]
         public static partial void LogMethodTwoParams(ILogger logger, string StringProperty, [LogProperties] ClassAsParam? complexParam);
 
-        [LogMethod(2, LogLevel.Information, "Testing non-nullable struct here...")]
+        [LoggerMessage(2, LogLevel.Information, "Testing non-nullable struct here...")]
         public static partial void LogMethodStruct(ILogger logger, [LogProperties] MyCustomStruct structParam);
 
-        [LogMethod(3, LogLevel.Information, "Testing nullable struct here...")]
+        [LoggerMessage(3, LogLevel.Information, "Testing nullable struct here...")]
         public static partial void LogMethodNullableStruct(ILogger logger, [LogProperties] in MyCustomStruct? structParam);
 
-        [LogMethod(4, LogLevel.Information, "Testing explicit nullable struct here...")]
+        [LoggerMessage(4, LogLevel.Information, "Testing explicit nullable struct here...")]
         public static partial void LogMethodExplicitNullableStruct(ILogger logger, [LogProperties] Nullable<MyCustomStruct> structParam);
 
-        [LogMethod]
+        [LoggerMessage]
         public static partial void LogMethodDefaultAttrCtor(ILogger logger, LogLevel level, [LogProperties] ClassAsParam? complexParam);
 
-        [LogMethod(5, LogLevel.Information, "Testing interface-typed argument here...")]
+        [LoggerMessage(5, LogLevel.Information, "Testing interface-typed argument here...")]
         public static partial void LogMethodInterfaceArg(ILogger logger, [LogProperties] IMyInterface complexParam);
     }
 }

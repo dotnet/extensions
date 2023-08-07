@@ -16,7 +16,7 @@ internal static class AttributeProcessors
     private const int LogLevelCritical = 5;
 
     public static (int? eventId, int? level, string message, string? eventName, bool skipEnabledCheck)
-        ExtractLogMethodAttributeValues(AttributeData attr, SymbolHolder symbols)
+        ExtractLoggerMessageAttributeValues(AttributeData attr, SymbolHolder symbols)
     {
         // seven constructor arg shapes:
         //

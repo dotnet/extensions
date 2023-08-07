@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace TestClasses
 {
@@ -13,7 +12,7 @@ namespace TestClasses
             public override string ToString() => "Hello from S";
         }
 
-        [LogMethod(0, LogLevel.Information, "M0 {s}")]
+        [LoggerMessage(0, LogLevel.Information, "M0 {s}")]
         internal static partial void M0(ILogger logger, in S s);
     }
 }

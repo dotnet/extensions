@@ -50,13 +50,13 @@ public sealed class UsingToStringInLoggersAnalyzer : DiagnosticAnalyzer
     [ExcludeFromCodeCoverage]
     private static bool IsLoggerMethod(ISymbol symbol)
     {
-        return symbol.GetAttributes().Any(a => a.AttributeClass != null && IsLogMethodAttribute(a.AttributeClass));
+        return symbol.GetAttributes().Any(a => a.AttributeClass != null && IsLoggerMessageAttribute(a.AttributeClass));
     }
 
-    private static bool IsLogMethodAttribute(ISymbol attributeSymbol)
+    private static bool IsLoggerMessageAttribute(ISymbol attributeSymbol)
     {
-        return attributeSymbol.Name == "LogMethodAttribute"
-            && attributeSymbol.ContainingNamespace.ToString() == "Microsoft.Extensions.Telemetry.Logging";
+        return attributeSymbol.Name == "LoggerMessageAttribute"
+            && attributeSymbol.ContainingNamespace.ToString() == "Microsoft.Extensions.Logging";
     }
 
     private static IEnumerable<Diagnostic> AnalyzeLogger(IInvocationOperation invocation)

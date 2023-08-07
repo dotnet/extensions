@@ -119,14 +119,14 @@ internal static partial class Log
 
     #endregion
 
-    [LogMethod(3, LogLevel.Error, ReadingRequestBodyError)]
+    [LoggerMessage(3, LogLevel.Error, ReadingRequestBodyError)]
     public static partial void ErrorReadingRequestBody(this ILogger logger, Exception ex);
 
-    [LogMethod(4, LogLevel.Error, ReadingResponseBodyError)]
+    [LoggerMessage(4, LogLevel.Error, ReadingResponseBodyError)]
     public static partial void ErrorReadingResponseBody(this ILogger logger, Exception ex);
 
 #pragma warning disable LOGGEN000
-    [LogMethod(5, LogLevel.Warning,
+    [LoggerMessage(5, LogLevel.Warning,
         $"HttpLogging middleware is injected into application pipeline, but {nameof(LogLevel)} '{{logLevel}}' is disabled in logger. " +
         "Remove {methodName}() call from pipeline configuration in that case.")]
     public static partial void MiddlewareIsMisused(this ILogger logger, LogLevel logLevel, string methodName);

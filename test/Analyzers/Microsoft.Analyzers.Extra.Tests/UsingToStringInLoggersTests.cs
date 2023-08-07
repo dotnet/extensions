@@ -4,8 +4,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Enrichment;
-using Microsoft.Extensions.Telemetry.Logging;
 using Microsoft.Gen.Logging;
 using Xunit;
 
@@ -15,9 +15,8 @@ public class UsingToStringInLoggersTests
 {
     public static IEnumerable<Assembly> References => new[]
     {
-        Assembly.GetAssembly(typeof(LogMethodAttribute))!,
+        Assembly.GetAssembly(typeof(LoggerMessageAttribute))!,
         Assembly.GetAssembly(typeof(IEnrichmentTagCollector))!,
-        Assembly.GetAssembly(typeof(Microsoft.Extensions.Logging.LogLevel))!,
     };
 
     [Fact]
@@ -30,7 +29,7 @@ public class UsingToStringInLoggersTests
             {
                 internal static partial class Log
                 {
-                    [Microsoft.Extensions.Telemetry.Logging.LogMethod(1, LogLevel.Debug, ""Flargh! {arg}"")]
+                    [LoggerMessage(1, LogLevel.Debug, ""Flargh! {arg}"")]
                     public static partial void Flargh(ILogger log, string arg);
                 }
 

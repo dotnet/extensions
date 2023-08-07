@@ -527,61 +527,61 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute : System.Attribute",
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute : System.Attribute",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(int eventId, Microsoft.Extensions.Logging.LogLevel level, string message);",
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.LoggerMessageAttribute(int eventId, Microsoft.Extensions.Logging.LogLevel level, string message);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(int eventId, Microsoft.Extensions.Logging.LogLevel level);",
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.LoggerMessageAttribute(int eventId, Microsoft.Extensions.Logging.LogLevel level);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(Microsoft.Extensions.Logging.LogLevel level, string message);",
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.LoggerMessageAttribute(Microsoft.Extensions.Logging.LogLevel level, string message);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(Microsoft.Extensions.Logging.LogLevel level);",
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.LoggerMessageAttribute(Microsoft.Extensions.Logging.LogLevel level);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(string message);",
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.LoggerMessageAttribute(string message);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(int eventId, string message);",
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.LoggerMessageAttribute(int eventId, string message);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute(int eventId);",
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.LoggerMessageAttribute(int eventId);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.LogMethodAttribute();",
+          "Member": "Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.LoggerMessageAttribute();",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "int Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.EventId { get; }",
+          "Member": "int Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.EventId { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string? Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.EventName { get; set; }",
+          "Member": "string? Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.EventName { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Logging.LogLevel? Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.Level { get; }",
+          "Member": "Microsoft.Extensions.Logging.LogLevel? Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.Level { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.Message { get; }",
+          "Member": "string Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.Message { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute.SkipEnabledCheck { get; set; }",
+          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LoggerMessageAttribute.SkipEnabledCheck { get; set; }",
           "Stage": "Stable"
         }
       ]

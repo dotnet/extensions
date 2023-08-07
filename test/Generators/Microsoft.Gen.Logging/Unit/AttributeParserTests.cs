@@ -10,7 +10,6 @@ using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Enrichment;
-using Microsoft.Extensions.Telemetry.Logging;
 using Microsoft.Gen.Logging.Parsing;
 using Microsoft.Gen.Shared;
 using Xunit;
@@ -25,7 +24,7 @@ public class AttributeParserTests
         var diagnostics = await RunGenerator(@"
                 internal static partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M {p0}"")]
                     static partial void M(ILogger logger, [Test] string p0);
                 }
             ");
@@ -55,7 +54,7 @@ public class AttributeParserTests
         var diagnostics = await RunGenerator(@"
                 internal static partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M {p0}"")]
                     static partial void M(ILogger logger, [PrivateDataAttribute] string p0);
                 }
             ");
@@ -69,7 +68,7 @@ public class AttributeParserTests
         var diagnostics = await RunGenerator(@"
                 internal static partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M {p0}"")]
                     static partial void M(ILogger logger, [PrivateData] string p0);
                 }
             ");
@@ -83,7 +82,7 @@ public class AttributeParserTests
         var diagnostics = await RunGenerator(@"
                 internal static partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M {p0}"")]
                     static partial void M(ILogger logger, [Test][PrivateData] string p0);
                 }
             ");
@@ -107,7 +106,7 @@ public class AttributeParserTests
                     _redactorProvider = redactorProvider;
                 }}
 
-                [LogMethod(0, LogLevel.Debug, ""M0 {{p0}}"")]
+                [LoggerMessage(0, LogLevel.Debug, ""M0 {{p0}}"")]
                 public partial void M0({type} p0);
             }}");
 
@@ -120,7 +119,7 @@ public class AttributeParserTests
         var diagnostics = await RunGenerator(@"
                 internal static partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M {p0}"")]
                     static partial void M(ILogger logger, [PrivateData] int p0);
                 }
             ");
@@ -134,7 +133,7 @@ public class AttributeParserTests
         var diagnostics = await RunGenerator(@"
                 internal static partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M {p0}"")]
                     static partial void M(ILogger logger, IRedactorProvider provider, [PrivateData][PrivateData] string p0);
                 }
             ");
@@ -148,7 +147,7 @@ public class AttributeParserTests
         var diagnostics = await RunGenerator(@"
                 internal static partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M {p0}"")]
                     static partial void M([PrivateData] string p0);
                 }
             ");
@@ -163,7 +162,7 @@ public class AttributeParserTests
         var diagnostics = await RunGenerator(@"
                 internal static partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M {p0}"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M {p0}"")]
                     static partial void M(ILogger logger, [PublicData] string p0);
                 }
             ");
@@ -177,7 +176,7 @@ public class AttributeParserTests
         var diagnostics = await RunGenerator(@$"
             internal partial class C
             {{
-                [LogMethod(0, LogLevel.Debug, ""M {{p0}}"")]
+                [LoggerMessage(0, LogLevel.Debug, ""M {{p0}}"")]
                 partial void M(ILogger logger, [PrivateData] string p0);
             }}");
 
@@ -199,7 +198,7 @@ public class AttributeParserTests
             ";
 
         var loggerAssembly = Assembly.GetAssembly(typeof(ILogger));
-        var logMethodAssembly = Assembly.GetAssembly(typeof(LogMethodAttribute));
+        var logMethodAssembly = Assembly.GetAssembly(typeof(LoggerMessageAttribute));
         var enrichmentAssembly = Assembly.GetAssembly(typeof(IEnrichmentTagCollector));
         var dataClassificationAssembly = Assembly.GetAssembly(typeof(DataClassification));
         var simpleDataClassificationAssembly = Assembly.GetAssembly(typeof(PrivateDataAttribute));

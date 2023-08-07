@@ -10,7 +10,7 @@ namespace Microsoft.Gen.Logging.Parsing;
 [ExcludeFromCodeCoverage]
 internal sealed record class SymbolHolder(
     Compilation Compilation,
-    INamedTypeSymbol LogMethodAttribute,
+    INamedTypeSymbol LoggerMessageAttribute,
     INamedTypeSymbol LogPropertiesAttribute,
     INamedTypeSymbol? LogPropertyIgnoreAttribute,
     INamedTypeSymbol ITagCollectorSymbol,

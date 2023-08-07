@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.ExtraAnalyzers.Test;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 using Xunit;
 
 namespace Microsoft.Extensions.ExtraAnalyzers.CallAnalysis.Test;
@@ -84,7 +83,7 @@ using System;
 static partial class Log
 {
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, LogLevel.Trace, ""Hello {message}"")]
+    [LoggerMessage(0, LogLevel.Trace, ""Hello {message}"")]
     internal static partial void HelloMessage(this ILogger logger, string message);
 }
 ";
@@ -92,7 +91,7 @@ static partial class Log
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget }).ConfigureAwait(false);
 
         var actualSource = l[0];
@@ -103,7 +102,7 @@ static partial class Log
     }
 
     [Fact]
-    public static async Task MissingReferenceToLogMethodAttribute()
+    public static async Task MissingReferenceToLoggerMessageAttribute()
     {
         const string OriginalTarget = @"
 #pragma warning disable CS8019
@@ -155,7 +154,7 @@ using System;
 static partial class Log
 {
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute(1, LogLevel.Trace, ""Hello World"")]
+    [LoggerMessage(0, LogLevel.Trace, ""Hello World"")]
     internal static partial void HelloWorld(this ILogger logger);
 }
 ";
@@ -225,7 +224,7 @@ using System;
 static partial class Log
 {
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, LogLevel.Trace, ""Hello"")]
+    [LoggerMessage(0, LogLevel.Trace, ""Hello"")]
     internal static partial void Hello(this ILogger logger);
 }
 ";
@@ -233,7 +232,7 @@ static partial class Log
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource },
             extraFile: "Log.cs").ConfigureAwait(false);
 
@@ -288,7 +287,7 @@ using System;
 static partial class Log
 {
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, LogLevel.Trace, ""Hello"")]
+    [LoggerMessage(0, LogLevel.Trace, ""Hello"")]
     internal static partial void Hello(this ILogger logger);
 }
 ";
@@ -296,7 +295,7 @@ static partial class Log
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource },
             extraFile: "Log.cs").ConfigureAwait(false);
 
@@ -349,7 +348,7 @@ using System;
 static partial class Log
 {
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, LogLevel.Trace, ""Hello World"")]
+    [LoggerMessage(0, LogLevel.Trace, ""Hello World"")]
     internal static partial void HelloWorld(this ILogger logger);
 }
 ";
@@ -357,7 +356,7 @@ static partial class Log
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource },
             extraFile: "Log.cs").ConfigureAwait(false);
 
@@ -416,16 +415,16 @@ using System;
 static partial class Log
 {
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, LogLevel.Trace, ""Hello {_arg0}"")]
+    [LoggerMessage(0, LogLevel.Trace, ""Hello {_arg0}"")]
     internal static partial void HelloArg0(this ILogger logger, int _arg0);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(1, LogLevel.Trace, ""Hello {x} World"")]
+    [LoggerMessage(1, LogLevel.Trace, ""Hello {x} World"")]
     internal static partial void HelloXWorld(this ILogger logger, int x);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(2, LogLevel.Trace, ""Hello {x} {_arg0} World"")]
+    [LoggerMessage(2, LogLevel.Trace, ""Hello {x} {_arg0} World"")]
     internal static partial void HelloXArg0World(this ILogger logger, int x, int _arg0);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(3, LogLevel.Trace, ""Hello {x} World"")]
+    [LoggerMessage(3, LogLevel.Trace, ""Hello {x} World"")]
     internal static partial void HelloXWorld(this ILogger logger, Exception exception, int x);
 }
 ";
@@ -433,7 +432,7 @@ static partial class Log
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource },
             extraFile: "Log.cs").ConfigureAwait(false);
 
@@ -598,85 +597,85 @@ static partial class Log
                 static partial class Log
                 {
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(1, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello {arg1}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(1, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello {arg1}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(2, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(2, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger, System.Exception exception);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(3, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello {arg1}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(3, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello {arg1}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger, System.Exception exception, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(4, Microsoft.Extensions.Logging.LogLevel.Debug, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(4, Microsoft.Extensions.Logging.LogLevel.Debug, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(5, Microsoft.Extensions.Logging.LogLevel.Debug, ""Hello {arg1}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(5, Microsoft.Extensions.Logging.LogLevel.Debug, ""Hello {arg1}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(6, Microsoft.Extensions.Logging.LogLevel.Debug, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(6, Microsoft.Extensions.Logging.LogLevel.Debug, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger, System.Exception exception);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(7, Microsoft.Extensions.Logging.LogLevel.Debug, ""Hello {arg1}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(7, Microsoft.Extensions.Logging.LogLevel.Debug, ""Hello {arg1}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger, System.Exception exception, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(8, Microsoft.Extensions.Logging.LogLevel.Information, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(8, Microsoft.Extensions.Logging.LogLevel.Information, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(9, Microsoft.Extensions.Logging.LogLevel.Information, ""Hello {arg1}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(9, Microsoft.Extensions.Logging.LogLevel.Information, ""Hello {arg1}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(10, Microsoft.Extensions.Logging.LogLevel.Information, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(10, Microsoft.Extensions.Logging.LogLevel.Information, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger, System.Exception exception);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(11, Microsoft.Extensions.Logging.LogLevel.Information, ""Hello {arg1}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(11, Microsoft.Extensions.Logging.LogLevel.Information, ""Hello {arg1}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger, System.Exception exception, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(12, Microsoft.Extensions.Logging.LogLevel.Warning, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(12, Microsoft.Extensions.Logging.LogLevel.Warning, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(13, Microsoft.Extensions.Logging.LogLevel.Warning, ""Hello {arg1}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(13, Microsoft.Extensions.Logging.LogLevel.Warning, ""Hello {arg1}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(14, Microsoft.Extensions.Logging.LogLevel.Warning, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(14, Microsoft.Extensions.Logging.LogLevel.Warning, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger, System.Exception exception);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(15, Microsoft.Extensions.Logging.LogLevel.Warning, ""Hello {arg1}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(15, Microsoft.Extensions.Logging.LogLevel.Warning, ""Hello {arg1}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger, System.Exception exception, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(16, Microsoft.Extensions.Logging.LogLevel.Error, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(16, Microsoft.Extensions.Logging.LogLevel.Error, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(17, Microsoft.Extensions.Logging.LogLevel.Error, ""Hello {arg1}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(17, Microsoft.Extensions.Logging.LogLevel.Error, ""Hello {arg1}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(18, Microsoft.Extensions.Logging.LogLevel.Error, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(18, Microsoft.Extensions.Logging.LogLevel.Error, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger, System.Exception exception);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(19, Microsoft.Extensions.Logging.LogLevel.Error, ""Hello {arg1}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(19, Microsoft.Extensions.Logging.LogLevel.Error, ""Hello {arg1}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger, System.Exception exception, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(20, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(20, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(21, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello {arg1}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(21, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello {arg1}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(22, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(22, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger, System.Exception exception);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(23, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello {arg1}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(23, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello {arg1}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger, System.Exception exception, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(24, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello {arg1:0}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(24, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello {arg1:0}"")]
     internal static partial void HelloArg10(this Microsoft.Extensions.Logging.ILogger logger, string arg1);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(25, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello {arg1:0"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(25, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello {arg1:0"")]
     internal static partial void HelloArg10(this Microsoft.Extensions.Logging.ILogger logger, string arg0);
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(26, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello {{arg1}}"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(26, Microsoft.Extensions.Logging.LogLevel.Critical, ""Hello {{arg1}}"")]
     internal static partial void HelloArg1(this Microsoft.Extensions.Logging.ILogger logger);
 }
                 ";
@@ -684,7 +683,7 @@ static partial class Log
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OrriginalSource, OrriginalTarget }).ConfigureAwait(false);
 
         var actualSource = l[0];
@@ -738,7 +737,7 @@ logger.Hello();
                     static partial class Log
                     {
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger? logger);
 }
                     ";
@@ -746,7 +745,7 @@ logger.Hello();
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OrriginalSource, OrriginalTarget }).ConfigureAwait(false);
 
         var actualSource = l[0];

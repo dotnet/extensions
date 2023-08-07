@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 #pragma warning disable SA1402 // File may only contain a single type
 #pragma warning disable CA1822 // Mark members as static
@@ -19,7 +18,7 @@ namespace TestClasses
         {
             internal static partial class NestedClass
             {
-                [LogMethod(8, LogLevel.Error, "M8")]
+                [LoggerMessage(8, LogLevel.Error, "M8")]
                 public static partial void M8(ILogger logger);
             }
         }
@@ -34,7 +33,7 @@ namespace TestClasses
         {
             internal static partial class NestedClass
             {
-                [LogMethod(9, LogLevel.Debug, "M9")]
+                [LoggerMessage(9, LogLevel.Debug, "M9")]
                 public static partial void M9(ILogger logger);
             }
 
@@ -48,7 +47,7 @@ namespace TestClasses
     {
         internal static partial class Logger
         {
-            [LogMethod(10, LogLevel.Debug, "M10")]
+            [LoggerMessage(10, LogLevel.Debug, "M10")]
             public static partial void M10(ILogger logger);
         }
     }
@@ -57,7 +56,7 @@ namespace TestClasses
     {
         internal static partial class Logger
         {
-            [LogMethod(11, LogLevel.Debug, "M11")]
+            [LoggerMessage(11, LogLevel.Debug, "M11")]
             public static partial void M11(ILogger logger);
         }
     }
@@ -70,7 +69,7 @@ namespace TestClasses
             {
                 internal static partial class Logger
                 {
-                    [LogMethod(12, LogLevel.Debug, "M12")]
+                    [LoggerMessage(12, LogLevel.Debug, "M12")]
                     public static partial void M12(ILogger logger);
                 }
             }

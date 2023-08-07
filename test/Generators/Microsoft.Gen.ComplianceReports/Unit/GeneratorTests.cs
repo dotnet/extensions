@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 using Microsoft.Gen.Shared;
 using Xunit;
 using Xunit.Abstractions;
@@ -95,7 +94,7 @@ public class GeneratorTests
                     new[]
                     {
                         Assembly.GetAssembly(typeof(ILogger))!,
-                        Assembly.GetAssembly(typeof(LogMethodAttribute))!,
+                        Assembly.GetAssembly(typeof(LoggerMessageAttribute))!,
                         Assembly.GetAssembly(typeof(Microsoft.Extensions.Compliance.Classification.DataClassification))!,
                     },
                     new[]

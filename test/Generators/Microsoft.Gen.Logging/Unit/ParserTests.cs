@@ -10,7 +10,6 @@ using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Enrichment;
-using Microsoft.Extensions.Telemetry.Logging;
 using Microsoft.Gen.Logging.Parsing;
 using Microsoft.Gen.Shared;
 using Xunit;
@@ -39,10 +38,10 @@ public partial class ParserTests
                     /// <summary>
                     /// A comment!
                     /// </summary>
-                    [LogMethod(13, LogLevel.Error, ""M13{p1}"")]
+                    [LoggerMessage(13, LogLevel.Error, ""M13{p1}"")]
                     public static partial void M13(ILogger logger, StructEnumerable p1);
 
-                    [LogMethod(14, LogLevel.Error, ""M14{p1}"")]
+                    [LoggerMessage(14, LogLevel.Error, ""M14{p1}"")]
                     public static partial void M14(ILogger logger, StructEnumerable? p1);
                 }
             }");
@@ -56,7 +55,7 @@ public partial class ParserTests
             {
                 internal static partial class NullableTestExtensions
                 {
-                    [LogMethod(6, LogLevel.Debug, ""M6 {p0}"")]
+                    [LoggerMessage(6, LogLevel.Debug, ""M6 {p0}"")]
                     internal static partial void M6(ILogger? logger, string p0);
                 }
             }");
@@ -68,10 +67,10 @@ public partial class ParserTests
         await RunGenerator(@"
                 internal static partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M0 {p0}"", EventName = )]
+                    [LoggerMessage(0, LogLevel.Debug, ""M0 {p0}"", EventName = )]
                     static partial void M0(ILogger logger, string p0);
 
-                    [LogMethod(1, LogLevel.Debug, ""M0 {p0}"", SkipEnabledChecks = )]
+                    [LoggerMessage(1, LogLevel.Debug, ""M0 {p0}"", SkipEnabledChecks = )]
                     static partial void M1(ILogger logger, string p0);
                 }
             ");
@@ -83,7 +82,7 @@ public partial class ParserTests
         await RunGenerator(@"
                 partial class C
                 {
-                    [LogMethod(0, null, ""This is a message with {foo}"")]
+                    [LoggerMessage(0, null, ""This is a message with {foo}"")]
                     static partial void M1(ILogger logger, string foo);
                 }
             ");
@@ -95,7 +94,7 @@ public partial class ParserTests
         await RunGenerator(@"
                 partial class C
                 {
-                    [LogMethod(null, LogLevel.Debug, ""This is a message with {foo}"")]
+                    [LoggerMessage(null, LogLevel.Debug, ""This is a message with {foo}"")]
                     static partial void M1(ILogger logger, string foo);
                 }
             ");
@@ -107,7 +106,7 @@ public partial class ParserTests
         await RunGenerator(@"
                 partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, null)]
+                    [LoggerMessage(0, LogLevel.Debug, null)]
                     static partial void M1(ILogger logger, string foo);
                 }
             ");
@@ -119,13 +118,13 @@ public partial class ParserTests
         await RunGenerator(@"
                 partial class C
                 {
-                    [LogMethod()]
+                    [LoggerMessage()]
                     static partial void M1(ILogger logger, LogLevel level, string foo);
 
-                    [LogMethod]
+                    [LoggerMessage]
                     static partial void M2(ILogger logger, LogLevel level, string foo);
 
-                    [LogMethod(SkipEnabledChecks = true)]
+                    [LoggerMessage(SkipEnabledChecks = true)]
                     static partial void M3(ILogger logger, LogLevel level, string foo);
                 }");
     }
@@ -136,7 +135,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
                     static partial void __M1(ILogger logger);
                 }
             ";
@@ -150,7 +149,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    /*0+*/[LogMethod(0, ""M1"")]
+                    /*0+*/[LoggerMessage(""M1"")]
                     static partial void M1(ILogger logger);/*-0*/
                }
             ";
@@ -164,7 +163,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    /*0+*/[LogMethod]
+                    /*0+*/[LoggerMessage]
                     static partial void M1(ILogger logger);/*-0*/
                 }
             ";
@@ -180,7 +179,7 @@ public partial class ParserTests
                 {
                     static partial void M1(ILogger logger);
 
-                    [LogMethod(0, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
                     static partial void M1(ILogger logger)
                     /*0+*/{
                     }/*-0*/
@@ -196,7 +195,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""This is a message without foo"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""This is a message without foo"")]
                     static partial void M1(ILogger logger, string /*0+*/foo/*-0*/);
                 }
             ";
@@ -210,7 +209,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [/*0+*/LogMethod(0, LogLevel.Debug, ""{foo}"")/*-0*/]
+                    [/*0+*/LoggerMessage(0, LogLevel.Debug, ""{foo}"")/*-0*/]
                     static partial void M1(ILogger logger);
                 }
             ";
@@ -238,7 +237,7 @@ public partial class ParserTests
         string source = @$"
             partial class C
             {{
-                [/*0+*/LogMethod(LogLevel.Debug, ""{template}"")/*-0*/]
+                [/*0+*/LoggerMessage(LogLevel.Debug, ""{template}"")/*-0*/]
                 static partial void M1(ILogger logger, int param);
             }}";
 
@@ -251,7 +250,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [/*0+*/LogMethod(0, LogLevel.Information, ""INFO: this is an informative message"")/*-0*/]
+                    [/*0+*/LoggerMessage(0, LogLevel.Information, ""INFO: this is an informative message"")/*-0*/]
                     static partial void M1(ILogger logger);
                 }
             ";
@@ -265,7 +264,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [/*0+*/LogMethod(0, LogLevel.Debug, ""M1 {ex} {ex2}"")/*-0*/]
+                    [/*0+*/LoggerMessage(0, LogLevel.Debug, ""M1 {ex} {ex2}"")/*-0*/]
                     static partial void M1(ILogger logger, System.Exception ex, System.Exception ex2);
                 }
             ";
@@ -279,7 +278,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [/*0+*/LogMethod(0, ""M1 {l1} {l2}"")/*-0*/]
+                    [/*0+*/LoggerMessage(0, ""M1 {l1} {l2}"")/*-0*/]
                     static partial void M1(ILogger logger, LogLevel l1, LogLevel l2);
                 }
             ";
@@ -293,7 +292,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [/*0+*/LogMethod(0, LogLevel.Debug, ""M1 {logger}"")/*-0*/]
+                    [/*0+*/LoggerMessage(0, LogLevel.Debug, ""M1 {logger}"")/*-0*/]
                     static partial void M1(ILogger logger);
                 }
             ";
@@ -308,7 +307,7 @@ public partial class ParserTests
             namespace Test;
             partial class C
             {
-                [LogMethod(0, LogLevel.Debug, ""{P1}"")]
+                [LoggerMessage(0, LogLevel.Debug, ""{P1}"")]
                 static partial void M1(ILogger logger, int p1);
             }", inNamespace: false);
     }
@@ -322,7 +321,7 @@ public partial class ParserTests
         string source = @$"
                 partial class C
                 {{
-                    [LogMethod(0, LogLevel.Debug, ""M1 {{{template ?? name}}}"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1 {{{template ?? name}}}"")]
                     static partial void M1(ILogger logger, string {name});
                 }}
             ";
@@ -353,11 +352,11 @@ public partial class ParserTests
                 }
                 namespace Microsoft.Extensions.Telemetry.Logging
                 {
-                    public class LogMethodAttribute : System.Attribute {}
+                    public class LoggerMessageAttribute : System.Attribute {}
                 }
                 partial class C
                 {
-                    [Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute()]
+                    [Microsoft.Extensions.Logging.LoggerMessageAttribute()]
                     public static partial void Something(this Microsoft.Extensions.Logging.ILogger logger);
                 }";
 
@@ -375,7 +374,7 @@ public partial class ParserTests
                 }
                 namespace Microsoft.Extensions.Telemetry.Logging
                 {
-                    public class LogMethodAttribute : System.Attribute {}
+                    public class LoggerMessageAttribute : System.Attribute {}
                     public class LogPropertiesAttribute : System.Attribute {}
                     public class LogPropertyIgnoreAttribute : System.Attribute {}
                     public class ITagCollector {}
@@ -383,7 +382,7 @@ public partial class ParserTests
                 }
                 partial class C
                 {
-                    [Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute]
+                    [Microsoft.Extensions.Logging.LoggerMessageAttribute]
                     public static partial void Something(this Microsoft.Extensions.Logging.ILogger logger, Microsoft.Extensions.Logging.LogLevel level, string foo);
                 }";
 
@@ -391,7 +390,7 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task MissingLogMethodAttributeType()
+    public async Task MissingLoggerMessageAttributeType()
     {
         await RunGenerator(@"
                 partial class C
@@ -406,7 +405,7 @@ public partial class ParserTests
         await RunGenerator(@"
                 namespace Microsoft.Extensions.Telemetry.Logging
                 {
-                    public sealed class LogMethodAttribute : System.Attribute {}
+                    public sealed class LoggerMessageAttribute : System.Attribute {}
                 }
                 partial class C
                 {
@@ -420,7 +419,7 @@ public partial class ParserTests
         await RunGenerator(@"
                 namespace Microsoft.Extensions.Telemetry.Logging
                 {
-                    public sealed class LogMethodAttribute : System.Attribute {}
+                    public sealed class LoggerMessageAttribute : System.Attribute {}
                 }
                 namespace Microsoft.Extensions.Logging
                 {
@@ -438,10 +437,10 @@ public partial class ParserTests
         const string Source = @"
                 partial class MyClass
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
                     static partial void M1(ILogger logger);
 
-                    [/*0+*/LogMethod(0, LogLevel.Debug, ""M1"")/*-0*/]
+                    [/*0+*/LoggerMessage(0, LogLevel.Debug, ""M1"")/*-0*/]
                     static partial void M2(ILogger logger);
                 }
             ";
@@ -455,10 +454,10 @@ public partial class ParserTests
         const string Source = @"
                 partial class MyClass
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M1"", EventName = ""Dog"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"", EventName = ""Dog"")]
                     static partial void M1(ILogger logger);
 
-                    [/*0+*/LogMethod(1, LogLevel.Debug, ""M1"", EventName = ""Dog"")/*-0*/]
+                    [/*0+*/LoggerMessage(1, LogLevel.Debug, ""M1"", EventName = ""Dog"")/*-0*/]
                     static partial void M2(ILogger logger);
                 }
             ";
@@ -472,7 +471,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
                     public static partial /*0+*/int/*-0*/ M1(ILogger logger);
 
                     public static partial int M1(ILogger logger) { return 0; }
@@ -488,7 +487,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M1 {p1}"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1 {p1}"")]
                     static partial void M1/*0+*/(int p1)/*-0*/;
                 }
             ";
@@ -502,7 +501,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
                     partial void /*0+*/M1/*-0*/(ILogger logger);
                 }
             ";
@@ -516,7 +515,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
                     public partial void /*0+*/M1/*-0*/();
                 }
             ";
@@ -533,7 +532,7 @@ public partial class ParserTests
                     public ILogger _logger1;
                     public ILogger /*0+*/_logger2/*-0*/;
 
-                    [LogMethod(0, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
                     public partial void M1();
                 }
             ";
@@ -549,10 +548,10 @@ public partial class ParserTests
             {
                 public ILogger _logger;
 
-                [LogMethod]
+                [LoggerMessage]
                 public partial void /*0+*/M1/*-0*/(LogLevel level);
 
-                [LogMethod(LogLevel.Debug)]
+                [LoggerMessage(LogLevel.Debug)]
                 public partial void /*1+*/M2/*-1*/();
             }";
 
@@ -565,10 +564,10 @@ public partial class ParserTests
         const string Source = @"
             partial class C
             {
-                [LogMethod]
+                [LoggerMessage]
                 public static partial void /*0+*/M1/*-0*/(ILogger logger, LogLevel level);
 
-                [LogMethod(LogLevel.Debug)]
+                [LoggerMessage(LogLevel.Debug)]
                 public static partial void /*1+*/M2/*-1*/(ILogger logger);
             }";
 
@@ -583,16 +582,16 @@ public partial class ParserTests
                 {
                     public ILogger _logger;
 
-                    [LogMethod]
+                    [LoggerMessage]
                     public partial void M1(LogLevel level, Exception ex);
 
-                    [LogMethod(LogLevel.Debug)]
+                    [LoggerMessage(LogLevel.Debug)]
                     public partial void M2(Exception ex);
 
-                    [LogMethod]
+                    [LoggerMessage]
                     public static partial void M3(ILogger logger, LogLevel level, Exception ex);
 
-                    [LogMethod(LogLevel.Debug)]
+                    [LoggerMessage(LogLevel.Debug)]
                     public static partial void M4(ILogger logger, Exception ex);
                 }");
     }
@@ -603,7 +602,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
                     static void /*0+*/M1/*-0*/(ILogger logger);
                 }
             ";
@@ -617,7 +616,7 @@ public partial class ParserTests
         const string Source = @"
                 partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
                     static partial void M1/*0+*/<T>/*-0*/(ILogger logger);
                 }
             ";
@@ -632,7 +631,7 @@ public partial class ParserTests
         string source = @$"
             partial class C
             {{
-                [LogMethod(0, LogLevel.Debug, ""Parameter {{P1}}"")]
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter {{P1}}"")]
                 static partial void M(ILogger logger, {modifier} int /*0+*/p1/*-0*/);
             }}";
 
@@ -645,25 +644,25 @@ public partial class ParserTests
         await RunGenerator(@"
                 partial class C
                 {
-                    [LogMethod(1, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(1, LogLevel.Debug, ""M1"")]
                     static partial void M1(ILogger logger);
 
-                    [LogMethod(2, LogLevel.Debug, ""M2 {arg1} {arg2}"")]
+                    [LoggerMessage(2, LogLevel.Debug, ""M2 {arg1} {arg2}"")]
                     static partial void M2(ILogger logger, string arg1, string arg2);
 
-                    [LogMethod(3, LogLevel.Debug, ""M3 {arg1"")]
+                    [LoggerMessage(3, LogLevel.Debug, ""M3 {arg1"")]
                     static partial void M3(ILogger logger);
 
-                    [LogMethod(4, LogLevel.Debug, ""M4 arg1}"")]
+                    [LoggerMessage(4, LogLevel.Debug, ""M4 arg1}"")]
                     static partial void M4(ILogger logger);
 
-                    [LogMethod(5, LogLevel.Debug, ""M5 {"")]
+                    [LoggerMessage(5, LogLevel.Debug, ""M5 {"")]
                     static partial void M5(ILogger logger);
 
-                    [LogMethod(6, LogLevel.Debug, ""}M6 "")]
+                    [LoggerMessage(6, LogLevel.Debug, ""}M6 "")]
                     static partial void M6(ILogger logger);
 
-                    [LogMethod(7, LogLevel.Debug, ""M7 {{arg1}}"")]
+                    [LoggerMessage(7, LogLevel.Debug, ""M7 {{arg1}}"")]
                     static partial void M7(ILogger logger);
                 }
             ");
@@ -676,7 +675,7 @@ public partial class ParserTests
             await RunGenerator(@"
                 partial class C
                 {
-                    [LogMethod(0, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
                     static partial void M1(ILogger logger);
                 }
             ", cancellationToken: new CancellationToken(true)));
@@ -689,23 +688,23 @@ public partial class ParserTests
                 static partial class C
                 {
                     // bogus argument type
-                    [LogMethod(0, "", ""Hello"")]
+                    [LoggerMessage(0, "", ""Hello"")]
                     static partial void M1(ILogger logger);
 
                     // missing parameter name
-                    [LogMethod(1, LogLevel.Debug, ""Hello"")]
+                    [LoggerMessage(1, LogLevel.Debug, ""Hello"")]
                     static partial void M2(ILogger);
 
                     // bogus parameter type
-                    [LogMethod(2, LogLevel.Debug, ""Hello"")]
+                    [LoggerMessage(2, LogLevel.Debug, ""Hello"")]
                     static partial void M3(XILogger logger);
 
                     // bogus enum value
-                    [LogMethod(3, LogLevel.Foo, ""Hello"")]
+                    [LoggerMessage(3, LogLevel.Foo, ""Hello"")]
                     static partial void M4(ILogger logger);
 
                     // attribute applied to something other than a method
-                    [LogMethod(4, "", ""Hello"")]
+                    [LoggerMessage(4, "", ""Hello"")]
                     int M5;
                 }
             ");
@@ -748,7 +747,7 @@ public partial class ParserTests
             refs = new[]
             {
                 Assembly.GetAssembly(typeof(ILogger))!,
-                Assembly.GetAssembly(typeof(LogMethodAttribute))!,
+                Assembly.GetAssembly(typeof(LoggerMessageAttribute))!,
                 Assembly.GetAssembly(typeof(IEnrichmentTagCollector))!,
                 Assembly.GetAssembly(typeof(DataClassification))!,
                 Assembly.GetAssembly(typeof(PrivateDataAttribute))!,

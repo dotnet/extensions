@@ -44,7 +44,7 @@ public sealed partial class LegacyLoggingFixer : CodeFixProvider
     internal Func<Compilation, string, INamedTypeSymbol?> GetTypeByMetadataName3 = (c, n) => c.GetTypeByMetadataName(n);
     internal Func<SemanticModel, BaseMethodDeclarationSyntax, CancellationToken, IMethodSymbol?> GetDeclaredSymbol = (sm, m, t) => sm.GetDeclaredSymbol(m, t);
 
-    private const string LogMethodAttribute = "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute";
+    private const string LoggerMessageAttribute = "Microsoft.Extensions.Logging.LoggerMessageAttribute";
     private const int LogMethodAttrEventIdArg = 0;
     private const int LogMethodAttrLevelArg = 1;
     private const int LogMethodAttrMessageArg = 2;
@@ -147,7 +147,7 @@ public sealed partial class LegacyLoggingFixer : CodeFixProvider
         var sm = docEditor.SemanticModel;
         var comp = sm.Compilation;
 
-        var logMethodAttribute = GetTypeByMetadataName2(comp, LogMethodAttribute);
+        var logMethodAttribute = GetTypeByMetadataName2(comp, LoggerMessageAttribute);
         if (logMethodAttribute is null)
         {
             // strange that we can't find the attribute, but supply a potential useful value instead
@@ -573,7 +573,7 @@ namespace {details.TargetNamespace}
             gen.LiteralExpression(details.Message),
         };
 
-        var attr = gen.Attribute(LogMethodAttribute, attrArgs);
+        var attr = gen.Attribute(LoggerMessageAttribute, attrArgs);
 
         logMethod = gen.AddAttributes(logMethod, attr);
 
@@ -588,13 +588,13 @@ namespace {details.TargetNamespace}
 
     /// <summary>
     /// Iterate through the existing methods in the target class
-    /// and look at any method annotated with [LogMethod],
+    /// and look at any method annotated with [LoggerMessage],
     /// get their event ids, and then return 1 larger than any event id
     /// found.
     /// </summary>
     private int CalcEventId(Compilation comp, ClassDeclarationSyntax targetClass, CancellationToken cancellationToken)
     {
-        var logMethodAttribute = GetTypeByMetadataName3(comp, LogMethodAttribute);
+        var logMethodAttribute = GetTypeByMetadataName3(comp, LoggerMessageAttribute);
         if (logMethodAttribute is null)
         {
             // strange we can't find the attribute, but supply a potential useful value instead

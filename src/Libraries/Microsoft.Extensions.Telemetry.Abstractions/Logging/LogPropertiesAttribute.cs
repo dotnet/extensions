@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
@@ -10,7 +11,7 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 /// <summary>
 /// Marks a logging method parameter whose public tags need to be logged.
 /// </summary>
-/// <seealso cref="LogMethodAttribute"/>
+/// <seealso cref="LoggerMessageAttribute"/>
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class LogPropertiesAttribute : Attribute
@@ -26,7 +27,7 @@ public sealed class LogPropertiesAttribute : Attribute
     /// </remarks>
     /// <example>
     /// <code>
-    /// [LogMethod(1, LogLevel.Warning, "Logging complex object here.")]
+    /// [LoggerMessage(1, LogLevel.Warning, "Logging complex object here.")]
     /// static partial void LogMethod(ILogger logger, [LogProperties] ClassToLog param);
     /// </code>
     /// </example>
@@ -66,7 +67,7 @@ public sealed class LogPropertiesAttribute : Attribute
     /// </remarks>
     /// <example>
     /// <code>
-    /// [LogMethod(1, LogLevel.Warning, "Custom tags for {Param}.")]
+    /// [LoggerMessage(1, LogLevel.Warning, "Custom tags for {Param}.")]
     /// static partial void LogMethod(ILogger logger,
     ///     [LogProperties(typeof(CustomProvider), nameof(CustomProvider.GetTagsToLog))] ClassToLog o);
     ///

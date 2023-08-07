@@ -199,14 +199,14 @@ internal sealed class Parser
     private List<ClassifiedLogMethod>? GetClassifiedLogMethods(ITypeSymbol typeSymbol)
     {
         List<ClassifiedLogMethod>? classifiedLogMethods = null;
-        if (_symbolHolder.LogMethodAttribute != null)
+        if (_symbolHolder.LoggerMessageAttribute != null)
         {
             var methods = typeSymbol.GetMembers().OfType<IMethodSymbol>();
             foreach (IMethodSymbol method in methods)
             {
                 foreach (var a in method.GetAttributes())
                 {
-                    if (SymbolEqualityComparer.Default.Equals(_symbolHolder.LogMethodAttribute, a.AttributeClass))
+                    if (SymbolEqualityComparer.Default.Equals(_symbolHolder.LoggerMessageAttribute, a.AttributeClass))
                     {
                         var clm = new ClassifiedLogMethod
                         {

@@ -3,12 +3,11 @@
 
 using System;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.Probes;
 
 internal static partial class Log
 {
-    [LogMethod(LogLevel.Error, "Error updating health status through TCP endpoint")]
+    [LoggerMessage(LogLevel.Error, "Error updating health status through TCP endpoint")]
     public static partial void SocketExceptionCaughtTcpEndpoint(this ILogger logger, Exception e);
 }
