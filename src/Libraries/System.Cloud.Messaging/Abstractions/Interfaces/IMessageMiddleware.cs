@@ -21,6 +21,6 @@ public interface IMessageMiddleware
     /// <param name="context">The message context.</param>
     /// <param name="nextHandler">The next handler in the async processing pipeline.</param>
     /// <returns><see cref="ValueTask"/>.</returns>
-    [SuppressMessage("Resilience", "R9A061:The async method doesn't support cancellation", Justification = $"{nameof(MessageContext)} has {nameof(CancellationToken)}")]
+    [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = $"{nameof(MessageContext)} has {nameof(CancellationToken)}")]
     ValueTask InvokeAsync(MessageContext context, MessageDelegate nextHandler);
 }

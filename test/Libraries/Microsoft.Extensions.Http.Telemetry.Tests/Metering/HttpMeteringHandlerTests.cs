@@ -787,7 +787,7 @@ public sealed partial class HttpMeteringHandlerTests : IDisposable
             DependencyName = "success_service",
             RequestRoute = "/foo"
         };
-        requestMetadataContext?.SetRequestMetadata(requestMetadata);
+        requestMetadataContext.SetRequestMetadata(requestMetadata);
         Assert.NotNull(requestMetadataContext);
     }
 

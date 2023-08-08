@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.CodeAnalysis;
 
 [assembly: System.Resources.NeutralResourcesLanguage("en-us")]
@@ -9,197 +10,154 @@ namespace Microsoft.Extensions.ExtraAnalyzers;
 
 internal static class DiagDescriptors
 {
-    /// <summary>
-    /// Category for analyzers that will improve performance of the application.
-    /// </summary>
     private const string Performance = nameof(Performance);
-
-    /// <summary>
-    /// Category for analyzers that will make code more readable.
-    /// </summary>
-    private const string Readability = nameof(Readability);
-
-    /// <summary>
-    /// Category for analyzers that will improve reliability of the application.
-    /// </summary>
     private const string Reliability = nameof(Reliability);
-
-    /// <summary>
-    /// Category for analyzers that will improve resiliency of the application.
-    /// </summary>
     private const string Resilience = nameof(Resilience);
-
-    /// <summary>
-    /// Category for analyzers that will make code more correct.
-    /// </summary>
     private const string Correctness = nameof(Correctness);
 
-    /// <summary>
-    /// Category for analyzers that will improve the privacy posture of code.
-    /// </summary>
-    private const string Privacy = nameof(Privacy);
-
-    public static DiagnosticDescriptor LegacyLogging { get; } = new(
-        id: "R9A000",
+    public static DiagnosticDescriptor LegacyLogging { get; } = Make(
+        id: "EA0000",
         messageFormat: Resources.LegacyLoggingMessage,
         title: Resources.LegacyLoggingTitle,
         category: Performance,
         description: Resources.LegacyLoggingDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a000",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    // R9A001..R9A020 are retired
-
-    public static DiagnosticDescriptor UsingToStringInLoggers { get; } = new(
-        id: "R9A021",
+    public static DiagnosticDescriptor UsingToStringInLoggers { get; } = Make(
+        id: "EA0001",
         messageFormat: Resources.UsingToStringInLoggersMessage,
         title: Resources.UsingToStringInLoggersTitle,
-        category: "Performance",
+        category: Performance,
         description: Resources.UsingToStringInLoggersDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a021",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor StaticTime { get; } = new(
-        id: "R9A022",
+    public static DiagnosticDescriptor StaticTime { get; } = Make(
+        id: "EA0002",
         messageFormat: Resources.StaticTimeMessage,
         title: Resources.StaticTimeTitle,
         category: Reliability,
         description: Resources.StaticTimeDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a022",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    // R9A023..R9A029 retired
-
-    public static DiagnosticDescriptor StartsEndsWith { get; } = new(
-        id: "R9A030",
+    public static DiagnosticDescriptor StartsEndsWith { get; } = Make(
+        id: "EA0003",
         messageFormat: Resources.StartsEndsWithMessage,
         title: Resources.StartsEndsWithTitle,
         category: Performance,
         description: Resources.StartsEndsWithDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a030",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor MakeExeTypesInternal { get; } = new(
-        id: "R9A031",
+    public static DiagnosticDescriptor MakeExeTypesInternal { get; } = Make(
+        id: "EA0004",
         messageFormat: Resources.MakeExeTypesInternalMessage,
         title: Resources.MakeExeTypesInternalTitle,
         category: Performance,
         description: Resources.MakeExeTypesInternalDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a031",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor Arrays { get; } = new(
-        id: "R9A032",
+    public static DiagnosticDescriptor Arrays { get; } = Make(
+        id: "EA0005",
         messageFormat: Resources.ArraysMessage,
         title: Resources.ArraysTitle,
         category: Performance,
         description: Resources.ArraysDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a032",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor EnumStrings { get; } = new(
-        id: "R9A033",
+    public static DiagnosticDescriptor EnumStrings { get; } = Make(
+        id: "EA0006",
         messageFormat: Resources.EnumStringsMessage,
         title: Resources.EnumStringsTitle,
         category: Performance,
         description: Resources.EnumStringsDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a033",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    // R9A034..R9A036 retired
-
-    public static DiagnosticDescriptor ValueTuple { get; } = new(
-        id: "R9A037",
+    public static DiagnosticDescriptor ValueTuple { get; } = Make(
+        id: "EA0007",
         messageFormat: Resources.ValueTupleMessage,
         title: Resources.ValueTupleTitle,
         category: Performance,
         description: Resources.ValueTupleDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a037",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    // R9A038..R9A039 retired
-
-    public static DiagnosticDescriptor LegacyCollection { get; } = new(
-        id: "R9A040",
+    public static DiagnosticDescriptor LegacyCollection { get; } = Make(
+        id: "EA0008",
         messageFormat: Resources.LegacyCollectionMessage,
         title: Resources.LegacyCollectionTitle,
         category: Performance,
         description: Resources.LegacyCollectionDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a040",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    // R9A041..R9A042 retired
-
-    public static DiagnosticDescriptor Split { get; } = new(
-        id: "R9A043",
+    public static DiagnosticDescriptor Split { get; } = Make(
+        id: "EA0009",
         messageFormat: Resources.SplitMessage,
         title: Resources.SplitTitle,
         category: Performance,
         description: Resources.SplitDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a043",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    // R9A044..R9A055 retired
-
-    public static DiagnosticDescriptor AsyncCallInsideUsingBlock { get; } = new(
-        id: "R9A056",
+    public static DiagnosticDescriptor AsyncCallInsideUsingBlock { get; } = Make(
+        id: "EA0010",
         messageFormat: Resources.AsyncCallInsideUsingBlockMessage,
         title: Resources.AsyncCallInsideUsingBlockTitle,
         category: Correctness,
         description: Resources.AsyncCallInsideUsingBlockDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a056",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    // R9A057 retired
-
-    public static DiagnosticDescriptor ConditionalAccess { get; } = new(
-        id: "R9A058",
+    public static DiagnosticDescriptor ConditionalAccess { get; } = Make(
+        id: "EA0011",
         messageFormat: Resources.ConditionalAccessMessage,
         title: Resources.ConditionalAccessTitle,
         category: Performance,
         description: Resources.ConditionalAccessDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a058",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor CoalesceAssignment { get; } = new(
-        id: "R9A059",
+    public static DiagnosticDescriptor CoalesceAssignment { get; } = Make(
+        id: "EA0012",
         messageFormat: Resources.CoalesceAssignmentMessage,
         title: Resources.CoalesceAssignmentTitle,
         category: Performance,
         description: Resources.CoalesceAssignmentDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a059",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor Coalesce { get; } = new(
-        id: "R9A060",
+    public static DiagnosticDescriptor Coalesce { get; } = Make(
+        id: "EA0013",
         messageFormat: Resources.CoalesceMessage,
         title: Resources.CoalesceTitle,
         category: Performance,
         description: Resources.CoalesceDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a060",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor AsyncMethodWithoutCancellation { get; } = new(
-        id: "R9A061",
+    public static DiagnosticDescriptor AsyncMethodWithoutCancellation { get; } = Make(
+        id: "EA0014",
         messageFormat: Resources.AsyncMethodWithoutCancellationMessage,
         title: Resources.AsyncMethodWithoutCancellationTitle,
         category: Resilience,
         description: Resources.AsyncMethodWithoutCancellationDescription,
-        defaultSeverity: DiagnosticSeverity.Warning,
-        helpLinkUri: "https://TODO/r9a061",
-        isEnabledByDefault: true);
+        defaultSeverity: DiagnosticSeverity.Warning);
+
+#if false
+#pragma warning disable S1075 // URIs should not be hardcoded
+    private const string HelpLinkBase = "https://TODO/";
+#pragma warning restore S1075 // URIs should not be hardcoded
+#endif
+
+    private static DiagnosticDescriptor Make(string id, string title, string description, string messageFormat, string category, DiagnosticSeverity defaultSeverity)
+    {
+        return new(
+            id,
+            title,
+            messageFormat,
+            category,
+            defaultSeverity,
+            true,
+#if false
+            description,
+#pragma warning disable CA1308 // Normalize strings to uppercase
+            HelpLinkBase + id.ToLowerInvariant(),
+#pragma warning restore CA1308 // Normalize strings to uppercase
+            Array.Empty<string>());
+#else
+            description);
+#endif
+    }
 }

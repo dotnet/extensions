@@ -6242,7 +6242,7 @@ Diagnostics:
     Attributes:
       general:
         Severity: None
-        Redundant: R9A013
+        Redundant: CA1852
   S3059:
     Metadata:
       Category: Major Code Smell
@@ -6286,7 +6286,7 @@ Diagnostics:
     Attributes:
       general:
         Severity: None
-        Redundant: R9A022
+        Redundant: EA0002
   S6422:
     Metadata:
       Category: Blocker Code Smell

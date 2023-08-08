@@ -59,7 +59,7 @@ public class FakeLogRecord
     /// Gets the opaque state supplied by the caller when creating the log record as a read-only list.
     /// </summary>
     /// <remarks>
-    /// When logging using the R9 logging model, the arguments you supply to the logging method are packaged into a single state object which is delivered to the <see cref="ILogger.Log"/>
+    /// When logging using the code generator logging model, the arguments you supply to the logging method are packaged into a single state object which is delivered to the <see cref="ILogger.Log"/>
     /// method. This state can be retrieved as a set of name/value pairs encoded in a read-only list.
     ///
     /// The object returned by this property is the same as what <see cref="State"/> returns, except it has been cast to a read-only list.

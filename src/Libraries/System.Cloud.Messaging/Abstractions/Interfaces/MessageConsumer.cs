@@ -72,7 +72,7 @@ public abstract class MessageConsumer
     /// <param name="context">The message context.</param>
     /// <param name="exception">The exception during the processing of the message.</param>
     /// <returns><see cref="ValueTask"/>.</returns>
-    [SuppressMessage("Resilience", "R9A061:The async method doesn't support cancellation", Justification = $"{nameof(MessageContext)} has {nameof(CancellationToken)}")]
+    [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = $"{nameof(MessageContext)} has {nameof(CancellationToken)}")]
     protected abstract ValueTask HandleMessageProcessingFailureAsync(MessageContext context, Exception exception);
 
     /// <summary>
@@ -81,7 +81,7 @@ public abstract class MessageConsumer
     /// <remarks>Default behavior is to to not do anything and can be updated by the implementation class as per the requirement.</remarks>
     /// <param name="context">The message context.</param>
     /// <returns><see cref="ValueTask"/>.</returns>
-    [SuppressMessage("Resilience", "R9A061:The async method doesn't support cancellation", Justification = $"{nameof(MessageContext)} has {nameof(CancellationToken)}")]
+    [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = $"{nameof(MessageContext)} has {nameof(CancellationToken)}")]
     protected virtual ValueTask HandleMessageProcessingCompletionAsync(MessageContext context) => default;
 
     /// <summary>
@@ -177,7 +177,7 @@ public abstract class MessageConsumer
     /// </summary>
     /// <param name="context">The message context.</param>
     /// <returns><see cref="ValueTask"/>.</returns>
-    [SuppressMessage("Resilience", "R9A061:The async method doesn't support cancellation", Justification = $"{nameof(MessageContext)} has {nameof(CancellationToken)}")]
+    [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = $"{nameof(MessageContext)} has {nameof(CancellationToken)}")]
     protected virtual ValueTask ProcessMessageAsync(MessageContext context)
     {
         _ = Throw.IfNull(context);

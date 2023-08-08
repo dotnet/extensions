@@ -38,14 +38,14 @@ namespace TestClasses
         [LogMethod(9, "M9")]
         public static partial void M9(LogLevel level, ILogger logger);
 
-#pragma warning disable R9G001 // Don't include a template for level in the logging message
+#pragma warning disable LOGGEN000 // Don't include a template for level in the logging message
         [LogMethod(10, "M10 {level}")]
         public static partial void M10(ILogger logger, LogLevel level);
-#pragma warning restore R9G001
+#pragma warning restore LOGGEN000
 
-#pragma warning disable R9G017 // Don't include a template for logger in the logging message
+#pragma warning disable LOGGEN014 // Don't include a template for logger in the logging message
         [LogMethod(11, "M11 {logger}")]
         public static partial void M11(ILogger logger, LogLevel level);
-#pragma warning restore R9G017
+#pragma warning restore LOGGEN014
     }
 }

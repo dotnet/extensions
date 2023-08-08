@@ -1,8 +1,8 @@
 # Created by DiagConfig, the diagnostic config generator
-# Generated : 2023-05-24 21:09:54Z
+# Generated : 2023-08-07 17:59:56Z
 # Max Tier  : 1
-# Attributes: general, general_externalonly
-# Analyzers : ILLink.RoslynAnalyzer, Microsoft.AspNetCore.App.Analyzers, Microsoft.AspNetCore.Components.Analyzers, Microsoft.CodeAnalysis.CSharp.NetAnalyzers, Microsoft.CodeAnalysis.NetAnalyzers, Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0, Microsoft.Extensions.LocalAnalyzers, Microsoft.VisualStudio.Threading.Analyzers, Microsoft.VisualStudio.Threading.Analyzers.CSharp, SonarAnalyzer.CSharp
+# Attributes: general
+# Analyzers : ILLink.RoslynAnalyzer, Microsoft.Analyzers.Extra, Microsoft.Analyzers.Local, Microsoft.AspNetCore.App.Analyzers, Microsoft.AspNetCore.Components.Analyzers, Microsoft.CodeAnalysis.CSharp.NetAnalyzers, Microsoft.CodeAnalysis.NetAnalyzers, Microsoft.VisualStudio.Threading.Analyzers, Microsoft.VisualStudio.Threading.Analyzers.CSharp, SonarAnalyzer.CSharp
 
 is_global = true
 global_level = -1
@@ -99,6 +99,11 @@ dotnet_diagnostic.BL0007.severity = none
 # Category : Design
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1000
 dotnet_diagnostic.CA1000.severity = none
+
+# Title    : Types that own disposable fields should be disposable
+# Category : Design
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001
+dotnet_diagnostic.CA1001.severity = none
 
 # Title    : Types that own disposable fields should be disposable
 # Category : Design
@@ -454,6 +459,11 @@ dotnet_diagnostic.CA1506.severity = none
 # Category : Maintainability
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1507
 dotnet_diagnostic.CA1507.severity = none
+
+# Title    : Avoid dead conditional code
+# Category : Maintainability
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1508
+dotnet_diagnostic.CA1508.severity = warning
 
 # Title    : Avoid dead conditional code
 # Category : Maintainability
@@ -818,22 +828,57 @@ dotnet_diagnostic.CA1857.severity = warning
 # Title    : Use 'StartsWith' instead of 'IndexOf'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1858
-dotnet_diagnostic.CA1858.severity = suggestion
+dotnet_diagnostic.CA1858.severity = none
 
 # Title    : Use concrete types when possible for improved performance
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859
-dotnet_diagnostic.CA1859.severity = suggestion
+dotnet_diagnostic.CA1859.severity = none
 
 # Title    : Avoid using 'Enumerable.Any()' extension method
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860
-dotnet_diagnostic.CA1860.severity = suggestion
+dotnet_diagnostic.CA1860.severity = none
 
 # Title    : Avoid constant arrays as arguments
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861
 dotnet_diagnostic.CA1861.severity = suggestion
+
+# Title    : Prefer using 'StringComparer' to perform case-insensitive string comparisons
+# Category : Performance
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862
+dotnet_diagnostic.CA1862.severity = none
+
+# Title    : Use 'CompositeFormat'
+# Category : Performance
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1863
+dotnet_diagnostic.CA1863.severity = none
+
+# Title    : Prefer the 'IDictionary.TryAdd(TKey, TValue)' method
+# Category : Performance
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864
+dotnet_diagnostic.CA1864.severity = suggestion
+
+# Title    : Use char overload
+# Category : Performance
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1865
+dotnet_diagnostic.CA1865.severity = suggestion
+
+# Title    : Use char overload
+# Category : Performance
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1866
+dotnet_diagnostic.CA1866.severity = suggestion
+
+# Title    : Use char overload
+# Category : Performance
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1867
+dotnet_diagnostic.CA1867.severity = warning
+
+# Title    : Unnecessary call to 'Contains(item)'
+# Category : Performance
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1868
+dotnet_diagnostic.CA1868.severity = suggestion
 
 # Title    : Dispose objects before losing scope
 # Category : Reliability
@@ -1145,6 +1190,11 @@ dotnet_diagnostic.CA2259.severity = none
 # Category : Usage
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2260
 dotnet_diagnostic.CA2260.severity = none
+
+# Title    : Do not use ConfigureAwaitOptions.SuppressThrowing with Task<TResult>
+# Category : Usage
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261
+dotnet_diagnostic.CA2261.severity = warning
 
 # Title    : Do not use insecure deserializer BinaryFormatter
 # Category : Security
@@ -1641,6 +1691,66 @@ dotnet_diagnostic.CA5404.severity = none
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5405
 dotnet_diagnostic.CA5405.severity = none
 
+# Title    : Use source generated logging methods for improved performance
+# Category : Performance
+dotnet_diagnostic.EA0000.severity = none
+
+# Title    : Perform message formatting in the body of the logging method
+# Category : Performance
+dotnet_diagnostic.EA0001.severity = none
+
+# Title    : Use 'System.TimeProvider' to make the code easier to test
+# Category : Reliability
+dotnet_diagnostic.EA0002.severity = none
+
+# Title    : Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
+# Category : Performance
+dotnet_diagnostic.EA0003.severity = none
+
+# Title    : Make types declared in an executable internal
+# Category : Performance
+dotnet_diagnostic.EA0004.severity = none
+
+# Title    : Consider using an array instead of a collection
+# Category : Performance
+dotnet_diagnostic.EA0005.severity = none
+
+# Title    : Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance
+# Category : Performance
+dotnet_diagnostic.EA0006.severity = none
+
+# Title    : Use 'System.ValueTuple' instead of 'System.Tuple' for improved performance
+# Category : Performance
+dotnet_diagnostic.EA0007.severity = none
+
+# Title    : Use generic collections instead of legacy collections for improved performance
+# Category : Performance
+dotnet_diagnostic.EA0008.severity = none
+
+# Title    : Use 'System.MemoryExtensions.Split' for improved performance
+# Category : Performance
+dotnet_diagnostic.EA0009.severity = none
+
+# Title    : Fire-and-forget async call inside a 'using' block
+# Category : Correctness
+dotnet_diagnostic.EA0010.severity = warning
+
+# Title    : Consider removing unnecessary conditional access operator (?)
+# Category : Performance
+dotnet_diagnostic.EA0011.severity = warning
+
+# Title    : Consider removing unnecessary null coalescing assignment (??=)
+# Category : Performance
+dotnet_diagnostic.EA0012.severity = suggestion
+
+# Title    : Consider removing unnecessary null coalescing operator (??)
+# Category : Performance
+dotnet_diagnostic.EA0013.severity = suggestion
+
+# Title    : The async method doesn't support cancellation
+# Category : Resilience
+dotnet_diagnostic.EA0014.severity = none
+
 # Title    : Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 # Category : Trimming
 dotnet_diagnostic.IL2026.severity = warning
@@ -1821,7 +1931,7 @@ dotnet_diagnostic.IL2094.severity = warning
 # Category : Trimming
 dotnet_diagnostic.IL2095.severity = warning
 
-# Title    : Call to 'Type.GetType' method can perform case insensitive lookup of the type, currently ILLink can not guarantee presence of all the matching types.
+# Title    : Call to 'Type.GetType' method can perform case insensitive lookup of the type, currently trimming can not guarantee presence of all the matching types.
 # Category : Trimming
 dotnet_diagnostic.IL2096.severity = none
 
@@ -1903,155 +2013,37 @@ dotnet_diagnostic.IL3051.severity = warning
 # Category : AOT
 dotnet_diagnostic.IL3056.severity = warning
 
-# Title    : Use source generated logging methods for improved performance
+# Title    : Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
 # Category : Performance
-# Help Link: https://TODO/r9a000
-dotnet_diagnostic.R9A000.severity = none
+dotnet_diagnostic.LA0000.severity = none
 
 # Title    : Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
 # Category : Performance
-# Help Link: https://TODO/r9a014
-dotnet_diagnostic.R9A014.severity = none
-
-# Title    : Use the 'Microsoft.Shared.Diagnostics.Throws' class instead of explicitly throwing exception for improved performance
-# Category : Performance
-# Help Link: https://TODO/r9a015
-dotnet_diagnostic.R9A015.severity = none
-
-# Title    : Use 'System.Text.CompositeFormat' instead of 'string.Format' for improved performance
-# Category : Performance
-# Help Link: https://TODO/r9a018
-dotnet_diagnostic.R9A018.severity = none
-
-# Title    : Remove unnecessary dictionary lookups
-# Category : Performance
-# Help Link: https://TODO/r9a019
-dotnet_diagnostic.R9A019.severity = none
-
-# Title    : Remove unnecessary set lookups
-# Category : Performance
-# Help Link: https://TODO/r9a020
-dotnet_diagnostic.R9A020.severity = none
-
-# Title    : Perform message formatting in the body of the logging method
-# Category : Performance
-# Help Link: https://TODO/r9a021
-dotnet_diagnostic.R9A021.severity = none
-
-# Title    : Use 'System.TimeProvider' to make the code easier to test
-# Category : Reliability
-# Help Link: https://TODO/r9a022
-dotnet_diagnostic.R9A022.severity = none
-
-# Title    : Using experimental API
-# Category : Reliability
-# Help Link: https://TODO/r9a029
-dotnet_diagnostic.R9A029.severity = warning
-
-# Title    : Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
-# Category : Performance
-# Help Link: https://TODO/r9a030
-dotnet_diagnostic.R9A030.severity = none
-
-# Title    : Make types declared in an executable internal
-# Category : Performance
-# Help Link: https://TODO/r9a031
-dotnet_diagnostic.R9A031.severity = none
-
-# Title    : Consider using an array instead of a collection
-# Category : Performance
-# Help Link: https://TODO/r9a032
-dotnet_diagnostic.R9A032.severity = none
-
-# Title    : Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance
-# Category : Performance
-# Help Link: https://TODO/r9a033
-dotnet_diagnostic.R9A033.severity = none
+dotnet_diagnostic.LA0001.severity = none
 
 # Title    : Use 'Microsoft.Shared.Text.NumericExtensions.ToInvariantString' for improved performance
 # Category : Performance
-# Help Link: https://TODO/r9a036
-dotnet_diagnostic.R9A036.severity = none
-
-# Title    : Use 'System.ValueTuple' instead of 'System.Tuple' for improved performance
-# Category : Performance
-# Help Link: https://TODO/r9a037
-dotnet_diagnostic.R9A037.severity = none
-
-# Title    : Use generic collections instead of legacy collections for improved performance
-# Category : Performance
-# Help Link: https://TODO/r9a040
-dotnet_diagnostic.R9A040.severity = none
-
-# Title    : Use 'System.MemoryExtensions.Split' for improved performance
-# Category : Performance
-# Help Link: https://TODO/r9a043
-dotnet_diagnostic.R9A043.severity = none
-
-# Title    : Assign array of literal values to a static field for improved performance
-# Category : Performance
-# Help Link: https://TODO/r9a044
-dotnet_diagnostic.R9A044.severity = none
+dotnet_diagnostic.LA0002.severity = none
 
 # Title    : Newly added symbols must be marked as experimental
 # Category : Correctness
-# Help Link: https://TODO/r9a049
-dotnet_diagnostic.R9A049.severity = none
+dotnet_diagnostic.LA0003.severity = none
 
 # Title    : Experimental symbols cannot be marked as obsolete
 # Category : Correctness
-# Help Link: https://TODO/r9a050
-dotnet_diagnostic.R9A050.severity = none
+dotnet_diagnostic.LA0004.severity = none
 
 # Title    : Published symbols cannot be marked experimental
 # Category : Correctness
-# Help Link: https://TODO/r9a051
-dotnet_diagnostic.R9A051.severity = none
+dotnet_diagnostic.LA0005.severity = none
 
 # Title    : Published symbols cannot be deleted to maintain compatibility
 # Category : Correctness
-# Help Link: https://TODO/r9a052
-dotnet_diagnostic.R9A052.severity = none
-
-# Title    : A deprecated API is not annotated with the obsolete attribute
-# Category : Correctness
-# Help Link: https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a053
-dotnet_diagnostic.R9A053.severity = none
-
-# Title    : A deprecated API is marked as experimental
-# Category : Correctness
-# Help Link: https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis/analyzers/r9a054
-dotnet_diagnostic.R9A054.severity = none
+dotnet_diagnostic.LA0006.severity = none
 
 # Title    : Published symbols cannot be changed to maintain compatibility
 # Category : Correctness
-# Help Link: https://TODO/r9a055
-dotnet_diagnostic.R9A055.severity = none
-
-# Title    : Fire-and-forget async call inside a 'using' block
-# Category : Correctness
-# Help Link: https://TODO/r9a056
-dotnet_diagnostic.R9A056.severity = warning
-
-# Title    : Consider removing unnecessary conditional access operator (?)
-# Category : Performance
-# Help Link: https://TODO/r9a058
-dotnet_diagnostic.R9A058.severity = suggestion
-
-# Title    : Consider removing unnecessary null coalescing assignment (??=)
-# Category : Performance
-# Help Link: https://TODO/r9a059
-dotnet_diagnostic.R9A059.severity = suggestion
-
-# Title    : Consider removing unnecessary null coalescing operator (??)
-# Category : Performance
-# Help Link: https://TODO/r9a060
-dotnet_diagnostic.R9A060.severity = suggestion
-
-# Title    : The async method doesn't support cancellation
-# Category : Resilience
-# Help Link: https://TODO/r9a061
-dotnet_diagnostic.R9A061.severity = none
+dotnet_diagnostic.LA0007.severity = none
 
 # Title    : Methods and properties should be named in PascalCase
 # Category : Minor Code Smell
@@ -2808,7 +2800,8 @@ dotnet_diagnostic.S2486.severity = none
 # Title    : Shared resources should not be used for locking
 # Category : Critical Bug
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2551
-dotnet_diagnostic.S2551.severity = warning
+# Redundant: CA2002
+dotnet_diagnostic.S2551.severity = none
 
 # Title    : Conditionally executed code should be reachable
 # Category : Major Bug
@@ -4061,7 +4054,7 @@ dotnet_diagnostic.S5773.severity = none
 # Title    : Use a testable date/time provider
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-6354
-# Redundant: R9A022
+# Redundant: EA0002
 dotnet_diagnostic.S6354.severity = none
 
 # Title    : Azure Functions should be stateless

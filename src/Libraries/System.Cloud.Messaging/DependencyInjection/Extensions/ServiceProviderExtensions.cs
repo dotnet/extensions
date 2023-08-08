@@ -29,7 +29,7 @@ public static class ServiceProviderExtensions
         _ = Throw.IfNull(serviceProvider);
         _ = Throw.IfNullOrEmpty(pipelineName);
 
-        return serviceProvider.GetRequiredService<INamedServiceProvider<IMessageSource>>().GetRequiredService(pipelineName);
+        return serviceProvider.GetRequiredKeyedService<IMessageSource>(pipelineName);
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ public static class ServiceProviderExtensions
         _ = Throw.IfNull(serviceProvider);
         _ = Throw.IfNullOrEmpty(pipelineName);
 
-        return serviceProvider.GetRequiredService<INamedServiceProvider<IMessageMiddleware>>().GetServices(pipelineName).ToList();
+        return serviceProvider.GetKeyedServices<IMessageMiddleware>(pipelineName).ToArray();
     }
 
     /// <summary>
@@ -61,6 +61,6 @@ public static class ServiceProviderExtensions
         _ = Throw.IfNull(serviceProvider);
         _ = Throw.IfNullOrEmpty(pipelineName);
 
-        return serviceProvider.GetRequiredService<INamedServiceProvider<MessageDelegate>>().GetRequiredService(pipelineName);
+        return serviceProvider.GetRequiredKeyedService<MessageDelegate>(pipelineName);
     }
 }

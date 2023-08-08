@@ -29,12 +29,12 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <param name="pipelineBuilder">The builder for async processing pipeline.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
     /// <exception cref="ArgumentNullException">Any argument is <see langword="null"/>.</exception>
-    public static IAsyncProcessingPipelineBuilder AddNamedSingleton<T>(this IAsyncProcessingPipelineBuilder pipelineBuilder)
+    public static IAsyncProcessingPipelineBuilder AddKeyedSingleton<T>(this IAsyncProcessingPipelineBuilder pipelineBuilder)
         where T : class
     {
         _ = Throw.IfNull(pipelineBuilder);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton(pipelineBuilder.PipelineName, sp => sp.GetRequiredService<T>());
+        _ = pipelineBuilder.Services.AddKeyedSingleton(pipelineBuilder.PipelineName, (sp, _) => sp.GetRequiredService<T>());
         return pipelineBuilder;
     }
 
@@ -46,14 +46,14 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <param name="implementationFactory">The implementation factory for the singleton type.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
     /// <exception cref="ArgumentNullException">Any argument is <see langword="null"/>.</exception>
-    public static IAsyncProcessingPipelineBuilder AddNamedSingleton<T>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
+    public static IAsyncProcessingPipelineBuilder AddKeyedSingleton<T>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                        Func<IServiceProvider, T> implementationFactory)
         where T : class
     {
         _ = Throw.IfNull(pipelineBuilder);
         _ = Throw.IfNull(implementationFactory);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton(pipelineBuilder.PipelineName, implementationFactory);
+        _ = pipelineBuilder.Services.AddKeyedSingleton(pipelineBuilder.PipelineName, implementationFactory);
         return pipelineBuilder;
     }
 
@@ -66,7 +66,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     /// <param name="implementationFactory">The implementation factory for the singleton type.</param>
     /// <returns><see cref="IAsyncProcessingPipelineBuilder"/> to chain additional calls.</returns>
     /// <exception cref="ArgumentNullException">Any argument is <see langword="null"/>.</exception>
-    public static IAsyncProcessingPipelineBuilder AddNamedSingleton<T>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
+    public static IAsyncProcessingPipelineBuilder AddKeyedSingleton<T>(this IAsyncProcessingPipelineBuilder pipelineBuilder,
                                                                        string name,
                                                                        Func<IServiceProvider, T> implementationFactory)
         where T : class
@@ -75,7 +75,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
         _ = Throw.IfNullOrEmpty(name);
         _ = Throw.IfNull(implementationFactory);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton(name, implementationFactory);
+        _ = pipelineBuilder.Services.AddKeyedSingleton(name, (sp, _) => implementationFactory(sp));
         return pipelineBuilder;
     }
 
@@ -94,7 +94,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     {
         _ = Throw.IfNull(pipelineBuilder);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton<IMessageDestination>(pipelineBuilder.PipelineName, sp => sp.GetRequiredService<TDestination>());
+        _ = pipelineBuilder.Services.AddKeyedSingleton<IMessageDestination>(pipelineBuilder.PipelineName, (sp, _) => sp.GetRequiredService<TDestination>());
         return pipelineBuilder;
     }
 
@@ -113,7 +113,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
         _ = Throw.IfNull(pipelineBuilder);
         _ = Throw.IfNull(implementationFactory);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton<IMessageDestination>(pipelineBuilder.PipelineName, implementationFactory);
+        _ = pipelineBuilder.Services.AddKeyedSingleton<IMessageDestination>(pipelineBuilder.PipelineName, (sp, _) => implementationFactory(sp));
         return pipelineBuilder;
     }
 
@@ -135,7 +135,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
         _ = Throw.IfNullOrEmpty(name);
         _ = Throw.IfNull(implementationFactory);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton<IMessageDestination>(name, implementationFactory);
+        _ = pipelineBuilder.Services.AddKeyedSingleton<IMessageDestination>(name, (sp, _) => implementationFactory(sp));
         return pipelineBuilder;
     }
 
@@ -154,7 +154,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     {
         _ = Throw.IfNull(pipelineBuilder);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton<IMessageSource>(pipelineBuilder.PipelineName, sp => sp.GetRequiredService<TSource>());
+        _ = pipelineBuilder.Services.AddKeyedSingleton<IMessageSource>(pipelineBuilder.PipelineName, (sp, _) => sp.GetRequiredService<TSource>());
         return pipelineBuilder;
     }
 
@@ -173,7 +173,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
         _ = Throw.IfNull(pipelineBuilder);
         _ = Throw.IfNull(implementationFactory);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton<IMessageSource>(pipelineBuilder.PipelineName, implementationFactory);
+        _ = pipelineBuilder.Services.AddKeyedSingleton<IMessageSource>(pipelineBuilder.PipelineName, (sp, _) => implementationFactory(sp));
         return pipelineBuilder;
     }
 
@@ -193,7 +193,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     {
         _ = Throw.IfNull(pipelineBuilder);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton<IMessageMiddleware>(pipelineBuilder.PipelineName, sp => sp.GetRequiredService<TMiddleware>());
+        _ = pipelineBuilder.Services.AddKeyedSingleton<IMessageMiddleware>(pipelineBuilder.PipelineName, (sp, _) => sp.GetRequiredService<TMiddleware>());
         return pipelineBuilder;
     }
 
@@ -215,7 +215,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
         _ = Throw.IfNull(pipelineBuilder);
         _ = Throw.IfNull(implementationFactory);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton<IMessageMiddleware>(pipelineBuilder.PipelineName, implementationFactory);
+        _ = pipelineBuilder.Services.AddKeyedSingleton<IMessageMiddleware>(pipelineBuilder.PipelineName, (sk, _) => implementationFactory(sk));
         return pipelineBuilder;
     }
 
@@ -234,7 +234,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     {
         _ = Throw.IfNull(pipelineBuilder);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton(pipelineBuilder.PipelineName, sp => sp.GetRequiredService<MessageDelegate>());
+        _ = pipelineBuilder.Services.AddKeyedSingleton(pipelineBuilder.PipelineName, (sp, _) => sp.GetRequiredService<MessageDelegate>());
         return pipelineBuilder;
     }
 
@@ -256,7 +256,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
         _ = Throw.IfNull(pipelineBuilder);
         _ = Throw.IfNull(implementationFactory);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton(pipelineBuilder.PipelineName, implementationFactory);
+        _ = pipelineBuilder.Services.AddKeyedSingleton(pipelineBuilder.PipelineName, (sp, _) => implementationFactory(sp));
         return pipelineBuilder;
     }
 
@@ -275,7 +275,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
     {
         _ = Throw.IfNull(pipelineBuilder);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton<MessageConsumer>(pipelineBuilder.PipelineName, sp => sp.GetRequiredService<TConsumer>());
+        _ = pipelineBuilder.Services.AddKeyedSingleton<MessageConsumer>(pipelineBuilder.PipelineName, (sp, _) => sp.GetRequiredService<TConsumer>());
         return pipelineBuilder;
     }
 
@@ -294,7 +294,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
         _ = Throw.IfNull(pipelineBuilder);
         _ = Throw.IfNull(implementationFactory);
 
-        _ = pipelineBuilder.Services.AddNamedSingleton<MessageConsumer>(pipelineBuilder.PipelineName, implementationFactory);
+        _ = pipelineBuilder.Services.AddKeyedSingleton<MessageConsumer>(pipelineBuilder.PipelineName, (sp, _) => implementationFactory(sp));
         return pipelineBuilder;
     }
 
@@ -313,8 +313,7 @@ public static class AsyncProcessingPipelineBuilderExtensions
         _ = Throw.IfNull(pipelineBuilder);
         _ = pipelineBuilder.Services.AddSingleton<IHostedService>(serviceProvider =>
         {
-            INamedServiceProvider<MessageConsumer> namedMessageConsumerProvider = serviceProvider.GetRequiredService<INamedServiceProvider<MessageConsumer>>();
-            MessageConsumer messageConsumer = namedMessageConsumerProvider.GetRequiredService(pipelineBuilder.PipelineName);
+            MessageConsumer messageConsumer = serviceProvider.GetRequiredKeyedService<MessageConsumer>(pipelineBuilder.PipelineName);
             return new ConsumerBackgroundService(messageConsumer);
         });
     }

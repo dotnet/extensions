@@ -34,7 +34,7 @@ public static partial class HttpClientBuilderExtensions
     public static IHttpResilienceStrategyBuilder AddResilienceHandler(
         this IHttpClientBuilder builder,
         string strategyName,
-        Action<ResilienceStrategyBuilder<HttpResponseMessage>> configure)
+        Action<CompositeStrategyBuilder<HttpResponseMessage>> configure)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNullOrEmpty(strategyName);
@@ -42,7 +42,7 @@ public static partial class HttpClientBuilderExtensions
 
         return builder.AddResilienceHandler(strategyName, ConfigureBuilder);
 
-        void ConfigureBuilder(ResilienceStrategyBuilder<HttpResponseMessage> builder, ResilienceHandlerContext context) => configure(builder);
+        void ConfigureBuilder(CompositeStrategyBuilder<HttpResponseMessage> builder, ResilienceHandlerContext context) => configure(builder);
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ public static partial class HttpClientBuilderExtensions
     public static IHttpResilienceStrategyBuilder AddResilienceHandler(
         this IHttpClientBuilder builder,
         string strategyName,
-        Action<ResilienceStrategyBuilder<HttpResponseMessage>, ResilienceHandlerContext> configure)
+        Action<CompositeStrategyBuilder<HttpResponseMessage>, ResilienceHandlerContext> configure)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNullOrEmpty(strategyName);
@@ -110,10 +110,10 @@ public static partial class HttpClientBuilderExtensions
         _ = provider(request);
     }
 
-    private static IHttpResilienceStrategyBuilder AddHttpResilienceStrategy(
+    private static HttpResilienceStrategyBuilder AddHttpResilienceStrategy(
         this IHttpClientBuilder builder,
         string name,
-        Action<ResilienceStrategyBuilder<HttpResponseMessage>, ResilienceHandlerContext> configure)
+        Action<CompositeStrategyBuilder<HttpResponseMessage>, ResilienceHandlerContext> configure)
     {
         var strategyName = StrategyNameHelper.GetName(builder.Name, name);
         var key = new HttpKey(strategyName, string.Empty);
@@ -122,7 +122,7 @@ public static partial class HttpClientBuilderExtensions
 
         ConfigureHttpServices(builder.Services);
 
-        return new HttpResilienceStrategyBuilder(strategyName, builder.Services);
+        return new(strategyName, builder.Services);
     }
 
     private static void ConfigureHttpServices(IServiceCollection services)

@@ -10,8 +10,6 @@ using Microsoft.Shared.Diagnostics;
 #pragma warning disable CA1716
 namespace Microsoft.Shared.Pools;
 
-#pragma warning disable R9A038
-
 /// <summary>
 /// A factory of object pools.
 /// </summary>

@@ -5,10 +5,6 @@
     <Description>Tool to help with .NET API management activities</Description>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <NoWarn>$(NoWarn);R9A061;R9A044</NoWarn>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.CommandLine.NamingConventionBinder" />

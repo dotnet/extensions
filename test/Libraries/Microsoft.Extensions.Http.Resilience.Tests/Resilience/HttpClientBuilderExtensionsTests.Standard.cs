@@ -39,7 +39,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         ConfigurationStubFactory.Create(
             new Dictionary<string, string?>
             {
-                { "StandardResilienceOptions:CircuitBreakerOptions:FailureThreshold", "0.1"},
+                { "StandardResilienceOptions:CircuitBreakerOptions:FailureRatio", "0.1"},
                 { "StandardResilienceOptions:AttemptTimeoutOptions:Timeout", "00:00:05"},
                 { "StandardResilienceOptions:TotalRequestTimeoutOptions:Timeout", "00:00:20"},
             })
@@ -49,7 +49,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
        ConfigurationStubFactory.Create(
             new Dictionary<string, string?>
             {
-                { "StandardResilienceOptions:CircuitBreakerOptionsTypo:FailureThreshold", "0.1"}
+                { "StandardResilienceOptions:CircuitBreakerOptionsTypo:FailureRatio", "0.1"}
             })
         .GetSection("StandardResilienceOptions");
 

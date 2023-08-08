@@ -1,256 +1,176 @@
 Origin:
-  AssemblyName: Microsoft.Extensions.ExtraAnalyzers.Roslyn4.0
+  AssemblyName: Microsoft.Analyzers.Extra
   Version: 42.42.42.42424
 Diagnostics:
-  R9A000:
-    Metadata:
-      Category: Performance
-      Title: Use source generated logging methods for improved performance
-      Description: Identifies calls to legacy logging methods
-      HelpLinkUri: https://TODO/r9a000
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  R9A018:
-    Metadata:
-      Category: Performance
-      Title: Use 'System.Text.CompositeFormat' instead of 'string.Format' for improved performance
-      Description: Identifies uses of 'String.Format' and 'StringBuilder.AppendFormat'
-      HelpLinkUri: https://TODO/r9a018
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  R9A019:
-    Metadata:
-      Category: Performance
-      Title: Remove unnecessary dictionary lookups
-      Description: Encourages optimal use of dictionary lookup
-      HelpLinkUri: https://TODO/r9a019
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  R9A020:
-    Metadata:
-      Category: Performance
-      Title: Remove unnecessary set lookups
-      Description: Encourages optimal use of set lookup
-      HelpLinkUri: https://TODO/r9a020
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  R9A022:
-    Metadata:
-      Category: Reliability
-      Title: Use 'System.TimeProvider' to make the code easier to test
-      Description: Identifies uses of time dependent APIs that can lead to flaky tests
-      HelpLinkUri: https://TODO/r9a022
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      production:
-        Severity: Warning
-  R9A021:
-    Metadata:
-      Category: Performance
-      Title: Perform message formatting in the body of the logging method
-      Description: Identifies calls to the 'ToString' method as arguments to a logging method
-      HelpLinkUri: https://TODO/r9a021
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  R9A029:
-    Metadata:
-      Category: Reliability
-      Title: Using experimental API
-      Description: Indicates that code is depending on an experimental API
-      HelpLinkUri: https://TODO/r9a029
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      general_externalonly:
-        Severity: Warning
-  R9A031:
-    Metadata:
-      Category: Performance
-      Title: Make types declared in an executable internal
-      Description: Making an executable's types internal enables dead code analysis along with other potential optimizations
-      HelpLinkUri: https://TODO/r9a031
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  R9A030:
-    Metadata:
-      Category: Performance
-      Title: Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
-      Description: When checking for a single character, prefer the character overloads of 'String.StartsWith' and 'String.EndsWith' for improved performance
-      HelpLinkUri: https://TODO/r9a030
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  R9A033:
-    Metadata:
-      Category: Performance
-      Title: Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance
-      Description: Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance
-      HelpLinkUri: https://TODO/r9a033
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  R9A037:
-    Metadata:
-      Category: Performance
-      Title: Use 'System.ValueTuple' instead of 'System.Tuple' for improved performance
-      Description: Using 'System.ValueTuple' avoids allocations and is generally more efficient than 'System.Tuple'
-      HelpLinkUri: https://TODO/r9a037
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  R9A032:
-    Metadata:
-      Category: Performance
-      Title: Consider using an array instead of a collection
-      Description: Dictionaries and sets which use enums and bytes as keys can often be replaced with simple arrays for improved performance
-      HelpLinkUri: https://TODO/r9a032
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: None
-  R9A040:
-    Metadata:
-      Category: Performance
-      Title: Use generic collections instead of legacy collections for improved performance
-      Description: Using generic collections can avoid boxing overhead and provides strong typing
-      HelpLinkUri: https://TODO/r9a040
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  R9A043:
-    Metadata:
-      Category: Performance
-      Title: Use 'System.MemoryExtensions.Split' for improved performance
-      Description: Use 'System.MemoryExtensions.Split' for improved performance
-      HelpLinkUri: https://TODO/r9a043
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  R9A044:
-    Metadata:
-      Category: Performance
-      Title: Assign array of literal values to a static field for improved performance
-      Description: Arrays of literal values should generally be assigned to static fields in order to avoid creating them redundantly over time
-      HelpLinkUri: https://TODO/r9a044
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  R9A056:
-    Metadata:
-      Category: Correctness
-      Title: Fire-and-forget async call inside a 'using' block
-      Description: When skipping the await keyword for asynchronous operations inside a using block, then a disposable object could be disposed before the asynchronous invocation finishes. This might result in incorrect behavior and very often ends with a runtime exception notifying that the code is trying to operate on a disposed object.
-      HelpLinkUri: https://TODO/r9a056
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: Warning
-  R9A058:
-    Metadata:
-      Category: Performance
-      Title: Consider removing unnecessary conditional access operator (?)
-      Description: Using the conditional access operator (?) to access values which are statically known not to be null causes superfluous null checks to be performed at runtime
-      HelpLinkUri: https://TODO/r9a058
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: Suggestion
-  R9A059:
+  EA0012:
     Metadata:
       Category: Performance
       Title: Consider removing unnecessary null coalescing assignment (??=)
       Description: Using the null coalescing assignment operator (??=) with values which are statically known not to be null causes superfluous null checks to be performed at runtime
-      HelpLinkUri: https://TODO/r9a059
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
       general:
         Severity: Suggestion
-  R9A060:
+  EA0013:
     Metadata:
       Category: Performance
       Title: Consider removing unnecessary null coalescing operator (??)
       Description: Using the null coalescing operator (??) with values which are statically known to be null causes superfluous null checks to be performed at runtime
-      HelpLinkUri: https://TODO/r9a060
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
       general:
         Severity: Suggestion
-  R9A061:
+  EA0004:
     Metadata:
-      Category: Resilience
-      Title: The async method doesn't support cancellation
-      Description: Accepting a CancellationToken as a parameter allows caller to express a loss of interest in the result enabling the method to save cycles by finishing early
-      HelpLinkUri: https://TODO/r9a061
+      Category: Performance
+      Title: Make types declared in an executable internal
+      Description: Making an executable's types internal enables dead code analysis along with other potential optimizations
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  EA0001:
+    Metadata:
+      Category: Performance
+      Title: Perform message formatting in the body of the logging method
+      Description: Identifies calls to the 'ToString' method as arguments to a logging method
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  EA0003:
+    Metadata:
+      Category: Performance
+      Title: Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
+      Description: When checking for a single character, prefer the character overloads of 'String.StartsWith' and 'String.EndsWith' for improved performance
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  EA0002:
+    Metadata:
+      Category: Reliability
+      Title: Use 'System.TimeProvider' to make the code easier to test
+      Description: Identifies uses of time dependent APIs that can lead to flaky tests
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
       general:
         Severity: None
       production:
+        Severity: Warning
+  EA0006:
+    Metadata:
+      Category: Performance
+      Title: Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance
+      Description: Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  EA0000:
+    Metadata:
+      Category: Performance
+      Title: Use source generated logging methods for improved performance
+      Description: Identifies calls to legacy logging methods
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  EA0009:
+    Metadata:
+      Category: Performance
+      Title: Use 'System.MemoryExtensions.Split' for improved performance
+      Description: Use 'System.MemoryExtensions.Split' for improved performance
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  EA0008:
+    Metadata:
+      Category: Performance
+      Title: Use generic collections instead of legacy collections for improved performance
+      Description: Using generic collections can avoid boxing overhead and provides strong typing
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  EA0005:
+    Metadata:
+      Category: Performance
+      Title: Consider using an array instead of a collection
+      Description: Dictionaries and sets which use enums and bytes as keys can often be replaced with simple arrays for improved performance
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: None
+  EA0007:
+    Metadata:
+      Category: Performance
+      Title: Use 'System.ValueTuple' instead of 'System.Tuple' for improved performance
+      Description: Using 'System.ValueTuple' avoids allocations and is generally more efficient than 'System.Tuple'
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  EA0010:
+    Metadata:
+      Category: Correctness
+      Title: Fire-and-forget async call inside a 'using' block
+      Description: When skipping the await keyword for asynchronous operations inside a using block, then a disposable object could be disposed before the asynchronous invocation finishes. This might result in incorrect behavior and very often ends with a runtime exception notifying that the code is trying to operate on a disposed object.
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  EA0014:
+    Metadata:
+      Category: Resilience
+      Title: The async method doesn't support cancellation
+      Description: Accepting a CancellationToken as a parameter allows caller to express a loss of interest in the result enabling the method to save cycles by finishing early
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  EA0011:
+    Metadata:
+      Category: Performance
+      Title: Consider removing unnecessary conditional access operator (?)
+      Description: Using the conditional access operator (?) to access values which are statically known not to be null causes superfluous null checks to be performed at runtime
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
         Severity: Warning

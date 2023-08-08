@@ -59,7 +59,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         Assert.NotNull(provider);
         Assert.NotNull(logger);
         Assert.NotNull(publishers);
-        Assert.Equal(2, publishers?.Length);
+        Assert.Equal(2, publishers.Length);
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
         Assert.NotNull(logger);
         Assert.NotNull(publishers);
         Assert.IsType<IResourceUtilizationPublisher[]>(publishers);
-        Assert.Equal(2, publishers?.Length);
+        Assert.Equal(2, publishers.Length);
     }
 
     /// <summary>
@@ -180,7 +180,7 @@ public sealed class ResourceUtilizationTrackerServiceTest
 
         Assert.NotNull(publishers);
         Assert.IsType<IResourceUtilizationPublisher[]>(publishers);
-        Assert.Equal(1, publishers?.Length);
+        Assert.Single(publishers);
     }
 
     [Fact]

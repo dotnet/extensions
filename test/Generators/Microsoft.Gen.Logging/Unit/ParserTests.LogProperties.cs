@@ -64,7 +64,7 @@ public partial class ParserTests
     [InlineData("System.Exception")]
     public async Task LogPropertiesInvalidUsage(string annotation)
     {
-        // We don't check [LogProperties] on ILogger here since it produces a lot of errors apart from R9G027
+        // We don't check [LogProperties] on ILogger here since it produces a lot of errors
         string source = @$"
             partial class C
             {{

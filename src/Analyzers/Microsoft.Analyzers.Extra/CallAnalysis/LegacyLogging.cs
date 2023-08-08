@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.Extensions.ExtraAnalyzers.CallAnalysis;
 
 /// <summary>
-/// Recommends replacing legacy logging calls with R9 logging calls.
+/// Recommends replacing legacy logging calls with code generator-based logging calls.
 /// </summary>
 internal sealed class LegacyLogging
 {

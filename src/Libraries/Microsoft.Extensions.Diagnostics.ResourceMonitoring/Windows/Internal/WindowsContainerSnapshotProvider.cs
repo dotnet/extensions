@@ -133,7 +133,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             var memoryStatus = _memoryStatus.Value;
 
             // Technically, the unconstrained limit is memoryStatus.TotalPageFile.
-            // Leaving this at physical as it is more understandable to R9 consumers at present.
+            // Leaving this at physical as it is more understandable to consumers.
             memoryLimitInBytes = memoryStatus.TotalPhys;
         }
 

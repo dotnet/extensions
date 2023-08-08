@@ -39,22 +39,22 @@ internal sealed class ResourceUtilizationHealthCheck : IHealthCheck
     public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         var utilization = _dataTracker.GetUtilization(_options.SamplingWindow);
-        if (utilization.CpuUsedPercentage > _options.CpuThresholds?.UnhealthyUtilizationPercentage)
+        if (utilization.CpuUsedPercentage > _options.CpuThresholds.UnhealthyUtilizationPercentage)
         {
             return Task.FromResult(HealthCheckResult.Unhealthy("CPU usage is above the limit"));
         }
 
-        if (utilization.MemoryUsedPercentage > _options.MemoryThresholds?.UnhealthyUtilizationPercentage)
+        if (utilization.MemoryUsedPercentage > _options.MemoryThresholds.UnhealthyUtilizationPercentage)
         {
             return Task.FromResult(HealthCheckResult.Unhealthy("Memory usage is above the limit"));
         }
 
-        if (utilization.CpuUsedPercentage > _options.CpuThresholds?.DegradedUtilizationPercentage)
+        if (utilization.CpuUsedPercentage > _options.CpuThresholds.DegradedUtilizationPercentage)
         {
             return Task.FromResult(HealthCheckResult.Degraded("CPU usage is close to the limit"));
         }
 
-        if (utilization.MemoryUsedPercentage > _options.MemoryThresholds?.DegradedUtilizationPercentage)
+        if (utilization.MemoryUsedPercentage > _options.MemoryThresholds.DegradedUtilizationPercentage)
         {
             return Task.FromResult(HealthCheckResult.Degraded("Memory usage is close to the limit"));
         }

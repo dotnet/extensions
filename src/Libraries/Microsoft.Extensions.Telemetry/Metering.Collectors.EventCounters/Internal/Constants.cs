@@ -7,7 +7,6 @@ namespace Microsoft.Extensions.Telemetry.Metering.Internal;
 
 internal sealed class Constants
 {
-#pragma warning disable R9A044 // Assign array of literal values to a static field for improved performance
     public static readonly Dictionary<string, HashSet<string>> DefaultCounters = new()
     {
         ["System.Runtime"] = new HashSet<string>
@@ -30,5 +29,4 @@ internal sealed class Constants
             "request-queue-length",
         },
     };
-#pragma warning restore R9A044 // Assign array of literal values to a static field for improved performance
 }

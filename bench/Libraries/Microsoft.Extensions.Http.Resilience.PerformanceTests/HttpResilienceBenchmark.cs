@@ -10,8 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Http.Resilience.Bench;
 
-#pragma warning disable R9A044 // Assign array of literal values to a static field for improved performance
-
 public class HttpResilienceBenchmark
 {
     private static readonly Uri _uri = new(HttpClientFactory.PrimaryEndpoint);

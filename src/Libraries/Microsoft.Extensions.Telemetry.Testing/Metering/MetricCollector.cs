@@ -249,7 +249,7 @@ public sealed class MetricCollector<T> : IDisposable
     /// <param name="minCount">The minimum number of measurements to wait for.</param>
     /// <param name="timeout">How long to wait.</param>
     /// <returns>A task that completes when the collector has collected the requisite number of measurements.</returns>
-    [SuppressMessage("Resilience", "R9A061:The async method doesn't support cancellation", Justification = "Not relevant in this case")]
+    [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Not relevant in this case")]
     public async Task WaitForMeasurementsAsync(int minCount, TimeSpan timeout)
     {
 #if NET8_0_OR_GREATER

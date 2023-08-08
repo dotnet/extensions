@@ -241,9 +241,6 @@ internal class SelfDiagnosticsConfigRefresher : IDisposable
         fs?.Dispose();
     }
 
-    [SuppressMessage("Performance",
-        "R9A017:Use asynchronous operations instead of legacy thread blocking code",
-        Justification = "Borrowed from OpenTelemetry-dotnet as is.")]
     private void OpenLogFile(string newLogDirectory, int newFileSize)
     {
         try

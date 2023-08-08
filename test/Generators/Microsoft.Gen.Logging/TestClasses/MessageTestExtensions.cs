@@ -18,8 +18,6 @@ namespace TestClasses
         public static partial void M2(ILogger logger);
 
 #if false
-#pragma warning disable R9G014
-#pragma warning disable R9G005
 
         // These are disabled due to https://github.com/dotnet/roslyn/issues/52527
         //
@@ -34,9 +32,6 @@ namespace TestClasses
 
         [LogMethod(4, LogLevel.Debug, "{p1}")]
         public static partial void M4(ILogger logger, string p1, int p2, int p3);
-
-#pragma warning restore R9G014
-#pragma warning restore R9G005
 
 #endif
 

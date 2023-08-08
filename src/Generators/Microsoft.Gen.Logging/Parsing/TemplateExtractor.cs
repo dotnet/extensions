@@ -23,7 +23,9 @@ internal static class TemplateExtractor
 
         var scanIndex = 0;
         var endIndex = message!.Length;
-        ICollection<string> foundAtTemplates = null!;
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
+        ICollection<string>? foundAtTemplates = null;
+#pragma warning restore CA1859 // Use concrete types when possible for improved performance
         while (scanIndex < endIndex)
         {
             var openBraceIndex = FindBraceIndex(message, '{', scanIndex, endIndex);

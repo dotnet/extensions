@@ -38,7 +38,7 @@ public class HttpCircuitBreakerStrategyOptionsTests
     public void Ctor_Defaults()
     {
         _testObject.BreakDuration.Should().Be(TimeSpan.FromSeconds(5));
-        _testObject.FailureThreshold.Should().Be(0.1);
+        _testObject.FailureRatio.Should().Be(0.1);
         _testObject.SamplingDuration.Should().Be(TimeSpan.FromSeconds(30));
         _testObject.MinimumThroughput.Should().Be(100);
         _testObject.ShouldHandle.Should().NotBeNull();
