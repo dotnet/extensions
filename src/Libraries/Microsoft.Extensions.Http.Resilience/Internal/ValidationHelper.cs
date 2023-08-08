@@ -19,7 +19,7 @@ internal static class ValidationHelper
         try
         {
             var aggregatedDelay = TimeSpan.Zero;
-            var builder = new ResilienceStrategyBuilder
+            var builder = new CompositeStrategyBuilder
             {
                 Randomizer = () => 1.0 // disable randomization so the output is always the same
             };

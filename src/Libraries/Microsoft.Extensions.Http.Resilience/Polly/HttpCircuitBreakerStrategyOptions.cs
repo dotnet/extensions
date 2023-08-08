@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// <summary>
 /// Implementation of the <see cref="CircuitBreakerStrategyOptions{TResult}"/> for <see cref="HttpResponseMessage"/> results.
 /// </summary>
-public class HttpCircuitBreakerStrategyOptions : AdvancedCircuitBreakerStrategyOptions<HttpResponseMessage>
+public class HttpCircuitBreakerStrategyOptions : CircuitBreakerStrategyOptions<HttpResponseMessage>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpCircuitBreakerStrategyOptions"/> class.
