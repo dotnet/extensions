@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>$(LatestTargetFramework)</TargetFramework>
+        <TargetFrameworks>$(TargetFrameworks)</TargetFrameworks>
         <IsShipping>false</IsShipping>
         <!-- Reference the outputs to have them available as build outputs. -->
         <NoTargetsDoNotReferenceOutputAssemblies>false</NoTargetsDoNotReferenceOutputAssemblies>

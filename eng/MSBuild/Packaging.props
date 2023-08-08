@@ -4,7 +4,7 @@
     <SignArtifacts>$(SignAssembly)</SignArtifacts>
 
     <!-- Arcade SDK marks all but *.pkgproj as non-packable, we need to override. -->
-    <IsPackable>true</IsPackable>
+    <IsPackable Condition="'$(IsPackable)' == ''">true</IsPackable>
   </PropertyGroup>
 
   <!-- strong name signing control -->

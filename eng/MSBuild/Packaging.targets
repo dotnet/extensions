@@ -9,7 +9,7 @@
 
   <!-- packaging control -->
   <PropertyGroup>
-    <IsPackable Condition="'$(Stage)' == ''">false</IsPackable>
+    <IsPackable Condition="'$(Stage)' == '' and '$(IsPackable)' == ''">false</IsPackable>
     <BeforePack>$(BeforePack);_VerifyMinimumSupportedTfmForPackagingIsUsed;_AddNETStandardCompatErrorFileForPackaging</BeforePack>
   </PropertyGroup>
 
@@ -78,7 +78,7 @@
                        !@(_PackageBuildFile->AnyHaveMetadataValue('PackagePathWithoutFilename', '$(_NETStandardCompatErrorPlaceholderFilePackagePath)'))" />
     </ItemGroup>
   </Target>
-  
+
   <!-- Add the de-duped placeholder file to the package. -->
   <Target Name="_AddPlaceholderFileToNone"
           AfterTargets="_AddNETStandardCompatErrorFileForPackaging">
