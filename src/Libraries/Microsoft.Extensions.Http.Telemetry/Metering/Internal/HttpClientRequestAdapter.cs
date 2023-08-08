@@ -13,9 +13,7 @@ using Microsoft.Extensions.DiagnosticAdapter;
 
 namespace Microsoft.Extensions.Http.Telemetry.Metering.Internal;
 
-#pragma warning disable R9A013 // This class has virtual members and can't be sealed.
 internal class HttpClientRequestAdapter
-#pragma warning restore R9A013 // This class has virtual members and can't be sealed.
 {
     internal TimeProvider TimeProvider = TimeProvider.System;
 

@@ -134,7 +134,7 @@ public static partial class HttpClientBuilderExtensions
 
                 _ = builder
                     .AddRateLimiter(options.EndpointOptions.RateLimiterOptions)
-                    .AddAdvancedCircuitBreaker(options.EndpointOptions.CircuitBreakerOptions)
+                    .AddCircuitBreaker(options.EndpointOptions.CircuitBreakerOptions)
                     .AddTimeout(options.EndpointOptions.TimeoutOptions);
             })
             .SelectStrategyByAuthority(DataClassification.Unknown);

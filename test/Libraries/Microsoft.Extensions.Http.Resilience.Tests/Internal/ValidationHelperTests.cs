@@ -30,7 +30,8 @@ public class ValidationHelperTests
         var options = new HttpRetryStrategyOptions
         {
             RetryCount = 10,
-            BackoffType = RetryBackoffType.ExponentialWithJitter,
+            BackoffType = RetryBackoffType.Exponential,
+            UseJitter = true,
             BaseDelay = TimeSpan.FromSeconds(1),
         };
 
@@ -46,7 +47,8 @@ public class ValidationHelperTests
         var options = new HttpRetryStrategyOptions
         {
             RetryCount = 99,
-            BackoffType = RetryBackoffType.ExponentialWithJitter,
+            BackoffType = RetryBackoffType.Exponential,
+            UseJitter = true,
             BaseDelay = TimeSpan.FromSeconds(1000),
         };
 

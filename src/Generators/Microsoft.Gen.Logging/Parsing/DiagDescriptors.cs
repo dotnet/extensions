@@ -10,223 +10,205 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
 {
     private const string Category = "LogMethod";
 
-    // R9G000 retired
-
     public static DiagnosticDescriptor ShouldntMentionLogLevelInMessage { get; } = Make(
-        id: "R9G001",
+        id: "LOGGEN000",
         title: Resources.ShouldntMentionLogLevelInMessageTitle,
         messageFormat: Resources.ShouldntMentionLogLevelInMessageMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 
-    // R9G002,R9G003 retired
-
     public static DiagnosticDescriptor MissingRequiredType { get; } = Make(
-        id: "R9G004",
+        id: "LOGGEN001",
         title: Resources.MissingRequiredTypeTitle,
         messageFormat: Resources.MissingRequiredTypeMessage,
         category: Category);
 
     public static DiagnosticDescriptor ShouldntReuseEventIds { get; } = Make(
-        id: "R9G005",
+        id: "LOGGEN002",
         title: Resources.ShouldntReuseEventIdsTitle,
         messageFormat: Resources.ShouldntReuseEventIdsMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 
     public static DiagnosticDescriptor LoggingMethodMustReturnVoid { get; } = Make(
-        id: "R9G006",
+        id: "LOGGEN003",
         title: Resources.LoggingMethodMustReturnVoidTitle,
         messageFormat: Resources.LoggingMethodMustReturnVoidMessage,
         category: Category);
 
     public static DiagnosticDescriptor MissingLoggerParameter { get; } = Make(
-        id: "R9G007",
+        id: "LOGGEN004",
         title: Resources.MissingLoggerParameterTitle,
         messageFormat: Resources.MissingLoggerParameterMessage,
         category: Category);
 
     public static DiagnosticDescriptor LoggingMethodShouldBeStatic { get; } = Make(
-        id: "R9G008",
+        id: "LOGGEN005",
         title: Resources.LoggingMethodShouldBeStaticTitle,
         messageFormat: Resources.LoggingMethodShouldBeStaticMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 
     public static DiagnosticDescriptor LoggingMethodMustBePartial { get; } = Make(
-        id: "R9G009",
+        id: "LOGGEN006",
         title: Resources.LoggingMethodMustBePartialTitle,
         messageFormat: Resources.LoggingMethodMustBePartialMessage,
         category: Category);
 
     public static DiagnosticDescriptor LoggingMethodIsGeneric { get; } = Make(
-        id: "R9G010",
+        id: "LOGGEN007",
         title: Resources.LoggingMethodIsGenericTitle,
         messageFormat: Resources.LoggingMethodIsGenericMessage,
         category: Category);
 
     public static DiagnosticDescriptor RedundantQualifierInMessage { get; } = Make(
-        id: "R9G011",
+        id: "LOGGEN008",
         title: Resources.RedundantQualifierInMessageTitle,
         messageFormat: Resources.RedundantQualifierInMessageMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 
     public static DiagnosticDescriptor ShouldntMentionExceptionInMessage { get; } = Make(
-        id: "R9G012",
+        id: "LOGGEN009",
         title: Resources.ShouldntMentionExceptionInMessageTitle,
         messageFormat: Resources.ShouldntMentionExceptionInMessageMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 
     public static DiagnosticDescriptor TemplateHasNoCorrespondingParameter { get; } = Make(
-        id: "R9G013",
+        id: "LOGGEN010",
         title: Resources.TemplateHasNoCorrespondingParameterTitle,
         messageFormat: Resources.TemplateHasNoCorrespondingParameterMessage,
         category: Category);
 
     public static DiagnosticDescriptor ParameterHasNoCorrespondingTemplate { get; } = Make(
-        id: "R9G014",
+        id: "LOGGEN011",
         title: Resources.ParameterHasNoCorrespondingTemplateTitle,
         messageFormat: Resources.ParameterHasNoCorrespondingTemplateMessage,
         category: Category,
         DiagnosticSeverity.Info);
 
     public static DiagnosticDescriptor LoggingMethodHasBody { get; } = Make(
-        id: "R9G015",
+        id: "LOGGEN012",
         title: Resources.LoggingMethodHasBodyTitle,
         messageFormat: Resources.LoggingMethodHasBodyMessage,
         category: Category);
 
     public static DiagnosticDescriptor MissingLogLevel { get; } = Make(
-        id: "R9G016",
+        id: "LOGGEN013",
         title: Resources.MissingLogLevelTitle,
         messageFormat: Resources.MissingLogLevelMessage,
         category: Category);
 
     public static DiagnosticDescriptor ShouldntMentionLoggerInMessage { get; } = Make(
-        id: "R9G017",
+        id: "LOGGEN014",
         title: Resources.ShouldntMentionLoggerInMessageTitle,
         messageFormat: Resources.ShouldntMentionLoggerInMessageMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 
     public static DiagnosticDescriptor MissingLoggerField { get; } = Make(
-        id: "R9G018",
+        id: "LOGGEN015",
         title: Resources.MissingLoggerFieldTitle,
         messageFormat: Resources.MissingLoggerFieldMessage,
         category: Category);
 
     public static DiagnosticDescriptor MultipleLoggerFields { get; } = Make(
-        id: "R9G019",
+        id: "LOGGEN016",
         title: Resources.MultipleLoggerFieldsTitle,
         messageFormat: Resources.MultipleLoggerFieldsMessage,
         category: Category);
 
     public static DiagnosticDescriptor MultipleDataClassificationAttributes { get; } = Make(
-        id: "R9G020",
+        id: "LOGGEN017",
         title: Resources.MultipleDataClassificationAttributesTitle,
         messageFormat: Resources.MultipleDataClassificationAttributesMessage,
         category: Category);
 
-    // R9G021..R9G024 retired
-
     public static DiagnosticDescriptor InvalidTypeToLogProperties { get; } = Make(
-        id: "R9G025",
+        id: "LOGGEN018",
         title: Resources.InvalidTypeToLogPropertiesTitle,
         messageFormat: Resources.InvalidTypeToLogPropertiesMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 
-    // Skipping R9G026
-
     public static DiagnosticDescriptor LogPropertiesInvalidUsage { get; } = Make(
-        id: "R9G027",
+        id: "LOGGEN019",
         title: Resources.LogPropertiesInvalidUsageTitle,
         messageFormat: Resources.LogPropertiesInvalidUsageMessage,
         category: Category);
 
     public static DiagnosticDescriptor LogPropertiesParameterSkipped { get; } = Make(
-        id: "R9G028",
+        id: "LOGGEN020",
         title: Resources.LogPropertiesParameterSkippedTitle,
         messageFormat: Resources.LogPropertiesParameterSkippedMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 
     public static DiagnosticDescriptor LogPropertiesCycleDetected { get; } = Make(
-        id: "R9G029",
+        id: "LOGGEN021",
         title: Resources.LogPropertiesCycleDetectedTitle,
         messageFormat: Resources.LogPropertiesCycleDetectedMessage,
         category: Category);
 
-    // Skipping R9G030
-    // Skipping R9G031
-
     public static DiagnosticDescriptor TagProviderMethodNotFound { get; } = Make(
-        id: "R9G032",
+        id: "LOGGEN022",
         title: Resources.TagProviderMethodNotFoundTitle,
         messageFormat: Resources.TagProviderMethodNotFoundMessage,
         category: Category);
 
-    // Skipping R9G033
-
     public static DiagnosticDescriptor TagProviderMethodInaccessible { get; } = Make(
-        id: "R9G034",
+        id: "LOGGEN023",
         title: Resources.TagProviderMethodInaccessibleTitle,
         messageFormat: Resources.TagProviderMethodInaccessibleMessage,
         category: Category);
 
     public static DiagnosticDescriptor TagProviderMethodInvalidSignature { get; } = Make(
-        id: "R9G035",
+        id: "LOGGEN024",
         title: Resources.TagProviderMethodInvalidSignatureTitle,
         messageFormat: Resources.TagProviderMethodInvalidSignatureMessage,
         category: Category);
 
-    // Skipping R9G036
-    // Skipping R9G037
-
     public static DiagnosticDescriptor LoggingMethodParameterRefKind { get; } = Make(
-        id: "R9G038",
+        id: "LOGGEN025",
         title: Resources.LoggingMethodParameterRefKindTitle,
         messageFormat: Resources.LoggingMethodParameterRefKindMessage,
         category: Category);
 
     public static DiagnosticDescriptor LogPropertiesProviderWithRedaction { get; } = Make(
-        id: "R9G039",
+        id: "LOGGEN026",
         title: Resources.TagProviderWithRedactionTitle,
         messageFormat: Resources.TagProviderWithRedactionMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 
     public static DiagnosticDescriptor ShouldntReuseEventNames { get; } = Make(
-        id: "R9G040",
+        id: "LOGGEN027",
         title: Resources.ShouldntReuseEventNamesTitle,
         messageFormat: Resources.ShouldntReuseEventNamesMessage,
         category: Category,
         DiagnosticSeverity.Warning);
 
-    // R9G041 is no longer in use
-
     public static DiagnosticDescriptor LogPropertiesHiddenPropertyDetected { get; } = Make(
-        id: "R9G042",
+        id: "LOGGEN028",
         title: Resources.LogPropertiesHiddenPropertyDetectedTitle,
         messageFormat: Resources.LogPropertiesHiddenPropertyDetectedMessage,
         category: Category);
 
     public static DiagnosticDescriptor LogPropertiesNameCollision { get; } = Make(
-        id: "R9G043",
+        id: "LOGGEN029",
         title: Resources.LogPropertiesNameCollisionTitle,
         messageFormat: Resources.LogPropertiesNameCollisionMessage,
         category: Category);
 
     public static DiagnosticDescriptor EmptyLoggingMethod { get; } = Make(
-        id: "R9G044",
+        id: "LOGGEN030",
         title: Resources.EmptyLoggingMethodTitle,
         messageFormat: Resources.EmptyLoggingMethodMessage,
         category: Category);
 
     public static DiagnosticDescriptor TemplateStartsWithAtSymbol { get; } = Make(
-        id: "R9G045",
+        id: "LOGGEN031",
         title: Resources.TemplateStartsWithAtSymbolTitle,
         messageFormat: Resources.TemplateStartsWithAtSymbolMessage,
         category: Category);

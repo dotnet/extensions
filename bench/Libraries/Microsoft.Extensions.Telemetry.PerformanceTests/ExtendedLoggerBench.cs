@@ -2,14 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Extensions.Telemetry.Logging;
-
-#pragma warning disable R9A000 // Switch to updated logging methods using the [LogMethod] attribute for additional performance.
 
 namespace Microsoft.Extensions.Telemetry.Bench;
 
@@ -80,6 +79,7 @@ public class ExtendedLoggerBench
     }
 
     [Benchmark]
+    [SuppressMessage("Performance", "EA0000:Use source generated logging methods for improved performance", Justification = "Benchmark")]
     public void Classic_RefTypes()
     {
         var logger = _loggers[(int)Factory];
@@ -95,6 +95,7 @@ public class ExtendedLoggerBench
     }
 
     [Benchmark]
+    [SuppressMessage("Performance", "EA0000:Use source generated logging methods for improved performance", Justification = "Benchmark")]
     public void Classic_ValueTypes()
     {
         var logger = _loggers[(int)Factory];

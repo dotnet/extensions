@@ -16,32 +16,20 @@ Write-Output "Creating solution file"
 Write-Output "Restoring packages"
 & dotnet restore --nologo --verbosity q
 
-# $DotnetVersion = & dotnet --version
-$DotNetVersion = "8.0.100-preview.5.23262.6"
-
 $Artifacts = Join-Path -Path $PSScriptRoot -ChildPath "\..\artifacts" -Resolve
 $DiagToolPath = "$Artifacts\bin\DiagConfig\Debug\net8.0\*"
-$Command = "$Artifacts\bin\DiagConfig\Debug\net8.0\DiagConfig.exe"
 $Diags = (Resolve-Path $PSScriptRoot).Path + "\..\eng\Diags"
-#$DotnetPath = Split-Path -Path (get-command dotnet.exe).Path -Parent
-$DotnetPath = "C:\Program Files\dotnet"
-$RoslynPath = "$DotnetPath\sdk\$DotnetVersion\Roslyn\bincore"
-$CodeStylePath = "$DotnetPath\sdk\$DotnetVersion\Sdks\Microsoft.NET.Sdk\codestyle\cs"
-$NetAnalyzersPath = "$DotnetPath\sdk\$DotnetVersion\Sdks\Microsoft.NET.Sdk\analyzers"
-$PackagePath = Join-Path -Path $Home -ChildPath ".nuget/packages" -Resolve
-$AspNetCorePath = Join-Path -Path $DotNetPath -ChildPath packs\Microsoft.AspNetCore.App.Ref\7.0.4\analyzers\dotnet\cs
+# Project which will be used to fetch the analyzer list.
+$AsyncStateProjectPath = (Resolve-Path $PSScriptRoot).Path + "\..\test\Libraries\Microsoft.AspNetCore.AsyncState.Tests\Microsoft.AspNetCore.AsyncState.Tests.csproj"
+
+# In this section, we dynamically fetch the list of analyzers we should use by calling a target from one project which will return us the full list. To do so,
+# we must capture the msbuild output of the invocation of that target which returns a list of strings (one string for each line of output). Then we join all of these
+# lines into a single one, and we use a simple Regex to get the full list of analyzers.
+$_outputArray = & dotnet msbuild $AsyncStateProjectPath /t:GetAnalyzersPassedToCompiler /p:TargetFramework=net8.0
+$_output = $_outputArray -join "`n"
+$analyzers = $_output -match "Analyzers: (.+)$" | ForEach-Object { $matches[1] -split ',' }
 
 Write-Output "Processing analyzer assemblies"
-
-& $Command $Diags analyzer merge $Artifacts\bin\Microsoft.Analyzers.Extra\Debug\netstandard2.0\Microsoft.Analyzers.Extra.dll
-& $Command $Diags analyzer merge $Artifacts\bin\Microsoft.Analyzers.Local\Debug\netstandard2.0\Microsoft.Analyzers.Local.dll
-& $Command $Diags analyzer merge $PackagePath\stylecop.analyzers.unstable\1.2.0.435\analyzers\dotnet\cs\StyleCop.Analyzers.dll
-& $Command $Diags analyzer merge $PackagePath\sonaranalyzer.csharp\8.52.0.60960\analyzers\SonarAnalyzer.CSharp.dll
-& $Command $Diags analyzer merge $PackagePath\microsoft.visualstudio.threading.analyzers\17.5.22\analyzers\cs\Microsoft.VisualStudio.Threading.Analyzers.dll
-& $Command $Diags analyzer merge $PackagePath\microsoft.visualstudio.threading.analyzers\17.5.22\analyzers\cs\Microsoft.VisualStudio.Threading.Analyzers.CSharp.dll
-& $Command $Diags analyzer merge $PackagePath\xunit.analyzers\1.0.0\analyzers\dotnet\cs\xunit.analyzers.dll
-
-# voodoo for Microsoft.CodeAnalysis.* and Microsoft.AspNetCore.*
 
 $tempDir = "$PSScriptRoot\Temp"
 
@@ -52,24 +40,28 @@ if (-not (Test-Path -Path $tempDir)) {
 Push-Location $tempDir
 
 try {
-    Copy-Item -Path (Join-Path -Path $RoslynPath -ChildPath Microsoft.CodeAnalysis.dll -Resolve) -Destination $tempDir
-    Copy-Item -Path (Join-Path -Path $RoslynPath -ChildPath Microsoft.CodeAnalysis.CSharp.dll -Resolve) -Destination $tempDir
-    Copy-Item -Path (Join-Path -Path $CodeStylePath -ChildPath Microsoft.CodeAnalysis.CodeStyle.dll -Resolve) -Destination $tempDir
-    Copy-Item -Path (Join-Path -Path $CodeStylePath -ChildPath Microsoft.CodeAnalysis.CSharp.CodeStyle.dll -Resolve) -Destination $tempDir
-    Copy-Item -Path (Join-Path -Path $NetAnalyzersPath -ChildPath Microsoft.CodeAnalysis.NetAnalyzers.dll -Resolve) -Destination $tempDir
-    Copy-Item -Path (Join-Path -Path $NetAnalyzersPath -ChildPath Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll -Resolve) -Destination $tempDir
-    Copy-Item -Path (Join-Path -Path $NetAnalyzersPath -ChildPath ILlink.RoslynAnalyzer.dll -Resolve) -Destination $tempDir
-    Copy-Item -Path (Join-Path -Path $AspNetCorePath -ChildPath Microsoft.AspNetCore.App.Analyzers.dll -Resolve) -Destination $tempDir
-    Copy-Item -Path (Join-Path -Path $AspNetCorePath -ChildPath Microsoft.AspNetCore.Components.Analyzers.dll -Resolve) -Destination $tempDir
+
+    foreach ( $a in $analyzers )
+    {
+        Copy-Item -Path $a -Destination $tempDir
+    }
+
     Copy-Item -Path $DiagToolPath -Destination $tempDir
 
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.CodeAnalysis.CodeStyle.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.CodeAnalysis.CSharp.CodeStyle.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.CodeAnalysis.NetAnalyzers.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
-    & .\DiagConfig.exe $Diags analyzer merge ILlink.RoslynAnalyzer.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.AspNetCore.App.Analyzers.dll
-    & .\DiagConfig.exe $Diags analyzer merge Microsoft.AspNetCore.Components.Analyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.Analyzers.Extra.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.Analyzers.Local.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge StyleCop.Analyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge SonarAnalyzer.CSharp.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.VisualStudio.Threading.Analyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.VisualStudio.Threading.Analyzers.CSharp.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge xunit.analyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.CodeAnalysis.CodeStyle.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.CodeAnalysis.CSharp.CodeStyle.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.CodeAnalysis.NetAnalyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge ILlink.RoslynAnalyzer.dll
+#    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.AspNetCore.App.Analyzers.dll
+    & dotnet exec .\DiagConfig.dll $Diags analyzer merge Microsoft.AspNetCore.Components.Analyzers.dll
 } finally {
     Pop-Location
     Remove-Item -Path $tempDir -Recurse

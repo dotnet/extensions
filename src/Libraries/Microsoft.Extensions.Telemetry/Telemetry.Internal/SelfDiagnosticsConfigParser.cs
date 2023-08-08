@@ -118,9 +118,6 @@ internal class SelfDiagnosticsConfigParser
         return fileSizeInKb;
     }
 
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance",
-        "R9A017:Use asynchronous operations instead of legacy thread blocking code",
-        Justification = "Imported from OpenTelemetry-dotnet repo.")]
     internal virtual bool TryReadConfigFile(string configFilePath, out string configJson)
     {
         configJson = string.Empty;

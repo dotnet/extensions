@@ -41,7 +41,7 @@ public class PipelineDelegateFactoryTests
         using var host = hostBuilder.Build();
         var serviceProvider = host.Services;
 
-        var messageDelegate = serviceProvider.GetRequiredService<INamedServiceProvider<MessageDelegate>>().GetService(pipelineName);
+        var messageDelegate = serviceProvider.GetKeyedService<MessageDelegate>(pipelineName);
         Assert.NotNull(messageDelegate);
     }
 
@@ -61,7 +61,7 @@ public class PipelineDelegateFactoryTests
         using var host = hostBuilder.Build();
         var serviceProvider = host.Services;
 
-        var messageDelegate = serviceProvider.GetRequiredService<INamedServiceProvider<MessageDelegate>>().GetService(pipelineName);
+        var messageDelegate = serviceProvider.GetKeyedService<MessageDelegate>(pipelineName);
         Assert.NotNull(messageDelegate);
     }
 }

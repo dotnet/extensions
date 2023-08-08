@@ -35,7 +35,8 @@ public class HttpRetryStrategyOptionsTests
     {
         var options = new HttpRetryStrategyOptions();
 
-        options.BackoffType.Should().Be(RetryBackoffType.ExponentialWithJitter);
+        options.BackoffType.Should().Be(RetryBackoffType.Exponential);
+        options.UseJitter.Should().BeTrue();
         options.RetryCount.Should().Be(3);
         options.BaseDelay.Should().Be(TimeSpan.FromSeconds(2));
         options.ShouldHandle.Should().NotBeNull();

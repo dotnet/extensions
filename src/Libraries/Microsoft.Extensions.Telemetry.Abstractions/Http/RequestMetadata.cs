@@ -59,7 +59,7 @@ public class RequestMetadata
     /// - For outgoing request metrics: RequestName is used as the request name dimension if present, if not provided RequestRoute value would be used instead.
     /// - For outgoing request traces: It is used as the Display name for the activity i.e. When looking at the E2E trace flow this name is used in the Tree view of traces.
     ///   if not provided RequestRoute value would be used instead.
-    /// - For outgoing request logs: When present it would be added as an additional dimension to logs.
+    /// - For outgoing request logs: When present it would be added as an additional tag to logs.
     /// </remarks>
     public string RequestName { get; set; } = TelemetryConstants.Unknown;
 

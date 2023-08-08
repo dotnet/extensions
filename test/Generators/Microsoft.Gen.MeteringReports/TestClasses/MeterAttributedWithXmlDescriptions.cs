@@ -8,7 +8,6 @@ using Microsoft.Extensions.Telemetry.Metering;
 namespace TestClasses
 {
     [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "For testing emitter for classes with description for metrics.")]
-    [SuppressMessage("Readability", "R9A046:Source generated metrics (fast metrics) should be located in 'Metric' class", Justification = "Metering generator tests")]
     internal static partial class MeterAttributedWithXmlDescriptions
     {
         /// <summary>

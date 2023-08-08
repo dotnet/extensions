@@ -127,7 +127,7 @@ public sealed class HeaderParsingFeatureTests
     public void TryParse_returns_false_on_error()
     {
         using var meter = new Meter<HeaderParsingFeature>();
-        using var metricCollector = new MetricCollector<long>(meter, @"R9.HeaderParsing.ParsingErrors");
+        using var metricCollector = new MetricCollector<long>(meter, @"HeaderParsing.ParsingErrors");
         Context.Request.Headers["Date"] = "Not a date.";
 
         var feature = new HeaderParsingFeature(Registry, _logger, meter) { Context = Context };
@@ -180,7 +180,7 @@ public sealed class HeaderParsingFeatureTests
     public void CachingWorks()
     {
         using var meter = new Meter<HeaderParsingFeature>();
-        using var metricCollector = new MetricCollector<long>(meter, @"R9.HeaderParsing.CacheAccess");
+        using var metricCollector = new MetricCollector<long>(meter, @"HeaderParsing.CacheAccess");
 
         Context.Request.Headers[HeaderNames.CacheControl] = "max-age=604800";
 

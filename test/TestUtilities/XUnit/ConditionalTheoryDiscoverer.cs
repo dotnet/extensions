@@ -47,7 +47,7 @@ internal sealed class ConditionalTheoryDiscoverer : TheoryDiscoverer
            : base.CreateTestCasesForTheory(discoveryOptions, testMethod, theoryAttribute);
     }
 
-    protected override IEnumerable<IXunitTestCase> CreateTestCasesForDataRow(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo theoryAttribute, object[] dataRow)
+    protected override IEnumerable<IXunitTestCase> CreateTestCasesForDataRow(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo theoryAttribute, object[]? dataRow)
     {
         var skipReason = testMethod.EvaluateSkipConditions();
         if (skipReason == null && dataRow?.Length > 0)

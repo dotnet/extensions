@@ -68,9 +68,7 @@ public class MeteringReportsGenerator : ISourceGenerator
         var reportedMetrics = MapToCommonModel(meteringClasses, rootNamespace);
         var report = emitter.GenerateReport(reportedMetrics, context.CancellationToken);
 
-#pragma warning disable R9A017 // Switch to an asynchronous metricMethod for increased performance; Cannot because it is void metricMethod, and generators dont support tasks.
         File.WriteAllText(Path.Combine(path, FileName), report, Encoding.UTF8);
-#pragma warning restore R9A017 // Switch to an asynchronous metricMethod for increased performance; Cannot because it is void metricMethod, and generators dont support tasks.
     }
 
     private static ReportedMetricClass[] MapToCommonModel(IReadOnlyList<MetricType> meteringClasses, string? rootNamespace)

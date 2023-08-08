@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: ILLink.RoslynAnalyzer
-  Version: 8.0.8.26003
+  Version: 8.0.8.35901
 Diagnostics:
   IL2026:
     Metadata:
@@ -545,7 +545,7 @@ Diagnostics:
   IL2096:
     Metadata:
       Category: Trimming
-      Title: Call to 'Type.GetType' method can perform case insensitive lookup of the type, currently ILLink can not guarantee presence of all the matching types.
+      Title: Call to 'Type.GetType' method can perform case insensitive lookup of the type, currently trimming can not guarantee presence of all the matching types.
       Description: ''
       DefaultSeverity: Warning
     Tier: 3

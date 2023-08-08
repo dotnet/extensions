@@ -7,7 +7,7 @@ using System.Globalization;
 namespace Microsoft.Shared.Text;
 #pragma warning restore CA1716
 
-#pragma warning disable R9A036 // this is the implementation of ToInvariantString, so this warning doesn't make sense here
+#pragma warning disable LA0002 // this is the implementation of ToInvariantString, so this warning doesn't make sense here
 
 /// <summary>
 /// Utilities to augment the basic numeric types.

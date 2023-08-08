@@ -15,7 +15,7 @@ public class AutoActivationExtensionsTests
     [Fact]
     public void Activate_Throws_WhenArgumentsAreNull()
     {
-        Assert.Throws<ArgumentNullException>(() => AutoActivationExtensions.Activate<IFakeService>(null!));
+        Assert.Throws<ArgumentNullException>(() => AutoActivationExtensions.ActivateSingleton<IFakeService>(null!));
     }
 
     [Fact]

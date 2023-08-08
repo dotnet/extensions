@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.CodeAnalysis.CSharp.CodeStyle
-  Version: 4.7.8.26202
+  Version: 4.8.8.35803
 Diagnostics:
   IDE0001:
     Metadata:
@@ -57,7 +57,7 @@ Diagnostics:
   IDE0053:
     Metadata:
       Category: Style
-      Title: Use block body for lambda expression
+      Title: Use expression body for lambda expression
       Description: ''
       HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0053
       CustomTags:
@@ -1010,7 +1010,7 @@ Diagnostics:
   IDE0073:
     Metadata:
       Category: Style
-      Title: The file header does not match the required text
+      Title: The file header is missing or not located at the top of the file
       Description: ''
       HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0073
       CustomTags:
@@ -1735,6 +1735,48 @@ Diagnostics:
       Title: Make member 'readonly'
       Description: ''
       HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0251
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  IDE0290:
+    Metadata:
+      Category: Style
+      Title: Use primary constructor
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0290
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  IDE0301:
+    Metadata:
+      Category: Style
+      Title: Simplify collection initialization
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0301
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  IDE0300:
+    Metadata:
+      Category: Style
+      Title: Simplify collection initialization
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0300
       CustomTags:
       - Telemetry
       - EnforceOnBuild_Recommended

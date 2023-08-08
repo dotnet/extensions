@@ -121,7 +121,7 @@
       ],
       "Properties": [
         {
-          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.DimensionNames { get; }",
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.TagNames { get; }",
           "Stage": "Stable"
         }
       ]

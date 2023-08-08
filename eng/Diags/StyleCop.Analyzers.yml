@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: StyleCop.Analyzers
-  Version: 1.2.0.435
+  Version: 1.2.0.507
 Diagnostics:
   SA0001:
     Metadata:
@@ -8,6 +8,8 @@ Diagnostics:
       Title: XML comment analysis disabled
       Description: XML comment analysis can only be performed when the project is configured to parse documentation comments. To enable this functionality, update the project to produce an XML documentation file as part of the build.
       HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA0001.md
+      CustomTags:
+      - CompilationEnd
       DefaultSeverity: Warning
     Tier: 2
     Attributes:
@@ -21,9 +23,10 @@ Diagnostics:
         Various errors in the stylecop.json file can prevent the file from being loaded by the analyzers. In this case, the default settings are used instead.
 
 
-
         {0}
       HelpLinkUri: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA0002.md
+      CustomTags:
+      - CompilationEnd
       DefaultSeverity: Warning
     Tier: 1
     Attributes:

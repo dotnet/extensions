@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.Extensions.LocalAnalyzers.CallAnalysis;
 
 /// <summary>
-/// Recommends using R9's ToInvariantString extension method.
+/// Recommends using the shared ToInvariantString extension method.
 /// </summary>
 internal sealed class ToInvariantString
 {

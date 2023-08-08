@@ -52,7 +52,9 @@ internal sealed class AsyncState : IAsyncState
     public bool TryGet(AsyncStateToken token, out object? value)
     {
         // Context is not initialized
+#pragma warning disable EA0011
         if (_asyncContextCurrent.Value?.Features == null)
+#pragma warning restore EA0011
         {
             value = null;
             return false;
@@ -77,7 +79,9 @@ internal sealed class AsyncState : IAsyncState
     public void Set(AsyncStateToken token, object? value)
     {
         // Context is not initialized
+#pragma warning disable EA0011
         if (_asyncContextCurrent.Value?.Features == null)
+#pragma warning restore EA0011
         {
             Throw.InvalidOperationException("Context is not initialized");
         }

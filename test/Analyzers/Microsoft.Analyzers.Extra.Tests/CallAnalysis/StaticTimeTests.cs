@@ -24,8 +24,6 @@ public static class StaticTimeTests
     public static async Task StaticTime()
     {
         const string Source = @"
-            #pragma warning disable R9A017
-
             using System;
             using System.Threading;
             using System.Threading.Tasks;

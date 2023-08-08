@@ -160,9 +160,7 @@ internal sealed partial class ExtendedLogger : ILogger
 #if NETCOREAPP3_1_OR_GREATER
             trace = trace.Replace(Environment.NewLine, Environment.NewLine + indentStr + "   ", StringComparison.Ordinal).Trim(' ');
 #else
-#pragma warning disable R9A044 // Assign array of literal values to a static field for improved performance
             trace = trace.Replace(Environment.NewLine, Environment.NewLine + indentStr + "   ").Trim(' ');
-#pragma warning restore R9A044 // Assign array of literal values to a static field for improved performance
 #endif
 
             _ = sb.Append(exception.GetType());

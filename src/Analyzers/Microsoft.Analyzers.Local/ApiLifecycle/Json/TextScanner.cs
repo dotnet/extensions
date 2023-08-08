@@ -6,8 +6,6 @@
 using System.Globalization;
 using System.IO;
 
-#pragma warning disable R9A018
-
 namespace Microsoft.Extensions.LocalAnalyzers.Json;
 
 /// <summary>

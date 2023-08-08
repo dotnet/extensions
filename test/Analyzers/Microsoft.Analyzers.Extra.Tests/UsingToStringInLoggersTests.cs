@@ -95,7 +95,7 @@ public class UsingToStringInLoggersTests
 
                     internal static class Log
                     {
-                        [Simple(""This method is not a R9 LogMethod and should be ignored."")]
+                        [Simple(""This method is not a LogMethod and should be ignored."")]
                         public static void Trace(ILogger log, string arg)
                         {
                             log.LogTrace(arg);

@@ -11,31 +11,31 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
     private const string Category = "EnumStrings";
 
     public static DiagnosticDescriptor InvalidExtensionNamespace { get; } = Make(
-        id: "R9G250",
+        id: "ENUMSTRGEN000",
         title: Resources.InvalidExtensionNamespaceTitle,
         messageFormat: Resources.InvalidExtensionNamespaceMessage,
         category: Category);
 
     public static DiagnosticDescriptor IncorrectOverload { get; } = Make(
-        id: "R9G251",
+        id: "ENUMSTRGEN001",
         title: Resources.IncorrectOverloadTitle,
         messageFormat: Resources.IncorrectOverloadMessage,
         category: Category);
 
     public static DiagnosticDescriptor InvalidExtensionClassName { get; } = Make(
-        id: "R9G252",
+        id: "ENUMSTRGEN002",
         title: Resources.InvalidExtensionClassNameTitle,
         messageFormat: Resources.InvalidExtensionClassNameMessage,
         category: Category);
 
     public static DiagnosticDescriptor InvalidExtensionMethodName { get; } = Make(
-        id: "R9G253",
+        id: "ENUMSTRGEN003",
         title: Resources.InvalidExtensionMethodNameTitle,
         messageFormat: Resources.InvalidExtensionMethodNameMessage,
         category: Category);
 
     public static DiagnosticDescriptor InvalidEnumType { get; } = Make(
-        id: "R9G254",
+        id: "ENUMSTRGEN004",
         title: Resources.InvalidEnumTypeTitle,
         messageFormat: Resources.InvalidEnumTypeMessage,
         category: Category);

@@ -8,7 +8,7 @@ using Microsoft.Extensions.EnumStrings;
 namespace Microsoft.Gen.EnumStrings.Bench;
 
 #pragma warning disable CA1822 // Mark members as static
-#pragma warning disable R9A033 // Replace uses of 'Enum.GetName' and 'Enum.ToString' with the '[EnumStrings]' code generator for improved performance
+#pragma warning disable EA0006 // Replace uses of 'Enum.GetName' and 'Enum.ToString' with the '[EnumStrings]' code generator for improved performance
 
 [MemoryDiagnoser]
 public class EnumStrings
