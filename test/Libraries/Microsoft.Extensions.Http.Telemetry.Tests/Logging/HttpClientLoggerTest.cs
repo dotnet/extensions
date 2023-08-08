@@ -30,7 +30,6 @@ using Xunit;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
 
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Resilience", "R9A061:The async method doesn't support cancellation", Justification = "Temp")]
 public class HttpClientLoggerTest
 {
     private const string TestRequestHeader = "RequestHeader";
