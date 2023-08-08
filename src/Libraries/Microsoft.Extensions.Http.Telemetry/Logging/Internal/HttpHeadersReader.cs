@@ -19,9 +19,9 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
     private readonly FrozenDictionary<string, DataClassification> _responseHeaders;
     private readonly IHttpHeadersRedactor _redactor;
 
-    public HttpHeadersReader(IOptionsSnapshot<LoggingOptions> optionsSnapshot, IHttpHeadersRedactor redactor, [ServiceKey] string? serviceKey = null)
+    public HttpHeadersReader(IOptionsMonitor<LoggingOptions> optionsMonitor, IHttpHeadersRedactor redactor, [ServiceKey] string? serviceKey = null)
     {
-        var options = optionsSnapshot.GetKeyedOrDefault(serviceKey);
+        var options = optionsMonitor.GetKeyedOrCurrent(serviceKey);
 
         _redactor = redactor;
 

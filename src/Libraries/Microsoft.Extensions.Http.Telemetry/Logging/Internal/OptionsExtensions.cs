@@ -5,14 +5,14 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 
-internal static class OptionsSnapshotExtensions
+internal static class OptionsExtensions
 {
-    public static TOptions GetKeyedOrDefault<TOptions>(this IOptionsSnapshot<TOptions> options, string? serviceKey)
+    public static TOptions GetKeyedOrCurrent<TOptions>(this IOptionsMonitor<TOptions> options, string? serviceKey)
         where TOptions : class
     {
         if (serviceKey is null)
         {
-            return options.Value;
+            return options.CurrentValue;
         }
 
         return options.Get(serviceKey);

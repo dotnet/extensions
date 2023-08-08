@@ -1,6 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-#if false
+
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -14,7 +14,7 @@ using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
 using Microsoft.Extensions.Telemetry;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Extensions.Telemetry.Logging;
@@ -71,12 +71,11 @@ public class HttpRequestReaderTest
             .Returns(Redacted);
 
         var serviceKey = "my-key";
-        var optionsSnapshot = new Mock<IOptionsSnapshot<LoggingOptions>>();
-        optionsSnapshot.Setup(o => o.Get(It.Is(serviceKey, StringComparer.Ordinal))).Returns(options);
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(serviceKey), mockHeadersRedactor.Object, serviceKey);
+        using var serviceProvider = GetServiceProvider(headersReader, serviceKey);
 
-        var headersReader = new HttpHeadersReader(optionsSnapshot.Object, mockHeadersRedactor.Object, serviceKey);
-
-        var reader = new HttpRequestReader(optionsSnapshot.Object, GetHttpRouteFormatter(), RequestMetadataContext, serviceKey: serviceKey);
+        var reader = new HttpRequestReader(options.ToOptionsMonitor(serviceKey), serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+            RequestMetadataContext, serviceProvider, serviceKey: serviceKey);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -84,6 +83,7 @@ public class HttpRequestReaderTest
             RequestUri = new Uri("http://default-uri.com/foo"),
             Content = new StringContent(requestContent, Encoding.UTF8)
         };
+
         httpRequestMessage.Headers.Add(header1.Key, header1.Value);
         httpRequestMessage.Headers.Add(header3.Key, header3.Value);
 
@@ -92,6 +92,7 @@ public class HttpRequestReaderTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(responseContent, Encoding.UTF8)
         };
+
         httpResponseMessage.Headers.Add(header2.Key, header2.Value);
         httpResponseMessage.Headers.Add(header3.Key, header3.Value);
 
@@ -107,6 +108,7 @@ public class HttpRequestReaderTest
                 .Excluding(m => m.RequestBody)
                 .Excluding(m => m.ResponseBody)
                 .ComparingByMembers<LogRecord>());
+
         logRecord.RequestBody.Should().BeEquivalentTo(expectedRecord.RequestBody);
         logRecord.ResponseBody.Should().BeEquivalentTo(expectedRecord.ResponseBody);
     }
@@ -127,6 +129,7 @@ public class HttpRequestReaderTest
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
+
         var options = new LoggingOptions
         {
             RequestBodyContentTypes = new HashSet<string> { PlainTextMedia },
@@ -138,8 +141,11 @@ public class HttpRequestReaderTest
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
-        var headersReader = new HttpHeadersReader(options, mockHeadersRedactor.Object);
-        var reader = new HttpRequestReader(options, GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(options.ToOptionsMonitor(), serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -167,6 +173,7 @@ public class HttpRequestReaderTest
                 .Excluding(m => m.RequestBody)
                 .Excluding(m => m.ResponseBody)
                 .ComparingByMembers<LogRecord>());
+
         actualRecord.RequestBody.Should().BeEquivalentTo(expectedRecord.RequestBody);
         actualRecord.ResponseBody.Should().BeEquivalentTo(expectedRecord.ResponseBody);
     }
@@ -202,13 +209,17 @@ public class HttpRequestReaderTest
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
         };
+
         opts.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
-        var headersReader = new HttpHeadersReader(Microsoft.Extensions.Options.Options.Create(opts), mockHeadersRedactor.Object);
-        var reader = new HttpRequestReader(Microsoft.Extensions.Options.Options.Create(opts),
-            GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+
+        var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -216,6 +227,7 @@ public class HttpRequestReaderTest
             RequestUri = new Uri("http://default-uri.com/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
+
         httpRequestMessage.Headers.Add(header1.Key, header1.Value);
         httpRequestMessage.SetRequestMetadata(new RequestMetadata
         {
@@ -227,6 +239,7 @@ public class HttpRequestReaderTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(responseContent, Encoding.UTF8)
         };
+
         httpResponseMessage.Headers.Add(header2.Key, header2.Value);
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
@@ -267,6 +280,7 @@ public class HttpRequestReaderTest
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
+
         var opts = new LoggingOptions
         {
             LogRequestStart = true,
@@ -278,20 +292,26 @@ public class HttpRequestReaderTest
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured
         };
+
         opts.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
-        var headersReader = new HttpHeadersReader(Microsoft.Extensions.Options.Options.Create(opts), mockHeadersRedactor.Object);
-        var reader = new HttpRequestReader(Microsoft.Extensions.Options.Options.Create(opts),
-            GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+
+        var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
+
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
             RequestUri = new Uri("http://default-uri.com/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
+
         httpRequestMessage.Headers.Add(header1.Key, header1.Value);
         httpRequestMessage.SetRequestMetadata(new RequestMetadata
         {
@@ -303,6 +323,7 @@ public class HttpRequestReaderTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(responseContent, Encoding.UTF8)
         };
+
         httpResponseMessage.Headers.Add(header2.Key, header2.Value);
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
@@ -339,6 +360,7 @@ public class HttpRequestReaderTest
             RequestHeaders = new() { new("Header1", Redacted) },
             RequestBody = requestContent,
         };
+
         var opts = new LoggingOptions
         {
             LogRequestStart = true,
@@ -349,20 +371,26 @@ public class HttpRequestReaderTest
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured
         };
+
         opts.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
-        var headersReader = new HttpHeadersReader(Microsoft.Extensions.Options.Options.Create(opts), mockHeadersRedactor.Object);
-        var reader = new HttpRequestReader(Microsoft.Extensions.Options.Options.Create(opts),
-            GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+
+        var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
+
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
             RequestUri = new Uri("http://default-uri.com/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
+
         httpRequestMessage.Headers.Add(header1.Key, header1.Value);
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
@@ -410,13 +438,17 @@ public class HttpRequestReaderTest
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
         };
+
         opts.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
-        var headersReader = new HttpHeadersReader(Microsoft.Extensions.Options.Options.Create(opts), mockHeadersRedactor.Object);
-        var reader = new HttpRequestReader(Microsoft.Extensions.Options.Options.Create(opts),
-            GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+
+        var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -424,6 +456,7 @@ public class HttpRequestReaderTest
             RequestUri = new Uri("http://default-uri.com/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
+
         httpRequestMessage.Headers.Add(header1.Key, header1.Value);
         httpRequestMessage.SetRequestMetadata(new RequestMetadata
         {
@@ -435,6 +468,7 @@ public class HttpRequestReaderTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(responseContent, Encoding.UTF8)
         };
+
         httpResponseMessage.Headers.Add(header2.Key, header2.Value);
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
@@ -450,6 +484,7 @@ public class HttpRequestReaderTest
                 .Excluding(m => m.RequestBody)
                 .Excluding(m => m.ResponseBody)
                 .ComparingByMembers<LogRecord>());
+
         actualRecord.RequestBody.Should().BeEquivalentTo(expectedRecord.RequestBody);
         actualRecord.ResponseBody.Should().BeEquivalentTo(expectedRecord.ResponseBody);
     }
@@ -485,13 +520,17 @@ public class HttpRequestReaderTest
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
         };
+
         opts.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
-        var headersReader = new HttpHeadersReader(Microsoft.Extensions.Options.Options.Create(opts), mockHeadersRedactor.Object);
-        var reader = new HttpRequestReader(Microsoft.Extensions.Options.Options.Create(opts),
-            GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+
+        var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -499,6 +538,7 @@ public class HttpRequestReaderTest
             RequestUri = new Uri("http://default-uri.com/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
+
         httpRequestMessage.Headers.Add(header1.Key, header1.Value);
 
         using var httpResponseMessage = new HttpResponseMessage
@@ -506,6 +546,7 @@ public class HttpRequestReaderTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(responseContent, Encoding.UTF8)
         };
+
         httpResponseMessage.Headers.Add(header2.Key, header2.Value);
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
@@ -556,13 +597,17 @@ public class HttpRequestReaderTest
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
         };
+
         opts.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
-        var headersReader = new HttpHeadersReader(Microsoft.Extensions.Options.Options.Create(opts), mockHeadersRedactor.Object);
-        var reader = new HttpRequestReader(Microsoft.Extensions.Options.Options.Create(opts),
-            GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+
+        var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
+        using var serviceProvider = GetServiceProvider(headersReader);
+
+        var reader = new HttpRequestReader(opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -570,6 +615,7 @@ public class HttpRequestReaderTest
             RequestUri = new Uri("http://default-uri.com/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
+
         httpRequestMessage.Headers.Add(header1.Key, header1.Value);
         httpRequestMessage.SetRequestMetadata(new RequestMetadata());
 
@@ -578,6 +624,7 @@ public class HttpRequestReaderTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(responseContent, Encoding.UTF8)
         };
+
         httpResponseMessage.Headers.Add(header2.Key, header2.Value);
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
@@ -593,20 +640,28 @@ public class HttpRequestReaderTest
                 .Excluding(m => m.RequestBody)
                 .Excluding(m => m.ResponseBody)
                 .ComparingByMembers<LogRecord>());
+
         actualRecord.RequestBody.Should().BeEquivalentTo(expectedRecord.RequestBody);
         actualRecord.ResponseBody.Should().BeEquivalentTo(expectedRecord.ResponseBody);
     }
 
-    private static IHttpRouteFormatter GetHttpRouteFormatter()
+    private static ServiceProvider GetServiceProvider(HttpHeadersReader headersReader, string? serviceKey = null)
     {
-        var builder = new ServiceCollection()
+        var services = new ServiceCollection();
+        if (serviceKey is null)
+        {
+            _ = services.AddSingleton<IHttpHeadersReader>(headersReader);
+        }
+        else
+        {
+            _ = services.AddKeyedSingleton<IHttpHeadersReader>(serviceKey, headersReader);
+        }
+
+        return services
             .AddFakeRedaction()
             .AddHttpRouteProcessor()
             .BuildServiceProvider();
-
-        return builder.GetService<IHttpRouteFormatter>()!;
     }
 
-    private static IOutgoingRequestContext RequestMetadataContext => new Mock<IOutgoingRequestContext>().Object;
+    private static IOutgoingRequestContext RequestMetadataContext => Mock.Of<IOutgoingRequestContext>();
 }
-#endif

@@ -8,7 +8,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
 using Microsoft.Extensions.Telemetry.Internal;
 using Moq;
 using Xunit;
@@ -24,11 +24,7 @@ public class HttpHeadersReaderTest
         using var httpResponse = new HttpResponseMessage();
         var options = new LoggingOptions();
 
-        var optionsSnapshot = new Mock<IOptionsSnapshot<LoggingOptions>>();
-        optionsSnapshot.SetupGet(o => o.Value)
-            .Returns(options);
-
-        var headersReader = new HttpHeadersReader(optionsSnapshot.Object, Mock.Of<IHttpHeadersRedactor>());
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), Mock.Of<IHttpHeadersRedactor>());
         var buffer = new List<KeyValuePair<string, string>>();
 
         headersReader.ReadRequestHeaders(httpRequest, buffer);
@@ -66,11 +62,7 @@ public class HttpHeadersReaderTest
             },
         };
 
-        var optionsSnapshot = new Mock<IOptionsSnapshot<LoggingOptions>>();
-        optionsSnapshot.SetupGet(o => o.Value)
-            .Returns(options);
-
-        var headersReader = new HttpHeadersReader(optionsSnapshot.Object, mockHeadersRedactor.Object);
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
         var buffer = new List<KeyValuePair<string, string>>();
 
         headersReader.ReadRequestHeaders(httpRequest, buffer);
@@ -113,11 +105,7 @@ public class HttpHeadersReaderTest
     {
         var options = new LoggingOptions();
 
-        var optionsSnapshot = new Mock<IOptionsSnapshot<LoggingOptions>>();
-        optionsSnapshot.SetupGet(o => o.Value)
-            .Returns(options);
-
-        var headersReader = new HttpHeadersReader(optionsSnapshot.Object, Mock.Of<IHttpHeadersRedactor>());
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), Mock.Of<IHttpHeadersRedactor>());
         List<KeyValuePair<string, string>>? responseBuffer = null;
 
         using var httpRequest = new HttpRequestMessage();

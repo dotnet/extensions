@@ -38,15 +38,26 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
     public HttpClientLogger(
         ILogger<HttpClientLogger> logger,
         IEnumerable<IHttpClientLogEnricher> enrichers,
-        IOptionsSnapshot<LoggingOptions> optionsSnapshot,
+        IOptionsMonitor<LoggingOptions> optionsMonitor,
         IServiceProvider serviceProvider,
         [ServiceKey] string? serviceKey = null)
+        : this(
+              logger,
+              serviceProvider.GetRequiredKeyedServiceOrDefault<IHttpRequestReader>(serviceKey),
+              enrichers,
+              optionsMonitor.GetKeyedOrCurrent(serviceKey))
+    {
+    }
+
+    internal HttpClientLogger(
+        ILogger<HttpClientLogger> logger,
+        IHttpRequestReader httpRequestReader,
+        IEnumerable<IHttpClientLogEnricher> enrichers,
+        LoggingOptions options)
     {
         _logger = logger;
-        _httpRequestReader = serviceProvider.GetRequiredKeyedServiceOrDefault<IHttpRequestReader>(serviceKey);
+        _httpRequestReader = httpRequestReader;
         _enrichers = enrichers.Where(static x => x is not null).ToArray();
-        var options = optionsSnapshot.GetKeyedOrDefault(serviceKey);
-
         _logRequestStart = options.LogRequestStart;
         _logResponseHeaders = options.ResponseHeadersDataClasses.Count > 0;
         _logRequestHeaders = options.RequestHeadersDataClasses.Count > 0;

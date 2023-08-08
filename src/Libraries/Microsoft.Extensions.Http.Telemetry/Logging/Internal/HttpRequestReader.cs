@@ -41,16 +41,30 @@ internal sealed class HttpRequestReader : IHttpRequestReader
     private readonly IDownstreamDependencyMetadataManager? _downstreamDependencyMetadataManager;
 
     public HttpRequestReader(
-        IOptionsSnapshot<LoggingOptions> optionsSnapshot,
+        IOptionsMonitor<LoggingOptions> optionsMonitor,
         IHttpRouteFormatter routeFormatter,
         IOutgoingRequestContext requestMetadataContext,
         IServiceProvider serviceProvider,
         IDownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null,
         [ServiceKey] string? serviceKey = null)
+        : this(
+              optionsMonitor.GetKeyedOrCurrent(serviceKey),
+              routeFormatter,
+              serviceProvider.GetRequiredKeyedServiceOrDefault<IHttpHeadersReader>(serviceKey),
+              requestMetadataContext,
+              downstreamDependencyMetadataManager)
     {
-        var options = optionsSnapshot.GetKeyedOrDefault(serviceKey);
+    }
+
+    internal HttpRequestReader(
+        LoggingOptions options,
+        IHttpRouteFormatter routeFormatter,
+        IHttpHeadersReader httpHeadersReader,
+        IOutgoingRequestContext requestMetadataContext,
+        IDownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null)
+    {
         _outgoingPathLogMode = Throw.IfOutOfRange(options.RequestPathLoggingMode);
-        _httpHeadersReader = serviceProvider.GetRequiredKeyedServiceOrDefault<IHttpHeadersReader>(serviceKey);
+        _httpHeadersReader = httpHeadersReader;
 
         _routeFormatter = routeFormatter;
         _requestMetadataContext = requestMetadataContext;
