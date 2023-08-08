@@ -26,8 +26,9 @@ public class HttpRetryStrategyOptions : RetryStrategyOptions<HttpResponseMessage
     public HttpRetryStrategyOptions()
     {
         ShouldHandle = args => new ValueTask<bool>(HttpClientResiliencePredicates.IsTransientHttpOutcome(args.Outcome));
-        BackoffType = RetryBackoffType.ExponentialWithJitter;
+        BackoffType = RetryBackoffType.Exponential;
         ShouldRetryAfterHeader = true;
+        UseJitter = true;
     }
 
     /// <summary>

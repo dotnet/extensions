@@ -39,8 +39,8 @@ public sealed partial class HttpClientBuilderExtensionsTests
         Assert.Throws<ArgumentException>(() => builder.AddResilienceHandler(string.Empty, _ => { }));
         Assert.Throws<ArgumentNullException>(() => builder.AddResilienceHandler(null!, (_, _) => { }));
         Assert.Throws<ArgumentException>(() => builder.AddResilienceHandler(string.Empty, (_, _) => { }));
-        Assert.Throws<ArgumentNullException>(() => builder.AddResilienceHandler("dummy", (Action<ResilienceStrategyBuilder<HttpResponseMessage>>)null!));
-        Assert.Throws<ArgumentNullException>(() => builder.AddResilienceHandler("dummy", (Action<ResilienceStrategyBuilder<HttpResponseMessage>, ResilienceHandlerContext>)null!));
+        Assert.Throws<ArgumentNullException>(() => builder.AddResilienceHandler("dummy", (Action<CompositeStrategyBuilder<HttpResponseMessage>>)null!));
+        Assert.Throws<ArgumentNullException>(() => builder.AddResilienceHandler("dummy", (Action<CompositeStrategyBuilder<HttpResponseMessage>, ResilienceHandlerContext>)null!));
 
         builder = null;
         Assert.Throws<ArgumentNullException>(() => builder!.AddResilienceHandler("pipeline-name", _ => { }));
@@ -263,5 +263,5 @@ public sealed partial class HttpClientBuilderExtensionsTests
         Assert.NotNull(factory.CreateClient("my-client"));
     }
 
-    private void ConfigureBuilder(ResilienceStrategyBuilder<HttpResponseMessage> builder) => builder.AddTimeout(TimeSpan.FromSeconds(1));
+    private void ConfigureBuilder(CompositeStrategyBuilder<HttpResponseMessage> builder) => builder.AddTimeout(TimeSpan.FromSeconds(1));
 }

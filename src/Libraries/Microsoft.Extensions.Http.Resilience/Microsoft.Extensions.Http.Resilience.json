@@ -68,7 +68,7 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerStrategyOptions : Polly.CircuitBreaker.AdvancedCircuitBreakerStrategyOptions<System.Net.Http.HttpResponseMessage>",
+      "Type": "class Microsoft.Extensions.Http.Resilience.HttpCircuitBreakerStrategyOptions : Polly.CircuitBreaker.CircuitBreakerStrategyOptions<System.Net.Http.HttpResponseMessage>",
       "Stage": "Stable",
       "Methods": [
         {
@@ -82,11 +82,11 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, string strategyName, System.Action<Polly.ResilienceStrategyBuilder<System.Net.Http.HttpResponseMessage>> configure);",
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, string strategyName, System.Action<Polly.CompositeStrategyBuilder<System.Net.Http.HttpResponseMessage>> configure);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, string strategyName, System.Action<Polly.ResilienceStrategyBuilder<System.Net.Http.HttpResponseMessage>, Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext> configure);",
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResilienceStrategyBuilder Microsoft.Extensions.Http.Resilience.HttpClientBuilderExtensions.AddResilienceHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, string strategyName, System.Action<Polly.CompositeStrategyBuilder<System.Net.Http.HttpResponseMessage>, Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext> configure);",
           "Stage": "Stable"
         },
         {

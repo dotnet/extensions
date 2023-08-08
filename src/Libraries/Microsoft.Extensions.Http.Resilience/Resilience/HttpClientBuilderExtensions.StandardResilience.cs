@@ -82,7 +82,7 @@ public static partial class HttpClientBuilderExtensions
                 .AddRateLimiter(options.RateLimiterOptions)
                 .AddTimeout(options.TotalRequestTimeoutOptions)
                 .AddRetry(options.RetryOptions)
-                .AddAdvancedCircuitBreaker(options.CircuitBreakerOptions)
+                .AddCircuitBreaker(options.CircuitBreakerOptions)
                 .AddTimeout(options.AttemptTimeoutOptions);
         });
 
