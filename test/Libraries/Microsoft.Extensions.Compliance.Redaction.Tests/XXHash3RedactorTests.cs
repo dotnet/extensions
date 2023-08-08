@@ -35,10 +35,16 @@ public class XXHash3RedactorTests
         }));
 
         var s3 = new char[XXHash3Redactor.RedactedSize];
+        for (int i = 0; i < s3.Length; i++)
+        {
+            s3[i] = '@';
+        }
+
         var r3 = redactor.Redact("Hello", s3);
 
         Assert.Equal(r1, r3);
         Assert.NotEqual(s1, s3);
+        Assert.DoesNotContain('@', s3);
     }
 
     [Fact]

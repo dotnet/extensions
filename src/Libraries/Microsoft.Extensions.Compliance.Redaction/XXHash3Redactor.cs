@@ -70,9 +70,9 @@ internal sealed class XXHash3Redactor : Redactor
 #pragma warning restore S109 // Magic numbers should not be used
 
 #if NETCOREAPP3_1_OR_GREATER
-        _ = hash.TryFormat(destination.Slice(Prefix.Length), out var _, "x", CultureInfo.InvariantCulture);
+        _ = hash.TryFormat(destination.Slice(Prefix.Length), out var _, "x16", CultureInfo.InvariantCulture);
 #else
-        var str = hash.ToString("x", CultureInfo.InvariantCulture);
+        var str = hash.ToString("x16", CultureInfo.InvariantCulture);
         for (int i = 0; i < str.Length; i++)
         {
             destination[Prefix.Length + i] = str[i];
