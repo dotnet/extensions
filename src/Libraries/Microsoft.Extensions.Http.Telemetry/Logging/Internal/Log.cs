@@ -26,7 +26,7 @@ internal static partial class Log
         OutgoingRequest(logger, LogLevel.Error, 2, nameof(OutgoingRequestError), record, exception);
     }
 
-    [LogMethod(3, LogLevel.Error, "An error occurred while enriching the log record.")]
+    [LoggerMessage(3, LogLevel.Error, "An error occurred while enriching the log record.")]
     public static partial void EnrichmentError(ILogger logger, Exception exception);
 
     // Using the code below to avoid every item in ILogger's logRecord State being prefixed with parameter name.

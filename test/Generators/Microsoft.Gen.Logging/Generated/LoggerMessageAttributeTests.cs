@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Gen.Logging.Test;
 
-public class LogMethodAttributeTests
+public class LoggerMessageAttributeTests
 {
     [Fact]
     public void AllowsAttributesStaticMethod()

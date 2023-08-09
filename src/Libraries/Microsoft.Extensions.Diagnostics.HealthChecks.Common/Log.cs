@@ -3,19 +3,18 @@
 
 using System.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
 internal static partial class Log
 {
-    [LogMethod(0, LogLevel.Warning, "Process reporting unhealthy: {status}. Health check entries are {entries}")]
+    [LoggerMessage(0, LogLevel.Warning, "Process reporting unhealthy: {status}. Health check entries are {entries}")]
     public static partial void Unhealthy(
         ILogger logger,
         HealthStatus status,
         StringBuilder entries);
 
-    [LogMethod(1, LogLevel.Debug, "Process reporting healthy: {status}.")]
+    [LoggerMessage(1, LogLevel.Debug, "Process reporting healthy: {status}.")]
     public static partial void Healthy(
         ILogger logger,
         HealthStatus status);

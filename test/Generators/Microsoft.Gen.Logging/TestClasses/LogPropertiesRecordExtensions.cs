@@ -26,13 +26,13 @@ namespace TestClasses
             public long GetOnlyValue => IntValue + 1L;
         }
 
-        [LogMethod(LogLevel.Debug)]
+        [LoggerMessage(LogLevel.Debug)]
         public static partial void LogRecordClass(ILogger logger, [LogProperties] MyRecordClass p0);
 
-        [LogMethod(LogLevel.Debug, "Struct is: {p0}")]
+        [LoggerMessage(LogLevel.Debug, "Struct is: {p0}")]
         public static partial void LogRecordStruct(ILogger logger, [LogProperties] MyRecordStruct p0);
 
-        [LogMethod(LogLevel.Debug, "Readonly struct is: {p0}")]
+        [LoggerMessage(LogLevel.Debug, "Readonly struct is: {p0}")]
         public static partial void LogReadonlyRecordStruct(ILogger logger, [LogProperties] MyReadonlyRecordStruct p0);
     }
 }

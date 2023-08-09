@@ -146,7 +146,7 @@ public class FakeLogger : ILogger
             }
             else if (pair.Value is IEnumerable ve)
             {
-                str = LogMethodHelper.Stringify(ve);
+                str = LoggerMessageHelper.Stringify(ve);
             }
             else
             {

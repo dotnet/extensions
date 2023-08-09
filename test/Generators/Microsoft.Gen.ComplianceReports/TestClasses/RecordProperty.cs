@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Telemetry.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Test;
 
@@ -25,10 +25,10 @@ public record RecordProperty([C2] string F0, string F1, [C3] int F2) : IBar
     [C3]
     public int P1 { get; };
 
-    [LogMethod("Hello {user}")]
+    [LoggerMessage("Hello {user}")]
     public void LogHello([C3(Notes = "Note 3")] string user, int port);
 
-    [LogMethod("World {user}")]
+    [LoggerMessage("World {user}")]
     public void LogWorld([C2] string user, int port);
 }
 

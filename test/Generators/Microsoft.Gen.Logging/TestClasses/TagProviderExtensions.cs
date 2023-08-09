@@ -10,35 +10,35 @@ namespace TestClasses
 
     internal static partial class TagProviderExtensions
     {
-        [LogMethod(int.MaxValue, LogLevel.Warning, "Custom provided properties for {Param}.")]
+        [LoggerMessage(int.MaxValue, LogLevel.Warning, "Custom provided properties for {Param}.")]
         internal static partial void LogMethodCustomPropsProvider(
             ILogger logger,
             [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideProperties))] ClassToLog param);
 
-        [LogMethod(LogLevel.Debug, "Custom provided properties for struct.")]
+        [LoggerMessage(LogLevel.Debug, "Custom provided properties for struct.")]
         internal static partial void LogMethodCustomPropsProviderStruct(
             ILogger logger,
             [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideForStruct))] StructToLog param);
 
-        [LogMethod(LogLevel.Information, "Custom provided properties for interface.")]
+        [LoggerMessage(LogLevel.Information, "Custom provided properties for interface.")]
         internal static partial void LogMethodCustomPropsProviderInterface(
             ILogger logger,
             [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideForInterface))] IInterfaceToLog param);
 
-        [LogMethod(int.MinValue, LogLevel.Warning, "Custom provided properties for both complex params and {StringParam}.")]
+        [LoggerMessage(int.MinValue, LogLevel.Warning, "Custom provided properties for both complex params and {StringParam}.")]
         internal static partial void LogMethodCustomPropsProviderTwoParams(
             ILogger logger,
             string stringParam,
             [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideProperties))] ClassToLog param,
             [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideOtherProperties))] ClassToLog param2);
 
-        [LogMethod(1, LogLevel.Warning, "No params.")]
+        [LoggerMessage(1, LogLevel.Warning, "No params.")]
         internal static partial void LogMethodCombinePropsProvider(
             ILogger logger,
             [LogProperties] ClassToLog param1,
             [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideProperties))] ClassToLog param2);
 
-        [LogMethod]
+        [LoggerMessage]
         internal static partial void DefaultAttributeCtor(
             ILogger logger,
             LogLevel level,

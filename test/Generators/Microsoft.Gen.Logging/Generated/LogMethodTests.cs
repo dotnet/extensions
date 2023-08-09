@@ -231,7 +231,7 @@ public class LogMethodTests
         Assert.Null(collector.LatestRecord.Exception);
         Assert.Equal("M1 One", collector.LatestRecord.Message);
         Assert.Equal(LogLevel.Error, collector.LatestRecord.Level);
-        Assert.Equal(1, collector.LatestRecord.Id.Id);
+        Assert.Equal(0, collector.LatestRecord.Id.Id);
         Assert.Equal(1, collector.Count);
 
         collector.Clear();
@@ -239,7 +239,7 @@ public class LogMethodTests
         Assert.Null(collector.LatestRecord.Exception);
         Assert.Equal(string.Empty, collector.LatestRecord.Message);
         Assert.Equal(LogLevel.Debug, collector.LatestRecord.Level);
-        Assert.Equal(2, collector.LatestRecord.Id.Id);
+        Assert.Equal(0, collector.LatestRecord.Id.Id);
         Assert.Equal(1, collector.Count);
 
         collector.Clear();
@@ -247,7 +247,7 @@ public class LogMethodTests
         Assert.Null(collector.LatestRecord.Exception);
         Assert.Equal(string.Empty, collector.LatestRecord.Message);
         Assert.Equal(LogLevel.Error, collector.LatestRecord.Level);
-        Assert.Equal(3, collector.LatestRecord.Id.Id);
+        Assert.Equal(0, collector.LatestRecord.Id.Id);
         Assert.Equal(1, collector.Count);
 
         collector.Clear();
@@ -325,7 +325,7 @@ public class LogMethodTests
         Assert.Null(collector.LatestRecord.Exception);
         Assert.Equal("\"p\" -> \"q\"", collector.LatestRecord.Message);
         Assert.Equal(LogLevel.Warning, collector.LatestRecord.Level);
-        Assert.Equal(6, collector.LatestRecord.Id);
+        Assert.Equal(0, collector.LatestRecord.Id.Id);
         Assert.Equal(1, collector.Count);
 
         collector.Clear();
@@ -333,7 +333,7 @@ public class LogMethodTests
         Assert.Null(collector.LatestRecord.Exception);
         Assert.Equal("\"\n\r\\", collector.LatestRecord.Message);
         Assert.Equal(LogLevel.Debug, collector.LatestRecord.Level);
-        Assert.Equal(7, collector.LatestRecord.Id);
+        Assert.Equal(0, collector.LatestRecord.Id.Id);
         Assert.Equal(1, collector.Count);
     }
 

@@ -9,7 +9,7 @@ namespace Microsoft.Gen.Logging.Parsing;
 
 internal static class SymbolLoader
 {
-    internal const string LogMethodAttribute = "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute";
+    internal const string LoggerMessageAttribute = "Microsoft.Extensions.Logging.LoggerMessageAttribute";
     internal const string LogPropertiesAttribute = "Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute";
     internal const string LogPropertyIgnoreAttribute = "Microsoft.Extensions.Telemetry.Logging.LogPropertyIgnoreAttribute";
     internal const string ITagCollectorType = "Microsoft.Extensions.Telemetry.Logging.ITagCollector";
@@ -50,7 +50,7 @@ internal static class SymbolLoader
     {
         var loggerSymbol = compilation.GetTypeByMetadataName(ILoggerType);
         var logLevelSymbol = compilation.GetTypeByMetadataName(LogLevelType);
-        var logMethodAttributeSymbol = compilation.GetTypeByMetadataName(LogMethodAttribute);
+        var logMethodAttributeSymbol = compilation.GetTypeByMetadataName(LoggerMessageAttribute);
         var logPropertiesAttributeSymbol = compilation.GetTypeByMetadataName(LogPropertiesAttribute);
         var tagCollectorSymbol = compilation.GetTypeByMetadataName(ITagCollectorType);
         var logPropertyIgnoreAttributeSymbol = compilation.GetTypeByMetadataName(LogPropertyIgnoreAttribute);

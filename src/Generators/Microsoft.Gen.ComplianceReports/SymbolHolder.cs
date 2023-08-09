@@ -10,4 +10,4 @@ namespace Microsoft.Gen.ComplianceReports;
 /// </summary>
 internal sealed record class SymbolHolder(
     INamedTypeSymbol DataClassificationAttributeSymbol,
-    INamedTypeSymbol? LogMethodAttribute);
+    INamedTypeSymbol? LoggerMessageAttribute);

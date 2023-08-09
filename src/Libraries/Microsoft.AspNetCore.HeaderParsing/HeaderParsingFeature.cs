@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Telemetry.Logging;
 using Microsoft.Extensions.Telemetry.Metering;
 using Microsoft.Shared.Diagnostics;
 
@@ -197,12 +196,12 @@ public sealed partial class HeaderParsingFeature
         }
     }
 
-    [LogMethod(LogLevel.Debug, "Can't parse header '{headerName}' due to '{error}'.")]
+    [LoggerMessage(LogLevel.Debug, "Can't parse header '{headerName}' due to '{error}'.")]
     private partial void LogParsingError(string headerName, string error);
 
-    [LogMethod(LogLevel.Debug, "Using a default value for header '{headerName}'.")]
+    [LoggerMessage(LogLevel.Debug, "Using a default value for header '{headerName}'.")]
     private partial void LogDefaultUsage(string headerName);
 
-    [LogMethod(LogLevel.Debug, "Header '{headerName}' not found.")]
+    [LoggerMessage(LogLevel.Debug, "Header '{headerName}' not found.")]
     private partial void LogNotFound(string headerName);
 }

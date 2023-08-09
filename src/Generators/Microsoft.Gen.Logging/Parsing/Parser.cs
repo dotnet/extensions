@@ -66,7 +66,7 @@ internal sealed class Parser
                 {
                     sm ??= _compilation.GetSemanticModel(typeDec.SyntaxTree);
 
-                    var attrLoc = GetLogMethodAttribute(method, sm, symbols);
+                    var attrLoc = GetLoggerMessageAttribute(method, sm, symbols);
                     if (attrLoc == null)
                     {
                         // doesn't have the magic attribute we like, so ignore
@@ -314,9 +314,9 @@ internal sealed class Parser
 
         (LoggingMethod lm, bool keepMethod) ProcessMethod(MethodDeclarationSyntax method, IMethodSymbol methodSymbol, Location attrLoc)
         {
-            var attr = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogMethodAttribute, methodSymbol)!;
+            var attr = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LoggerMessageAttribute, methodSymbol)!;
 
-            var (eventId, level, message, eventName, skipEnabledCheck) = AttributeProcessors.ExtractLogMethodAttributeValues(attr, symbols);
+            var (eventId, level, message, eventName, skipEnabledCheck) = AttributeProcessors.ExtractLoggerMessageAttributeValues(attr, symbols);
 
             var lm = new LoggingMethod
             {
@@ -512,14 +512,14 @@ internal sealed class Parser
         return lp;
     }
 
-    private Location? GetLogMethodAttribute(MethodDeclarationSyntax methodSyntax, SemanticModel sm, SymbolHolder symbols)
+    private Location? GetLoggerMessageAttribute(MethodDeclarationSyntax methodSyntax, SemanticModel sm, SymbolHolder symbols)
     {
         foreach (var mal in methodSyntax.AttributeLists)
         {
             foreach (var methodAttr in mal.Attributes)
             {
                 var attrCtor = sm.GetSymbolInfo(methodAttr, _cancellationToken).Symbol;
-                if (attrCtor != null && SymbolEqualityComparer.Default.Equals(attrCtor.ContainingType, symbols.LogMethodAttribute))
+                if (attrCtor != null && SymbolEqualityComparer.Default.Equals(attrCtor.ContainingType, symbols.LoggerMessageAttribute))
                 {
                     return methodAttr.GetLocation();
                 }

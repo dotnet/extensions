@@ -15,7 +15,7 @@ namespace Microsoft.Gen.Logging.Test;
 public class SymbolLoaderTests
 {
     [Theory]
-    [InlineData(SymbolLoader.LogMethodAttribute)]
+    [InlineData(SymbolLoader.LoggerMessageAttribute)]
     [InlineData(SymbolLoader.LogLevelType)]
     [InlineData(SymbolLoader.ILoggerType)]
     [InlineData(SymbolLoader.ExceptionType, true)]

@@ -70,6 +70,9 @@
     <!-- Opt in to build acceleration in VS (from 17.5 onwards): https://github.com/dotnet/project-system/blob/main/docs/build-acceleration.md -->
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <AccelerateBuildsInVisualStudio>true</AccelerateBuildsInVisualStudio>
+
+    <!-- This repo introduces a replacement generator, we don't use the one from dotnet/runtime -->
+    <DisableMicrosoftExtensionsLoggingSourceGenerator>true</DisableMicrosoftExtensionsLoggingSourceGenerator>
   </PropertyGroup>
 
   <!-- https://github.com/dotnet/aspnetcore/blob/72b0269372a/eng/Common.props#L3-L6 -->
