@@ -35,7 +35,7 @@ public static class EnricherExtensions
     /// <param name="services">The dependency injection container to add the enricher instance to.</param>
     /// <param name="enricher">The enricher instance to add.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="enricher"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="enricher"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddLogEnricher(this IServiceCollection services, ILogEnricher enricher)
     {
         _ = Throw.IfNull(services);
@@ -66,7 +66,7 @@ public static class EnricherExtensions
     /// <param name="services">The dependency injection container to add the enricher instance to.</param>
     /// <param name="enricher">The enricher instance to add.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="enricher"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="enricher"/> is <see langword="null"/>.</exception>
     [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static IServiceCollection AddStaticLogEnricher(this IServiceCollection services, IStaticLogEnricher enricher)
     {
@@ -97,7 +97,7 @@ public static class EnricherExtensions
     /// <param name="services">The dependency injection container to add the enricher instance to.</param>
     /// <param name="enricher">The enricher instance to add.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="enricher"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="enricher"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddMetricEnricher(this IServiceCollection services, IMetricEnricher enricher)
     {
         _ = Throw.IfNull(services);
