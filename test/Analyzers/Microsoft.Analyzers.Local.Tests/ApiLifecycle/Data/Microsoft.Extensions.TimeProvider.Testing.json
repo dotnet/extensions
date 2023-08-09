@@ -3,61 +3,61 @@
   "Types": [
     {
       "Type": "class Microsoft.Extensions.Time.Testing.FakeTimeProvider : System.TimeProvider",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset startDateTime);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "void Microsoft.Extensions.Time.Testing.FakeTimeProvider.Advance(System.TimeSpan delta);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override System.Threading.ITimer Microsoft.Extensions.Time.Testing.FakeTimeProvider.CreateTimer(System.Threading.TimerCallback callback, object? state, System.TimeSpan dueTime, System.TimeSpan period);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override long Microsoft.Extensions.Time.Testing.FakeTimeProvider.GetTimestamp();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override System.DateTimeOffset Microsoft.Extensions.Time.Testing.FakeTimeProvider.GetUtcNow();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "void Microsoft.Extensions.Time.Testing.FakeTimeProvider.SetLocalTimeZone(System.TimeZoneInfo localTimeZone);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "void Microsoft.Extensions.Time.Testing.FakeTimeProvider.SetUtcNow(System.DateTimeOffset value);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override string Microsoft.Extensions.Time.Testing.FakeTimeProvider.ToString();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "System.TimeSpan Microsoft.Extensions.Time.Testing.FakeTimeProvider.AutoAdvanceAmount { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override System.TimeZoneInfo Microsoft.Extensions.Time.Testing.FakeTimeProvider.LocalTimeZone { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "System.DateTimeOffset Microsoft.Extensions.Time.Testing.FakeTimeProvider.Start { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "override long Microsoft.Extensions.Time.Testing.FakeTimeProvider.TimestampFrequency { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     }

@@ -4,11 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
-using Microsoft.Extensions.Time.Testing;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Time.Testing;
@@ -16,7 +13,6 @@ namespace Microsoft.Extensions.Time.Testing;
 /// <summary>
 /// A synthetic time provider used to enable deterministic behavior in tests.
 /// </summary>
-[Experimental(diagnosticId: Experiments.TimeProvider, UrlFormat = Experiments.UrlFormat)]
 public class FakeTimeProvider : TimeProvider
 {
     internal readonly HashSet<Waiter> Waiters = new();
