@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry.Latency;
@@ -79,7 +80,7 @@ public static class LatencyRegistryExtensions
 
     private static void ConfigureOption(this IServiceCollection services, Action<LatencyContextRegistrationOptions> action)
     {
-        _ = services.AddOptions<LatencyContextRegistrationOptions>();
+        _ = services.AddValidatedOptions<LatencyContextRegistrationOptions, LatencyContextRegistrationOptionsValidator>();
         _ = services.Configure(action);
     }
 }
