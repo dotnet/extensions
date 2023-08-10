@@ -17,13 +17,14 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// <para>
 /// Bulkhead -> Total Request Timeout -> Retry -> Circuit Breaker -> Attempt Timeout.
 /// </para>
-/// The configuration of each Strategy is initialized with the default options per type. The request goes through these strategies:
+/// The configuration of each strategy is initialized with the default options per type. The request goes through these strategies:
 /// <list type="number">
-/// <item><description>Total request timeout Strategy applies an overall timeout to the execution, ensuring that the request including hedging attempts does not exceed the configured limit.</description></item>
-/// <item><description>The retry Strategy retries the request in case the dependency is slow or returns a transient error.</description></item>
-/// <item><description>The bulkhead Strategy limits the maximum number of concurrent requests being send to the dependency.</description></item>
+/// <item><description>Total request timeout strategy applies an overall timeout to the execution,
+/// ensuring that the request including hedging attempts, does not exceed the configured limit.</description></item>
+/// <item><description>The retry strategy retries the request in case the dependency is slow or returns a transient error.</description></item>
+/// <item><description>The bulkhead strategy limits the maximum number of concurrent requests being send to the dependency.</description></item>
 /// <item><description>The circuit breaker blocks the execution if too many direct failures or timeouts are detected.</description></item>
-/// <item><description>The attempt timeout Strategy limits each request attempt duration and throws if its exceeded.</description></item>
+/// <item><description>The attempt timeout strategy limits each request attempt duration and throws if its exceeded.</description></item>
 /// </list>
 /// </remarks>
 public class HttpStandardResilienceOptions
