@@ -3,7 +3,7 @@
     <RootNamespace>Microsoft.AspNetCore.AsyncState.Test</RootNamespace>
     <Description>Unit tests for Microsoft.AspNetCore.AsyncState.</Description>
     <!-- Setting IsTrimmable to true so that the ILLink Analyzers are also used in this project. -->
-    <IsTrimmable>true</IsTrimmable>
+    <IsTrimmable Condition="'$(TargetFrameowrk)' != 'net462'">true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
