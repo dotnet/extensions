@@ -20,7 +20,8 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// The configuration of each resilience strategy is initialized with the default options per type. The request goes through these resilience strategies:
 /// <para>
 /// <list type="number">
-/// <item><description>Total request timeout strategy applies an overall timeout to the execution, ensuring that the request including hedging attempts does not exceed the configured limit.</description></item>
+/// <item><description>Total request timeout strategy applies an overall timeout to the execution,
+/// ensuring that the request including hedging attempts does not exceed the configured limit.</description></item>
 /// <item><description>The hedging strategy executes the requests against multiple endpoints in case the dependency is slow or returns a transient error.</description></item>
 /// <item><description>The bulkhead policy limits the maximum number of concurrent requests being send to the dependency.</description></item>
 /// <item><description>The circuit breaker blocks the execution if too many direct failures or timeouts are detected.</description></item>

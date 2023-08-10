@@ -46,7 +46,7 @@ public static class LinuxUtilizationExtensions
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring of <see cref="LinuxResourceUtilizationProviderOptions"/>.</param>
-    /// <returns>The builder.</returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
     public static IResourceMonitorBuilder AddLinuxProvider(this IResourceMonitorBuilder builder, IConfigurationSection section)
@@ -64,7 +64,7 @@ public static class LinuxUtilizationExtensions
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <param name="configure">The delegate for configuring of <see cref="LinuxResourceUtilizationProviderOptions"/>.</param>
-    /// <returns>The builder.</returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="configure"/> is <see langword="null" />.</exception>
     public static IResourceMonitorBuilder AddLinuxProvider(this IResourceMonitorBuilder builder, Action<LinuxResourceUtilizationProviderOptions> configure)
     {
