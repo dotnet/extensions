@@ -161,7 +161,7 @@ public class FakeTimeProvider : TimeProvider
     /// Returns a string representation this provider's idea of current time.
     /// </summary>
     /// <returns>A string representing the provider's current time.</returns>
-    public override string ToString() => GetUtcNow().ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture);
+    public override string ToString() => _now.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture);
 
     /// <inheritdoc />
     public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)

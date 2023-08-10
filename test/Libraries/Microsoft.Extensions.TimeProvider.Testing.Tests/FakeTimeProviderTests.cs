@@ -320,5 +320,29 @@ public class FakeTimeProviderTests
         Assert.Equal(timeProvider.Start + TimeSpan.FromSeconds(1), second);
         Assert.Equal(timeProvider.Start + TimeSpan.FromSeconds(2), third);
     }
+
+    [Fact]
+    public void ToString_AutoAdvance_off()
+    {
+        var timeProvider = new FakeTimeProvider();
+
+        _ = timeProvider.ToString();
+
+        Assert.Equal(timeProvider.Start, timeProvider.GetUtcNow());
+    }
+
+    [Fact]
+    public void ToString_AutoAdvance_on()
+    {
+        var timeProvider = new FakeTimeProvider()
+        {
+            AutoAdvanceAmount = TimeSpan.FromSeconds(1)
+        };
+
+        _ = timeProvider.ToString();
+
+        timeProvider.AutoAdvanceAmount = TimeSpan.Zero;
+        Assert.Equal(timeProvider.Start, timeProvider.GetUtcNow());
+    }
 }
 
