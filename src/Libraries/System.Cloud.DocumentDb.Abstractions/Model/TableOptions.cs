@@ -9,7 +9,7 @@ using Microsoft.Shared.Data.Validation;
 namespace System.Cloud.DocumentDb;
 
 /// <summary>
-/// The class representing table configurations.
+/// Represents table configurations.
 /// </summary>
 public class TableOptions
 {

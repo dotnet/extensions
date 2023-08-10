@@ -41,7 +41,7 @@ public sealed class LogPropertiesAttribute : Attribute
     /// <param name="providerType">A type containing a method that provides a custom set of tags to log.</param>
     /// <param name="providerMethod">The name of a method on the provider type which generates a custom set of tags to log.</param>
     /// <exception cref="ArgumentNullException">
-    /// When <paramref name="providerMethod"/> or <paramref name="providerType"/> are <see langword="null"/>.
+    /// When <paramref name="providerMethod"/> or <paramref name="providerType"/> is <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentException">
     /// When <paramref name="providerMethod"/> is either an empty string or contains only whitespace.

@@ -29,14 +29,14 @@ public static class ResilienceServiceCollectionExtensions
     /// <remarks>
     /// This method adds additional dimensions on top of the default ones that are built-in to the Polly library. These include:
     /// <list type="bullet">
-    /// <item>
-    /// Exception enrichment based on <see cref="IExceptionSummarizer"/>.
+    /// <item><description>
+    /// Exception enrichment based on <see cref="IExceptionSummarizer"/>.</description>
     /// </item>
-    /// <item>
-    /// Result enrichment based on <see cref="ConfigureFailureResultContext"/> and <see cref="FailureResultContext"/>.
+    /// <item><description>
+    /// Result enrichment based on <see cref="ConfigureFailureResultContext"/> and <see cref="FailureResultContext"/>.</description>
     /// </item>
-    /// <item>
-    /// Request metadata enrichment based on <see cref="RequestMetadata"/>.
+    /// <item><description>
+    /// Request metadata enrichment based on <see cref="RequestMetadata"/>.</description>
     /// </item>
     /// </list>
     /// </remarks>
@@ -72,7 +72,7 @@ public static class ResilienceServiceCollectionExtensions
     /// <param name="configure">The configure result dimensions.</param>
     /// <returns>The input <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException">
-    /// <paramref name="services"/> is <see langword="null"/> or <paramref name="configure"/> is <see langword="null"/>.
+    /// <paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.
     /// </exception>
     public static IServiceCollection ConfigureFailureResultContext<TResult>(
        this IServiceCollection services,

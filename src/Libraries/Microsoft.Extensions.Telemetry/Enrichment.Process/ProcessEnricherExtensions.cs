@@ -11,7 +11,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Telemetry.Enrichment;
 
 /// <summary>
-/// Extension methods for setting up Process enrichers in an <see cref="IServiceCollection" />.
+/// Provides extension methods for setting up Process enrichers in an <see cref="IServiceCollection" />.
 /// </summary>
 public static class ProcessEnricherExtensions
 {

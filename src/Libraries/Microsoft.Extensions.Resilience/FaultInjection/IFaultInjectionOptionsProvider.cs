@@ -15,14 +15,14 @@ namespace Microsoft.Extensions.Resilience.FaultInjection;
 public interface IFaultInjectionOptionsProvider
 {
     /// <summary>
-    /// Get an instance of <see cref="ChaosPolicyOptionsGroup"/> from the provider by the options group name.
+    /// Gets an instance of <see cref="ChaosPolicyOptionsGroup"/> from the provider by the options group name.
     /// </summary>
     /// <param name="optionsGroupName">The chaos policy options group name.</param>
     /// <param name="optionsGroup">
     /// The <see cref="ChaosPolicyOptionsGroup"/> associated with the options group name if it is found; otherwise, <see langword="null"/>.
     /// </param>
     /// <returns>
-    /// True if the <see cref="ChaosPolicyOptionsGroup"/> associated with the options group name if it is found; otherwise, false.
+    /// <see langword="true" /> if the <see cref="ChaosPolicyOptionsGroup"/> associated with the options group name if it is found; otherwise, <see langword="false" />.
     /// </returns>
     public bool TryGetChaosPolicyOptionsGroup(string optionsGroupName, [NotNullWhen(true)] out ChaosPolicyOptionsGroup? optionsGroup);
 }

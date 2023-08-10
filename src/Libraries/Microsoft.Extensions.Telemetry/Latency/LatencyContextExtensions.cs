@@ -18,10 +18,10 @@ namespace Microsoft.Extensions.Telemetry.Latency;
 public static class LatencyContextExtensions
 {
     /// <summary>
-    /// Add latency context.
+    /// Adds latency context.
     /// </summary>
-    /// <param name="services">Dependency injection container.</param>
-    /// <returns>Provided service collection with <see cref="ILatencyContext"/> added.</returns>
+    /// <param name="services">The dependency injection container.</param>
+    /// <returns>The provided service collection with <see cref="ILatencyContext"/> added.</returns>
     public static IServiceCollection AddLatencyContext(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
@@ -34,11 +34,11 @@ public static class LatencyContextExtensions
     }
 
     /// <summary>
-    /// Add latency context.
+    /// Adds latency context.
     /// </summary>
-    /// <param name="services">Dependency injection container.</param>
-    /// <param name="configure"><see cref="LatencyContextOptions"/> configuration delegate.</param>
-    /// <returns>Provided service collection with <see cref="LatencyContextProvider"/> added.</returns>
+    /// <param name="services">The dependency injection container.</param>
+    /// <param name="configure">The <see cref="LatencyContextOptions"/> configuration delegate.</param>
+    /// <returns>The provided service collection with <see cref="LatencyContextProvider"/> added.</returns>
     public static IServiceCollection AddLatencyContext(this IServiceCollection services, Action<LatencyContextOptions> configure)
     {
         _ = Throw.IfNull(services);
@@ -50,11 +50,11 @@ public static class LatencyContextExtensions
     }
 
     /// <summary>
-    /// Add latency context.
+    /// Adds latency context.
     /// </summary>
-    /// <param name="services">Dependency injection container.</param>
-    /// <param name="section">Configuration of <see cref="LatencyContextOptions"/>.</param>
-    /// <returns>Provided service collection with <see cref="LatencyContextProvider"/> added.</returns>
+    /// <param name="services">The dependency injection container.</param>
+    /// <param name="section">The configuration of <see cref="LatencyContextOptions"/>.</param>
+    /// <returns>The provided service collection with <see cref="LatencyContextProvider"/> added.</returns>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LatencyContextOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",

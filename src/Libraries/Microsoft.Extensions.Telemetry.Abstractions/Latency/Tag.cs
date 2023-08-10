@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Extensions.Telemetry.Latency;
 
 /// <summary>
-/// Name and value pair to provide metadata about a operation being measured.
+/// Represents a name and value pair to provide metadata about an operation being measured.
 /// </summary>
 [SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Comparing instances is not an expected scenario")]
 public readonly struct Tag

@@ -4,7 +4,7 @@
 namespace Microsoft.Extensions.Telemetry.Latency;
 
 /// <summary>
-/// A factory of latency contextts.
+/// A factory of latency contexts.
 /// </summary>
 public interface ILatencyContextProvider
 {

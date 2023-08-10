@@ -17,23 +17,23 @@ public static class TelemetryConstants
     public const string RequestMetadataKey = "R9-RequestMetadata";
 
     /// <summary>
-    /// Placeholder string for unknown request name, dependency name etc. in telemetry.
+    /// Represents the placeholder text for an unknown request name or dependency name in telemetry.
     /// </summary>
     public const string Unknown = "unknown";
 
     /// <summary>
-    /// Placeholder string used for redacted data where needed.
+    /// Represents the placeholder text used for redacted data where needed.
     /// </summary>
     public const string Redacted = "REDACTED";
 
     /// <summary>
-    /// Header for client application name, sent on an outgoing http call.
+    /// Represents the header for client application name, sent on an outgoing HTTP call.
     /// </summary>
     [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public const string ClientApplicationNameHeader = "X-ClientApplication";
 
     /// <summary>
-    /// Header for server application name, sent on a http request.
+    /// Represents the header for server application name, sent on a HTTP request.
     /// </summary>
     [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public const string ServerApplicationNameHeader = "X-ServerApplication";

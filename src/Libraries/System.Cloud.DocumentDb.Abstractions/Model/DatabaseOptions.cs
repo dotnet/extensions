@@ -12,58 +12,66 @@ using Microsoft.Shared.DiagnosticIds;
 namespace System.Cloud.DocumentDb;
 
 /// <summary>
-/// The class representing configurations for database.
+/// Represents configuration options for a database.
 /// </summary>
 public class DatabaseOptions
 {
     /// <summary>
     /// Gets or sets the global database name.
     /// </summary>
+    /// <value>
+    /// The default is <see cref="string.Empty" />.
+    /// </value>
     /// <remarks>
-    /// Default is <see cref="string.Empty" />.
     /// The value is required.
     /// </remarks>
     [Required]
     public string DatabaseName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets default name for a database in regions.
+    /// Gets or sets the default name for a regional database.
     /// </summary>
+    /// <value>
+    /// The default is <see langword="null" />.
+    /// </value>
     /// <remarks>
-    /// Default is <see langword="null" />.
-    /// This name can be override by specific region config <see cref="RegionalDatabaseOptions.DatabaseName"/>.
-    /// The value is required if regional name has not overridden.
+    /// This name can be overridden by a specific region config <see cref="RegionalDatabaseOptions.DatabaseName"/>.
+    /// The value is required if the regional name isn't overridden.
     /// </remarks>
     public string? DefaultRegionalDatabaseName { get; set; }
 
     /// <summary>
     /// Gets or sets the key to the account or resource token.
     /// </summary>
-    /// <remarks>
-    /// Default is <see langword="null" />.
-    /// </remarks>
+    /// <value>
+    /// The default is <see langword="null" />.
+    /// </value>
     public string? PrimaryKey { get; set; }
 
     /// <summary>
     /// Gets or sets the global database endpoint uri.
     /// </summary>
+    /// <value>
+    /// The default is <see langword="null" />.
+    /// </value>
     /// <remarks>
-    /// Default is <see langword="null" />.
     /// The value is required.
     /// </remarks>
     [Required]
     public Uri? Endpoint { get; set; }
 
     /// <summary>
-    /// Gets or sets timeout before unused connection will be closed.
+    /// Gets or sets the timeout before an unused connection is closed.
     /// </summary>
+    /// <value>
+    /// The default is <see langword="null" />.
+    /// </value>
     /// <remarks>
-    /// Default is <see langword="null" />.
     /// By default, idle connections should be kept open indefinitely.
-    /// Value must be greater than or equal to 10 minutes.
+    /// The value must be greater than or equal to 10 minutes.
     /// Recommended values are between 20 minutes and 24 hours.
-    /// Mainly useful for sparse infrequent access to a large database account.
-    /// Works for all global and regional connections.
+    /// This value is mainly useful for sparse infrequent access to a large database account.
+    /// It works for all global and regional connections.
     /// </remarks>
     [TimeSpan("00:10:00", "30.00:00:00")]
     public TimeSpan? IdleTcpConnectionTimeout { get; set; }
@@ -71,8 +79,10 @@ public class DatabaseOptions
     /// <summary>
     /// Gets or sets the throughput value.
     /// </summary>
-    /// <remarks>
+    /// <value>
     /// The default is <see cref="Throughput.Unlimited"/>.
+    /// </value>
+    /// <remarks>
     /// The throughput is in database defined units,
     /// for example, Cosmos DB throughput measured in RUs (request units) per second:
     /// <see href="https://learn.microsoft.com/azure/cosmos-db/concepts-limits">Azure Cosmos DB service quotas</see>.
@@ -80,11 +90,13 @@ public class DatabaseOptions
     public Throughput Throughput { get; set; } = Throughput.Unlimited;
 
     /// <summary>
-    /// Gets or sets json serializer options.
+    /// Gets or sets JSON serializer options.
     /// </summary>
+    /// <value>
+    /// The default is the default <see cref="JsonSerializerOptions" />.
+    /// </value>
     /// <remarks>
     /// This will be used only if <see cref="OverrideSerialization"/> is enabled.
-    /// Default is the default <see cref="JsonSerializerOptions" />.
     /// Those options will be used by compatible APIs to serialize input before sending to server and deserialize output.
     /// This includes sent/received documents.
     /// </remarks>
@@ -93,8 +105,10 @@ public class DatabaseOptions
     /// <summary>
     /// Gets or sets a value indicating whether serialization overridden.
     /// </summary>
+    /// <value>
+    /// The default is <see langword="true"/>.
+    /// </value>
     /// <remarks>
-    /// Default is <see langword="true"/>.
     /// When enabled, System.Text.Json based serialization will be configured with
     /// settings defined in <see cref="JsonSerializerOptions"/>.
     /// </remarks>

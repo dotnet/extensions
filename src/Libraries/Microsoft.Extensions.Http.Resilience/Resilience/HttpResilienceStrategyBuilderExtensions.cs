@@ -37,7 +37,7 @@ public static class HttpResilienceStrategyBuilderExtensions
     /// <param name="builder">The builder instance.</param>
     /// <param name="selectorFactory">The factory that returns a key selector.</param>
     /// <returns>The same builder instance.</returns>
-    /// <remarks>The strategy key is used in metrics and logs, do not return any sensitive value.</remarks>
+    /// <remarks>The strategy key is used in metrics and logs, so don't return any sensitive values.</remarks>
     public static IHttpResilienceStrategyBuilder SelectStrategyBy(this IHttpResilienceStrategyBuilder builder, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory)
     {
         _ = Throw.IfNull(builder);

@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 
 /// <summary>
-/// Extension for <see cref="IRoutingStrategyBuilder"/>.
+/// Extensions for <see cref="IRoutingStrategyBuilder"/>.
 /// </summary>
 public static class RoutingStrategyBuilderExtensions
 {

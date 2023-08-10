@@ -26,7 +26,7 @@ public interface IDocumentReader<TDocument>
     /// <param name="requestOptions">The request options.</param>
     /// <param name="id">The document id requested to read.</param>
     /// <param name="cancellationToken">The token represents request cancellation.</param>
-    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> which wraps the result document.</returns>
+    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> that wraps the result document.</returns>
     /// <exception cref="DatabaseClientException">Thrown when an error occurred on a client side.
     /// For example on a bad request, permissions error or client timeout.</exception>
     /// <exception cref="DatabaseServerException">Thrown when an error occurred on a database server side,
@@ -45,7 +45,7 @@ public interface IDocumentReader<TDocument>
     /// <param name="options">The request options.</param>
     /// <param name="condition">The fetch condition function.</param>
     /// <param name="cancellationToken">The token represents request cancellation.</param>
-    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> which wraps enumerable of fetched documents.</returns>
+    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> that wraps enumerable of fetched documents.</returns>
     /// <exception cref="DatabaseClientException">Thrown when an error occurred on a client side.
     /// For example on a bad request, permissions error or client timeout.</exception>
     /// <exception cref="DatabaseServerException">Thrown when an error occurred on a database server side,
@@ -66,7 +66,7 @@ public interface IDocumentReader<TDocument>
     /// <param name="options">The query request options.</param>
     /// <param name="query">The query to fetch items.</param>
     /// <param name="cancellationToken">The token represents request cancellation.</param>
-    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> which wraps enumerable of fetched documents.</returns>
+    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> that wraps enumerable of fetched documents.</returns>
     /// <exception cref="DatabaseClientException">Thrown when an error occurred on a client side.
     /// For example on a bad request, permissions error or client timeout.</exception>
     /// <exception cref="DatabaseServerException">Thrown when an error occurred on a database server side,

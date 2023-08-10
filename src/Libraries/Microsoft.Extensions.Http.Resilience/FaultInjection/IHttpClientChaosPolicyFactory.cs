@@ -8,17 +8,16 @@ using Polly.Contrib.Simmy.Outcomes;
 namespace Microsoft.Extensions.Http.Resilience.FaultInjection;
 
 /// <summary>
-/// Factory for http response chaos policy creation.
+/// Factory for HTTP response chaos policy creation.
 /// </summary>
 public interface IHttpClientChaosPolicyFactory
 {
     /// <summary>
-    /// Creates an async http response fault injection policy with delegate functions
+    /// Creates an async HTTP response fault injection policy with delegate functions
     /// to fetch fault injection settings from <see cref="Context"/>.
     /// </summary>
     /// <returns>
-    /// An http response fault injection policy,
-    /// an instance of <see cref="AsyncInjectOutcomePolicy{HttpResponseMessage}"/>.
+    /// An HTTP response fault injection policy.
     /// </returns>
     public AsyncInjectOutcomePolicy<HttpResponseMessage> CreateHttpResponsePolicy();
 }

@@ -22,7 +22,7 @@ public static class FakeRedactionExtensions
     /// <summary>
     /// Sets the fake redactor to use for a set of data classes.
     /// </summary>
-    /// <param name="builder">The builder to attach the redactorr to.</param>
+    /// <param name="builder">The builder to attach the redactor to.</param>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
@@ -38,11 +38,11 @@ public static class FakeRedactionExtensions
     /// <summary>
     /// Sets the fake redactor to use for a set of data classes.
     /// </summary>
-    /// <param name="builder">The builder to attach the redactorr to.</param>
+    /// <param name="builder">The builder to attach the redactor to.</param>
     /// <param name="configure">Configuration function.</param>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="configure"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
     public static IRedactionBuilder SetFakeRedactor(this IRedactionBuilder builder, Action<FakeRedactorOptions> configure, params DataClassification[] classifications)
     {
         _ = Throw.IfNull(builder);
@@ -60,11 +60,11 @@ public static class FakeRedactionExtensions
     /// <summary>
     /// Sets the fake redactor to use for a set of data classes.
     /// </summary>
-    /// <param name="builder">The builder to attach the redactorr to.</param>
+    /// <param name="builder">The builder to attach the redactor to.</param>
     /// <param name="section">Configuration section.</param>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="section"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="section"/> is <see langword="null"/>.</exception>
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "The type is FakeRedactorOptions and we know it.")]

@@ -12,7 +12,7 @@ using OpenTelemetry.Trace;
 namespace Microsoft.Extensions.Telemetry.Enrichment;
 
 /// <summary>
-/// Extension methods for setting up the service enrichers in an <see cref="IServiceCollection" />.
+/// Provides extension methods for setting up the service enrichers in an <see cref="IServiceCollection" />.
 /// </summary>
 public static class ServiceEnricherExtensions
 {

@@ -20,8 +20,7 @@ public interface IChaosPolicyFactory
     /// </summary>
     /// <typeparam name="TResult">The type of value policies created by this method will inject.</typeparam>
     /// <returns>
-    /// A latency policy,
-    /// an instance of <see cref="AsyncInjectLatencyPolicy{TResult}"/>.
+    /// A latency policy.
     /// </returns>
     public AsyncInjectLatencyPolicy<TResult> CreateLatencyPolicy<TResult>();
 
@@ -30,8 +29,7 @@ public interface IChaosPolicyFactory
     /// fault injection settings from <see cref="Context"/>.
     /// </summary>
     /// <returns>
-    /// An exception policy,
-    /// an instance of <see cref="AsyncInjectOutcomePolicy"/>.
+    /// An exception policy.
     /// </returns>
     public AsyncInjectOutcomePolicy CreateExceptionPolicy();
 
@@ -40,7 +38,7 @@ public interface IChaosPolicyFactory
     /// fault injection settings from <see cref="Context"/>.
     /// </summary>
     /// <typeparam name="TResult">The type of value policies created by this method will inject.</typeparam>
-    /// <returns>A custom result policy, an instance of <see cref="AsyncInjectOutcomePolicy{TResult}"/>.</returns>
+    /// <returns>A custom result policy.</returns>
     [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public AsyncInjectOutcomePolicy<TResult> CreateCustomResultPolicy<TResult>();
 }
