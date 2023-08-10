@@ -35,7 +35,7 @@ public readonly struct TableInfo
     /// Gets the time to live for table items.
     /// </summary>
     /// <value>
-    /// The default is <see cref="string.Empty" />.
+    /// The default is <see langword="null" />.
     /// </value>
     /// <remarks>
     /// If not specified, records will not expire.
