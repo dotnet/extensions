@@ -9,7 +9,7 @@ namespace System.Cloud.DocumentDb;
 /// The exception that's thrown when the operation failed without a specific reason.
 /// </summary>
 /// <remarks>
-/// It might due to some failures on server side.
+/// It might be due to failures on server side.
 /// Ask the engineer to investigate this case and escalate if necessary.
 /// Http code 500.
 /// </remarks>

@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Hosting.Testing;
 public sealed class FakeHost : IHost
 {
     /// <summary>
-    /// Gets the programs configured services.
+    /// Gets the program's configured services.
     /// </summary>
     public IServiceProvider Services => _host.Services;
     internal TimeProvider TimeProvider = TimeProvider.System;
@@ -39,7 +39,7 @@ public sealed class FakeHost : IHost
     /// <summary>
     /// Creates an instance of <see cref="IHostBuilder"/> to configure and build the host.
     /// </summary>
-    /// <param name="configure">Use to configure the <see cref="FakeHostOptions"/> instance.</param>
+    /// <param name="configure">The options to configure the <see cref="FakeHostOptions"/> instance.</param>
     /// <returns>An instance of <see cref="IHostBuilder"/>.</returns>
     public static IHostBuilder CreateBuilder(Action<FakeHostOptions> configure)
     {
@@ -62,7 +62,7 @@ public sealed class FakeHost : IHost
     }
 
     /// <summary>
-    /// Start the program.
+    /// Starts the program.
     /// </summary>
     /// <param name="cancellationToken">Used to abort program start.</param>
     /// <returns>A <see cref="Task"/> that will be completed when the <see cref="IHost"/> starts.</returns>

@@ -14,7 +14,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Time.Testing;
 
 /// <summary>
-/// A synthetic time provider used to enable deterministic behavior in tests.
+/// Represents a synthetic time provider that can be used to enable deterministic behavior in tests.
 /// </summary>
 [Experimental(diagnosticId: Experiments.TimeProvider, UrlFormat = Experiments.UrlFormat)]
 public class FakeTimeProvider : TimeProvider

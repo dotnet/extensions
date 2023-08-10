@@ -8,7 +8,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Http.AutoClient;
 
 /// <summary>
-/// Exception used whenever REST API requests are not successful.
+/// The exception that's thrown when REST API requests aren't successful.
 /// </summary>
 /// <remarks>
 /// This exception is thrown whenever a REST API call returns a non-successful status code. It contains the status code

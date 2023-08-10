@@ -18,7 +18,7 @@ public static partial class HttpClientBuilderExtensions
     private const string StandardIdentifier = "standard";
 
     /// <summary>
-    /// Adds a standard resilience handler that uses a multiple resilience strategies with default options to send the requests and handle any transient errors.
+    /// Adds a standard resilience handler that uses multiple resilience strategies with default options to send the requests and handle any transient errors.
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="section">The section that the options will bind against.</param>
@@ -36,7 +36,7 @@ public static partial class HttpClientBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a standard resilience handler that uses a multiple resilience strategies with default options to send the requests and handle any transient errors.
+    /// Adds a standard resilience handler that uses multiple resilience strategies with default options to send the requests and handle any transient errors.
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="configure">The callback that configures the options.</param>
@@ -54,7 +54,7 @@ public static partial class HttpClientBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a standard resilience handler that uses a multiple resilience strategies with default options to send the requests and handle any transient errors.
+    /// Adds a standard resilience handler that uses multiple resilience strategies with default options to send the requests and handle any transient errors.
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <returns>The HTTP resilience handler builder instance.</returns>

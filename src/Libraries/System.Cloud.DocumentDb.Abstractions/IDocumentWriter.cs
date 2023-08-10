@@ -27,7 +27,7 @@ public interface IDocumentWriter<TDocument>
     /// <param name="patchOperations">The patch operations to be applied.</param>
     /// <param name="filter">The predicate filter to be checked before patch applied.</param>
     /// <param name="cancellationToken">The token represents request cancellation.</param>
-    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> which wraps the result document.</returns>
+    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> that wraps the result document.</returns>
     /// <exception cref="DatabaseClientException">Thrown when an error occurred on a client side.
     /// For example on a bad request, permissions error or client timeout.</exception>
     /// <exception cref="DatabaseServerException">Thrown when an error occurred on a database server side,
@@ -50,7 +50,7 @@ public interface IDocumentWriter<TDocument>
     /// </remarks>
     /// <param name="options">The request options.</param>
     /// <param name="cancellationToken">The token represents request cancellation.</param>
-    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> which wraps the created document.</returns>
+    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> that wraps the created document.</returns>
     /// <exception cref="DatabaseClientException">Thrown when an error occurred on a client side.
     /// For example on a bad request, permissions error or client timeout.</exception>
     /// <exception cref="DatabaseServerException">Thrown when an error occurred on a database server side,
@@ -73,7 +73,7 @@ public interface IDocumentWriter<TDocument>
     /// <param name="options">The request options.</param>
     /// <param name="id">Id of the document to replace.</param>
     /// <param name="cancellationToken">The token represents request cancellation.</param>
-    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> which wraps the updated document.</returns>
+    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> that wraps the updated document.</returns>
     /// <exception cref="DatabaseClientException">Thrown when an error occurred on a client side.
     /// For example on a bad request, permissions error or client timeout.</exception>
     /// <exception cref="DatabaseServerException">Thrown when an error occurred on a database server side,
@@ -99,7 +99,7 @@ public interface IDocumentWriter<TDocument>
     /// <param name="id">The document id.</param>
     /// <param name="conflictResolveFunc">Func used to resolve conflict if there are documents in DB.</param>
     /// <param name="cancellationToken">The token represents request cancellation.</param>
-    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> which wraps the updated document.</returns>
+    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> that wraps the updated document.</returns>
     /// <exception cref="DatabaseClientException">Thrown when an error occurred on a client side.
     /// For example on a bad request, permissions error or client timeout.</exception>
     /// <exception cref="DatabaseServerException">Thrown when an error occurred on a database server side,
@@ -122,7 +122,7 @@ public interface IDocumentWriter<TDocument>
     /// </remarks>
     /// <param name="options">The request options.</param>
     /// <param name="cancellationToken">The token represents request cancellation.</param>
-    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> which wraps the updated document.</returns>
+    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{T}"/> that wraps the updated document.</returns>
     /// <exception cref="DatabaseClientException">Thrown when an error occurred on a client side.
     /// For example on a bad request, permissions error or client timeout.</exception>
     /// <exception cref="DatabaseServerException">Thrown when an error occurred on a database server side,
@@ -140,7 +140,7 @@ public interface IDocumentWriter<TDocument>
     /// <param name="options">The request options.</param>
     /// <param name="id">The id of the document to be deleted.</param>
     /// <param name="cancellationToken">The token represents request cancellation.</param>
-    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{Boolean}"/> which wraps the asynchronous operation result.
+    /// <returns>A <see cref="Task"/> containing a <see cref="IDatabaseResponse{Boolean}"/> that wraps the asynchronous operation result.
     /// Result of the operation is true when deletion succeed, false if failed.</returns>
     /// <exception cref="DatabaseClientException">Thrown when an error occurred on a client side.
     /// For example on a bad request, permissions error or client timeout.</exception>
@@ -165,7 +165,7 @@ public interface IDocumentWriter<TDocument>
     /// <param name="requestOptions">The request options.</param>
     /// <param name="itemsToPerformTransactionalBatch"><see cref="IList{BatchItem}"/> to perform transaction batch.</param>
     /// <param name="cancellationToken">The token represents request cancellation.</param>
-    /// <returns>A <see cref="Task"/> containing a <see cref="IList{T}"/> of <see cref="IDatabaseResponse{T}"/> which wraps transaction operation response.</returns>
+    /// <returns>A <see cref="Task"/> containing a <see cref="IList{T}"/> of <see cref="IDatabaseResponse{T}"/> that wraps transaction operation response.</returns>
     /// <exception cref="DatabaseClientException">Thrown when an error occurred on a client side.
     /// For example on a bad request, permissions error or client timeout.</exception>
     /// <exception cref="DatabaseServerException">Thrown when an error occurred on a database server side,

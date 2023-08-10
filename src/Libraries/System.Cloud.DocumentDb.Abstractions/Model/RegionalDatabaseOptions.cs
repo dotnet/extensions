@@ -9,7 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace System.Cloud.DocumentDb;
 
 /// <summary>
-/// The class representing region specific configurations for database.
+/// Represents region-specific configurations for databases.
 /// </summary>
 public class RegionalDatabaseOptions
 {

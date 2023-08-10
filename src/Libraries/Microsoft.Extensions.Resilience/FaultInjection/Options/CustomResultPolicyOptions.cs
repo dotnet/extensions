@@ -16,10 +16,12 @@ public class CustomResultPolicyOptions : ChaosPolicyOptionsBase
     /// <summary>
     /// Gets or sets the custom result key.
     /// </summary>
+    /// <value>
+    /// The default is <see cref="string.Empty"/>.
+    /// </value>
     /// <remarks>
     /// This key is used for fetching the custom defined result object
     /// from <see cref="ICustomResultRegistry"/>.
-    /// Default is set to <see cref="string.Empty"/>.
     /// </remarks>
     [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     [Required]

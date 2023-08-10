@@ -23,8 +23,10 @@ public readonly struct TableInfo
     /// <summary>
     /// Gets the table name.
     /// </summary>
+    /// <value>
+    /// The default is <see cref="string.Empty" />.
+    /// </value>
     /// <remarks>
-    /// Default is <see cref="string.Empty" />.
     /// The value is required.
     /// </remarks>
     public string TableName { get; }
@@ -32,27 +34,33 @@ public readonly struct TableInfo
     /// <summary>
     /// Gets the time to live for table items.
     /// </summary>
+    /// <value>
+    /// The default is <see cref="string.Empty" />.
+    /// </value>
     /// <remarks>
-    /// Default is <see langword="null" />.
     /// If not specified, records will not expire.
-    /// 1s is the minimum value.
+    /// The minimum value is 1 second.
     /// </remarks>
     public TimeSpan TimeToLive { get; }
 
     /// <summary>
-    /// Gets the partition id path for store.
+    /// Gets the partition ID path for store.
     /// </summary>
-    /// <remarks>
-    /// Default is <see langword="null" />.
-    /// </remarks>
+    /// <value>
+    /// The default is <see langword="null" />.
+    /// </value>
     public string? PartitionIdPath { get; }
 
     /// <summary>
     /// Gets a value indicating whether table is regionally replicated or a global.
     /// </summary>
+    /// <value>
+    /// <see langword="true" /> if the table is regional;
+    /// <see langword="false" /> if it's global.
+    /// The default is <see langword="false" />.
+    /// </value>
     /// <remarks>
-    /// Default is <see langword="false"/>, which means table is global.
-    /// When enabling regional tables
+    /// When enabling regional tables:
     /// - All required region endpoints should be configured in client.
     /// - Requests should contain <see cref="RequestOptions.Region"/> provided.
     /// </remarks>
@@ -71,7 +79,9 @@ public readonly struct TableInfo
     /// Gets a value indicating whether a <see cref="ITableLocator"/> is required to be used with this table.
     /// </summary>
     /// <value>
-    /// The default is <see langword="false"/>, which means a locator isn't used even if configured.
+    /// <see langword="true" /> to use a locator;
+    /// <see langword="false" /> if a locator isn't used even if configured.
+    /// The default is <see langword="false"/>.
     /// </value>
     /// <remarks>
     /// If a locator is required, requests require that <see cref="RequestOptions"/> be specified to provide <see cref="RequestOptions{TDocument}.Document"/>.

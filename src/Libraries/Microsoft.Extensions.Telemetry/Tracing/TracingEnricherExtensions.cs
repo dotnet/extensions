@@ -13,15 +13,15 @@ using OpenTelemetry.Trace;
 namespace Microsoft.Extensions.Telemetry.Enrichment;
 
 /// <summary>
-/// Extension methods for Tracing.
+/// Provides extension methods for tracing.
 /// </summary>
 public static class TracingEnricherExtensions
 {
     /// <summary>
     /// Adds an enricher to enrich all traces.
     /// </summary>
-    /// <typeparam name="T">Enricher object type.</typeparam>
-    /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add enricher.</param>
+    /// <typeparam name="T">The enricher object type.</typeparam>
+    /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add the enricher.</param>
     /// <returns>The <see cref="TracerProviderBuilder"/> so that additional calls can be chained.</returns>
     /// <exception cref="ArgumentNullException">The argument <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static TracerProviderBuilder AddTraceEnricher<T>(this TracerProviderBuilder builder)

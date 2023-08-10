@@ -24,7 +24,7 @@ public static partial class HttpClientBuilderExtensions
     private const string StandardHandlerPostfix = "standard-hedging";
 
     /// <summary>
-    /// Adds a standard hedging handler which wraps the execution of the request with a standard hedging mechanism.
+    /// Adds a standard hedging handler that wraps the execution of the request with a standard hedging mechanism.
     /// </summary>
     /// <param name="builder">The HTTP client builder.</param>
     /// <param name="configure">Configures the routing strategy associated with this handler.</param>
@@ -54,7 +54,7 @@ public static partial class HttpClientBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a standard hedging handler which wraps the execution of the request with a standard hedging mechanism.
+    /// Adds a standard hedging handler that wraps the execution of the request with a standard hedging mechanism.
     /// </summary>
     /// <param name="builder">The HTTP client builder.</param>
     /// <returns>

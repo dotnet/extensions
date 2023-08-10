@@ -6,7 +6,7 @@ using System;
 namespace System.Cloud.DocumentDb;
 
 /// <summary>
-/// Exception represent the operation is failed w/ a specific reason and it's eligible to retry in future.
+/// The exception that's thrown when the operation failed with a specific reason and it's eligible to retry in the future.
 /// </summary>
 /// <remarks>
 /// Http code 429, 503, 408.
@@ -34,7 +34,7 @@ public class DatabaseRetryableException : DatabaseException
     /// Initializes a new instance of the <see cref="DatabaseRetryableException"/> class.
     /// </summary>
     /// <param name="message">The exception message.</param>
-    /// <param name="innerException">Exception related to the missing data.</param>
+    /// <param name="innerException">The exception related to the missing data.</param>
     public DatabaseRetryableException(string message, Exception innerException)
         : base(message, innerException)
     {
@@ -47,7 +47,7 @@ public class DatabaseRetryableException : DatabaseException
     /// <param name="innerException">Exception related to the missing data.</param>
     /// <param name="statusCode">Exception status code.</param>
     /// <param name="subStatusCode">Exception sub status code.</param>
-    /// <param name="retryAfter">Retry after timespan.</param>
+    /// <param name="retryAfter">Retry-after timespan.</param>
     /// <param name="requestInfo">The request.</param>
     public DatabaseRetryableException(
         string message,
@@ -65,7 +65,7 @@ public class DatabaseRetryableException : DatabaseException
     }
 
     /// <summary>
-    /// Gets a value indicate the retry after time.
+    /// Gets the retry-after time.
     /// </summary>
     public TimeSpan RetryAfter { get; } = TimeSpan.Zero;
 }

@@ -19,11 +19,11 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// </para>
 /// The configuration of each Strategy is initialized with the default options per type. The request goes through these strategies:
 /// <list type="number">
-/// <item>Total request timeout Strategy applies an overall timeout to the execution, ensuring that the request including hedging attempts does not exceed the configured limit.</item>
-/// <item>The retry Strategy retries the request in case the dependency is slow or returns a transient error.</item>
-/// <item>The bulkhead Strategy limits the maximum number of concurrent requests being send to the dependency.</item>
-/// <item>The circuit breaker blocks the execution if too many direct failures or timeouts are detected.</item>
-/// <item>The attempt timeout Strategy limits each request attempt duration and throws if its exceeded.</item>
+/// <item><description>Total request timeout Strategy applies an overall timeout to the execution, ensuring that the request including hedging attempts does not exceed the configured limit.</description></item>
+/// <item><description>The retry Strategy retries the request in case the dependency is slow or returns a transient error.</description></item>
+/// <item><description>The bulkhead Strategy limits the maximum number of concurrent requests being send to the dependency.</description></item>
+/// <item><description>The circuit breaker blocks the execution if too many direct failures or timeouts are detected.</description></item>
+/// <item><description>The attempt timeout Strategy limits each request attempt duration and throws if its exceeded.</description></item>
 /// </list>
 /// </remarks>
 public class HttpStandardResilienceOptions
@@ -32,7 +32,7 @@ public class HttpStandardResilienceOptions
     /// Gets or sets the bulkhead options.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpRateLimiterStrategyOptions"/> using default properties values.
+    /// By default, this property is initialized with a unique instance of <see cref="HttpRateLimiterStrategyOptions"/> using default properties values.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
@@ -45,7 +45,7 @@ public class HttpStandardResilienceOptions
     /// Gets or sets the timeout Strategy options for the total timeout applied on the request's execution.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpTimeoutStrategyOptions"/>.
+    /// By default, this property is initialized with a unique instance of <see cref="HttpTimeoutStrategyOptions"/>.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
@@ -55,10 +55,10 @@ public class HttpStandardResilienceOptions
     };
 
     /// <summary>
-    /// Gets or sets the retry Strategy Options.
+    /// Gets or sets the retry strategy options.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpRetryStrategyOptions"/> using default properties values.
+    /// By default, this property is initialized with a unique instance of <see cref="HttpRetryStrategyOptions"/> using default properties values.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
@@ -71,7 +71,7 @@ public class HttpStandardResilienceOptions
     /// Gets or sets the circuit breaker options.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpCircuitBreakerStrategyOptions"/> using default properties values.
+    /// By default, this property is initialized with a unique instance of <see cref="HttpCircuitBreakerStrategyOptions"/> using default properties values.
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
@@ -81,10 +81,10 @@ public class HttpStandardResilienceOptions
     };
 
     /// <summary>
-    /// Gets or sets the options for the timeout Strategy applied per each request attempt.
+    /// Gets or sets the options for the timeout strategy applied per each request attempt.
     /// </summary>
     /// <remarks>
-    /// By default it is initialized with a unique instance of <see cref="HttpTimeoutStrategyOptions"/>
+    /// By default, this property is initialized with a unique instance of <see cref="HttpTimeoutStrategyOptions"/>
     /// using custom <see cref="TimeoutStrategyOptions.Timeout"/> of 10 seconds.
     /// </remarks>
     [Required]

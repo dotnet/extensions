@@ -187,15 +187,15 @@ public abstract class Redactor
     /// <summary>
     /// Tries to redact potentially sensitive data.
     /// </summary>
-    /// <typeparam name="T">Type of value to redact.</typeparam>
-    /// <param name="value">Value to redact.</param>
-    /// <param name="destination">Buffer to redact into.</param>
-    /// <param name="charsWritten">Variable that receive the number of redacted characters written to the destination buffer.</param>
+    /// <typeparam name="T">The type of value to redact.</typeparam>
+    /// <param name="value">The value to redact.</param>
+    /// <param name="destination">The buffer to redact into.</param>
+    /// <param name="charsWritten">When this method returns, contains the number of redacted characters that were written to the destination buffer.</param>
     /// <param name="format">
     /// The format string that selects the specific formatting operation performed. Refer to the
     /// documentation of the type being formatted to understand the values you can supply here.
     /// </param>
-    /// <param name="provider">Format provider used to produce a string representing the value.</param>
+    /// <param name="provider">The format provider used to produce a string representing the value.</param>
     /// <returns><see langword="true"/> if the destination buffer was large enough, otherwise <see langword="false"/>.</returns>
     [SkipLocalsInit]
     [SuppressMessage("Minor Code Smell", "S3247:Duplicate casts should not be made", Justification = "Avoid pattern matching to improve jitted code")]

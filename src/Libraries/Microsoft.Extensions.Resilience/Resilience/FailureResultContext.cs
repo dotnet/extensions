@@ -7,7 +7,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Resilience;
 
 /// <summary>
-/// Object model capturing the dimensions metered for a transient failure result.
+/// Captures the dimensions metered for a transient failure result.
 /// </summary>
 #pragma warning disable CA1815 // Override equals and operator equals on value types (Such usage is not expected in this scenario)
 public readonly struct FailureResultContext
@@ -19,7 +19,7 @@ public readonly struct FailureResultContext
     /// <param name="failureSource">The source of the failure.</param>
     /// <param name="failureReason">The reason of the failure.</param>
     /// <param name="additionalInformation">Additional information for the failure.</param>
-    /// <returns><see cref="FailureResultContext"/> object.</returns>
+    /// <returns>To be added.</returns>
     public static FailureResultContext Create(
         string failureSource = TelemetryConstants.Unknown,
         string failureReason = TelemetryConstants.Unknown,
@@ -34,17 +34,17 @@ public readonly struct FailureResultContext
     }
 
     /// <summary>
-    /// Gets the source of the failure presented in delegate result.
+    /// Gets the source of the failure presented in the delegate result.
     /// </summary>
     public string FailureSource { get; }
 
     /// <summary>
-    /// Gets the reason of the failure presented in delegate result.
+    /// Gets the reason of the failure presented in the delegate result.
     /// </summary>
     public string FailureReason { get; }
 
     /// <summary>
-    /// Gets additional information of the failure presented in delegate result.
+    /// Gets additional information of the failure presented in the delegate result.
     /// </summary>
     public string AdditionalInformation { get; }
 }

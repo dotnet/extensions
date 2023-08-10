@@ -17,7 +17,7 @@ public class HttpCircuitBreakerStrategyOptions : CircuitBreakerStrategyOptions<H
     /// </summary>
     /// <remarks>
     /// By default the options is set to handle only transient failures,
-    /// i.e. timeouts, 5xx responses and <see cref="HttpRequestException"/> exceptions.
+    /// that is, timeouts, 5xx responses, and <see cref="HttpRequestException"/> exceptions.
     /// </remarks>
     public HttpCircuitBreakerStrategyOptions()
     {

@@ -4,13 +4,13 @@
 namespace Microsoft.Extensions.Telemetry.Enrichment;
 
 /// <summary>
-/// A component that augments log records with additional properties.
+/// Augments log records with additional properties.
 /// </summary>
 public interface ILogEnricher
 {
     /// <summary>
-    /// Called to collect tags for a log record.
+    /// Collects tags for a log record.
     /// </summary>
-    /// <param name="collector">Where the enricher puts the tags it is producing.</param>
+    /// <param name="collector">Where the enricher puts the tags it produces.</param>
     void Enrich(IEnrichmentTagCollector collector);
 }

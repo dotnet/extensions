@@ -4,13 +4,13 @@
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 /// <summary>
-/// The names of instruments published by this package.
+/// Represents the names of instruments published by this package.
 /// </summary>
 /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
 public static class LinuxResourceUtilizationCounters
 {
     /// <summary>
-    /// Gets CPU consumption by running application in percentages.
+    /// Gets the CPU consumption of the running application in percentages.
     /// </summary>
     /// <remarks>
     /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableGauge{T}"/> (long).
@@ -18,7 +18,7 @@ public static class LinuxResourceUtilizationCounters
     public static string CpuConsumptionPercentage { get; } = "cpu_consumption_percentage";
 
     /// <summary>
-    /// Gets memory consumption by running application in percentages.
+    /// Gets the memory consumption of the running application in percentages.
     /// </summary>
     /// <remarks>
     /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableGauge{T}"/> (long).

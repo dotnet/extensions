@@ -49,7 +49,7 @@ public class HttpMeteringHandler : DelegatingHandler
     /// Initializes a new instance of the <see cref="HttpMeteringHandler"/> class.
     /// </summary>
     /// <param name="meter">The meter.</param>
-    /// <param name="enrichers">Enumerable of outgoing request metric enrichers.</param>
+    /// <param name="enrichers">The outgoing request metric enrichers.</param>
     [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public HttpMeteringHandler(
         Meter<HttpMeteringHandler> meter,
