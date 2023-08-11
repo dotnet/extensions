@@ -9,6 +9,7 @@
   <PropertyGroup>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
   </PropertyGroup>
 

@@ -39,9 +39,4 @@
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
   </ItemGroup>
-
-  <!-- WarningDefinitions.cs is included globally via eng\MSBuild\Shared.props -->
-  <ItemGroup>
-    <Compile Remove="DiagnosticIds\Experiments.cs" />
-  </ItemGroup>
 </Project>
