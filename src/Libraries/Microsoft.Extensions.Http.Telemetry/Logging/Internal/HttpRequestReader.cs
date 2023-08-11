@@ -41,16 +41,16 @@ internal sealed class HttpRequestReader : IHttpRequestReader
     private readonly IDownstreamDependencyMetadataManager? _downstreamDependencyMetadataManager;
 
     public HttpRequestReader(
+        IServiceProvider serviceProvider,
         IOptionsMonitor<LoggingOptions> optionsMonitor,
         IHttpRouteFormatter routeFormatter,
         IOutgoingRequestContext requestMetadataContext,
-        IServiceProvider serviceProvider,
         IDownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null,
         [ServiceKey] string? serviceKey = null)
         : this(
               optionsMonitor.GetKeyedOrCurrent(serviceKey),
               routeFormatter,
-              serviceProvider.GetRequiredKeyedServiceOrDefault<IHttpHeadersReader>(serviceKey),
+              serviceProvider.GetRequiredOrKeyedService<IHttpHeadersReader>(serviceKey),
               requestMetadataContext,
               downstreamDependencyMetadataManager)
     {

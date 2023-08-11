@@ -36,14 +36,14 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
     private IHttpClientLogEnricher[] _enrichers;
 
     public HttpClientLogger(
+        IServiceProvider serviceProvider,
         ILogger<HttpClientLogger> logger,
         IEnumerable<IHttpClientLogEnricher> enrichers,
         IOptionsMonitor<LoggingOptions> optionsMonitor,
-        IServiceProvider serviceProvider,
         [ServiceKey] string? serviceKey = null)
         : this(
               logger,
-              serviceProvider.GetRequiredKeyedServiceOrDefault<IHttpRequestReader>(serviceKey),
+              serviceProvider.GetRequiredOrKeyedService<IHttpRequestReader>(serviceKey),
               enrichers,
               optionsMonitor.GetKeyedOrCurrent(serviceKey))
     {

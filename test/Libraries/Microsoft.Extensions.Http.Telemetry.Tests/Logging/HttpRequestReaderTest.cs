@@ -74,8 +74,8 @@ public class HttpRequestReaderTest
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(serviceKey), mockHeadersRedactor.Object, serviceKey);
         using var serviceProvider = GetServiceProvider(headersReader, serviceKey);
 
-        var reader = new HttpRequestReader(options.ToOptionsMonitor(serviceKey), serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
-            RequestMetadataContext, serviceProvider, serviceKey: serviceKey);
+        var reader = new HttpRequestReader(serviceProvider, options.ToOptionsMonitor(serviceKey), serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+            RequestMetadataContext, serviceKey: serviceKey);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -145,7 +145,7 @@ public class HttpRequestReaderTest
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
         using var serviceProvider = GetServiceProvider(headersReader);
 
-        var reader = new HttpRequestReader(options.ToOptionsMonitor(), serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
+        var reader = new HttpRequestReader(serviceProvider, options.ToOptionsMonitor(), serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -218,8 +218,8 @@ public class HttpRequestReaderTest
         var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
         using var serviceProvider = GetServiceProvider(headersReader);
 
-        var reader = new HttpRequestReader(opts.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
+        var reader = new HttpRequestReader(serviceProvider, opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -302,8 +302,8 @@ public class HttpRequestReaderTest
         var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
         using var serviceProvider = GetServiceProvider(headersReader);
 
-        var reader = new HttpRequestReader(opts.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
+        var reader = new HttpRequestReader(serviceProvider, opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -381,8 +381,8 @@ public class HttpRequestReaderTest
         var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
         using var serviceProvider = GetServiceProvider(headersReader);
 
-        var reader = new HttpRequestReader(opts.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
+        var reader = new HttpRequestReader(serviceProvider, opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -447,8 +447,8 @@ public class HttpRequestReaderTest
         var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
         using var serviceProvider = GetServiceProvider(headersReader);
 
-        var reader = new HttpRequestReader(opts.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
+        var reader = new HttpRequestReader(serviceProvider, opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -529,8 +529,8 @@ public class HttpRequestReaderTest
         var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
         using var serviceProvider = GetServiceProvider(headersReader);
 
-        var reader = new HttpRequestReader(opts.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
+        var reader = new HttpRequestReader(serviceProvider, opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -606,8 +606,8 @@ public class HttpRequestReaderTest
         var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
         using var serviceProvider = GetServiceProvider(headersReader);
 
-        var reader = new HttpRequestReader(opts.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext, serviceProvider);
+        var reader = new HttpRequestReader(serviceProvider, opts.ToOptionsMonitor(),
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {

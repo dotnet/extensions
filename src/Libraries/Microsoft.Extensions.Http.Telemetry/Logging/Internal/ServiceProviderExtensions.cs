@@ -8,11 +8,19 @@ namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 
 internal static class ServiceProviderExtensions
 {
-    public static T GetRequiredKeyedServiceOrDefault<T>(this IServiceProvider serviceProvider, string? serviceKey)
+    /// <summary>
+    /// Gets a keyed service from the <see cref="IServiceProvider"/>, or a non-keyed service if the key is <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of service object to get.</typeparam>
+    /// <param name="provider">The <see cref="IServiceProvider"/> to retrieve the service object from.</param>
+    /// <param name="serviceKey">An optional object that specifies the key of service object to get.</param>
+    /// <returns>A service object of type <typeparamref name="T"/>.</returns>
+    /// <exception cref="InvalidOperationException">There is no service of type <typeparamref name="T"/> registered.</exception>
+    public static T GetRequiredOrKeyedService<T>(this IServiceProvider provider, string? serviceKey)
         where T : notnull
     {
         return serviceKey is null
-            ? serviceProvider.GetRequiredService<T>()
-            : serviceProvider.GetRequiredKeyedService<T>(serviceKey);
+            ? provider.GetRequiredService<T>()
+            : provider.GetRequiredKeyedService<T>(serviceKey);
     }
 }
