@@ -135,7 +135,7 @@ internal sealed partial class Emitter : EmitterBase
             return false;
         }
 
-        static string ConvertToString(LoggingMethodParameter lp, string arg)
+        static string ConvertParameterToString(LoggingMethodParameter lp, string arg)
         {
             var question = lp.PotentiallyNull ? "?" : string.Empty;
             if (lp.ImplementsIConvertible)
@@ -262,7 +262,7 @@ internal sealed partial class Emitter : EmitterBase
                         else
                         {
                             value = ShouldStringify(p.Type)
-                                ? ConvertToString(p, p.NameWithAt)
+                                ? ConvertParameterToString(p, p.NameWithAt)
                                 : p.NameWithAt;
                         }
 
@@ -314,7 +314,7 @@ internal sealed partial class Emitter : EmitterBase
                         var classification = $"_{EncodeTypeName(p.ClassificationAttributeType!)}_Classification";
 
                         var value = ShouldStringify(p.Type)
-                            ? ConvertToString(p, p.NameWithAt)
+                            ? ConvertParameterToString(p, p.NameWithAt)
                             : p.NameWithAt;
 
                         OutLn($"{stateName}.ClassifiedTagArray[{--count}] = new({key}, {value}, {classification});");

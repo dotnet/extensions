@@ -11,33 +11,11 @@ internal static class SymbolLoader
     public const string FlagsAttribute = "System.FlagsAttribute";
     public const string FreezerClass = "System.Collections.Frozen.FrozenDictionary";
 
-    public static bool TryLoad(Compilation compilation, out SymbolHolder? symbolHolder)
+    public static void Load(Compilation compilation, out SymbolHolder? symbolHolder)
     {
-        INamedTypeSymbol? GetSymbol(string metadataName, bool optional = false)
-        {
-            var symbol = compilation.GetTypeByMetadataName(metadataName);
-            if (symbol == null && !optional)
-            {
-                return null;
-            }
-
-            return symbol;
-        }
-
-        // required
-        var flagsAttributeSymbol = GetSymbol(FlagsAttribute);
-        var enumStringsAttributeSymbol = GetSymbol(EnumStringsAttribute);
-
-        if (flagsAttributeSymbol == null || enumStringsAttributeSymbol == null)
-        {
-            symbolHolder = default;
-            return false;
-        }
-
         symbolHolder = new(
-            flagsAttributeSymbol,
-            enumStringsAttributeSymbol,
-            GetSymbol(FreezerClass));
-        return true;
+            compilation.GetTypeByMetadataName(FlagsAttribute)!,
+            compilation.GetTypeByMetadataName(EnumStringsAttribute)!,
+            compilation.GetTypeByMetadataName(FreezerClass));
     }
 }
