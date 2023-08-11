@@ -79,7 +79,9 @@ internal sealed class PublicFilterVisitor : CSharpOutputVisitor
                     || s.Contains("ExcludeFromCodeCoverage")
                     || s.Contains("DebuggerStepThrough")
                     || s.Contains("SuppressMessage")
+                    || s.Contains("UnconditionalSuppressMessage")
                     || s.Contains("DynamicDependency")
+                    || s.Contains("RequiresUnreferencedCode")
                     || s.Contains("AsyncStateMachine"))
 #pragma warning restore S1067
                 {
