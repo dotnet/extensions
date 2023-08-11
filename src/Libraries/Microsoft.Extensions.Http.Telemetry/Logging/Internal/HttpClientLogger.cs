@@ -43,7 +43,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
         [ServiceKey] string? serviceKey = null)
         : this(
               logger,
-              serviceProvider.GetRequiredOrKeyedService<IHttpRequestReader>(serviceKey),
+              serviceProvider.GetRequiredOrKeyedRequiredService<IHttpRequestReader>(serviceKey),
               enrichers,
               optionsMonitor.GetKeyedOrCurrent(serviceKey))
     {

@@ -50,7 +50,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         : this(
               optionsMonitor.GetKeyedOrCurrent(serviceKey),
               routeFormatter,
-              serviceProvider.GetRequiredOrKeyedService<IHttpHeadersReader>(serviceKey),
+              serviceProvider.GetRequiredOrKeyedRequiredService<IHttpHeadersReader>(serviceKey),
               requestMetadataContext,
               downstreamDependencyMetadataManager)
     {

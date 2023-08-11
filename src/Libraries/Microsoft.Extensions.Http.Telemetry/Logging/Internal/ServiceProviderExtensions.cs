@@ -16,7 +16,7 @@ internal static class ServiceProviderExtensions
     /// <param name="serviceKey">An optional object that specifies the key of service object to get.</param>
     /// <returns>A service object of type <typeparamref name="T"/>.</returns>
     /// <exception cref="InvalidOperationException">There is no service of type <typeparamref name="T"/> registered.</exception>
-    public static T GetRequiredOrKeyedService<T>(this IServiceProvider provider, string? serviceKey)
+    public static T GetRequiredOrKeyedRequiredService<T>(this IServiceProvider provider, string? serviceKey)
         where T : notnull
     {
         return serviceKey is null
