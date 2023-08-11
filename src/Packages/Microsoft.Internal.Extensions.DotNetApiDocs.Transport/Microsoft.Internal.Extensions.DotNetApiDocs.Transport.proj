@@ -7,7 +7,7 @@
     <!-- Workaround https://github.com/microsoft/MSBuildSdks/issues/469 -->
     <TargetFrameworks />
 
-    <Stage>normal</Stage>
+    <Stage>transport</Stage>
     <IsShipping>false</IsShipping>
 
     <IncludeBuildOutput>true</IncludeBuildOutput>
