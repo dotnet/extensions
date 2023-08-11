@@ -26,9 +26,9 @@
          Set Private=false to avoid copying the referenced projects to output -->
     <ProjectReference PrivateAssets="all"
                       Private="false"
-                      Include="$(LibrariesProjectRoot)\*\*.*proj;
-                              $(LibrariesProjectRoot)\..\ToBeMoved\*\*.*proj;
-                              $(LibrariesProjectRoot)\..\ToBeRemoved\*\*.*proj"
+                      Include="$(SrcLibrariesDir)\*\*.*proj;
+                               $(SrcLibrariesDir)\..\ToBeMoved\*\*.*proj;
+                               $(SrcLibrariesDir)\..\ToBeRemoved\*\*.*proj"
                       />
   </ItemGroup>
 

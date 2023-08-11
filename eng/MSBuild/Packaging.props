@@ -7,6 +7,11 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Similar to https://github.com/dotnet/arcade/blob/main/src/Microsoft.DotNet.Arcade.Sdk/tools/RepoLayout.props#L48 -->
+    <SrcLibrariesDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'src', 'Libraries'))</SrcLibrariesDir>
+  </PropertyGroup>
+
   <!-- strong name signing control -->
   <PropertyGroup Condition="'$(SignArtifacts)' == 'true' ">
     <DelaySign>true</DelaySign>
