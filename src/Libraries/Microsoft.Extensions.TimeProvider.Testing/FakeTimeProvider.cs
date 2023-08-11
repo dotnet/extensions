@@ -18,7 +18,7 @@ public class FakeTimeProvider : TimeProvider
     internal readonly HashSet<Waiter> Waiters = new();
     private DateTimeOffset _now = new(2000, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
     private TimeZoneInfo _localTimeZone = TimeZoneInfo.Utc;
-    private int _wakeWaitersGate;
+    private volatile int _wakeWaitersGate;
     private TimeSpan _autoAdvanceAmount;
 
     /// <summary>
@@ -59,6 +59,7 @@ public class FakeTimeProvider : TimeProvider
     /// <remarks>
     /// This defaults to <see cref="TimeSpan.Zero"/>.
     /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">if the time value is set to less than <see cref="TimeSpan.Zero"/>.</exception>
     public TimeSpan AutoAdvanceAmount
     {
         get => _autoAdvanceAmount;
@@ -88,6 +89,7 @@ public class FakeTimeProvider : TimeProvider
     /// Sets the date and time in the UTC time zone.
     /// </summary>
     /// <param name="value">The date and time in the UTC time zone.</param>
+    /// <exception cref="ArgumentOutOfRangeException">if the supplied time value is before the curent time.</exception>
     public void SetUtcNow(DateTimeOffset value)
     {
         lock (Waiters)
@@ -113,6 +115,7 @@ public class FakeTimeProvider : TimeProvider
     /// marches forward automatically in hardware, for the fake time provider the application is responsible for
     /// doing this explicitly by calling this method.
     /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">if the time value is less than <see cref="TimeSpan.Zero"/>.</exception>
     public void Advance(TimeSpan delta)
     {
         _ = Throw.IfLessThan(delta.Ticks, 0);
@@ -147,7 +150,7 @@ public class FakeTimeProvider : TimeProvider
     /// Sets the local time zone.
     /// </summary>
     /// <param name="localTimeZone">The local time zone.</param>
-    public void SetLocalTimeZone(TimeZoneInfo localTimeZone) => _localTimeZone = localTimeZone;
+    public void SetLocalTimeZone(TimeZoneInfo localTimeZone) => _localTimeZone = Throw.IfNull(localTimeZone);
 
     /// <summary>
     /// Gets the amount by which the value from <see cref="GetTimestamp"/> increments per second.
@@ -240,15 +243,29 @@ public class FakeTimeProvider : TimeProvider
                 return;
             }
 
+            var oldTicks = _now.Ticks;
+
             // invoke the callback
             candidate.InvokeCallback();
+
+            var newTicks = _now.Ticks;
 
             // see if we need to reschedule the waiter
             if (candidate.Period > 0)
             {
                 // update the waiter's state
-                candidate.ScheduledOn = _now.Ticks;
-                candidate.WakeupTime += candidate.Period;
+                candidate.ScheduledOn = newTicks;
+
+                if (oldTicks != newTicks)
+                {
+                    // time changed while in the callback, readjust the wake time accordingly
+                    candidate.WakeupTime = newTicks + candidate.Period;
+                }
+                else
+                {
+                    // move on to the next period
+                    candidate.WakeupTime += candidate.Period;
+                }
             }
             else
             {
