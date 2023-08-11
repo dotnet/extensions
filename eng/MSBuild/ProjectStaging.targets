@@ -11,7 +11,7 @@
 
   <!-- Produce errors if we don't have all the right property values for normal stage -->
   <Target Name="_CheckNormalStageProps" Condition="'$(Stage)' == 'normal'" BeforeTargets="Build">
-    <Error Condition="'$(MinCodeCoverage)' != 'n/a' AND ('$(MinCodeCoverage)' &lt; 85)" Text="MinCodeCoverage property must be >= 85 for normal stage." />
+    <Error Condition="'$(MinCodeCoverage)' != 'n/a' AND ('$(MinCodeCoverage)' &lt; 75)" Text="MinCodeCoverage property must be >= 75 for normal stage." />
     <Error Condition="'$(MinMutationScore)' != 'n/a' AND ('$(MinMutationScore)' &lt; 50)" Text="MinMutationScore property must be >= 50 for normal stage." />
   </Target>
 

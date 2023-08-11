@@ -41,7 +41,6 @@ Get-ChildItem -Path src -Include '*.*sproj' -Recurse | ForEach-Object {
     $XmlDoc = [xml](Get-Content $_)
     $AssemblyName = Get-XmlValue $XmlDoc "//Project/PropertyGroup/AssemblyName"
     $MinCodeCoverage = Get-XmlValue $XmlDoc "//Project/PropertyGroup/MinCodeCoverage"
-    $TempMinCodeCoverage = Get-XmlValue $XmlDoc "//Project/PropertyGroup/TempMinCodeCoverage"
 
     if ([string]::IsNullOrWhiteSpace($AssemblyName)) {
         $AssemblyName = $_.BaseName
@@ -51,12 +50,6 @@ Get-ChildItem -Path src -Include '*.*sproj' -Recurse | ForEach-Object {
         # Test projects may not legitimely have min code coverage set.
         Write-Warning "$AssemblyName doesn't declare 'MinCodeCoverage' property"
         return
-    }
-
-    # Some projects currently fail code coverage checks. Allow to temporarily override the requirements
-    # TODO: This should eventually removed.
-    if (![string]::IsNullOrWhiteSpace($TempMinCodeCoverage)) {
-        $MinCodeCoverage = $TempMinCodeCoverage
     }
 
     $ProjectToMinCoverageMap[$AssemblyName] = $MinCodeCoverage
