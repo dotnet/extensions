@@ -344,5 +344,21 @@ public class FakeTimeProviderTests
         timeProvider.AutoAdvanceAmount = TimeSpan.Zero;
         Assert.Equal(timeProvider.Start, timeProvider.GetUtcNow());
     }
-}
 
+    [Fact]
+    public void AdvanceTimeInCallback()
+    {
+        var oneSecond = TimeSpan.FromSeconds(1);
+        var timeProvider = new FakeTimeProvider();
+
+        var timer = timeProvider.CreateTimer(_ =>
+        {
+            // Advance the time with exactly the same amount as the period of the timer. This could lead to an
+            // infinite loop where this callback repeatedly gets invoked. A correct implementation however
+            // will adjust the timer's wake time so this won't be a problem.
+            timeProvider.Advance(oneSecond);
+        }, null, TimeSpan.Zero, oneSecond);
+
+        Assert.True(true, "Yay, we didn't enter an infinite loop!");
+    }
+}
