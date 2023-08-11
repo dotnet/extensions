@@ -8,10 +8,6 @@
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.AsyncState.AsyncStateExtensions.AddAsyncStateCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.AsyncState.AsyncStateExtensions.TryRemoveAsyncStateCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
         }
       ]
     },
