@@ -4,7 +4,6 @@
     <Description>Benchmarks for Microsoft.Extensions.Telemetry.</Description>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <InjectSharedPools>true</InjectSharedPools>
   </PropertyGroup>
 
   <ItemGroup>

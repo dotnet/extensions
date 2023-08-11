@@ -15,6 +15,7 @@
     <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -7,6 +7,7 @@
 
   <PropertyGroup>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedPools>true</InjectSharedPools>
     <DisableSourceGeneratorPropertyName>DisableMicrosoftExtensionsTelemetrySourceGeneration</DisableSourceGeneratorPropertyName>
     <BuildAnalyzerReferences>true</BuildAnalyzerReferences>

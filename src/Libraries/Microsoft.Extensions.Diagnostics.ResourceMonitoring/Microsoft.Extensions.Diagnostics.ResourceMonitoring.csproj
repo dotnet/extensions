@@ -15,6 +15,7 @@
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
   </PropertyGroup>
 
   <PropertyGroup>

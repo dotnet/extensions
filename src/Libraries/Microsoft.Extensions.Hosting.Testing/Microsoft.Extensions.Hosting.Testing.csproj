@@ -9,6 +9,7 @@
   <PropertyGroup>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
   </PropertyGroup>
 
   <PropertyGroup>
