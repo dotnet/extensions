@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
-    <IsTrimmable Condition="'$(IsTrimmable)' == ''">true</IsTrimmable>
+    <IsTrimmable Condition="'$(IsTrimmable)' == '' and '$(TargetFrameowrk)' != 'net462'">true</IsTrimmable>
     <Api>false</Api>
 
     <InjectDiagnosticAttributesOnLegacy Condition="'$(InjectDiagnosticAttributesOnLegacy)' == ''">true</InjectDiagnosticAttributesOnLegacy>
