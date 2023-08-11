@@ -18,7 +18,6 @@ Write-Output "Creating .editorconfig files"
 & $Command $Diags editorconfig save --exclude xunit.analyzers src/Analyzers/.editorconfig       general,performance,production
 & $Command $Diags editorconfig save --exclude xunit.analyzers src/Generators/.editorconfig      general,performance,production
 & $Command $Diags editorconfig save --exclude xunit.analyzers src/Libraries/.editorconfig       general,api,performance,production
-& $Command $Diags editorconfig save --exclude xunit.analyzers src/ToBeRemoved/.editorconfig     general,performance,production
 & $Command $Diags editorconfig save --exclude xunit.analyzers src/LegacySupport/.editorconfig  general,performance,production
 & $Command $Diags editorconfig save --exclude xunit.analyzers src/Shared/.editorconfig          general,performance,production
 & $Command $Diags editorconfig save --exclude xunit.analyzers bench/.editorconfig               general,performance

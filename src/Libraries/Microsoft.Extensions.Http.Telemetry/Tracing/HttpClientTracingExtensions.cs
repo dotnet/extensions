@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Telemetry.Tracing.Internal;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
@@ -34,7 +33,7 @@ public static class HttpClientTracingExtensions
 
         return builder
             .ConfigureServices(services => services
-                .AddValidatedOptions<HttpClientTracingOptions, HttpClientTracingOptionsValidator>())
+                .AddOptionsWithValidateOnStart<HttpClientTracingOptions, HttpClientTracingOptionsValidator>())
              .AddHttpClientTracingInternal();
     }
 
@@ -52,7 +51,7 @@ public static class HttpClientTracingExtensions
 
         return builder
             .ConfigureServices(services => services
-                .AddValidatedOptions<HttpClientTracingOptions, HttpClientTracingOptionsValidator>()
+                .AddOptionsWithValidateOnStart<HttpClientTracingOptions, HttpClientTracingOptionsValidator>()
                 .Configure(configure))
              .AddHttpClientTracingInternal();
     }
@@ -71,7 +70,7 @@ public static class HttpClientTracingExtensions
 
         return builder
             .ConfigureServices(services => services
-                .AddValidatedOptions<HttpClientTracingOptions, HttpClientTracingOptionsValidator>()
+                .AddOptionsWithValidateOnStart<HttpClientTracingOptions, HttpClientTracingOptionsValidator>()
                 .Bind(section))
              .AddHttpClientTracingInternal();
     }

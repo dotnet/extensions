@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.AspNetCore.Connections;
@@ -47,7 +46,7 @@ public static class ConnectionTimeoutExtensions
         _ = Throw.IfNull(configure);
 
         _ = services
-            .AddValidatedOptions<ConnectionTimeoutOptions, ConnectionTimeoutValidator>()
+            .AddOptionsWithValidateOnStart<ConnectionTimeoutOptions, ConnectionTimeoutValidator>()
             .Configure(configure);
 
         return services;
@@ -70,7 +69,7 @@ public static class ConnectionTimeoutExtensions
         _ = Throw.IfNull(section);
 
         _ = services
-            .AddValidatedOptions<ConnectionTimeoutOptions, ConnectionTimeoutValidator>()
+            .AddOptionsWithValidateOnStart<ConnectionTimeoutOptions, ConnectionTimeoutValidator>()
             .Bind(section);
 
         return services;

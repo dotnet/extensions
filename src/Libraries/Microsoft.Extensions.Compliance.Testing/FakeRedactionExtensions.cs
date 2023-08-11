@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Compliance.Testing;
@@ -49,8 +48,8 @@ public static class FakeRedactionExtensions
         _ = Throw.IfNull(configure);
 
         builder
-            .Services.AddValidatedOptions<FakeRedactorOptions, FakeRedactorOptionsAutoValidator>()
-            .Services.AddValidatedOptions<FakeRedactorOptions, FakeRedactorOptionsCustomValidator>()
+            .Services.AddOptionsWithValidateOnStart<FakeRedactorOptions, FakeRedactorOptionsAutoValidator>()
+            .Services.AddOptionsWithValidateOnStart<FakeRedactorOptions, FakeRedactorOptionsCustomValidator>()
             .Configure(configure)
             .Services.TryAddSingleton<FakeRedactionCollector>();
 
@@ -74,8 +73,8 @@ public static class FakeRedactionExtensions
         _ = Throw.IfNull(section);
 
         builder
-            .Services.AddValidatedOptions<FakeRedactorOptions, FakeRedactorOptionsAutoValidator>()
-            .Services.AddValidatedOptions<FakeRedactorOptions, FakeRedactorOptionsCustomValidator>()
+            .Services.AddOptionsWithValidateOnStart<FakeRedactorOptions, FakeRedactorOptionsAutoValidator>()
+            .Services.AddOptionsWithValidateOnStart<FakeRedactorOptions, FakeRedactorOptionsCustomValidator>()
             .Services.Configure<FakeRedactorOptions>(section)
             .TryAddSingleton<FakeRedactionCollector>();
 
@@ -101,8 +100,8 @@ public static class FakeRedactionExtensions
         });
 
         return services
-            .AddValidatedOptions<FakeRedactorOptions, FakeRedactorOptionsAutoValidator>()
-            .Services.AddValidatedOptions<FakeRedactorOptions, FakeRedactorOptionsCustomValidator>()
+            .AddOptionsWithValidateOnStart<FakeRedactorOptions, FakeRedactorOptionsAutoValidator>()
+            .Services.AddOptionsWithValidateOnStart<FakeRedactorOptions, FakeRedactorOptionsCustomValidator>()
             .Services;
     }
 
@@ -128,8 +127,8 @@ public static class FakeRedactionExtensions
         });
 
         return services
-            .AddValidatedOptions<FakeRedactorOptions, FakeRedactorOptionsAutoValidator>()
-            .Services.AddValidatedOptions<FakeRedactorOptions, FakeRedactorOptionsCustomValidator>()
+            .AddOptionsWithValidateOnStart<FakeRedactorOptions, FakeRedactorOptionsAutoValidator>()
+            .Services.AddOptionsWithValidateOnStart<FakeRedactorOptions, FakeRedactorOptionsCustomValidator>()
             .Configure(configure)
             .Services;
     }

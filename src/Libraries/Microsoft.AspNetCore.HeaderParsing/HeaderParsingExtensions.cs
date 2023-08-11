@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Metering;
 using Microsoft.Shared.Diagnostics;
 
@@ -50,8 +49,8 @@ public static class HeaderParsingExtensions
     {
         _ = Throw.IfNull(services);
 
-        _ = services.AddValidatedOptions<HeaderParsingOptions, HeaderParsingOptionsValidator>();
-        _ = services.AddValidatedOptions<HeaderParsingOptions, HeaderParsingOptionsManualValidator>();
+        _ = services.AddOptionsWithValidateOnStart<HeaderParsingOptions, HeaderParsingOptionsValidator>();
+        _ = services.AddOptionsWithValidateOnStart<HeaderParsingOptions, HeaderParsingOptionsManualValidator>();
 
         return services
             .AddHeaderParsing()
@@ -69,11 +68,11 @@ public static class HeaderParsingExtensions
         _ = Throw.IfNull(services);
 
         _ = services
-            .AddValidatedOptions<HeaderParsingOptions, HeaderParsingOptionsValidator>()
+            .AddOptionsWithValidateOnStart<HeaderParsingOptions, HeaderParsingOptionsValidator>()
             .Bind(section);
 
         _ = services
-            .AddValidatedOptions<HeaderParsingOptions, HeaderParsingOptionsManualValidator>()
+            .AddOptionsWithValidateOnStart<HeaderParsingOptions, HeaderParsingOptionsManualValidator>()
             .Bind(section);
 
         return services

@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.Probes;
@@ -44,7 +43,7 @@ internal static class TcpEndpointHealthCheckExtensions
         _ = services.AddHealthChecks();
 
         _ = services
-            .AddValidatedOptions<KubernetesProbesOptions.EndpointOptions, EndpointOptionsValidator>(name);
+            .AddOptionsWithValidateOnStart<KubernetesProbesOptions.EndpointOptions, EndpointOptionsValidator>(name);
 
         _ = services.AddSingleton<IHostedService>(provider =>
         {

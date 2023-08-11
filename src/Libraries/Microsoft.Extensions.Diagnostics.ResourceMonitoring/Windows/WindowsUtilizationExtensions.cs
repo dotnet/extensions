@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Metering;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
@@ -78,7 +77,7 @@ public static class WindowsUtilizationExtensions
             .RegisterMetering();
 
         _ = builder.Services
-            .AddValidatedOptions<WindowsCountersOptions, WindowsCountersOptionsValidator>();
+            .AddOptionsWithValidateOnStart<WindowsCountersOptions, WindowsCountersOptionsValidator>();
 
         builder.Services
             .TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<WindowsCountersOptions>, WindowsCountersOptionsCustomValidator>());
@@ -107,7 +106,7 @@ public static class WindowsUtilizationExtensions
             .RegisterMetering();
 
         _ = builder.Services
-            .AddValidatedOptions<WindowsCountersOptions, WindowsCountersOptionsValidator>()
+            .AddOptionsWithValidateOnStart<WindowsCountersOptions, WindowsCountersOptionsValidator>()
                 .Bind(section);
 
         builder.Services
@@ -137,7 +136,7 @@ public static class WindowsUtilizationExtensions
             .RegisterMetering();
 
         _ = builder.Services
-            .AddValidatedOptions<WindowsCountersOptions, WindowsCountersOptionsValidator>()
+            .AddOptionsWithValidateOnStart<WindowsCountersOptions, WindowsCountersOptionsValidator>()
             .Configure(configure);
 
         builder.Services

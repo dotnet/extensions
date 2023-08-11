@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
@@ -68,8 +67,8 @@ public static partial class HttpClientBuilderExtensions
 
         var optionsName = StrategyNameHelper.GetName(builder.Name, StandardIdentifier);
 
-        _ = builder.Services.AddValidatedOptions<HttpStandardResilienceOptions, HttpStandardResilienceOptionsCustomValidator>(optionsName);
-        _ = builder.Services.AddValidatedOptions<HttpStandardResilienceOptions, HttpStandardResilienceOptionsValidator>(optionsName);
+        _ = builder.Services.AddOptionsWithValidateOnStart<HttpStandardResilienceOptions, HttpStandardResilienceOptionsCustomValidator>(optionsName);
+        _ = builder.Services.AddOptionsWithValidateOnStart<HttpStandardResilienceOptions, HttpStandardResilienceOptionsValidator>(optionsName);
 
         _ = builder.AddResilienceHandler(StandardIdentifier, (builder, context) =>
         {
