@@ -4,7 +4,6 @@
 using System;
 using Microsoft.Extensions.AsyncState;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.AspNetCore.AsyncState;
@@ -25,11 +24,10 @@ public static class AsyncStateHttpContextExtensions
     {
         _ = Throw.IfNull(services);
 
-        services
+        _ = services
             .AddHttpContextAccessor()
             .AddAsyncStateCore()
-            .TryRemoveAsyncStateCore()
-            .TryAddSingleton(typeof(IAsyncContext<>), typeof(AsyncContextHttpContext<>));
+            .AddSingleton(typeof(IAsyncContext<>), typeof(AsyncContextHttpContext<>));
 
         return services;
     }
