@@ -334,7 +334,7 @@ public class FakeTimeProviderTests
     [Fact]
     public void ToString_AutoAdvance_on()
     {
-        var timeProvider = new FakeTimeProvider()
+        var timeProvider = new FakeTimeProvider
         {
             AutoAdvanceAmount = TimeSpan.FromSeconds(1)
         };
