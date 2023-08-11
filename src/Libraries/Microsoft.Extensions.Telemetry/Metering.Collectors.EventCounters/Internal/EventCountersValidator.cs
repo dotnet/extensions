@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Data.Validation;
-using Validation = Microsoft.Extensions.Options.Validation;
 
 namespace Microsoft.Extensions.Telemetry.Metering.Internal;
 

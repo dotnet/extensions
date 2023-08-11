@@ -10,7 +10,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.IO;
 using Microsoft.Shared.Diagnostics;
@@ -111,7 +110,7 @@ public static class HttpLoggingServiceExtensions
         Action<OptionsBuilder<LoggingOptions>>? configureOptionsBuilder = null)
     {
         var builder = services
-            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>();
+            .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>();
 
         configureOptionsBuilder?.Invoke(builder);
 

@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Shared.Diagnostics;
 
@@ -85,7 +84,7 @@ public static class RequestHeadersEnricherExtensions
         Action<RequestHeadersLogEnricherOptions> configure)
     {
         _ = services
-            .AddValidatedOptions<RequestHeadersLogEnricherOptions, RequestHeadersLogEnricherOptionsValidator>()
+            .AddOptionsWithValidateOnStart<RequestHeadersLogEnricherOptions, RequestHeadersLogEnricherOptionsValidator>()
             .Configure(configure);
 
         return services;

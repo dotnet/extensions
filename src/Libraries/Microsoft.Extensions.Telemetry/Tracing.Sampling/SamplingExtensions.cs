@@ -5,7 +5,6 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Tracing.Internal;
 using Microsoft.Shared.Diagnostics;
 using OpenTelemetry.Trace;
@@ -73,8 +72,8 @@ public static class SamplingExtensions
     {
         return builder.ConfigureServices(services =>
         {
-            _ = services.AddValidatedOptions<SamplingOptions, SamplingOptionsAutoValidator>();
-            _ = services.AddValidatedOptions<SamplingOptions, SamplingOptionsCustomValidator>();
+            _ = services.AddOptionsWithValidateOnStart<SamplingOptions, SamplingOptionsAutoValidator>();
+            _ = services.AddOptionsWithValidateOnStart<SamplingOptions, SamplingOptionsCustomValidator>();
 
             _ = services.ConfigureOpenTelemetryTracerProvider((serviceProvider, builder) =>
             {

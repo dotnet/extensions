@@ -21,7 +21,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
-    <ProjectReference Include="..\..\ToBeRemoved\Options.ValidateOnStart\Options.ValidateOnStart.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
@@ -105,8 +104,8 @@ public static class ResourceMonitoringExtensions
         Action<OptionsBuilder<ResourceMonitoringOptions>> configure)
     {
         var optionsBuilder = builder
-            .Services.AddValidatedOptions<ResourceMonitoringOptions, ResourceUtilizationTrackerOptionsValidator>()
-            .Services.AddValidatedOptions<ResourceMonitoringOptions, ResourceUtilizationTrackerOptionsManualValidator>();
+            .Services.AddOptionsWithValidateOnStart<ResourceMonitoringOptions, ResourceUtilizationTrackerOptionsValidator>()
+            .Services.AddOptionsWithValidateOnStart<ResourceMonitoringOptions, ResourceUtilizationTrackerOptionsManualValidator>();
 
         configure.Invoke(optionsBuilder);
         return builder;

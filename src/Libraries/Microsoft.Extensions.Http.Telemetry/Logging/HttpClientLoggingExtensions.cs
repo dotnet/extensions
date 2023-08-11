@@ -12,7 +12,6 @@ using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
 
@@ -93,7 +92,7 @@ public static class HttpClientLoggingExtensions
         _ = Throw.IfNull(section);
 
         _ = services
-            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>()
+            .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>()
             .Bind(section);
 
         return services.AddDefaultHttpClientLogging();
@@ -115,7 +114,7 @@ public static class HttpClientLoggingExtensions
         _ = Throw.IfNull(configure);
 
         _ = services
-            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>()
+            .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>()
             .Configure(configure);
 
         return services.AddDefaultHttpClientLogging();
@@ -134,7 +133,7 @@ public static class HttpClientLoggingExtensions
         _ = Throw.IfNull(builder);
 
         _ = builder.Services
-            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>(builder.Name);
+            .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>(builder.Name);
 
         _ = builder.Services
             .AddHttpRouteProcessor()
@@ -176,7 +175,7 @@ public static class HttpClientLoggingExtensions
         _ = Throw.IfNull(section);
 
         _ = builder.Services
-            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>(builder.Name)
+            .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>(builder.Name)
             .Bind(section);
 
         _ = builder.Services
@@ -211,7 +210,7 @@ public static class HttpClientLoggingExtensions
         _ = Throw.IfNull(configure);
 
         _ = builder.Services
-            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>(builder.Name)
+            .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>(builder.Name)
             .Configure(configure);
 
         _ = builder.Services

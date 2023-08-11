@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AmbientMetadata;
@@ -80,7 +79,7 @@ public static class ApplicationMetadataExtensions
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(section);
 
-        _ = services.AddValidatedOptions<ApplicationMetadata, ApplicationMetadataValidator>().Bind(section);
+        _ = services.AddOptionsWithValidateOnStart<ApplicationMetadata, ApplicationMetadataValidator>().Bind(section);
 
         return services;
     }
@@ -97,7 +96,7 @@ public static class ApplicationMetadataExtensions
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configure);
 
-        _ = services.AddValidatedOptions<ApplicationMetadata, ApplicationMetadataValidator>().Configure(configure);
+        _ = services.AddOptionsWithValidateOnStart<ApplicationMetadata, ApplicationMetadataValidator>().Configure(configure);
 
         return services;
     }

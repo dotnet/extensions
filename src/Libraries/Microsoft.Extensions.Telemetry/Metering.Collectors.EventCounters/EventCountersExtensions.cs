@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Metering.Internal;
 using Microsoft.Shared.Diagnostics;
 
@@ -62,7 +61,7 @@ public static class EventCountersExtensions
     private static OptionsBuilder<EventCountersCollectorOptions> AddEventCounterCollectorInternal(IServiceCollection services)
     {
         var optionsBuilder = services
-            .AddValidatedOptions<EventCountersCollectorOptions, EventCountersCollectorOptionsValidator>();
+            .AddOptionsWithValidateOnStart<EventCountersCollectorOptions, EventCountersCollectorOptionsValidator>();
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IValidateOptions<EventCountersCollectorOptions>, EventCountersValidator>());
         _ = services.RegisterMetering();

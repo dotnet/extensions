@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
@@ -79,8 +78,8 @@ public static partial class HttpClientBuilderExtensions
 
         builder.Services.TryAddSingleton<Randomizer>();
 
-        _ = builder.Services.AddValidatedOptions<HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsValidator>(optionsName);
-        _ = builder.Services.AddValidatedOptions<HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsCustomValidator>(optionsName);
+        _ = builder.Services.AddOptionsWithValidateOnStart<HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsValidator>(optionsName);
+        _ = builder.Services.AddOptionsWithValidateOnStart<HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsCustomValidator>(optionsName);
         _ = builder.Services.PostConfigure<HttpStandardHedgingResilienceOptions>(optionsName, options =>
         {
             options.HedgingOptions.HedgingActionGenerator = args =>

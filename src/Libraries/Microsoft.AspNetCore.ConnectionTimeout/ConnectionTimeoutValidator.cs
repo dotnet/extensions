@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Extensions.Options;
-using Validation = Microsoft.Extensions.Options.Validation;
 
 namespace Microsoft.AspNetCore.Connections;
 

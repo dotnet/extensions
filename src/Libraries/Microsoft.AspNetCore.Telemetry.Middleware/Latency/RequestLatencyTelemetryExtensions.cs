@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Telemetry.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Latency;
 using Microsoft.Shared.Diagnostics;
 
@@ -32,7 +31,7 @@ public static class RequestLatencyTelemetryExtensions
         services.TryAddScoped(p => p.GetRequiredService<ILatencyContextProvider>().CreateContext());
         services.TryAddSingleton<RequestLatencyTelemetryMiddleware>();
 
-        _ = services.AddValidatedOptions<RequestLatencyTelemetryOptions, RequestLatencyTelemetryOptionsValidator>();
+        _ = services.AddOptionsWithValidateOnStart<RequestLatencyTelemetryOptions, RequestLatencyTelemetryOptionsValidator>();
 
         return services;
     }
