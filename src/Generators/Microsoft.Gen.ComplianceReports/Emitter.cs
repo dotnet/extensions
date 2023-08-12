@@ -174,6 +174,10 @@ internal sealed class Emitter : EmitterBase
 
     private void OutNameValue(string name, string value)
     {
+        value = value
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"");
+
         NewItem();
         OutIndent();
         Out($"\"{name}\": \"{value}\"");
