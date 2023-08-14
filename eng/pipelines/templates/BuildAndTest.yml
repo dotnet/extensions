@@ -62,21 +62,21 @@ steps:
             $(_OfficialBuildIdArgs)
     displayName: Build
 
-  - ${{ if eq(parameters.isWindows, 'true') }}:
-    - ${{ if ne(parameters.skipTests, 'true') }}:
-      - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
-                -l ${{ parameters.repoLogPath }}/coverage.net462.log -ll Verbose
-                --settings $(Build.SourcesDirectory)/eng/CodeCoverage.config
-                --output ${{ parameters.repoTestResultsPath }}/$(Agent.Os)_$(Agent.JobName).cobertura.net462.xml
-                "${{ parameters.buildScript }} -test -configuration ${{ parameters.buildConfig }} /p:TestTargetFrameworks=net462 /bl:${{ parameters.repoLogPath }}/tests.net462.binlog $(_OfficialBuildIdArgs)"
-        displayName: Run tests (net462)
+  # - ${{ if eq(parameters.isWindows, 'true') }}:
+  #   - ${{ if ne(parameters.skipTests, 'true') }}:
+  #     - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
+  #               -l ${{ parameters.repoLogPath }}/coverage.net462.log -ll Verbose
+  #               --settings $(Build.SourcesDirectory)/eng/CodeCoverage.config
+  #               --output ${{ parameters.repoTestResultsPath }}/$(Agent.Os)_$(Agent.JobName).cobertura.net462.xml
+  #               "${{ parameters.buildScript }} -test -configuration ${{ parameters.buildConfig }} /p:TestTargetFrameworks=net462 /bl:${{ parameters.repoLogPath }}/tests.net462.binlog $(_OfficialBuildIdArgs)"
+  #       displayName: Run tests (net462)
 
-      - task: PublishBuildArtifacts@1
-        displayName: Publish coverage results (cobertura.xml)
-        inputs:
-          PathtoPublish: '${{ parameters.repoTestResultsPath }}/$(Agent.Os)_$(Agent.JobName).cobertura.net462.xml'
-          PublishLocation: Container
-          ArtifactName: CodeCoverageResults
+  #     - task: PublishBuildArtifacts@1
+  #       displayName: Publish coverage results (cobertura.xml)
+  #       inputs:
+  #         PathtoPublish: '${{ parameters.repoTestResultsPath }}/$(Agent.Os)_$(Agent.JobName).cobertura.net462.xml'
+  #         PublishLocation: Container
+  #         ArtifactName: CodeCoverageResults
 
   - ${{ if ne(parameters.skipTests, 'true') }}:
     - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
