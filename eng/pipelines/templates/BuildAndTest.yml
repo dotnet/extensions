@@ -46,7 +46,7 @@ steps:
     displayName: Restore
 
   - pwsh: |
-        $(Build.SourcesDirectory)/scripts/Slngen.ps1 Compliance.Abstractions -NoLaunch
+        $(Build.SourcesDirectory)/scripts/Slngen.ps1 Compliance -NoLaunch
     displayName: Create solution
 
   - script: ${{ parameters.buildScript }}
