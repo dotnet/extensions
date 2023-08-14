@@ -123,8 +123,7 @@ internal sealed class Parser
         obj switch
         {
             sbyte or short or int or long => (ulong)Convert.ToInt64(obj, CultureInfo.InvariantCulture),
-            byte or ushort or uint or ulong => Convert.ToUInt64(obj, CultureInfo.InvariantCulture),
-            _ => 0,
+            _ => Convert.ToUInt64(obj, CultureInfo.InvariantCulture),
         };
 
     private static bool IsValidNamespace(string nspace)
@@ -154,12 +153,11 @@ internal sealed class Parser
         {
             if (SymbolEqualityComparer.Default.Equals(ad.AttributeClass, _symbolHolder.EnumStringsAttributeSymbol))
             {
-                var attrData = ad;
-                var attrSyntax = attrData.ApplicationSyntaxReference?.GetSyntax(_cancellationToken) as AttributeSyntax;
+                var attrSyntax = ad.ApplicationSyntaxReference?.GetSyntax(_cancellationToken) as AttributeSyntax;
 
-                if (attrData != null && attrSyntax != null)
+                if (attrSyntax != null)
                 {
-                    var (explicitEnumType, nspace, className, methodName, classModifiers) = ExtractAttributeValues(attrData);
+                    var (explicitEnumType, nspace, className, methodName, classModifiers) = ExtractAttributeValues(ad);
 
                     if (nspace != null && !IsValidNamespace(nspace))
                     {

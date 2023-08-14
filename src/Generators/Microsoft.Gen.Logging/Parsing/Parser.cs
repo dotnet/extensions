@@ -73,12 +73,7 @@ internal sealed class Parser
                         continue;
                     }
 
-                    var methodSymbol = sm.GetDeclaredSymbol(method, _cancellationToken);
-                    if (methodSymbol == null)
-                    {
-                        // we only care about methods
-                        continue;
-                    }
+                    var methodSymbol = sm.GetDeclaredSymbol(method, _cancellationToken)!;
 
                     var (lm, keepMethod) = ProcessMethod(method, methodSymbol, attrLoc);
 

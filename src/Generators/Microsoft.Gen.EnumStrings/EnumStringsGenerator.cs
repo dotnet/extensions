@@ -27,11 +27,7 @@ public class EnumStringsGenerator : IIncrementalGenerator
 
     private static void HandleAnnotatedNodes(Compilation compilation, ImmutableArray<SyntaxNode> nodes, SourceProductionContext context)
     {
-        if (!SymbolLoader.TryLoad(compilation, out var symbolHolder))
-        {
-            // Not eligible compilation
-            return;
-        }
+        SymbolLoader.Load(compilation, out var symbolHolder);
 
         var parser = new Parser(compilation, context.ReportDiagnostic, symbolHolder!, context.CancellationToken);
 

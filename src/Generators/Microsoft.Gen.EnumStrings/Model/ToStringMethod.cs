@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Gen.EnumStrings.Model;
 
+[ExcludeFromCodeCoverage]
 internal sealed record class ToStringMethod(
     string EnumTypeName,
     List<string> MemberNames,
