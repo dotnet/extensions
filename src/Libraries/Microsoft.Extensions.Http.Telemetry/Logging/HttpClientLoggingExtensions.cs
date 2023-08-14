@@ -7,6 +7,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Internal;
@@ -20,15 +21,15 @@ namespace Microsoft.Extensions.Http.Telemetry.Logging;
 public static class HttpClientLoggingExtensions
 {
     /// <summary>
-    /// Adds a <see cref="DelegatingHandler" /> to collect and emit logs for outgoing requests for all http clients.
+    /// Adds an <see cref="IHttpClientAsyncLogger" /> to emit logs for outgoing requests for all HTTP clients created with <see cref="IHttpClientFactory"/>.
     /// </summary>
-    /// <remarks>
-    /// This extension configures outgoing request logs auto collection globally for all http clients.
-    /// </remarks>
     /// <param name="services">The <see cref="IServiceCollection" />.</param>
     /// <returns>
     /// <see cref="IServiceCollection" /> instance for chaining.
     /// </returns>
+    /// <remarks>
+    /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
+    /// </remarks>
     /// <exception cref="ArgumentNullException">Argument <paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddDefaultHttpClientLogging(this IServiceCollection services)
     {
@@ -51,16 +52,16 @@ public static class HttpClientLoggingExtensions
     }
 
     /// <summary>
-    /// Adds a <see cref="DelegatingHandler" /> to collect and emit logs for outgoing requests for all http clients.
+    /// Adds an <see cref="IHttpClientAsyncLogger" /> to emit logs for outgoing requests for all HTTP clients created with <see cref="IHttpClientFactory"/>.
     /// </summary>
-    /// <remarks>
-    /// This extension configures outgoing request logs auto collection globally for all http clients.
-    /// </remarks>
     /// <param name="services">The <see cref="IServiceCollection" />.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="LoggingOptions"/>.</param>
     /// <returns>
     /// <see cref="IServiceCollection" /> instance for chaining.
     /// </returns>
+    /// <remarks>
+    /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
+    /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
     [UnconditionalSuppressMessage("Trimming",
@@ -79,16 +80,16 @@ public static class HttpClientLoggingExtensions
     }
 
     /// <summary>
-    /// Adds a <see cref="DelegatingHandler" /> to collect and emit logs for outgoing requests for all http clients.
+    /// Adds an <see cref="IHttpClientAsyncLogger" /> to emit logs for outgoing requests for all HTTP clients created with <see cref="IHttpClientFactory"/>.
     /// </summary>
-    /// <remarks>
-    /// This extension configures outgoing request logs auto collection globally for all http clients.
-    /// </remarks>
     /// <param name="services">The <see cref="IServiceCollection" />.</param>
     /// <param name="configure">The delegate to configure <see cref="LoggingOptions"/> with.</param>
     /// <returns>
     /// <see cref="IServiceCollection" /> instance for chaining.
     /// </returns>
+    /// <remarks>
+    /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
+    /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static IServiceCollection AddDefaultHttpClientLogging(this IServiceCollection services, Action<LoggingOptions> configure)
     {
@@ -103,12 +104,15 @@ public static class HttpClientLoggingExtensions
     }
 
     /// <summary>
-    /// Registers HTTP client logging components into <see cref="IServiceCollection"/>.
+    /// Adds an <see cref="IHttpClientAsyncLogger" /> to emit logs for outgoing requests for a named <see cref="HttpClient"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder" />.</param>
     /// <returns>
     /// An <see cref="IHttpClientBuilder" /> that can be used to configure the client.
     /// </returns>
+    /// <remarks>
+    /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
+    /// </remarks>
     /// <exception cref="ArgumentNullException">Argument <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static IHttpClientBuilder AddHttpClientLogging(this IHttpClientBuilder builder)
     {
@@ -118,13 +122,16 @@ public static class HttpClientLoggingExtensions
     }
 
     /// <summary>
-    /// Registers HTTP client logging components into <see cref="IServiceCollection"/>.
+    /// Adds an <see cref="IHttpClientAsyncLogger" /> to emit logs for outgoing requests for a named <see cref="HttpClient"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder" />.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="LoggingOptions"/>.</param>
     /// <returns>
     /// An <see cref="IHttpClientBuilder" /> that can be used to configure the client.
     /// </returns>
+    /// <remarks>
+    /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
+    /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
     [UnconditionalSuppressMessage("Trimming",
@@ -139,13 +146,16 @@ public static class HttpClientLoggingExtensions
     }
 
     /// <summary>
-    /// Registers HTTP client logging components into <see cref="IServiceCollection"/>.
+    /// Adds an <see cref="IHttpClientAsyncLogger" /> to emit logs for outgoing requests for a named <see cref="HttpClient"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder" />.</param>
     /// <param name="configure">The delegate to configure <see cref="LoggingOptions"/> with.</param>
     /// <returns>
     /// An <see cref="IHttpClientBuilder" /> that can be used to configure the client.
     /// </returns>
+    /// <remarks>
+    /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
+    /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
     [UnconditionalSuppressMessage("Trimming",
@@ -160,7 +170,7 @@ public static class HttpClientLoggingExtensions
     }
 
     /// <summary>
-    /// Adds an enricher instance of <typeparamref name="T"/> to the <see cref="IServiceCollection"/> to enrich HTTP client logs.
+    /// Adds an enricher instance of <typeparamref name="T"/> to the <see cref="IServiceCollection"/> to enrich <see cref="HttpClient"/> logs.
     /// </summary>
     /// <typeparam name="T">Type of enricher.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the instance of <typeparamref name="T"/> to.</param>

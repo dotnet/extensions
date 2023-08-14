@@ -22,15 +22,18 @@ internal static partial class Log
     private const int MinimalPropertyCount = 4;
 
     private const string RequestReadErrorMessage =
-        "An error occurred while reading the request data to fill the log record: " +
+        "An error occurred while reading the request data to fill the logger context for request: " +
         $"{{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}/{{{HttpClientLoggingTagNames.Path}}}";
 
     private const string ResponseReadErrorMessage =
-        "An error occurred while reading the response data to fill the log record: " +
+        "An error occurred while reading the response data to fill the logger context for request: " +
         $"{{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}/{{{HttpClientLoggingTagNames.Path}}}";
 
+    private const string LoggerContextMissingMessage =
+        $"The logger couldn't read its context for {{requestState}} request: {{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}";
+
     private const string EnrichmentErrorMessage =
-        "An error occurred in enricher '{enricherType}' while enriching the log record: " +
+        "An error occurred in enricher '{enricherType}' while enriching the logger context for request: " +
         $"{{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}/{{{HttpClientLoggingTagNames.Path}}}";
 
     private static readonly Func<LoggerMessageState, Exception?, string> _originalFormatValueFMTFunc = OriginalFormatValueFMT;
@@ -46,10 +49,13 @@ internal static partial class Log
     }
 
     [LoggerMessage(LogLevel.Error, RequestReadErrorMessage)]
-    public static partial void RequestReadError(ILogger logger, Exception exception, HttpMethod httpMethod, string? httpHost, string httpPath);
+    public static partial void RequestReadError(ILogger logger, Exception exception, HttpMethod httpMethod, string? httpHost, string? httpPath);
 
     [LoggerMessage(LogLevel.Error, ResponseReadErrorMessage)]
     public static partial void ResponseReadError(ILogger logger, Exception exception, HttpMethod httpMethod, string httpHost, string httpPath);
+
+    [LoggerMessage(LogLevel.Error, LoggerContextMissingMessage)]
+    public static partial void LoggerContextMissing(ILogger logger, Exception? exception, string requestState, HttpMethod httpMethod, string? httpHost);
 
     [LoggerMessage(LogLevel.Error, EnrichmentErrorMessage)]
     public static partial void EnrichmentError(ILogger logger, Exception exception, string? enricherType, HttpMethod httpMethod, string httpHost, string httpPath);

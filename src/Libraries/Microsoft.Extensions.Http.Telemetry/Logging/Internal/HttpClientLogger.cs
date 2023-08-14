@@ -21,6 +21,8 @@ namespace Microsoft.Extensions.Http.Telemetry.Logging;
 
 internal sealed class HttpClientLogger : IHttpClientAsyncLogger
 {
+    private const string SyncLoggingExceptionMessage = "Synchronous logging is not supported";
+
     private readonly ObjectPool<List<KeyValuePair<string, string>>> _headersPool =
         PoolFactory.CreateListPool<KeyValuePair<string, string>>();
 
@@ -93,7 +95,7 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
                 ? request.RequestUri?.AbsolutePath
                 : logRecord.Path;
 
-            Log.RequestReadError(_logger, ex, request.Method, request.RequestUri?.Host, pathToLog ?? string.Empty);
+            Log.RequestReadError(_logger, ex, request.Method, request.RequestUri?.Host, pathToLog);
 
             // Return back pooled objects (since the logRecord wasn't fully prepared):
             _logRecordPool.Return(logRecord);
@@ -126,19 +128,13 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
             => await LogResponseAsync(context, request, response, exception, elapsed, cancellationToken).ConfigureAwait(false);
 
     public object? LogRequestStart(HttpRequestMessage request)
-    {
-        throw new NotSupportedException();
-    }
+        => throw new NotSupportedException(SyncLoggingExceptionMessage);
 
     public void LogRequestStop(object? context, HttpRequestMessage request, HttpResponseMessage response, TimeSpan elapsed)
-    {
-        throw new NotSupportedException();
-    }
+        => throw new NotSupportedException(SyncLoggingExceptionMessage);
 
     public void LogRequestFailed(object? context, HttpRequestMessage request, HttpResponseMessage? response, Exception exception, TimeSpan elapsed)
-    {
-        throw new NotSupportedException();
-    }
+        => throw new NotSupportedException(SyncLoggingExceptionMessage);
 
     private static LogLevel GetLogLevel(LogRecord logRecord)
     {
@@ -165,7 +161,11 @@ internal sealed class HttpClientLogger : IHttpClientAsyncLogger
     {
         if (context is not LogRecord logRecord)
         {
-            // TODO: we need to decide - log an error or try to fill a new log record from the context?
+            var requestState = response is null
+                ? "failed"
+                : "completed";
+
+            Log.LoggerContextMissing(_logger, exception, requestState, request.Method, request.RequestUri?.Host);
             return;
         }
 
