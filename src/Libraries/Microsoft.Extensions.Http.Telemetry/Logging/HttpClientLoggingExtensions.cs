@@ -178,7 +178,7 @@ public static class HttpClientLoggingExtensions
     private static IHttpClientBuilder AddNamedClientLoggingInternal(IHttpClientBuilder builder, Action<OptionsBuilder<LoggingOptions>>? configureOptionsBuilder = null)
     {
         var optionsBuilder = builder.Services
-            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>(builder.Name);
+            .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>(builder.Name);
 
         configureOptionsBuilder?.Invoke(optionsBuilder);
 
