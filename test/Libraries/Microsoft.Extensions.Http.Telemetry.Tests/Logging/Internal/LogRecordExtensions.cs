@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
@@ -27,6 +28,12 @@ internal static class LogRecordExtensions
     {
         var actualValue = Assert.Contains(key, logRecordState);
         Assert.Equal(expectedValue, actualValue);
+    }
+
+    public static void Contains(this IDictionary<string, string?> logRecordState, string key, Action<string?> assertion)
+    {
+        var actualValue = Assert.Contains(key, logRecordState);
+        assertion(actualValue);
     }
 
     public static void NotContains(this IDictionary<string, string?> logRecord, string key)

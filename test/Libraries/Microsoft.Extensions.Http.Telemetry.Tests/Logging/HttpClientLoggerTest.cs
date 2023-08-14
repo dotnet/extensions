@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
-using FluentAssertions;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,7 +71,7 @@ public class HttpClientLoggerTest
         var act = async () =>
             await client.SendAsync(null!, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
-        await act.Should().ThrowAsync<ArgumentNullException>().ConfigureAwait(false);
+        await Assert.ThrowsAsync<ArgumentNullException>(act);
     }
 
     [Fact]
@@ -107,7 +106,8 @@ public class HttpClientLoggerTest
         var act = async () =>
             await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
-        await act.Should().ThrowAsync<HttpRequestException>().Where(e => e == exception);
+        var actualException = await Assert.ThrowsAsync<HttpRequestException>(act);
+        Assert.Same(exception, actualException);
     }
 
     [Fact]
@@ -149,7 +149,8 @@ public class HttpClientLoggerTest
         var act = async () =>
             await httpClient.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
-        await act.Should().NotThrowAsync<Exception>();
+        var exception = await Record.ExceptionAsync(act);
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -159,8 +160,6 @@ public class HttpClientLoggerTest
         var responseContent = _fixture.Create<string>();
         var testRequestHeaderValue = _fixture.Create<string>();
         var testResponseHeaderValue = _fixture.Create<string>();
-
-        var fakeTimeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
 
         var testEnricher = new TestEnricher();
 
@@ -172,7 +171,6 @@ public class HttpClientLoggerTest
             Host = "default-uri.com",
             Method = HttpMethod.Post,
             Path = "foo/bar",
-            Duration = 1000,
             StatusCode = 200,
             ResponseHeaders = new() { new(TestExpectedResponseHeaderKey, Redacted), new(testSharedResponseHeaderKey, Redacted) },
             RequestHeaders = new() { new(TestExpectedRequestHeaderKey, Redacted), new(testSharedRequestHeaderKey, Redacted) },
@@ -187,6 +185,7 @@ public class HttpClientLoggerTest
             RequestUri = new($"http://{expectedLogRecord.Host}/{expectedLogRecord.Path}"),
             Content = new StringContent(requestContent, Encoding.UTF8, TextPlain)
         };
+
         httpRequestMessage.Headers.Add(TestRequestHeader, testRequestHeaderValue);
         httpRequestMessage.Headers.Add("Header3", testRequestHeaderValue);
 
@@ -195,6 +194,7 @@ public class HttpClientLoggerTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(responseContent, Encoding.UTF8, TextPlain),
         };
+
         httpResponseMessage.Headers.Add(TestResponseHeader, testResponseHeaderValue);
         httpResponseMessage.Headers.Add("Header3", testRequestHeaderValue);
 
@@ -230,31 +230,26 @@ public class HttpClientLoggerTest
 
         using var handler = new TestLoggingHandler(
             logger,
-            new TestingHandlerStub((_, _) =>
-            {
-                fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(1000));
-                return Task.FromResult(httpResponseMessage);
-            }));
+            new TestingHandlerStub((_, _) => Task.FromResult(httpResponseMessage)));
 
         using var client = new HttpClient(handler);
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
-        logRecords.Count.Should().Be(1);
-
-        var logRecord = logRecords[0].GetStructuredState();
-        logRecord.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
-        logRecord.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
-        logRecord.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
-        logRecord.Contains(HttpClientLoggingTagNames.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
-        logRecord.Contains(HttpClientLoggingTagNames.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
-        logRecord.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
-        logRecord.Contains(HttpClientLoggingTagNames.ResponseBody, expectedLogRecord.ResponseBody);
-        logRecord.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders[0].Value);
-        logRecord.Contains(TestExpectedResponseHeaderKey, expectedLogRecord.ResponseHeaders[0].Value);
-        logRecord.Contains(testSharedResponseHeaderKey, expectedLogRecord.ResponseHeaders[1].Value);
-        logRecord.Contains(testSharedRequestHeaderKey, expectedLogRecord.RequestHeaders[1].Value);
-        logRecord.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
+        var logRecord = Assert.Single(logRecords);
+        var logRecordState = logRecord.GetStructuredState();
+        logRecordState.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
+        logRecordState.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
+        logRecordState.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
+        logRecordState.Contains(HttpClientLoggingTagNames.Duration, EnsureLogRecordDuration);
+        logRecordState.Contains(HttpClientLoggingTagNames.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
+        logRecordState.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
+        logRecordState.Contains(HttpClientLoggingTagNames.ResponseBody, expectedLogRecord.ResponseBody);
+        logRecordState.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders[0].Value);
+        logRecordState.Contains(TestExpectedResponseHeaderKey, expectedLogRecord.ResponseHeaders[0].Value);
+        logRecordState.Contains(testSharedResponseHeaderKey, expectedLogRecord.ResponseHeaders[1].Value);
+        logRecordState.Contains(testSharedRequestHeaderKey, expectedLogRecord.RequestHeaders[1].Value);
+        logRecordState.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
     }
 
     [Fact]
@@ -264,7 +259,6 @@ public class HttpClientLoggerTest
         var responseContent = _fixture.Create<string>();
         var requestHeaderValue = _fixture.Create<string>();
         var responseHeaderValue = _fixture.Create<string>();
-        var fakeTimeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
         var testEnricher = new TestEnricher();
 
         var expectedLogRecord = new LogRecord
@@ -272,7 +266,6 @@ public class HttpClientLoggerTest
             Host = "default-uri.com",
             Method = HttpMethod.Post,
             Path = "foo/bar",
-            Duration = 1000,
             StatusCode = 200,
             ResponseHeaders = new() { new(TestResponseHeader, Redacted) },
             RequestHeaders = new() { new(TestRequestHeader, Redacted) },
@@ -333,17 +326,13 @@ public class HttpClientLoggerTest
 
         using var handler = new TestLoggingHandler(
             logger,
-            new TestingHandlerStub((_, _) =>
-            {
-                fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(1000));
-                return Task.FromResult(httpResponseMessage);
-            }));
+            new TestingHandlerStub((_, _) => Task.FromResult(httpResponseMessage)));
 
         using var client = new HttpClient(handler);
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
-        logRecords.Count.Should().Be(2);
+        Assert.Equal(2, logRecords.Count);
 
         var logRecordRequest = logRecords[0].GetStructuredState();
         logRecordRequest.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
@@ -358,7 +347,7 @@ public class HttpClientLoggerTest
         logRecordFull.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
         logRecordFull.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
         logRecordFull.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
-        logRecordFull.Contains(HttpClientLoggingTagNames.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
+        logRecordFull.Contains(HttpClientLoggingTagNames.Duration, EnsureLogRecordDuration);
         logRecordFull.Contains(HttpClientLoggingTagNames.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
         logRecordFull.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
         logRecordFull.Contains(HttpClientLoggingTagNames.ResponseBody, expectedLogRecord.ResponseBody);
@@ -375,7 +364,6 @@ public class HttpClientLoggerTest
         var responseContent = _fixture.Create<string>();
         var requestHeaderValue = _fixture.Create<string>();
         var responseHeaderValue = _fixture.Create<string>();
-        var fakeTimeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
         var testEnricher = new TestEnricher();
 
         var expectedLogRecord = new LogRecord
@@ -383,7 +371,6 @@ public class HttpClientLoggerTest
             Host = "default-uri.com",
             Method = HttpMethod.Post,
             Path = "foo/bar",
-            Duration = 1000,
             StatusCode = 200,
             ResponseHeaders = new() { new(TestResponseHeader, Redacted) },
             RequestHeaders = new() { new(TestRequestHeader, Redacted) },
@@ -398,6 +385,7 @@ public class HttpClientLoggerTest
             RequestUri = new($"http://{expectedLogRecord.Host}/{expectedLogRecord.Path}"),
             Content = new StringContent(requestContent, Encoding.UTF8, TextPlain)
         };
+
         httpRequestMessage.Headers.Add(TestRequestHeader, requestHeaderValue);
 
         using var httpResponseMessage = new HttpResponseMessage
@@ -405,6 +393,7 @@ public class HttpClientLoggerTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(responseContent, Encoding.UTF8, TextPlain),
         };
+
         httpResponseMessage.Headers.Add(TestResponseHeader, responseHeaderValue);
 
         var options = new LoggingOptions
@@ -423,7 +412,7 @@ public class HttpClientLoggerTest
 
         var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector(Options.Options.Create(new FakeLogCollectorOptions())));
 
-        var exception = new OperationCanceledException();
+        var exception = new TaskCanceledException();
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
@@ -439,33 +428,29 @@ public class HttpClientLoggerTest
                     headersReader, RequestMetadataContext),
                 new List<IHttpClientLogEnricher> { testEnricher },
                 options),
-            new TestingHandlerStub((_, _) =>
-            {
-                fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(expectedLogRecord.Duration));
-                throw exception;
-            }));
+            new TestingHandlerStub((_, _) => throw exception));
 
         using var client = new HttpClient(handler);
-        var act = async () => await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
-        await act.Should().ThrowAsync<OperationCanceledException>().ConfigureAwait(false);
+        var act = () => client.SendAsync(httpRequestMessage, CancellationToken.None);
+        await Assert.ThrowsAsync<TaskCanceledException>(act);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
-        logRecords.Count.Should().Be(1);
-        logRecords[0].Message.Should().Be($"{httpRequestMessage.Method} {httpRequestMessage.RequestUri.Host}/{TelemetryConstants.Redacted}");
-        logRecords[0].Exception.Should().Be(exception);
+        var logRecord = Assert.Single(logRecords);
+        Assert.Equal($"{httpRequestMessage.Method} {httpRequestMessage.RequestUri.Host}/{TelemetryConstants.Redacted}", logRecord.Message);
+        Assert.Same(exception, logRecord.Exception);
 
-        var logRecord = logRecords[0].GetStructuredState();
-        logRecord.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
-        logRecord.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
-        logRecord.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
-        logRecord.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
-        logRecord.NotContains(HttpClientLoggingTagNames.ResponseBody);
-        logRecord.NotContains(HttpClientLoggingTagNames.StatusCode);
-        logRecord.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
-        logRecord.Should().NotContain(kvp => kvp.Key.StartsWith(HttpClientLoggingTagNames.ResponseHeaderPrefix));
-        logRecord.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
-        logRecord.NotContains(testEnricher.KvpResponse.Key);
-        logRecord.Contains(HttpClientLoggingTagNames.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
+        var logRecordState = logRecord.GetStructuredState();
+        logRecordState.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
+        logRecordState.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
+        logRecordState.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
+        logRecordState.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
+        logRecordState.NotContains(HttpClientLoggingTagNames.ResponseBody);
+        logRecordState.NotContains(HttpClientLoggingTagNames.StatusCode);
+        logRecordState.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
+        logRecordState.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
+        logRecordState.NotContains(testEnricher.KvpResponse.Key);
+        logRecordState.Contains(HttpClientLoggingTagNames.Duration, EnsureLogRecordDuration);
+        Assert.DoesNotContain(logRecordState, kvp => kvp.Key.StartsWith(HttpClientLoggingTagNames.ResponseHeaderPrefix));
     }
 
     [Fact(Skip = "Flaky test, see https://github.com/dotnet/r9/issues/372")]
@@ -475,7 +460,6 @@ public class HttpClientLoggerTest
         var responseContent = _fixture.Create<string>();
         var requestHeaderValue = _fixture.Create<string>();
         var responseHeaderValue = _fixture.Create<string>();
-        var fakeTimeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
         var testEnricher = new TestEnricher();
 
         var expectedLogRecord = new LogRecord
@@ -483,7 +467,6 @@ public class HttpClientLoggerTest
             Host = "default-uri.com",
             Method = HttpMethod.Post,
             Path = "foo/bar",
-            Duration = 1000,
             StatusCode = 200,
             ResponseHeaders = new() { new(TestResponseHeader, Redacted) },
             RequestHeaders = new() { new(TestRequestHeader, Redacted) },
@@ -498,6 +481,7 @@ public class HttpClientLoggerTest
             RequestUri = new($"http://{expectedLogRecord.Host}/{expectedLogRecord.Path}"),
             Content = new StringContent(requestContent, Encoding.UTF8, TextPlain)
         };
+
         httpRequestMessage.Headers.Add(TestRequestHeader, requestHeaderValue);
 
         using var httpResponseMessage = new HttpResponseMessage
@@ -505,6 +489,7 @@ public class HttpClientLoggerTest
             StatusCode = HttpStatusCode.OK,
             Content = new StringContent(responseContent, Encoding.UTF8, TextPlain),
         };
+
         httpResponseMessage.Headers.Add(TestResponseHeader, responseHeaderValue);
 
         var options = new LoggingOptions
@@ -559,34 +544,29 @@ public class HttpClientLoggerTest
                 mockedRequestReader.Object,
                 new List<IHttpClientLogEnricher> { testEnricher },
                 options),
-            new TestingHandlerStub((_, _) =>
-            {
-                fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(1000));
-                return Task.FromResult(httpResponseMessage);
-            }));
+            new TestingHandlerStub((_, _) => Task.FromResult(httpResponseMessage)));
 
         using var client = new HttpClient(handler);
         var act = async () => await client
             .SendAsync(httpRequestMessage, It.IsAny<CancellationToken>())
             .ConfigureAwait(false);
-        await act.Should().ThrowAsync<InvalidOperationException>().ConfigureAwait(false);
+        await Assert.ThrowsAsync<InvalidOperationException>(act);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
-        logRecords.Count.Should().Be(1);
-        logRecords[0].Exception.Should().Be(exception);
+        var logRecord = Assert.Single(logRecords);
 
-        var logRecord = logRecords[0].GetStructuredState();
-        logRecord.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
-        logRecord.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
-        logRecord.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
-        logRecord.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
-        logRecord.NotContains(HttpClientLoggingTagNames.ResponseBody);
-        logRecord.NotContains(HttpClientLoggingTagNames.StatusCode);
-        logRecord.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
-        logRecord.Should().NotContain(kvp => kvp.Key.StartsWith(HttpClientLoggingTagNames.ResponseHeaderPrefix));
-        logRecord.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
-        logRecord.Contains(testEnricher.KvpResponse.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpResponse.Key));
-        logRecord.Contains(HttpClientLoggingTagNames.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
+        var logRecordState = logRecord.GetStructuredState();
+        logRecordState.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
+        logRecordState.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
+        logRecordState.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
+        logRecordState.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
+        logRecordState.NotContains(HttpClientLoggingTagNames.ResponseBody);
+        logRecordState.NotContains(HttpClientLoggingTagNames.StatusCode);
+        logRecordState.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
+        logRecordState.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
+        logRecordState.Contains(testEnricher.KvpResponse.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpResponse.Key));
+        logRecordState.Contains(HttpClientLoggingTagNames.Duration, EnsureLogRecordDuration);
+        Assert.DoesNotContain(logRecordState, kvp => kvp.Key.StartsWith(HttpClientLoggingTagNames.ResponseHeaderPrefix));
     }
 
     [Fact]
@@ -596,7 +576,6 @@ public class HttpClientLoggerTest
         var responseContent = _fixture.Create<string>();
         var requestHeaderValue = _fixture.Create<string>();
         var responseHeaderValue = _fixture.Create<string>();
-        var fakeTimeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow);
         var testEnricher = new TestEnricher();
 
         var expectedLogRecord = new LogRecord
@@ -604,7 +583,6 @@ public class HttpClientLoggerTest
             Host = "default-uri.com",
             Method = HttpMethod.Post,
             Path = "foo/bar",
-            Duration = 1000,
             StatusCode = 200,
             ResponseHeaders = new() { new(TestResponseHeader, Redacted) },
             RequestHeaders = new() { new(TestRequestHeader, Redacted) },
@@ -659,29 +637,25 @@ public class HttpClientLoggerTest
                     headersReader, RequestMetadataContext),
                 new List<IHttpClientLogEnricher> { testEnricher },
                 options),
-            new TestingHandlerStub((_, _) =>
-            {
-                fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(1000));
-                return Task.FromResult(httpResponseMessage);
-            }));
+            new TestingHandlerStub((_, _) => Task.FromResult(httpResponseMessage)));
 
         using var client = new HttpClient(handler);
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
-        logRecords.Count.Should().Be(1);
+        var logRecord = Assert.Single(logRecords);
 
-        var logRecord = logRecords[0].GetStructuredState();
-        logRecord.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
-        logRecord.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
-        logRecord.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
-        logRecord.Contains(HttpClientLoggingTagNames.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
-        logRecord.Contains(HttpClientLoggingTagNames.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
-        logRecord.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
-        logRecord.Contains(HttpClientLoggingTagNames.ResponseBody, expectedLogRecord.ResponseBody);
-        logRecord.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
-        logRecord.Contains(TestExpectedResponseHeaderKey, expectedLogRecord.ResponseHeaders.FirstOrDefault().Value);
-        logRecord.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
+        var logRecordState = logRecord.GetStructuredState();
+        logRecordState.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
+        logRecordState.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
+        logRecordState.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
+        logRecordState.Contains(HttpClientLoggingTagNames.Duration, EnsureLogRecordDuration);
+        logRecordState.Contains(HttpClientLoggingTagNames.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
+        logRecordState.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
+        logRecordState.Contains(HttpClientLoggingTagNames.ResponseBody, expectedLogRecord.ResponseBody);
+        logRecordState.Contains(TestExpectedRequestHeaderKey, expectedLogRecord.RequestHeaders.FirstOrDefault().Value);
+        logRecordState.Contains(TestExpectedResponseHeaderKey, expectedLogRecord.ResponseHeaders.FirstOrDefault().Value);
+        logRecordState.Contains(testEnricher.KvpRequest.Key, expectedLogRecord.GetEnrichmentProperty(testEnricher.KvpRequest.Key));
     }
 
     [Fact]
@@ -693,6 +667,7 @@ public class HttpClientLoggerTest
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
+
         var fakeLogger = new FakeLogger<HttpClientLogger>();
         using var handler = new TestLoggingHandler(
             new HttpClientLogger(
@@ -717,7 +692,7 @@ public class HttpClientLoggerTest
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
-        logRecords.Count.Should().Be(1);
+        _ = Assert.Single(logRecords);
 
         enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()), Times.Exactly(1));
         enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()), Times.Exactly(1));
@@ -759,7 +734,7 @@ public class HttpClientLoggerTest
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
-        logRecords.Count.Should().Be(2);
+        Assert.Equal(2, logRecords.Count);
 
         enricher1.Verify(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()), Times.Exactly(1));
         enricher2.Verify(e => e.Enrich(It.IsAny<IEnrichmentTagCollector>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>(), It.IsAny<Exception>()), Times.Exactly(1));
@@ -797,7 +772,7 @@ public class HttpClientLoggerTest
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
-        logRecords.Count.Should().Be(2);
+        Assert.Equal(2, logRecords.Count);
 
         Assert.Equal(nameof(Log.EnrichmentError), logRecords[0].Id.Name);
         Assert.Equal(exception, logRecords[0].Exception);
@@ -821,7 +796,7 @@ public class HttpClientLoggerTest
         var enricher2 = new Mock<IHttpClientLogEnricher>();
         var fakeLogger = new FakeLogger<HttpClientLogger>();
 
-        var sendAsyncException = new OperationCanceledException();
+        var sendAsyncException = new TaskCanceledException();
         using var handler = new TestLoggingHandler(
             new HttpClientLogger(
                 fakeLogger,
@@ -838,11 +813,11 @@ public class HttpClientLoggerTest
             Content = new StringContent(_fixture.Create<string>(), Encoding.UTF8, TextPlain)
         };
 
-        var act = () => client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
-        await act.Should().ThrowAsync<OperationCanceledException>();
+        var act = () => client.SendAsync(httpRequestMessage, CancellationToken.None);
+        await Assert.ThrowsAsync<TaskCanceledException>(act);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
-        logRecords.Count.Should().Be(2);
+        Assert.Equal(2, logRecords.Count);
 
         Assert.Equal(nameof(Log.EnrichmentError), logRecords[0].Id.Name);
         Assert.Equal(enrichmentException, logRecords[0].Exception);
@@ -940,13 +915,12 @@ public class HttpClientLoggerTest
         await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
-        logRecords.Count.Should().Be(1);
+        var logRecord = Assert.Single(logRecords).GetStructuredState();
 
-        var logRecord = logRecords[0].GetStructuredState();
         logRecord.Contains(HttpClientLoggingTagNames.Host, expectedLogRecord.Host);
         logRecord.Contains(HttpClientLoggingTagNames.Method, expectedLogRecord.Method.ToString());
         logRecord.Contains(HttpClientLoggingTagNames.Path, TelemetryConstants.Redacted);
-        logRecord.Contains(HttpClientLoggingTagNames.Duration, expectedLogRecord.Duration.ToString(CultureInfo.InvariantCulture));
+        logRecord.Contains(HttpClientLoggingTagNames.Duration, EnsureLogRecordDuration);
         logRecord.Contains(HttpClientLoggingTagNames.StatusCode, expectedLogRecord.StatusCode.Value.ToString(CultureInfo.InvariantCulture));
         logRecord.Contains(HttpClientLoggingTagNames.RequestBody, expectedLogRecord.RequestBody);
         logRecord.Contains(HttpClientLoggingTagNames.ResponseBody, expectedLogRecord.ResponseBody);
@@ -998,6 +972,12 @@ public class HttpClientLoggerTest
             .BuildServiceProvider();
 
         return builder.GetService<IHttpRouteFormatter>()!;
+    }
+
+    private static void EnsureLogRecordDuration(string? actualValue)
+    {
+        Assert.NotNull(actualValue);
+        Assert.InRange(int.Parse(actualValue), 0, int.MaxValue);
     }
 
     private static IOutgoingRequestContext RequestMetadataContext
