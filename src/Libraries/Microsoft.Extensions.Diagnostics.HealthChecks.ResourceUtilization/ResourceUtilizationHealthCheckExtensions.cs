@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -30,7 +29,7 @@ public static class ResourceUtilizationHealthCheckExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(tags);
 
-        _ = builder.Services.AddValidatedOptions<ResourceUtilizationHealthCheckOptions, ResourceUtilizationHealthCheckOptionsValidator>();
+        _ = builder.Services.AddOptionsWithValidateOnStart<ResourceUtilizationHealthCheckOptions, ResourceUtilizationHealthCheckOptionsValidator>();
         return builder.AddCheck<ResourceUtilizationHealthCheck>(HealthCheckName, tags: tags);
     }
 
@@ -46,7 +45,7 @@ public static class ResourceUtilizationHealthCheckExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(tags);
 
-        _ = builder.Services.AddValidatedOptions<ResourceUtilizationHealthCheckOptions, ResourceUtilizationHealthCheckOptionsValidator>();
+        _ = builder.Services.AddOptionsWithValidateOnStart<ResourceUtilizationHealthCheckOptions, ResourceUtilizationHealthCheckOptionsValidator>();
         return builder.AddCheck<ResourceUtilizationHealthCheck>(HealthCheckName, tags: tags);
     }
 

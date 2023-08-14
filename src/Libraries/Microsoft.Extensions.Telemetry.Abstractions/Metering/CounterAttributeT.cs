@@ -18,11 +18,11 @@ namespace Microsoft.Extensions.Telemetry.Metering;
 /// <remarks>
 /// This attribute is applied to a method which has the following constraints:
 /// <list type="bullet">
-/// <item>Must be a partial method.</item>
-/// <item>Must return <c>metricName</c> as the type. A class with that name will be generated.</item>
-/// <item>Must not be generic.</item>
-/// <item>Must have <c>System.Diagnostics.Metrics.Meter</c> as first parameter.</item>
-/// <item>Must have all the keys provided in <c>staticTags</c> as string type parameters.</item>
+/// <item><description>Must be a partial method.</description></item>
+/// <item><description>Must return <c>metricName</c> as the type. A class with that name will be generated.</description></item>
+/// <item><description>Must not be generic.</description></item>
+/// <item><description>Must have <c>System.Diagnostics.Metrics.Meter</c> as first parameter.</description></item>
+/// <item><description>Must have all the keys provided in <c>staticTags</c> as string type parameters.</description></item>
 /// </list>
 /// </remarks>
 /// <example>
@@ -70,7 +70,7 @@ public sealed class CounterAttribute<T> : Attribute
     /// </code>
     /// </example>
     /// <remarks>
-    /// In this example the metric name is <c>SampleMetric</c>. When <c>Name</c> is not provided
+    /// In this example, the metric name is <c>SampleMetric</c>. When <c>Name</c> is not provided
     /// the return type of the method is used as metric name. In this example, this would
     /// be <c>RequestCounter</c> if <c>Name</c> wasn't provided.
     /// </remarks>

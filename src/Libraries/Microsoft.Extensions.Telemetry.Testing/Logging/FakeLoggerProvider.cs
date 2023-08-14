@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Telemetry.Testing.Logging;
 #pragma warning disable CA1063
 
 /// <summary>
-/// A provider of fake loggers.
+/// Provides fake loggers.
 /// </summary>
 [ProviderAlias("Fake")]
 public class FakeLoggerProvider : ILoggerProvider, ISupportExternalScope

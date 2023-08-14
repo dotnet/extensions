@@ -67,7 +67,8 @@ public sealed class ApiLifecycleAnalyzer : DiagnosticAnalyzer
         var compilation = context.Compilation;
         var obsoleteAttribute = compilation.GetTypeByMetadataName(ObsoleteAttributeFullName);
 
-        // flag symbols found in the code, but not in the model
+        // #1. flag symbols found in the code, but not in the model
+
         foreach (var symbol in assemblyAnalysis.NotFoundInBaseline)
         {
             if (!symbol.IsContaminated(ExperimentalAttributeFullName))
@@ -76,7 +77,7 @@ public sealed class ApiLifecycleAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        // flag any stable or deprecated API in the model, but not in the assembly
+        // #2. flag any stable or deprecated API in the model, but not in the assembly
 
         foreach (var type in assemblyAnalysis.MissingTypes.Where(x => x.Stage != Stage.Experimental))
         {
@@ -98,7 +99,8 @@ public sealed class ApiLifecycleAnalyzer : DiagnosticAnalyzer
             context.ReportDiagnostic(Diagnostic.Create(DiagDescriptors.PublishedSymbolsCantBeDeleted, null, field.Member));
         }
 
-        // now make sure attributes are applied correctly
+        // #3. make sure attributes are applied correctly
+
         foreach (var (symbol, stage) in assemblyAnalysis.FoundInBaseline)
         {
             var isMarkedExperimental = symbol.IsContaminated(ExperimentalAttributeFullName);
@@ -106,11 +108,6 @@ public sealed class ApiLifecycleAnalyzer : DiagnosticAnalyzer
 
             if (stage == Stage.Experimental)
             {
-                if (!isMarkedExperimental)
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(DiagDescriptors.NewSymbolsMustBeMarkedExperimental, symbol.Locations.FirstOrDefault(), symbol));
-                }
-
                 if (isMarkedObsolete)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(DiagDescriptors.ExperimentalSymbolsCantBeMarkedObsolete, symbol.Locations.FirstOrDefault(), symbol));

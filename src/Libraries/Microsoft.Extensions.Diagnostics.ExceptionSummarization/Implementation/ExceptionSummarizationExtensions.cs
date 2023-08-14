@@ -35,7 +35,7 @@ public static class ExceptionSummarizationExtensions
     /// <param name="services">The dependency injection container to add the summarizer to.</param>
     /// <param name="configure">Delegates that configures the set of registered summary providers.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="configure"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddExceptionSummarizer(this IServiceCollection services, Action<IExceptionSummarizationBuilder> configure)
     {
         _ = Throw.IfNull(services);

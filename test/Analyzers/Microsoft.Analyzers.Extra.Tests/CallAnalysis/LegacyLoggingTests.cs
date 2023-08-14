@@ -9,7 +9,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.ExtraAnalyzers.Test;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 using Xunit;
 
 namespace Microsoft.Extensions.ExtraAnalyzers.CallAnalysis.Test;
@@ -63,7 +62,7 @@ public static partial class LegacyLoggingTests
                     public static partial class Log
                     {
 
-        [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
+        [Microsoft.Extensions.Logging.LoggerMessage(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
         internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger);
     }
                 }
@@ -72,7 +71,7 @@ public static partial class LegacyLoggingTests
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
             defaultNamespace: "Example").ConfigureAwait(false);
 
@@ -156,7 +155,7 @@ public static partial class LegacyLoggingTests
                     public static partial class Log
                     {
 
-        [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello {myProperty}"")]
+        [Microsoft.Extensions.Logging.LoggerMessage(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello {myProperty}"")]
         internal static partial void HelloMyProperty(this Microsoft.Extensions.Logging.ILogger logger, string myProperty);
     }
                 }
@@ -165,7 +164,7 @@ public static partial class LegacyLoggingTests
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
             defaultNamespace: "Example").ConfigureAwait(false);
 
@@ -219,7 +218,7 @@ namespace Example
     static partial class Log
     {
 
-        [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, LogLevel.Trace, ""Hello"")]
+        [LoggerMessage(0, LogLevel.Trace, ""Hello"")]
         internal static partial void Hello(this ILogger logger);
     }
 }
@@ -228,7 +227,7 @@ namespace Example
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource },
             extraFile: "Log.cs",
             defaultNamespace: "Example").ConfigureAwait(false);
@@ -282,14 +281,14 @@ namespace Example
             public static partial class Log
             {
 
-    [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
+    [Microsoft.Extensions.Logging.LoggerMessage(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
     internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger);
 }";
 
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
             defaultNamespace: "Example").ConfigureAwait(false);
 
@@ -353,7 +352,7 @@ namespace Example
                         static partial class Log
                         {
 
-            [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
+            [Microsoft.Extensions.Logging.LoggerMessage(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
             internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger);
         }
                     }
@@ -363,7 +362,7 @@ namespace Example
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
             defaultNamespace: "Example.Example2").ConfigureAwait(false);
 
@@ -430,7 +429,7 @@ namespace Example.Example2
     static partial class Log
     {
 
-        [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, LogLevel.Trace, ""Hello"")]
+        [LoggerMessage(0, LogLevel.Trace, ""Hello"")]
         internal static partial void Hello(this ILogger logger);
     }
 }
@@ -439,7 +438,7 @@ namespace Example.Example2
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
             extraFile: "Log.cs",
             defaultNamespace: "Example.Example2").ConfigureAwait(false);
@@ -501,7 +500,7 @@ namespace Example
     static partial class Log
     {
 
-        [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, LogLevel.Trace, ""Hello"")]
+        [LoggerMessage(0, LogLevel.Trace, ""Hello"")]
         internal static partial void Hello(this ILogger logger);
     }
 }
@@ -510,7 +509,7 @@ namespace Example
         var l = await RoslynTestUtils.RunAnalyzerAndFixer(
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
             sourceNames: new[] { "primary.cs", "Log.cs" },
             extraFile: "Log2.cs",
@@ -571,7 +570,7 @@ namespace Example
                     public static partial class Log
                     {
 
-        [Microsoft.Extensions.Telemetry.Logging.LogMethod(1, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
+        [Microsoft.Extensions.Logging.LoggerMessage(1, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello"")]
         internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger);
     }
                 }
@@ -583,7 +582,7 @@ namespace Example
             {
                 GetTypeByMetadataName3 = (_, _) => null,
             },
-            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! },
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
             defaultNamespace: "Example").ConfigureAwait(false);
 
@@ -617,7 +616,7 @@ namespace Example
                     {
                         /*0+*/static partial class Log/*-0*/
                         {
-                            [Microsoft.Extensions.Telemetry.Logging.LogMethod(0, LogLevel.Trace, ""Hello"")]
+                            [Microsoft.Extensions.Telemetry.LoggerMessage(0, LogLevel.Trace, ""Hello"")]
                             internal static void Hello(ILogger logger) {}
 
                             [Obsolete]
@@ -644,7 +643,7 @@ namespace Example
                 ";
 
         var proj = RoslynTestUtils
-            .CreateTestProject(new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LogMethodAttribute))! })
+            .CreateTestProject(new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! })
                 .WithDocument("target.cs", TargetSourceCode)
                 .WithDocument("invocation.cs", InvocationSourceCode);
 

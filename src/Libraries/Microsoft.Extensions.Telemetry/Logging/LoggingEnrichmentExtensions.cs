@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
@@ -39,7 +38,7 @@ public static class LoggingEnrichmentExtensions
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
         _ = builder.Services.Configure(configure);
-        _ = builder.Services.AddValidatedOptions<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>();
+        _ = builder.Services.AddOptionsWithValidateOnStart<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>();
 
         return builder;
     }
@@ -55,7 +54,7 @@ public static class LoggingEnrichmentExtensions
         _ = Throw.IfNull(builder);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
-        _ = builder.Services.AddValidatedOptions<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>().Bind(section);
+        _ = builder.Services.AddOptionsWithValidateOnStart<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>().Bind(section);
 
         return builder;
     }

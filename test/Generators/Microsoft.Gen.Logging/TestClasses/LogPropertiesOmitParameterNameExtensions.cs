@@ -15,21 +15,21 @@ namespace TestClasses
             public string? P1 { get; set; }
         }
 
-        [LogMethod(0, LogLevel.Debug)]
+        [LoggerMessage(LogLevel.Debug)]
         public static partial void M0(ILogger logger, [LogProperties(OmitParameterName = true)] MyProps p);
 
-        [LogMethod(1, LogLevel.Warning)]
+        [LoggerMessage(LogLevel.Warning)]
         public static partial void M1(
             ILogger logger,
             [LogProperties(typeof(MyPropsProvider), nameof(MyPropsProvider.ProvideProperties), OmitParameterName = true)] MyProps p);
 
-        [LogMethod]
+        [LoggerMessage]
         internal static partial void M2(
             ILogger logger,
             LogLevel level,
             [LogProperties(OmitParameterName = true)] MyProps param);
 
-        [LogMethod]
+        [LoggerMessage]
         internal static partial void M3(
             ILogger logger,
             LogLevel level,

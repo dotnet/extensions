@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Telemetry.Latency;
 public static class NullLatencyContextExtensions
 {
     /// <summary>
-    /// Add a no-op latency context to a dependency injection container.
+    /// Adds a no-op latency context to a dependency injection container.
     /// </summary>
     /// <param name="services">The dependency injection container to add the context to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>

@@ -11,7 +11,6 @@ using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal.OrderedGroups;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal.WeightedGroups;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
@@ -20,7 +19,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 
 /// <summary>
-/// Extension for <see cref="IRoutingStrategyBuilder"/>.
+/// Extensions for <see cref="IRoutingStrategyBuilder"/>.
 /// </summary>
 public static class RoutingStrategyBuilderExtensions
 {
@@ -149,7 +148,7 @@ public static class RoutingStrategyBuilderExtensions
             return () => factory.Get();
         });
 
-        return builder.Services.AddValidatedOptions<OrderedGroupsRoutingOptions, OrderedGroupsRoutingOptionsValidator>(builder.Name);
+        return builder.Services.AddOptionsWithValidateOnStart<OrderedGroupsRoutingOptions, OrderedGroupsRoutingOptionsValidator>(builder.Name);
     }
 
     private static OptionsBuilder<WeightedGroupsRoutingOptions> ConfigureWeightedGroupsCore(this IRoutingStrategyBuilder builder)
@@ -161,6 +160,6 @@ public static class RoutingStrategyBuilderExtensions
             return () => factory.Get();
         });
 
-        return builder.Services.AddValidatedOptions<WeightedGroupsRoutingOptions, WeightedGroupsRoutingOptionsValidator>(builder.Name);
+        return builder.Services.AddOptionsWithValidateOnStart<WeightedGroupsRoutingOptions, WeightedGroupsRoutingOptionsValidator>(builder.Name);
     }
 }

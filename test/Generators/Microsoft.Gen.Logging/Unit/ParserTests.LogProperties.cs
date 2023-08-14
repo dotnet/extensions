@@ -20,7 +20,7 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod(0, LogLevel.Debug, ""Parameterless..."")]
+                [LoggerMessage(0, LogLevel.Debug, ""Parameterless..."")]
                 static partial void M0(ILogger logger, [LogProperties(OmitParameterName = true)] MyType /*0+*/p0/*-0*/);
             }";
 
@@ -38,7 +38,7 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod]
+                [LoggerMessage]
                 static partial void M0(ILogger logger, LogLevel level, [LogProperties] MyType p0);
             }");
     }
@@ -54,7 +54,7 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod(LogLevel.Debug)]
+                [LoggerMessage(LogLevel.Debug)]
                 public static partial void LogFunc(ILogger logger, [LogProperties] MyRecord p0);
             }");
     }
@@ -68,7 +68,7 @@ public partial class ParserTests
         string source = @$"
             partial class C
             {{
-                [LogMethod(0, LogLevel.Debug, ""Parameterless..."")]
+                [LoggerMessage(0, LogLevel.Debug, ""Parameterless..."")]
                 static partial void M(ILogger logger, [LogProperties] {annotation} /*0+*/param/*-0*/);
             }}";
 
@@ -99,7 +99,7 @@ public partial class ParserTests
 
             partial class C
             {{
-                [LogMethod(0, LogLevel.Debug, ""Parameter {{P1}}"")]
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter {{P1}}"")]
                 static partial void M(ILogger logger, [LogProperties] {parameterType} p1);
             }}");
     }
@@ -119,7 +119,7 @@ public partial class ParserTests
 
             partial class C
             {{
-                [LogMethod(0, LogLevel.Debug, ""Empty template"")]
+                [LoggerMessage(0, LogLevel.Debug, ""Empty template"")]
                 static partial void M(ILogger logger, [LogProperties] {parameterType} /*0+*/param/*-0*/);
             }}";
 
@@ -137,7 +137,7 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod(0, LogLevel.Debug, ""{Param} is here"")]
+                [LoggerMessage(0, LogLevel.Debug, ""{Param} is here"")]
                 static partial void M(ILogger logger, [LogProperties] MyClass param);
             }");
     }
@@ -154,7 +154,7 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod(0, LogLevel.Debug, ""{param}"")]
+                [LoggerMessage(0, LogLevel.Debug, ""{param}"")]
                 static partial void M(ILogger logger, [LogProperties] MyClass /*0+*/param/*-0*/);
             }";
 
@@ -167,7 +167,7 @@ public partial class ParserTests
         const string Source = @"
             partial class C
             {
-                [LogMethod(0, LogLevel.Debug, ""{Param} {Param}"")]
+                [LoggerMessage(0, LogLevel.Debug, ""{Param} {Param}"")]
                 static partial void M(ILogger logger, string param, string /*0+*/Param/*-0*/);
             }";
 
@@ -185,7 +185,7 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod(0, LogLevel.Debug, ""{param_A}"")]
+                [LoggerMessage(0, LogLevel.Debug, ""{param_A}"")]
                 static partial void M(ILogger logger, string param_A, [LogProperties] MyClass /*0+*/param/*-0*/);
             }";
 
@@ -210,7 +210,7 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod(0, LogLevel.Debug, ""No params..."")]
+                [LoggerMessage(0, LogLevel.Debug, ""No params..."")]
                 static partial void M(ILogger logger, [LogProperties] MyClass /*0+*/param/*-0*/);
             }";
 
@@ -228,7 +228,7 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod(0, LogLevel.Debug, ""Parameter"")]
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter"")]
                 static partial void M(ILogger logger, [LogProperties(typeof(XXX), """")] MyClass p1);
             }");
     }
@@ -257,7 +257,7 @@ public partial class ParserTests
 
             partial class C
             {{
-                [LogMethod(0, LogLevel.Debug, ""Parameter"")]
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter"")]
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), {methodName})/*-0*/] MyClass p1);
             }}";
 
@@ -286,7 +286,7 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod(0, LogLevel.Debug, ""Parameter"")]
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter"")]
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide))/*-0*/] MyClass p1);
             }";
 
@@ -311,7 +311,7 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod(0, LogLevel.Debug, ""Parameter"")]
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter"")]
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide))/*-0*/] MyClass p1);
             }";
 
@@ -345,19 +345,19 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod(LogLevel.Debug)]
+                [LoggerMessage(LogLevel.Debug)]
                 static partial void M1(ILogger logger, [LogProperties(typeof(Provider), nameof(Provider.Provide1))] MyClass p1);
 
-                [LogMethod(LogLevel.Debug)]
+                [LoggerMessage(LogLevel.Debug)]
                 static partial void M2(ILogger logger, [LogProperties(typeof(Provider), nameof(Provider.Provide2))] MyClass p1);
 
-                [LogMethod(LogLevel.Debug)]
+                [LoggerMessage(LogLevel.Debug)]
                 static partial void M3(ILogger logger, [LogProperties(typeof(Provider), nameof(Provider.Provide3))] MyClass p1);
 
-                [LogMethod(LogLevel.Debug)]
+                [LoggerMessage(LogLevel.Debug)]
                 static partial void M4(ILogger logger, [LogProperties(typeof(Provider), nameof(Provider.Provide4))] MyClass p1);
 
-                [LogMethod(LogLevel.Debug)]
+                [LoggerMessage(LogLevel.Debug)]
                 static partial void M5(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide5))/*-0*/] MyClass? p1);
             }";
 
@@ -385,7 +385,7 @@ public partial class ParserTests
 
             partial class C
             {{
-                [LogMethod(0, LogLevel.Debug, ""Parameter"")]
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter"")]
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide))/*-0*/] MyClass p1);
             }}";
 
@@ -418,7 +418,7 @@ public partial class ParserTests
 
             partial class C
             {{
-                [LogMethod(0, LogLevel.Debug, ""Parameter"")]
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter"")]
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide))/*-0*/] MyClass p1);
             }}";
 
@@ -446,7 +446,7 @@ public partial class ParserTests
 
             partial class C
             {{
-                [LogMethod(0, LogLevel.Debug, ""Parameter"")]
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter"")]
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide))/*-0*/] MyClass p1);
             }}";
 
@@ -474,7 +474,7 @@ public partial class ParserTests
 
             partial class C
             {{
-                [LogMethod(0, LogLevel.Debug, ""Parameter"")]
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter"")]
                 static partial void M(ILogger logger, [/*0+*/LogProperties(typeof(Provider), nameof(Provider.Provide))/*-0*/] MyClass p1);
             }}";
 
@@ -533,7 +533,7 @@ public partial class ParserTests
         string source = @$"
             partial class C
             {{
-                [LogMethod(0, LogLevel.Debug, ""No params..."")]
+                [LoggerMessage(0, LogLevel.Debug, ""No params..."")]
                 static partial void M(ILogger logger, [LogProperties] {type} /*0+*/test/*-0*/);
             }}";
 
@@ -572,7 +572,7 @@ public partial class ParserTests
 
             partial class LoggerClass
             {{
-                [LogMethod(0, LogLevel.Debug, ""No params..."")]
+                [LoggerMessage(0, LogLevel.Debug, ""No params..."")]
                 static partial void M(ILogger logger, [LogProperties] ClassA /*0+*/test/*-0*/);
             }}";
 
@@ -595,7 +595,7 @@ public partial class ParserTests
 
             partial class LoggerClass
             {
-                [LogMethod(0, LogLevel.Debug, ""No params..."")]
+                [LoggerMessage(0, LogLevel.Debug, ""No params..."")]
                 static partial void M(ILogger logger, [LogProperties] DerivedType /*0+*/test/*-0*/);
             }";
 
@@ -617,7 +617,7 @@ public partial class ParserTests
 
             internal static partial class C
             {
-                [LogMethod(0, LogLevel.Debug, ""Only {A}"")]
+                [LoggerMessage(0, LogLevel.Debug, ""Only {A}"")]
                 static partial void M(ILogger logger, [FeedbackData] string a, [LogProperties] MyClass param);
             }";
 
@@ -647,7 +647,7 @@ public partial class ParserTests
                 {{
                 }}
 
-                [LogMethod(0, LogLevel.Debug, ""No params..."")]
+                [LoggerMessage(0, LogLevel.Debug, ""No params..."")]
                 static partial void M(ILogger logger, [LogProperties(typeof(C), nameof(C.Provide))] {type} test);
             }}";
 
@@ -700,7 +700,7 @@ public partial class ParserTests
                 {{
                 }}
 
-                [LogMethod(0, LogLevel.Debug, ""No params..."")]
+                [LoggerMessage(0, LogLevel.Debug, ""No params..."")]
                 static partial void M(ILogger logger, [LogProperties(typeof(C), nameof(C.Provide))] {type} /*0+*/test/*-0*/);
             }}";
 

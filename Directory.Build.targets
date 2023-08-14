@@ -16,16 +16,6 @@
     <!-- This is false for local development, but set to true in the CI system -->
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">false</TreatWarningsAsErrors>
 
-    <!--
-      TODO: to be resolved (https://github.com/dotnet/extensions/issues/4128)
-
-      warning CS0436: (NETCORE_ENGINEERING_TELEMETRY=Build) The type '__Attributes' in
-      'Microsoft.Extensions.Options.SourceGeneration/Microsoft.Extensions.Options.Generators.Generator/Validators.g.cs' conflicts with the imported type
-      '__Attributes' in 'Microsoft.Extensions.Telemetry, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'.
-      Using the type defined in 'Microsoft.Extensions.Options.SourceGeneration/Microsoft.Extensions.Options.Generators.Generator/Validators.g.cs'.
-     -->
-    <NoWarn>$(NoWarn);CS0436</NoWarn>
-
     <!-- TODO: to be re-enabled and all warnings fixed (https://github.com/dotnet/extensions/issues/4002) -->
     <NoWarn>$(NoWarn);IL2026;IL2087;IL2067;IL2075;IL2091;IL2072;IL2090;CA1825;IL2070;IL2098;IL2057</NoWarn>
 
@@ -94,5 +84,20 @@
       <!-- This property is used by the Arcade SDK while bootstrapping the VS Test runner -->
       <TestRunnerAdditionalArguments>$(TestRunnerAdditionalArguments) $(_BlameArgs)</TestRunnerAdditionalArguments>
     </PropertyGroup>
+  </Target>
+
+  <!-- This target will make sure that projects targeting netcoreapp3.1 will also have the Microsoft.Extensions.Logging.Abstractions analyzer removed. -->
+  <Target Name="_Microsoft_Extensions_Logging_AbstractionsRemoveAnalyzers" 
+          Condition="'$(DisableMicrosoftExtensionsLoggingSourceGenerator)' == 'true'"
+          AfterTargets="ResolveReferences">
+    <ItemGroup>
+      <_Microsoft_Extensions_Logging_AbstractionsAnalyzer Include="@(Analyzer)" Condition="'%(Analyzer.NuGetPackageId)' == 'Microsoft.Extensions.Logging.Abstractions' Or
+                                                                                           ('%(Analyzer.AssemblyName)' == 'Microsoft.Extensions.Logging.Generators' and '%(Analyzer.NuGetPackageId)' == 'Microsoft.AspNetCore.App.Ref')" />
+    </ItemGroup>
+
+    <!-- Remove Microsoft.Extensions.Logging.Abstractions Analyzer -->
+    <ItemGroup>
+      <Analyzer Remove="@(_Microsoft_Extensions_Logging_AbstractionsAnalyzer)" />
+    </ItemGroup>
   </Target>
 </Project>

@@ -3,13 +3,12 @@
 
 using System;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace TestClasses
 {
     internal static partial class InvariantTestExtensions
     {
-        [LogMethod(0, LogLevel.Debug, "M0 {p0}")]
+        [LoggerMessage(0, LogLevel.Debug, "M0 {p0}")]
         public static partial void M0(ILogger logger, DateTime p0);
     }
 }

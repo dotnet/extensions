@@ -17,6 +17,7 @@
     <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
     <InjectSharedPools>true</InjectSharedPools>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
   </PropertyGroup>
 
   <PropertyGroup>

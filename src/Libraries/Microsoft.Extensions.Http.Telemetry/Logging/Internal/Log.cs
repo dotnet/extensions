@@ -45,13 +45,13 @@ internal static partial class Log
         OutgoingRequest(logger, LogLevel.Error, 2, nameof(OutgoingRequestError), record, exception);
     }
 
-    [LogMethod(LogLevel.Error, RequestReadErrorMessage)]
+    [LoggerMessage(LogLevel.Error, RequestReadErrorMessage)]
     public static partial void RequestReadError(ILogger logger, Exception exception, HttpMethod httpMethod, string? httpHost, string httpPath);
 
-    [LogMethod(LogLevel.Error, ResponseReadErrorMessage)]
+    [LoggerMessage(LogLevel.Error, ResponseReadErrorMessage)]
     public static partial void ResponseReadError(ILogger logger, Exception exception, HttpMethod httpMethod, string httpHost, string httpPath);
 
-    [LogMethod(LogLevel.Error, EnrichmentErrorMessage)]
+    [LoggerMessage(LogLevel.Error, EnrichmentErrorMessage)]
     public static partial void EnrichmentError(ILogger logger, Exception exception, string? enricherType, HttpMethod httpMethod, string httpHost, string httpPath);
 
     // Using the code below instead of generated logging method because we have a custom formatter and custom tag keys for headers.

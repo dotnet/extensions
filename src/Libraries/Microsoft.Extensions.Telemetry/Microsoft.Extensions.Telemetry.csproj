@@ -13,14 +13,14 @@
     <InjectSharedPools>true</InjectSharedPools>
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
     <InjectSharedMemoization>true</InjectSharedMemoization>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <UseLoggingGenerator>true</UseLoggingGenerator>
   </PropertyGroup>
 
   <PropertyGroup>
     <Stage>normal</Stage>
-    <TempMinCodeCoverage>78</TempMinCodeCoverage>
-    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinCodeCoverage>78</MinCodeCoverage>
     <MinMutationScore>90</MinMutationScore>
   </PropertyGroup>
 

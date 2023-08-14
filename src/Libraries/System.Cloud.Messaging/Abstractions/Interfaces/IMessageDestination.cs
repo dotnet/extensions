@@ -13,7 +13,7 @@ namespace System.Cloud.Messaging;
 public interface IMessageDestination
 {
     /// <summary>
-    /// Write message asynchronously.
+    /// Writes a message asynchronously.
     /// </summary>
     /// <param name="context">The message context.</param>
     /// <returns><see cref="ValueTask"/>.</returns>

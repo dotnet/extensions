@@ -32,7 +32,7 @@ internal sealed class Emitter : EmitterBase
     private const string AutoClientOptions = "global::Microsoft.Extensions.Http.AutoClient.AutoClientOptions";
     private const string AutoClientOptionsValidator = "global::Microsoft.Extensions.Http.AutoClient.AutoClientOptionsValidator";
     private const string Action = "global::System.Action";
-    private const string OptionsBuilderExtensions = "global::Microsoft.Extensions.Options.Validation.OptionsBuilderExtensions";
+    private const string OptionsBuilderExtensions = "global::Microsoft.Extensions.DependencyInjection.OptionsServiceCollectionExtensions";
     private const string IOptionsMonitor = "global::Microsoft.Extensions.Options.IOptionsMonitor";
     private const string ServiceProviderServiceExtensions = "global::Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions";
     private const string MediaTypeHeaderValue = "global::System.Net.Http.Headers.MediaTypeHeaderValue";
@@ -147,7 +147,7 @@ internal sealed class Emitter : EmitterBase
                 this {IServiceCollection} services,
                 {Action}<{AutoClientOptions}> configureOptions)");
             OutOpenBrace();
-            OutLn(@$"{OptionsBuilderExtensions}.AddValidatedOptions<{AutoClientOptions}, {AutoClientOptionsValidator}>(services, ""{restApiType.Name}"").Configure(configureOptions);");
+            OutLn(@$"{OptionsBuilderExtensions}.AddOptionsWithValidateOnStart<{AutoClientOptions}, {AutoClientOptionsValidator}>(services, ""{restApiType.Name}"").Configure(configureOptions);");
             OutLn($"{ServiceCollectionDescriptorExtensions}.TryAddSingleton<I{restApiType.Name}>(services, provider =>");
             OutOpenBrace();
             OutLn(@$"var httpClient = {ServiceProviderServiceExtensions}.GetRequiredService<{IHttpClientFactory}>(provider).CreateClient(""{restApiType.HttpClientName}"");");

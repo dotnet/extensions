@@ -11,7 +11,7 @@ using Polly.Timeout;
 namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Static predicates used within the current package.
+/// Provides static predicates used within the current package.
 /// </summary>
 public static class HttpClientResiliencePredicates
 {

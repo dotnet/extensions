@@ -18,8 +18,8 @@ public interface ILatencyContext : IDisposable
     /// <summary>
     /// Adds a tag to the context.
     /// </summary>
-    /// <param name="token">Tag token.</param>
-    /// <param name="value">Value of the tag.</param>
+    /// <param name="token">The tag token.</param>
+    /// <param name="value">The value of the tag.</param>
     /// <remarks>
     /// Tags are used to provide metadata to the context. These are pivots that are useful to
     /// slice and dice the data for analysis. Examples include API, Client, UserType etc.
@@ -31,7 +31,7 @@ public interface ILatencyContext : IDisposable
     /// <summary>
     /// Adds a checkpoint to the context.
     /// </summary>
-    /// <param name="token">Checkpoint token.</param>
+    /// <param name="token">The checkpoint token.</param>
     /// <remarks>
     /// A checkpoint can be added only once per context. Use checkpoints for
     /// code that is non-reentrant per context.
@@ -41,8 +41,8 @@ public interface ILatencyContext : IDisposable
     /// <summary>
     /// Adds to a measure.
     /// </summary>
-    /// <param name="token">Measure token.</param>
-    /// <param name="value">Value to add.</param>
+    /// <param name="token">The measure token.</param>
+    /// <param name="value">The value to add.</param>
     /// <remarks>
     /// Adds the value to a measure. Measures are used for tracking total latency
     /// or the count for repeating operations. Example: Latency for all database calls,
@@ -52,8 +52,8 @@ public interface ILatencyContext : IDisposable
     /// <summary>
     /// Sets a measure to an absolute value.
     /// </summary>
-    /// <param name="token">Measure token.</param>
-    /// <param name="value">Value to set.</param>
+    /// <param name="token">The measure token.</param>
+    /// <param name="value">The value to set.</param>
     void RecordMeasure(MeasureToken token, long value);
 
     /// <summary>

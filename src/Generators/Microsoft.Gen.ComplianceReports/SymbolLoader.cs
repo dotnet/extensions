@@ -8,7 +8,7 @@ namespace Microsoft.Gen.ComplianceReports;
 internal static class SymbolLoader
 {
     private const string DataClassificationAttribute = "Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute";
-    private const string LogMethodAttribute = "Microsoft.Extensions.Telemetry.Logging.LogMethodAttribute";
+    private const string LoggerMessageAttribute = "Microsoft.Extensions.Logging.LoggerMessageAttribute";
 
     public static bool TryLoad(Compilation compilation, out SymbolHolder? symbolHolder)
     {
@@ -23,7 +23,7 @@ internal static class SymbolLoader
 
         symbolHolder = new(
             dataClassificationAttributeSymbol,
-            compilation.GetTypeByMetadataName(LogMethodAttribute));
+            compilation.GetTypeByMetadataName(LoggerMessageAttribute));
 
         return true;
     }

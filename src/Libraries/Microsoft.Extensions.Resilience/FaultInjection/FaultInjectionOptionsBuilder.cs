@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
@@ -40,7 +39,7 @@ public class FaultInjectionOptionsBuilder
     public FaultInjectionOptionsBuilder Configure()
     {
         _ = _services
-            .AddValidatedOptions<FaultInjectionOptions, FaultInjectionOptionsValidator>();
+            .AddOptionsWithValidateOnStart<FaultInjectionOptions, FaultInjectionOptionsValidator>();
         return this;
     }
 
@@ -65,7 +64,7 @@ public class FaultInjectionOptionsBuilder
         _ = Throw.IfNull(section);
 
         _ = _services
-            .AddValidatedOptions<FaultInjectionOptions, FaultInjectionOptionsValidator>()
+            .AddOptionsWithValidateOnStart<FaultInjectionOptions, FaultInjectionOptionsValidator>()
             .Bind(section);
 
         return this;
@@ -87,7 +86,7 @@ public class FaultInjectionOptionsBuilder
         _ = Throw.IfNull(configureOptions);
 
         _ = _services
-            .AddValidatedOptions<FaultInjectionOptions, FaultInjectionOptionsValidator>()
+            .AddOptionsWithValidateOnStart<FaultInjectionOptions, FaultInjectionOptionsValidator>()
             .Configure(configureOptions);
 
         return this;

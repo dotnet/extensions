@@ -10,8 +10,8 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// Validator for <see cref="AutoClientOptions"/>.
 /// </summary>
 /// <remarks>
-/// This type is not intended to be directly invoked by application code,
-/// it is intended to be invoked by generated code.
+/// This type is not intended to be directly invoked by application code.
+/// It's intended to be invoked by generated code.
 /// </remarks>
 [EditorBrowsable(EditorBrowsableState.Never)]
 [OptionsValidator]

@@ -10,6 +10,12 @@
     <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Stage>dev</Stage>
+    <MinCodeCoverage>64</MinCodeCoverage>
+    <MinMutationScore>85</MinMutationScore>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="..\Shared\DiagDescriptorsBase.cs" LinkBase="Shared" />
     <Compile Include="..\Shared\StringBuilderPool.cs" LinkBase="Shared" />

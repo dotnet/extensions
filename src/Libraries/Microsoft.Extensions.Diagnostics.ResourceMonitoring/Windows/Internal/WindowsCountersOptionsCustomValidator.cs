@@ -4,7 +4,6 @@
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Options;
-using Validation = Microsoft.Extensions.Options.Validation;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 

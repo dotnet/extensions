@@ -8,7 +8,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Telemetry.Latency;
 
 /// <summary>
-/// Token representing a registered measure.
+/// Represents a registered measure.
 /// </summary>
 [SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Comparing instances is not an expected scenario")]
 public readonly struct MeasureToken

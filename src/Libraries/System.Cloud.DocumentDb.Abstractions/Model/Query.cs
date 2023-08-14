@@ -8,7 +8,7 @@ using Microsoft.Shared.Diagnostics;
 namespace System.Cloud.DocumentDb;
 
 /// <summary>
-/// The class representing a query with parameters.
+/// Represents a query with parameters.
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types",
     Justification = "Not to be used as a key in key value structs.")]

@@ -20,10 +20,10 @@ namespace TestClasses
             public string? P4 { get; set; }
         }
 
-        [LogMethod(LogLevel.Debug)]
+        [LoggerMessage(LogLevel.Debug)]
         public static partial void M0(ILogger logger, [LogProperties] MyProps p);
 
-        [LogMethod(LogLevel.Debug)]
+        [LoggerMessage(LogLevel.Debug)]
         public static partial void M1(ILogger logger, [LogProperties(SkipNullProperties = true)] MyProps p);
     }
 }

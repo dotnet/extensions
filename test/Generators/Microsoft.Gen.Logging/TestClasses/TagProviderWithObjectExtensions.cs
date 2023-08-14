@@ -10,12 +10,12 @@ namespace TestClasses
 
     internal static partial class TagProviderWithObjectExtensions
     {
-        [LogMethod(int.MaxValue, LogLevel.Warning, "Custom provided properties for {Param}.")]
+        [LoggerMessage(int.MaxValue, LogLevel.Warning, "Custom provided properties for {Param}.")]
         internal static partial void OneParam(
             ILogger logger,
             [LogProperties(typeof(CustomProviderWithObject), nameof(CustomProviderWithObject.ProvideProperties))] object param);
 
-        [LogMethod(int.MinValue, LogLevel.Warning, "Custom provided properties for both complex params and {StringParam}.")]
+        [LoggerMessage(int.MinValue, LogLevel.Warning, "Custom provided properties for both complex params and {StringParam}.")]
         internal static partial void TwoParams(
             ILogger logger,
             string stringParam,

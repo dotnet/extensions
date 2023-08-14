@@ -49,11 +49,6 @@ public class ApiLifecycleAnalyzerTest
         }
     }
 
-    private const string AttributeDefinition = @"
-            namespace System.Diagnostics.CodeAnalysis;
-            internal sealed class ExperimentalAttribute : System.Attribute { }
-        ";
-
     [Theory]
     [MemberData(nameof(CodeWithMissingMembers))]
     public async Task Analyzer_Reports_Diagnostics_When_StableCode_Was_Not_Found_In_The_Compilation(int expectedDiagnostics, string fileName,
@@ -66,7 +61,6 @@ public class ApiLifecycleAnalyzerTest
                 sources: new[]
                 {
                     "[assembly: System.Runtime.Versioning.TargetFramework(\".NETCoreApp,Version=v6.0\")]",
-                    AttributeDefinition,
                     source
                 },
                 options: options,
@@ -126,7 +120,6 @@ public class ApiLifecycleAnalyzerTest
 
             "
         },
-#if false
         new object[]
         {
             1,
@@ -228,7 +221,7 @@ public class ApiLifecycleAnalyzerTest
                 using System.Collections.Generic;
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: ""TBD"", UrlFormat = ""TBD"")]
                 public class AdditionalContext2
                 {
                     protected IReadOnlyDictionary<string, object> Features { get; } = new Dictionary<string, object>();
@@ -347,7 +340,7 @@ public class ApiLifecycleAnalyzerTest
 
                 private T[] _buffer = Array.Empty<T>();
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: ""TBD"", UrlFormat = ""TBD"")]
                 public BufferWriter2() { }
 
                 public ReadOnlyMemory<T> WrittenMemory => _buffer.AsMemory(0, WrittenCount);
@@ -393,7 +386,6 @@ public class ApiLifecycleAnalyzerTest
             }
         "
         },
-
         new object[]
         {
             0,
@@ -474,7 +466,7 @@ public class ApiLifecycleAnalyzerTest
                     public DataClass DataClass { get; }
                 }
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: ""TBD"", UrlFormat = ""TBD"")]
                 public enum DataClass
                 {
 
@@ -562,10 +554,10 @@ public class ApiLifecycleAnalyzerTest
 
             using System.Diagnostics.CodeAnalysis;
 
-            [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+            [Experimental(diagnosticId: ""TBD"", UrlFormat = ""TBD"")]
             public static class Test
             {
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: ""TBD"", UrlFormat = ""TBD"")]
                 public static void Load()
                 {
                     // Intentionally left empty.
@@ -707,7 +699,7 @@ public class ApiLifecycleAnalyzerTest
                 using System.Collections.Generic;
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: ""TBD"", UrlFormat = ""TBD"")]
                 public class WindowsCountersOptions2
                 {
                     [Required]
@@ -728,7 +720,7 @@ public class ApiLifecycleAnalyzerTest
 
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: ""TBD"", UrlFormat = ""TBD"")]
                 public sealed class BufferWriter<T>
                 {
                     internal const int MaxArrayLength = 0X7FEF_FFFF;   // Copy of the internal Array.MaxArrayLength const
@@ -751,7 +743,7 @@ public class ApiLifecycleAnalyzerTest
 
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: ""TBD"", UrlFormat = ""TBD"")]
                 public class BaseType
                 {
                     public virtual int P => 1;
@@ -774,7 +766,7 @@ public class ApiLifecycleAnalyzerTest
 
                 using System.Diagnostics.CodeAnalysis;
 
-                [Experimental(diagnosticId: "TBD", UrlFormat = "TBD")]
+                [Experimental(diagnosticId: ""TBD"", UrlFormat = ""TBD"")]
                 public class OuterType
                 {
                     public int ReadValue(string s) => new InnerType().P;
@@ -786,11 +778,40 @@ public class ApiLifecycleAnalyzerTest
                 }
             "
         }
-#endif
     };
 
     public static IEnumerable<object[]> CodeWithMissingApis => new List<object[]>
     {
+        new object[]
+        {
+            0,
+            "ApiLifecycle/Data/Microsoft.Extensions.TimeProvider.Testing.json",
+            "Microsoft.Extensions.TimeProvider.Testing",
+            DiagDescriptors.NewSymbolsMustBeMarkedExperimental,
+            @"
+                using System;
+                using System.Threading;
+
+                namespace Microsoft.Extensions.Time.Testing;
+
+                public class FakeTimeProvider : TimeProvider
+                {
+                    public FakeTimeProvider() { }
+                    public FakeTimeProvider(DateTimeOffset startDateTime) { }
+                    public DateTimeOffset Start { get; }
+                    public TimeSpan AutoAdvanceAmount { get; set; }
+                    public override DateTimeOffset GetUtcNow() => default;
+                    public void SetUtcNow(DateTimeOffset value) { }
+                    public void Advance(TimeSpan delta) { }
+                    public override long GetTimestamp() => 0;
+                    public override TimeZoneInfo LocalTimeZone => null!;
+                    public void SetLocalTimeZone(TimeZoneInfo localTimeZone) { }
+                    public override long TimestampFrequency => 0;
+                    public override string ToString() => string.Empty;
+                    public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period) => null!;
+                }
+            "
+        },
         new object[]
         {
             1,

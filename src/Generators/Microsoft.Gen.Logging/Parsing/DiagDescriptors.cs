@@ -8,7 +8,7 @@ namespace Microsoft.Gen.Logging.Parsing;
 
 internal sealed class DiagDescriptors : DiagDescriptorsBase
 {
-    private const string Category = "LogMethod";
+    private const string Category = "LoggerMessage";
 
     public static DiagnosticDescriptor ShouldntMentionLogLevelInMessage { get; } = Make(
         id: "LOGGEN000",

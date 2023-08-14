@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using Microsoft.Extensions.Options;
-using Validation = Microsoft.Extensions.Options.Validation;
 
 namespace Microsoft.Extensions.Compliance.Testing;
 

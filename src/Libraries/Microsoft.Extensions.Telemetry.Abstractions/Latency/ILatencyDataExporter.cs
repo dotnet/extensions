@@ -13,10 +13,10 @@ namespace Microsoft.Extensions.Telemetry.Latency;
 public interface ILatencyDataExporter
 {
     /// <summary>
-    /// Function called to export latency data.
+    /// Exports latency data.
     /// </summary>
-    /// <param name="data">A latency context's latency data.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="data">The latency context's latency data.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A <see cref="Task"/> that represents the export operation.</returns>
     Task ExportAsync(LatencyData data, CancellationToken cancellationToken);
 }

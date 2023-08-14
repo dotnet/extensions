@@ -11,7 +11,6 @@ using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Enrichment;
-using Microsoft.Extensions.Telemetry.Logging;
 using Microsoft.Gen.Logging.Parsing;
 using Microsoft.Gen.Shared;
 using Xunit;
@@ -40,7 +39,7 @@ public class EmitterTests
             new[]
             {
                 Assembly.GetAssembly(typeof(ILogger))!,
-                Assembly.GetAssembly(typeof(LogMethodAttribute))!,
+                Assembly.GetAssembly(typeof(LoggerMessageAttribute))!,
                 Assembly.GetAssembly(typeof(IEnrichmentTagCollector))!,
                 Assembly.GetAssembly(typeof(DataClassification))!,
                 Assembly.GetAssembly(typeof(IRedactorProvider))!,
@@ -51,10 +50,14 @@ public class EmitterTests
             .ConfigureAwait(false);
 
         // we need this "Where()" hack because Roslyn 4.0 doesn't recognize #pragma warning disable for generator-produced warnings
+#pragma warning disable S1067 // Expressions should not be too complex
         Assert.Empty(d.Where(diag
             => diag.Id != DiagDescriptors.ShouldntMentionExceptionInMessage.Id
             && diag.Id != DiagDescriptors.ShouldntMentionLoggerInMessage.Id
-            && diag.Id != DiagDescriptors.ShouldntMentionLogLevelInMessage.Id));
+            && diag.Id != DiagDescriptors.ShouldntMentionLogLevelInMessage.Id
+            && diag.Id != DiagDescriptors.EmptyLoggingMethod.Id
+            && diag.Id != DiagDescriptors.ParameterHasNoCorrespondingTemplate.Id));
+#pragma warning restore S1067 // Expressions should not be too complex
 
         _ = Assert.Single(r);
 

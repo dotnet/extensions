@@ -13,14 +13,12 @@
 
   <PropertyGroup>
     <Stage>dev</Stage>
-    <TempMinCodeCoverage>70</TempMinCodeCoverage>
-    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinCodeCoverage>70</MinCodeCoverage>
     <MinMutationScore>75</MinMutationScore>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
-    <ProjectReference Include="..\..\ToBeRemoved\Options.ValidateOnStart\Options.ValidateOnStart.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Telemetry.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
@@ -33,7 +32,7 @@ public static class HttpTracingExtensions
 
         return builder
             .ConfigureServices(services => services
-                .AddValidatedOptions<HttpTracingOptions, HttpTracingOptionsValidator>())
+                .AddOptionsWithValidateOnStart<HttpTracingOptions, HttpTracingOptionsValidator>())
              .AddHttpTracingInternal();
     }
 
@@ -51,7 +50,7 @@ public static class HttpTracingExtensions
 
         return builder
             .ConfigureServices(services => services
-                .AddValidatedOptions<HttpTracingOptions, HttpTracingOptionsValidator>()
+                .AddOptionsWithValidateOnStart<HttpTracingOptions, HttpTracingOptionsValidator>()
                 .Configure(configure))
              .AddHttpTracingInternal();
     }
@@ -75,7 +74,7 @@ public static class HttpTracingExtensions
 
         return builder
             .ConfigureServices(services => services
-                .AddValidatedOptions<HttpTracingOptions, HttpTracingOptionsValidator>()
+                .AddOptionsWithValidateOnStart<HttpTracingOptions, HttpTracingOptionsValidator>()
                 .Bind(section))
              .AddHttpTracingInternal();
     }

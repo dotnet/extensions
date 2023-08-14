@@ -9,12 +9,13 @@
     <InjectSkipLocalsInitAttributeOnLegacy>true</InjectSkipLocalsInitAttributeOnLegacy>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
   </PropertyGroup>
 
   <PropertyGroup>
     <Stage>normal</Stage>
-    <MinCodeCoverage>90</MinCodeCoverage>
+    <MinCodeCoverage>93</MinCodeCoverage>
     <MinMutationScore>100</MinMutationScore>
   </PropertyGroup>
 

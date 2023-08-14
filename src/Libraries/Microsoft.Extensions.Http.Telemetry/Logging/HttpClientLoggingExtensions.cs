@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Options.Validation;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
 
@@ -73,7 +72,7 @@ public static class HttpClientLoggingExtensions
         _ = Throw.IfNull(section);
 
         _ = services
-            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>()
+            .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>()
             .Bind(section);
 
         return services.AddDefaultHttpClientLogging();
@@ -97,7 +96,7 @@ public static class HttpClientLoggingExtensions
         _ = Throw.IfNull(configure);
 
         _ = services
-            .AddValidatedOptions<LoggingOptions, LoggingOptionsValidator>()
+            .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>()
             .Configure(configure);
 
         return services.AddDefaultHttpClientLogging();

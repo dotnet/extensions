@@ -9,20 +9,20 @@ namespace TestClasses
 {
     internal static partial class AtSymbolsTestExtensions
     {
-        [LogMethod(0, LogLevel.Information, "M0 {event}")]
+        [LoggerMessage(0, LogLevel.Information, "M0 {event}")]
         internal static partial void M0(ILogger logger, string @event);
 
-        [LogMethod(1, LogLevel.Information, "M1 {event}")]
+        [LoggerMessage(1, LogLevel.Information, "M1 {event}")]
         internal static partial void M1(ILogger logger, [PrivateData] string @event);
 
-        [LogMethod(int.MaxValue, "M2 {Event}")]
+        [LoggerMessage("M2 {Event}")]
         internal static partial void M2(ILogger logger, LogLevel level, string @event);
 
         // And support with property logging
-        [LogMethod(3, "M3")]
+        [LoggerMessage("M3")]
         internal static partial void M3(ILogger logger, LogLevel level, [LogProperties] ClassToLog @event);
 
-        [LogMethod(LogLevel.Information, "M4 {class}")]
+        [LoggerMessage(LogLevel.Information, "M4 {class}")]
         internal static partial void M4(ILogger logger, string @class);
     }
 }

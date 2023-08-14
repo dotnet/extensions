@@ -4,13 +4,13 @@
 namespace Microsoft.Extensions.Telemetry.Enrichment;
 
 /// <summary>
-/// A component that augments metric state with additional properties.
+/// Augments metric state with additional properties.
 /// </summary>
 public interface IMetricEnricher
 {
     /// <summary>
-    /// Called to collect tags for metrics.
+    /// Collects tags for metrics.
     /// </summary>
-    /// <param name="collector">Where the enricher puts the tags it is producing.</param>
+    /// <param name="collector">Where the enricher puts the tags it produces.</param>
     void Enrich(IEnrichmentTagCollector collector);
 }

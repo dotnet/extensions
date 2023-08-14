@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry.Logging;
@@ -10,7 +11,7 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 /// <summary>
 /// Marks a logging method parameter whose public tags need to be logged.
 /// </summary>
-/// <seealso cref="LogMethodAttribute"/>
+/// <seealso cref="LoggerMessageAttribute"/>
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
 public sealed class LogPropertiesAttribute : Attribute
@@ -26,7 +27,7 @@ public sealed class LogPropertiesAttribute : Attribute
     /// </remarks>
     /// <example>
     /// <code>
-    /// [LogMethod(1, LogLevel.Warning, "Logging complex object here.")]
+    /// [LoggerMessage(1, LogLevel.Warning, "Logging complex object here.")]
     /// static partial void LogMethod(ILogger logger, [LogProperties] ClassToLog param);
     /// </code>
     /// </example>
@@ -40,7 +41,7 @@ public sealed class LogPropertiesAttribute : Attribute
     /// <param name="providerType">A type containing a method that provides a custom set of tags to log.</param>
     /// <param name="providerMethod">The name of a method on the provider type which generates a custom set of tags to log.</param>
     /// <exception cref="ArgumentNullException">
-    /// When <paramref name="providerMethod"/> or <paramref name="providerType"/> are <see langword="null"/>.
+    /// When <paramref name="providerMethod"/> or <paramref name="providerType"/> is <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentException">
     /// When <paramref name="providerMethod"/> is either an empty string or contains only whitespace.
@@ -66,7 +67,7 @@ public sealed class LogPropertiesAttribute : Attribute
     /// </remarks>
     /// <example>
     /// <code>
-    /// [LogMethod(1, LogLevel.Warning, "Custom tags for {Param}.")]
+    /// [LoggerMessage(1, LogLevel.Warning, "Custom tags for {Param}.")]
     /// static partial void LogMethod(ILogger logger,
     ///     [LogProperties(typeof(CustomProvider), nameof(CustomProvider.GetTagsToLog))] ClassToLog o);
     ///

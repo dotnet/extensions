@@ -10,6 +10,12 @@
     <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>95</MinCodeCoverage>
+    <MinMutationScore>85</MinMutationScore>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Update="Resources.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="Resources.resx" />
     <Compile Include="..\Shared\*.cs" LinkBase="Shared" />
