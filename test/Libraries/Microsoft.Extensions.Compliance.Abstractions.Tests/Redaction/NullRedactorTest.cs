@@ -15,7 +15,10 @@ public static class NullRedactorTest
         var r = NullRedactor.Instance;
 
         var emptyStringRedacted = r.Redact(string.Empty);
+        Assert.Equal(string.Empty, emptyStringRedacted);
 
+        string? s = null;
+        emptyStringRedacted = r.Redact(s);
         Assert.Equal(string.Empty, emptyStringRedacted);
     }
 

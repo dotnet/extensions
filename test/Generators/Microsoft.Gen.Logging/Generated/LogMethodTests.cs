@@ -869,6 +869,11 @@ public class LogMethodTests
         FormattableTestExtensions.Method2(logger, new FormattableTestExtensions.ComplexObj());
         Assert.Equal(1, collector.Count);
         Assert.Equal("Formatted!", collector.LatestRecord.StructuredState!.GetValue("p1_P1"));
+
+        collector.Clear();
+        FormattableTestExtensions.Method3(logger, new FormattableTestExtensions.Convertible());
+        Assert.Equal(1, collector.Count);
+        Assert.Equal("Converted!", collector.LatestRecord.StructuredState!.GetValue("p1"));
     }
 
     private static void AssertLastState(FakeLogCollector collector, params KeyValuePair<string, string?>[] expected)

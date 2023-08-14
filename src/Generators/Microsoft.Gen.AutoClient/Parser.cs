@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
@@ -58,17 +59,8 @@ internal sealed class Parser
                 _cancellationToken.ThrowIfCancellationRequested();
                 semanticModel ??= _compilation.GetSemanticModel(typeDeclaration.SyntaxTree);
 
-                var classSymbol = semanticModel.GetDeclaredSymbol(typeDeclaration, _cancellationToken);
-                if (classSymbol == null)
-                {
-                    continue;
-                }
-
+                var classSymbol = semanticModel.GetDeclaredSymbol(typeDeclaration, _cancellationToken)!;
                 var classAttributes = classSymbol.GetAttributes();
-                if (classAttributes.Length == 0)
-                {
-                    continue;
-                }
 
                 var attrResult = ParseInterfaceAttributes(classAttributes, symbols);
                 if (attrResult.HttpClientName == null)
@@ -653,16 +645,19 @@ internal sealed class Parser
         _reportDiagnostic(Diagnostic.Create(desc, location, messageArgs));
     }
 
+    [ExcludeFromCodeCoverage]
     private sealed record class ParseInterfaceAttributesResult(
         string? HttpClientName,
         string? CustomDependencyName,
         Dictionary<string, string> StaticHeaders);
 
+    [ExcludeFromCodeCoverage]
     private sealed record class ParseParameterAttributesResult(
         string? HeaderName,
         string? QueryKey,
         BodyContentTypeParam? BodyType);
 
+    [ExcludeFromCodeCoverage]
     private sealed record class ParseMethodAttributesResult(
         List<string?> HttpMethods,
         string? Path,
