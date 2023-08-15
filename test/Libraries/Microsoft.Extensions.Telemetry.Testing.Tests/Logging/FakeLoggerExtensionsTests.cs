@@ -23,7 +23,7 @@ public class FakeLoggerExtensionsTests
         var factory = serviceProvider.GetService<ILoggerFactory>();
         var collector = serviceProvider.GetFakeLogCollector();
 
-        var logger = factory!.CreateLogger("R9");
+        var logger = factory!.CreateLogger("DOT-NET");
         Assert.Equal(0, collector.Count);
         logger.LogError("M1");
         Assert.Equal(1, collector.Count);
