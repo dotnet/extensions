@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Extensions.Resilience.Resilience.Internal;
+namespace Microsoft.Extensions.Resilience.Internal;
 
 internal sealed class FailureEventMetricsOptions
 {
