@@ -406,18 +406,6 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        },
-        {
           "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder builder);",
           "Stage": "Stable"
         },
@@ -487,34 +475,6 @@
         },
         {
           "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceLogEnricherOptions.EnvironmentName { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.ServiceMetricEnricherOptions();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.ApplicationName { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.BuildVersion { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.DeploymentRing { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceMetricEnricherOptions.EnvironmentName { get; set; }",
           "Stage": "Stable"
         }
       ]
