@@ -82,11 +82,6 @@
     <IsWindowsBuild Condition=" '$(TargetOsName)' == 'win' ">true</IsWindowsBuild>
   </PropertyGroup>
 
-  <!-- TODO: workaround for https://github.com/dotnet/r9/issues/85 -->
-  <PropertyGroup>
-    <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(DotNetBuildOffline)' == 'true'">
     <!--
       Arcade has a special version prop for CodeAnalysis.CSharp in GenFacades
