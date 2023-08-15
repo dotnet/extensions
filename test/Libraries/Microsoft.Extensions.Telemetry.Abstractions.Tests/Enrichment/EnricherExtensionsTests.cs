@@ -31,39 +31,6 @@ public class EnricherExtensionsTests
     }
 
     [Fact]
-    public void ServiceCollection_GivenNullArguments_Throws()
-    {
-        Assert.Throws<ArgumentNullException>(() =>
-            ((IServiceCollection)null!).AddMetricEnricher<EmptyEnricher>());
-
-        Assert.Throws<ArgumentNullException>(() =>
-            ((IServiceCollection)null!).AddMetricEnricher(new EmptyEnricher()));
-
-        Assert.Throws<ArgumentNullException>(() =>
-            new ServiceCollection()
-                .AddMetricEnricher(null!));
-    }
-
-    [Fact]
-    public void ServiceCollection_AddMultipleMetricEnrichersSuccessfully()
-    {
-        var services = new ServiceCollection();
-        services.AddMetricEnricher<EmptyEnricher>();
-        services.AddMetricEnricher(new TestEnricher());
-
-        using var provider = services.BuildServiceProvider();
-        var enrichersCollection = provider.GetServices<IMetricEnricher>();
-
-        var enricherCount = 0;
-        foreach (var enricher in enrichersCollection)
-        {
-            enricherCount++;
-        }
-
-        Assert.Equal(2, enricherCount);
-    }
-
-    [Fact]
     public void AddLogEnricher()
     {
         var services = new ServiceCollection();
@@ -101,7 +68,7 @@ public class EnricherExtensionsTests
         Assert.Equal(2, enricherCount);
     }
 
-    internal class EmptyEnricher : IMetricEnricher, ILogEnricher, IStaticLogEnricher
+    internal class EmptyEnricher : ILogEnricher, IStaticLogEnricher
     {
         public void Enrich(IEnrichmentTagCollector collector)
         {
@@ -109,7 +76,7 @@ public class EnricherExtensionsTests
         }
     }
 
-    internal class TestEnricher : IMetricEnricher, ILogEnricher, IStaticLogEnricher
+    internal class TestEnricher : ILogEnricher, IStaticLogEnricher
     {
         public void Enrich(IEnrichmentTagCollector collector)
         {
