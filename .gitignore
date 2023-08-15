@@ -309,5 +309,3 @@ BenchmarkDotNet.artifacts/
 /_TEST
 
 *.binlog
-
-/docs/releases/r9-packages.md
