@@ -5,7 +5,7 @@ using System.Diagnostics.Tracing;
 
 namespace Microsoft.Extensions.Telemetry.Internal.Test;
 
-[EventSource(Name = "R9-SelfDiagnostics-Test")]
+[EventSource(Name = "DotNet-SelfDiagnostics-Test")]
 internal sealed class TestEventSource : EventSource
 {
     public const string WarningMessageText = "This is a warning event.";
