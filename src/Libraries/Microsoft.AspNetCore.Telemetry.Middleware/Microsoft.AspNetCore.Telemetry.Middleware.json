@@ -85,63 +85,11 @@
       ]
     },
     {
-      "Type": "class Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder.HttpMeteringBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder.Services { get; private set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.AspNetCore.Telemetry.HttpMeteringExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Telemetry.HttpMeteringExtensions.AddHttpMetering(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Telemetry.HttpMeteringExtensions.AddHttpMetering(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder>? build);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder Microsoft.AspNetCore.Telemetry.HttpMeteringExtensions.AddMetricEnricher<T>(this Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder builder);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder Microsoft.AspNetCore.Telemetry.HttpMeteringExtensions.AddMetricEnricher(this Microsoft.AspNetCore.Telemetry.HttpMeteringBuilder builder, Microsoft.AspNetCore.Telemetry.IIncomingRequestMetricEnricher enricher);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.AspNetCore.Builder.IApplicationBuilder Microsoft.AspNetCore.Telemetry.HttpMeteringExtensions.UseHttpMetering(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "interface Microsoft.AspNetCore.Telemetry.IHttpLogEnricher",
       "Stage": "Stable",
       "Methods": [
         {
           "Member": "void Microsoft.AspNetCore.Telemetry.IHttpLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector, Microsoft.AspNetCore.Http.HttpRequest request, Microsoft.AspNetCore.Http.HttpResponse response);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "interface Microsoft.AspNetCore.Telemetry.IIncomingRequestMetricEnricher : Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher",
-      "Stage": "Stable",
-      "Properties": [
-        {
-          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.AspNetCore.Telemetry.IIncomingRequestMetricEnricher.TagNames { get; }",
           "Stage": "Stable"
         }
       ]
