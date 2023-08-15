@@ -19,16 +19,6 @@ public class ServiceEnricherOptionsTests
     }
 
     [Fact]
-    public void ServiceMetricEnricherOptions_EnsureDefaultValues()
-    {
-        var options = new ServiceMetricEnricherOptions();
-        options.EnvironmentName.Should().BeTrue();
-        options.ApplicationName.Should().BeTrue();
-        options.BuildVersion.Should().BeFalse();
-        options.DeploymentRing.Should().BeFalse();
-    }
-
-    [Fact]
     public void ServiceTraceEnricherOptions_EnsureDefaultValues()
     {
         var options = new ServiceTraceEnricherOptions();

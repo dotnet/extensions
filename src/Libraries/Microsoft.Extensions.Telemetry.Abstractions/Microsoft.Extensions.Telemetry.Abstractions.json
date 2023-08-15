@@ -170,14 +170,6 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddMetricEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher enricher);",
-          "Stage": "Stable"
-        },
-        {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddStaticLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Experimental"
         },
@@ -414,16 +406,6 @@
       "Methods": [
         {
           "Member": "void Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector);",
           "Stage": "Stable"
         }
       ]
