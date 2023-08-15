@@ -45,14 +45,14 @@ steps:
             /bl:${{ parameters.repoLogPath }}/restore.binlog
     displayName: Restore
 
-  # - pwsh: |
-  #       $(Build.SourcesDirectory)/scripts/Slngen.ps1 Compliance -NoLaunch
-  #   displayName: Create solution
+  - pwsh: |
+        $(Build.SourcesDirectory)/scripts/Slngen.ps1 -All -NoLaunch
+    displayName: Create solution
 
-  # - script: ${{ parameters.buildScript }}
-  #           -restore
-  #           /bl:${{ parameters.repoLogPath }}/restore2.binlog
-  #   displayName: Restore
+  - script: ${{ parameters.buildScript }}
+            -restore
+            /bl:${{ parameters.repoLogPath }}/restore2.binlog
+    displayName: Restore
 
   - script: ${{ parameters.buildScript }}
             -build
