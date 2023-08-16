@@ -939,7 +939,7 @@ public class HttpClientLoggerTest
     public async Task HttpLoggingHandler_OnDifferentHttpStatusCodes_LogsOutgoingRequestWithAppropriateLogLevel(
         int httpStatusCode, LogLevel expectedLogLevel)
     {
-        var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector());
+        var fakeLogger = new FakeLogger<HttpClientLogger>();
         var options = new LoggingOptions();
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), new Mock<IHttpHeadersRedactor>().Object);
         var requestReader = new HttpRequestReader(
@@ -962,6 +962,45 @@ public class HttpClientLoggerTest
 
         var logRecord = fakeLogger.Collector.GetSnapshot().Single();
         Assert.Equal(expectedLogLevel, logRecord.Level);
+    }
+
+    [Fact]
+    public async Task HttpClientLogger_LogsAnError_WhenResponseReaderThrows()
+    {
+        var exception = new InvalidOperationException("Test exception");
+        var requestReaderMock = new Mock<IHttpRequestReader>();
+        requestReaderMock
+            .Setup(r => r.ReadResponseAsync(It.IsAny<LogRecord>(), It.IsAny<HttpResponseMessage>(), It.IsAny<List<KeyValuePair<string, string>>?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(exception);
+
+        var fakeLogger = new FakeLogger<HttpClientLogger>();
+        var logger = new HttpClientLogger(fakeLogger, requestReaderMock.Object, Array.Empty<IHttpClientLogEnricher>(), new());
+
+        using var httpRequestMessage = new HttpRequestMessage();
+        using var httpResponseMessage = new HttpResponseMessage();
+        await logger.LogRequestStopAsync(new LogRecord(), httpRequestMessage, httpResponseMessage, TimeSpan.Zero);
+
+        var logRecords = fakeLogger.Collector.GetSnapshot();
+        var logRecord = Assert.Single(logRecords);
+        Assert.Equal(LogLevel.Error, logRecord.Level);
+        Assert.Same(exception, logRecord.Exception);
+    }
+
+    [Fact]
+    public void SyncMethods_ShouldThrow()
+    {
+        var options = new LoggingOptions();
+        var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), Mock.Of<IHttpHeadersRedactor>());
+        var requestReader = new HttpRequestReader(
+            options, GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+
+        var logger = new HttpClientLogger(new FakeLogger<HttpClientLogger>(), requestReader, Array.Empty<IHttpClientLogEnricher>(), options);
+        using var httpRequestMessage = new HttpRequestMessage();
+        using var httpResponseMessage = new HttpResponseMessage();
+
+        Assert.Throws<NotSupportedException>(() => logger.LogRequestStart(httpRequestMessage));
+        Assert.Throws<NotSupportedException>(() => logger.LogRequestStop(null, httpRequestMessage, httpResponseMessage, TimeSpan.Zero));
+        Assert.Throws<NotSupportedException>(() => logger.LogRequestFailed(null, httpRequestMessage, null, new InvalidOperationException(), TimeSpan.Zero));
     }
 
     private static IHttpRouteFormatter GetHttpRouteFormatter()
