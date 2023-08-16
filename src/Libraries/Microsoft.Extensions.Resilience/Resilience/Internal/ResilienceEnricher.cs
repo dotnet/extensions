@@ -10,7 +10,7 @@ using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
 using Polly.Extensions.Telemetry;
 
-namespace Microsoft.Extensions.Resilience.Resilience.Internal;
+namespace Microsoft.Extensions.Resilience.Internal;
 
 internal sealed class ResilienceEnricher
 {
