@@ -168,6 +168,6 @@ internal sealed class HttpLoggingHandler : DelegatingHandler
         }
 
         logRecord.EnrichmentTags = propertyBag;
-        logRecord.Duration = (long)TimeProvider.GetElapsedTime(timestamp, TimeProvider.GetTimestamp()).TotalMilliseconds;
+        logRecord.Duration = (long)TimeProvider.GetElapsedTime(timestamp).TotalMilliseconds;
     }
 }
