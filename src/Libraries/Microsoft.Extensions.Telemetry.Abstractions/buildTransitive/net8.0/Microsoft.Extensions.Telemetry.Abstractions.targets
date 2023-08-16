@@ -4,8 +4,8 @@
           Condition="'$(DisableMicrosoftExtensionsLoggingSourceGenerator)' == 'true'"
           AfterTargets="ResolveReferences">
     <ItemGroup>
-      <_Microsoft_Extensions_Logging_AbstractionsAnalyzer Include="@(Analyzer)" Condition="'%(Analyzer.NuGetPackageId)' == 'Microsoft.Extensions.Logging.Abstractions' Or
-                                                                                           ('%(Analyzer.AssemblyName)' == 'Microsoft.Extensions.Logging.Generators' and '%(Analyzer.NuGetPackageId)' == 'Microsoft.AspNetCore.App.Ref')" />
+      <_Microsoft_Extensions_Logging_AbstractionsAnalyzer Include="@(Analyzer)" Condition="'%(Analyzer.AssemblyName)' == 'Microsoft.Extensions.Logging.Generators' Or
+                                                                                           '%(Analyzer.NuGetPackageId)' == 'Microsoft.Extensions.Logging.Abstractions'" />
     </ItemGroup>
 
     <!-- Remove Microsoft.Extensions.Logging.Abstractions Analyzer -->
