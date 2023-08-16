@@ -3,7 +3,7 @@
 
 using FluentAssertions;
 using Microsoft.Extensions.Http.Telemetry;
-using Microsoft.Extensions.Resilience.Resilience;
+using Microsoft.Extensions.Resilience;
 using Polly;
 using Xunit;
 

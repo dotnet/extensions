@@ -54,7 +54,6 @@ public class EventCountersCollectorOptions
     /// </value>
     /// <remarks>
     /// Includes the recommended default event counters in addition to the counters specified in <see cref="Counters"/>.
-    /// See the list of recommended default counters in <see href="https://eng.ms/docs/experiences-devices/r9-sdk/docs/telemetry/metering/event-counters"/>.
     /// EventSource: "System.Runtime", Counters:
     ///   - "cpu-usage", "working-set", "time-in-gc", "alloc-rate", "exception-count", "gen-2-gc-count", "gen-2-size",
     ///   - "monitor-lock-contention-count", "active-timer-count", "threadpool-queue-length", "threadpool-thread-count",
