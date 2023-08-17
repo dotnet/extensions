@@ -75,34 +75,4 @@ public static class EnricherExtensions
 
         return services.AddSingleton(enricher);
     }
-
-    /// <summary>
-    /// Registers a metric enricher type.
-    /// </summary>
-    /// <typeparam name="T">Enricher type.</typeparam>
-    /// <param name="services">The dependency injection container to add the enricher type to.</param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
-    public static IServiceCollection AddMetricEnricher<T>(this IServiceCollection services)
-        where T : class, IMetricEnricher
-    {
-        _ = Throw.IfNull(services);
-
-        return services.AddSingleton<IMetricEnricher, T>();
-    }
-
-    /// <summary>
-    /// Registers a metric enricher instance.
-    /// </summary>
-    /// <param name="services">The dependency injection container to add the enricher instance to.</param>
-    /// <param name="enricher">The enricher instance to add.</param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="enricher"/> is <see langword="null"/>.</exception>
-    public static IServiceCollection AddMetricEnricher(this IServiceCollection services, IMetricEnricher enricher)
-    {
-        _ = Throw.IfNull(services);
-        _ = Throw.IfNull(enricher);
-
-        return services.AddSingleton(enricher);
-    }
 }

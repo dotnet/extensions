@@ -1,2 +1,16 @@
 <Project>
+  <!-- This package should replace the Microsoft.Extensions.Logging.Abstractions source generator. -->
+  <Target Name="_Microsoft_Extensions_Logging_AbstractionsRemoveAnalyzers" 
+          Condition="'$(DisableMicrosoftExtensionsLoggingSourceGenerator)' == 'true'"
+          AfterTargets="ResolveReferences">
+    <ItemGroup>
+      <_Microsoft_Extensions_Logging_AbstractionsAnalyzer Include="@(Analyzer)" Condition="'%(Analyzer.AssemblyName)' == 'Microsoft.Extensions.Logging.Generators' Or
+                                                                                           '%(Analyzer.NuGetPackageId)' == 'Microsoft.Extensions.Logging.Abstractions'" />
+    </ItemGroup>
+
+    <!-- Remove Microsoft.Extensions.Logging.Abstractions Analyzer -->
+    <ItemGroup>
+      <Analyzer Remove="@(_Microsoft_Extensions_Logging_AbstractionsAnalyzer)" />
+    </ItemGroup>
+  </Target>
 </Project>
