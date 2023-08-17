@@ -168,26 +168,6 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions.ParentBasedSamplerOptions();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions.RootSamplerType { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions? Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions.TraceIdRatioBasedSamplerOptions { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.ProcessEnricherExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -268,32 +248,9 @@
           "Value": "0"
         },
         {
-          "Member": "const Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplerType.ParentBased",
-          "Stage": "Stable",
-          "Value": "3"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplerType.TraceIdRatioBased",
+          "Member": "const Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplerType.RatioBased",
           "Stage": "Stable",
           "Value": "2"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions.AddSampling(this OpenTelemetry.Trace.TracerProviderBuilder builder);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions.AddSampling(this OpenTelemetry.Trace.TracerProviderBuilder builder, System.Action<Microsoft.Extensions.Telemetry.Tracing.SamplingOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Tracing.SamplingExtensions.AddSampling(this OpenTelemetry.Trace.TracerProviderBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
         }
       ]
     },
@@ -308,15 +265,15 @@
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Tracing.ParentBasedSamplerOptions? Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.ParentBasedSamplerOptions { get; set; }",
-          "Stage": "Stable"
-        },
-        {
           "Member": "Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SamplerType { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions? Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.TraceIdRatioBasedSamplerOptions { get; set; }",
+          "Member": "bool Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.ParentBased { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "double Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SampleRate { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -335,18 +292,6 @@
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder builder);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder builder, System.Action<Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions.AddServiceTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         }
       ]
@@ -466,44 +411,6 @@
         {
           "Member": "static void Microsoft.Extensions.Telemetry.TelemetryExtensions.SetRequestMetadata(this System.Net.Http.HttpRequestMessage request, Microsoft.Extensions.Http.Telemetry.RequestMetadata metadata);",
           "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions.TraceIdRatioBasedSamplerOptions();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "double Microsoft.Extensions.Telemetry.Tracing.TraceIdRatioBasedSamplerOptions.Probability { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions.AddTraceEnricher<T>(this OpenTelemetry.Trace.TracerProviderBuilder builder);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions.AddTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder builder, Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher enricher);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions.AddTraceEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.TracingEnricherExtensions.AddTraceEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher enricher);",
-          "Stage": "Experimental"
         }
       ]
     }

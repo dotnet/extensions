@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Shared.Diagnostics;
-using OpenTelemetry.Trace;
 
 namespace Microsoft.Extensions.Telemetry.Enrichment;
 
@@ -62,58 +61,6 @@ public static class ServiceEnricherExtensions
         return services
             .AddStaticLogEnricher<ServiceLogEnricher>()
             .AddLogEnricherOptions(_ => { }, section);
-    }
-
-    /// <summary>
-    /// Adds an instance of service trace enricher to the <see cref="TracerProviderBuilder"/>.
-    /// </summary>
-    /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add the service trace enricher to.</param>
-    /// <returns>The <see cref="TracerProviderBuilder"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static TracerProviderBuilder AddServiceTraceEnricher(this TracerProviderBuilder builder)
-    {
-        _ = Throw.IfNull(builder);
-
-        _ = builder.AddTraceEnricher<ServiceTraceEnricher>();
-        _ = builder.ConfigureServices(services => services.AddTraceEnricherOptions(_ => { }));
-
-        return builder;
-    }
-
-    /// <summary>
-    /// Adds an instance of Service trace enricher to the <see cref="TracerProviderBuilder"/>.
-    /// </summary>
-    /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add the service trace enricher to.</param>
-    /// <param name="configure">The <see cref="ServiceTraceEnricherOptions"/> configuration delegate.</param>
-    /// <returns>The <see cref="TracerProviderBuilder"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
-    public static TracerProviderBuilder AddServiceTraceEnricher(this TracerProviderBuilder builder, Action<ServiceTraceEnricherOptions> configure)
-    {
-        _ = Throw.IfNull(builder);
-        _ = Throw.IfNull(configure);
-
-        _ = builder.AddTraceEnricher<ServiceTraceEnricher>();
-        _ = builder.ConfigureServices(services => services.AddTraceEnricherOptions(configure));
-
-        return builder;
-    }
-
-    /// <summary>
-    /// Adds an instance of Service trace enricher to the <see cref="TracerProviderBuilder"/>.
-    /// </summary>
-    /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add the Service trace enricher to.</param>
-    /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ServiceTraceEnricherOptions"/> in the Service trace enricher.</param>
-    /// <returns>The <see cref="TracerProviderBuilder"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
-    public static TracerProviderBuilder AddServiceTraceEnricher(this TracerProviderBuilder builder, IConfigurationSection section)
-    {
-        _ = Throw.IfNull(builder);
-        _ = Throw.IfNull(section);
-
-        _ = builder.AddTraceEnricher<ServiceTraceEnricher>();
-        _ = builder.ConfigureServices(services => services.AddTraceEnricherOptions(_ => { }, section));
-
-        return builder;
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ServiceLogEnricherOptions))]

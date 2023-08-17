@@ -9,6 +9,8 @@ bring it to our attention. Post an issue or email us:
 The attached notices are provided for information only.
 
 
+TODO: Should we keep this notice?
+
 License notice for OpenTelemetry .NET
 --------------------------------
 

@@ -21,10 +21,5 @@ public enum SamplerType
     /// <summary>
     /// Samples traces according to the specified probability.
     /// </summary>
-    TraceIdRatioBased,
-
-    /// <summary>
-    /// Samples traces if the parent Activity is sampled.
-    /// </summary>
-    ParentBased
+    RatioBased
 }
