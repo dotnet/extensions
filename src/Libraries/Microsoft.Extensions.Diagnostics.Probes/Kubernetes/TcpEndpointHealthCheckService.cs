@@ -68,7 +68,6 @@ internal sealed class TcpEndpointHealthCheckService : BackgroundService
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Yield();
-        _listener.Start();
 
         while (!stoppingToken.IsCancellationRequested)
         {
