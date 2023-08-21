@@ -188,36 +188,24 @@ internal sealed partial class ExtendedLogger : ILogger
         var loggers = MessageLoggers;
         var config = _factory.Config;
 
-        List<Exception>? exceptions = null;
-
         // redact
         JustInTimeRedactor? jitRedactors = null;
         for (int i = 0; i < msgState.NumClassifiedTags; i++)
         {
-            try
+            ref var cp = ref msgState.ClassifiedTagArray[i];
+            if (cp.Value != null)
             {
-                ref var cp = ref msgState.ClassifiedTagArray[i];
-                if (cp.Value != null)
-                {
-                    var jr = JustInTimeRedactor.Get();
-                    jr.Value = cp.Value;
-                    jr.Redactor = config.GetRedactor(cp.Classification);
-                    jr.Next = jitRedactors;
-                    jitRedactors = jr;
+                var jr = JustInTimeRedactor.Get();
+                jr.Value = cp.Value;
+                jr.Redactor = config.GetRedactor(cp.Classification);
+                jr.Next = jitRedactors;
+                jitRedactors = jr;
 
-                    var index = msgState.ReserveRedactedTagSpace(1);
-                    msgState.RedactedTagArray[index] = new(cp.Name, jr);
-                }
-                else
-                {
-                    var index = msgState.ReserveRedactedTagSpace(1);
-                    msgState.RedactedTagArray[index] = new(cp.Name, null);
-                }
+                msgState.RedactedTagArray[i] = new(cp.Name, jr);
             }
-            catch (Exception ex)
+            else
             {
-                exceptions ??= new();
-                exceptions.Add(ex);
+                msgState.RedactedTagArray[i] = new(cp.Name, null);
             }
         }
 
@@ -226,6 +214,8 @@ internal sealed partial class ExtendedLogger : ILogger
         joiner.Formatter = formatter;
         joiner.State = msgState;
         joiner.SetIncomingTags(msgState);
+
+        List<Exception>? exceptions = null;
 
         // enrich
         foreach (var enricher in config.Enrichers)

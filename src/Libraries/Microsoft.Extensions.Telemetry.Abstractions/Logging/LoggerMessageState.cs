@@ -60,25 +60,6 @@ public sealed partial class LoggerMessageState
     }
 
     /// <summary>
-    /// Allocates some room to put some redacted tags.
-    /// </summary>
-    /// <param name="count">The amount of space to allocate.</param>
-    /// <returns>The index in the <see cref="RedactedTagArray"/> where to store the tags.</returns>
-    public int ReserveRedactedTagSpace(int count)
-    {
-        int avail = _redactedTags.Length - NumRedactedTags;
-        if (count > avail)
-        {
-            var need = _redactedTags.Length + (count - avail);
-            Array.Resize(ref _redactedTags, need);
-        }
-
-        var index = NumRedactedTags;
-        NumRedactedTags += count;
-        return index;
-    }
-
-    /// <summary>
     /// Allocates some room to put some tags.
     /// </summary>
     /// <param name="count">The amount of space to allocate.</param>
@@ -90,6 +71,7 @@ public sealed partial class LoggerMessageState
         {
             var need = _classifiedTags.Length + (count - avail);
             Array.Resize(ref _classifiedTags, need);
+            Array.Resize(ref _redactedTags, need);
         }
 
         var index = NumClassifiedTags;
@@ -126,10 +108,9 @@ public sealed partial class LoggerMessageState
     public void Clear()
     {
         Array.Clear(_tags, 0, NumTags);
-        Array.Clear(_redactedTags, 0, NumRedactedTags);
         Array.Clear(_classifiedTags, 0, NumClassifiedTags);
+        Array.Clear(_redactedTags, 0, NumClassifiedTags);
         NumTags = 0;
-        NumRedactedTags = 0;
         NumClassifiedTags = 0;
         TagNamePrefix = string.Empty;
     }
@@ -138,11 +119,6 @@ public sealed partial class LoggerMessageState
     /// Gets a value indicating the number of unclassified tags currently in this instance.
     /// </summary>
     public int NumTags { get; private set; }
-
-    /// <summary>
-    /// Gets a value indicating the number of redacted tags currently in this instance.
-    /// </summary>
-    public int NumRedactedTags { get; private set; }
 
     /// <summary>
     /// Gets a value indicating the number of classified tags currently in this instance.
