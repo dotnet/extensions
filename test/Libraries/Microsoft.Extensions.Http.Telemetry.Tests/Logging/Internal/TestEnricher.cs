@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.Extensions.Telemetry.Enrichment;
@@ -12,19 +13,34 @@ internal class TestEnricher : IHttpClientLogEnricher
 {
     internal readonly KeyValuePair<string, object?> KvpRequest = new("test key request", "test value");
     internal readonly KeyValuePair<string, object?> KvpResponse = new("test key response", "test value");
-    public LogMethodHelper EnrichmentCollector => new() { KvpRequest, KvpResponse };
+    private readonly bool _throwOnEnrich;
 
-    public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage? request = null,
-        HttpResponseMessage? response = null)
+    public LoggerMessageState EnrichmentBag { get; }
+
+    public TestEnricher(bool throwOnEnrich = false)
     {
+        EnrichmentBag = new();
+        var index = EnrichmentBag.ReserveTagSpace(2);
+        EnrichmentBag.TagArray[index++] = KvpRequest;
+        EnrichmentBag.TagArray[index++] = KvpResponse;
+        _throwOnEnrich = throwOnEnrich;
+    }
+
+    public void Enrich(IEnrichmentTagCollector tagCollector, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
+    {
+        if (_throwOnEnrich)
+        {
+            throw new NotSupportedException("Synthetic exception from enricher");
+        }
+
         if (request is not null)
         {
-            collector.Add(KvpRequest.Key, KvpRequest.Value!);
+            tagCollector.Add(KvpRequest.Key, KvpRequest.Value!);
         }
 
         if (response is not null)
         {
-            collector.Add(KvpResponse.Key, KvpResponse.Value!);
+            tagCollector.Add(KvpResponse.Key, KvpResponse.Value!);
         }
     }
 }

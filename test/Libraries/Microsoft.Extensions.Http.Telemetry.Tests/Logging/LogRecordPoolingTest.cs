@@ -10,16 +10,16 @@ using Xunit;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
 
-public class LogRecordPooledObjectPolicyTest
+public class LogRecordPoolingTest
 {
     [Fact]
-    public void LogRecordPooledObjectPolicy_ResetsLogRecord()
+    public void LogRecordInPool_ResetsItsState()
     {
-        var pool = PoolFactory.CreatePool(new LogRecordPooledObjectPolicy());
+        var pool = PoolFactory.CreateResettingPool<LogRecord>();
         var testObject = new Fixture().Create<LogRecord>();
         testObject.RequestHeaders!.Add(new KeyValuePair<string, string>("key1", "value1"));
         testObject.ResponseHeaders!.Add(new KeyValuePair<string, string>("key2", "value2"));
-        testObject.EnrichmentTags!.Add("key3", "value3");
+        testObject.EnrichmentTags!.AddTag("key3", "value3");
 
         var logRecord1 = pool.Get();
         logRecord1.Host = testObject.Host;
@@ -42,8 +42,8 @@ public class LogRecordPooledObjectPolicyTest
         logRecord2.StatusCode.Should().BeNull();
         logRecord2.RequestHeaders.Should().BeNull();
         logRecord2.ResponseHeaders.Should().BeNull();
-        logRecord2.RequestBody.Should().Be(string.Empty);
-        logRecord2.ResponseBody.Should().Be(string.Empty);
+        logRecord2.RequestBody.Should().BeNull();
+        logRecord2.ResponseBody.Should().BeNull();
         logRecord2.EnrichmentTags.Should().BeNull();
     }
 }

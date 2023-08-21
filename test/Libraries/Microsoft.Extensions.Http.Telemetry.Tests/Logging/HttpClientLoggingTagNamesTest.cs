@@ -8,12 +8,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
 
-public class HttpClientLoggingDimensionsTest
+public class HttpClientLoggingTagNamesTest
 {
     [Fact]
-    public void GetDimensionNames_ReturnsAnArrayOfDimensionNames()
+    public void GetTagNames_ReturnsAnArrayOfTagNames()
     {
-        var actualDimensions = HttpClientLoggingTagNames.DimensionNames;
+        var actualDimensions = HttpClientLoggingTagNames.TagNames;
         var expectedDimensions = GetStringConstants(typeof(HttpClientLoggingTagNames));
 
         actualDimensions.Should().BeEquivalentTo(expectedDimensions);
