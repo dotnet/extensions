@@ -3,6 +3,8 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Options;
+using Moq;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
 
@@ -19,5 +21,25 @@ internal static class HelperExtensions
                     builder.AdditionalHandlers.Add(builder.Services.GetRequiredService<NoRemoteCallHandler>());
                 });
             });
+    }
+
+    public static IOptionsMonitor<LoggingOptions> ToOptionsMonitor(this LoggingOptions options, string? key = null)
+    {
+        var snapshotMock = new Mock<IOptionsMonitor<LoggingOptions>>();
+
+        if (key is not null)
+        {
+            snapshotMock
+                .Setup(monitor => monitor.Get(key))
+                .Returns(options);
+        }
+        else
+        {
+            snapshotMock
+                .SetupGet(monitor => monitor.CurrentValue)
+                .Returns(options);
+        }
+
+        return snapshotMock.Object;
     }
 }

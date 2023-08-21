@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Microsoft.Extensions.Http.Telemetry.Logging;
 
 /// <summary>
-/// Constants used for HTTP client logging dimensions.
+/// Constants used for HTTP client logging tags.
 /// </summary>
 public static class HttpClientLoggingTagNames
 {
@@ -57,10 +57,10 @@ public static class HttpClientLoggingTagNames
     public const string StatusCode = "httpStatusCode";
 
     /// <summary>
-    /// Gets a list of all dimension names.
+    /// Gets a list of all tag names.
     /// </summary>
-    /// <returns>A read-only <see cref="IReadOnlyList{String}"/> of all dimension names.</returns>
-    public static IReadOnlyList<string> DimensionNames { get; } =
+    /// <returns>A read-only <see cref="IReadOnlyList{String}"/> of all tag names.</returns>
+    public static IReadOnlyList<string> TagNames { get; } =
         Array.AsReadOnly(new[]
         {
             Duration,
