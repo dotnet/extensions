@@ -49,7 +49,7 @@ internal sealed partial class ExtendedLogger
             _incomingTagsCount = value.NumTags;
 
             _redactedTags = value.RedactedTagArray;
-            _redactedTagsCount = value.NumRedactedTags;
+            _redactedTagsCount = value.NumClassifiedTags;
         }
 
         public KeyValuePair<string, object?> this[int index]
