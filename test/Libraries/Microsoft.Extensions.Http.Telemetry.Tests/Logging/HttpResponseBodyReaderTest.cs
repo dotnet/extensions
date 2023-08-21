@@ -16,8 +16,6 @@ using Microsoft.Shared.Diagnostics;
 using Moq;
 using Xunit;
 
-using IOptionsFactory = Microsoft.Extensions.Options.Options;
-
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
 
 public class HttpResponseBodyReaderTest
@@ -30,20 +28,13 @@ public class HttpResponseBodyReaderTest
     }
 
     [Fact]
-    public void Reader_NullOptions_Throws()
-    {
-        var options = IOptionsFactory.Create((LoggingOptions)null!);
-        var act = () => new HttpResponseBodyReader(options);
-        act.Should().Throw<ArgumentException>();
-    }
-
-    [Fact]
     public async Task Reader_SimpleContent_ReadsContent()
     {
-        var options = IOptionsFactory.Create(new LoggingOptions
+        var options = new LoggingOptions
         {
             ResponseBodyContentTypes = new HashSet<string> { "text/plain" }
-        });
+        };
+
         var httpResponseBodyReader = new HttpResponseBodyReader(options);
         var expectedContentBody = _fixture.Create<string>();
         using var httpResponse = new HttpResponseMessage
@@ -59,10 +50,11 @@ public class HttpResponseBodyReaderTest
     [Fact]
     public async Task Reader_EmptyContent_ErrorMessage()
     {
-        var options = IOptionsFactory.Create(new LoggingOptions
+        var options = new LoggingOptions
         {
             ResponseBodyContentTypes = new HashSet<string> { "text/plain" }
-        });
+        };
+
         using var httpResponse = new HttpResponseMessage
         {
             Content = new StreamContent(new MemoryStream())
@@ -81,10 +73,11 @@ public class HttpResponseBodyReaderTest
             "application/javascript")]
         string contentType)
     {
-        var options = IOptionsFactory.Create(new LoggingOptions
+        var options = new LoggingOptions
         {
             ResponseBodyContentTypes = new HashSet<string> { "text/plain" }
-        });
+        };
+
         var httpResponseBodyReader = new HttpResponseBodyReader(options);
         var expectedContentBody = _fixture.Create<string>();
         using var httpResponse = new HttpResponseMessage
@@ -100,10 +93,11 @@ public class HttpResponseBodyReaderTest
     [Fact]
     public async Task Reader_OperationCanceled_ThrowsTaskCanceledException()
     {
-        var options = IOptionsFactory.Create(new LoggingOptions
+        var options = new LoggingOptions
         {
             ResponseBodyContentTypes = new HashSet<string> { "text/plain" }
-        });
+        };
+
         var httpResponseBodyReader = new HttpResponseBodyReader(options);
         var input = _fixture.Create<string>();
         using var httpResponse = new HttpResponseMessage
@@ -122,11 +116,12 @@ public class HttpResponseBodyReaderTest
     [CombinatorialData]
     public async Task Reader_BigContent_TrimsAtTheEnd([CombinatorialValues(32, 256, 4095, 4096, 4097, 65536, 131072)] int limit)
     {
-        var options = IOptionsFactory.Create(new LoggingOptions
+        var options = new LoggingOptions
         {
             BodySizeLimit = limit,
             ResponseBodyContentTypes = new HashSet<string> { "text/plain" }
-        });
+        };
+
         var httpResponseBodyReader = new HttpResponseBodyReader(options);
         var bigContent = RandomStringGenerator.Generate(limit * 2);
         using var httpResponse = new HttpResponseMessage
@@ -142,10 +137,11 @@ public class HttpResponseBodyReaderTest
     [Fact]
     public async Task Reader_ReadingTakesTooLong_TimesOut()
     {
-        var options = IOptionsFactory.Create(new LoggingOptions
+        var options = new LoggingOptions
         {
             ResponseBodyContentTypes = new HashSet<string> { "text/plain" }
-        });
+        };
+
         var httpResponseBodyReader = new HttpResponseBodyReader(options);
         var streamMock = new Mock<Stream>();
 #if NETCOREAPP3_1_OR_GREATER
@@ -157,6 +153,7 @@ public class HttpResponseBodyReaderTest
         {
             Content = new StreamContent(streamMock.Object)
         };
+
         httpResponse.Content.Headers.Add("Content-type", "text/plain");
 
         var requestBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None).ConfigureAwait(false);
@@ -167,7 +164,7 @@ public class HttpResponseBodyReaderTest
     [Fact]
     public void HttpResponseBodyReader_Has_Infinite_Timeout_For_Reading_A_Body_When_Debugger_Is_Attached()
     {
-        var options = IOptionsFactory.Create(new LoggingOptions());
+        var options = new LoggingOptions();
         var reader = new HttpResponseBodyReader(options, DebuggerState.Attached);
 
         Assert.Equal(reader.ResponseReadTimeout, Timeout.InfiniteTimeSpan);
@@ -177,7 +174,7 @@ public class HttpResponseBodyReaderTest
     public void HttpResponseBodyReader_Has_Option_Defined_Timeout_For_Reading_A_Body_When_Debugger_Is_Detached()
     {
         var timeout = TimeSpan.FromSeconds(274);
-        var options = IOptionsFactory.Create(new LoggingOptions { BodyReadTimeout = timeout });
+        var options = new LoggingOptions { BodyReadTimeout = timeout };
         var reader = new HttpResponseBodyReader(options, DebuggerState.Detached);
 
         Assert.Equal(reader.ResponseReadTimeout, timeout);

@@ -240,7 +240,9 @@ public class HttpClientTracingExtensionsTests
             // no op
         }
 
-        mockTraceEnricher.Verify(e => e.Enrich(It.IsAny<Activity>(), It.IsAny<HttpRequestMessage>(), It.IsAny<HttpResponseMessage>()), Times.Once);
+        // We check for the specific URL because we can catch traces from other tests:
+        mockTraceEnricher.Verify(e =>
+            e.Enrich(It.IsAny<Activity>(), It.Is<HttpRequestMessage>(x => x.RequestUri != null && x.RequestUri.AbsoluteUri == UriString), It.IsAny<HttpResponseMessage>()), Times.Once);
     }
 
     [Fact]

@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Compliance.Classification;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Internal;
-using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 
@@ -19,14 +19,14 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
     private readonly FrozenDictionary<string, DataClassification> _responseHeaders;
     private readonly IHttpHeadersRedactor _redactor;
 
-    public HttpHeadersReader(IOptions<LoggingOptions> options, IHttpHeadersRedactor redactor)
+    public HttpHeadersReader(IOptionsMonitor<LoggingOptions> optionsMonitor, IHttpHeadersRedactor redactor, [ServiceKey] string? serviceKey = null)
     {
-        _ = Throw.IfMemberNull(options, options.Value);
+        var options = optionsMonitor.GetKeyedOrCurrent(serviceKey);
 
         _redactor = redactor;
 
-        _requestHeaders = options.Value.RequestHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
-        _responseHeaders = options.Value.ResponseHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        _requestHeaders = options.RequestHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        _responseHeaders = options.ResponseHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
     }
 
     public void ReadRequestHeaders(HttpRequestMessage request, List<KeyValuePair<string, string>>? destination)

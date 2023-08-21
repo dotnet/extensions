@@ -162,7 +162,6 @@ public sealed class LogMethodHelper : List<KeyValuePair<string, object?>>, ITagC
     /// Gets an instance of a helper from the global pool.
     /// </summary>
     /// <returns>A usable instance.</returns>
-    [SuppressMessage("Minor Code Smell", "S4049:Properties should be preferred", Justification = "Not appropriate")]
     public static LogMethodHelper GetHelper() => _helpers.Get();
 
     /// <summary>
