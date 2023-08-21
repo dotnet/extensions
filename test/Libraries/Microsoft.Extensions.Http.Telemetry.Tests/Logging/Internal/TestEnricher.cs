@@ -26,7 +26,7 @@ internal class TestEnricher : IHttpClientLogEnricher
         _throwOnEnrich = throwOnEnrich;
     }
 
-    public void Enrich(IEnrichmentTagCollector tagCollector, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
+    public void Enrich(IEnrichmentTagCollector tagCollector, HttpRequestMessage request, HttpResponseMessage? response, Exception? exception)
     {
         if (_throwOnEnrich)
         {

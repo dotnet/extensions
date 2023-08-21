@@ -19,5 +19,9 @@ public interface IHttpClientLogEnricher
     /// <param name="request"><see cref="HttpRequestMessage"/> object associated with the outgoing HTTP request.</param>
     /// <param name="response"><see cref="HttpResponseMessage"/> object associated with the outgoing HTTP request.</param>
     /// <param name="exception">An optional <see cref="Exception"/> that was thrown within the outgoing HTTP request processing.</param>
-    void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null);
+    /// <remarks>
+    /// Please be aware that depending on the result of the HTTP request
+    /// the <paramref name="response"/> and <paramref name="exception"/> parameters may be <see langword="null"/>.
+    /// </remarks>
+    void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage request, HttpResponseMessage? response, Exception? exception);
 }
