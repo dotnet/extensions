@@ -2,44 +2,6 @@
   "Name": "Microsoft.Extensions.Telemetry, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "class Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.EventCountersCollectorOptions();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "System.Collections.Generic.IDictionary<string, System.Collections.Generic.ISet<string>> Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.Counters { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.IncludeRecommendedDefault { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.TimeSpan Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions.SamplingInterval { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Telemetry.Metering.EventCountersExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Metering.EventCountersExtensions.AddEventCounterCollector(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Telemetry.Metering.EventCountersCollectorOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Metering.EventCountersExtensions.AddEventCounterCollector(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.Telemetry.Latency.LatencyConsoleExtensions",
       "Stage": "Stable",
       "Methods": [
