@@ -82,24 +82,4 @@ public static class ServiceEnricherExtensions
 
         return services;
     }
-
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ServiceTraceEnricherOptions))]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed with [DynamicDependency]")]
-    private static IServiceCollection AddTraceEnricherOptions(
-        this IServiceCollection services,
-        Action<ServiceTraceEnricherOptions> configure,
-        IConfigurationSection? section = null)
-    {
-        _ = services.Configure(configure);
-
-        if (section is not null)
-        {
-            _ = services.Configure<ServiceTraceEnricherOptions>(section);
-        }
-
-        return services;
-    }
 }
