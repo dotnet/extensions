@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 #if NETCOREAPP3_1_OR_GREATER
 using Microsoft.Extensions.ObjectPool;
 #endif
-using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 #if NETCOREAPP3_1_OR_GREATER
 using Microsoft.Shared.Pools;
@@ -34,10 +33,8 @@ internal sealed class HttpRequestBodyReader
     private readonly FrozenSet<string> _readableRequestContentTypes;
     private readonly int _requestReadLimit;
 
-    public HttpRequestBodyReader(IOptions<LoggingOptions> options, IDebuggerState? debugger = null)
+    public HttpRequestBodyReader(LoggingOptions requestOptions, IDebuggerState? debugger = null)
     {
-        var requestOptions = Throw.IfMemberNull(options, options.Value);
-
         _readableRequestContentTypes = requestOptions.RequestBodyContentTypes.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
         debugger ??= DebuggerState.System;
         _requestReadLimit = requestOptions.BodySizeLimit;

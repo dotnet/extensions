@@ -121,7 +121,7 @@
       ],
       "Properties": [
         {
-          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.DimensionNames { get; }",
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.TagNames { get; }",
           "Stage": "Stable"
         }
       ]
@@ -131,7 +131,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector, System.Net.Http.HttpRequestMessage? request = null, System.Net.Http.HttpResponseMessage? response = null);",
+          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector, System.Net.Http.HttpRequestMessage request, System.Net.Http.HttpResponseMessage? response, System.Exception? exception);",
           "Stage": "Stable"
         }
       ]

@@ -77,7 +77,6 @@ public static class LoggerMessageStateTests
 
         Assert.Equal(4, lms.NumTags);
         Assert.Equal(0, lms.NumClassifiedTags);
-        Assert.Equal(0, lms.NumRedactedTags);
 
         Assert.Equal("K1", lms.TagArray[0].Key);
         Assert.Equal("K2", lms.TagArray[1].Key);

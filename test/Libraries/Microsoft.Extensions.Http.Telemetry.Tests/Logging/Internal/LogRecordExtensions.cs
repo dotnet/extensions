@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
@@ -23,14 +24,20 @@ internal static class LogRecordExtensions
         return logRecord.EnrichmentTags!.FirstOrDefault(kvp => kvp.Key == name).Value!.ToString()!;
     }
 
-    public static void Contains(this Dictionary<string, string?> logRecord, string key, string value)
+    public static void Contains(this IDictionary<string, string?> logRecordState, string key, string expectedValue)
     {
-        Assert.True(logRecord.ContainsKey(key));
-        Assert.Equal(value, logRecord[key]);
+        var actualValue = Assert.Contains(key, logRecordState);
+        Assert.Equal(expectedValue, actualValue);
     }
 
-    public static void NotContains(this Dictionary<string, string?> logRecord, string key)
+    public static void Contains(this IDictionary<string, string?> logRecordState, string key, Action<string?> assertion)
     {
-        Assert.False(logRecord.ContainsKey(key));
+        var actualValue = Assert.Contains(key, logRecordState);
+        assertion(actualValue);
+    }
+
+    public static void NotContains(this IDictionary<string, string?> logRecord, string key)
+    {
+        Assert.DoesNotContain(key, logRecord);
     }
 }
