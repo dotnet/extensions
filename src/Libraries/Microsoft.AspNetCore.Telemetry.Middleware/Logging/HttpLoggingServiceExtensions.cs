@@ -31,6 +31,7 @@ public static class HttpLoggingServiceExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="configureRedaction">Configures the redaction options.</param>
     /// <returns>The original service collection.</returns>
+    [Experimental("ID")]
     public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<LoggingRedactionOptions> configureRedaction)
     {
         _ = Throw.IfNull(services);

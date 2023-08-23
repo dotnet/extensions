@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Telemetry;
 /// <summary>
 /// Top-level model for redacting incoming HTTP requests and their corresponding responses.
 /// </summary>
+[Experimental("ID")]
 public class LoggingRedactionOptions
 {
     private const IncomingPathLoggingMode DefaultRequestPathLoggingMode = IncomingPathLoggingMode.Formatted;
@@ -36,7 +37,6 @@ public class LoggingRedactionOptions
     /// <remarks>
     /// Default set to <see cref="HttpRouteParameterRedactionMode.Strict"/>.
     /// </remarks>
-    [Experimental("ID")]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>
@@ -94,7 +94,6 @@ public class LoggingRedactionOptions
     /// };
     /// </code>
     /// </example>
-    [Experimental("ID")]
     [Required]
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
