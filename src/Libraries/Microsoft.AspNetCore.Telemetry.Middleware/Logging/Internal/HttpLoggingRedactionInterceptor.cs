@@ -8,6 +8,7 @@ using System.Buffers;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Routing;
@@ -48,7 +49,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         _httpRouteFormatter = httpRouteFormatter;
         _httpRouteUtility = httpRouteUtility;
 
-        _parametersToRedactMap = optionsValue.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal, optimizeForReading: true);
+        _parametersToRedactMap = optionsValue.RouteParameterDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
 
         _requestPathLogMode = EnsureRequestPathLoggingModeIsValid(optionsValue.RequestPathLoggingMode);
         _parameterRedactionMode = optionsValue.RequestPathParameterRedactionMode;
@@ -59,7 +60,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         _excludePathStartsWith = optionsValue.ExcludePathStartsWith.ToArray();
     }
 
-    public void OnRequest(HttpLoggingContext logContext)
+    public ValueTask OnRequestAsync(HttpLoggingInterceptorContext logContext)
     {
         var context = logContext.HttpContext;
         var request = context.Request;
@@ -71,7 +72,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         // Don't enrich if we're not going to log any part of the request
         if (!logContext.IsAnyEnabled(HttpLoggingFields.Request))
         {
-            return;
+            return default;
         }
 
         if (logContext.TryOverride(HttpLoggingFields.RequestPath))
@@ -104,7 +105,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
                         {
                             foreach (var param in routeParams)
                             {
-                                logContext.Add(param.Name, param.Value);
+                                logContext.AddParameter(param.Name, param.Value);
                             }
                         }
                     }
@@ -115,7 +116,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
                 path = request.Path.Value!;
             }
 
-            logContext.Add(nameof(request.Path), path);
+            logContext.AddParameter(nameof(request.Path), path);
         }
 
         if (logContext.TryOverride(HttpLoggingFields.RequestHeaders))
@@ -124,14 +125,16 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
             // Do we try to reconcile that with LoggingRedactionOptions.RequestHeadersDataClasses?
             _requestHeadersReader.Read(context.Request.Headers, logContext);
         }
+
+        return default;
     }
 
-    public void OnResponse(HttpLoggingContext logContext)
+    public ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext)
     {
         // Don't enrich if we're not going to log any part of the response
         if (!logContext.IsAnyEnabled(HttpLoggingFields.Response))
         {
-            return;
+            return default;
         }
 
         var context = logContext.HttpContext;
@@ -142,6 +145,8 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         }
 
         // TODO: What about the exception case?
+
+        return default;
     }
 
     private static IncomingPathLoggingMode EnsureRequestPathLoggingModeIsValid(IncomingPathLoggingMode mode)

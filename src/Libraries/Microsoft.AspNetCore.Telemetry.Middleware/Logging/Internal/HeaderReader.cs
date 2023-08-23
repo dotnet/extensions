@@ -50,7 +50,7 @@ internal sealed class HeaderReader
         }
     }
 #if NET8_0_OR_GREATER
-    public void Read(IHeaderDictionary headers, HttpLoggingContext logContext)
+    public void Read(IHeaderDictionary headers, HttpLoggingInterceptorContext logContext)
     {
         if (headers.Count == 0)
         {
@@ -63,7 +63,7 @@ internal sealed class HeaderReader
             {
                 var provider = _redactorProvider.GetRedactor(header.Value);
                 var redacted = provider.Redact(headerValue.ToString());
-                logContext.Add(header.Key, redacted);
+                logContext.AddParameter(header.Key, redacted);
             }
         }
     }

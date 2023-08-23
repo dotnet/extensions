@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.Telemetry.Logging;
@@ -21,18 +22,19 @@ internal sealed class HttpLoggingEnrichmentInterceptor : IHttpLoggingInterceptor
         _enrichers = httpLogEnrichers.ToArray();
     }
 
-    public void OnRequest(HttpLoggingContext logContext)
+    public ValueTask OnRequestAsync(HttpLoggingInterceptorContext logContext)
     {
         // Enrichment only applies to the response.
+        return default;
     }
 
-    public void OnResponse(HttpLoggingContext logContext)
+    public ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext)
     {
         // Don't enrich if we're not going to log any part of the response
         if (_enrichers.Length == 0
             || (!logContext.IsAnyEnabled(HttpLoggingFields.Response) && logContext.Parameters.Count == 0))
         {
-            return;
+            return default;
         }
 
         var context = logContext.HttpContext;
@@ -48,6 +50,8 @@ internal sealed class HttpLoggingEnrichmentInterceptor : IHttpLoggingInterceptor
         }
 
         LogMethodHelper.ReturnHelper(enrichmentBag);
+
+        return default;
     }
 }
 

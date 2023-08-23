@@ -36,7 +36,7 @@ public class LoggingRedactionOptions
     /// <remarks>
     /// Default set to <see cref="HttpRouteParameterRedactionMode.Strict"/>.
     /// </remarks>
-    [Experimental]
+    [Experimental("ID")]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>
@@ -94,7 +94,7 @@ public class LoggingRedactionOptions
     /// };
     /// </code>
     /// </example>
-    [Experimental]
+    [Experimental("ID")]
     [Required]
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
