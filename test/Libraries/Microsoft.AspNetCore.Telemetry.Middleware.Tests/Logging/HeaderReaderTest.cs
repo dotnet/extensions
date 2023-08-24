@@ -1,6 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
+#if NET8_0_OR_GREATER
 using System.Collections.Generic;
 using System.Net.Mime;
 using Microsoft.AspNetCore.Http;
@@ -18,9 +18,9 @@ public class HeaderReaderTest
     public void ShouldNotAddHeaders_WhenFilteringSetEmpty()
     {
         var reader = new HeaderReader(new Dictionary<string, DataClassification>(), null!);
-        var listToFill = new List<KeyValuePair<string, string>>();
+        var listToFill = new List<KeyValuePair<string, object?>>();
         var headers = new HeaderDictionary(new Dictionary<string, StringValues> { [HeaderNames.Accept] = MediaTypeNames.Text.Plain });
-        reader.Read(headers, listToFill);
+        reader.Read(headers, listToFill, string.Empty);
         Assert.Empty(listToFill);
     }
 
@@ -28,8 +28,8 @@ public class HeaderReaderTest
     public void ShouldNotAddHeaders_WhenHeadersCollectionEmpty()
     {
         var reader = new HeaderReader(new Dictionary<string, DataClassification> { [HeaderNames.Accept] = DataClassification.Unknown }, null!);
-        var listToFill = new List<KeyValuePair<string, string>>();
-        reader.Read(new HeaderDictionary(), listToFill);
+        var listToFill = new List<KeyValuePair<string, object?>>();
+        reader.Read(new HeaderDictionary(), listToFill, string.Empty);
         Assert.Empty(listToFill);
     }
 
@@ -44,8 +44,8 @@ public class HeaderReaderTest
             [HeaderNames.ContentType] = MediaTypeNames.Application.Pdf
         };
 
-        var listToFill = new List<KeyValuePair<string, string>>();
-        reader.Read(new HeaderDictionary(headers), listToFill);
+        var listToFill = new List<KeyValuePair<string, object?>>();
+        reader.Read(new HeaderDictionary(headers), listToFill, string.Empty);
 
         Assert.Single(listToFill);
 
@@ -54,3 +54,4 @@ public class HeaderReaderTest
         Assert.Equal($"<redacted:{MediaTypeNames.Text.Xml}>", redacted.Value);
     }
 }
+#endif

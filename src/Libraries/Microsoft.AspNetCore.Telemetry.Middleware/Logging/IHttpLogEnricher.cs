@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET8_0_OR_GREATER
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Telemetry.Enrichment;
 
@@ -19,3 +21,4 @@ public interface IHttpLogEnricher
     /// <param name="response"><see cref="HttpResponse"/> object associated with the response to an incoming HTTP request.</param>
     void Enrich(IEnrichmentTagCollector collector, HttpRequest request, HttpResponse response);
 }
+#endif

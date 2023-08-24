@@ -38,7 +38,7 @@ internal sealed class HttpLoggingEnrichmentInterceptor : IHttpLoggingInterceptor
         }
 
         var context = logContext.HttpContext;
-        var enrichmentBag =  LogMethodHelper.GetHelper();
+        var enrichmentBag = LogMethodHelper.GetHelper();
         foreach (var enricher in _enrichers)
         {
             enricher.Enrich(enrichmentBag, context.Request, context.Response);

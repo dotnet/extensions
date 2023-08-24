@@ -26,9 +26,8 @@ public class ApiRoutingController : ControllerBase
         Debug.Assert(noRedaction != null, "Test");
 
         // Request processing imitation:
-        var middleware = HttpContext.RequestServices.GetRequiredService<HttpLoggingMiddleware>();
-        var fakeTimeProvider = (FakeTimeProvider)middleware.TimeProvider;
-        fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(AcceptanceTest.ControllerProcessingTimeMs));
+        HttpContext.RequestServices.GetRequiredService<FakeTimeProvider>()
+            .Advance(TimeSpan.FromMilliseconds(AcceptanceTest.ControllerProcessingTimeMs));
 
         return "User info...";
     }

@@ -1,6 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
+#if NET8_0_OR_GREATER
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -41,7 +41,7 @@ public partial class AcceptanceTest
         public static void Configure(IApplicationBuilder app)
             => app
                 .UseRouting()
-                .UseHttpLoggingMiddleware()
+                .UseHttpLogging()
                 .UseEndpoints(endpoints => endpoints.MapControllers());
     }
 
@@ -55,7 +55,7 @@ public partial class AcceptanceTest
     {
         await RunControllerAsync(
             LogLevel.Information,
-            services => services.AddHttpLogging(o => o.RequestPathParameterRedactionMode = mode),
+            services => services.AddHttpLoggingRedaction(o => o.RequestPathParameterRedactionMode = mode),
             async (logCollector, client) =>
             {
                 const string UserId = "testUserId";
@@ -90,7 +90,7 @@ public partial class AcceptanceTest
     {
         await RunControllerAsync(
             LogLevel.Information,
-            services => services.AddHttpLogging(x => x.RequestPathLoggingMode = IncomingPathLoggingMode.Structured),
+            services => services.AddHttpLoggingRedaction(x => x.RequestPathLoggingMode = IncomingPathLoggingMode.Structured),
             async (logCollector, client) =>
             {
                 const string UserId = "testUserId";
@@ -129,7 +129,7 @@ public partial class AcceptanceTest
     {
         await RunControllerAsync(
             LogLevel.Information,
-            services => services.AddHttpLogging(x =>
+            services => services.AddHttpLoggingRedaction(x =>
             {
                 x.RouteParameterDataClasses.Add(new(NoDataClassParamName, DataClassification.None));
                 x.RequestPathLoggingMode = IncomingPathLoggingMode.Structured;
@@ -180,7 +180,7 @@ public partial class AcceptanceTest
     {
         await RunControllerAsync(
             LogLevel.Information,
-            services => services.AddHttpLogging(x => x.RequestPathParameterRedactionMode = HttpRouteParameterRedactionMode.None),
+            services => services.AddHttpLoggingRedaction(x => x.RequestPathParameterRedactionMode = HttpRouteParameterRedactionMode.None),
             async (logCollector, client) =>
             {
                 const string UserId = "testUserId";
@@ -218,7 +218,7 @@ public partial class AcceptanceTest
 
         await RunControllerAsync(
             LogLevel.Information,
-            services => services.AddHttpLogging(x =>
+            services => services.AddHttpLoggingRedaction(x =>
             {
                 x.RequestPathParameterRedactionMode = routeParameterRedactionModeNone
                     ? HttpRouteParameterRedactionMode.None : HttpRouteParameterRedactionMode.Strict;
@@ -250,3 +250,4 @@ public partial class AcceptanceTest
             });
     }
 }
+#endif

@@ -70,10 +70,13 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         }
 
         // Don't enrich if we're not going to log any part of the request
-        if (!logContext.IsAnyEnabled(HttpLoggingFields.Request))
+        if (!logContext.IsAnyEnabled(HttpLoggingFields.RequestPropertiesAndHeaders))
         {
             return default;
         }
+
+        // Always included, redaction will filter it out of the headers by default.
+        logContext.AddParameter(HttpLoggingTagNames.Host, context.Request.Host.Value);
 
         if (logContext.TryOverride(HttpLoggingFields.RequestPath))
         {
@@ -123,7 +126,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         {
             // TODO: HttpLoggingOptions.Request/ResponseHeaders are ignored which could be confusing.
             // Do we try to reconcile that with LoggingRedactionOptions.RequestHeadersDataClasses?
-            _requestHeadersReader.Read(context.Request.Headers, logContext);
+            _requestHeadersReader.Read(context.Request.Headers, logContext.Parameters, HttpLoggingTagNames.RequestHeaderPrefix);
         }
 
         return default;
@@ -132,7 +135,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
     public ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext)
     {
         // Don't enrich if we're not going to log any part of the response
-        if (!logContext.IsAnyEnabled(HttpLoggingFields.Response))
+        if (!logContext.IsAnyEnabled(HttpLoggingFields.ResponsePropertiesAndHeaders))
         {
             return default;
         }
@@ -141,7 +144,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
 
         if (logContext.TryOverride(HttpLoggingFields.ResponseHeaders))
         {
-            _responseHeadersReader.Read(context.Response.Headers, logContext);
+            _responseHeadersReader.Read(context.Response.Headers, logContext.Parameters, HttpLoggingTagNames.ResponseHeaderPrefix);
         }
 
         // TODO: What about the exception case?

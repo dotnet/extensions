@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Telemetry;
 /// <summary>
 /// Top-level model for redacting incoming HTTP requests and their corresponding responses.
 /// </summary>
-[Experimental("ID")]
 public class LoggingRedactionOptions
 {
     private const IncomingPathLoggingMode DefaultRequestPathLoggingMode = IncomingPathLoggingMode.Formatted;
