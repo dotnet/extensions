@@ -44,16 +44,6 @@ public static class HttpLoggingTagNames
     public const string ResponseHeaderPrefix = "ResponseHeader_";
 
     /// <summary>
-    /// HTTP Request Body.
-    /// </summary>
-    public const string RequestBody = "Body";
-
-    /// <summary>
-    /// HTTP Response Body.
-    /// </summary>
-    public const string ResponseBody = "Body";
-
-    /// <summary>
     /// HTTP Status Code.
     /// </summary>
     public const string StatusCode = "StatusCode";
@@ -71,8 +61,6 @@ public static class HttpLoggingTagNames
             Path,
             RequestHeaderPrefix,
             ResponseHeaderPrefix,
-            RequestBody,
-            ResponseBody,
             StatusCode
         });
 }

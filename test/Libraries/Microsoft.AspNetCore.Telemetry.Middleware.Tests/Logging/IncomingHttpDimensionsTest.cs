@@ -12,7 +12,7 @@ public class IncomingHttpDimensionsTest
     public void Should_ReturnList_AllDimensions()
     {
         var dimensions = HttpLoggingTagNames.DimensionNames;
-        Assert.Equal(9, dimensions.Count);
+        Assert.Equal(7, dimensions.Count);
 
         var names = new HashSet<string>(dimensions);
         Assert.Equal(names.Count, dimensions.Count);

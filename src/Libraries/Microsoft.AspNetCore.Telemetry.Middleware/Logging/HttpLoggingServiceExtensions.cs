@@ -26,16 +26,17 @@ public static class HttpLoggingServiceExtensions
     /// <param name="configureRedaction">Configures the redaction options.</param>
     /// <param name="configureLogging">Configures the logging options.</param>
     /// <returns>The original service collection.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     [Experimental("ID")]
     public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<LoggingRedactionOptions>? configureRedaction = null,
         Action<HttpLoggingOptions>? configureLogging = null)
     {
         _ = Throw.IfNull(services);
 
-        _ = services.Configure(configureRedaction ?? (_ => { }));
+        _ = services.Configure(configureRedaction ?? (static _ => { }));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpLoggingInterceptor, HttpLoggingRedactionInterceptor>());
 
-        _ = services.AddHttpLogging(configureLogging ?? (_ => { }));
+        _ = services.AddHttpLogging(configureLogging ?? (static _ => { }));
 
         // Internal stuff for route processing:
         _ = services.AddHttpRouteProcessor();
@@ -48,6 +49,7 @@ public static class HttpLoggingServiceExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The original service collection.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     [Experimental("ID")]
     public static IServiceCollection AddHttpLoggingEnrichment(this IServiceCollection services)
     {
@@ -55,9 +57,6 @@ public static class HttpLoggingServiceExtensions
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpLoggingInterceptor, HttpLoggingEnrichmentInterceptor>());
 
-        // Internal stuff for route processing:
-        _ = services.AddHttpRouteProcessor();
-        _ = services.AddHttpRouteUtilities();
         return services;
     }
 

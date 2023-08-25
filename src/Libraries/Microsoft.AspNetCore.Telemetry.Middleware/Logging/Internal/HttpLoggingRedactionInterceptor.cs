@@ -64,12 +64,13 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
     {
         var context = logContext.HttpContext;
         var request = context.Request;
-        if (ShouldExcludePath(context.Request.Path))
+        if (ShouldExcludePath(context.Request.Path.Value!))
         {
             logContext.LoggingFields = HttpLoggingFields.None;
+            return default;
         }
 
-        // Don't enrich if we're not going to log any part of the request
+        // Don't redact if we're not going to log any part of the request
         if (!logContext.IsAnyEnabled(HttpLoggingFields.RequestPropertiesAndHeaders))
         {
             return default;
@@ -78,7 +79,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         // Always included, redaction will filter it out of the headers by default.
         logContext.AddParameter(HttpLoggingTagNames.Host, context.Request.Host.Value);
 
-        if (logContext.TryOverride(HttpLoggingFields.RequestPath))
+        if (logContext.TryDisable(HttpLoggingFields.RequestPath))
         {
             string path = TelemetryConstants.Unknown;
 
@@ -122,7 +123,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
             logContext.AddParameter(nameof(request.Path), path);
         }
 
-        if (logContext.TryOverride(HttpLoggingFields.RequestHeaders))
+        if (logContext.TryDisable(HttpLoggingFields.RequestHeaders))
         {
             // TODO: HttpLoggingOptions.Request/ResponseHeaders are ignored which could be confusing.
             // Do we try to reconcile that with LoggingRedactionOptions.RequestHeadersDataClasses?
@@ -134,7 +135,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
 
     public ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext)
     {
-        // Don't enrich if we're not going to log any part of the response
+        // Don't redact if we're not going to log any part of the response
         if (!logContext.IsAnyEnabled(HttpLoggingFields.ResponsePropertiesAndHeaders))
         {
             return default;
@@ -142,7 +143,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
 
         var context = logContext.HttpContext;
 
-        if (logContext.TryOverride(HttpLoggingFields.ResponseHeaders))
+        if (logContext.TryDisable(HttpLoggingFields.ResponseHeaders))
         {
             _responseHeadersReader.Read(context.Response.Headers, logContext.Parameters, HttpLoggingTagNames.ResponseHeaderPrefix);
         }
