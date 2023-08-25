@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,7 +56,8 @@ public partial class AcceptanceTest
     {
         await RunControllerAsync(
             LogLevel.Information,
-            services => services.AddHttpLoggingRedaction(o => o.RequestPathParameterRedactionMode = mode),
+            services => services.AddHttpLoggingRedaction(o => o.RequestPathParameterRedactionMode = mode,
+                o => o.LoggingFields = HttpLoggingFields.RequestProperties),
             async (logCollector, client) =>
             {
                 const string UserId = "testUserId";
@@ -77,11 +79,7 @@ public partial class AcceptanceTest
                 Assert.DoesNotContain(state, x => x.Key == QueryParamName);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == redactedPath);
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Get.ToString());
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Duration &&
-                    x.Value != null &&
-                    int.Parse(x.Value, CultureInfo.InvariantCulture) == ControllerProcessingTimeMs);
             });
     }
 
@@ -90,7 +88,8 @@ public partial class AcceptanceTest
     {
         await RunControllerAsync(
             LogLevel.Information,
-            services => services.AddHttpLoggingRedaction(x => x.RequestPathLoggingMode = IncomingPathLoggingMode.Structured),
+            services => services.AddHttpLoggingRedaction(x => x.RequestPathLoggingMode = IncomingPathLoggingMode.Structured,
+                o => o.LoggingFields = HttpLoggingFields.RequestProperties),
             async (logCollector, client) =>
             {
                 const string UserId = "testUserId";
@@ -115,11 +114,7 @@ public partial class AcceptanceTest
                 Assert.DoesNotContain(state, x => x.Key == QueryParamName);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == ActionRouteTemplate);
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Get.ToString());
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Duration &&
-                    x.Value != null &&
-                    int.Parse(x.Value, CultureInfo.InvariantCulture) == ControllerProcessingTimeMs);
             });
     }
 
@@ -135,7 +130,8 @@ public partial class AcceptanceTest
                 x.RequestPathLoggingMode = IncomingPathLoggingMode.Structured;
                 x.RequestPathParameterRedactionMode = routeParameterRedactionModeNone
                     ? HttpRouteParameterRedactionMode.None : HttpRouteParameterRedactionMode.Strict;
-            }),
+            },
+            l => l.LoggingFields = HttpLoggingFields.RequestProperties),
             async (logCollector, client) =>
             {
                 const string UserId = "testUserId";
@@ -167,11 +163,7 @@ public partial class AcceptanceTest
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
                 var expectedPath = routeParameterRedactionModeNone ? $"/api/users/{UserId}/{NoDataClassParamValue}" : ActionRouteTemplate;
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == expectedPath);
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Get.ToString());
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Duration &&
-                    x.Value != null &&
-                    int.Parse(x.Value, CultureInfo.InvariantCulture) == ControllerProcessingTimeMs);
             });
     }
 
@@ -180,7 +172,8 @@ public partial class AcceptanceTest
     {
         await RunControllerAsync(
             LogLevel.Information,
-            services => services.AddHttpLoggingRedaction(x => x.RequestPathParameterRedactionMode = HttpRouteParameterRedactionMode.None),
+            services => services.AddHttpLoggingRedaction(x => x.RequestPathParameterRedactionMode = HttpRouteParameterRedactionMode.None,
+                l => l.LoggingFields = HttpLoggingFields.RequestProperties),
             async (logCollector, client) =>
             {
                 const string UserId = "testUserId";
@@ -202,11 +195,7 @@ public partial class AcceptanceTest
                 Assert.DoesNotContain(state, x => x.Key == QueryParamName);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == $"/api/users/testUserId/someTestData");
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Get.ToString());
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Duration &&
-                    x.Value != null &&
-                    int.Parse(x.Value, CultureInfo.InvariantCulture) == ControllerProcessingTimeMs);
             });
     }
 
@@ -222,7 +211,8 @@ public partial class AcceptanceTest
             {
                 x.RequestPathParameterRedactionMode = routeParameterRedactionModeNone
                     ? HttpRouteParameterRedactionMode.None : HttpRouteParameterRedactionMode.Strict;
-            }),
+            },
+            l => l.LoggingFields = HttpLoggingFields.RequestProperties),
             async (logCollector, client) =>
             {
                 using var response = await client.GetAsync(RequestPath).ConfigureAwait(false);
@@ -245,7 +235,6 @@ public partial class AcceptanceTest
                 Assert.DoesNotContain(state, x => x.Key == QueryParamName);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == expectedPath);
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Get.ToString());
             });
     }

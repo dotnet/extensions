@@ -107,9 +107,9 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
                         // Setting this value right away to be able to return it back to pool in a callee's "finally" block:
                         if (_httpRouteParser.TryExtractParameters(request.Path, in routeSegments, _parameterRedactionMode, paramsToRedact, ref routeParams))
                         {
-                            foreach (var param in routeParams)
+                            for (var i = 0; i < routeSegments.ParameterCount; i++)
                             {
-                                logContext.AddParameter(param.Name, param.Value);
+                                logContext.AddParameter(routeParams[i].Name, routeParams[i].Value);
                             }
                         }
                     }

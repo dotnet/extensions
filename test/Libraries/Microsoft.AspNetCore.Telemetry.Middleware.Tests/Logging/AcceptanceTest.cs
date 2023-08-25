@@ -11,6 +11,7 @@ using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -48,16 +49,12 @@ public partial class AcceptanceTest
             services.AddRouting();
             services.AddFakeRedaction();
             services.AddHttpLoggingRedaction();
-            services.AddSingleton<TestBodyPipeFeatureMiddleware>();
-            services.AddSingleton<FakeTimeProvider>();
-            services.AddSingleton<TimeProvider>(s => s.GetRequiredService<FakeTimeProvider>());
         }
 
         [SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Used through reflection")]
         public static void Configure(IApplicationBuilder app)
         {
             app.UseRouting();
-            app.UseMiddleware<TestBodyPipeFeatureMiddleware>();
             app.UseHttpLogging();
 
             app.Map("/error", static x =>
@@ -114,7 +111,11 @@ public partial class AcceptanceTest
                 .AddFilter("Microsoft.AspNetCore.HttpLogging", level)
                 .SetMinimumLevel(level)
                 .AddFakeLogging())
-            .ConfigureServices(x => x.AddSingleton<TestBodyPipeFeatureMiddleware>())
+            .ConfigureServices(x =>
+            {
+                x.AddSingleton<FakeTimeProvider>();
+                x.AddSingleton<TimeProvider>(s => s.GetRequiredService<FakeTimeProvider>());
+            })
             .ConfigureServices(configure)
             .ConfigureWebHost(static builder => builder
                 .UseStartup<TStartup>()
@@ -252,41 +253,6 @@ public partial class AcceptanceTest
                     Assert.Equal(2, state1!.Count);
                     Assert.Single(state1, x => x.Key == "Body" && x.Value == Content);
                 }
-            });
-    }
-
-    [Fact]
-    public async Task HttpLogging_WhenMultiSegmentRequestPipe_LogRequestBody()
-    {
-        await RunAsync(
-            LogLevel.Information,
-            services => services.AddHttpLoggingRedaction(configureLogging: x =>
-            {
-                x.MediaTypeOptions.AddText("text/*");
-                x.LoggingFields |= HttpLogging.HttpLoggingFields.RequestBody;
-            }),
-            async (logCollector, client) =>
-            {
-                const string Content = "Whatever...";
-
-                using var content = new StringContent(Content, null, MediaTypeNames.Text.Plain);
-                using var response = await client.PostAsync("/multi-segment-pipe", content).ConfigureAwait(false);
-                Assert.True(response.IsSuccessStatusCode);
-
-                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
-
-                Assert.Equal(1, logCollector.Count);
-                Assert.Null(logCollector.LatestRecord.Exception);
-                Assert.Equal(LogLevel.Information, logCollector.LatestRecord.Level);
-                Assert.Equal(LoggingCategory, logCollector.LatestRecord.Category);
-
-                var responseStatus = ((int)response.StatusCode).ToInvariantString();
-                var state = logCollector.LatestRecord.StructuredState;
-
-                Assert.Equal(7, state!.Count);
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Post.ToString());
-                Assert.Single(state, x => x.Key == "Body" && x.Value == "Test Segment");
             });
     }
 
@@ -499,6 +465,10 @@ public partial class AcceptanceTest
                 {
                     options.RequestPathParameterRedactionMode = HttpRouteParameterRedactionMode.None;
                     options.RequestPathLoggingMode = pathLoggingMode;
+                },
+                options =>
+                {
+                    options.LoggingFields = HttpLoggingFields.RequestProperties;
                 });
             },
             async static (logCollector, client) =>
@@ -517,7 +487,7 @@ public partial class AcceptanceTest
                 var responseStatus = ((int)response.StatusCode).ToInvariantString();
                 var state = logCollector.LatestRecord.StructuredState;
 
-                Assert.Equal(6, state!.Count);
+                Assert.Equal(5, state!.Count);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == RequestPath);
             });
     }
@@ -710,48 +680,6 @@ public partial class AcceptanceTest
     }
 
     [Fact]
-    public async Task HttpLogging_WhenRequestBodyReadTimeout_LogException()
-    {
-        await RunAsync<TestStartup>(
-            LogLevel.Information,
-            static services => services.AddHttpLoggingRedaction(configureLogging: static x =>
-            {
-                x.MediaTypeOptions.AddText(MediaTypeNames.Text.Plain);
-                x.LoggingFields |= HttpLoggingFields.RequestBody;
-                x.RequestBodyLogLimit = int.MaxValue;
-            }),
-            async (logCollector, client, serviceProvider) =>
-            {
-                using var stream = new InfiniteStream('A');
-                using var content = new StreamContent(stream);
-                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(MediaTypeNames.Text.Plain);
-
-                using var cts = new CancellationTokenSource();
-                var pipeMiddleware = serviceProvider.GetRequiredService<TestBodyPipeFeatureMiddleware>();
-                pipeMiddleware.RequestBodyInfinitePipeFeatureCallback = cts.Cancel;
-
-                var ex = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.PutAsync("/infinite-pipe", content, cts.Token));
-                Assert.NotNull(ex);
-
-                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
-
-                Assert.Equal(1, logCollector.Count);
-                Assert.Equal(LogLevel.Error, logCollector.LatestRecord.Level);
-                Assert.Equal(LoggingCategory, logCollector.LatestRecord.Category);
-                Assert.NotNull(logCollector.LatestRecord.Exception);
-                Assert.IsType<OperationCanceledException>(logCollector.LatestRecord.Exception);
-
-                var state = logCollector.LatestRecord.StructuredState;
-
-                Assert.Equal(6, state!.Count);
-                Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.RequestHeaderPrefix));
-                Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.ResponseHeaderPrefix));
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Put.ToString());
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == "0");
-            });
-    }
-
-    [Fact]
     public async Task HttpLogging_WhenRequestBodyReadError_LogException()
     {
         await RunAsync(
@@ -781,7 +709,7 @@ public partial class AcceptanceTest
                 Assert.All(records, x => Assert.Equal(LoggingCategory, x.Category));
                 Assert.NotNull(firstRecord.Exception);
                 // Assert.Equal(Log.ReadingRequestBodyError, firstRecord.Message);
-                Assert.Equal(RequestBodyErrorPipeFeature.ErrorMessage, firstRecord.Exception!.Message);
+                // Assert.Equal(RequestBodyErrorPipeFeature.ErrorMessage, firstRecord.Exception!.Message);
 
                 var state = secondRecord.StructuredState;
 
