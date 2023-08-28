@@ -65,54 +65,6 @@ public static class ServiceEnricherExtensions
     }
 
     /// <summary>
-    /// Adds an instance of the service enricher to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the service enricher to.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
-    public static IServiceCollection AddServiceMetricEnricher(this IServiceCollection services)
-    {
-        _ = Throw.IfNull(services);
-
-        return services
-            .AddServiceMetricEnricher(_ => { });
-    }
-
-    /// <summary>
-    /// Adds an instance of the service enricher to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the service enricher to.</param>
-    /// <param name="configure">The <see cref="ServiceMetricEnricherOptions"/> configuration delegate.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
-    public static IServiceCollection AddServiceMetricEnricher(this IServiceCollection services, Action<ServiceMetricEnricherOptions> configure)
-    {
-        _ = Throw.IfNull(services);
-        _ = Throw.IfNull(configure);
-
-        return services
-            .AddMetricEnricherOptions(configure)
-            .AddMetricEnricher<ServiceMetricEnricher>();
-    }
-
-    /// <summary>
-    /// Adds an instance of the service enricher to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the service enricher to.</param>
-    /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ServiceMetricEnricherOptions"/> in the service enricher.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
-    public static IServiceCollection AddServiceMetricEnricher(this IServiceCollection services, IConfigurationSection section)
-    {
-        _ = Throw.IfNull(services);
-        _ = Throw.IfNull(section);
-
-        return services
-            .AddMetricEnricherOptions(_ => { }, section)
-            .AddMetricEnricher<ServiceMetricEnricher>();
-    }
-
-    /// <summary>
     /// Adds an instance of service trace enricher to the <see cref="TracerProviderBuilder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="TracerProviderBuilder"/> to add the service trace enricher to.</param>
@@ -162,26 +114,6 @@ public static class ServiceEnricherExtensions
         _ = builder.ConfigureServices(services => services.AddTraceEnricherOptions(_ => { }, section));
 
         return builder;
-    }
-
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ServiceMetricEnricherOptions))]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed by [DynamicDependency]")]
-    private static IServiceCollection AddMetricEnricherOptions(
-        this IServiceCollection services,
-        Action<ServiceMetricEnricherOptions> configure,
-        IConfigurationSection? section = null)
-    {
-        _ = services.Configure(configure);
-
-        if (section is not null)
-        {
-            _ = services.Configure<ServiceMetricEnricherOptions>(section);
-        }
-
-        return services;
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ServiceLogEnricherOptions))]

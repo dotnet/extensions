@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Resilience.Resilience.Internal;
+using Microsoft.Extensions.Resilience.Internal;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly.Extensions.Telemetry;

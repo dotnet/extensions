@@ -12,28 +12,28 @@ refreshed as new analyzers are added or existing ones are modified.
 The lower a diagnostic's tier value, the more relatively important the diagnostic is.
 
 * A variable set of named attributes. Each attribute indicates a severity for the diagnostic, along with
-an optional comment. Attributes and their severities are maintained by the R9 team and are used to
+an optional comment. Attributes and their severities are maintained by the .NET Extensions team and are used to
 describe how to handle a given diagnostic for a given type of source code. More on attributes below.
 
 Here's an example diagnostic:
 
 ```yaml
 Diagnostics:
-  EA0001:
+  CA1001:
     Metadata:
-      Category: Performance
-      Title: Switch to `Microsoft.IO.RecyclableMemoryStream` for additional performance.
-      Description: Identifies uses of System.IO.MemoryStream.
-      HelpLinkUri: https://eng.ms/docs/experiences-devices/r9-sdk/docs/static-analysis-and-analyzers/analyzer/rules/r9a001
-      CustomTags: []
-    Tier: 1
+      Category: Design
+      Title: Types that own disposable fields should be disposable
+      Description: A class declares and implements an instance field that is a System.IDisposable type, and the class does not implement IDisposable. A class that declares an IDisposable field indirectly owns an unmanaged resource and should implement the IDisposable interface.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001
+      CustomTags:
+      - PortedFromFxCop
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 2
     Attributes:
-      baseline:
-        Severity: None
-        Comment:
-      production:
+      general:
         Severity: Warning
-        Comment:
 ```
 
 ## What's the Point?

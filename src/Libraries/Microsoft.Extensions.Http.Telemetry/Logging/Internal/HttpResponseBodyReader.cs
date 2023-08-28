@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Options;
 using Microsoft.IO;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
@@ -29,11 +28,8 @@ internal sealed class HttpResponseBodyReader
 
     private readonly RecyclableMemoryStreamManager _streamManager;
 
-    public HttpResponseBodyReader(IOptions<LoggingOptions> options, IDebuggerState? debugger = null)
+    public HttpResponseBodyReader(LoggingOptions responseOptions, IDebuggerState? debugger = null)
     {
-        _ = Throw.IfMemberNull(options, options.Value);
-
-        var responseOptions = options.Value;
         _streamManager = new RecyclableMemoryStreamManager();
         _readableResponseContentTypes = responseOptions.ResponseBodyContentTypes.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
         _responseReadLimit = responseOptions.BodySizeLimit;
@@ -66,7 +62,7 @@ internal sealed class HttpResponseBodyReader
         RecyclableMemoryStreamManager streamManager, CancellationToken cancellationToken)
     {
 #if NET5_0_OR_GREATER
-        var streamToReadFrom = await response.Content!.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        var streamToReadFrom = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #else
         var streamToReadFrom = await response.Content.ReadAsStreamAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
 #endif

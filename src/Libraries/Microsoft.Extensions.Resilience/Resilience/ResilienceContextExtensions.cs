@@ -8,7 +8,7 @@ using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
-namespace Microsoft.Extensions.Resilience.Resilience;
+namespace Microsoft.Extensions.Resilience;
 
 /// <summary>
 /// Extensions for <see cref="ResilienceContext"/>.

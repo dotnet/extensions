@@ -9,7 +9,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <UseMeteringGenerator>true</UseMeteringGenerator>
     <InjectSharedThrow>false</InjectSharedThrow>
     <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
     <InjectSharedDebugger>true</InjectSharedDebugger>
@@ -26,7 +25,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Libraries\Microsoft.Extensions.DependencyInjection.AutoActivation\Microsoft.Extensions.DependencyInjection.AutoActivation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.AutoActivation\Microsoft.Extensions.DependencyInjection.AutoActivation.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Telemetry\Microsoft.AspNetCore.Telemetry.csproj" />

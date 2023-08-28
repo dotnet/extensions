@@ -121,33 +121,7 @@
       ],
       "Properties": [
         {
-          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.DimensionNames { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions.AddDefaultHttpClientMetering(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions.AddHttpClientMetering(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions.AddHttpClientMeteringForAllHttpClients(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions.AddOutgoingRequestMetricEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Metering.HttpClientMeteringExtensions.AddOutgoingRequestMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Http.Telemetry.Metering.IOutgoingRequestMetricEnricher enricher);",
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.TagNames { get; }",
           "Stage": "Stable"
         }
       ]
@@ -207,52 +181,11 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Telemetry.Metering.HttpMeteringHandler : System.Net.Http.DelegatingHandler",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Http.Telemetry.Metering.HttpMeteringHandler.HttpMeteringHandler(Microsoft.Extensions.Telemetry.Metering.Meter<Microsoft.Extensions.Http.Telemetry.Metering.HttpMeteringHandler> meter, System.Collections.Generic.IEnumerable<Microsoft.Extensions.Http.Telemetry.Metering.IOutgoingRequestMetricEnricher> enrichers);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> Microsoft.Extensions.Http.Telemetry.Metering.HttpMeteringHandler.SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "enum Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType.HttpRequestResultType();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Fields": [
-        {
-          "Member": "const Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType.ExpectedFailure",
-          "Stage": "Experimental",
-          "Value": "2"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType.Failure",
-          "Stage": "Experimental",
-          "Value": "1"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType Microsoft.Extensions.Http.Telemetry.Metering.HttpRequestResultType.Success",
-          "Stage": "Experimental",
-          "Value": "0"
-        }
-      ]
-    },
-    {
       "Type": "interface Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector, System.Net.Http.HttpRequestMessage? request = null, System.Net.Http.HttpResponseMessage? response = null);",
+          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector, System.Net.Http.HttpRequestMessage request, System.Net.Http.HttpResponseMessage? response, System.Exception? exception);",
           "Stage": "Stable"
         }
       ]
@@ -274,16 +207,6 @@
         {
           "Member": "string Microsoft.Extensions.Http.Telemetry.Tracing.IHttpPathRedactor.Redact(string routeTemplate, string httpPath, System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> parametersToRedact, out int parameterCount);",
           "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "interface Microsoft.Extensions.Http.Telemetry.Metering.IOutgoingRequestMetricEnricher : Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher",
-      "Stage": "Stable",
-      "Properties": [
-        {
-          "Member": "System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Http.Telemetry.Metering.IOutgoingRequestMetricEnricher.DimensionNames { get; }",
-          "Stage": "Stable"
         }
       ]
     },

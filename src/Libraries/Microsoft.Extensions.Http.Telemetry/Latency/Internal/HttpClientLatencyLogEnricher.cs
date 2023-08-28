@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -14,7 +15,7 @@ using Microsoft.Shared.Pools;
 namespace Microsoft.Extensions.Http.Telemetry.Latency.Internal;
 
 /// <summary>
-/// The enrciher appends checkpoints for the outgoing http request.
+/// The enricher appends checkpoints for the outgoing http request.
 /// It also logs the server name from the response header to correlate logs between client and server.
 /// </summary>
 internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
@@ -30,7 +31,7 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
         _enricherInvoked = tokenIssuer.GetCheckpointToken(HttpCheckpoints.EnricherInvoked);
     }
 
-    public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage? request = null, HttpResponseMessage? response = null)
+    public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage request, HttpResponseMessage? response, Exception? exception)
     {
         if (response != null)
         {
