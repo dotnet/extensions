@@ -1,4 +1,4 @@
-  <Project Sdk="Microsoft.NET.Sdk">
+﻿  <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Telemetry</RootNamespace>
     <Description>Provides canonical implementations of telemetry abstractions</Description>
@@ -34,9 +34,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />
-    <!-- Manually referencing Logging.Configuration in nca3.1 which is a transitive dependency of OpenTelemetry in order to bump the version to 8.0 era -->
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" />
-    <PackageReference Include="OpenTelemetry" />
 
     <!-- In net462, we need to reference System.Net.Http as that is where HttpRequestMessage lives -->
     <Reference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net462'" />

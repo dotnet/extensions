@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <None Update="Text.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,7 +26,6 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.Net.Http" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">

@@ -30,7 +30,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))" />
     <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
   </ItemGroup>
@@ -40,14 +39,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <PackageVersion Update="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc9.4" />
-  </ItemGroup>
-
   <ItemGroup>
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Telemetry.Middleware"/>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Telemetry.Middleware.Tests"/>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Telemetry.Middleware" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Telemetry.Middleware.Tests" />
   </ItemGroup>
 </Project>
