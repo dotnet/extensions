@@ -59,7 +59,7 @@ public static class WindowsUtilizationExtensions
     }
 
     /// <summary>
-    /// An extension method that creates a few OpenTelemetry instruments for system counters.
+    /// An extension method that creates a few telemetry instruments for system counters.
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
@@ -86,7 +86,7 @@ public static class WindowsUtilizationExtensions
     }
 
     /// <summary>
-    /// An extension method that creates a few OpenTelemetry instruments for system counters.
+    /// An extension method that creates a few telemetry instruments for system counters.
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="WindowsCountersOptions"/>.</param>
@@ -116,7 +116,7 @@ public static class WindowsUtilizationExtensions
     }
 
     /// <summary>
-    /// An extension method that creates a few OpenTelemetry instruments for system counters.
+    /// An extension method that creates a few telemetry instruments for system counters.
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <param name="configure">The delegate for configuration of <see cref="WindowsCountersOptions"/>.</param>

@@ -35,7 +35,7 @@ public static class RedactorTest
 
         Redactor r = NullRedactor.Instance;
 
-        var redacted = r.Redact(data);
+        string redacted = r.Redact(data);
 
         Assert.Equal(data, redacted);
     }
@@ -46,8 +46,8 @@ public static class RedactorTest
         var data = new string('3', 3);
         var r = NullRedactor.Instance;
 
-        var lengthFromExtension = r.GetRedactedLength(data);
-        var length = r.GetRedactedLength(data);
+        int lengthFromExtension = r.GetRedactedLength(data);
+        int length = r.GetRedactedLength(data);
 
         Assert.Equal(lengthFromExtension, length);
     }
@@ -61,8 +61,8 @@ public static class RedactorTest
         Span<char> buffer = stackalloc char[3];
 
         var r = new PassthroughRedactor();
-        var extensionWritten = r.Redact(data, extBuffer);
-        var written = r.Redact(data, buffer);
+        int extensionWritten = r.Redact(data, extBuffer);
+        int written = r.Redact(data, buffer);
 
         Assert.Equal(extensionWritten, written);
         Assert.Equal(extBuffer.ToString(), buffer.ToString());
@@ -82,8 +82,8 @@ public static class RedactorTest
 
         var r = new PassthroughRedactor();
 
-        var redacted = r.Redact(spanFormattable, null, null);
-        var redactedDirectly = r.Redact(data);
+        string redacted = r.Redact(spanFormattable, null, null);
+        string redactedDirectly = r.Redact(data);
 
         Assert.Equal(redactedDirectly, redacted);
     }
@@ -102,10 +102,10 @@ public static class RedactorTest
         var buffer = new char[data.Length];
         var bufferDirect = new char[data.Length];
 
-        var redacted = r.Redact(spanFormattable, buffer, null, null);
-        var redactedDirectly = r.Redact(data, bufferDirect);
+        int redacted = r.Redact(spanFormattable, buffer, null, null);
+        int redactedDirectly = r.Redact(data, bufferDirect);
 
-        for (var i = 0; i < buffer.Length; i++)
+        for (int i = 0; i < buffer.Length; i++)
         {
             Assert.Equal(buffer[i], bufferDirect[i]);
         }
@@ -115,14 +115,14 @@ public static class RedactorTest
     [Fact]
     public static void Formattable_Format_And_Redacts_Data()
     {
-        var data = Guid.NewGuid().ToString();
+        string data = Guid.NewGuid().ToString();
 
         var formattable = new TestFormattable(data);
 
         var r = new PassthroughRedactor();
 
-        var redacted = r.Redact(formattable, null, null);
-        var redactedDirectly = r.Redact(data);
+        string redacted = r.Redact(formattable, null, null);
+        string redactedDirectly = r.Redact(data);
 
         Assert.Equal(redactedDirectly, redacted);
     }
@@ -139,10 +139,10 @@ public static class RedactorTest
         var buffer = new char[data.Length];
         var bufferDirect = new char[data.Length];
 
-        var redacted = r.Redact(spanFormattable, buffer, null, null);
-        var redactedDirectly = r.Redact(data, bufferDirect);
+        int redacted = r.Redact(spanFormattable, buffer, null, null);
+        int redactedDirectly = r.Redact(data, bufferDirect);
 
-        for (var i = 0; i < buffer.Length; i++)
+        for (int i = 0; i < buffer.Length; i++)
         {
             Assert.Equal(buffer[i], bufferDirect[i]);
         }
@@ -160,8 +160,8 @@ public static class RedactorTest
         var buffer = new char[data.Length];
         var bufferDirect = new char[data.Length];
 
-        var redacted = r.Redact(obj);
-        var redactedDirectly = r.Redact(data);
+        string redacted = r.Redact(obj);
+        string redactedDirectly = r.Redact(data);
 
         Assert.Equal(redactedDirectly, redacted);
     }
@@ -178,12 +178,62 @@ public static class RedactorTest
         var buffer = new char[data.Length];
         var bufferDirect = new char[data.Length];
 
-        var redacted = r.Redact(obj, buffer);
-        var redactedDirectly = r.Redact(data, bufferDirect);
+        int redacted = r.Redact(obj, buffer);
+        int redactedDirectly = r.Redact(data, bufferDirect);
 
-        for (var i = 0; i < buffer.Length; i++)
+        for (int i = 0; i < buffer.Length; i++)
         {
             Assert.Equal(buffer[i], bufferDirect[i]);
+        }
+    }
+
+    [Fact]
+    public static void ArrayEmptyOfChar_Redacted_correctly()
+    {
+        var r = new PassthroughRedactor();
+        string redacted = r.Redact(Array.Empty<char>());
+
+        Assert.Equal("", redacted);
+    }
+
+    [Fact]
+    public static void ArrayOfChar_Redacted_correctly()
+    {
+        var r = new PassthroughRedactor();
+        string redacted = r.Redact(new char[0]);
+
+        Assert.Equal("", redacted);
+    }
+
+    [Fact]
+    public static void ArrayEmptyOfChar_With_Destination_Buffer_Redacted_correctly()
+    {
+        char[] buffer = new char[5];
+
+        var r = new PassthroughRedactor();
+        int written = r.Redact(Array.Empty<char>(), buffer);
+
+        Assert.Equal(0, written);
+
+        foreach (char item in buffer)
+        {
+            Assert.Equal('\0', item);
+        }
+    }
+
+    [Fact]
+    public static void ArrayOfChar_With_Destination_Buffer_Redacted_correctly()
+    {
+        char[] buffer = new char[5];
+
+        var r = new PassthroughRedactor();
+        int written = r.Redact(new char[0], buffer);
+
+        Assert.Equal(0, written);
+
+        foreach (char item in buffer)
+        {
+            Assert.Equal('\0', item);
         }
     }
 
@@ -238,6 +288,38 @@ public static class RedactorTest
         if (success)
         {
             Assert.Equal(data.ToString("R"), new string(buffer, 0, charsWritten));
+        }
+    }
+
+    [Fact]
+    public static void TryRedact_ArrayEmptyOfChar_With_Destination_Buffer_Redacted_correctly()
+    {
+        char[] buffer = new char[5];
+
+        var r = new PassthroughRedactor();
+        Assert.True(r.TryRedact(Array.Empty<char>(), buffer, out int charsWritten, string.Empty.AsSpan(), null));
+
+        Assert.Equal(0, charsWritten);
+
+        foreach (char item in buffer)
+        {
+            Assert.Equal('\0', item);
+        }
+    }
+
+    [Fact]
+    public static void TryRedact_ArrayOfChar_With_Destination_Buffer_Redacted_correctly()
+    {
+        char[] buffer = new char[5];
+
+        var r = new PassthroughRedactor();
+        Assert.True(r.TryRedact(new char[0], buffer, out int charsWritten, string.Empty.AsSpan(), null));
+
+        Assert.Equal(0, charsWritten);
+
+        foreach (char item in buffer)
+        {
+            Assert.Equal('\0', item);
         }
     }
 

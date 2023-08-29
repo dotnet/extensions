@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Telemetry.Bench;
 [MemoryDiagnoser]
 public class RedactionBenchmark
 {
-    private readonly HttpTracingOptions _options;
     private readonly string _httpPath;
+    private readonly Dictionary<string, DataClassification> _routeParameterDataClasses = new();
     private readonly ObjectPool<StringBuilder> _stringBuilderPool;
     private readonly Dictionary<string, object?> _routeValues = new()
     {
@@ -29,9 +29,8 @@ public class RedactionBenchmark
 
     public RedactionBenchmark()
     {
-        _options = new HttpTracingOptions();
-        _options.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
-        _options.RouteParameterDataClasses.Add("chatId", SimpleClassifications.PrivateData);
+        _routeParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
+        _routeParameterDataClasses.Add("chatId", SimpleClassifications.PrivateData);
 
         _httpPath = "/users/{userId}/chats/{chatId}/test1/test2/{userId}";
         _stringBuilderPool = PoolFactory.CreateStringBuilderPool();
@@ -87,7 +86,7 @@ public class RedactionBenchmark
                     {
                         if (((string)item.Value!).AsSpan().SequenceEqual(segment))
                         {
-                            if (_options.RouteParameterDataClasses.TryGetValue(item.Key, out DataClassification classification))
+                            if (_routeParameterDataClasses.TryGetValue(item.Key, out DataClassification classification))
                             {
                                 pathStringBuilder.Append(Redact(segment, destinationBuffer));
                                 isRouteKeyFound = true;
@@ -146,7 +145,7 @@ public class RedactionBenchmark
                 {
                     var segment = span.Slice(startIndex, i - startIndex).ToString();
                     if (newDict.TryGetValue(segment, out var value) &&
-                        _options.RouteParameterDataClasses.TryGetValue(value, out DataClassification classification))
+                        _routeParameterDataClasses.TryGetValue(value, out DataClassification classification))
                     {
                         _ = pathStringBuilder.Append(Redact(segment, destinationBuffer));
                     }
@@ -202,7 +201,7 @@ public class RedactionBenchmark
                     {
                         if (((string)item.Value!).AsSpan().SequenceEqual(segment))
                         {
-                            if (_options.RouteParameterDataClasses.TryGetValue(item.Key, out DataClassification classification))
+                            if (_routeParameterDataClasses.TryGetValue(item.Key, out DataClassification classification))
                             {
                                 _ = pathStringBuilder.Append(Redact(segment, destinationBuffer));
                                 isRouteKeyFound = true;
@@ -280,7 +279,7 @@ public class RedactionBenchmark
                 {
                     if (((string)item.Value!).AsSpan().SequenceEqual(segment))
                     {
-                        if (_options.RouteParameterDataClasses.TryGetValue(item.Key, out DataClassification classification))
+                        if (_routeParameterDataClasses.TryGetValue(item.Key, out DataClassification classification))
                         {
                             _ = pathStringBuilder.Append(Redact(segment, destinationBuffer));
                             isRouteKeyFound = true;
@@ -320,7 +319,7 @@ public class RedactionBenchmark
                 {
                     if (_routeValues.TryGetValue(routeSegment.Segment, out var paramValue))
                     {
-                        if (_options.RouteParameterDataClasses.TryGetValue(routeSegment.Segment, out DataClassification classification))
+                        if (_routeParameterDataClasses.TryGetValue(routeSegment.Segment, out DataClassification classification))
                         {
                             _ = pathStringBuilder.Append(Redact((string)paramValue!, destinationBuffer));
                         }

@@ -12,7 +12,7 @@ internal sealed class BenchEnricher : IHttpClientLogEnricher
     private const string Key = "Performance in .NET Extensions";
     private const string Value = "is paramount.";
 
-    public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
+    public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage request, HttpResponseMessage? response, Exception? exception)
     {
         if (request is not null)
         {

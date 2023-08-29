@@ -127,86 +127,12 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTraceEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTraceEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Http.Telemetry.Tracing.IHttpClientTraceEnricher enricher);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTraceEnricher<T>(this OpenTelemetry.Trace.TracerProviderBuilder builder);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTraceEnricher(this OpenTelemetry.Trace.TracerProviderBuilder builder, Microsoft.Extensions.Http.Telemetry.Tracing.IHttpClientTraceEnricher enricher);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTracing(this OpenTelemetry.Trace.TracerProviderBuilder builder);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTracing(this OpenTelemetry.Trace.TracerProviderBuilder builder, System.Action<Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static OpenTelemetry.Trace.TracerProviderBuilder Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingExtensions.AddHttpClientTracing(this OpenTelemetry.Trace.TracerProviderBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingOptions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingOptions.HttpClientTracingOptions();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingOptions.RequestPathParameterRedactionMode { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.Extensions.Http.Telemetry.Tracing.HttpClientTracingOptions.RouteParameterDataClasses { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "interface Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector, System.Net.Http.HttpRequestMessage request, System.Net.Http.HttpResponseMessage? response = null, System.Exception? exception = null);",
+          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector, System.Net.Http.HttpRequestMessage request, System.Net.Http.HttpResponseMessage? response, System.Exception? exception);",
           "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "interface Microsoft.Extensions.Http.Telemetry.Tracing.IHttpClientTraceEnricher",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "void Microsoft.Extensions.Http.Telemetry.Tracing.IHttpClientTraceEnricher.Enrich(System.Diagnostics.Activity activity, System.Net.Http.HttpRequestMessage? request, System.Net.Http.HttpResponseMessage? response);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "interface Microsoft.Extensions.Http.Telemetry.Tracing.IHttpPathRedactor",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "string Microsoft.Extensions.Http.Telemetry.Tracing.IHttpPathRedactor.Redact(string routeTemplate, string httpPath, System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> parametersToRedact, out int parameterCount);",
-          "Stage": "Experimental"
         }
       ]
     },
