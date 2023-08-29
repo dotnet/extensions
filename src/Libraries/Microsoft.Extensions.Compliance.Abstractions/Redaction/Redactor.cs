@@ -32,7 +32,7 @@ public abstract class Redactor
             return string.Empty;
         }
 
-        var length = GetRedactedLength(source);
+        int length = GetRedactedLength(source);
 
 #if NETCOREAPP3_1_OR_GREATER
         unsafe
@@ -115,12 +115,12 @@ public abstract class Redactor
 
             // Stryker disable all : Cannot kill the mutant because the only difference is allocating buffer on stack or renting it.
             // Null forgiving operator: The null case is checked with default equality comparer, but compiler doesn't understand it.
-            if (((ISpanFormattable)value).TryFormat(buffer, out var written, format.AsSpan(), provider))
+            if (((ISpanFormattable)value).TryFormat(buffer, out int written, format.AsSpan(), provider))
             {
                 // Stryker enable all : Cannot kill the mutant because the only difference is allocating buffer on stack or renting it.
 
                 var formatted = buffer.Slice(0, written);
-                var length = GetRedactedLength(formatted);
+                int length = GetRedactedLength(formatted);
 
                 unsafe
                 {
@@ -138,6 +138,16 @@ public abstract class Redactor
         if (value is IFormattable)
         {
             return Redact(((IFormattable)value).ToString(format, provider));
+        }
+
+        if (value is char[])
+        {
+            // An attempt to call value.ToString() on a char[] will produce a string "System.Char[]" and all redaction will be attempted on it,
+            // instead of the provided array. This will lead to incorrectly allocated buffers.
+            //
+            // NB: not using pattern matching as it is recognized by the JIT and since this is a generic type, the JIT ends up generating code
+            // without any of those conditional statements being present. But this only happens when not using pattern matching.
+            return Redact(((char[])(object)value).AsSpan());
         }
 
         return Redact(value?.ToString());
@@ -166,7 +176,7 @@ public abstract class Redactor
             Span<char> buffer = stackalloc char[MaximumStackAllocation];
 
             // Stryker disable all : Cannot kill the mutant because the only difference is allocating buffer on stack or renting it.
-            if (((ISpanFormattable)value).TryFormat(buffer, out var written, format.AsSpan(), provider))
+            if (((ISpanFormattable)value).TryFormat(buffer, out int written, format.AsSpan(), provider))
             {
                 // Stryker enable all : Cannot kill the mutant because the only difference is allocating buffer on stack or renting it.
                 var formatted = buffer.Slice(0, written);
@@ -179,6 +189,16 @@ public abstract class Redactor
         if (value is IFormattable)
         {
             return Redact(((IFormattable)value).ToString(format, provider), destination);
+        }
+
+        if (value is char[])
+        {
+            // An attempt to call value.ToString() on a char[] will produce a string "System.Char[]" and all redaction will be attempted on it,
+            // instead of the provided array. This will lead to incorrectly allocated buffers.
+            //
+            // NB: not using pattern matching as it is recognized by the JIT and since this is a generic type, the JIT ends up generating code
+            // without any of those conditional statements being present. But this only happens when not using pattern matching.
+            return Redact(((char[])(object)value).AsSpan(), destination);
         }
 
         return Redact(value?.ToString(), destination);
@@ -207,12 +227,12 @@ public abstract class Redactor
             Span<char> buffer = stackalloc char[MaximumStackAllocation];
 
             // Stryker disable all : Cannot kill the mutant because the only difference is allocating buffer on stack or renting it.
-            if (((ISpanFormattable)value).TryFormat(buffer, out var written, format, provider))
+            if (((ISpanFormattable)value).TryFormat(buffer, out int written, format, provider))
             {
                 // Stryker enable all : Cannot kill the mutant because the only difference is allocating buffer on stack or renting it.
                 var formatted = buffer.Slice(0, written);
 
-                var rlen = GetRedactedLength(formatted);
+                int rlen = GetRedactedLength(formatted);
                 if (rlen > destination.Length)
                 {
                     charsWritten = 0;
@@ -225,25 +245,40 @@ public abstract class Redactor
         }
 #endif
 
-        string? str;
+        string? str = null;
+        ReadOnlySpan<char> ros = default;
         if (value is IFormattable)
         {
             var fmt = format.Length > 0 ? format.ToString() : string.Empty;
             str = ((IFormattable)value).ToString(fmt, provider);
+        }
+        else if (value is char[])
+        {
+            // An attempt to call value.ToString() on a char[] will produce a string "System.Char[]" and all redaction will be attempted on it,
+            // instead of the provided array. This will lead to incorrectly allocated buffers.
+            //
+            // Not using pattern matching as it is recognized by the JIT and since this is a generic type, the JIT ends up generating code
+            // without any of those conditional statements being present. But this only happens when not using pattern matching.
+            ros = ((char[])(object)value).AsSpan();
         }
         else
         {
             str = value?.ToString();
         }
 
-        var len = GetRedactedLength(str);
+        if (str is not null)
+        {
+            ros = str.AsSpan();
+        }
+
+        int len = GetRedactedLength(ros);
         if (len > destination.Length)
         {
             charsWritten = 0;
             return false;
         }
 
-        charsWritten = Redact(str, destination);
+        charsWritten = Redact(ros, destination);
         return true;
     }
 

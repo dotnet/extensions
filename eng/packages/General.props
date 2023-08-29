@@ -36,11 +36,6 @@
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(MicrosoftExtensionsPrimitivesVersion)" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageVersion Include="OpenTelemetry.Api" Version="1.4.0" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.4.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.0.0-rc9.14" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc9.14" />
-    <PackageVersion Include="OpenTelemetry" Version="1.4.0" />
     <PackageVersion Include="Polly.Contrib.Simmy" Version="0.3.0" />
     <PackageVersion Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
     <PackageVersion Include="Polly.Core" Version="8.0.0-alpha.8" />

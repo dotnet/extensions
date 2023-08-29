@@ -65,7 +65,7 @@ internal sealed class BenchLogger : ILogger
 
         if (o?.GetType() == typeof(Guid))
         {
-            // simulate what a real exporter like OTel would do.
+            // simulate what a real exporter would do.
             o = o.ToString();
         }
 

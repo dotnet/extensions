@@ -11,6 +11,6 @@ internal class EnricherWithCounter : IHttpClientLogEnricher
 {
     public int TimesCalled;
 
-    public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage request, HttpResponseMessage? response = null, Exception? exception = null)
+    public void Enrich(IEnrichmentTagCollector collector, HttpRequestMessage request, HttpResponseMessage? response, Exception? exception)
         => TimesCalled++;
 }
