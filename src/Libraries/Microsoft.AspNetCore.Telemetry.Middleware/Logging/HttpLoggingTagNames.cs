@@ -71,6 +71,8 @@ public static class HttpLoggingTagNames
             Path,
             RequestHeaderPrefix,
             ResponseHeaderPrefix,
+            RequestBody,
+            ResponseBody,
             StatusCode
         });
 }

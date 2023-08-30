@@ -28,8 +28,8 @@ public class ApiRoutingController : ControllerBase
         Debug.Assert(noRedaction != null, "Test");
 
         // Request processing imitation:
-        HttpContext.RequestServices.GetRequiredService<FakeTimeProvider>()
-            .Advance(TimeSpan.FromMilliseconds(AcceptanceTest.ControllerProcessingTimeMs));
+        var fakeTimeProvider = HttpContext.RequestServices.GetRequiredService<FakeTimeProvider>();
+        fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(AcceptanceTest.ControllerProcessingTimeMs));
 
         return "User info...";
     }

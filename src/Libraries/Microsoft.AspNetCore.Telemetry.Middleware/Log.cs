@@ -8,7 +8,6 @@ namespace Microsoft.AspNetCore.Telemetry;
 
 internal static partial class Log
 {
-
-    [LoggerMessage(0, LogLevel.Warning, "Enricher failed: {enricher}.")]
+    [LoggerMessage(0, LogLevel.Warning, "Enricher failed: {Enricher}.")]
     internal static partial void EnricherFailed(this ILogger logger, Exception exception, string enricher);
 }

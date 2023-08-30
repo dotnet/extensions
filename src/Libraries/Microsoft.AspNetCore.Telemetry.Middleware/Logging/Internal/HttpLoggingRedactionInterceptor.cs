@@ -148,8 +148,6 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
             _responseHeadersReader.Read(context.Response.Headers, logContext.Parameters, HttpLoggingTagNames.ResponseHeaderPrefix);
         }
 
-        // TODO: What about the exception case?
-
         return default;
     }
 

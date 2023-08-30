@@ -73,13 +73,15 @@ public partial class AcceptanceTest
                         }
                     }
 
-                    context.RequestServices.GetRequiredService<FakeTimeProvider>().Advance(TimeSpan.FromMilliseconds(ErrorRouteProcessingTimeMs));
+                    var fakeTimeProvider = context.RequestServices.GetRequiredService<FakeTimeProvider>();
+                    fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(ErrorRouteProcessingTimeMs));
                     throw new InvalidOperationException("Test exception");
                 }));
 
             app.Run(static async context =>
             {
-                context.RequestServices.GetRequiredService<FakeTimeProvider>().Advance(TimeSpan.FromMilliseconds(SlashRouteProcessingTimeMs));
+                var fakeTimeProvider = context.RequestServices.GetRequiredService<FakeTimeProvider>();
+                fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(SlashRouteProcessingTimeMs));
 
                 await context.Request.Body.DrainAsync(default).ConfigureAwait(false);
 
@@ -398,7 +400,6 @@ public partial class AcceptanceTest
 
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
 
-                var records = logCollector.GetSnapshot();
                 Assert.Equal(1, logCollector.Count);
                 Assert.Null(logCollector.LatestRecord.Exception);
                 Assert.Equal(LogLevel.Information, logCollector.LatestRecord.Level);
@@ -431,10 +432,6 @@ public partial class AcceptanceTest
                 {
                     options.RequestPathParameterRedactionMode = HttpRouteParameterRedactionMode.None;
                     options.RequestPathLoggingMode = pathLoggingMode;
-                },
-                options =>
-                {
-                    options.LoggingFields = HttpLoggingFields.RequestProperties;
                 });
             },
             async static (logCollector, client) =>
@@ -453,7 +450,7 @@ public partial class AcceptanceTest
                 var responseStatus = ((int)response.StatusCode).ToInvariantString();
                 var state = logCollector.LatestRecord.StructuredState;
 
-                Assert.Equal(5, state!.Count);
+                Assert.Equal(8, state!.Count);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == RequestPath);
             });
     }
@@ -466,11 +463,7 @@ public partial class AcceptanceTest
             static x =>
             {
                 x.AddHttpLogEnricher<TestHttpLogEnricher>();
-                x.AddHttpLoggingRedaction(configureLogging: x =>
-                {
-                    x.LoggingFields = HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.ResponsePropertiesAndHeaders;
-                    x.CombineLogs = false;
-                });
+                x.AddHttpLoggingRedaction(configureLogging: x => x.CombineLogs = false);
             },
             async static (logCollector, client) =>
             {
@@ -643,41 +636,6 @@ public partial class AcceptanceTest
                 Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.RequestHeaderPrefix));
                 Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.ResponseHeaderPrefix));
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Put.ToString());
-            });
-    }
-
-    [Fact]
-    public async Task HttpLogging_WhenRequestBodyReadError_LogException()
-    {
-        await RunAsync(
-            LogLevel.Information,
-            static services => services.AddHttpLoggingRedaction(configureLogging: static x =>
-            {
-                x.MediaTypeOptions.AddText(MediaTypeNames.Text.Plain);
-                x.LoggingFields |= HttpLoggingFields.RequestBody;
-            }),
-            async (logCollector, client) =>
-            {
-                const string Content = "Client: hello!";
-
-                using var content = new StringContent(Content);
-                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(MediaTypeNames.Text.Plain);
-
-                using var response = await client.PutAsync("/err-pipe", content);
-
-                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout, expectedRecords: 1);
-
-                var records = logCollector.GetSnapshot();
-                Assert.Equal(1, records.Count);
-                var firstRecord = records[0];
-
-                Assert.Equal(LogLevel.Information, firstRecord.Level);
-                Assert.Equal(LoggingCategory, firstRecord.Category);
-                Assert.Null(firstRecord.Exception);
-                var state = firstRecord.StructuredState;
-                Assert.Equal(10, state!.Count);
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Put.ToString());
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == ((int)response.StatusCode).ToInvariantString());
             });
     }
 

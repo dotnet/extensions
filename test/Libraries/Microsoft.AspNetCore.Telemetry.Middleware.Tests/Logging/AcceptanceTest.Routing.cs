@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
 #if NET8_0_OR_GREATER
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Telemetry.Http.Logging.Test.Controllers;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -130,8 +131,7 @@ public partial class AcceptanceTest
             httpPath,
             configureHttpLogging: services =>
             {
-                services.AddHttpLoggingRedaction(o => o.RequestPathParameterRedactionMode = mode,
-                    o => o.LoggingFields = HttpLoggingFields.RequestProperties);
+                services.AddHttpLoggingRedaction(o => o.RequestPathParameterRedactionMode = mode);
             },
             validateRequestState: state =>
             {
@@ -170,10 +170,6 @@ public partial class AcceptanceTest
             configureHttpLogging: services => services.AddHttpLoggingRedaction(options =>
             {
                 options.RequestPathLoggingMode = IncomingPathLoggingMode.Structured;
-            },
-            options =>
-            {
-                options.LoggingFields = HttpLoggingFields.RequestProperties;
             }),
             validateRequestState: state =>
             {
