@@ -84,14 +84,7 @@ public class LoggingOptionsValidationTest
     public static IEnumerable<object[]> OptionsConfigureActions =>
         new List<object[]>
         {
-//            new object[] { "BodySizeLimit", (TOpt) (x => x.BodySizeLimit = 0) },
-//            new object[] { "BodySizeLimit", (TOpt) (x => x.BodySizeLimit = -1) },
-//            new object[] { "BodySizeLimit", (TOpt) (x => x.BodySizeLimit = 1_572_865) },
-//            new object[] { "BodySizeLimit", (TOpt) (x => x.BodySizeLimit = int.MaxValue) },
-//            new object[] { "BodySizeLimit", (TOpt) (x => x.BodySizeLimit = int.MinValue) },
-//            new object[] { "RequestBodyContentTypes", (TOpt) (x => x.RequestBodyContentTypes = null!) },
             new object[] { "RequestHeadersDataClasses", (TOpt) (x => x.RequestHeadersDataClasses = null!) },
-//            new object[] { "ResponseBodyContentTypes", (TOpt) (x => x.ResponseBodyContentTypes = null!) },
             new object[] { "ResponseHeadersDataClasses", (TOpt) (x => x.ResponseHeadersDataClasses = null!) },
             new object[] { "RouteParameterDataClasses", (TOpt) (x => x.RouteParameterDataClasses = null!) },
             new object[] { "ExcludePathStartsWith", (TOpt) ( x=> x.ExcludePathStartsWith = null!) }

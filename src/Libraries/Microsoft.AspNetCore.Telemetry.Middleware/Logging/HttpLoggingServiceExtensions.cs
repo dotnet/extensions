@@ -33,10 +33,17 @@ public static class HttpLoggingServiceExtensions
     {
         _ = Throw.IfNull(services);
 
+        var builder = services
+            .AddOptionsWithValidateOnStart<LoggingRedactionOptions, LoggingRedactionOptionsValidator>();
+
         _ = services.Configure(configureRedaction ?? (static _ => { }));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpLoggingInterceptor, HttpLoggingRedactionInterceptor>());
 
-        _ = services.AddHttpLogging(configureLogging ?? (static _ => { }));
+        _ = services.AddHttpLogging(o =>
+        {
+            o.CombineLogs = true;
+            configureLogging?.Invoke(o);
+        });
 
         // Internal stuff for route processing:
         _ = services.AddHttpRouteProcessor();

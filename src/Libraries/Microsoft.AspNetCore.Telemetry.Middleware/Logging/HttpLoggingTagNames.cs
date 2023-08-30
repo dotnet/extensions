@@ -44,6 +44,16 @@ public static class HttpLoggingTagNames
     public const string ResponseHeaderPrefix = "ResponseHeader_";
 
     /// <summary>
+    /// HTTP Request Body.
+    /// </summary>
+    public const string RequestBody = "RequestBody";
+
+    /// <summary>
+    /// HTTP Response Body.
+    /// </summary>
+    public const string ResponseBody = "ResponseBody";
+
+    /// <summary>
     /// HTTP Status Code.
     /// </summary>
     public const string StatusCode = "StatusCode";
