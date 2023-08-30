@@ -3,37 +3,37 @@
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T> where T : struct",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "bool Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>.ContainsTags(params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "bool Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>.ContainsTags(params string[] tags);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "bool Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>.MatchesTags(params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "bool Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>.MatchesTags(params string[] tags);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>.Tags { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.DateTimeOffset Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>.Timestamp { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "T Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>.Value { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -295,83 +295,83 @@
     },
     {
       "Type": "static class Microsoft.Extensions.Telemetry.Testing.Metering.MeasurementExtensions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "static System.Collections.Generic.IEnumerable<Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>> Microsoft.Extensions.Telemetry.Testing.Metering.MeasurementExtensions.ContainsTags<T>(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>> measurements, params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static System.Collections.Generic.IEnumerable<Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>> Microsoft.Extensions.Telemetry.Testing.Metering.MeasurementExtensions.ContainsTags<T>(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>> measurements, params string[] tags);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static T Microsoft.Extensions.Telemetry.Testing.Metering.MeasurementExtensions.EvaluateAsCounter<T>(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>> measurements);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static System.Collections.Generic.IEnumerable<Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>> Microsoft.Extensions.Telemetry.Testing.Metering.MeasurementExtensions.MatchesTags<T>(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>> measurements, params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static System.Collections.Generic.IEnumerable<Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>> Microsoft.Extensions.Telemetry.Testing.Metering.MeasurementExtensions.MatchesTags<T>(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>> measurements, params string[] tags);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T> : System.IDisposable where T : struct",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.Instrument<T> instrument, System.TimeProvider? timeProvider = null);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.ObservableInstrument<T> instrument, System.TimeProvider? timeProvider = null);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.MetricCollector(object? meterScope, string meterName, string instrumentName, System.TimeProvider? timeProvider = null);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.Meter meter, string instrumentName, System.TimeProvider? timeProvider = null);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "void Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.Clear();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "void Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.Dispose();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>> Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.GetMeasurementSnapshot(bool clear = false);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "void Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.RecordObservableInstruments();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Threading.Tasks.Task Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.WaitForMeasurementsAsync(int minCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Threading.Tasks.Task Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.WaitForMeasurementsAsync(int minCount, System.TimeSpan timeout);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "System.Diagnostics.Metrics.Instrument? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.Instrument { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.Telemetry.Testing.Metering.CollectedMeasurement<T>? Microsoft.Extensions.Telemetry.Testing.Metering.MetricCollector<T>.LastMeasurement { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     }

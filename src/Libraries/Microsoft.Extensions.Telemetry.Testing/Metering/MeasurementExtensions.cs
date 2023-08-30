@@ -2,17 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Telemetry.Testing.Metering;
 
 /// <summary>
 /// Extensions to simplify working with lists of measurements.
 /// </summary>
-[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 public static class MeasurementExtensions
 {
     /// <summary>
