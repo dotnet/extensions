@@ -37,6 +37,7 @@
     <MicrosoftExtensionsConfigurationVersion>8.0.0-rc.1.23409.17</MicrosoftExtensionsConfigurationVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>8.0.0-rc.1.23409.17</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>8.0.0-rc.1.23409.17</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDiagnosticsVersion>8.0.0-rc.1.23409.17</MicrosoftExtensionsDiagnosticsVersion>
     <MicrosoftExtensionsHostingAbstractionsVersion>8.0.0-rc.1.23409.17</MicrosoftExtensionsHostingAbstractionsVersion>
     <MicrosoftExtensionsHostingVersion>8.0.0-rc.1.23409.17</MicrosoftExtensionsHostingVersion>
     <MicrosoftExtensionsHttpVersion>8.0.0-rc.1.23409.17</MicrosoftExtensionsHttpVersion>

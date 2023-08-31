@@ -3,10 +3,11 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Telemetry.Metering;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.AspNetCore.HeaderParsing;
@@ -28,7 +29,7 @@ public sealed partial class HeaderParsingFeature
 
     internal HttpContext? Context { get; set; }
 
-    internal HeaderParsingFeature(IHeaderRegistry registry, ILogger<HeaderParsingFeature> logger, Meter<HeaderParsingFeature> meter)
+    internal HeaderParsingFeature(IHeaderRegistry registry, ILogger<HeaderParsingFeature> logger, Meter meter)
     {
         _logger = logger;
         _registry = registry;
@@ -88,10 +89,17 @@ public sealed partial class HeaderParsingFeature
 
     internal sealed class PoolHelper : IDisposable
     {
+        internal const string MeterName = "Microsoft.AspNetCore.HeaderParsing.HeaderParsingFeature";
+
         public HeaderParsingFeature Feature { get; }
+
         private readonly ObjectPool<PoolHelper> _pool;
 
-        public PoolHelper(ObjectPool<PoolHelper> pool, IHeaderRegistry registry, ILogger<HeaderParsingFeature> logger, Meter<HeaderParsingFeature> meter)
+        public PoolHelper(
+            ObjectPool<PoolHelper> pool,
+            IHeaderRegistry registry,
+            ILogger<HeaderParsingFeature> logger,
+            [FromKeyedServices(MeterName)] Meter meter)
         {
             _pool = pool;
             Feature = new HeaderParsingFeature(registry, logger, meter);
