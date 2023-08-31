@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -9,7 +9,6 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry.Testing.Metering;
@@ -18,7 +17,6 @@ namespace Microsoft.Extensions.Telemetry.Testing.Metering;
 /// Collects the measurements published from an <see cref="Instrument{T}"/> or <see cref="ObservableInstrument{T}"/>.
 /// </summary>
 /// <typeparam name="T">The type of metric data being recorded.</typeparam>
-[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 [DebuggerDisplay("{_measurements.Count} measurements")]
 public sealed class MetricCollector<T> : IDisposable
     where T : struct
