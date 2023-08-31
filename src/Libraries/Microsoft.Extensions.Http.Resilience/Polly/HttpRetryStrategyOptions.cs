@@ -40,8 +40,8 @@ public class HttpRetryStrategyOptions : RetryStrategyOptions<HttpResponseMessage
     /// </value>
     /// <remarks>
     /// If the property is set to <see langword="true"/> then the generator will resolve the delay
-    /// based on the <c>Retry-After</c> header rules, otherwise it will return <see cref="RetryDelayGeneratorArguments{TResult}.DelayHint"/>
-    /// that was suggested by the retry strategy.
+    /// based on the <c>Retry-After</c> header rules, otherwise it will return <see langword="null"/> and the retry strategy
+    /// delay will generate the delay based on the configured options.
     /// </remarks>
     public bool ShouldRetryAfterHeader
     {

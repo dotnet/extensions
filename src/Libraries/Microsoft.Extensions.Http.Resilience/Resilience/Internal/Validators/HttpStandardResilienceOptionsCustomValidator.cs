@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Extensions.Options;
-using Polly.Retry;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal.Validators;
 
