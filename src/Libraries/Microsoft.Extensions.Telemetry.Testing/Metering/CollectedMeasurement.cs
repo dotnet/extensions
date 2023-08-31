@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry.Testing.Metering;
@@ -15,7 +13,6 @@ namespace Microsoft.Extensions.Telemetry.Testing.Metering;
 /// Represents a single measurement performed by an instrument.
 /// </summary>
 /// <typeparam name="T">The type of metric measurement value.</typeparam>
-[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 [DebuggerDisplay("{DebuggerToString(),nq}")]
 public sealed class CollectedMeasurement<T>
     where T : struct
