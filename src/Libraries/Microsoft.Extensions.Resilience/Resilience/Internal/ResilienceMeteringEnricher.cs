@@ -8,17 +8,17 @@ using System.Linq;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
-using Polly.Extensions.Telemetry;
+using Polly.Telemetry;
 
 namespace Microsoft.Extensions.Resilience.Internal;
 
-internal sealed class ResilienceEnricher
+internal sealed class ResilienceMeteringEnricher : MeteringEnricher
 {
     private readonly FrozenDictionary<Type, Func<object, FailureResultContext>> _faultFactories;
     private readonly IOutgoingRequestContext? _outgoingRequestContext;
     private readonly IExceptionSummarizer _exceptionSummarizer;
 
-    public ResilienceEnricher(
+    public ResilienceMeteringEnricher(
         IOptions<FailureEventMetricsOptions> metricsOptions,
         IEnumerable<IOutgoingRequestContext> outgoingRequestContext,
         IExceptionSummarizer exceptionSummarizer)
@@ -28,38 +28,28 @@ internal sealed class ResilienceEnricher
         _exceptionSummarizer = exceptionSummarizer;
     }
 
-    public void Enrich(EnrichmentContext context)
+    public override void Enrich<TResult, TArgs>(in EnrichmentContext<TResult, TArgs> context)
     {
-        if (context.Outcome?.Exception is Exception e)
+        var outcome = context.TelemetryEvent.Outcome;
+
+        if (outcome?.Exception is Exception e)
         {
             context.Tags.Add(new(ResilienceTagNames.FailureSource, e.Source));
             context.Tags.Add(new(ResilienceTagNames.FailureReason, e.GetType().Name));
             context.Tags.Add(new(ResilienceTagNames.FailureSummary, _exceptionSummarizer.Summarize(e).ToString()));
         }
-        else if (context.Outcome?.Result is object result && _faultFactories.TryGetValue(result.GetType(), out var factory))
+        else if (outcome is not null && outcome.Value.Result is object result && _faultFactories.TryGetValue(result.GetType(), out var factory))
         {
             var failureContext = factory(result);
             context.Tags.Add(new(ResilienceTagNames.FailureSource, failureContext.FailureSource));
             context.Tags.Add(new(ResilienceTagNames.FailureReason, failureContext.FailureReason));
             context.Tags.Add(new(ResilienceTagNames.FailureSummary, failureContext.AdditionalInformation));
         }
-        else
-        {
-            context.Tags.Add(new(ResilienceTagNames.FailureSource, null));
-            context.Tags.Add(new(ResilienceTagNames.FailureReason, null));
-            context.Tags.Add(new(ResilienceTagNames.FailureSummary, null));
-        }
 
-        var requestMetadata = context.Context.GetRequestMetadata() ?? _outgoingRequestContext?.RequestMetadata;
-        if (requestMetadata is not null)
+        if ((context.TelemetryEvent.Context.GetRequestMetadata() ?? _outgoingRequestContext?.RequestMetadata) is RequestMetadata requestMetadata)
         {
             context.Tags.Add(new(ResilienceTagNames.RequestName, requestMetadata.RequestName));
             context.Tags.Add(new(ResilienceTagNames.DependencyName, requestMetadata.DependencyName));
-        }
-        else
-        {
-            context.Tags.Add(new(ResilienceTagNames.RequestName, null));
-            context.Tags.Add(new(ResilienceTagNames.DependencyName, null));
         }
     }
 }

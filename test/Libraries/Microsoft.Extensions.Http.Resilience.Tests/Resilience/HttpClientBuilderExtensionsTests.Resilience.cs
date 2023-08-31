@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -21,8 +22,8 @@ using Microsoft.Extensions.Telemetry.Metering;
 using Microsoft.Extensions.Telemetry.Testing.Metering;
 using Moq;
 using Polly;
-using Polly.Extensions.Telemetry;
 using Polly.Registry;
+using Polly.Telemetry;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Resilience.Test;
@@ -39,8 +40,8 @@ public sealed partial class HttpClientBuilderExtensionsTests
         Assert.Throws<ArgumentException>(() => builder.AddResilienceHandler(string.Empty, _ => { }));
         Assert.Throws<ArgumentNullException>(() => builder.AddResilienceHandler(null!, (_, _) => { }));
         Assert.Throws<ArgumentException>(() => builder.AddResilienceHandler(string.Empty, (_, _) => { }));
-        Assert.Throws<ArgumentNullException>(() => builder.AddResilienceHandler("dummy", (Action<CompositeStrategyBuilder<HttpResponseMessage>>)null!));
-        Assert.Throws<ArgumentNullException>(() => builder.AddResilienceHandler("dummy", (Action<CompositeStrategyBuilder<HttpResponseMessage>, ResilienceHandlerContext>)null!));
+        Assert.Throws<ArgumentNullException>(() => builder.AddResilienceHandler("dummy", (Action<ResiliencePipelineBuilder<HttpResponseMessage>>)null!));
+        Assert.Throws<ArgumentNullException>(() => builder.AddResilienceHandler("dummy", (Action<ResiliencePipelineBuilder<HttpResponseMessage>, ResilienceHandlerContext>)null!));
 
         builder = null;
         Assert.Throws<ArgumentNullException>(() => builder!.AddResilienceHandler("pipeline-name", _ => { }));
@@ -58,7 +59,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         // add twice intentionally
         builder.AddResilienceHandler("test", ConfigureBuilder);
 
-        Assert.Contains(services, s => s.ServiceType == typeof(ResilienceStrategyProvider<HttpKey>));
+        Assert.Contains(services, s => s.ServiceType == typeof(ResiliencePipelineProvider<HttpKey>));
     }
 
     [Fact]
@@ -80,22 +81,10 @@ public sealed partial class HttpClientBuilderExtensionsTests
     public async Task AddResilienceHandler_EnsureFailureResultContext()
     {
         using var metricCollector = new MetricCollector<int>(null, "Polly", "resilience-events");
-
-        var asserted = false;
+        var enricher = new TestMeteringEnricher();
         var services = new ServiceCollection()
             .AddResilienceEnrichment()
-            .Configure<TelemetryOptions>(options =>
-            {
-                options.Enrichers.Add(context =>
-                {
-                    var dict = context.Tags.ToDictionary(t => t.Key, t => t.Value);
-                    dict.Should().ContainKey("failure-reason").WhoseValue.Should().Be("500");
-                    dict.Should().ContainKey("failure-summary").WhoseValue.Should().Be("InternalServerError");
-                    dict.Should().ContainKey("failure-source").WhoseValue.Should().Be(TelemetryConstants.Unknown);
-
-                    asserted = true;
-                });
-            });
+            .Configure<TelemetryOptions>(options => options.MeteringEnrichers.Add(enricher));
 
         var clientBuilder = services
             .AddHttpClient("client")
@@ -104,8 +93,8 @@ public sealed partial class HttpClientBuilderExtensionsTests
             .Configure(options =>
             {
                 options.RetryOptions.ShouldHandle = _ => PredicateResult.True;
-                options.RetryOptions.RetryCount = 1;
-                options.RetryOptions.BaseDelay = TimeSpan.Zero;
+                options.RetryOptions.MaxRetryAttempts = 1;
+                options.RetryOptions.Delay = TimeSpan.Zero;
             });
 
         var client = services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("client");
@@ -113,7 +102,10 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
         using var response = await client.SendAsync(request);
 
-        asserted.Should().BeTrue();
+        var lookup = enricher.Tags.ToLookup(t => t.Key, t => t.Value);
+        lookup["failure-reason"].Should().Contain("500");
+        lookup["failure-summary"].Should().Contain("InternalServerError");
+        lookup["failure-source"].Should().Contain(TelemetryConstants.Unknown);
     }
 
     [Fact]
@@ -128,7 +120,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
                 context.InstanceName.Should().Be("dummy-key");
                 verified = true;
             })
-            .SelectStrategyBy(_ => _ => "dummy-key");
+            .SelectPipelineBy(_ => _ => "dummy-key");
 
         _builder.AddHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.InternalServerError));
 
@@ -143,12 +135,12 @@ public sealed partial class HttpClientBuilderExtensionsTests
         IHttpClientBuilder? builder = services.AddHttpClient("client");
         builder.AddResilienceHandler("test", ConfigureBuilder);
 
-        var registryOptions = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<ResilienceStrategyRegistryOptions<HttpKey>>>().Value;
+        var registryOptions = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<ResiliencePipelineRegistryOptions<HttpKey>>>().Value;
         registryOptions.BuilderComparer.Equals(new HttpKey("A", "1"), new HttpKey("A", "2")).Should().BeTrue();
         registryOptions.BuilderComparer.Equals(new HttpKey("A", "1"), new HttpKey("B", "1")).Should().BeFalse();
 
-        registryOptions.StrategyComparer.Equals(new HttpKey("A", "1"), new HttpKey("A", "1")).Should().BeTrue();
-        registryOptions.StrategyComparer.Equals(new HttpKey("A", "1"), new HttpKey("A", "2")).Should().BeFalse();
+        registryOptions.PipelineComparer.Equals(new HttpKey("A", "1"), new HttpKey("A", "1")).Should().BeTrue();
+        registryOptions.PipelineComparer.Equals(new HttpKey("A", "1"), new HttpKey("A", "2")).Should().BeFalse();
 
         registryOptions.BuilderNameFormatter(new HttpKey("A", "1")).Should().Be("A");
         registryOptions.InstanceNameFormatter!(new HttpKey("A", "1")).Should().Be("1");
@@ -164,18 +156,18 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [InlineData(true)]
     [InlineData(false)]
     [Theory]
-    public async Task AddResilienceHandler_EnsureProperStrategyInstanceRetrieved(bool bySelector)
+    public async Task AddResilienceHandler_EnsureProperPipelineInstanceRetrieved(bool bySelector)
     {
         // arrange
-        var resilienceProvider = new Mock<ResilienceStrategyProvider<HttpKey>>(MockBehavior.Strict);
+        var resilienceProvider = new Mock<ResiliencePipelineProvider<HttpKey>>(MockBehavior.Strict);
         var services = new ServiceCollection().AddLogging().RegisterMetering().AddFakeRedaction();
         services.AddSingleton(resilienceProvider.Object);
         var builder = services.AddHttpClient("client");
         var pipelineBuilder = builder.AddResilienceHandler("dummy", ConfigureBuilder);
-        var expectedStrategyName = "client-dummy";
+        var expectedPipelineKey = "client-dummy";
         if (bySelector)
         {
-            pipelineBuilder.SelectStrategyByAuthority(DataClassification.Unknown);
+            pipelineBuilder.SelectPipelineByAuthority(DataClassification.Unknown);
         }
 
         builder.AddHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.OK));
@@ -184,14 +176,14 @@ public sealed partial class HttpClientBuilderExtensionsTests
         if (bySelector)
         {
             resilienceProvider
-                .Setup(v => v.GetStrategy<HttpResponseMessage>(new HttpKey(expectedStrategyName, "https://dummy1")))
-                .Returns(NullResilienceStrategy<HttpResponseMessage>.Instance);
+                .Setup(v => v.GetPipeline<HttpResponseMessage>(new HttpKey(expectedPipelineKey, "https://dummy1")))
+                .Returns(ResiliencePipeline<HttpResponseMessage>.Empty);
         }
         else
         {
             resilienceProvider
-                .Setup(v => v.GetStrategy<HttpResponseMessage>(new HttpKey(expectedStrategyName, string.Empty)))
-                .Returns(NullResilienceStrategy<HttpResponseMessage>.Instance);
+                .Setup(v => v.GetPipeline<HttpResponseMessage>(new HttpKey(expectedPipelineKey, string.Empty)))
+                .Returns(ResiliencePipeline<HttpResponseMessage>.Empty);
         }
 
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
@@ -204,11 +196,11 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     [Fact]
-    public async Task AddResilienceHandlerBySelector_EnsureResilienceStrategyProviderCalled()
+    public async Task AddResilienceHandlerBySelector_EnsureResiliencePipelineProviderCalled()
     {
         // arrange
         var services = new ServiceCollection().AddLogging().RegisterMetering();
-        var providerMock = new Mock<ResilienceStrategyProvider<HttpKey>>(MockBehavior.Strict);
+        var providerMock = new Mock<ResiliencePipelineProvider<HttpKey>>(MockBehavior.Strict);
 
         services.AddSingleton(providerMock.Object);
         var pipelineName = string.Empty;
@@ -219,13 +211,13 @@ public sealed partial class HttpClientBuilderExtensionsTests
         clientBuilder.AddHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.OK));
 
         providerMock
-            .Setup(v => v.GetStrategy<HttpResponseMessage>(new HttpKey(pipelineName, string.Empty)))
-            .Returns(NullResilienceStrategy<HttpResponseMessage>.Instance)
+            .Setup(v => v.GetPipeline<HttpResponseMessage>(new HttpKey(pipelineName, string.Empty)))
+            .Returns(ResiliencePipeline<HttpResponseMessage>.Empty)
             .Verifiable();
 
         var provider = services.BuildServiceProvider();
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
-        var pipelineProvider = provider.GetRequiredService<ResilienceStrategyProvider<HttpKey>>();
+        var pipelineProvider = provider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
 
         // act
         await client.GetAsync("https://dummy1");
@@ -241,12 +233,12 @@ public sealed partial class HttpClientBuilderExtensionsTests
         var clientBuilder = new ServiceCollection().AddLogging().RegisterMetering().AddRedaction()
             .AddHttpClient("my-client")
             .AddResilienceHandler("my-pipeline", ConfigureBuilder)
-            .SelectStrategyByAuthority(SimpleClassifications.PrivateData);
+            .SelectPipelineByAuthority(SimpleClassifications.PrivateData);
 
         var factory = clientBuilder.Services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>();
 
         var error = Assert.Throws<InvalidOperationException>(() => factory.CreateClient("my-client"));
-        Assert.Equal("The redacted strategy key is an empty string and cannot be used for the strategy selection. Is redaction correctly configured?", error.Message);
+        Assert.Equal("The redacted pipeline key is an empty string and cannot be used for the pipeline selection. Is redaction correctly configured?", error.Message);
     }
 
     [Fact]
@@ -256,12 +248,22 @@ public sealed partial class HttpClientBuilderExtensionsTests
         var clientBuilder = new ServiceCollection().AddLogging().RegisterMetering().AddRedaction()
             .AddHttpClient("my-client")
             .AddResilienceHandler("my-pipeline", ConfigureBuilder)
-            .SelectStrategyBy(_ => _ => string.Empty);
+            .SelectPipelineBy(_ => _ => string.Empty);
 
         var factory = clientBuilder.Services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>();
 
         Assert.NotNull(factory.CreateClient("my-client"));
     }
 
-    private void ConfigureBuilder(CompositeStrategyBuilder<HttpResponseMessage> builder) => builder.AddTimeout(TimeSpan.FromSeconds(1));
+    private void ConfigureBuilder(ResiliencePipelineBuilder<HttpResponseMessage> builder) => builder.AddTimeout(TimeSpan.FromSeconds(1));
+
+    private class TestMeteringEnricher : MeteringEnricher
+    {
+        public List<KeyValuePair<string, object?>> Tags { get; } = new();
+
+        public override void Enrich<TResult, TArgs>(in EnrichmentContext<TResult, TArgs> context)
+        {
+            Tags.AddRange(context.Tags);
+        }
+    }
 }

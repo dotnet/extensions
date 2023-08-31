@@ -3,7 +3,7 @@
 
 namespace Microsoft.Extensions.Http.Resilience.Internal;
 
-internal static class StandardStrategyNames
+internal static class StandardPipelineNames
 {
     public const string CircuitBreaker = "Standard-CircuitBreaker";
 

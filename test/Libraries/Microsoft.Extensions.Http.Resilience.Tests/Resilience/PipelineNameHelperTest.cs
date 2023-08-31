@@ -5,11 +5,12 @@ using Microsoft.Extensions.Http.Resilience.Internal;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Resilience.Test.Resilience;
-public class StrategyNameHelperTest
+
+public class PipelineNameHelperTest
 {
     [Fact]
     public void GetPipelineName_Ok()
     {
-        Assert.Equal("client-pipeline", StrategyNameHelper.GetName("client", "pipeline"));
+        Assert.Equal("client-pipeline", PipelineNameHelper.GetName("client", "pipeline"));
     }
 }

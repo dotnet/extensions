@@ -16,17 +16,17 @@ namespace Microsoft.Extensions.Http.Resilience.Internal;
 /// </summary>
 internal sealed class ResilienceHandler : DelegatingHandler
 {
-    private readonly Func<HttpRequestMessage, ResilienceStrategy<HttpResponseMessage>> _strategyProvider;
+    private readonly Func<HttpRequestMessage, ResiliencePipeline<HttpResponseMessage>> _pipelineProvider;
 
-    public ResilienceHandler(Func<HttpRequestMessage, ResilienceStrategy<HttpResponseMessage>> strategyProvider)
+    public ResilienceHandler(Func<HttpRequestMessage, ResiliencePipeline<HttpResponseMessage>> pipelineProvider)
     {
-        _strategyProvider = strategyProvider;
+        _pipelineProvider = pipelineProvider;
     }
 
     /// <inheritdoc/>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var strategy = _strategyProvider(request);
+        var pipeline = _pipelineProvider(request);
         var created = false;
         if (request.GetResilienceContext() is not ResilienceContext context)
         {
@@ -44,7 +44,7 @@ internal sealed class ResilienceHandler : DelegatingHandler
 
         try
         {
-            var outcome = await strategy.ExecuteOutcomeAsync(
+            var outcome = await pipeline.ExecuteOutcomeAsync(
                 static async (context, state) =>
                 {
                     var request = context.Properties.GetValue(ResilienceKeys.RequestMessage, state.request);

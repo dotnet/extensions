@@ -4,6 +4,7 @@
 using System;
 using FluentAssertions;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Polly;
 using Polly.Retry;
 using Xunit;
 
@@ -17,9 +18,9 @@ public class ValidationHelperTests
         ValidationHelper.GetAggregatedDelay(
             new HttpRetryStrategyOptions
             {
-                RetryCount = 10,
-                BackoffType = RetryBackoffType.Constant,
-                BaseDelay = TimeSpan.FromSeconds(1),
+                MaxRetryAttempts = 10,
+                BackoffType = DelayBackoffType.Constant,
+                Delay = TimeSpan.FromSeconds(1),
             })
             .Should().Be(TimeSpan.FromSeconds(10));
     }
@@ -29,10 +30,10 @@ public class ValidationHelperTests
     {
         var options = new HttpRetryStrategyOptions
         {
-            RetryCount = 10,
-            BackoffType = RetryBackoffType.Exponential,
+            MaxRetryAttempts = 10,
+            BackoffType = DelayBackoffType.Exponential,
             UseJitter = true,
-            BaseDelay = TimeSpan.FromSeconds(1),
+            Delay = TimeSpan.FromSeconds(1),
         };
 
         ValidationHelper
@@ -46,10 +47,10 @@ public class ValidationHelperTests
     {
         var options = new HttpRetryStrategyOptions
         {
-            RetryCount = 99,
-            BackoffType = RetryBackoffType.Exponential,
+            MaxRetryAttempts = 99,
+            BackoffType = DelayBackoffType.Exponential,
             UseJitter = true,
-            BaseDelay = TimeSpan.FromSeconds(1000),
+            Delay = TimeSpan.FromSeconds(1000),
         };
 
         ValidationHelper

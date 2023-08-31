@@ -69,10 +69,10 @@ public class HttpCircuitBreakerStrategyOptionsTests
         Assert.Equal(expectedToHandle, shouldHandle);
     }
 
-    private OutcomeArguments<HttpResponseMessage, CircuitBreakerPredicateArguments> CreateArgs(Exception error)
-        => new(_context, Outcome.FromException<HttpResponseMessage>(error), default);
+    private CircuitBreakerPredicateArguments<HttpResponseMessage> CreateArgs(Exception error)
+        => new(_context, Outcome.FromException<HttpResponseMessage>(error));
 
-    private OutcomeArguments<HttpResponseMessage, CircuitBreakerPredicateArguments> CreateArgs(HttpResponseMessage response)
-        => new(_context, Outcome.FromResult(response), default);
+    private CircuitBreakerPredicateArguments<HttpResponseMessage> CreateArgs(HttpResponseMessage response)
+        => new(_context, Outcome.FromResult(response));
 
 }

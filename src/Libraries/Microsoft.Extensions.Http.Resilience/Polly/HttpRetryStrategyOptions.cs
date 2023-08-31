@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Polly;
 using Polly.Retry;
 
 namespace Microsoft.Extensions.Http.Resilience;
@@ -26,7 +27,7 @@ public class HttpRetryStrategyOptions : RetryStrategyOptions<HttpResponseMessage
     public HttpRetryStrategyOptions()
     {
         ShouldHandle = args => new ValueTask<bool>(HttpClientResiliencePredicates.IsTransientHttpOutcome(args.Outcome));
-        BackoffType = RetryBackoffType.Exponential;
+        BackoffType = DelayBackoffType.Exponential;
         ShouldRetryAfterHeader = true;
         UseJitter = true;
     }
@@ -39,7 +40,7 @@ public class HttpRetryStrategyOptions : RetryStrategyOptions<HttpResponseMessage
     /// </value>
     /// <remarks>
     /// If the property is set to <see langword="true"/> then the generator will resolve the delay
-    /// based on the <c>Retry-After</c> header rules, otherwise it will return <see cref="RetryDelayArguments.DelayHint"/>
+    /// based on the <c>Retry-After</c> header rules, otherwise it will return <see cref="RetryDelayGeneratorArguments{TResult}.DelayHint"/>
     /// that was suggested by the retry strategy.
     /// </remarks>
     public bool ShouldRetryAfterHeader
@@ -51,15 +52,15 @@ public class HttpRetryStrategyOptions : RetryStrategyOptions<HttpResponseMessage
 
             if (_shouldRetryAfterHeader)
             {
-                RetryDelayGenerator = args => args.Outcome.Result switch
+                DelayGenerator = args => args.Outcome.Result switch
                 {
                     HttpResponseMessage response when RetryAfterHelper.TryParse(response, TimeProvider.System, out var retryAfter) => new ValueTask<TimeSpan>(retryAfter),
-                    _ => new ValueTask<TimeSpan>(args.Arguments.DelayHint)
+                    _ => new ValueTask<TimeSpan>(args.DelayHint)
                 };
             }
             else
             {
-                RetryDelayGenerator = null;
+                DelayGenerator = null;
             }
         }
     }

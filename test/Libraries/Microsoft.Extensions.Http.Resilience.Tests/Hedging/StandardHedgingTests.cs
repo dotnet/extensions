@@ -38,7 +38,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
             .Configure(options =>
             {
                 options.HedgingOptions.MaxHedgedAttempts = DefaultHedgingAttempts;
-                options.HedgingOptions.HedgingDelay = TimeSpan.FromMilliseconds(5);
+                options.HedgingOptions.Delay = TimeSpan.FromMilliseconds(5);
             });
     }
 
@@ -73,7 +73,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     {
         Builder.Configure((o, serviceProvider) =>
         {
-            serviceProvider.GetRequiredService<ResilienceStrategyProvider<HttpKey>>().Should().NotBeNull();
+            serviceProvider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>().Should().NotBeNull();
             o.HedgingOptions.MaxHedgedAttempts = 8;
         });
 
@@ -107,7 +107,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     public void ActionGenerator_Ok()
     {
         var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
-        var generator = options.HedgingOptions.HedgingActionGenerator;
+        var generator = options.HedgingOptions.ActionGenerator;
         var primary = ResilienceContextPool.Shared.Get();
         var secondary = ResilienceContextPool.Shared.Get();
         using var response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -167,21 +167,19 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     public void VerifyPipeline()
     {
         var serviceProvider = Builder.Services.BuildServiceProvider();
-        var strategyProvider = serviceProvider.GetRequiredService<ResilienceStrategyProvider<HttpKey>>();
+        var pipelineProvider = serviceProvider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
 
         // primary handler
-        var primary = strategyProvider.GetStrategy<HttpResponseMessage>(new HttpKey("clientId-standard-hedging", "instance")).GetInnerStrategies();
-        primary.HasTelemetry.Should().BeTrue();
+        var primary = pipelineProvider.GetPipeline<HttpResponseMessage>(new HttpKey("clientId-standard-hedging", "instance")).GetPipelineDescriptor();
         primary.IsReloadable.Should().BeTrue();
         primary.Strategies.Should().HaveCount(4);
-        primary.Strategies[0].StrategyType.Should().Be(typeof(RoutingResilienceStrategy));
-        primary.Strategies[1].StrategyType.Should().Be(typeof(RequestMessageSnapshotStrategy));
+        primary.Strategies[0].StrategyInstance.Should().BeOfType<RoutingResilienceStrategy>();
+        primary.Strategies[1].StrategyInstance.Should().BeOfType<RequestMessageSnapshotStrategy>();
         primary.Strategies[2].Options.Should().BeOfType<HttpTimeoutStrategyOptions>();
         primary.Strategies[3].Options.Should().BeOfType<HttpHedgingStrategyOptions>();
 
         // inner handler
-        var inner = strategyProvider.GetStrategy<HttpResponseMessage>(new HttpKey("clientId-standard-hedging-endpoint", "instance")).GetInnerStrategies();
-        inner.HasTelemetry.Should().BeTrue();
+        var inner = pipelineProvider.GetPipeline<HttpResponseMessage>(new HttpKey("clientId-standard-hedging-endpoint", "instance")).GetPipelineDescriptor();
         inner.IsReloadable.Should().BeTrue();
         inner.Strategies.Should().HaveCount(3);
         inner.Strategies[0].Options.Should().BeOfType<HttpRateLimiterStrategyOptions>();
@@ -194,21 +192,21 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     [Theory]
     public async Task VerifyPipelineSelection(string? customKey)
     {
-        var noPolicy = NullResilienceStrategy<HttpResponseMessage>.Instance;
-        var provider = new Mock<ResilienceStrategyProvider<HttpKey>>(MockBehavior.Strict);
+        var noPolicy = ResiliencePipeline<HttpResponseMessage>.Empty;
+        var provider = new Mock<ResiliencePipelineProvider<HttpKey>>(MockBehavior.Strict);
         Builder.Services.AddSingleton(provider.Object);
         if (customKey == null)
         {
-            Builder.SelectStrategyByAuthority(SimpleClassifications.PublicData);
+            Builder.SelectPipelineByAuthority(SimpleClassifications.PublicData);
         }
         else
         {
-            Builder.SelectStrategyBy(_ => _ => customKey);
+            Builder.SelectPipelineBy(_ => _ => customKey);
         }
 
         customKey ??= "https://key:80";
-        provider.Setup(v => v.GetStrategy<HttpResponseMessage>(new HttpKey("clientId-standard-hedging", string.Empty))).Returns(noPolicy);
-        provider.Setup(v => v.GetStrategy<HttpResponseMessage>(new HttpKey("clientId-standard-hedging-endpoint", customKey))).Returns(noPolicy);
+        provider.Setup(v => v.GetPipeline<HttpResponseMessage>(new HttpKey("clientId-standard-hedging", string.Empty))).Returns(noPolicy);
+        provider.Setup(v => v.GetPipeline<HttpResponseMessage>(new HttpKey("clientId-standard-hedging-endpoint", customKey))).Returns(noPolicy);
 
         using var client = CreateClientWithHandler();
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://key:80/discarded");
@@ -227,11 +225,11 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         var config = ConfigurationStubFactory.Create(
             new()
             {
-                { "standard:HedgingOptions:MaxHedgedAttempts", "3" }
+                { "standard:HedgingOptions:MaxHedgedAttempts", "2" }
             },
             out var reloadAction).GetSection("standard");
 
-        Builder.Configure(config).Configure(options => options.HedgingOptions.HedgingDelay = Timeout.InfiniteTimeSpan);
+        Builder.Configure(config).Configure(options => options.HedgingOptions.Delay = Timeout.InfiniteTimeSpan);
         SetupRouting();
         SetupRoutes(10);
 
@@ -243,7 +241,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         await client.SendAsync(firstRequest);
         AssertNoResponse();
 
-        reloadAction(new() { { "standard:HedgingOptions:MaxHedgedAttempts", "7" } });
+        reloadAction(new() { { "standard:HedgingOptions:MaxHedgedAttempts", "6" } });
 
         AddResponse(HttpStatusCode.InternalServerError, 7);
         using var secondRequest = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");

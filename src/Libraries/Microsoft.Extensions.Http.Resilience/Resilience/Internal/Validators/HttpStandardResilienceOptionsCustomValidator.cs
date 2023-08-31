@@ -30,7 +30,7 @@ internal sealed class HttpStandardResilienceOptionsCustomValidator : IValidateOp
                 $"Attempt Timeout: {options.AttemptTimeoutOptions.Timeout.TotalSeconds}s");
         }
 
-        if (options.RetryOptions.RetryCount > 0)
+        if (options.RetryOptions.MaxRetryAttempts > 0)
         {
             TimeSpan retrySum = ValidationHelper.GetAggregatedDelay(options.RetryOptions);
 

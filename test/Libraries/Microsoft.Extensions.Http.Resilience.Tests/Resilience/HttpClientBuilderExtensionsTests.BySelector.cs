@@ -26,32 +26,32 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [InlineData(false, "https://dummy:21/path", "https://dummy:21")]
     [InlineData(false, "https://dummy", "https://dummy")]
     [Theory]
-    public void SelectStrategyByAuthority_Ok(bool standardResilience, string url, string expectedStrategyKey)
+    public void SelectPipelineByAuthority_Ok(bool standardResilience, string url, string expectedPipelineKey)
     {
         _builder.Services.AddFakeRedaction();
 
         var pipelineName = standardResilience ?
-            _builder.AddStandardResilienceHandler().SelectStrategyByAuthority(DataClassification.Unknown).StrategyName :
+            _builder.AddStandardResilienceHandler().SelectPipelineByAuthority(DataClassification.Unknown).PipelineName :
             _builder
                 .AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1)))
-                .SelectStrategyByAuthority(DataClassification.Unknown).StrategyName;
+                .SelectPipelineByAuthority(DataClassification.Unknown).PipelineName;
 
-        var provider = _builder.Services.BuildServiceProvider().GetStrategyKeyProvider(pipelineName)!;
+        var provider = _builder.Services.BuildServiceProvider().GetPipelineKeyProvider(pipelineName)!;
 
         using var request = new HttpRequestMessage(HttpMethod.Head, url);
 
         var key = provider(request);
 
-        Assert.Equal(expectedStrategyKey, key);
+        Assert.Equal(expectedPipelineKey, key);
         Assert.Same(provider(request), provider(request));
     }
 
     [Fact]
-    public void SelectStrategyByAuthority_Ok_NullURL_Throws()
+    public void SelectPipelineByAuthority_Ok_NullURL_Throws()
     {
         _builder.Services.AddFakeRedaction();
-        var builder = _builder.AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1))).SelectStrategyByAuthority(DataClassification.Unknown);
-        var provider = StrategyKeyProviderHelper.GetStrategyKeyProvider(builder.Services.BuildServiceProvider(), builder.StrategyName)!;
+        var builder = _builder.AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1))).SelectPipelineByAuthority(DataClassification.Unknown);
+        var provider = PipelineKeyProviderHelper.GetPipelineKeyProvider(builder.Services.BuildServiceProvider(), builder.PipelineName)!;
 
         using var request = new HttpRequestMessage();
 
@@ -59,11 +59,11 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     [Fact]
-    public void SelectStrategyByAuthority_ErasingRedactor_InvalidOperationException()
+    public void SelectPipelineByAuthority_ErasingRedactor_InvalidOperationException()
     {
         _builder.Services.AddRedaction();
-        var builder = _builder.AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1))).SelectStrategyByAuthority(SimpleClassifications.PrivateData);
-        var provider = StrategyKeyProviderHelper.GetStrategyKeyProvider(builder.Services.BuildServiceProvider(), builder.StrategyName)!;
+        var builder = _builder.AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1))).SelectPipelineByAuthority(SimpleClassifications.PrivateData);
+        var provider = PipelineKeyProviderHelper.GetPipelineKeyProvider(builder.Services.BuildServiceProvider(), builder.PipelineName)!;
 
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
 
@@ -75,7 +75,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [InlineData(false, "https://dummy:21/path", "https://")]
     [InlineData(false, "https://dummy", "https://")]
     [Theory]
-    public void SelectStrategyBy_Ok(bool standardResilience, string url, string expectedStrategyKey)
+    public void SelectPipelineBy_Ok(bool standardResilience, string url, string expectedPipelineKey)
     {
         _builder.Services.AddFakeRedaction();
 
@@ -85,22 +85,22 @@ public sealed partial class HttpClientBuilderExtensionsTests
         {
             pipelineName = _builder
                 .AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1)))
-                .SelectStrategyBy(_ => r => r.RequestUri!.GetLeftPart(UriPartial.Scheme)).StrategyName;
+                .SelectPipelineBy(_ => r => r.RequestUri!.GetLeftPart(UriPartial.Scheme)).PipelineName;
         }
         else
         {
             pipelineName = _builder
                 .AddStandardResilienceHandler()
-                .SelectStrategyBy(_ => r => r.RequestUri!.GetLeftPart(UriPartial.Scheme)).StrategyName;
+                .SelectPipelineBy(_ => r => r.RequestUri!.GetLeftPart(UriPartial.Scheme)).PipelineName;
         }
 
-        var provider = _builder.Services.BuildServiceProvider().GetStrategyKeyProvider(pipelineName)!;
+        var provider = _builder.Services.BuildServiceProvider().GetPipelineKeyProvider(pipelineName)!;
 
         using var request = new HttpRequestMessage(HttpMethod.Head, url);
 
         var key = provider(request);
 
-        Assert.Equal(expectedStrategyKey, key);
+        Assert.Equal(expectedPipelineKey, key);
         Assert.NotSame(provider(request), provider(request));
     }
 
@@ -109,34 +109,34 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [InlineData(false, "https://dummy:21/path", "https://dummy:21")]
     [InlineData(false, "https://dummy123", "https://dummy123")]
     [Theory]
-    public async Task SelectStrategyBy_EnsureResilienceStrategyProviderCall(bool standardResilience, string url, string expectedStrategyKey)
+    public async Task SelectPipelineBy_EnsureResiliencePipelineProviderCall(bool standardResilience, string url, string expectedPipelineKey)
     {
-        var strategyProvider = new Mock<ResilienceStrategyProvider<HttpKey>>(MockBehavior.Strict);
+        var provider = new Mock<ResiliencePipelineProvider<HttpKey>>(MockBehavior.Strict);
 
         _builder.Services.AddFakeRedaction();
-        _builder.Services.TryAddSingleton(strategyProvider.Object);
+        _builder.Services.TryAddSingleton(provider.Object);
         string? pipelineName = null;
         if (standardResilience)
         {
             pipelineName = _builder
                 .AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1)))
-                .SelectStrategyByAuthority(DataClassification.None).StrategyName;
+                .SelectPipelineByAuthority(DataClassification.None).PipelineName;
         }
         else
         {
             pipelineName = _builder
                 .AddStandardResilienceHandler()
-                .SelectStrategyByAuthority(DataClassification.None).StrategyName;
+                .SelectPipelineByAuthority(DataClassification.None).PipelineName;
         }
 
         _builder.AddHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.OK));
 
-        strategyProvider
-            .Setup(p => p.GetStrategy<HttpResponseMessage>(new HttpKey(pipelineName, expectedStrategyKey)))
-            .Returns(NullResilienceStrategy<HttpResponseMessage>.Instance);
+        provider
+            .Setup(p => p.GetPipeline<HttpResponseMessage>(new HttpKey(pipelineName, expectedPipelineKey)))
+            .Returns(ResiliencePipeline<HttpResponseMessage>.Empty);
 
         await CreateClient().GetAsync(url);
 
-        strategyProvider.VerifyAll();
+        provider.VerifyAll();
     }
 }

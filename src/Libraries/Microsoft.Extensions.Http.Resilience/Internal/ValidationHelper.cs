@@ -19,25 +19,21 @@ internal static class ValidationHelper
         try
         {
             var aggregatedDelay = TimeSpan.Zero;
-            var builder = new CompositeStrategyBuilder
+            new ResiliencePipelineBuilder().AddRetry(new()
             {
-                Randomizer = () => 1.0 // disable randomization so the output is always the same
-            };
-
-            builder.AddRetry(new()
-            {
-                RetryCount = options.RetryCount,
-                BaseDelay = options.BaseDelay,
+                MaxRetryAttempts = options.MaxRetryAttempts,
+                Delay = options.Delay,
                 BackoffType = options.BackoffType,
                 ShouldHandle = _ => PredicateResult.True, // always retry until all retries are exhausted
-                RetryDelayGenerator = args =>
+                DelayGenerator = args =>
                 {
                     // the delay hint is calculated for this attempt by the retry strategy
-                    aggregatedDelay += args.Arguments.DelayHint;
+                    aggregatedDelay += args.DelayHint;
 
                     // return zero delay, so no waiting
                     return new ValueTask<TimeSpan>(TimeSpan.Zero);
                 },
+                Randomizer = () => 1.0 // disable randomization so the output is always the same
             })
             .Build()
             .Execute(static () => { }); // this executes all retries and we aggregate the delays immediately

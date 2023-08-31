@@ -3,7 +3,7 @@
 
 namespace Microsoft.Extensions.Http.Resilience.Internal.Validators;
 
-internal static class StandardHedgingStrategyNames
+internal static class StandardHedgingPipelineNames
 {
     public const string CircuitBreaker = "StandardHedging-CircuitBreaker";
 

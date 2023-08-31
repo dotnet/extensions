@@ -3,7 +3,7 @@
 
 namespace Microsoft.Extensions.Http.Resilience.Internal;
 
-internal static class StrategyNameHelper
+internal static class PipelineNameHelper
 {
-    public static string GetName(string httpClientName, string strategyIdentifier) => $"{httpClientName}-{strategyIdentifier}";
+    public static string GetName(string httpClientName, string pipelineIdentifier) => $"{httpClientName}-{pipelineIdentifier}";
 }

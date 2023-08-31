@@ -11,6 +11,7 @@ using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Resilience;
 #endif
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
+using Polly;
 using Polly.Retry;
 using Xunit;
 
@@ -60,9 +61,9 @@ public class HttpStandardResilienceOptionsCustomValidatorTests
             yield return new object[] { options };
 
             options = new HttpStandardResilienceOptions();
-            options.RetryOptions.RetryCount = 1;
-            options.RetryOptions.BackoffType = RetryBackoffType.Linear;
-            options.RetryOptions.BaseDelay = options.TotalRequestTimeoutOptions.Timeout;
+            options.RetryOptions.MaxRetryAttempts = 1;
+            options.RetryOptions.BackoffType = DelayBackoffType.Linear;
+            options.RetryOptions.Delay = options.TotalRequestTimeoutOptions.Timeout;
             yield return new object[] { options };
         }
     }
@@ -90,7 +91,7 @@ public class HttpStandardResilienceOptionsCustomValidatorTests
             yield return new object[] { options };
 
             options = new HttpStandardResilienceOptions();
-            options.RetryOptions.BaseDelay = TimeSpan.FromDays(1);
+            options.RetryOptions.Delay = TimeSpan.FromDays(1);
             yield return new object[] { options };
 
             options = new HttpStandardResilienceOptions();
