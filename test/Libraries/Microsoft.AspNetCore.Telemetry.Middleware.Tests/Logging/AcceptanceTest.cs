@@ -196,12 +196,12 @@ public partial class AcceptanceTest
                 if (shouldLog)
                 {
                     Assert.Single(state, x => x.Key == HttpLoggingTagNames.ResponseBody && x.Value == "Server: hello!Server: world!");
-                    Assert.Equal(9, state!.Count);
+                    Assert.Equal(8, state!.Count);
                 }
                 else
                 {
                     Assert.DoesNotContain(state, x => x.Key == HttpLoggingTagNames.ResponseBody);
-                    Assert.Equal(8, state!.Count);
+                    Assert.Equal(7, state!.Count);
                 }
             });
     }
@@ -256,12 +256,12 @@ public partial class AcceptanceTest
                 if (shouldLog)
                 {
                     Assert.Single(state, x => x.Key == HttpLoggingTagNames.RequestBody && x.Value == Content);
-                    Assert.Equal(10, state!.Count);
+                    Assert.Equal(9, state!.Count);
                 }
                 else
                 {
                     Assert.DoesNotContain(state, x => x.Key == HttpLoggingTagNames.RequestBody);
-                    Assert.Equal(8, state!.Count);
+                    Assert.Equal(7, state!.Count);
                 }
             });
     }
@@ -297,7 +297,7 @@ public partial class AcceptanceTest
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout, expectedRecords: 2);
 
                 var logRecords = logCollector.GetSnapshot();
-                Assert.Equal(4, logRecords.Count);
+                Assert.Equal(5, logRecords.Count);
                 Assert.All(logRecords, x => Assert.Null(x.Exception));
                 Assert.All(logRecords, x => Assert.Equal(LogLevel.Information, x.Level));
                 Assert.All(logRecords, x => Assert.Equal(LoggingCategory, x.Category));
@@ -307,6 +307,7 @@ public partial class AcceptanceTest
                 var requestBodyState = logRecords[1].StructuredState;
                 var responseState = logRecords[2].StructuredState;
                 var responseBodyState = logRecords[3].StructuredState;
+                var durationState = logRecords[4].StructuredState;
 
                 Assert.Equal(6, requestState!.Count);
                 Assert.DoesNotContain(requestState, x => x.Key.StartsWith(HttpLoggingTagNames.ResponseHeaderPrefix));
@@ -321,14 +322,15 @@ public partial class AcceptanceTest
                 Assert.Equal(3, requestBodyState!.Count);
                 Assert.Single(requestBodyState, x => x.Key == "Body" && x.Value == Content);
 
-                Assert.Equal(3, responseState!.Count);
+                Assert.Equal(2, responseState!.Count);
                 Assert.Single(responseState, x => x.Key == HttpLoggingTagNames.ResponseHeaderPrefix + HeaderNames.TransferEncoding);
                 Assert.Single(responseState, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
-                Assert.Single(responseState, x => x.Key == HttpLoggingTagNames.Duration && x.Value != null);
 
-                Assert.Equal(3, responseBodyState!.Count);
+                Assert.Equal(2, responseBodyState!.Count);
                 Assert.Single(responseBodyState, x => x.Key == "Body" && x.Value == "Server: hello!Server: world!");
-                Assert.Single(responseBodyState, x => x.Key == HttpLoggingTagNames.Duration && x.Value != null);
+
+                Assert.Equal(2, durationState!.Count);
+                Assert.Single(durationState, x => x.Key == HttpLoggingTagNames.Duration && x.Value != null);
             });
     }
 
@@ -362,7 +364,7 @@ public partial class AcceptanceTest
                 var responseStatus = ((int)response.StatusCode).ToInvariantString();
                 var state = lastRecord.StructuredState;
 
-                Assert.Equal(10, state!.Count);
+                Assert.Equal(9, state!.Count);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.RequestHeaderPrefix + HeaderNames.Accept);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.ResponseHeaderPrefix + HeaderNames.TransferEncoding);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
@@ -408,7 +410,7 @@ public partial class AcceptanceTest
                 var responseStatus = ((int)response.StatusCode).ToInvariantString();
                 var state = logCollector.LatestRecord.StructuredState;
 
-                Assert.Equal(10, state!.Count);
+                Assert.Equal(9, state!.Count);
                 Assert.Single(state, x => x.Key == TestHttpLogEnricher.Key1 && x.Value == TestHttpLogEnricher.Value1);
                 Assert.Single(state, x => x.Key == TestHttpLogEnricher.Key2 && x.Value == TestHttpLogEnricher.Value2.ToString(CultureInfo.CurrentCulture));
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Delete.ToString());
@@ -450,7 +452,7 @@ public partial class AcceptanceTest
                 var responseStatus = ((int)response.StatusCode).ToInvariantString();
                 var state = logCollector.LatestRecord.StructuredState;
 
-                Assert.Equal(8, state!.Count);
+                Assert.Equal(7, state!.Count);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == RequestPath);
             });
     }
@@ -473,7 +475,7 @@ public partial class AcceptanceTest
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout, expectedRecords: 2);
 
                 var logRecords = logCollector.GetSnapshot();
-                Assert.Equal(2, logRecords.Count);
+                Assert.Equal(3, logRecords.Count);
                 Assert.All(logRecords, x => Assert.Null(x.Exception));
                 Assert.All(logRecords, x => Assert.Equal(LogLevel.Information, x.Level));
                 Assert.All(logRecords, x => Assert.Equal(LoggingCategory, x.Category));
@@ -486,7 +488,7 @@ public partial class AcceptanceTest
                 Assert.DoesNotContain(firstState, x => x.Key == TestHttpLogEnricher.Key1 && x.Value == TestHttpLogEnricher.Value1);
                 Assert.DoesNotContain(firstState, x => x.Key == TestHttpLogEnricher.Key2 && x.Value == TestHttpLogEnricher.Value2.ToString(CultureInfo.CurrentCulture));
 
-                Assert.Equal(4, secondState!.Count);
+                Assert.Equal(3, secondState!.Count);
                 Assert.Single(secondState, x => x.Key == TestHttpLogEnricher.Key1 && x.Value == TestHttpLogEnricher.Value1);
                 Assert.Single(secondState, x => x.Key == TestHttpLogEnricher.Key2 && x.Value == TestHttpLogEnricher.Value2.ToString(CultureInfo.CurrentCulture));
             });
@@ -511,7 +513,7 @@ public partial class AcceptanceTest
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout, expectedRecords: 4);
 
                 var logRecords = logCollector.GetSnapshot();
-                Assert.Equal(4, logRecords.Count);
+                Assert.Equal(6, logRecords.Count);
                 Assert.All(logRecords, x => Assert.Null(x.Exception));
                 Assert.All(logRecords, x => Assert.Equal(LogLevel.Information, x.Level));
                 Assert.All(logRecords, x => Assert.Equal(LoggingCategory, x.Category));
@@ -521,20 +523,29 @@ public partial class AcceptanceTest
                 var secondRecord = logRecords[1].StructuredState;
                 var thirdRecord = logRecords[2].StructuredState;
                 var fourthRecord = logRecords[3].StructuredState;
+                var fithRecord = logRecords[4].StructuredState;
+                var sixthRecord = logRecords[5].StructuredState;
 
                 Assert.Equal(5, firstRecord!.Count);
-                Assert.Equal(5, thirdRecord!.Count);
+                Assert.Equal(1, secondRecord!.Count);
+                Assert.Equal(5, fourthRecord!.Count);
+                Assert.Equal(1, fithRecord!.Count);
                 Assert.DoesNotContain(firstRecord, x => x.Key == HttpLoggingTagNames.StatusCode);
                 Assert.DoesNotContain(firstRecord, x => x.Key == HttpLoggingTagNames.Duration);
-                Assert.DoesNotContain(thirdRecord, x => x.Key == HttpLoggingTagNames.StatusCode);
-                Assert.DoesNotContain(thirdRecord, x => x.Key == HttpLoggingTagNames.Duration);
+                Assert.DoesNotContain(secondRecord, x => x.Key == HttpLoggingTagNames.Duration);
+                Assert.DoesNotContain(fourthRecord, x => x.Key == HttpLoggingTagNames.StatusCode);
+                Assert.DoesNotContain(fourthRecord, x => x.Key == HttpLoggingTagNames.Duration);
+                Assert.DoesNotContain(fithRecord, x => x.Key == HttpLoggingTagNames.Duration);
 
-                Assert.Equal(2, secondRecord!.Count);
-                Assert.Equal(2, fourthRecord!.Count);
+                Assert.Equal(1, secondRecord!.Count);
+                Assert.Equal(1, fithRecord!.Count);
                 Assert.Single(secondRecord, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
-                Assert.Single(secondRecord, x => x.Key == HttpLoggingTagNames.Duration && x.Value != null);
-                Assert.Single(fourthRecord, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
-                Assert.Single(fourthRecord, x => x.Key == HttpLoggingTagNames.Duration && x.Value != null);
+                Assert.Single(fithRecord, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+
+                Assert.Equal(2, thirdRecord!.Count);
+                Assert.Equal(2, sixthRecord!.Count);
+                Assert.Single(thirdRecord, x => x.Key == HttpLoggingTagNames.Duration && x.Value != null);
+                Assert.Single(sixthRecord, x => x.Key == HttpLoggingTagNames.Duration && x.Value != null);
             });
     }
 
@@ -558,7 +569,7 @@ public partial class AcceptanceTest
 
                 var state = logCollector.LatestRecord.StructuredState;
 
-                Assert.Equal(8, state!.Count);
+                Assert.Equal(7, state!.Count);
                 Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.RequestHeaderPrefix));
                 Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.ResponseHeaderPrefix));
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Get.ToString());
@@ -599,7 +610,7 @@ public partial class AcceptanceTest
 
                 var state = logCollector.LatestRecord.StructuredState;
 
-                Assert.Equal(11, state!.Count);
+                Assert.Equal(10, state!.Count);
                 Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.RequestHeaderPrefix));
                 Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.ResponseHeaderPrefix));
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Put.ToString());
@@ -632,7 +643,7 @@ public partial class AcceptanceTest
 
                 var state = logCollector.LatestRecord.StructuredState;
 
-                Assert.Equal(8, state!.Count);
+                Assert.Equal(7, state!.Count);
                 Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.RequestHeaderPrefix));
                 Assert.DoesNotContain(state, x => x.Key.StartsWith(HttpLoggingTagNames.ResponseHeaderPrefix));
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Put.ToString());
@@ -690,7 +701,7 @@ public partial class AcceptanceTest
                 {
                     await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
                     Assert.Equal(1, logCollector.Count);
-                    Assert.Equal(8, logCollector.GetSnapshot()[0].StructuredState!.Count);
+                    Assert.Equal(7, logCollector.GetSnapshot()[0].StructuredState!.Count);
                 }
             });
     }

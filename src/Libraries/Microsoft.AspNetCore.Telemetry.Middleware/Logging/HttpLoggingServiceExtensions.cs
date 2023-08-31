@@ -42,6 +42,7 @@ public static class HttpLoggingServiceExtensions
         _ = services.AddHttpLogging(o =>
         {
             o.CombineLogs = true;
+            o.LoggingFields |= HttpLoggingFields.Duration;
             configureLogging?.Invoke(o);
         });
 
