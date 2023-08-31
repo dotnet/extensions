@@ -31,7 +31,6 @@ public class RequestMessageSnapshotStrategyTests
             context);
     }
 
-
     [Fact]
     public void ExecuteAsync_requestMessageNotFound_Throws()
     {
