@@ -92,7 +92,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
             .AddStandardResilienceHandler()
             .Configure(options =>
             {
-                options.RetryOptions.ShouldHandle = _ => PredicateResult.True;
+                options.RetryOptions.ShouldHandle = _ => PredicateResult.True();
                 options.RetryOptions.MaxRetryAttempts = 1;
                 options.RetryOptions.Delay = TimeSpan.Zero;
             });

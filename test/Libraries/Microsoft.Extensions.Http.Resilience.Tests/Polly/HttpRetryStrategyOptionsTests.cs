@@ -93,7 +93,7 @@ public class HttpRetryStrategyOptionsTests
     }
 
     [Fact]
-    public async Task ShouldRetryAfterHeader_InvalidOutcomes_ShouldReturnZero()
+    public async Task ShouldRetryAfterHeader_InvalidOutcomes_ShouldReturnNull()
     {
         var options = new HttpRetryStrategyOptions { ShouldRetryAfterHeader = true };
         using var responseMessage = new HttpResponseMessage { };
@@ -103,23 +103,21 @@ public class HttpRetryStrategyOptionsTests
         var result = await options.DelayGenerator(
             new(ResilienceContextPool.Shared.Get(),
             Outcome.FromResult(responseMessage),
-            0,
-            TimeSpan.Zero));
-        Assert.Equal(result, TimeSpan.Zero);
+            0));
+
+        result.Should().BeNull();
 
         result = await options.DelayGenerator(
             new(ResilienceContextPool.Shared.Get(),
             Outcome.FromResult<HttpResponseMessage>(null),
-            0,
-            TimeSpan.Zero));
-        Assert.Equal(result, TimeSpan.Zero);
+            0));
+        result.Should().BeNull();
 
         result = await options.DelayGenerator(
             new(ResilienceContextPool.Shared.Get(),
             Outcome.FromException<HttpResponseMessage>(new InvalidOperationException()),
-            0,
-            TimeSpan.Zero));
-        Assert.Equal(result, TimeSpan.Zero);
+            0));
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -137,8 +135,7 @@ public class HttpRetryStrategyOptionsTests
         var result = await options.DelayGenerator!(
             new(ResilienceContextPool.Shared.Get(),
             Outcome.FromResult(responseMessage),
-            0,
-            TimeSpan.Zero));
+            0));
 
         Assert.Equal(result, TimeSpan.FromSeconds(10));
     }

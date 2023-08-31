@@ -54,8 +54,8 @@ public class HttpRetryStrategyOptions : RetryStrategyOptions<HttpResponseMessage
             {
                 DelayGenerator = args => args.Outcome.Result switch
                 {
-                    HttpResponseMessage response when RetryAfterHelper.TryParse(response, TimeProvider.System, out var retryAfter) => new ValueTask<TimeSpan>(retryAfter),
-                    _ => new ValueTask<TimeSpan>(args.DelayHint)
+                    HttpResponseMessage response when RetryAfterHelper.TryParse(response, TimeProvider.System, out var retryAfter) => new ValueTask<TimeSpan?>(retryAfter),
+                    _ => new ValueTask<TimeSpan?>((TimeSpan?)null)
                 };
             }
             else

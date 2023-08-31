@@ -159,8 +159,8 @@ public sealed partial class HttpClientBuilderExtensionsTests
         {
             if (wholePipeline)
             {
-                options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(2);
-                options.AttemptTimeoutOptions.Timeout = TimeSpan.FromSeconds(1);
+                options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(1);
+                options.AttemptTimeoutOptions.Timeout = TimeSpan.FromSeconds(2);
             }
             else
             {

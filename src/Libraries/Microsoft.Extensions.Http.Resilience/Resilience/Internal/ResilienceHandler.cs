@@ -65,7 +65,7 @@ internal sealed class ResilienceHandler : DelegatingHandler
                 (instance: this, request))
                 .ConfigureAwait(context.ContinueOnCapturedContext);
 
-            outcome.EnsureSuccess();
+            outcome.ThrowIfException();
 
             return outcome.Result!;
         }

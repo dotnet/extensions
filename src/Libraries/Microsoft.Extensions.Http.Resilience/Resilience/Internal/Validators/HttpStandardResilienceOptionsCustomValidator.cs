@@ -30,18 +30,6 @@ internal sealed class HttpStandardResilienceOptionsCustomValidator : IValidateOp
                 $"Attempt Timeout: {options.AttemptTimeoutOptions.Timeout.TotalSeconds}s");
         }
 
-        if (options.RetryOptions.MaxRetryAttempts > 0)
-        {
-            TimeSpan retrySum = ValidationHelper.GetAggregatedDelay(options.RetryOptions);
-
-            if (retrySum > options.TotalRequestTimeoutOptions.Timeout)
-            {
-                builder.AddError($"The cumulative delay of the retry strategy cannot be larger than total request timeout policy interval. " +
-                $"Cumulative Delay: {retrySum.TotalSeconds}s," +
-                $"Total Request Timeout: {options.TotalRequestTimeoutOptions.Timeout.TotalSeconds}s");
-            }
-        }
-
         return builder.Build();
 
     }

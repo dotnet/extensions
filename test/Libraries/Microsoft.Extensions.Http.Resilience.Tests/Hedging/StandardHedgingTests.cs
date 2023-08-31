@@ -112,7 +112,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         var secondary = ResilienceContextPool.Shared.Get();
         using var response = new HttpResponseMessage(HttpStatusCode.OK);
 
-        var args = new HedgingActionGeneratorArguments<HttpResponseMessage>(primary, secondary, 0, _ => Outcome.FromResultAsTask(response));
+        var args = new HedgingActionGeneratorArguments<HttpResponseMessage>(primary, secondary, 0, _ => Outcome.FromResultAsValueTask(response));
         generator.Invoking(g => g(args)).Should().Throw<InvalidOperationException>().WithMessage("Request message snapshot is not attached to the resilience context.");
 
         using var request = new HttpRequestMessage();
