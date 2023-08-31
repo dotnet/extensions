@@ -721,26 +721,6 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Telemetry.Metering.Meter<TMeterName> : System.Diagnostics.Metrics.Meter",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.Meter<TMeterName>.Meter();",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Telemetry.Metering.MeteringExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Metering.MeteringExtensions.RegisterMetering(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.Telemetry.Latency.NullLatencyContextExtensions",
       "Stage": "Stable",
       "Methods": [
