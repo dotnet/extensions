@@ -3,9 +3,9 @@
 
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Telemetry.Tracing.Internal;
+namespace Microsoft.Extensions.Telemetry.Tracing;
 
 [OptionsValidator]
-internal sealed partial class SamplingOptionsAutoValidator : IValidateOptions<SamplingOptions>
+public sealed partial class SamplingOptionsAutoValidator : IValidateOptions<SamplingOptions>
 {
 }
