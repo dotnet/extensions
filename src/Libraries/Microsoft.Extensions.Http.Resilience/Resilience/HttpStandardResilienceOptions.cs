@@ -17,14 +17,14 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// <para>
 /// Bulkhead -> Total Request Timeout -> Retry -> Circuit Breaker -> Attempt Timeout.
 /// </para>
-/// The configuration of each strategy is initialized with the default options per type. The request goes through these strategies:
+/// The configuration of each pipeline is initialized with the default options per type. The request goes through these strategies:
 /// <list type="number">
-/// <item><description>Total request timeout strategy applies an overall timeout to the execution,
+/// <item><description>Total request timeout pipeline applies an overall timeout to the execution,
 /// ensuring that the request including hedging attempts, does not exceed the configured limit.</description></item>
-/// <item><description>The retry strategy retries the request in case the dependency is slow or returns a transient error.</description></item>
-/// <item><description>The bulkhead strategy limits the maximum number of concurrent requests being send to the dependency.</description></item>
+/// <item><description>The retry pipeline retries the request in case the dependency is slow or returns a transient error.</description></item>
+/// <item><description>The bulkhead pipeline limits the maximum number of concurrent requests being send to the dependency.</description></item>
 /// <item><description>The circuit breaker blocks the execution if too many direct failures or timeouts are detected.</description></item>
-/// <item><description>The attempt timeout strategy limits each request attempt duration and throws if its exceeded.</description></item>
+/// <item><description>The attempt timeout pipeline limits each request attempt duration and throws if its exceeded.</description></item>
 /// </list>
 /// </remarks>
 public class HttpStandardResilienceOptions
@@ -39,7 +39,7 @@ public class HttpStandardResilienceOptions
     [ValidateObjectMembers]
     public HttpRateLimiterStrategyOptions RateLimiterOptions { get; set; } = new HttpRateLimiterStrategyOptions
     {
-        Name = StandardStrategyNames.RateLimiter
+        Name = StandardPipelineNames.RateLimiter
     };
 
     /// <summary>
@@ -52,11 +52,11 @@ public class HttpStandardResilienceOptions
     [ValidateObjectMembers]
     public HttpTimeoutStrategyOptions TotalRequestTimeoutOptions { get; set; } = new HttpTimeoutStrategyOptions
     {
-        Name = StandardStrategyNames.TotalRequestTimeout
+        Name = StandardPipelineNames.TotalRequestTimeout
     };
 
     /// <summary>
-    /// Gets or sets the retry strategy options.
+    /// Gets or sets the retry pipeline options.
     /// </summary>
     /// <remarks>
     /// By default, this property is initialized with a unique instance of <see cref="HttpRetryStrategyOptions"/> using default properties values.
@@ -65,7 +65,7 @@ public class HttpStandardResilienceOptions
     [ValidateObjectMembers]
     public HttpRetryStrategyOptions RetryOptions { get; set; } = new HttpRetryStrategyOptions
     {
-        Name = StandardStrategyNames.Retry
+        Name = StandardPipelineNames.Retry
     };
 
     /// <summary>
@@ -78,11 +78,11 @@ public class HttpStandardResilienceOptions
     [ValidateObjectMembers]
     public HttpCircuitBreakerStrategyOptions CircuitBreakerOptions { get; set; } = new HttpCircuitBreakerStrategyOptions
     {
-        Name = StandardStrategyNames.CircuitBreaker
+        Name = StandardPipelineNames.CircuitBreaker
     };
 
     /// <summary>
-    /// Gets or sets the options for the timeout strategy applied per each request attempt.
+    /// Gets or sets the options for the timeout pipeline applied per each request attempt.
     /// </summary>
     /// <remarks>
     /// By default, this property is initialized with a unique instance of <see cref="HttpTimeoutStrategyOptions"/>
@@ -93,6 +93,6 @@ public class HttpStandardResilienceOptions
     public HttpTimeoutStrategyOptions AttemptTimeoutOptions { get; set; } = new()
     {
         Timeout = TimeSpan.FromSeconds(10),
-        Name = StandardStrategyNames.AttemptTimeout
+        Name = StandardPipelineNames.AttemptTimeout
     };
 }

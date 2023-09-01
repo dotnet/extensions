@@ -23,7 +23,7 @@ public class ResilienceHandlerTest
     [Theory]
     public async Task SendAsync_EnsureRequestMetadataFlows(bool resilienceContextSet)
     {
-        using var handler = new ResilienceHandler(_ => NullResilienceStrategy<HttpResponseMessage>.Instance);
+        using var handler = new ResilienceHandler(_ => ResiliencePipeline<HttpResponseMessage>.Empty);
         using var invoker = new HttpMessageInvoker(handler);
         using var request = new HttpRequestMessage();
 
@@ -57,7 +57,7 @@ public class ResilienceHandlerTest
     [Theory]
     public async Task SendAsync_EnsureExecutionContext(bool executionContextSet)
     {
-        using var handler = new ResilienceHandler(_ => NullResilienceStrategy<HttpResponseMessage>.Instance);
+        using var handler = new ResilienceHandler(_ => ResiliencePipeline<HttpResponseMessage>.Empty);
         using var invoker = new HttpMessageInvoker(handler);
         using var request = new HttpRequestMessage();
 
@@ -85,7 +85,7 @@ public class ResilienceHandlerTest
     [Theory]
     public async Task SendAsync_EnsureInvoker(bool executionContextSet)
     {
-        using var handler = new ResilienceHandler(_ => NullResilienceStrategy<HttpResponseMessage>.Instance);
+        using var handler = new ResilienceHandler(_ => ResiliencePipeline<HttpResponseMessage>.Empty);
         using var invoker = new HttpMessageInvoker(handler);
         using var request = new HttpRequestMessage();
 
@@ -111,7 +111,7 @@ public class ResilienceHandlerTest
     public async Task SendAsync_EnsureCancellationTokenFlowsToResilienceContext()
     {
         using var source = new CancellationTokenSource();
-        using var handler = new ResilienceHandler(_ => NullResilienceStrategy<HttpResponseMessage>.Instance);
+        using var handler = new ResilienceHandler(_ => ResiliencePipeline<HttpResponseMessage>.Empty);
         using var invoker = new HttpMessageInvoker(handler);
         using var request = new HttpRequestMessage();
 
@@ -130,7 +130,7 @@ public class ResilienceHandlerTest
     [Fact]
     public async Task SendAsync_Exception_EnsureRethrown()
     {
-        using var handler = new ResilienceHandler(_ => NullResilienceStrategy<HttpResponseMessage>.Instance);
+        using var handler = new ResilienceHandler(_ => ResiliencePipeline<HttpResponseMessage>.Empty);
         using var invoker = new HttpMessageInvoker(handler);
         using var request = new HttpRequestMessage();
 

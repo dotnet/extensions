@@ -11,39 +11,39 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Extensions for <see cref="IHttpResilienceStrategyBuilder"/>.
+/// Extensions for <see cref="IHttpResiliencePipelineBuilder"/>.
 /// </summary>
-public static class HttpResilienceStrategyBuilderExtensions
+public static class HttpResiliencePipelineBuilderExtensions
 {
     /// <summary>
-    /// Instructs the underlying builder to select the strategy instance by redacted authority (scheme + host + port).
+    /// Instructs the underlying builder to select the pipeline instance by redacted authority (scheme + host + port).
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="classification">The data class associated with the authority.</param>
     /// <returns>The same builder instance.</returns>
     /// <remarks>The authority is redacted using <see cref="Redactor"/> retrieved for <paramref name="classification"/>.</remarks>
-    public static IHttpResilienceStrategyBuilder SelectStrategyByAuthority(this IHttpResilienceStrategyBuilder builder, DataClassification classification)
+    public static IHttpResiliencePipelineBuilder SelectPipelineByAuthority(this IHttpResiliencePipelineBuilder builder, DataClassification classification)
     {
         _ = Throw.IfNull(builder);
 
-        StrategyKeyProviderHelper.SelectStrategyByAuthority(builder.Services, builder.StrategyName, classification);
+        PipelineKeyProviderHelper.SelectPipelineByAuthority(builder.Services, builder.PipelineName, classification);
 
         return builder;
     }
 
     /// <summary>
-    /// Instructs the underlying builder to select the strategy instance by custom selector.
+    /// Instructs the underlying builder to select the pipeline instance by custom selector.
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="selectorFactory">The factory that returns a key selector.</param>
     /// <returns>The same builder instance.</returns>
-    /// <remarks>The strategy key is used in metrics and logs, so don't return any sensitive values.</remarks>
-    public static IHttpResilienceStrategyBuilder SelectStrategyBy(this IHttpResilienceStrategyBuilder builder, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory)
+    /// <remarks>The pipeline key is used in metrics and logs, so don't return any sensitive values.</remarks>
+    public static IHttpResiliencePipelineBuilder SelectPipelineBy(this IHttpResiliencePipelineBuilder builder, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(selectorFactory);
 
-        StrategyKeyProviderHelper.SelectStrategyBy(builder.Services, builder.StrategyName, selectorFactory);
+        PipelineKeyProviderHelper.SelectPipelineBy(builder.Services, builder.PipelineName, selectorFactory);
 
         return builder;
     }
