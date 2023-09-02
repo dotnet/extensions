@@ -617,23 +617,11 @@
         {
           "Member": "Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.LogPropertiesAttribute();",
           "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.LogPropertiesAttribute(System.Type providerType, string providerMethod);",
-          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.OmitParameterName { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "string? Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.ProviderMethod { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "System.Type? Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.ProviderType { get; }",
+          "Member": "bool Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute.OmitReferenceName { get; set; }",
           "Stage": "Stable"
         },
         {

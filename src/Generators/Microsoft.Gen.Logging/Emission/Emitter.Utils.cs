@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.Gen.Logging.Model;
 using Microsoft.Gen.Shared;
@@ -72,22 +70,6 @@ internal sealed partial class Emitter : EmitterBase
         }
 
         return sb.ToString();
-    }
-
-    internal static IReadOnlyCollection<string> GetLogPropertiesAttributes(LoggingMethod lm)
-    {
-        var result = new HashSet<string?>();
-        var parametersWithLogProps = lm.Parameters.Where(x => x.HasProperties && !x.HasTagProvider);
-        foreach (var parameter in parametersWithLogProps)
-        {
-            parameter.TraverseParameterPropertiesTransitively((_, property) => result.Add(property.ClassificationAttributeType));
-        }
-
-        // Remove null values (no data classification attribute)
-        return result
-            .Where(x => x != null)
-            .Select(x => x!)
-            .ToArray();
     }
 
     internal static string GetLoggerMethodLogLevel(LoggingMethod lm)
