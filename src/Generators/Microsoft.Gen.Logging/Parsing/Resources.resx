@@ -193,7 +193,7 @@
     <value>A "LogLevel" value must be supplied</value>
   </data>
   <data name="MissingLogLevelMessage" xml:space="preserve">
-    <value>A "LogLevel" value must be supplied in the "LoggerMethod" attribute or as a parameter to the logging method</value>
+    <value>A "LogLevel" value must be supplied in the "LoggerMessage" attribute or as a parameter to the logging method</value>
   </data>
   <data name="ShouldntMentionLogLevelInMessageMessage" xml:space="preserve">
     <value>Don't include a template for parameter "{0}" in the logging message</value>
@@ -219,17 +219,11 @@
   <data name="MultipleLoggerFieldsTitle" xml:space="preserve">
     <value>Multiple fields of type "Microsoft.Extensions.Logging.ILogger" were found</value>
   </data>
-  <data name="MultipleDataClassificationAttributesMessage" xml:space="preserve">
-    <value>Can't have multiple data classification attributes for a single data value</value>
-  </data>
-  <data name="MultipleDataClassificationAttributesTitle" xml:space="preserve">
-    <value>Can't have multiple data classification attributes for a single data value</value>
-  </data>
   <data name="InvalidTypeToLogPropertiesMessage" xml:space="preserve">
-    <value>Can't log properties of parameters of type "{0}"</value>
+    <value>Can't log properties of items of type "{0}"</value>
   </data>
   <data name="InvalidTypeToLogPropertiesTitle" xml:space="preserve">
-    <value>Can't log properties of a logging parameter</value>
+    <value>Can't log properties of a parameter or property</value>
   </data>
   <data name="LogPropertiesInvalidUsageMessage" xml:space="preserve">
     <value>Parameter "{0}" is annotated for property logging but it has special semantics (ILogger, LogLevel, Exception, etc.)</value>
@@ -308,5 +302,29 @@
   </data>
   <data name="TemplateStartsWithAtSymbolTitle" xml:space="preserve">
     <value>A logging message template starts with "@"</value>
+  </data>
+  <data name="CantUseDataClassificationWithLogPropertiesOrTagProviderMessage" xml:space="preserve">
+    <value>Cant combine the [LogProperties] or [TagProvider] attributes with data classification attributes</value>
+  </data>
+  <data name="CantUseDataClassificationWithLogPropertiesOrTagProviderTitle" xml:space="preserve">
+    <value>Cant combine the [LogProperties] or [TagProvider] attributes with data classification attributes</value>
+  </data>
+  <data name="CantMixAttributesMessage" xml:space="preserve">
+    <value>Can only have one of [LogProperties], [TagProvider], and [LogPropertyIgnore]</value>
+  </data>
+  <data name="CantMixAttributesTitle" xml:space="preserve">
+    <value>Can only have one of [LogProperties], [TagProvider], and [LogPropertyIgnore]</value>
+  </data>
+  <data name="TagProviderInvalidUsageMessage" xml:space="preserve">
+    <value>Parameter "{0}" is annotated to use a tag provider but it has special semantics (ILogger, LogLevel, Exception, etc.)</value>
+  </data>
+  <data name="TagProviderInvalidUsageTitle" xml:space="preserve">
+    <value>Method parameter can't be used for with a tag provider</value>
+  </data>
+  <data name="InvalidAttributeUsageMessage" xml:space="preserve">
+    <value>Attribute [{0}] can't be used in this context</value>
+  </data>
+  <data name="InvalidAttributeUsageTitle" xml:space="preserve">
+    <value>Attribute can't be used in this context</value>
   </data>
 </root>

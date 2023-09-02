@@ -18,7 +18,7 @@ namespace TestClasses
         [LoggerMessage(2, LogLevel.Error, "Method3")]
         public static partial void Method3(ILogger logger, Convertible p1);
 
-        internal class Formattable : IFormattable
+        internal struct Formattable : IFormattable
         {
             public string ToString(string? format, IFormatProvider? formatProvider)
             {
@@ -26,7 +26,7 @@ namespace TestClasses
             }
         }
 
-        internal class Convertible : IConvertible
+        internal struct Convertible : IConvertible
         {
             public TypeCode GetTypeCode() => throw new NotSupportedException();
             public bool ToBoolean(IFormatProvider? provider) => throw new NotSupportedException();
@@ -50,8 +50,8 @@ namespace TestClasses
 
         internal class ComplexObj
         {
-            public Formattable P1 { get; } = new();
-            public Convertible P2 { get; } = new();
+            public Formattable P1 { get; }
+            public Convertible P2 { get; }
             public CustomToStringTestClass P3 { get; } = new();
         }
     }

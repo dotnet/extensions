@@ -14,11 +14,12 @@ using Microsoft.Gen.Shared;
 
 namespace Microsoft.Gen.Logging.Parsing;
 
-internal sealed class Parser
+internal sealed partial class Parser
 {
     private readonly CancellationToken _cancellationToken;
     private readonly Compilation _compilation;
     private readonly Action<Diagnostic> _reportDiagnostic;
+    private bool _failedMethod;
 
     public Parser(Compilation compilation, Action<Diagnostic> reportDiagnostic, CancellationToken cancellationToken)
     {
@@ -75,6 +76,7 @@ internal sealed class Parser
 
                     var methodSymbol = sm.GetDeclaredSymbol(method, _cancellationToken)!;
 
+                    _failedMethod = false;
                     var (lm, keepMethod) = ProcessMethod(method, methodSymbol, attrLoc);
 
                     parameterSymbols.Clear();
@@ -91,32 +93,44 @@ internal sealed class Parser
 
                         parameterSymbols[lp] = paramSymbol;
 
-                        // Check if the parameter is annotated with an attribute to enable logging of its properties:
                         var logPropertiesAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogPropertiesAttribute, paramSymbol);
                         if (logPropertiesAttribute is not null)
                         {
-                            var processingResult = ParsingUtilities.ProcessLogPropertiesForParameter(
+                            if (!ProcessLogPropertiesForParameter(
                                 logPropertiesAttribute,
                                 lm,
                                 lp,
                                 paramSymbol,
-                                symbols,
-                                diagReport,
-                                _compilation,
-                                _cancellationToken);
+                                symbols))
+                            {
+                                lp.Properties.Clear();
+                            }
+                        }
 
-                            if (processingResult == LogPropertiesProcessingResult.Fail)
+                        var tagProviderAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.TagProviderAttribute, paramSymbol);
+                        if (tagProviderAttribute is not null)
+                        {
+                            if (!ProcessTagProviderForParameter(
+                                tagProviderAttribute,
+                                lp,
+                                paramSymbol,
+                                symbols))
                             {
-                                keepMethod = false;
+                                lp.TagProvider = null;
                             }
-                            else
-                            {
-                                parsingState.FoundCustomLogPropertiesProvider |= lp.HasTagProvider;
-                                if (processingResult == LogPropertiesProcessingResult.SucceededWithRedaction)
-                                {
-                                    parsingState.FoundDataClassificationAnnotation = true;
-                                }
-                            }
+                        }
+
+                        if (lp.HasDataClassification && (lp.HasProperties || lp.HasTagProvider))
+                        {
+                            Diag(DiagDescriptors.CantUseDataClassificationWithLogPropertiesOrTagProvider, paramSymbol.GetLocation());
+                            lp.ClassificationAttributeTypes.Clear();
+                        }
+
+                        if (lp.HasProperties && lp.HasTagProvider)
+                        {
+                            Diag(DiagDescriptors.CantMixAttributes, paramSymbol.GetLocation());
+                            lp.Properties.Clear();
+                            lp.TagProvider = null;
                         }
 
                         bool forceAsTemplateParam = false;
@@ -135,11 +149,16 @@ internal sealed class Parser
                             Diag(DiagDescriptors.ShouldntMentionLogLevelInMessage, attrLoc, lp.Name);
                             forceAsTemplateParam = true;
                         }
-                        else if (lp.IsNormalParameter && !lm.TemplateToParameterName.ContainsKey(lp.Name) &&
-                                 logPropertiesAttribute == null && !string.IsNullOrEmpty(lm.Message))
+#pragma warning disable S1067 // Expressions should not be too complex
+                        else if (lp.IsNormalParameter
+                            && !lm.TemplateToParameterName.ContainsKey(lp.Name)
+                            && logPropertiesAttribute == null
+                            && tagProviderAttribute == null
+                            && !string.IsNullOrEmpty(lm.Message))
                         {
                             Diag(DiagDescriptors.ParameterHasNoCorrespondingTemplate, paramSymbol.GetLocation(), lp.Name);
                         }
+#pragma warning restore S1067 // Expressions should not be too complex
 
                         lm.Parameters.Add(lp);
                         if (lp.IsNormalParameter || forceAsTemplateParam)
@@ -197,7 +216,8 @@ internal sealed class Parser
                         if (lm.Level == null && !parsingState.FoundLogLevel)
                         {
                             Diag(DiagDescriptors.MissingLogLevel, method.GetLocation());
-                            keepMethod = false;
+
+                            lm.Level = 1;
                         }
 
                         if (keepMethod &&
@@ -205,7 +225,10 @@ internal sealed class Parser
                             !lm.EventId.HasValue &&
                             lm.Parameters.All(x => x.IsLogger || x.IsLogLevel))
                         {
-                            Diag(DiagDescriptors.EmptyLoggingMethod, method.Identifier.GetLocation(), methodSymbol.Name);
+                            if (!_failedMethod)
+                            {
+                                Diag(DiagDescriptors.EmptyLoggingMethod, method.Identifier.GetLocation(), methodSymbol.Name);
+                            }
                         }
 
                         foreach (var t in lm.TemplateToParameterName)
@@ -226,7 +249,7 @@ internal sealed class Parser
                             }
                         }
 
-                        ParsingUtilities.CheckMethodParametersAreUnique(lm, diagReport, parameterSymbols);
+                        CheckMethodParametersAreUnique(lm, parameterSymbols);
                     }
 
                     if (lt == null)
@@ -268,6 +291,8 @@ internal sealed class Parser
                                 Name = typeDec.Identifier.ToString() + typeDec.TypeParameterList,
                                 Parent = null,
                             };
+
+                            lt.AllMembers.AddRange(methodSymbol.ContainingType.GetMembers().Select(x => x.Name));
 
                             LoggingType currentLoggerClass = lt;
                             var parentLoggerClass = typeDec.Parent as TypeDeclarationSyntax;
@@ -413,6 +438,45 @@ internal sealed class Parser
         return false;
     }
 
+    // Returns all the classification attributes attached to a symbol.
+    private static List<INamedTypeSymbol> GetDataClassificationAttributes(ISymbol symbol, SymbolHolder symbols)
+        => symbol
+            .GetAttributes()
+            .Select(static attribute => attribute.AttributeClass)
+            .Where(x => x is not null && symbols.DataClassificationAttribute is not null && ParserUtilities.IsBaseOrIdentity(x, symbols.DataClassificationAttribute, symbols.Compilation))
+            .Select(static x => x!)
+            .ToList();
+
+    private void CheckMethodParametersAreUnique(LoggingMethod lm, Dictionary<LoggingMethodParameter, IParameterSymbol> parameterSymbols)
+    {
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var parameter in lm.Parameters)
+        {
+            var parameterName = lm.GetParameterNameInTemplate(parameter);
+            if (!names.Add(parameterName))
+            {
+                Diag(DiagDescriptors.LogPropertiesNameCollision, parameterSymbols[parameter].GetLocation(), parameter.Name, parameterName, lm.Name);
+            }
+
+            if (parameter.HasProperties)
+            {
+                parameter.TraverseParameterPropertiesTransitively((chain, leaf) =>
+                {
+                    if (parameter.OmitReferenceName)
+                    {
+                        chain = chain.Skip(1);
+                    }
+
+                    var fullName = string.Join("_", chain.Concat(new[] { leaf }).Select(static x => x.Name));
+                    if (!names.Add(fullName))
+                    {
+                        Diag(DiagDescriptors.LogPropertiesNameCollision, parameterSymbols[parameter].GetLocation(), parameter.Name, fullName, lm.Name);
+                    }
+                });
+            }
+        }
+    }
+
     private LoggingMethodParameter? ProcessParameter(
         IParameterSymbol paramSymbol,
         SymbolHolder symbols,
@@ -459,22 +523,10 @@ internal sealed class Parser
             SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
                 SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier | SymbolDisplayMiscellaneousOptions.UseSpecialTypes));
 
-        INamedTypeSymbol? classificationAttributeType = null;
-
-        var paramDataClassAttributes = paramSymbol.GetDataClassificationAttributes(symbols);
-        if (paramDataClassAttributes.Count > 1)
-        {
-            Diag(DiagDescriptors.MultipleDataClassificationAttributes, paramSymbol.GetLocation());
-        }
-        else
-        {
-            bool isAnnotatedWithDataClassAttr = paramDataClassAttributes.Count == 1;
-            if (isAnnotatedWithDataClassAttr)
-            {
-                classificationAttributeType = paramDataClassAttributes[0];
-                parsingState.FoundDataClassificationAnnotation = true;
-            }
-        }
+        var paramDataClassAttributes = new HashSet<string>(
+            GetDataClassificationAttributes(paramSymbol, symbols)
+            .Distinct(SymbolEqualityComparer.Default)
+            .Select(x => x!.ToDisplayString()));
 
         var extractedType = paramTypeSymbol;
         if (paramTypeSymbol.IsNullableOfT())
@@ -489,15 +541,16 @@ internal sealed class Parser
             Type = typeName,
             Qualifier = qualifier,
             NeedsAtSign = needsAtSign,
-            ClassificationAttributeType = classificationAttributeType?.ToDisplayString(),
+            ClassificationAttributeTypes = paramDataClassAttributes,
             IsNullable = paramTypeSymbol.NullableAnnotation == NullableAnnotation.Annotated,
             IsReference = paramTypeSymbol.IsReferenceType,
             IsLogger = !parsingState.FoundLogger && ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.ILoggerSymbol, _compilation),
             IsException = !parsingState.FoundException && ParserUtilities.IsBaseOrIdentity(paramTypeSymbol, symbols.ExceptionSymbol, _compilation),
             IsLogLevel = !parsingState.FoundLogLevel && SymbolEqualityComparer.Default.Equals(paramTypeSymbol, symbols.LogLevelSymbol),
-            IsEnumerable = ParsingUtilities.IsEnumerable(extractedType, symbols),
-            ImplementsIConvertible = ParsingUtilities.ImplementsIConvertible(paramTypeSymbol, symbols),
-            ImplementsIFormattable = ParsingUtilities.ImplementsIFormattable(paramTypeSymbol, symbols),
+            IsEnumerable = extractedType.IsEnumerable(symbols),
+            ImplementsIConvertible = paramTypeSymbol.ImplementsIConvertible(symbols),
+            ImplementsIFormattable = paramTypeSymbol.ImplementsIFormattable(symbols),
+            ImplementsISpanFormattable = paramTypeSymbol.ImplementsISpanFormattable(symbols),
         };
 
         parsingState.FoundLogger |= lp.IsLogger;
@@ -557,13 +610,17 @@ internal sealed class Parser
 
     private void Diag(DiagnosticDescriptor desc, Location? location, params object?[]? messageArgs)
     {
-        _reportDiagnostic(Diagnostic.Create(desc, location, messageArgs));
+        var d = Diagnostic.Create(desc, location, messageArgs);
+        _reportDiagnostic(d);
+
+        if (d.Severity == DiagnosticSeverity.Error)
+        {
+            _failedMethod = true;
+        }
     }
 
     private record struct MethodParsingState(
         bool FoundLogger,
         bool FoundException,
-        bool FoundLogLevel,
-        bool FoundDataClassificationAnnotation,
-        bool FoundCustomLogPropertiesProvider);
+        bool FoundLogLevel);
 }

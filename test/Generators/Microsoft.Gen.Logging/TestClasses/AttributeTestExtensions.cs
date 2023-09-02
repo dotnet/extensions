@@ -27,12 +27,13 @@ namespace TestClasses
             [PrivateData] string p2,
             [PrivateData] string p3);
 
-        [LoggerMessage(4, LogLevel.Debug, "M4 {p0} {p1} {p2}")]
+        [LoggerMessage(4, LogLevel.Debug, "M4 {p0} {p1} {p2} {p3}")]
         public static partial void M4(
             ILogger logger,
             [PrivateData] string p0,
             [PrivateData] string p1,
-            [PrivateData] string p2);
+            [PrivateData] string p2,
+            [PrivateData] NonFormattable p3);
 
         [LoggerMessage(5, LogLevel.Debug, "M5 {p0} {p1} {p2} {p3} {p4} {p5} {p6} {p7} {p8} {p9} {p10}")]
         [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Testing.")]
@@ -64,5 +65,8 @@ namespace TestClasses
 
         [LoggerMessage(9, LogLevel.Debug, "M9 {p0}")]
         public static partial void M9(ILogger logger, [PrivateData] CustomToStringTestClass p0);
+
+        [LoggerMessage(10, LogLevel.Debug, "M10 {p0}")]
+        public static partial void M10(ILogger logger, [PrivateData] NonFormattable p0);
     }
 }

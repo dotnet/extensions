@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Telemetry.Logging;
 /// Interface given to custom tag providers, enabling them to emit tags.
 /// </summary>
 /// <remarks>
-/// See <see cref="LogPropertiesAttribute(Type, string)"/> for details on how this interface is used.
+/// See <see cref="TagProviderAttribute"/> for details on how this interface is used.
 /// </remarks>
 public interface ITagCollector
 {

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Redaction;
+using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Logging;
@@ -77,6 +78,9 @@ internal static class Utils
 
         serviceCollection.AddRedaction(builder =>
         {
+            builder.SetRedactor<PlusRedactor>(new PublicDataAttribute().Classification);
+            builder.SetRedactor<MinusRedactor>(new PrivateDataAttribute().Classification);
+            builder.SetRedactor<HashRedactor>(new PrivateDataAttribute().Classification | new PublicDataAttribute().Classification);
             builder.SetFallbackRedactor<StarRedactor>();
         });
 

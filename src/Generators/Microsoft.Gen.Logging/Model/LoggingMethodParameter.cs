@@ -25,11 +25,12 @@ internal sealed class LoggingMethodParameter
     public bool IsReference;
     public bool ImplementsIConvertible;
     public bool ImplementsIFormattable;
+    public bool ImplementsISpanFormattable;
     public bool SkipNullProperties;
-    public bool OmitParameterName;
+    public bool OmitReferenceName;
     public bool UsedAsTemplate;
-    public string? ClassificationAttributeType;
-    public List<LoggingProperty> PropertiesToLog = new();
+    public HashSet<string> ClassificationAttributeTypes = new();
+    public List<LoggingProperty> Properties = new();
     public TagProvider? TagProvider;
 
     public string NameWithAt => NeedsAtSign ? "@" + Name : Name;
@@ -43,8 +44,8 @@ internal sealed class LoggingMethodParameter
     // but instead is supposed to be taken as a normal parameter.
     public bool IsNormalParameter => !IsLogger && !IsException && !IsLogLevel;
 
-    public bool HasDataClassification => ClassificationAttributeType != null;
-    public bool HasProperties => PropertiesToLog.Count > 0;
+    public bool HasDataClassification => ClassificationAttributeTypes.Count > 0;
+    public bool HasProperties => Properties.Count > 0;
     public bool HasTagProvider => TagProvider is not null;
     public bool PotentiallyNull => (IsReference && !IsLogger) || IsNullable;
 }

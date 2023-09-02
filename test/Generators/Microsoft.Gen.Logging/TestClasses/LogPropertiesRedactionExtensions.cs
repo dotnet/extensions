@@ -38,6 +38,10 @@ namespace TestClasses
             [PrivateData]
             public string GetOnlyProperty => "GetOnlyProperty";
 
+            [PrivateData]
+            public NonFormattable NonFormattableProperty { get; set; }
+
+            [LogProperties]
             public MyTransitiveClass TransitiveProp { get; set; } = new();
         }
 

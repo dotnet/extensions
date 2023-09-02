@@ -128,20 +128,6 @@ public class AttributeParserTests
     }
 
     [Fact]
-    public async Task MultipleDataClassificationAttributes()
-    {
-        var diagnostics = await RunGenerator(@"
-                internal static partial class C
-                {
-                    [LoggerMessage(0, LogLevel.Debug, ""M {p0}"")]
-                    static partial void M(ILogger logger, IRedactorProvider provider, [PrivateData][PrivateData] string p0);
-                }
-            ");
-
-        Assert.Contains(diagnostics, d => d.Id == DiagDescriptors.MultipleDataClassificationAttributes.Id);
-    }
-
-    [Fact]
     public async Task MissingLogger()
     {
         var diagnostics = await RunGenerator(@"
