@@ -7,9 +7,9 @@ using System.Net.Http;
 namespace Microsoft.Extensions.Http.Resilience.Internal;
 
 /// <summary>
-/// The provider that returns the strategy key from the request message.
+/// The provider that returns the pipeline key from the request message.
 /// </summary>
-internal sealed class StrategyKeyOptions
+internal sealed class PipelineKeyOptions
 {
     public Func<HttpRequestMessage, string>? KeyProvider { get; set; }
 }

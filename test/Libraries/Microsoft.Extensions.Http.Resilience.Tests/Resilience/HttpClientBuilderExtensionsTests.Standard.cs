@@ -122,7 +122,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
         AddStandardResilienceHandler(mode, builder, _invalidConfigurationSection, options => { });
 
-        Assert.Throws<InvalidOperationException>(() => HttpClientBuilderExtensionsTests.GetStrategy(builder.Services, $"test-standard"));
+        Assert.Throws<InvalidOperationException>(() => HttpClientBuilderExtensionsTests.GetPipeline(builder.Services, $"test-standard"));
     }
 
     [Fact]
@@ -134,12 +134,11 @@ public sealed partial class HttpClientBuilderExtensionsTests
             .AddHttpClient("test")
             .AddStandardResilienceHandler()
             .Services.BuildServiceProvider()
-            .GetRequiredService<ResilienceStrategyProvider<HttpKey>>();
+            .GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
 
-        var descriptor = provider.GetStrategy<HttpResponseMessage>(new HttpKey("test-standard", string.Empty)).GetInnerStrategies();
+        var descriptor = provider.GetPipeline<HttpResponseMessage>(new HttpKey("test-standard", string.Empty)).GetPipelineDescriptor();
 
         descriptor.Strategies.Should().HaveCount(5);
-        descriptor.HasTelemetry.Should().BeTrue();
         descriptor.IsReloadable.Should().BeTrue();
 
         descriptor.Strategies[0].Options.Should().BeOfType<HttpRateLimiterStrategyOptions>();
@@ -160,16 +159,16 @@ public sealed partial class HttpClientBuilderExtensionsTests
         {
             if (wholePipeline)
             {
-                options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(2);
-                options.AttemptTimeoutOptions.Timeout = TimeSpan.FromSeconds(1);
+                options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(1);
+                options.AttemptTimeoutOptions.Timeout = TimeSpan.FromSeconds(2);
             }
             else
             {
-                options.RetryOptions.RetryCount = -3;
+                options.RetryOptions.MaxRetryAttempts = -3;
             }
         });
 
-        Assert.Throws<OptionsValidationException>(() => GetStrategy(builder.Services, $"test-standard"));
+        Assert.Throws<OptionsValidationException>(() => GetPipeline(builder.Services, $"test-standard"));
     }
 
     [InlineData(MethodArgs.None)]
@@ -187,7 +186,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
         AddStandardResilienceHandler(mode, builder, _validConfigurationSection, options => { });
 
-        var pipeline = GetStrategy(builder.Services, $"test-standard");
+        var pipeline = GetPipeline(builder.Services, $"test-standard");
         Assert.NotNull(pipeline);
     }
 
@@ -199,14 +198,14 @@ public sealed partial class HttpClientBuilderExtensionsTests
         var config = ConfigurationStubFactory.Create(
             new()
             {
-                { "standard:RetryOptions:RetryCount", "6" }
+                { "standard:RetryOptions:MaxRetryAttempts", "6" }
             },
             out var reloadAction).GetSection("standard");
 
         _builder.AddStandardResilienceHandler().Configure(config).Configure(options =>
         {
-            options.RetryOptions.BaseDelay = TimeSpan.Zero;
-            options.RetryOptions.BackoffType = RetryBackoffType.Constant;
+            options.RetryOptions.Delay = TimeSpan.Zero;
+            options.RetryOptions.BackoffType = DelayBackoffType.Constant;
         });
         _builder.AddHttpMessageHandler(() => new TestHandlerStub((r, _) =>
         {
@@ -221,7 +220,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         requests.Should().HaveCount(7);
 
         requests.Clear();
-        reloadAction(new() { { "standard:RetryOptions:RetryCount", "10" } });
+        reloadAction(new() { { "standard:RetryOptions:MaxRetryAttempts", "10" } });
 
         await client.GetAsync("https://dummy");
         requests.Should().HaveCount(11);
@@ -251,10 +250,10 @@ public sealed partial class HttpClientBuilderExtensionsTests
         };
     }
 
-    private static ResilienceStrategy<HttpResponseMessage> GetStrategy(IServiceCollection services, string name)
+    private static ResiliencePipeline<HttpResponseMessage> GetPipeline(IServiceCollection services, string name)
     {
-        var provider = services.BuildServiceProvider().GetRequiredService<ResilienceStrategyProvider<HttpKey>>();
+        var provider = services.BuildServiceProvider().GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
 
-        return provider.GetStrategy<HttpResponseMessage>(new HttpKey(name, string.Empty));
+        return provider.GetPipeline<HttpResponseMessage>(new HttpKey(name, string.Empty));
     }
 }
