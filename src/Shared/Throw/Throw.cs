@@ -943,7 +943,7 @@ internal static class Throw
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double IfOutOfRange(double argument, double min, double max, [CallerArgumentExpression(nameof(argument))] string paramName = "")
     {
-        if (argument < min || argument > max)
+        if (!(min <= argument && argument <= max))
         {
             ArgumentOutOfRangeException(paramName, argument, $"Argument not in the range [{min}..{max}]");
         }
