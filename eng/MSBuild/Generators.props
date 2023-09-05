@@ -7,8 +7,8 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.EnumStrings\Microsoft.Gen.EnumStrings.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(UseMeteringGenerator)' == 'true' and '$(BuildingSlnForDocs)' != 'true'">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.Metering\Microsoft.Gen.Metering.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+  <ItemGroup Condition="'$(UseMetricsGenerator)' == 'true' and '$(BuildingSlnForDocs)' != 'true'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.Metrics\Microsoft.Gen.Metrics.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseContextualOptionsGenerator)' == 'true' and '$(BuildingSlnForDocs)' != 'true'">

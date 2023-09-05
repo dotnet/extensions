@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Compliance.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Compliance.Abstractions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "readonly struct Microsoft.Extensions.Compliance.Classification.DataClassification : System.IEquatable<Microsoft.Extensions.Compliance.Classification.DataClassification>",

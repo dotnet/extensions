@@ -18,8 +18,8 @@ using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience;
-using Microsoft.Extensions.Telemetry.Metering;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
+using Microsoft.Extensions.Telemetry.Testing.Metrics;
 using Moq;
 using Polly;
 using Polly.Registry;
@@ -81,7 +81,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     public async Task AddResilienceHandler_EnsureFailureResultContext()
     {
         using var metricCollector = new MetricCollector<int>(null, "Polly", "resilience-events");
-        var enricher = new TestMeteringEnricher();
+        var enricher = new TestMetricsEnricher();
         var services = new ServiceCollection()
             .AddResilienceEnrichment()
             .Configure<TelemetryOptions>(options => options.MeteringEnrichers.Add(enricher));
@@ -160,7 +160,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     {
         // arrange
         var resilienceProvider = new Mock<ResiliencePipelineProvider<HttpKey>>(MockBehavior.Strict);
-        var services = new ServiceCollection().AddLogging().RegisterMetering().AddFakeRedaction();
+        var services = new ServiceCollection().AddLogging().RegisterMetrics().AddFakeRedaction();
         services.AddSingleton(resilienceProvider.Object);
         var builder = services.AddHttpClient("client");
         var pipelineBuilder = builder.AddResilienceHandler("dummy", ConfigureBuilder);
@@ -199,7 +199,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     public async Task AddResilienceHandlerBySelector_EnsureResiliencePipelineProviderCalled()
     {
         // arrange
-        var services = new ServiceCollection().AddLogging().RegisterMetering();
+        var services = new ServiceCollection().AddLogging().RegisterMetrics();
         var providerMock = new Mock<ResiliencePipelineProvider<HttpKey>>(MockBehavior.Strict);
 
         services.AddSingleton(providerMock.Object);
@@ -230,7 +230,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     public void AddResilienceHandler_AuthoritySelectorAndNotConfiguredRedaction_EnsureValidated()
     {
         // arrange
-        var clientBuilder = new ServiceCollection().AddLogging().RegisterMetering().AddRedaction()
+        var clientBuilder = new ServiceCollection().AddLogging().RegisterMetrics().AddRedaction()
             .AddHttpClient("my-client")
             .AddResilienceHandler("my-pipeline", ConfigureBuilder)
             .SelectPipelineByAuthority(SimpleClassifications.PrivateData);
@@ -245,7 +245,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     public void AddResilienceHandler_AuthorityByCustomSelector_NotValidated()
     {
         // arrange
-        var clientBuilder = new ServiceCollection().AddLogging().RegisterMetering().AddRedaction()
+        var clientBuilder = new ServiceCollection().AddLogging().RegisterMetrics().AddRedaction()
             .AddHttpClient("my-client")
             .AddResilienceHandler("my-pipeline", ConfigureBuilder)
             .SelectPipelineBy(_ => _ => string.Empty);
@@ -257,7 +257,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
     private void ConfigureBuilder(ResiliencePipelineBuilder<HttpResponseMessage> builder) => builder.AddTimeout(TimeSpan.FromSeconds(1));
 
-    private class TestMeteringEnricher : MeteringEnricher
+    private class TestMetricsEnricher : MeteringEnricher
     {
         public List<KeyValuePair<string, object?>> Tags { get; } = new();
 

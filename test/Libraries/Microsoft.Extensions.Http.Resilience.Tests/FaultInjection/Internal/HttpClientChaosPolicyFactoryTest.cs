@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.FaultInjection.Internal;
 using Microsoft.Extensions.Resilience.FaultInjection;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 using Polly;
 using Xunit;
 
@@ -39,7 +39,7 @@ public class HttpClientChaosPolicyFactoryTest
                 });
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
 
         using var provider = services.BuildServiceProvider();
@@ -69,7 +69,7 @@ public class HttpClientChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddHttpClientFaultInjection();
 
         using var provider = services.BuildServiceProvider();
@@ -105,7 +105,7 @@ public class HttpClientChaosPolicyFactoryTest
                 });
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
 
         using var provider = services.BuildServiceProvider();
@@ -134,7 +134,7 @@ public class HttpClientChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddHttpClientFaultInjection();
 
         using var provider = services.BuildServiceProvider();
@@ -170,7 +170,7 @@ public class HttpClientChaosPolicyFactoryTest
                 });
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
 
         using var provider = services.BuildServiceProvider();

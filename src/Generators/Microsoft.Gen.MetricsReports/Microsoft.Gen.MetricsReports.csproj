@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Gen.MetricsReports</RootNamespace>
+    <Description>Generates reports about metric usage in the project being compiled.</Description>
+    <Workstream>Telemetry</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AnalyzerLanguage>cs</AnalyzerLanguage>
+    <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>dev</Stage>
+    <MinCodeCoverage>65</MinCodeCoverage>
+    <MinMutationScore>85</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\DiagDescriptorsBase.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\StringBuilderPool.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\ClassDeclarationSyntaxReceiver.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\EmitterBase.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\GeneratorUtilities.cs" LinkBase="Shared" />
+    <Compile Include="..\Shared\ParserUtilities.cs" LinkBase="Shared" />
+    <Compile Include="..\Microsoft.Gen.Metrics\Exceptions\*.cs" LinkBase="Microsoft.Gen.Metrics" />
+    <Compile Include="..\Microsoft.Gen.Metrics\Model\*.cs" LinkBase="Microsoft.Gen.Metrics" />
+    <Compile Include="..\Microsoft.Gen.Metrics\Parser.cs" LinkBase="Microsoft.Gen.Metrics" />
+    <Compile Include="..\Microsoft.Gen.Metrics\StrongTypeAttributeParameters.cs" LinkBase="Microsoft.Gen.Metrics" />
+    <Compile Include="..\\Microsoft.Gen.Metrics\SymbolLoader.cs" LinkBase="Microsoft.Gen.Metrics" />
+    <Compile Include="..\\Microsoft.Gen.Metrics\SymbolHolder.cs" LinkBase="Microsoft.Gen.Metrics" />
+    <Compile Include="..\Microsoft.Gen.Metrics\DiagDescriptors.cs" LinkBase="Microsoft.Gen.Metrics" />
+    <Compile Include="..\Microsoft.Gen.Metrics\Resources.Designer.cs" LinkBase="Microsoft.Gen.Metrics"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Microsoft.Gen.Metrics\Resources.resx" Link="Shared\Resources.resx" Generator="ResXFileCodeGenerator" LastGenOutput="Resources.Designer.cs" CustomToolNamespace="Microsoft.Gen.Metrics" LogicalName="Microsoft.Gen.Metrics.Resources.resources" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToTest Include="Microsoft.Gen.MetricsReports.Unit.Tests" />
+  </ItemGroup>
+</Project>

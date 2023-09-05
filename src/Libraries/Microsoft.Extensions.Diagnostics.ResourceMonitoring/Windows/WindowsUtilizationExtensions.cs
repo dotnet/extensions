@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
@@ -74,7 +74,7 @@ public static class WindowsUtilizationExtensions
             .AddActivatedSingleton<WindowsCounters>();
 
         _ = builder.Services
-            .RegisterMetering();
+            .RegisterMetrics();
 
         _ = builder.Services
             .AddOptionsWithValidateOnStart<WindowsCountersOptions, WindowsCountersOptionsValidator>();
@@ -103,7 +103,7 @@ public static class WindowsUtilizationExtensions
             .AddActivatedSingleton<WindowsCounters>();
 
         _ = builder.Services
-            .RegisterMetering();
+            .RegisterMetrics();
 
         _ = builder.Services
             .AddOptionsWithValidateOnStart<WindowsCountersOptions, WindowsCountersOptionsValidator>()
@@ -133,7 +133,7 @@ public static class WindowsUtilizationExtensions
             .AddActivatedSingleton<WindowsCounters>();
 
         _ = builder.Services
-            .RegisterMetering();
+            .RegisterMetrics();
 
         _ = builder.Services
             .AddOptionsWithValidateOnStart<WindowsCountersOptions, WindowsCountersOptionsValidator>()

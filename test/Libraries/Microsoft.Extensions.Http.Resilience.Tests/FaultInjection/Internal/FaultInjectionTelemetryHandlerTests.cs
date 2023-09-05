@@ -4,9 +4,9 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Resilience.FaultInjection;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 using Microsoft.Extensions.Telemetry.Testing.Logging;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
+using Microsoft.Extensions.Telemetry.Testing.Metrics;
 using Moq;
 using Xunit;
 
