@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 
 #pragma warning disable EA0006 // Replace uses of 'Enum.GetName' and 'Enum.ToString' with the '[EnumStrings]' code generator for improved performance
 
@@ -39,7 +39,7 @@ internal static class HttpClientFactory
     {
         var services = new ServiceCollection();
         services
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddSingleton<IRedactorProvider>(NullRedactorProvider.Instance)
             .AddTransient<NoRemoteCallHandler>()
             .AddHttpClient(StandardClient, client => client.Timeout = Timeout.InfiniteTimeSpan)

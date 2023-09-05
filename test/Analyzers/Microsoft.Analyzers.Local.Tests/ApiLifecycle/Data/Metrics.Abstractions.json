@@ -1,0 +1,33 @@
+﻿{
+  "Name": "Microsoft.Extensions.Metrics.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.Metrics.CounterAttribute : System.Attribute",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Metrics.CounterAttribute.CounterAttribute(params string[] dimensions);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Metrics.CounterAttribute.CounterAttribute(System.Type type);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string[]? Microsoft.Extensions.Metrics.CounterAttribute.Dimensions { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Metrics.CounterAttribute.Name { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Type? Microsoft.Extensions.Metrics.CounterAttribute.Type { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

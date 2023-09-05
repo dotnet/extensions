@@ -197,7 +197,7 @@ public class ApiLifecycleAnalyzerTest
             "ICounterT",
             new[] { DiagDescriptors.PublishedSymbolsCantChange.Id },
             @"
-                namespace Microsoft.Extensions.Metering;
+                namespace Microsoft.Extensions.Metrics;
 
                 using System.Collections.Generic;
 
@@ -235,7 +235,7 @@ public class ApiLifecycleAnalyzerTest
             "ICounterT",
             Array.Empty<string>(),
             @"
-                namespace Microsoft.Extensions.Metering;
+                namespace Microsoft.Extensions.Metrics;
 
                 using System.Collections.Generic;
 
@@ -278,7 +278,7 @@ public class ApiLifecycleAnalyzerTest
             "Histogram",
             Array.Empty<string>(),
             @"
-                namespace Microsoft.Extensions.Metering;
+                namespace Microsoft.Extensions.Metrics;
 
                 using System.Collections.Generic;
 
@@ -594,14 +594,14 @@ public class ApiLifecycleAnalyzerTest
         new object[]
         {
             0,
-            "ApiLifecycle/Data/Metering.Abstractions.json",
-            "Microsoft.Extensions.Metering.Abstractions",
+            "ApiLifecycle/Data/Metrics.Abstractions.json",
+            "Microsoft.Extensions.Metrics.Abstractions",
             new[] { DiagDescriptors.PublishedSymbolsCantBeDeleted.Id },
             @"
                 using System;
                 using System.Diagnostics;
 
-                namespace Microsoft.Extensions.Metering;
+                namespace Microsoft.Extensions.Metrics;
 
                 [AttributeUsage(AttributeTargets.Method)]
                 [Conditional(""CODE_GENERATION_ATTRIBUTES"")]

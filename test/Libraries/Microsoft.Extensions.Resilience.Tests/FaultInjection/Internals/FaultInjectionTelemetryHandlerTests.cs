@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Metering;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
+using Microsoft.Extensions.Telemetry.Testing.Metrics;
 using Moq;
 using Xunit;
 

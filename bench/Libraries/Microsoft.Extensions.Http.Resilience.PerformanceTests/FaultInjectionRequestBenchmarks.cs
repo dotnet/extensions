@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Resilience.FaultInjection;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 
 namespace Microsoft.Extensions.Http.Resilience.FaultInjection.PerformanceTests;
 
@@ -36,7 +36,7 @@ public class FaultInjectionRequestBenchmarks
                 });
 
             services
-                .RegisterMetering()
+                .RegisterMetrics()
                 .AddHttpClientFaultInjection(action);
         }
 

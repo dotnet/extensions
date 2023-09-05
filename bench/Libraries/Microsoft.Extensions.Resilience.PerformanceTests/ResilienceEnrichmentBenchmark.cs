@@ -22,7 +22,7 @@ public class ResilienceEnrichmentBenchmark
     [GlobalSetup]
     public void GlobalSetup()
     {
-        _listener = MeteringUtil.ListenPollyMetrics();
+        _listener = MetricsUtil.ListenPollyMetrics();
         _pipeline = CreateResiliencePipeline(_ => { });
         _pipelineEnriched = CreateResiliencePipeline(services =>
         {

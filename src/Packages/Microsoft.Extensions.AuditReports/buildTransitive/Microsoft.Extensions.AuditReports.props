@@ -4,15 +4,15 @@
     <GenerateComplianceReport Condition="'$(DesignTimeBuild)' != 'true' OR '$(BuildingProject)' == 'true'">true</GenerateComplianceReport>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(GenerateMeteringReport)' == ''">
-    <GenerateMeteringReport Condition="'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'">false</GenerateMeteringReport>
-    <GenerateMeteringReport Condition="'$(DesignTimeBuild)' != 'true' OR '$(BuildingProject)' == 'true'">true</GenerateMeteringReport>
+  <PropertyGroup Condition="'$(GenerateMetricsReport)' == ''">
+    <GenerateMetricsReport Condition="'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'">false</GenerateMetricsReport>
+    <GenerateMetricsReport Condition="'$(DesignTimeBuild)' != 'true' OR '$(BuildingProject)' == 'true'">true</GenerateMetricsReport>
   </PropertyGroup>
 
   <ItemGroup>
     <CompilerVisibleProperty Include="GenerateComplianceReport" />
     <CompilerVisibleProperty Include="ComplianceReportOutputPath" />
-    <CompilerVisibleProperty Include="GenerateMeteringReport" />
-    <CompilerVisibleProperty Include="MeteringReportOutputPath" />
+    <CompilerVisibleProperty Include="GenerateMetricsReport" />
+    <CompilerVisibleProperty Include="MetricsReportOutputPath" />
   </ItemGroup>
 </Project>

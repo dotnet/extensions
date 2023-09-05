@@ -52,8 +52,8 @@ public class JsonValueTest
         Assert.False(new JsonValue(default(JsonArray)).IsJsonArray);
         Assert.Null(new JsonValue(default(JsonArray)).AsJsonArray);
 
-        Assert.Equal("interface Microsoft.Extensions.Metering.IHistogram2<in T> where T : struct",
-            new JsonValue("interface Microsoft.Extensions.Metering.IHistogram2<in T> where T : struct").AsString);
+        Assert.Equal("interface Microsoft.Extensions.Metrics.IHistogram2<in T> where T : struct",
+            new JsonValue("interface Microsoft.Extensions.Metrics.IHistogram2<in T> where T : struct").AsString);
     }
 
     [Fact]

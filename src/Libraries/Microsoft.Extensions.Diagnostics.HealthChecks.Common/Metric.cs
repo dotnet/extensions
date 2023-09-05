@@ -4,7 +4,7 @@
 using System.Diagnostics.Metrics;
 using System.Globalization;
 using Microsoft.Extensions.EnumStrings;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 
 [assembly: EnumStrings(typeof(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus))]
 
