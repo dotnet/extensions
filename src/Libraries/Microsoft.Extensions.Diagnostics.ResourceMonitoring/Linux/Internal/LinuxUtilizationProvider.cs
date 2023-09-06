@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 

@@ -42,7 +42,7 @@
 
   <ItemGroup>
     <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Logging\Microsoft.Gen.Logging.csproj" />
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Metering\Microsoft.Gen.Metering.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Metrics\Microsoft.Gen.Metrics.csproj" />
   </ItemGroup>
 
   <ItemGroup>

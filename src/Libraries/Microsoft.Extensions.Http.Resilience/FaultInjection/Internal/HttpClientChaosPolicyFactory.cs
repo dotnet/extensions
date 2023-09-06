@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.EnumStrings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Resilience.FaultInjection;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 using Polly;
 using Polly.Contrib.Simmy;
 using Polly.Contrib.Simmy.Outcomes;

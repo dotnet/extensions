@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Telemetry.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Telemetry.Abstractions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "readonly struct Microsoft.Extensions.Telemetry.Latency.Checkpoint : System.IEquatable<Microsoft.Extensions.Telemetry.Latency.Checkpoint>",
@@ -102,57 +102,57 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.CounterAttribute : System.Attribute",
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metrics.CounterAttribute : System.Attribute",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.CounterAttribute.CounterAttribute(params string[] tagNames);",
+          "Member": "Microsoft.Extensions.Telemetry.Metrics.CounterAttribute.CounterAttribute(params string[] tagNames);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.CounterAttribute.CounterAttribute(System.Type type);",
+          "Member": "Microsoft.Extensions.Telemetry.Metrics.CounterAttribute.CounterAttribute(System.Type type);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string? Microsoft.Extensions.Telemetry.Metering.CounterAttribute.Name { get; set; }",
+          "Member": "string? Microsoft.Extensions.Telemetry.Metrics.CounterAttribute.Name { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.CounterAttribute.TagNames { get; }",
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metrics.CounterAttribute.TagNames { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metering.CounterAttribute.Type { get; }",
+          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metrics.CounterAttribute.Type { get; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T> : System.Attribute where T : struct",
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metrics.CounterAttribute<T> : System.Attribute where T : struct",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.CounterAttribute(params string[] tagNames);",
+          "Member": "Microsoft.Extensions.Telemetry.Metrics.CounterAttribute<T>.CounterAttribute(params string[] tagNames);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.CounterAttribute(System.Type type);",
+          "Member": "Microsoft.Extensions.Telemetry.Metrics.CounterAttribute<T>.CounterAttribute(System.Type type);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string? Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.Name { get; set; }",
+          "Member": "string? Microsoft.Extensions.Telemetry.Metrics.CounterAttribute<T>.Name { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.TagNames { get; }",
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metrics.CounterAttribute<T>.TagNames { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metering.CounterAttribute<T>.Type { get; }",
+          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metrics.CounterAttribute<T>.Type { get; }",
           "Stage": "Stable"
         }
       ]
@@ -180,85 +180,85 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.GaugeAttribute : System.Attribute",
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metrics.GaugeAttribute : System.Attribute",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.GaugeAttribute(params string[] tagNames);",
+          "Member": "Microsoft.Extensions.Telemetry.Metrics.GaugeAttribute.GaugeAttribute(params string[] tagNames);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.GaugeAttribute(System.Type type);",
+          "Member": "Microsoft.Extensions.Telemetry.Metrics.GaugeAttribute.GaugeAttribute(System.Type type);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string? Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.Name { get; set; }",
+          "Member": "string? Microsoft.Extensions.Telemetry.Metrics.GaugeAttribute.Name { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.TagNames { get; }",
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metrics.GaugeAttribute.TagNames { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metering.GaugeAttribute.Type { get; }",
+          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metrics.GaugeAttribute.Type { get; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.HistogramAttribute : System.Attribute",
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute : System.Attribute",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.HistogramAttribute(params string[] tagNames);",
+          "Member": "Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute.HistogramAttribute(params string[] tagNames);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.HistogramAttribute(System.Type type);",
+          "Member": "Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute.HistogramAttribute(System.Type type);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.Name { get; set; }",
+          "Member": "string? Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute.Name { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.TagNames { get; }",
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute.TagNames { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute.Type { get; }",
+          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute.Type { get; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T> : System.Attribute where T : struct",
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute<T> : System.Attribute where T : struct",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.HistogramAttribute(params string[] tagNames);",
+          "Member": "Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute<T>.HistogramAttribute(params string[] tagNames);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.HistogramAttribute(System.Type type);",
+          "Member": "Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute<T>.HistogramAttribute(System.Type type);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Name { get; set; }",
+          "Member": "string? Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute<T>.Name { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string[]? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.TagNames { get; }",
+          "Member": "string[]? Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute<T>.TagNames { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metering.HistogramAttribute<T>.Type { get; }",
+          "Member": "System.Type? Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute<T>.Type { get; }",
           "Stage": "Stable"
         }
       ]
@@ -709,21 +709,21 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Telemetry.Metering.Meter<TMeterName> : System.Diagnostics.Metrics.Meter",
+      "Type": "class Microsoft.Extensions.Telemetry.Metrics.Meter<TMeterName> : System.Diagnostics.Metrics.Meter",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.Meter<TMeterName>.Meter();",
+          "Member": "Microsoft.Extensions.Telemetry.Metrics.Meter<TMeterName>.Meter();",
           "Stage": "Experimental"
         }
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Telemetry.Metering.MeteringExtensions",
+      "Type": "static class Microsoft.Extensions.Telemetry.Metrics.MetricsExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Metering.MeteringExtensions.RegisterMetering(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Metrics.MetricsExtensions.RegisterMetrics(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Experimental"
         }
       ]
@@ -795,17 +795,17 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Telemetry.Metering.TagNameAttribute : System.Attribute",
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Metrics.TagNameAttribute : System.Attribute",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Metering.TagNameAttribute.TagNameAttribute(string name);",
+          "Member": "Microsoft.Extensions.Telemetry.Metrics.TagNameAttribute.TagNameAttribute(string name);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.Telemetry.Metering.TagNameAttribute.Name { get; }",
+          "Member": "string Microsoft.Extensions.Telemetry.Metrics.TagNameAttribute.Name { get; }",
           "Stage": "Stable"
         }
       ]

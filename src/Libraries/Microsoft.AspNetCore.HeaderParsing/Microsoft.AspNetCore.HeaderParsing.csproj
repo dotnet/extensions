@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <UseMeteringGenerator>true</UseMeteringGenerator>
+    <UseMetricsGenerator>true</UseMetricsGenerator>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
   </PropertyGroup>

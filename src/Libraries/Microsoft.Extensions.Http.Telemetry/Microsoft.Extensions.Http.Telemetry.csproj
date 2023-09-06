@@ -11,7 +11,7 @@
 
     <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <UseMeteringReportsGenerator>true</UseMeteringReportsGenerator>
+    <UseMetricsReportsGenerator>true</UseMetricsReportsGenerator>
     <InjectGetOrAddOnLegacy>false</InjectGetOrAddOnLegacy>
     <InjectTaskWaitAsyncOnLegacy>true</InjectTaskWaitAsyncOnLegacy>
     <InjectExperimentalAttributeOnLegacy>false</InjectExperimentalAttributeOnLegacy>
