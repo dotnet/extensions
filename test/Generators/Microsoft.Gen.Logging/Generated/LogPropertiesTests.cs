@@ -162,26 +162,40 @@ public class LogPropertiesTests
             P1 = null,
             P2 = 2,
             P3 = null,
+            P4 = default,
+            P5 = null!,
+            P6 = null,
+            P7 = 2,
+            P8 = null,
+            P9 = default,
         };
 
         LogPropertiesNullHandlingExtensions.M0(logger, props);
-        Assert.Equal(5, collector.LatestRecord.StructuredState!.Count);
+        Assert.Equal(1, collector.Count);
 
         var ss = collector.LatestRecord.StructuredState!.ToDictionary(x => x.Key, x => x.Value);
+        Assert.Equal(10, ss.Count);
         Assert.Null(ss["p_P0"]);
         Assert.Null(ss["p_P1"]);
         Assert.Equal(props.P2.ToString(null, CultureInfo.InvariantCulture), ss["p_P2"]);
         Assert.Null(ss["p_P3"]);
-        Assert.Null(ss["p_P4"]);
-        Assert.Equal(1, collector.Count);
+        Assert.Equal("I refuse to be formatted", ss["p_P4"]);
+        Assert.Null(ss["p_P5"]);
+        Assert.Null(ss["p_P6"]);
+        Assert.Equal("-", ss["p_P7"]);
+        Assert.Null(ss["p_P8"]);
+        Assert.Equal("------------------------", ss["p_P9"]);
 
         collector.Clear();
         LogPropertiesNullHandlingExtensions.M1(logger, props);
-        Assert.Equal(1, collector.LatestRecord.StructuredState!.Count);
+        Assert.Equal(1, collector.Count);
 
         ss = collector.LatestRecord.StructuredState!.ToDictionary(x => x.Key, x => x.Value);
+        Assert.Equal(4, ss.Count);
         Assert.Equal(props.P2.ToString(null, CultureInfo.InvariantCulture), ss["p_P2"]);
-        Assert.Equal(1, collector.Count);
+        Assert.Equal("I refuse to be formatted", ss["p_P4"]);
+        Assert.Equal("-", ss["p_P7"]);
+        Assert.Equal("------------------------", ss["p_P9"]);
     }
 
     [Fact]
@@ -316,6 +330,7 @@ public class LogPropertiesTests
             ["P0"] = StringParamValue,
             ["p1_MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
             ["p1_MyStringProperty"] = classToLog.MyStringProperty,
+            ["p1_AnotherStringProperty"] = classToLog.AnotherStringProperty,
             ["{OriginalFormat}"] = "LogProperties: {P0}"
         };
 

@@ -16,6 +16,7 @@ internal sealed partial class Emitter : EmitterBase
     private const string LoggerMessageHelperType = "global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper";
 
     private readonly StringBuilderPool _sbPool = new();
+    private readonly Dictionary<string, string> _classificationMap = new();
 
     public string Emit(IEnumerable<LoggingType> logTypes, CancellationToken cancellationToken)
     {
@@ -26,13 +27,6 @@ internal sealed partial class Emitter : EmitterBase
         }
 
         return Capture();
-    }
-
-    private static string GetAttributeClassification(string classificationAttributeType)
-    {
-        var classificationVariableName = EncodeTypeName(classificationAttributeType);
-
-        return $"_{classificationVariableName}_Classification";
     }
 
     private void GenType(LoggingType lt)
@@ -64,14 +58,7 @@ internal sealed partial class Emitter : EmitterBase
         OutLn($"partial {lt.Keyword} {lt.Name}");
         OutOpenBrace();
 
-        var isRedactionRequired =
-            lt.Methods.SelectMany(static lm => lm.Parameters).Any(static lp => lp.HasDataClassification)
-            || lt.Methods.SelectMany(static lm => GetLogPropertiesAttributes(lm)).Any();
-
-        if (isRedactionRequired)
-        {
-            GenAttributeClassifications(lt);
-        }
+        GenAttributeClassifications(lt);
 
         var first = true;
         foreach (LoggingMethod lm in lt.Methods)
@@ -105,21 +92,31 @@ internal sealed partial class Emitter : EmitterBase
 
     private void GenAttributeClassifications(LoggingType lt)
     {
-        // Generates fields which contain the data clasification associated with each attribute used in the type
-
-        var logPropsDataClasses = lt.Methods.SelectMany(lm => GetLogPropertiesAttributes(lm));
-        var classificationAttributeTypes = lt.Methods
-            .SelectMany(static lm => lm.Parameters)
-            .Where(static lp => lp.ClassificationAttributeType is not null)
-            .Select(static lp => lp.ClassificationAttributeType!)
-            .Concat(logPropsDataClasses)
-            .Distinct();
-
-        foreach (var classificationAttributeType in classificationAttributeTypes.OrderBy(static x => x))
+        // gather all the claassification attributes referenced by the logging type
+        var classificationAttrs = new HashSet<string>();
+        foreach (var lm in lt.Methods)
         {
-            var attrClassificationFieldName = GetAttributeClassification(classificationAttributeType);
+            foreach (var parameter in lm.Parameters)
+            {
+                if (parameter.HasProperties)
+                {
+                    parameter.TraverseParameterPropertiesTransitively((_, property) => classificationAttrs.UnionWith(property.ClassificationAttributeTypes));
+                }
+                else
+                {
+                    classificationAttrs.UnionWith(parameter.ClassificationAttributeTypes);
+                }
+            }
+        }
+
+        _classificationMap.Clear();
+        foreach (var classificationAttr in classificationAttrs)
+        {
+            var fieldName = PickUniqueName($"_{EncodeTypeName(classificationAttr)}", lt.AllMembers);
+            _classificationMap.Add(classificationAttr, fieldName);
+
             OutGeneratedCodeAttribute();
-            OutLn($"private static readonly Microsoft.Extensions.Compliance.Classification.DataClassification {attrClassificationFieldName} = new {classificationAttributeType}().Classification;");
+            OutLn($"private static readonly Microsoft.Extensions.Compliance.Classification.DataClassification {fieldName} = new {classificationAttr}().Classification;");
             OutLn();
         }
     }

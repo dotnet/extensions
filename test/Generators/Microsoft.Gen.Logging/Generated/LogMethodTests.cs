@@ -284,6 +284,17 @@ public class LogMethodTests
         Assert.Equal(LogLevel.Information, logRecord.Level);
         Assert.Equal(0, logRecord.Id.Id);
         Assert.Equal("M7", logRecord.Id.Name);
+
+        collector.Clear();
+        ConstructorVariationsTestExtensions.M8(logger, "Seven");
+        Assert.Equal(1, collector.Count);
+
+        logRecord = collector.LatestRecord;
+        Assert.Null(logRecord.Exception);
+        Assert.Equal("M8", logRecord.Message);
+        Assert.Equal(LogLevel.Trace, logRecord.Level);
+        Assert.Equal(42, logRecord.Id.Id);
+        Assert.Equal("EN1", logRecord.Id.Name);
     }
 
     [Fact]
@@ -463,7 +474,7 @@ public class LogMethodTests
         using var logger = Utils.GetLogger();
         var collector = logger.FakeLogCollector;
 
-        var redactorProvider = new StarRedactorProvider();
+        var redactorProvider = new SimpleRedactorProvider();
         var instance = new NonStaticTestClass(logger);
 
         instance.NoParams();
@@ -496,7 +507,7 @@ public class LogMethodTests
         var instance = new NonStaticNullableTestClass(logger);
         instance.M2("One", "Two", "Three");
         Assert.Null(collector.LatestRecord.Exception);
-        Assert.Equal("M2 *** *** *****", collector.LatestRecord.Message);
+        Assert.Equal("M2 --- --- -----", collector.LatestRecord.Message);
 
         collector.Clear();
         instance = new NonStaticNullableTestClass(null);
@@ -732,6 +743,19 @@ public class LogMethodTests
 
         AtSymbolsTestExtensions.M1(logger, "Test");
         Assert.Equal(2, collector.Count);
+
+        var o = new AtSymbolsTestExtensions.SpecialNames
+        {
+            @class = 42,
+        };
+
+        collector.Clear();
+        AtSymbolsTestExtensions.M3(logger, LogLevel.Debug, o);
+        Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("event_class"));
+
+        collector.Clear();
+        AtSymbolsTestExtensions.M5(logger, LogLevel.Debug, o);
+        Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("class"));
     }
 
     [Fact]
@@ -861,7 +885,7 @@ public class LogMethodTests
         using var logger = Utils.GetLogger();
         var collector = logger.FakeLogCollector;
 
-        FormattableTestExtensions.Method1(logger, new FormattableTestExtensions.Formattable());
+        FormattableTestExtensions.Method1(logger, default);
         Assert.Equal(1, collector.Count);
         Assert.Equal("Formatted!", collector.LatestRecord.StructuredState!.GetValue("p1"));
 
@@ -871,7 +895,7 @@ public class LogMethodTests
         Assert.Equal("Formatted!", collector.LatestRecord.StructuredState!.GetValue("p1_P1"));
 
         collector.Clear();
-        FormattableTestExtensions.Method3(logger, new FormattableTestExtensions.Convertible());
+        FormattableTestExtensions.Method3(logger, default);
         Assert.Equal(1, collector.Count);
         Assert.Equal("Converted!", collector.LatestRecord.StructuredState!.GetValue("p1"));
     }

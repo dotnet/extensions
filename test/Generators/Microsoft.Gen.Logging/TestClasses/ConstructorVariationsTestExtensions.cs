@@ -30,5 +30,8 @@ namespace TestClasses
 
         [LoggerMessage]
         public static partial void M7(ILogger logger, LogLevel level, string p0);
+
+        [LoggerMessage(Level = LogLevel.Trace, EventName = "EN1", EventId = 42, Message = "M8", SkipEnabledCheck = true)]
+        public static partial void M8(ILogger logger, string p0);
     }
 }
