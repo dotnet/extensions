@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Telemetry, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Telemetry, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class Microsoft.Extensions.Telemetry.Latency.LatencyConsoleExtensions",
@@ -227,15 +227,15 @@
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SamplerType { get; set; }",
-          "Stage": "Stable"
-        },
-        {
           "Member": "bool Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.ParentBased { get; set; }",
           "Stage": "Stable"
         },
         {
           "Member": "double Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SampleRate { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SamplerType { get; set; }",
           "Stage": "Stable"
         }
       ]

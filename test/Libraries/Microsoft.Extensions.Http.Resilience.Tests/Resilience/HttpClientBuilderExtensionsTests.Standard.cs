@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 using Polly;
 using Polly.Registry;
 using Polly.Retry;
@@ -29,7 +29,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     public HttpClientBuilderExtensionsTests()
     {
         _builder = new ServiceCollection().AddHttpClient(BuilderName);
-        _builder.Services.RegisterMetering();
+        _builder.Services.RegisterMetrics();
         _builder.Services.AddLogging();
     }
 
@@ -118,7 +118,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [Theory]
     public void AddStandardResilienceHandler_ConfigurationPropertyWithTypo_Throws(MethodArgs mode)
     {
-        var builder = new ServiceCollection().AddLogging().RegisterMetering().AddHttpClient("test");
+        var builder = new ServiceCollection().AddLogging().RegisterMetrics().AddHttpClient("test");
 
         AddStandardResilienceHandler(mode, builder, _invalidConfigurationSection, options => { });
 
@@ -130,7 +130,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     {
         var provider = new ServiceCollection()
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddHttpClient("test")
             .AddStandardResilienceHandler()
             .Services.BuildServiceProvider()
@@ -153,7 +153,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [Theory]
     public void AddStandardResilienceHandler_EnsureValidated(bool wholePipeline)
     {
-        var builder = new ServiceCollection().AddLogging().RegisterMetering().AddHttpClient("test");
+        var builder = new ServiceCollection().AddLogging().RegisterMetrics().AddHttpClient("test");
 
         AddStandardResilienceHandler(MethodArgs.ConfigureMethod, builder, null!, options =>
         {
@@ -182,7 +182,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [Theory]
     public void AddStandardResilienceHandler_EnsureConfigured(MethodArgs mode)
     {
-        var builder = new ServiceCollection().AddLogging().RegisterMetering().AddHttpClient("test");
+        var builder = new ServiceCollection().AddLogging().RegisterMetrics().AddHttpClient("test");
 
         AddStandardResilienceHandler(mode, builder, _validConfigurationSection, options => { });
 

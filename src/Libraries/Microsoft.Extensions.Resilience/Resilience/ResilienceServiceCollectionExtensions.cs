@@ -46,16 +46,16 @@ public static class ResilienceServiceCollectionExtensions
         _ = Throw.IfNull(services);
 
         // let's make this call idempotent by checking if ResilienceEnricher is already added
-        if (services.Any(s => s.ServiceType == typeof(ResilienceMeteringEnricher)))
+        if (services.Any(s => s.ServiceType == typeof(ResilienceMetricsEnricher)))
         {
             return services;
         }
 
-        services.TryAddActivatedSingleton<ResilienceMeteringEnricher>();
+        services.TryAddActivatedSingleton<ResilienceMetricsEnricher>();
 
         _ = services
             .AddOptions<TelemetryOptions>()
-            .Configure<ResilienceMeteringEnricher>((options, enricher) => options.MeteringEnrichers.Add(enricher));
+            .Configure<ResilienceMetricsEnricher>((options, enricher) => options.MeteringEnrichers.Add(enricher));
 
         return services;
     }

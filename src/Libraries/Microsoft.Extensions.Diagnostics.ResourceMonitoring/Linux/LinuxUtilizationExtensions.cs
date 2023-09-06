@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
@@ -28,7 +28,7 @@ public static class LinuxUtilizationExtensions
         _ = Throw.IfNull(builder);
 
         builder.Services
-             .RegisterMetering()
+             .RegisterMetrics()
              .AddOptionsWithValidateOnStart<LinuxResourceUtilizationProviderOptions, LinuxCountersOptionsValidator>()
              .Services.TryAddActivatedSingleton<ISnapshotProvider, LinuxUtilizationProvider>();
 

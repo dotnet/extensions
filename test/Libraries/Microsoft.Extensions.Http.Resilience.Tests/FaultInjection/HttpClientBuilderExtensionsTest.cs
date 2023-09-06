@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Resilience.FaultInjection;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 using Polly;
 using Xunit;
 
@@ -58,7 +58,7 @@ public class HttpClientBuilderExtensionsTest
         Action<HttpFaultInjectionOptionsBuilder> action = builder => { };
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
 
         var builder = services.AddHttpClient<HttpClientClass>();
@@ -109,7 +109,7 @@ public class HttpClientBuilderExtensionsTest
 
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
         services
             .AddHttpClient<HttpClientClass>()
@@ -172,7 +172,7 @@ public class HttpClientBuilderExtensionsTest
 
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
         services
             .AddHttpClient<HttpClientClass>()
@@ -209,7 +209,7 @@ public class HttpClientBuilderExtensionsTest
         Action<HttpFaultInjectionOptionsBuilder> action = builder => { };
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
 
         var builder = services.AddHttpClient<HttpClientClass>();
@@ -261,7 +261,7 @@ public class HttpClientBuilderExtensionsTest
                 });
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
         services
             .AddHttpClient<HttpClientClass>()

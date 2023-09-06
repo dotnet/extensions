@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Http.AutoClient, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Http.AutoClient, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.AutoClientAttribute : System.Attribute",

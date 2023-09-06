@@ -2,15 +2,15 @@
   "Name": "Histogram",
   "Types": [
     {
-      "Type": "interface Microsoft.Extensions.Metering.IHistogram2<in T> where T : struct",
+      "Type": "interface Microsoft.Extensions.Metrics.IHistogram2<in T> where T : struct",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Metering.IHistogram2<T>.Record(T value, params string[] dimensionValues);",
+          "Member": "void Microsoft.Extensions.Metrics.IHistogram2<T>.Record(T value, params string[] dimensionValues);",
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Metering.IHistogram2<T>.Record(T value, System.Collections.Generic.IDictionary<string, string> dimensions);",
+          "Member": "void Microsoft.Extensions.Metrics.IHistogram2<T>.Record(T value, System.Collections.Generic.IDictionary<string, string> dimensions);",
           "Stage": "Stable"
         }
       ]
