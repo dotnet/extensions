@@ -23,7 +23,6 @@ internal sealed class TypeDefConverter : JsonConverter<TypeDef>
 
             if (reader.TokenType == JsonTokenType.PropertyName)
             {
-                // Check if the property name matches the one you're looking for
                 if (reader.ValueTextEquals("Type"))
                 {
                     _ = reader.Read();
