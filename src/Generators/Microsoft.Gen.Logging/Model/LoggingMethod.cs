@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Microsoft.Gen.Logging.Model;
 
 /// <summary>
 /// A logger method in a logger type.
 /// </summary>
+[DebuggerDisplay("{Name}")]
 internal sealed class LoggingMethod
 {
     public readonly List<LoggingMethodParameter> Parameters = new();

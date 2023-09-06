@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Gen.Logging.Model;
 using Xunit;
 
@@ -40,7 +41,10 @@ public class LoggingMethodParameterTests
 
         if (addPropertiesToLog)
         {
-            lp.PropertiesToLog.Add(new LoggingProperty(string.Empty, string.Empty, PrivateDataAttributeType, false, false, false, false, false, false, Array.Empty<LoggingProperty>()));
+            lp.Properties.Add(new LoggingProperty
+            {
+                ClassificationAttributeTypes = new HashSet<string>(new[] { PrivateDataAttributeType })
+            });
         }
 
         Assert.Equal(expectedParamIsInTemplate, lp.IsNormalParameter);
