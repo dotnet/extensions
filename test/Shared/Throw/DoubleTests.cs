@@ -93,7 +93,7 @@ public class DoubleTests
     }
 
     [Fact]
-    public void Double_OUtOfRange()
+    public void Double_OutOfRange()
     {
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => Throw.IfOutOfRange(-1.0, 0, 1, "foo"));
         Assert.Equal("foo", exception.ParamName);
@@ -105,6 +105,10 @@ public class DoubleTests
 
         Assert.Equal(0, Throw.IfOutOfRange(0.0, 0, 1, "foo"));
         Assert.Equal(1, Throw.IfOutOfRange(1.0, 0, 1, "foo"));
+
+        exception = Assert.Throws<ArgumentOutOfRangeException>(() => Throw.IfOutOfRange(double.NaN, 0, 1, "foo"));
+        Assert.Equal("foo", exception.ParamName);
+        Assert.StartsWith("Argument not in the range", exception.Message);
     }
 
     [Fact]
