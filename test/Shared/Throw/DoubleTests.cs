@@ -18,6 +18,10 @@ public class DoubleTests
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => Throw.IfLessThan(0.0, 1.0, "paramName"));
         Assert.Equal("paramName", exception.ParamName);
         Assert.StartsWith("Argument less than minimum value 1", exception.Message);
+
+        exception = Assert.Throws<ArgumentOutOfRangeException>(() => Throw.IfLessThan(double.NaN, 1.0, "paramName"));
+        Assert.Equal("paramName", exception.ParamName);
+        Assert.StartsWith("Argument less than minimum value 1", exception.Message);
     }
 
     [Fact]
@@ -31,6 +35,10 @@ public class DoubleTests
     public void IfDoubleGreaterThan_ThrowWhenGreaterThan()
     {
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => Throw.IfGreaterThan(1.4, 0.0, "paramName"));
+        Assert.Equal("paramName", exception.ParamName);
+        Assert.StartsWith("Argument greater than maximum value 0", exception.Message);
+
+        exception = Assert.Throws<ArgumentOutOfRangeException>(() => Throw.IfGreaterThan(double.NaN, 0.0, "paramName"));
         Assert.Equal("paramName", exception.ParamName);
         Assert.StartsWith("Argument greater than maximum value 0", exception.Message);
     }
@@ -48,6 +56,10 @@ public class DoubleTests
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => Throw.IfLessThanOrEqual(1.2, 1.2, "paramName"));
         Assert.Equal("paramName", exception.ParamName);
         Assert.StartsWith("Argument less or equal than minimum value 1.2", exception.Message);
+
+        exception = Assert.Throws<ArgumentOutOfRangeException>(() => Throw.IfLessThanOrEqual(double.NaN, 1.2, "paramName"));
+        Assert.Equal("paramName", exception.ParamName);
+        Assert.StartsWith("Argument less or equal than minimum value 1.2", exception.Message);
     }
 
     [Fact]
@@ -61,6 +73,10 @@ public class DoubleTests
     public void IfDoubleGreaterThanOrEqual_ThrowWhenEqual()
     {
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() => Throw.IfGreaterThanOrEqual(1.22, 1.22, "paramName"));
+        Assert.Equal("paramName", exception.ParamName);
+        Assert.StartsWith("Argument greater or equal than maximum value 1.22", exception.Message);
+
+        exception = Assert.Throws<ArgumentOutOfRangeException>(() => Throw.IfGreaterThanOrEqual(double.NaN, 1.22, "paramName"));
         Assert.Equal("paramName", exception.ParamName);
         Assert.StartsWith("Argument greater or equal than maximum value 1.22", exception.Message);
     }
@@ -86,6 +102,7 @@ public class DoubleTests
     [InlineData(0.001)]
     [InlineData(-0.010)]
     [InlineData(1.1)]
+    [InlineData(double.NaN)]
     public void IfDoubleZero_DoesntThrow_WhenNotZero(double notZero)
     {
         var exception = Record.Exception(() => Throw.IfZero(notZero, "paramName"));
