@@ -54,7 +54,7 @@ public class ApiLifecycleAnalyzerTest
     public async Task Analyzer_Reports_Diagnostics_When_StableCode_Was_Not_Found_In_The_Compilation(int expectedDiagnostics, string fileName,
         string testAssemblyName, string[] ids, string source)
     {
-     var options = AnalyzerOptionsFactory.WithFiles(fileName);
+        var options = AnalyzerOptionsFactory.WithFiles(fileName);
         var diagnostics = await RoslynTestUtils.RunAnalyzer(
                 analyzer: new ApiLifecycleAnalyzer(),
                 references: References,
