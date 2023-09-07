@@ -9,4 +9,9 @@ namespace Microsoft.Extensions.Resilience.Internal;
 internal sealed class FailureEventMetricsOptions
 {
     public Dictionary<Type, Func<object, FailureResultContext>> Factories { get; } = new();
+
+    public void ConfigureFailureResultContext<TResult>(Func<TResult, FailureResultContext> configure)
+    {
+        Factories[typeof(TResult)] = value => configure((TResult)value);
+    }
 }

@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Logging;
+using Microsoft.Shared.Text;
 
 namespace TestClasses
 {
@@ -13,41 +14,47 @@ namespace TestClasses
         [LoggerMessage(int.MaxValue, LogLevel.Warning, "Custom provided properties for {Param}.")]
         internal static partial void LogMethodCustomPropsProvider(
             ILogger logger,
-            [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideProperties))] ClassToLog param);
+            [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideTags))] ClassToLog param);
 
         [LoggerMessage(LogLevel.Debug, "Custom provided properties for struct.")]
         internal static partial void LogMethodCustomPropsProviderStruct(
             ILogger logger,
-            [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideForStruct))] StructToLog param);
+            [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideForStruct))] StructToLog param);
 
         [LoggerMessage(LogLevel.Information, "Custom provided properties for interface.")]
         internal static partial void LogMethodCustomPropsProviderInterface(
             ILogger logger,
-            [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideForInterface))] IInterfaceToLog param);
+            [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideForInterface))] IInterfaceToLog param);
 
         [LoggerMessage(int.MinValue, LogLevel.Warning, "Custom provided properties for both complex params and {StringParam}.")]
         internal static partial void LogMethodCustomPropsProviderTwoParams(
             ILogger logger,
             string stringParam,
-            [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideProperties))] ClassToLog param,
-            [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideOtherProperties))] ClassToLog param2);
+            [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideTags))] ClassToLog param,
+            [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideOtherTags))] ClassToLog param2);
 
         [LoggerMessage(1, LogLevel.Warning, "No params.")]
         internal static partial void LogMethodCombinePropsProvider(
             ILogger logger,
             [LogProperties] ClassToLog param1,
-            [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideProperties))] ClassToLog param2);
+            [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideTags))] ClassToLog param2);
 
         [LoggerMessage]
         internal static partial void DefaultAttributeCtor(
             ILogger logger,
             LogLevel level,
-            [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideProperties))] ClassToLog param);
+            [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideTags))] ClassToLog param);
+
+        [LoggerMessage]
+        internal static partial void Nullable(
+            ILogger logger,
+            LogLevel level,
+            [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideTags))] int? param);
     }
 
     internal static class CustomProvider
     {
-        public static void ProvideProperties(ITagCollector list, ClassToLog? param)
+        public static void ProvideTags(ITagCollector list, ClassToLog? param)
         {
             // This condition is here only for testing purposes:
             if (param is null)
@@ -59,7 +66,20 @@ namespace TestClasses
             list.Add("Custom_property_name", param.MyStringProperty);
         }
 
-        public static void ProvideOtherProperties(ITagCollector list, ClassToLog? param)
+        public static void ProvideTags(ITagCollector list, int? p)
+        {
+            if (p != null)
+            {
+                list.Add("P1", p.Value.ToInvariantString());
+            }
+        }
+
+        public static void ProvideTags(ITagCollector list, string v)
+        {
+            list.Add("NestedTagProvider", v);
+        }
+
+        public static void ProvideOtherTags(ITagCollector list, ClassToLog? param)
         {
             list.Add("Another_property_name", param?.MyStringProperty.ToUpperInvariant());
             list.Add(nameof(ClassToLog.MyIntProperty) + "_test", param?.MyIntProperty);
@@ -83,6 +103,9 @@ namespace TestClasses
         public int MyIntProperty { get; set; }
 
         public string MyStringProperty { get; set; } = "Test string";
+
+        [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideTags))]
+        public string AnotherStringProperty { get; set; } = "Another test string";
 
         public override string ToString() => "Custom string representation";
     }

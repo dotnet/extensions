@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 using Moq;
 using Polly;
 using Xunit;
@@ -29,7 +29,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 {
     public const string ClientId = "clientId";
 
-    public const int DefaultHedgingAttempts = 3;
+    public const int DefaultHedgingAttempts = 2;
 
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly Mock<RequestRoutingStrategy> _requestRoutingStrategyMock;
@@ -44,7 +44,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         _requestRoutingStrategyMock = new Mock<RequestRoutingStrategy>(MockBehavior.Strict, new Randomizer());
         _requestRoutingStrategyFactory = () => _requestRoutingStrategyMock.Object;
 
-        _services = new ServiceCollection().RegisterMetering().AddLogging();
+        _services = new ServiceCollection().RegisterMetrics().AddLogging();
         _services.AddSingleton<IRedactorProvider>(NullRedactorProvider.Instance);
 
         var httpClient = _services.AddHttpClient(ClientId);
@@ -164,7 +164,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         using var client = CreateClientWithHandler();
 
         var result = await client.SendAsync(request, _cancellationTokenSource.Token);
-        Assert.Equal(DefaultHedgingAttempts, Requests.Count);
+        Assert.Equal(DefaultHedgingAttempts + 1, Requests.Count);
         Assert.Equal(HttpStatusCode.ServiceUnavailable, result.StatusCode);
     }
 

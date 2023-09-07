@@ -16,24 +16,24 @@ namespace TestClasses
         }
 
         [LoggerMessage(LogLevel.Debug)]
-        public static partial void M0(ILogger logger, [LogProperties(OmitParameterName = true)] MyProps p);
+        public static partial void M0(ILogger logger, [LogProperties(OmitReferenceName = true)] MyProps p);
 
         [LoggerMessage(LogLevel.Warning)]
         public static partial void M1(
             ILogger logger,
-            [LogProperties(typeof(MyPropsProvider), nameof(MyPropsProvider.ProvideProperties), OmitParameterName = true)] MyProps p);
+            [TagProvider(typeof(MyPropsProvider), nameof(MyPropsProvider.ProvideProperties), OmitReferenceName = true)] MyProps p);
 
         [LoggerMessage]
         internal static partial void M2(
             ILogger logger,
             LogLevel level,
-            [LogProperties(OmitParameterName = true)] MyProps param);
+            [LogProperties(OmitReferenceName = true)] MyProps param);
 
         [LoggerMessage]
         internal static partial void M3(
             ILogger logger,
             LogLevel level,
-            [LogProperties(typeof(MyPropsProvider), nameof(MyPropsProvider.ProvideProperties), OmitParameterName = true)] MyProps p);
+            [TagProvider(typeof(MyPropsProvider), nameof(MyPropsProvider.ProvideProperties), OmitReferenceName = true)] MyProps p);
 
         internal static class MyPropsProvider
         {

@@ -17,7 +17,7 @@ public class RoutingResilienceStrategyTests
     [Fact]
     public void NoRequestMessage_Throws()
     {
-        RoutingResilienceStrategy strategy = new RoutingResilienceStrategy(() => Mock.Of<RequestRoutingStrategy>());
+        var strategy = Create(() => Mock.Of<RequestRoutingStrategy>());
 
         strategy.Invoking(s => s.Execute(() => { })).Should().Throw<InvalidOperationException>().WithMessage("The HTTP request message was not found in the resilience context.");
     }
@@ -27,10 +27,14 @@ public class RoutingResilienceStrategyTests
     {
         using var request = new HttpRequestMessage();
 
-        RoutingResilienceStrategy strategy = new RoutingResilienceStrategy(null);
+        var strategy = Create(null);
         var context = ResilienceContextPool.Shared.Get();
         context.Properties.Set(ResilienceKeys.RequestMessage, request);
 
         strategy.Invoking(s => s.Execute(_ => { }, context)).Should().NotThrow();
     }
+
+    private static ResiliencePipeline Create(Func<RequestRoutingStrategy>? provider) =>
+        new ResiliencePipelineBuilder().AddStrategy(_ => new RoutingResilienceStrategy(provider), Mock.Of<ResilienceStrategyOptions>()).Build();
+
 }

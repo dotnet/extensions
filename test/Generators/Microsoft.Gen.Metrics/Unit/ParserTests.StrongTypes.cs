@@ -1,0 +1,593 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Threading.Tasks;
+using Xunit;
+
+namespace Microsoft.Gen.Metrics.Test;
+
+public partial class ParserTests
+{
+    [Fact]
+    public async Task NullDimensionNamesInAttributes()
+    {
+        var d = await RunGenerator(@"
+            public struct HistogramStruct
+            {
+                [Dimension(null)]
+                public string? Dim1 { get; set; }
+            }
+
+            public static partial class MetricClass
+            {
+                [Histogram(typeof(HistogramStruct), Name=""TotalCountTest"")]
+                public static partial TotalCount CreateTotalCountCounter(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task StructTypeHistogram()
+    {
+        var d = await RunGenerator(@"
+            public enum Operations
+            {
+                Unknown = 0,
+                Operation1 = 1,
+            }
+
+            public struct HistogramStruct
+            {
+                [Dimension(""Dim1_FromAttribute"")]
+                public string? Dim1 { get; set; }
+
+                [Dimension(""Operations_FromAttribute"")]
+                public Operations Operations { get; set; }
+            }
+
+            public static partial class MetricClass
+            {
+                [Histogram(typeof(HistogramStruct), Name=""TotalCountTest"")]
+                public static partial TotalCount CreateTotalCountCounter(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task StrongTypeHistogram()
+    {
+        // This test should return no errors.
+        var d = await RunGenerator(@"
+            public class TagNamesTest : ParentTagNames
+            {
+                public string? test1 { get; set; }
+
+                [TagName(""test1_FromAttribute"")]
+                public string? test1_WithAttribute { get; set; }
+
+                [TagName(""operations_FromAttribute"")]
+                public Operations operations {get;set;}
+
+                public ChildTagNames? ChildTagNames1 { get; set; }
+
+                public void Method()
+                {
+                    System.Console.WriteLine(""I am a method."");
+                }
+            }
+
+            public enum Operations
+            {
+                Unknown = 0,
+                Operation1 = 1,
+            }
+
+            public class ParentTagNames
+            {
+                [TagName(""parentTagName_FromAttribute"")]
+                public string? ParentOperationNameWithAttribute { get;set; }
+
+                public string? ParentOperationName { get;set; }
+
+                public TagNamesStruct ChildTagNamesStruct { get; set; }
+            }
+
+            public class ChildTagNames
+            {
+                [TagName(""test2_FromAttribute"")]
+                public string test2_WithAttribute { get; set; }
+
+                public string test2 { get; set; }
+
+                [TagName(""test1_FromAttribute_In_Child1"")]
+                public string? test1 { get; set; }
+
+                public ChildTagNames2? ChildTagNames2 { get; set;}
+            }
+
+            public class ChildTagNames2
+            {
+                [TagName(""test3_FromAttribute"")]
+                public string test3_WithAttribute { get; set; }
+
+                public string test3 { get; set; }
+
+                [TagName(""test1_FromAttribute_In_Child2"")]
+                public string? test1 { get; set; }
+            }
+
+            public struct TagNamesStruct
+            {
+                [TagName(""testStruct_FromAttribute"")]
+                public string testStruct_WithAttribute { get; set; }
+
+                public string testStruct { get; set; }
+            }
+
+            public static partial class MetricClass
+            {
+                [Histogram(typeof(TagNamesTest), Name=""TotalCountTest"")]
+                public static partial TotalCount CreateTotalCountCounter(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task SimpleStrongTypeHistogram()
+    {
+        // This test should return no errors.
+        var d = await RunGenerator(@"
+            public struct TagNamesTest
+            {
+                [TagName(""test1_FromAttribute"")]
+                public string? test1_WithAttribute { get; set; }
+                public string? test1 { get; set; }
+            }
+
+            public static partial class MetricClass
+            {
+                [Histogram(typeof(TagNamesTest))]
+                public static partial TotalCount CreateTotalCountCounter(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task TestNoStrongTypeDefined()
+    {
+        var d = await RunGenerator(@"
+            public static partial class MetricClass
+            {
+                [Histogram(typeof(DimensionsTest))]
+                public static partial TotalCount CreateTotalCountCounter(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task StructTypeCounter()
+    {
+        var d = await RunGenerator(@"
+            public enum Operations
+            {
+                Unknown = 0,
+                Operation1 = 1,
+            }
+
+            public struct CounterStruct
+            {
+                [Dimension(""Dim1_FromAttribute"")]
+                public string? Dim1 { get; set; }
+
+                [Dimension(""Dim2_FromAttribute"")]
+                public string? Dim2;
+
+                [Dimension(""Operations_FromAttribute"")]
+                public Operations Operations { get; set; }
+            }
+
+            public static partial class MetricClass
+            {
+                [Counter(typeof(CounterStruct), Name=""TotalCountTest"")]
+                public static partial TotalCount CreateTotalCountCounter(Meter meter);
+            }
+        ");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task StrongTypeCounter()
+    {
+        // This test should return no errors.
+        var d = await RunGenerator(@"
+            public class TagNamesTest : ParentTagNames
+            {
+                [TagName(""test1_FromAttribute"")]
+                public string? test1 { get; set; }
+
+                [TagName(""Operations_FromAttribute"")]
+                public Operations operations {get;set;}
+
+                public ChildTagNames? ChildTagNames1 { get; set; }
+
+                public void Method()
+                {
+                    System.Console.WriteLine(""I am a method."");
+                }
+            }
+
+            public enum Operations
+            {
+                Unknown = 0,
+                Operation1 = 1,
+            }
+
+            public class ParentTagNames
+            {
+                [TagName(""parentTagName_FromAttribute"")]
+                public string? ParentOperationNameWithAttribute { get;set; }
+
+                public string? ParentOperationName { get;set; }
+
+                public TagNamesStruct ChildTagNamesStruct { get; set; }
+            }
+
+            public class ChildTagNames
+            {
+                [TagName(""test2_FromAttribute"")]
+                public string test2_WithAttribute { get; set; }
+
+                public string test2 { get; set; }
+
+                [TagName(""test1_FromAttribute_In_Child1"")]
+                public string? test1 { get; set; }
+            }
+
+            public struct TagNamesStruct
+            {
+                [TagName(""testStruct_FromAttribute"")]
+                public string testStruct_WithAttribute { get; set; }
+
+                public string testStruct { get; set; }
+            }
+
+            public static partial class MetricClass
+            {
+                [Counter(typeof(TagNamesTest), Name=""TotalCountTest"")]
+                public static partial TotalCount CreateTotalCountCounter(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task StrongTypeCounterWithDescription()
+    {
+        var d = await RunGenerator(@"
+        internal static partial class Metric
+        {
+            /// <summary>
+            /// TagName1 description.
+            /// </summary>
+            public const string Dim1 = ""Dim1"";
+
+            /// <summary>
+            /// DescribedTagNameCounter description.
+            /// </summary>
+            /// <param name=""meter""></param>
+            /// <returns></returns>
+            [Counter(DescripedTagNames.TagName1, Dim1)]
+            public static partial DescribedTagNameCounter CreatePublicCounter(Meter meter);
+
+            /// <summary>
+            /// DimenisonDefinedInMetricClass description.
+            /// </summary>
+            public const string DimenisonDefinedInMetricClass = ""DimenisonDefinedInMetricClass"";
+
+            /// <summary>
+            /// DescribedTagNameHistogram description.
+            /// </summary>
+            /// <param name=""meter""></param>
+            /// <returns></returns>
+            [Histogram(DescripedTagNames.TagName2, DimenisonDefinedInMetricClass)]
+            public static partial DescribedTagNameHistogram CreatePublicHistogram(Meter meter);
+
+            /// <summary>
+            /// StrongTypeCounterWithDescripedTagName description.
+            /// </summary>
+            /// <param name=""meter""></param>
+            /// <returns></returns>
+            [Counter(typeof(TagNameForStrongTypes), Name = ""MyStrongTypeMetricWithDescription"")]
+            public static partial StrongTypeCounterWithDescripedTagName CreateStrongTypeCounterWithDescibedTagNames(Meter meter);
+        }
+
+        /// <summary>
+        /// DescripedTagNames class description.
+        /// </summary>
+        internal static class DescripedTagNames
+        {
+            /// <summary>
+            /// TagName1 in class description.
+            /// </summary>
+            public const string TagName1 = ""TagName1"";
+
+            /// <summary>
+            /// TagName2 description.
+            /// </summary>
+            public const string TagName2 = ""TagName2"";
+
+            /// <summary>
+            /// TagName3 description.
+            /// </summary>
+            public const string TagName3 = ""TagName3"";
+        }
+
+        public class TagNameForStrongTypes
+        {
+            /// <summary>
+            /// Gets or sets anotherTagName.
+            /// </summary>
+            public string? AnotherTagName { get; set; }
+
+            /// <summary>
+            /// Gets or sets MetricEnum.
+            /// </summary>
+            public MetricOperations MetricEnum { get; set; }
+
+            /// <summary>
+            /// Gets or sets MetricEnum2.
+            /// </summary>
+            [TagName(""Enum2"")]
+            public MetricOperations MetricEnum2 { get; set; }
+
+            /// <summary>
+            /// Gets or sets ChildTagNamesClass.
+            /// </summary>
+            public ChildClassTagNameForStrongTypes? ChildTagNamesClass { get; set; }
+
+            /// <summary>
+            ///  Gets or sets ChildTagNamesStruct.
+            /// </summary>
+            public TagNameForStrongTypesTagNamesStruct ChildTagNamesStruct { get; set; }
+        }
+
+        public enum MetricOperations
+        {
+            Unknown = 0,
+            Operation1 = 1,
+        }
+
+        public class ChildClassTagNameForStrongTypes
+        {
+            /// <summary>
+            /// Gets or sets Dim2.
+            /// </summary>
+            public string? Dim2 { get; set; }
+
+            /// <summary>
+            /// Gets or sets SomeDim.
+            /// </summary>
+            [TagName(""dim2FromAttribute"")]
+            public string? SomeDim;
+        }
+
+        public struct TagNameForStrongTypesTagNamesStruct
+        {
+            /// <summary>
+            /// Gets or sets Dim4Struct.
+            /// </summary>
+            public string Dim4Struct { get; set; }
+
+            /// <summary>
+            /// Gets or sets Dim5Struct.
+            /// </summary>
+            [TagName(""Dim5FromAttribute"")]
+            public string Dim5Struct { get; set; }
+        }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task StrongTypeHistogramWithDescription()
+    {
+        // This test should return no errors.
+        var d = await RunGenerator(@"
+            public class TagNamesTest : ParentTagNames
+            {
+                /// <summary>
+                /// test1 description.
+                /// </summary>
+                public string? test1 { get; set; }
+
+                /// <summary>
+                /// test1_FromAttribute description.
+                /// </summary>
+                [TagName(""test1_FromAttribute"")]
+                public string? test1_WithAttribute { get; set; }
+
+                /// <summary>
+                /// operations_FromAttribute description.
+                /// </summary>
+                [TagName(""operations_FromAttribute"")]
+                public Operations operations {get;set;}
+
+                /// <summary>
+                /// ChildTagNames1 description.
+                /// </summary>
+                public ChildTagNames? ChildTagNames1 { get; set; }
+
+                public void Method()
+                {
+                    System.Console.WriteLine(""I am a method."");
+                }
+            }
+
+            public enum Operations
+            {
+                Unknown = 0,
+                Operation1 = 1,
+            }
+
+            public class ParentTagNames
+            {
+                /// <summary>
+                /// parentTagName_FromAttribute description.
+                /// </summary>
+                [TagName(""parentTagName_FromAttribute"")]
+                public string? ParentOperationNameWithAttribute { get;set; }
+
+                /// <summary>
+                /// ParentOperationName description.
+                /// </summary>
+                public string? ParentOperationName { get;set; }
+
+                public TagNamesStruct ChildTagNamesStruct { get; set; }
+            }
+
+            public class ChildTagNames
+            {
+                /// <summary>
+                /// test2_WithAttribute description.
+                /// </summary>
+                [TagName(""test2_FromAttribute"")]
+                public string test2_WithAttribute { get; set; }
+
+                /// <summary>
+                /// test2 description.
+                /// </summary>
+                public string test2 { get; set; }
+
+                /// <summary>
+                /// test1_FromAttribute_In_Child1 description.
+                /// </summary>
+                [TagName(""test1_FromAttribute_In_Child1"")]
+                public string? test1 { get; set; }
+
+                public ChildTagNames2? ChildTagNames2 { get; set;}
+            }
+
+            public class ChildTagNames2
+            {
+                /// <summary>
+                /// test3_FromAttribute description.
+                /// </summary>
+                [TagName(""test3_FromAttribute"")]
+                public string test3_WithAttribute { get; set; }
+
+                /// <summary>
+                /// test3 description.
+                /// </summary>
+                public string test3 { get; set; }
+
+                /// <summary>
+                /// test1_FromAttribute_In_Child2 description.
+                /// </summary>
+                [TagName(""test1_FromAttribute_In_Child2"")]
+                public string? test1 { get; set; }
+            }
+
+            public struct TagNamesStruct
+            {
+                /// <summary>
+                /// testStruct_WithAttribute description.
+                /// </summary>
+                [TagName(""testStruct_FromAttribute"")]
+                public string testStruct_WithAttribute { get; set; }
+
+                /// <summary>
+                /// testStruct description.
+                /// </summary>
+                public string testStruct { get; set; }
+            }
+
+            public static partial class MetricClass
+            {
+                [Histogram(typeof(TagNamesTest), Name=""TotalCountTest"")]
+                public static partial TestHistogram CreateTestHistogram(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task StructTypeCounterWithDescription()
+    {
+        var d = await RunGenerator(@"
+            public enum Operations
+            {
+                Unknown = 0,
+                Operation1 = 1,
+            }
+
+            public struct CounterStruct
+            {
+                /// <summary>
+                /// Dim1_FromAttribute description.
+                /// </summary>
+                [Dimension(""Dim1_FromAttribute"")]
+                public string? Dim1 { get; set; }
+
+                /// <summary>
+                /// Dim2_FromAttribute description.
+                /// </summary>
+                [Dimension(""Dim2_FromAttribute"")]
+                public string? Dim2;
+
+                /// <summary>
+                /// Operations_FromAttribute description.
+                /// </summary>
+                [Dimension(""Operations_FromAttribute"")]
+                public Operations Operations { get; set; }
+            }
+
+            public static partial class MetricClass
+            {
+                [Counter(typeof(CounterStruct), Name=""TotalCountTest"")]
+                public static partial TotalCount CreateTotalCountCounter(Meter meter);
+            }
+        ");
+
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task StructTypeHistogramWithDescription()
+    {
+        var d = await RunGenerator(@"
+            public enum Operations
+            {
+                Unknown = 0,
+                Operation1 = 1,
+            }
+
+            public struct HistogramStruct
+            {
+                /// <summary>
+                /// Dim1_FromAttribute description.
+                /// </summary>
+                [Dimension(""Dim1_FromAttribute"")]
+                public string? Dim1 { get; set; }
+
+                /// <summary>
+                /// Operations_FromAttribute description.
+                /// </summary>
+                [Dimension(""Operations_FromAttribute"")]
+                public Operations Operations { get; set; }
+            }
+
+            public static partial class MetricClass
+            {
+                [Histogram(typeof(HistogramStruct), Name=""TotalCountTest"")]
+                public static partial TotalHistogram CreateTotalHistogram(Meter meter);
+            }");
+
+        Assert.Empty(d);
+    }
+}

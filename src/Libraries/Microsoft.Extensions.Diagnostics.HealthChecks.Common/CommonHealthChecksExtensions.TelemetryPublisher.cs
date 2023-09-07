@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
@@ -21,7 +21,7 @@ public static partial class CommonHealthChecksExtensions
     /// <exception cref="ArgumentNullException"><paramref name="services" /> is <see langword="null" />.</exception>
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services)
         => Throw.IfNull(services)
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddSingleton<IHealthCheckPublisher, TelemetryHealthCheckPublisher>();
 
     /// <summary>
@@ -35,7 +35,7 @@ public static partial class CommonHealthChecksExtensions
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services, IConfigurationSection section)
         => Throw.IfNull(services)
             .Configure<TelemetryHealthCheckPublisherOptions>(Throw.IfNull(section))
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddSingleton<IHealthCheckPublisher, TelemetryHealthCheckPublisher>();
 
     /// <summary>
@@ -49,6 +49,6 @@ public static partial class CommonHealthChecksExtensions
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services, Action<TelemetryHealthCheckPublisherOptions> configure)
         => Throw.IfNull(services)
             .Configure(Throw.IfNull(configure))
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddSingleton<IHealthCheckPublisher, TelemetryHealthCheckPublisher>();
 }

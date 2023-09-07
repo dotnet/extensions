@@ -8,7 +8,7 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
@@ -82,7 +82,7 @@ public static class FaultInjectionExtensions
         var builder = new FaultInjectionOptionsBuilder(services);
         configure.Invoke(builder);
 
-        _ = services.RegisterMetering();
+        _ = services.RegisterMetrics();
 
         services.TryAddSingleton<IFaultInjectionOptionsProvider, FaultInjectionOptionsProvider>();
         services.TryAddSingleton<IExceptionRegistry, ExceptionRegistry>();

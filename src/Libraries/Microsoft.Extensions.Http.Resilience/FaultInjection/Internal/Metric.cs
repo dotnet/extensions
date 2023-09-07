@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Http.Resilience.FaultInjection.Internal;
 
 internal static partial class Metric
 {
-    [Microsoft.Extensions.Telemetry.Metering.Counter(
+    [Microsoft.Extensions.Telemetry.Metrics.Counter(
         FaultInjectionEventMeterTagNames.FaultInjectionGroupName,
         FaultInjectionEventMeterTagNames.FaultType,
         FaultInjectionEventMeterTagNames.InjectedValue,

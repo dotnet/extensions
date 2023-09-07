@@ -45,13 +45,13 @@ public class LoggerMessageAttributeTests
         collector.Clear();
         AttributeTestExtensions.M1(logger, "arg0", "arg1");
         Assert.Null(collector.LatestRecord.Exception);
-        Assert.Equal("M1 **** arg1", collector.LatestRecord.Message);
+        Assert.Equal("M1 ---- arg1", collector.LatestRecord.Message);
         Assert.Equal(1, collector.Count);
 
         collector.Clear();
         AttributeTestExtensions.M2(logger, "arg0", "arg1");
         Assert.Null(collector.LatestRecord.Exception);
-        Assert.Equal("M2 **** arg1", collector.LatestRecord.Message);
+        Assert.Equal("M2 ---- arg1", collector.LatestRecord.Message);
         Assert.Equal(1, collector.Count);
     }
 
@@ -64,13 +64,19 @@ public class LoggerMessageAttributeTests
         collector.Clear();
         AttributeTestExtensions.M8(logger, 123456);
         Assert.Null(collector.LatestRecord.Exception);
-        Assert.Equal("M8 ******", collector.LatestRecord.Message);
+        Assert.Equal("M8 ------", collector.LatestRecord.Message);
         Assert.Equal(1, collector.Count);
 
         collector.Clear();
         AttributeTestExtensions.M9(logger, new CustomToStringTestClass());
         Assert.Null(collector.LatestRecord.Exception);
-        Assert.Equal("M9 ****", collector.LatestRecord.Message);
+        Assert.Equal("M9 ----", collector.LatestRecord.Message);
+        Assert.Equal(1, collector.Count);
+
+        collector.Clear();
+        AttributeTestExtensions.M10(logger, default);
+        Assert.Null(collector.LatestRecord.Exception);
+        Assert.Equal("M10 ------------------------", collector.LatestRecord.Message);
         Assert.Equal(1, collector.Count);
     }
 
@@ -83,13 +89,13 @@ public class LoggerMessageAttributeTests
         collector.Clear();
         AttributeTestExtensions.M3(logger, "arg0", "arg1", "arg2", "arg3");
         Assert.Null(collector.LatestRecord.Exception);
-        Assert.Equal("M3 **** **** **** ****", collector.LatestRecord.Message);
+        Assert.Equal("M3 ---- ---- ---- ----", collector.LatestRecord.Message);
         Assert.Equal(1, collector.Count);
 
         collector.Clear();
-        AttributeTestExtensions.M4(logger, "arg0", "arg1", "arg2");
+        AttributeTestExtensions.M4(logger, "arg0", "arg1", "arg2", default);
         Assert.Null(collector.LatestRecord.Exception);
-        Assert.Equal("M4 **** **** ****", collector.LatestRecord.Message);
+        Assert.Equal("M4 ---- ---- ---- ------------------------", collector.LatestRecord.Message);
         Assert.Equal(1, collector.Count);
     }
 
@@ -102,7 +108,7 @@ public class LoggerMessageAttributeTests
         collector.Clear();
         AttributeTestExtensions.M5(logger, "arg0", "arg1", "arg2", "arg3", "arg4", "arg5", "arg6", "arg7", "arg8", "arg9", "arg10");
         Assert.Null(collector.LatestRecord.Exception);
-        Assert.Equal("M5 **** **** **** **** **** **** **** **** **** **** *****", collector.LatestRecord.Message);
+        Assert.Equal("M5 ---- ---- ---- ---- ---- ---- ---- ---- ++++ ++++ +++++", collector.LatestRecord.Message);
         Assert.Equal(1, collector.Count);
     }
 
@@ -114,11 +120,11 @@ public class LoggerMessageAttributeTests
 
         collector.Clear();
         AttributeTestExtensions.M6(logger, LogLevel.Critical, "arg0", "arg1");
-        AssertWhenDefaultLogMethodCtor(collector, LogLevel.Critical, ("p0", "****"), ("p1", "arg1"));
+        AssertWhenDefaultLogMethodCtor(collector, LogLevel.Critical, ("p0", "----"), ("p1", "arg1"));
 
         collector.Clear();
         AttributeTestExtensions.M7(logger, LogLevel.Warning, "arg_0", "arg_1");
-        AssertWhenDefaultLogMethodCtor(collector, LogLevel.Warning, ("p0", "*****"), ("p1", "arg_1"));
+        AssertWhenDefaultLogMethodCtor(collector, LogLevel.Warning, ("p0", "-----"), ("p1", "arg_1"));
     }
 
     [Fact]
@@ -130,18 +136,18 @@ public class LoggerMessageAttributeTests
         collector.Clear();
         new NonStaticTestClass(logger).M1("arg0");
         Assert.Null(collector.LatestRecord.Exception);
-        Assert.Equal("M1 ****", collector.LatestRecord.Message);
+        Assert.Equal("M1 ----", collector.LatestRecord.Message);
         Assert.Equal(1, collector.Count);
 
         collector.Clear();
         new NonStaticTestClass(logger).M2("arg0", "arg1", "arg2");
         Assert.Null(collector.LatestRecord.Exception);
-        Assert.Equal("M2 **** **** ****", collector.LatestRecord.Message);
+        Assert.Equal("M2 ---- ---- ----", collector.LatestRecord.Message);
         Assert.Equal(1, collector.Count);
 
         collector.Clear();
         new NonStaticTestClass(logger).M3(LogLevel.Information, "arg_0");
-        AssertWhenDefaultLogMethodCtor(collector, LogLevel.Information, ("p0", "*****"));
+        AssertWhenDefaultLogMethodCtor(collector, LogLevel.Information, ("p0", "-----"));
     }
 
     private static void AssertWhenDefaultLogMethodCtor(FakeLogCollector collector, LogLevel expectedLevel, params (string key, string value)[] expectedState)

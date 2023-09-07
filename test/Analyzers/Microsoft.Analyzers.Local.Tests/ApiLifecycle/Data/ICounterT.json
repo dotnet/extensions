@@ -2,15 +2,15 @@
   "Name": "ICounterT",
   "Types": [
     {
-      "Type": "interface Microsoft.Extensions.Metering.ICounter2<in T> where T : struct",
+      "Type": "interface Microsoft.Extensions.Metrics.ICounter2<in T> where T : struct",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Metering.ICounter2<T>.Add(T value, params string[] dimensionValues);",
+          "Member": "void Microsoft.Extensions.Metrics.ICounter2<T>.Add(T value, params string[] dimensionValues);",
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Metering.ICounter2<T>.Add(T value, System.Collections.Generic.IDictionary<string, string> dimensions);",
+          "Member": "void Microsoft.Extensions.Metrics.ICounter2<T>.Add(T value, System.Collections.Generic.IDictionary<string, string> dimensions);",
           "Stage": "Stable"
         }
       ]

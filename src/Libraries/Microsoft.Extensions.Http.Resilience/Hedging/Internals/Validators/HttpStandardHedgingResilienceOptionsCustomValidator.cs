@@ -31,9 +31,9 @@ internal sealed class HttpStandardHedgingResilienceOptionsCustomValidator : IVal
         }
 
         // if generator is specified we cannot calculate the max hedging delay
-        if (options.HedgingOptions.HedgingDelayGenerator == null)
+        if (options.HedgingOptions.DelayGenerator == null)
         {
-            var maxHedgingDelay = TimeSpan.FromMilliseconds((options.HedgingOptions.MaxHedgedAttempts - 1) * options.HedgingOptions.HedgingDelay.TotalMilliseconds);
+            var maxHedgingDelay = TimeSpan.FromMilliseconds(options.HedgingOptions.MaxHedgedAttempts * options.HedgingOptions.Delay.TotalMilliseconds);
 
             // Stryker disable once Equality
             if (maxHedgingDelay > options.TotalRequestTimeoutOptions.Timeout)

@@ -534,7 +534,7 @@ internal sealed class Parser
 
         if (!requestNames.Add(requestName))
         {
-            Diag(DiagDescriptors.ErrorDuplicateRequestName, methodSymbol.GetLocation());
+            Diag(DiagDescriptors.ErrorDuplicateRequestName, methodSymbol.GetLocation(), requestName);
             hasErrors = true;
         }
 

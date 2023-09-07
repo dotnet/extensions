@@ -399,6 +399,7 @@ public class ParserTests
             }");
 
         Assert.Contains(DiagDescriptors.ErrorDuplicateRequestName.Id, ds.Select(x => x.Id));
+        Assert.Contains("GetUsers", ds.First(x => x.Id == DiagDescriptors.ErrorDuplicateRequestName.Id).GetMessage());
     }
 
     [Fact]
@@ -416,6 +417,7 @@ public class ParserTests
             }");
 
         Assert.Contains(DiagDescriptors.ErrorDuplicateRequestName.Id, ds.Select(x => x.Id));
+        Assert.Contains("GetUsers", ds.First(x => x.Id == DiagDescriptors.ErrorDuplicateRequestName.Id).GetMessage());
     }
 
     [Fact]

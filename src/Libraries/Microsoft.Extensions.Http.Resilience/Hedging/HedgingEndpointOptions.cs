@@ -27,7 +27,7 @@ public class HedgingEndpointOptions
     [ValidateObjectMembers]
     public HttpRateLimiterStrategyOptions RateLimiterOptions { get; set; } = new HttpRateLimiterStrategyOptions
     {
-        Name = StandardHedgingStrategyNames.RateLimiter
+        Name = StandardHedgingPipelineNames.RateLimiter
     };
 
     /// <summary>
@@ -40,7 +40,7 @@ public class HedgingEndpointOptions
     [ValidateObjectMembers]
     public HttpCircuitBreakerStrategyOptions CircuitBreakerOptions { get; set; } = new HttpCircuitBreakerStrategyOptions
     {
-        Name = StandardHedgingStrategyNames.CircuitBreaker
+        Name = StandardHedgingPipelineNames.CircuitBreaker
     };
 
     /// <summary>
@@ -55,6 +55,6 @@ public class HedgingEndpointOptions
     public HttpTimeoutStrategyOptions TimeoutOptions { get; set; } = new()
     {
         Timeout = TimeSpan.FromSeconds(10),
-        Name = StandardHedgingStrategyNames.AttemptTimeout
+        Name = StandardHedgingPipelineNames.AttemptTimeout
     };
 }

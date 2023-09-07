@@ -22,9 +22,9 @@ namespace Microsoft.Extensions.Http.Resilience;
 public static class StandardHedgingHandlerBuilderExtensions
 {
     /// <summary>
-    /// Configures the <see cref="HttpStandardHedgingResilienceOptions"/> for the standard hedging strategy.
+    /// Configures the <see cref="HttpStandardHedgingResilienceOptions"/> for the standard hedging pipeline.
     /// </summary>
-    /// <param name="builder">The strategy builder.</param>
+    /// <param name="builder">The pipeline builder.</param>
     /// <param name="section">The section that the options will bind against.</param>
     /// <returns>The same builder instance.</returns>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HttpStandardHedgingResilienceOptions))]
@@ -43,9 +43,9 @@ public static class StandardHedgingHandlerBuilderExtensions
     }
 
     /// <summary>
-    /// Configures the <see cref="HttpStandardResilienceOptions"/> for the standard hedging strategy.
+    /// Configures the <see cref="HttpStandardResilienceOptions"/> for the standard hedging pipeline.
     /// </summary>
-    /// <param name="builder">The strategy builder.</param>
+    /// <param name="builder">The pipeline builder.</param>
     /// <param name="configure">The configure method.</param>
     /// <returns>The same builder instance.</returns>
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, Action<HttpStandardHedgingResilienceOptions> configure)
@@ -57,9 +57,9 @@ public static class StandardHedgingHandlerBuilderExtensions
     }
 
     /// <summary>
-    /// Configures the <see cref="HttpStandardResilienceOptions"/> for the standard hedging strategy.
+    /// Configures the <see cref="HttpStandardResilienceOptions"/> for the standard hedging pipeline.
     /// </summary>
-    /// <param name="builder">The strategy builder.</param>
+    /// <param name="builder">The pipeline builder.</param>
     /// <param name="configure">The configure method.</param>
     /// <returns>The same builder instance.</returns>
     [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
@@ -74,38 +74,38 @@ public static class StandardHedgingHandlerBuilderExtensions
     }
 
     /// <summary>
-    /// Instructs the underlying strategy builder to select the strategy instance by redacted authority (scheme + host + port).
+    /// Instructs the underlying pipeline builder to select the pipeline instance by redacted authority (scheme + host + port).
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="classification">The data class associated with the authority.</param>
     /// <returns>The same builder instance.</returns>
     /// <remarks>The authority is redacted using <see cref="Redactor"/> retrieved for <paramref name="classification"/>.</remarks>
-    public static IStandardHedgingHandlerBuilder SelectStrategyByAuthority(this IStandardHedgingHandlerBuilder builder, DataClassification classification)
+    public static IStandardHedgingHandlerBuilder SelectPipelineByAuthority(this IStandardHedgingHandlerBuilder builder, DataClassification classification)
     {
         _ = Throw.IfNull(builder);
 
-        var strategyName = StrategyNameHelper.GetName(builder.Name, HttpClientBuilderExtensions.StandardInnerHandlerPostfix);
+        var pipelineName = PipelineNameHelper.GetName(builder.Name, HttpClientBuilderExtensions.StandardInnerHandlerPostfix);
 
-        StrategyKeyProviderHelper.SelectStrategyByAuthority(builder.Services, strategyName, classification);
+        PipelineKeyProviderHelper.SelectPipelineByAuthority(builder.Services, pipelineName, classification);
 
         return builder;
     }
 
     /// <summary>
-    /// Instructs the underlying strategy builder to select the strategy instance by custom selector.
+    /// Instructs the underlying pipeline builder to select the pipeline instance by custom selector.
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="selectorFactory">The factory that returns key selector.</param>
     /// <returns>The same builder instance.</returns>
-    /// <remarks>The strategy key is used in metrics and logs, do not return any sensitive value.</remarks>
-    public static IStandardHedgingHandlerBuilder SelectStrategyBy(this IStandardHedgingHandlerBuilder builder, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory)
+    /// <remarks>The pipeline key is used in metrics and logs, do not return any sensitive value.</remarks>
+    public static IStandardHedgingHandlerBuilder SelectPipelineBy(this IStandardHedgingHandlerBuilder builder, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(selectorFactory);
 
-        var strategyName = StrategyNameHelper.GetName(builder.Name, HttpClientBuilderExtensions.StandardInnerHandlerPostfix);
+        var pipelineName = PipelineNameHelper.GetName(builder.Name, HttpClientBuilderExtensions.StandardInnerHandlerPostfix);
 
-        StrategyKeyProviderHelper.SelectStrategyBy(builder.Services, strategyName, selectorFactory);
+        PipelineKeyProviderHelper.SelectPipelineBy(builder.Services, pipelineName, selectorFactory);
 
         return builder;
     }

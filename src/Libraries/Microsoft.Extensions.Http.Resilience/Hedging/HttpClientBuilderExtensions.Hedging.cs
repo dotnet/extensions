@@ -34,7 +34,7 @@ public static partial class HttpClientBuilderExtensions
     /// The standard hedging uses a pool of circuit breakers to ensure that unhealthy endpoints are not hedged against.
     /// By default, the selection from pool is based on the URL Authority (scheme + host + port).
     /// It is recommended that you configure the way the strategies are selected by calling
-    /// <see cref="StandardHedgingHandlerBuilderExtensions.SelectStrategyByAuthority(IStandardHedgingHandlerBuilder, DataClassification)"/>
+    /// <see cref="StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(IStandardHedgingHandlerBuilder, DataClassification)"/>
     /// extensions.
     /// <para>
     /// See <see cref="HttpStandardHedgingResilienceOptions"/> for more details about the used resilience strategies.
@@ -63,7 +63,7 @@ public static partial class HttpClientBuilderExtensions
     /// The standard hedging uses a pool of circuit breakers to ensure that unhealthy endpoints are not hedged against.
     /// By default, the selection from pool is based on the URL Authority (scheme + host + port).
     /// It is recommended that you configure the way the strategies are selected by calling
-    /// <see cref="StandardHedgingHandlerBuilderExtensions.SelectStrategyByAuthority(IStandardHedgingHandlerBuilder, DataClassification)"/>
+    /// <see cref="StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(IStandardHedgingHandlerBuilder, DataClassification)"/>
     /// extensions.
     /// <para>
     /// See <see cref="HttpStandardHedgingResilienceOptions"/> for more details about the used resilience strategies.
@@ -82,7 +82,7 @@ public static partial class HttpClientBuilderExtensions
         _ = builder.Services.AddOptionsWithValidateOnStart<HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsCustomValidator>(optionsName);
         _ = builder.Services.PostConfigure<HttpStandardHedgingResilienceOptions>(optionsName, options =>
         {
-            options.HedgingOptions.HedgingActionGenerator = args =>
+            options.HedgingOptions.ActionGenerator = args =>
             {
                 if (!args.PrimaryContext.Properties.TryGetValue(ResilienceKeys.RequestSnapshot, out var snapshot))
                 {
@@ -94,9 +94,9 @@ public static partial class HttpClientBuilderExtensions
                 // replace the request message
                 args.ActionContext.Properties.Set(ResilienceKeys.RequestMessage, requestMessage);
 
-                if (args.PrimaryContext.Properties.TryGetValue(ResilienceKeys.RoutingStrategy, out var routingStrategy))
+                if (args.PrimaryContext.Properties.TryGetValue(ResilienceKeys.RoutingStrategy, out var routingPipeline))
                 {
-                    if (!routingStrategy.TryGetNextRoute(out var route))
+                    if (!routingPipeline.TryGetNextRoute(out var route))
                     {
                         // no routes left, stop hedging
                         return null;
@@ -117,8 +117,8 @@ public static partial class HttpClientBuilderExtensions
             var routingOptions = context.GetOptions<RequestRoutingOptions>(routingBuilder.Name);
 
             _ = builder
-                .AddStrategy(new RoutingResilienceStrategy(routingOptions.RoutingStrategyProvider))
-                .AddStrategy(new RequestMessageSnapshotStrategy())
+                .AddStrategy(_ => new RoutingResilienceStrategy(routingOptions.RoutingStrategyProvider), new EmptyResilienceStrategyOptions())
+                .AddStrategy(_ => new RequestMessageSnapshotStrategy(), new EmptyResilienceStrategyOptions())
                 .AddTimeout(options.TotalRequestTimeoutOptions)
                 .AddHedging(options.HedgingOptions);
         });
@@ -136,7 +136,7 @@ public static partial class HttpClientBuilderExtensions
                     .AddCircuitBreaker(options.EndpointOptions.CircuitBreakerOptions)
                     .AddTimeout(options.EndpointOptions.TimeoutOptions);
             })
-            .SelectStrategyByAuthority(DataClassification.Unknown);
+            .SelectPipelineByAuthority(DataClassification.Unknown);
 
         return new StandardHedgingHandlerBuilder(builder.Name, builder.Services, routingBuilder);
     }
@@ -145,4 +145,8 @@ public static partial class HttpClientBuilderExtensions
         string Name,
         IServiceCollection Services,
         IRoutingStrategyBuilder RoutingStrategyBuilder) : IStandardHedgingHandlerBuilder;
+
+    private sealed class EmptyResilienceStrategyOptions : ResilienceStrategyOptions
+    {
+    }
 }

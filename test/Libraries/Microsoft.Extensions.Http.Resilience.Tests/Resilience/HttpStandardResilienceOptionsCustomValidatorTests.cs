@@ -11,6 +11,7 @@ using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Resilience;
 #endif
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
+using Polly;
 using Polly.Retry;
 using Xunit;
 
@@ -31,7 +32,7 @@ public class HttpStandardResilienceOptionsCustomValidatorTests
 #if NET8_0_OR_GREATER
         // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
         // and as such the API is available in .NET 8 onwards.
-        Assert.Equal(3, validationResult.Failures.Count());
+        Assert.Equal(2, validationResult.Failures.Count());
 #endif
     }
 
@@ -60,9 +61,9 @@ public class HttpStandardResilienceOptionsCustomValidatorTests
             yield return new object[] { options };
 
             options = new HttpStandardResilienceOptions();
-            options.RetryOptions.RetryCount = 1;
-            options.RetryOptions.BackoffType = RetryBackoffType.Linear;
-            options.RetryOptions.BaseDelay = options.TotalRequestTimeoutOptions.Timeout;
+            options.RetryOptions.MaxRetryAttempts = 1;
+            options.RetryOptions.BackoffType = DelayBackoffType.Linear;
+            options.RetryOptions.Delay = options.TotalRequestTimeoutOptions.Timeout;
             yield return new object[] { options };
         }
     }
@@ -87,10 +88,6 @@ public class HttpStandardResilienceOptionsCustomValidatorTests
 
             options = new HttpStandardResilienceOptions();
             options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(2);
-            yield return new object[] { options };
-
-            options = new HttpStandardResilienceOptions();
-            options.RetryOptions.BaseDelay = TimeSpan.FromDays(1);
             yield return new object[] { options };
 
             options = new HttpStandardResilienceOptions();

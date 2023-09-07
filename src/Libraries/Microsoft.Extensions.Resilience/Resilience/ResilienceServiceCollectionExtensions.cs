@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience.Internal;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
-using Polly.Extensions.Telemetry;
+using Polly.Telemetry;
 
 namespace Microsoft.Extensions.Resilience;
 
@@ -46,20 +46,16 @@ public static class ResilienceServiceCollectionExtensions
         _ = Throw.IfNull(services);
 
         // let's make this call idempotent by checking if ResilienceEnricher is already added
-        if (services.Any(s => s.ServiceType == typeof(ResilienceEnricher)))
+        if (services.Any(s => s.ServiceType == typeof(ResilienceMetricsEnricher)))
         {
             return services;
         }
 
-        services.TryAddActivatedSingleton<ResilienceEnricher>();
+        services.TryAddActivatedSingleton<ResilienceMetricsEnricher>();
 
         _ = services
             .AddOptions<TelemetryOptions>()
-            .Configure<IServiceProvider>((options, serviceProvider) =>
-            {
-                var enricher = serviceProvider.GetRequiredService<ResilienceEnricher>();
-                options.Enrichers.Add(enricher.Enrich);
-            });
+            .Configure<ResilienceMetricsEnricher>((options, enricher) => options.MeteringEnrichers.Add(enricher));
 
         return services;
     }
@@ -81,9 +77,6 @@ public static class ResilienceServiceCollectionExtensions
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configure);
 
-        return services.Configure<FailureEventMetricsOptions>(options =>
-        {
-            options.Factories[typeof(TResult)] = value => configure((TResult)value);
-        });
+        return services.Configure<FailureEventMetricsOptions>(options => options.ConfigureFailureResultContext(configure));
     }
 }

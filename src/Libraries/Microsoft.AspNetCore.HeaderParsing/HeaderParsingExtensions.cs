@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Telemetry.Metrics;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.AspNetCore.HeaderParsing;
@@ -33,7 +33,7 @@ public static class HeaderParsingExtensions
                 .AddSingleton<IHeaderRegistry, HeaderRegistry>()
                 .AddScoped(provider => provider.GetRequiredService<ObjectPool<HeaderParsingFeature.PoolHelper>>().Get())
                 .AddScoped(provider => provider.GetRequiredService<HeaderParsingFeature.PoolHelper>().Feature)
-                .RegisterMetering();
+                .RegisterMetrics();
         }
 
         return services;

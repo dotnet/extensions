@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Moq;
 using Polly;
 using Xunit;
 
@@ -16,7 +17,7 @@ public class RequestMessageSnapshotStrategyTests
     [Fact]
     public async Task SendAsync_EnsureSnapshotAttached()
     {
-        var strategy = new RequestMessageSnapshotStrategy();
+        var strategy = Create();
         var context = ResilienceContextPool.Shared.Get();
         using var request = new HttpRequestMessage();
         context.Properties.Set(ResilienceKeys.RequestMessage, request);
@@ -33,8 +34,10 @@ public class RequestMessageSnapshotStrategyTests
     [Fact]
     public void ExecuteAsync_requestMessageNotFound_Throws()
     {
-        var strategy = new RequestMessageSnapshotStrategy();
+        var strategy = Create();
 
         strategy.Invoking(s => s.Execute(() => { })).Should().Throw<InvalidOperationException>();
     }
+
+    private static ResiliencePipeline Create() => new ResiliencePipelineBuilder().AddStrategy(_ => new RequestMessageSnapshotStrategy(), Mock.Of<ResilienceStrategyOptions>()).Build();
 }
