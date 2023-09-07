@@ -47,24 +47,6 @@ public static class LogMethodHelperTests
         Assert.Single(list);
         Assert.Equal(PropName, list[0].Key);
         Assert.Equal(Value, list[0].Value);
-
-        _ = list.TryReset();
-        collector.Add(PropName, (object)Value);
-        Assert.Single(list);
-        Assert.Equal(PropName, list[0].Key);
-        Assert.Equal(Value, list[0].Value);
-
-        _ = list.TryReset();
-        collector.Add(new[] { new KeyValuePair<string, object>(PropName, Value) }.AsSpan());
-        Assert.Single(list);
-        Assert.Equal(PropName, list[0].Key);
-        Assert.Equal(Value, list[0].Value);
-
-        _ = list.TryReset();
-        collector.Add(new[] { new KeyValuePair<string, string>(PropName, Value) }.AsSpan());
-        Assert.Single(list);
-        Assert.Equal(PropName, list[0].Key);
-        Assert.Equal(Value, list[0].Value);
     }
 
     [Theory]

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 
 namespace Microsoft.Extensions.Telemetry.Enrichment;
 
@@ -48,28 +47,4 @@ public interface IEnrichmentTagCollector
     /// For metric enrichment, <paramref name="tagValue"/> is converted to <see cref="string"/> format using <see cref="object.ToString()"/> method.
     /// </remarks>
     void Add(string tagName, object tagValue);
-
-    /// <summary>
-    /// Adds a tag in form of a key/value pair.
-    /// </summary>
-    /// <param name="tagName">Enrichment property key.</param>
-    /// <param name="tagValue">Enrichment property value.</param>
-    /// <exception cref="ArgumentException"><paramref name="tagName"/> is an empty string.</exception>
-    /// <exception cref="ArgumentNullException">
-    /// Either <paramref name="tagName"/> or <paramref name="tagValue"/> is <see langword="null" />.
-    /// </exception>
-    void Add(string tagName, string tagValue);
-
-    /// <summary>
-    /// Adds a series of tags.
-    /// </summary>
-    /// <param name="tags">The tags to add.</param>
-    /// <remarks>Refer to the <see cref="Add(string, object)"/> overload for a description of the serialization semantics.</remarks>
-    void Add(ReadOnlySpan<KeyValuePair<string, object>> tags);
-
-    /// <summary>
-    /// Adds a series of tags.
-    /// </summary>
-    /// <param name="tags">The tags to add.</param>
-    void Add(ReadOnlySpan<KeyValuePair<string, string>> tags);
 }
