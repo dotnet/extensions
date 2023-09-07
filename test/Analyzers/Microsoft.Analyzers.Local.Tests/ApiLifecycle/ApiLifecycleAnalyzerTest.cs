@@ -77,7 +77,7 @@ public class ApiLifecycleAnalyzerTest
         }
     }
 
-    public static IEnumerable<System.Reflection.Assembly> References => new[]
+    public static IEnumerable<Assembly> References => new[]
     {
         Assembly.GetAssembly(typeof(ObsoleteAttribute))!,
         Assembly.GetAssembly(typeof(EditorBrowsableAttribute))!,
