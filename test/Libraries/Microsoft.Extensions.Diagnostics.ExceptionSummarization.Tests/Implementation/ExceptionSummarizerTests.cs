@@ -294,4 +294,24 @@ public class ExceptionSummarizerTests
         Assert.Equal(exceptionHResultSummary, summary);
         Assert.Equal(exceptionHResultSummary.ToString(), summary.ToString());
     }
+
+    private class DerivedException : TestException
+    {
+        public DerivedException(uint hResult, string message, Exception innerException)
+            : base(hResult, message, innerException)
+        {
+        }
+    }
+
+    [Fact]
+    public void Summarize_WithDerivedExceptionType_ReturnSummary()
+    {
+        var exception = new DerivedException(0, "Test", new TestException(0));
+        var exceptionHResultSummary = new ExceptionSummary("DerivedException", "TestException", "Unknown");
+
+        var summary = _exceptionSummarizer.Summarize(exception);
+
+        Assert.Equal(exceptionHResultSummary, summary);
+        Assert.Equal(exceptionHResultSummary.ToString(), summary.ToString());
+    }
 }
