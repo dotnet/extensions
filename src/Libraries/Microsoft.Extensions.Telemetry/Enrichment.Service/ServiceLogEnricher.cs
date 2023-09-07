@@ -23,7 +23,13 @@ internal sealed class ServiceLogEnricher : IStaticLogEnricher
         _tags = Initialize(enricherOptions, applicationMetadata);
     }
 
-    public void Enrich(IEnrichmentTagCollector collector) => collector.Add(_tags);
+    public void Enrich(IEnrichmentTagCollector collector)
+    {
+        foreach (var kvp in _tags)
+        {
+            collector.Add(kvp.Key, kvp.Value);
+        }
+    }
 
     private static KeyValuePair<string, object>[] Initialize(ServiceLogEnricherOptions enricherOptions, ApplicationMetadata applicationMetadata)
     {

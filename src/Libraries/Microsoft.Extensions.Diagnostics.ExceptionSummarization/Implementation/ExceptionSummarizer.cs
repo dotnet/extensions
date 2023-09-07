@@ -9,18 +9,11 @@ using Microsoft.Shared.Text;
 
 namespace Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 
-/// <summary>
-/// Looks through all the registered summary providers, returns a summary if possible.
-/// </summary>
 internal sealed class ExceptionSummarizer : IExceptionSummarizer
 {
     private const string DefaultDescription = "Unknown";
     private readonly FrozenDictionary<Type, IExceptionSummaryProvider> _exceptionTypesToProviders;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ExceptionSummarizer"/> class.
-    /// </summary>
-    /// <param name="providers">All registered exception providers.</param>
     public ExceptionSummarizer(IEnumerable<IExceptionSummaryProvider> providers)
     {
         var exceptionTypesToProvidersBuilder = new Dictionary<Type, IExceptionSummaryProvider>();
@@ -35,21 +28,22 @@ internal sealed class ExceptionSummarizer : IExceptionSummarizer
         _exceptionTypesToProviders = exceptionTypesToProvidersBuilder.ToFrozenDictionary();
     }
 
-    /// <summary>
-    /// It iterates through all registered summarizers, returns a summary if possible.
-    /// Default is <see cref="Exception"/> message if its length is less than 32, otherwise exception type name.
-    /// </summary>
-    /// <param name="exception">The exception.</param>
-    /// <returns>The summary of the given <see cref="Exception"/>.</returns>
     public ExceptionSummary Summarize(Exception exception)
     {
         _ = Throw.IfNull(exception);
         var exceptionType = exception.GetType();
         var exceptionTypeName = exception.GetType().Name;
 
-        if (_exceptionTypesToProviders.TryGetValue(exceptionType, out var exceptionSummaryProvider))
+        // find a match for the exception type or a base type thereof
+        var type = exceptionType;
+        while (type != null)
         {
-            return BuildSummary(exception, exceptionSummaryProvider, exceptionTypeName);
+            if (_exceptionTypesToProviders.TryGetValue(type, out var exceptionSummaryProvider))
+            {
+                return BuildSummary(exception, exceptionSummaryProvider, exceptionTypeName);
+            }
+
+            type = type.BaseType;
         }
 
         // Let's see if we get lucky with the inner exception

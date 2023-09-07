@@ -71,22 +71,12 @@ public static class LoggerMessageStateTests
         var collector = (IEnrichmentTagCollector)lms;
 
         collector.Add("K1", "V1");
-        collector.Add("K2", (object)"V2");
-        collector.Add(new[] { new KeyValuePair<string, string>("K3", "V3") }.AsSpan());
-        collector.Add(new[] { new KeyValuePair<string, object>("K4", "V4") }.AsSpan());
 
-        Assert.Equal(4, lms.NumTags);
+        Assert.Equal(1, lms.NumTags);
         Assert.Equal(0, lms.NumClassifiedTags);
 
         Assert.Equal("K1", lms.TagArray[0].Key);
-        Assert.Equal("K2", lms.TagArray[1].Key);
-        Assert.Equal("K3", lms.TagArray[2].Key);
-        Assert.Equal("K4", lms.TagArray[3].Key);
-
         Assert.Equal("V1", lms.TagArray[0].Value);
-        Assert.Equal("V2", lms.TagArray[1].Value);
-        Assert.Equal("V3", lms.TagArray[2].Value);
-        Assert.Equal("V4", lms.TagArray[3].Value);
     }
 
     [Fact]

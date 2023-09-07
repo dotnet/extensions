@@ -887,7 +887,10 @@ public static class ExtendedLoggerTests
             if (_objectVersion)
             {
                 var p = (KeyValuePair<string, object>[])(object)_values;
-                collector.Add(p.AsSpan());
+                foreach (var kvp in p)
+                {
+                    collector.Add(kvp.Key, kvp.Value);
+                }
             }
             else
             {
@@ -898,7 +901,10 @@ public static class ExtendedLoggerTests
                     a[i++] = new(kvp.Key, (string)kvp.Value!);
                 }
 
-                collector.Add(a.AsSpan());
+                foreach (var kvp in a)
+                {
+                    collector.Add(kvp.Key, kvp.Value);
+                }
             }
         }
     }

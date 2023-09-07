@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Telemetry.Abstractions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Telemetry.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "readonly struct Microsoft.Extensions.Telemetry.Latency.Checkpoint : System.IEquatable<Microsoft.Extensions.Telemetry.Latency.Checkpoint>",
@@ -314,18 +314,6 @@
       "Methods": [
         {
           "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector.Add(string tagName, object tagValue);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector.Add(string tagName, string tagValue);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string, object>> tags);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string, string>> tags);",
           "Stage": "Stable"
         }
       ]
@@ -807,6 +795,30 @@
         {
           "Member": "string Microsoft.Extensions.Telemetry.Metrics.TagNameAttribute.Name { get; }",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Telemetry.Logging.TagProviderAttribute : System.Attribute",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Telemetry.Logging.TagProviderAttribute.TagProviderAttribute(System.Type providerType, string providerMethod);",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Telemetry.Logging.TagProviderAttribute.OmitReferenceName { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Telemetry.Logging.TagProviderAttribute.ProviderMethod { get; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "System.Type Microsoft.Extensions.Telemetry.Logging.TagProviderAttribute.ProviderType { get; }",
+          "Stage": "Experimental"
         }
       ]
     },

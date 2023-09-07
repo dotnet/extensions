@@ -24,33 +24,6 @@ internal sealed class MetricEnrichmentTagCollector : List<KeyValuePair<string, s
     }
 
     /// <inheritdoc/>
-    public void Add(string key, string value)
-    {
-        _ = Throw.IfNullOrEmpty(key);
-        _ = Throw.IfNull(value);
-
-        Add(new KeyValuePair<string, string>(key, value));
-    }
-
-    /// <inheritdoc/>
-    public void Add(ReadOnlySpan<KeyValuePair<string, string>> properties)
-    {
-        foreach (var p in properties)
-        {
-            Add(p);
-        }
-    }
-
-    /// <inheritdoc/>
-    public void Add(ReadOnlySpan<KeyValuePair<string, object>> properties)
-    {
-        foreach (var p in properties)
-        {
-            Add(new KeyValuePair<string, string>(p.Key, p.Value.ToString() ?? string.Empty));
-        }
-    }
-
-    /// <inheritdoc/>
     public bool TryReset()
     {
         Clear();
