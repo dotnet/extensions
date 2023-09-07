@@ -1,0 +1,11 @@
+Microsoft.Extensions.DependencyInjection.Abstractions
+Microsoft.Extensions.Hosting.Abstractions
+Microsoft.Extensions.Options
+System.Collections
+System.ComponentModel
+System.Linq
+System.Private.CoreLib
+System.Private.Uri
+System.Runtime
+System.Runtime.CompilerServices.Unsafe
+System.Runtime.InteropServices
