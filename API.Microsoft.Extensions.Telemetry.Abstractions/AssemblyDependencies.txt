@@ -1,0 +1,13 @@
+Microsoft.Extensions.Compliance.Abstractions
+Microsoft.Extensions.DependencyInjection.Abstractions
+Microsoft.Extensions.Logging.Abstractions
+Microsoft.Extensions.ObjectPool
+Microsoft.Extensions.Options
+System.Collections
+System.ComponentModel.Annotations
+System.Diagnostics.DiagnosticSource
+System.Private.CoreLib
+System.Private.Uri
+System.Runtime
+System.Runtime.CompilerServices.Unsafe
+System.Runtime.InteropServices
