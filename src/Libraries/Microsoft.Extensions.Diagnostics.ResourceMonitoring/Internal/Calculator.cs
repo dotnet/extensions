@@ -27,6 +27,12 @@ internal static class Calculator
         // Compute the total number of ticks available on the machine during that interval
         double totalSystemTicks = runtimeTickDelta * systemResources.GuaranteedCpuUnits;
 
+        // fudge to avoid divide by zero
+        if (totalSystemTicks <= 0)
+        {
+            totalSystemTicks = 1;
+        }
+
         // Now, compute the amount of usage between the intervals
         long oldUsageTicks = first.KernelTimeSinceStart.Ticks + first.UserTimeSinceStart.Ticks;
         long newUsageTicks = second.KernelTimeSinceStart.Ticks + second.UserTimeSinceStart.Ticks;
