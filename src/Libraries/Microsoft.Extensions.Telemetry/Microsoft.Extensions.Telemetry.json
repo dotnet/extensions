@@ -190,57 +190,6 @@
       ]
     },
     {
-      "Type": "enum Microsoft.Extensions.Telemetry.Tracing.SamplerType",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Tracing.SamplerType.SamplerType();",
-          "Stage": "Stable"
-        }
-      ],
-      "Fields": [
-        {
-          "Member": "const Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplerType.AlwaysOff",
-          "Stage": "Stable",
-          "Value": "1"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplerType.AlwaysOn",
-          "Stage": "Stable",
-          "Value": "0"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplerType.RatioBased",
-          "Stage": "Stable",
-          "Value": "2"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.Telemetry.Tracing.SamplingOptions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SamplingOptions();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "bool Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.ParentBased { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "double Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SampleRate { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Tracing.SamplerType Microsoft.Extensions.Telemetry.Tracing.SamplingOptions.SamplerType { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.ServiceEnricherExtensions",
       "Stage": "Stable",
       "Methods": [
