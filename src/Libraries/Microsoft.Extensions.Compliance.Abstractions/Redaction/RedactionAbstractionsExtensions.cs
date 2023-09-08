@@ -30,7 +30,6 @@ public static class RedactionAbstractionsExtensions
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="stringBuilder"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="redactor"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     public static StringBuilder AppendRedacted(this StringBuilder stringBuilder, Redactor redactor, string? value)
         => AppendRedacted(stringBuilder, redactor, value.AsSpan());
 

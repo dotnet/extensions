@@ -23,7 +23,6 @@ public class CustomResultPolicyOptions : ChaosPolicyOptionsBase
     /// This key is used for fetching the custom defined result object
     /// from <see cref="ICustomResultRegistry"/>.
     /// </remarks>
-    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     [Required]
     public string CustomResultKey { get; set; } = string.Empty;
 }
