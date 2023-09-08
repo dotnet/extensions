@@ -184,6 +184,22 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.Logging.LoggerRedactionOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.LoggerRedactionOptions.LoggerRedactionOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Logging.LoggerRedactionOptions.ApplyDiscriminator { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "static class Microsoft.Extensions.Logging.LoggingEnrichmentExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -207,6 +223,14 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.LoggingRedactionExtensions.EnableRedaction(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.LoggingRedactionExtensions.EnableRedaction(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Logging.LoggerRedactionOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.LoggingRedactionExtensions.EnableRedaction(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         }
       ]

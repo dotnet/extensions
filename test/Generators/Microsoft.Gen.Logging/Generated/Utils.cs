@@ -72,7 +72,10 @@ internal static class Utils
         {
             builder.SetMinimumLevel(LogLevel.Trace);
             builder.AddProvider(new Provider(fakeLogger));
-            builder.EnableRedaction();
+            builder.EnableRedaction(o =>
+            {
+                o.ApplyDiscriminator = false;
+            });
         });
 
         serviceCollection.AddRedaction(builder =>

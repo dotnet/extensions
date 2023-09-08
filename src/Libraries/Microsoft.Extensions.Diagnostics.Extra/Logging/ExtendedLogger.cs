@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Logging;
 #pragma warning disable CA1031
 
 // NOTE: This implementation uses thread local storage. As a result, it will fail if formatter code, enricher code, or
-//       redsctor code calls recursively back into the logger. Don't do that.
+//       redactor code calls recursively back into the logger. Don't do that.
 //
 // NOTE: Unlike the original logger in dotnet/runtime, this logger eats exceptions thrown from invoked loggers, enrichers,
 //       and redactors, rather than forwarding the exceptions to the caller. The fact an exception occured is recorded in
@@ -200,9 +200,11 @@ internal sealed partial class ExtendedLogger : ILogger
             ref var cp = ref msgState.ClassifiedTagArray[i];
             if (cp.Value != null)
             {
-                var jr = JustInTimeRedactor.Get();
-                jr.Value = cp.Value;
-                jr.Redactor = config.GetRedactor(cp.Classification);
+                var jr = JustInTimeRedactor.Get(
+                    cp.Value,
+                    config.GetRedactor(cp.Classification),
+                    config.AddRedactionDiscriminator ? cp.Name : string.Empty);
+
                 jr.Next = jitRedactors;
                 jitRedactors = jr;
 

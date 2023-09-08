@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InjectSharedText>true</InjectSharedText>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
