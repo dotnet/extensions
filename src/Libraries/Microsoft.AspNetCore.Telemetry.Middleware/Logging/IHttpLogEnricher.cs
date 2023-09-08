@@ -3,14 +3,17 @@
 
 #if NET8_0_OR_GREATER
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Telemetry.Enrichment;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.AspNetCore.Telemetry;
 
 /// <summary>
 /// Interface for implementing log enrichers for incoming HTTP requests.
 /// </summary>
+[Experimental(diagnosticId: Experiments.HttpLogging, UrlFormat = Experiments.UrlFormat)]
 public interface IHttpLogEnricher
 {
     /// <summary>

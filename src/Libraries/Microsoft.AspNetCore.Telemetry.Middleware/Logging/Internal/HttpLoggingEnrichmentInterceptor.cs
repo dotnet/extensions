@@ -27,6 +27,7 @@ internal sealed class HttpLoggingEnrichmentInterceptor : IHttpLoggingInterceptor
         {
             Throw.ArgumentException(nameof(httpLogEnrichers), "No IHttpLogEnricher instances were registered.");
         }
+
         _logger = logger;
     }
 

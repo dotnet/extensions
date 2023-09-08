@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Telemetry.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Telemetry.Internal;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.AspNetCore.Telemetry;
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.Telemetry;
 /// <summary>
 /// Extension methods to register the HTTP logging feature within the service.
 /// </summary>
+[Experimental(diagnosticId: Experiments.HttpLogging, UrlFormat = Experiments.UrlFormat)]
 public static class HttpLoggingServiceExtensions
 {
     /// <summary>
@@ -27,7 +29,6 @@ public static class HttpLoggingServiceExtensions
     /// <param name="configureLogging">Configures the logging options.</param>
     /// <returns>The original service collection.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
-    [Experimental("ID")]
     public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<LoggingRedactionOptions>? configureRedaction = null,
         Action<HttpLoggingOptions>? configureLogging = null)
     {
@@ -58,7 +59,6 @@ public static class HttpLoggingServiceExtensions
     /// <param name="services">The service collection.</param>
     /// <returns>The original service collection.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
-    [Experimental("ID")]
     public static IServiceCollection AddHttpLoggingEnrichment(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);

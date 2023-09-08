@@ -3,11 +3,15 @@
 
 #if NET8_0_OR_GREATER
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
+
 namespace Microsoft.AspNetCore.Telemetry;
 
 /// <summary>
 /// Strategy to decide how request path is logged.
 /// </summary>
+[Experimental(diagnosticId: Experiments.HttpLogging, UrlFormat = Experiments.UrlFormat)]
 public enum IncomingPathLoggingMode
 {
     /// <summary>

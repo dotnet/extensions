@@ -8,12 +8,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Telemetry;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.AspNetCore.Telemetry;
 
 /// <summary>
 /// Top-level model for redacting incoming HTTP requests and their corresponding responses.
 /// </summary>
+[Experimental(diagnosticId: Experiments.HttpLogging, UrlFormat = Experiments.UrlFormat)]
 public class LoggingRedactionOptions
 {
     private const IncomingPathLoggingMode DefaultRequestPathLoggingMode = IncomingPathLoggingMode.Formatted;
