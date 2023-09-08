@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Telemetry;
@@ -80,13 +79,8 @@ public class LoggingRedactionOptions
     /// </remarks>
     /// <example>
     /// A typical set of HTTP paths would be:
-    /// <code>
-    /// ExcludePathStartsWith = new HashSet&lt;string&gt;
-    /// {
-    ///     "/probe/live",
-    ///     "/probe/ready"
-    /// };
-    /// </code>
+    /// - "/probe/live".
+    /// - "/probe/ready".
     /// </example>
     public ISet<string> ExcludePathStartsWith { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 }

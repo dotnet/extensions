@@ -66,30 +66,5 @@ public class LoggingOptionsValidationTest
 
         Assert.Null(ex);
     }
-
-    [Theory]
-    [MemberData(nameof(OptionsConfigureActions))]
-    public void Should_Throw_OnInvalidOption(string fieldName, TOpt configure)
-    {
-        using var services = new ServiceCollection()
-            .AddLogging()
-            .AddFakeRedaction()
-            .AddHttpLoggingRedaction(configure)
-            .BuildServiceProvider();
-
-        var ex = Assert.Throws<OptionsValidationException>(
-            () => services.GetRequiredService<IHttpLoggingInterceptor>());
-
-        Assert.Contains($"{nameof(LoggingRedactionOptions)}.{fieldName}", ex.Message);
-    }
-
-    public static IEnumerable<object[]> OptionsConfigureActions =>
-        new List<object[]>
-        {
-            new object[] { "RequestHeadersDataClasses", (TOpt) (x => x.RequestHeadersDataClasses = null!) },
-            new object[] { "ResponseHeadersDataClasses", (TOpt) (x => x.ResponseHeadersDataClasses = null!) },
-            new object[] { "RouteParameterDataClasses", (TOpt) (x => x.RouteParameterDataClasses = null!) },
-            new object[] { "ExcludePathStartsWith", (TOpt) ( x=> x.ExcludePathStartsWith = null!) }
-        };
 }
 #endif
