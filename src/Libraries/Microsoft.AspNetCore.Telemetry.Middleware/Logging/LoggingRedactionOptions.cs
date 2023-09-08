@@ -3,6 +3,7 @@
 
 #if NET8_0_OR_GREATER
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -41,7 +42,7 @@ public class LoggingRedactionOptions
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>
-    /// Gets or sets a map between HTTP path parameters and their data classification.
+    /// Gets a map between HTTP path parameters and their data classification.
     /// </summary>
     /// <remarks>
     /// Default set to an empty dictionary.
@@ -49,36 +50,28 @@ public class LoggingRedactionOptions
     /// it's not found in this map, it will be redacted as if it was <see cref="DataClassification.Unknown"/>.
     /// If you don't want a parameter to be redacted, mark it as <see cref="DataClassification.None"/>.
     /// </remarks>
-    [Required]
-    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Options pattern.")]
-    public IDictionary<string, DataClassification> RouteParameterDataClasses { get; set; } = new Dictionary<string, DataClassification>();
+    public IDictionary<string, DataClassification> RouteParameterDataClasses { get; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Gets or sets a map between request headers to be logged and their data classification.
+    /// Gets a map between request headers to be logged and their data classification.
     /// </summary>
     /// <remarks>
     /// Default set to an empty dictionary.
     /// That means that no request header will be logged by default.
     /// </remarks>
-    [Required]
-    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
-        Justification = "Options pattern.")]
-    public IDictionary<string, DataClassification> RequestHeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
+    public IDictionary<string, DataClassification> RequestHeadersDataClasses { get; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Gets or sets a map between response headers to be logged and their data classification.
+    /// Gets a map between response headers to be logged and their data classification.
     /// </summary>
     /// <remarks>
     /// Default set to an empty dictionary.
     /// That means that no response header will be logged by default.
     /// </remarks>
-    [Required]
-    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
-        Justification = "Options pattern.")]
-    public IDictionary<string, DataClassification> ResponseHeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
+    public IDictionary<string, DataClassification> ResponseHeadersDataClasses { get; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Gets or sets the set of HTTP paths that should be excluded from logging.
+    /// Gets the set of HTTP paths that should be excluded from logging.
     /// </summary>
     /// <remarks>
     /// Any path added to the set will not be logged.
@@ -95,10 +88,7 @@ public class LoggingRedactionOptions
     /// };
     /// </code>
     /// </example>
-    [Required]
-    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
-        Justification = "Options pattern.")]
-    public ISet<string> ExcludePathStartsWith { get; set; } = new HashSet<string>();
+    public ISet<string> ExcludePathStartsWith { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 }
 
 #endif
