@@ -55,7 +55,7 @@ internal sealed class HttpLoggingEnrichmentInterceptor : IHttpLoggingInterceptor
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                enricher.Enrich(enrichmentBag, context.Request, context.Response);
+                enricher.Enrich(enrichmentBag, context);
             }
             catch (Exception ex)
             {

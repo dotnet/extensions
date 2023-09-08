@@ -20,8 +20,7 @@ public interface IHttpLogEnricher
     /// Enrich logs.
     /// </summary>
     /// <param name="collector">Tag collector to add tags to.</param>
-    /// <param name="request"><see cref="HttpResponse"/> object associated with the incoming HTTP request.</param>
-    /// <param name="response"><see cref="HttpResponse"/> object associated with the response to an incoming HTTP request.</param>
-    void Enrich(IEnrichmentTagCollector collector, HttpRequest request, HttpResponse response);
+    /// <param name="httpContext"><see cref="HttpContext"/> object associated with the incoming HTTP request.</param>
+    void Enrich(IEnrichmentTagCollector collector, HttpContext httpContext);
 }
 #endif
