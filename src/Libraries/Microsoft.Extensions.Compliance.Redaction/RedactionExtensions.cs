@@ -4,63 +4,15 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Compliance.Redaction;
 
 /// <summary>
-/// Add redaction to the application.
+/// Add redaction support to the application.
 /// </summary>
 public static partial class RedactionExtensions
 {
-    /// <summary>
-    /// Registers redaction in the application.
-    /// </summary>
-    /// <param name="builder"><see cref="IHostBuilder"/> instance.</param>
-    /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static IHostBuilder ConfigureRedaction(this IHostBuilder builder)
-    {
-        _ = Throw.IfNull(builder);
-
-        return builder.ConfigureServices((_, services) => services.AddRedaction());
-    }
-
-    /// <summary>
-    /// Registers redaction in the application.
-    /// </summary>
-    /// <param name="builder"><see cref="IHostBuilder"/> instance.</param>
-    /// <param name="configure">Configuration for <see cref="IRedactionBuilder"/>.</param>
-    /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="configure"/> is <see langword="null"/>.</exception>
-    public static IHostBuilder ConfigureRedaction(
-        this IHostBuilder builder,
-        Action<HostBuilderContext, IRedactionBuilder> configure)
-    {
-        _ = Throw.IfNull(builder);
-        _ = Throw.IfNull(configure);
-
-        return builder.ConfigureServices((context, services) => services.AddRedaction(builder => configure(context, builder)));
-    }
-
-    /// <summary>
-    /// Registers redaction in the application.
-    /// </summary>
-    /// <param name="builder"><see cref="IHostBuilder"/> instance.</param>
-    /// <param name="configure">Configuration for <see cref="IRedactionBuilder"/>.</param>
-    /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="configure"/> is <see langword="null"/>.</exception>
-    public static IHostBuilder ConfigureRedaction(this IHostBuilder builder, Action<IRedactionBuilder> configure)
-    {
-        _ = Throw.IfNull(builder);
-        _ = Throw.IfNull(configure);
-
-        return builder.ConfigureServices((_, services) => services.AddRedaction(builder => configure(builder)));
-    }
-
     /// <summary>
     /// Registers an implementation of <see cref="IRedactorProvider"/> in the <see cref="IServiceCollection"/>.
     /// </summary>

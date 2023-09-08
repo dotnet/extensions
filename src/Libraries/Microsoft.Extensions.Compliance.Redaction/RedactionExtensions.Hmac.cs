@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Compliance.Redaction;
@@ -13,7 +14,7 @@ namespace Microsoft.Extensions.Compliance.Redaction;
 public static partial class RedactionExtensions
 {
     /// <summary>
-    /// Sets the xxHash3 redactor to use for a set of data classes.
+    /// Sets the HMAC redactor to use for a set of data classes.
     /// </summary>
     /// <param name="builder">The builder to attach the redactor to.</param>
     /// <param name="configure">Configuration function.</param>
@@ -21,14 +22,12 @@ public static partial class RedactionExtensions
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="configure" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
     /// <remarks>
-    /// The <see href="https://xxhash.com/">XXH3</see> algorithm is a high-quality high-performance
-    /// non-cryptographic hashing algorithm that produces a 64-bit value. Given the relatively small
-    /// hash space, it is possible to brute-force the hash value to find the original input value
-    /// using a rainbow table.
-    ///
-    /// If you need a crytographically secure redaction algorithm, see <see cref="SetHmacRedactor(IRedactionBuilder, Action{HmacRedactorOptions}, DataClassification[])"/> instead.
+    /// This redactor providers crytographically secure redaction. This is fairly computationally
+    /// intensive. If you don't need crytographic quality redaction, see <see cref="SetXXHash3Redactor(IRedactionBuilder, Action{XXHash3RedactorOptions}, DataClassification[])"/>
+    /// which is considerably faster.
     /// </remarks>
-    public static IRedactionBuilder SetXXHash3Redactor(this IRedactionBuilder builder, Action<XXHash3RedactorOptions> configure, params DataClassification[] classifications)
+    [Experimental(diagnosticId: Experiments.Compliance, UrlFormat = Experiments.UrlFormat)]
+    public static IRedactionBuilder SetHmacRedactor(this IRedactionBuilder builder, Action<HmacRedactorOptions> configure, params DataClassification[] classifications)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
@@ -36,14 +35,14 @@ public static partial class RedactionExtensions
 
         _ = builder
                 .Services
-                .AddOptionsWithValidateOnStart<XXHash3RedactorOptions, XXHash3RedactorOptionsValidator>()
+                .AddOptionsWithValidateOnStart<HmacRedactorOptions, HmacRedactorOptionsValidator>()
                 .Configure(configure);
 
-        return builder.SetRedactor<XXHash3Redactor>(classifications);
+        return builder.SetRedactor<HmacRedactor>(classifications);
     }
 
     /// <summary>
-    /// Sets the xxHash3 redactor to use for a set of data classes.
+    /// Sets the HMAC redactor to use for a set of data classes.
     /// </summary>
     /// <param name="builder">The builder to attach the redactor to.</param>
     /// <param name="section">Configuration section.</param>
@@ -51,28 +50,26 @@ public static partial class RedactionExtensions
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="section" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
     /// <remarks>
-    /// The <see href="https://xxhash.com/">XXH3</see> algorithm is a high-quality high-performance
-    /// non-cryptographic hashing algorithm that produces a 64-bit value. Given the relatively small
-    /// hash space, it is possible to brute-force the hash value to find the original input value
-    /// using a rainbow table.
-    ///
-    /// If you need a crytographically secure redaction algorithm, see <see cref="SetHmacRedactor(IRedactionBuilder, IConfigurationSection, DataClassification[])"/> instead.
+    /// This redactor providers crytographically secure redaction. This is fairly computationally
+    /// intensive. If you don't need crytographic quality redaction, see <see cref="SetXXHash3Redactor(IRedactionBuilder, IConfigurationSection, DataClassification[])"/>
+    /// which is considerably faster.
     /// </remarks>
+    [Experimental(diagnosticId: Experiments.Compliance, UrlFormat = Experiments.UrlFormat)]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(XXHash3RedactorOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Addressed with [DynamicDependency]")]
-    public static IRedactionBuilder SetXXHash3Redactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications)
+    public static IRedactionBuilder SetHmacRedactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
         _ = Throw.IfNull(classifications);
 
         _ = builder
-                .Services.AddOptionsWithValidateOnStart<XXHash3RedactorOptions, XXHash3RedactorOptionsValidator>()
-                .Services.Configure<XXHash3RedactorOptions>(section);
+                .Services.AddOptionsWithValidateOnStart<HmacRedactorOptions, HmacRedactorOptionsValidator>()
+                .Services.Configure<HmacRedactorOptions>(section);
 
-        return builder.SetRedactor<XXHash3Redactor>(classifications);
+        return builder.SetRedactor<HmacRedactor>(classifications);
     }
 }

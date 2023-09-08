@@ -38,18 +38,6 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.ConfigureRedaction(this Microsoft.Extensions.Hosting.IHostBuilder builder);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.ConfigureRedaction(this Microsoft.Extensions.Hosting.IHostBuilder builder, System.Action<Microsoft.Extensions.Hosting.HostBuilderContext, Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.ConfigureRedaction(this Microsoft.Extensions.Hosting.IHostBuilder builder, System.Action<Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder> configure);",
-          "Stage": "Stable"
-        },
-        {
           "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.SetXXHash3Redactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, System.Action<Microsoft.Extensions.Compliance.Redaction.XXHash3RedactorOptions> configure, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
           "Stage": "Stable"
         },

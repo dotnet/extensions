@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Globalization;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,13 +9,13 @@ using Xunit;
 
 namespace Microsoft.Extensions.Compliance.Redaction.Tests;
 
-public class XXHash3RedactorExtensionsTests
+public class BlottingRedactorExtensionsTests
 {
     [Fact]
     public void DelegateBased()
     {
         var redactorProvider = new ServiceCollection()
-            .AddRedaction(redaction => redaction.SetXXHash3Redactor(o => o.HashSeed = 101, SimpleClassifications.PrivateData))
+            .AddRedaction(redaction => redaction.SetBlottingRedactor(o => o.BlottingCharacter = 'X', SimpleClassifications.PrivateData))
             .BuildServiceProvider()
             .GetRequiredService<IRedactorProvider>();
 
@@ -24,13 +23,13 @@ public class XXHash3RedactorExtensionsTests
     }
 
     [Fact]
-    public void HostBuilder_GivenXXHashRedactorWithConfigurationSectionConfig_RegistersItAsHashingRedactorAndRedacts()
+    public void GivenRedactorWithConfigurationSectionConfig_RegistersItAsHashingRedactorAndRedacts()
     {
         var redactorProvider = new ServiceCollection()
             .AddRedaction(redaction =>
             {
-                var section = GetRedactorConfiguration(new ConfigurationBuilder(), 101);
-                redaction.SetXXHash3Redactor(section, SimpleClassifications.PrivateData);
+                var section = GetRedactorConfiguration(new ConfigurationBuilder(), 'X');
+                redaction.SetBlottingRedactor(section, SimpleClassifications.PrivateData);
             })
             .BuildServiceProvider()
             .GetRequiredService<IRedactorProvider>();
@@ -58,27 +57,28 @@ public class XXHash3RedactorExtensionsTests
 
             if (dc == SimpleClassifications.PrivateData)
             {
-                Assert.Equal(XXHash3Redactor.RedactedSize, expectedLength);
-                Assert.Equal(XXHash3Redactor.RedactedSize, actualLength);
+                Assert.Equal(Example.Length, expectedLength);
+                Assert.Equal(Example.Length, actualLength);
+                Assert.Equal(new string('X', Example.Length), new string(destination));
             }
             else
             {
-                Assert.True(expectedLength == 0 || expectedLength == Example.Length);
-                Assert.True(actualLength == 0 || actualLength == Example.Length);
+                Assert.Equal(0, expectedLength);
+                Assert.Equal(0, actualLength);
             }
         }
     }
 
-    private static IConfigurationSection GetRedactorConfiguration(IConfigurationBuilder builder, ulong hashSeed)
+    private static IConfigurationSection GetRedactorConfiguration(IConfigurationBuilder builder, char blottingChar)
     {
-        XXHash3RedactorOptions options;
+        BlottingRedactorOptions options;
 
         return builder
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                { $"{nameof(XXHash3RedactorOptions)}:{nameof(options.HashSeed)}", hashSeed.ToString(CultureInfo.InvariantCulture) },
+                { $"{nameof(BlottingRedactorOptions)}:{nameof(options.BlottingCharacter)}", blottingChar.ToString() },
             })
             .Build()
-            .GetSection(nameof(XXHash3RedactorOptions));
+            .GetSection(nameof(BlottingRedactorOptions));
     }
 }
