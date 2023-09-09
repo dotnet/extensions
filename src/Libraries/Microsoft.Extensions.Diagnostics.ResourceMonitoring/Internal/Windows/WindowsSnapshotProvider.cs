@@ -22,13 +22,13 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         Resources = new SystemResources(cpuUnits, cpuUnits, memoryStatus.TotalPhys, memoryStatus.TotalPhys);
     }
 
-    public ResourceUtilizationSnapshot GetSnapshot()
+    public Snapshot GetSnapshot()
     {
         // Gather the information
         // Get CPU kernel and user ticks
         var process = Process.GetCurrentProcess();
 
-        return new ResourceUtilizationSnapshot(
+        return new Snapshot(
             TimeSpan.FromTicks(TimeProvider.GetUtcNow().Ticks),
             TimeSpan.FromTicks(process.PrivilegedProcessorTime.Ticks),
             TimeSpan.FromTicks(process.UserProcessorTime.Ticks),

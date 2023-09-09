@@ -42,7 +42,7 @@ internal sealed class WindowsPerfCounterPublisher : IResourceUtilizationPublishe
     }
 
     /// <inheritdoc/>
-    public ValueTask PublishAsync(Utilization utilization, CancellationToken cancellationToken)
+    public ValueTask PublishAsync(ResourceUtilization utilization, CancellationToken cancellationToken)
     {
         // Throw exception if cancellation was requested.
         cancellationToken.ThrowIfCancellationRequested();

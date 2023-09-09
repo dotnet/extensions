@@ -20,10 +20,10 @@ public sealed class ResourceUtilizationTrackerOptionsManualValidatorTest
         var options = new ResourceMonitoringOptions
         {
             CollectionWindow = TimeSpan.FromSeconds(collectionWindow),
-            CalculationPeriod = TimeSpan.FromSeconds(calculationPeriod)
+            PublishingWindow = TimeSpan.FromSeconds(calculationPeriod)
         };
 
-        var validator = new ResourceUtilizationTrackerOptionsManualValidator();
+        var validator = new ResourceMonitoringOptionsCustomValidator();
         var isValid = validator.Validate(nameof(options), options).Succeeded;
         Assert.True(isValid);
     }
@@ -34,10 +34,10 @@ public sealed class ResourceUtilizationTrackerOptionsManualValidatorTest
         var options = new ResourceMonitoringOptions
         {
             CollectionWindow = TimeSpan.FromSeconds(1),
-            CalculationPeriod = TimeSpan.FromSeconds(2)
+            PublishingWindow = TimeSpan.FromSeconds(2)
         };
 
-        var validator = new ResourceUtilizationTrackerOptionsManualValidator();
+        var validator = new ResourceMonitoringOptionsCustomValidator();
         var validationResult = validator.Validate(nameof(options), options);
 
         Assert.True(validationResult.Failed);
@@ -47,6 +47,6 @@ public sealed class ResourceUtilizationTrackerOptionsManualValidatorTest
 #else
         var failureMessage = validationResult.FailureMessage;
 #endif
-        Assert.Equal("Property CalculationPeriod: Value must be <= to CollectionWindow (00:00:01), but is 00:00:02.", failureMessage);
+        Assert.Equal("Property PublishingWindow: Value must be <= to CollectionWindow (00:00:01), but is 00:00:02.", failureMessage);
     }
 }

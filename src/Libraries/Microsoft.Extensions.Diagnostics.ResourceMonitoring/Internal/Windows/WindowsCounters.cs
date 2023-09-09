@@ -13,7 +13,7 @@ internal sealed class WindowsCounters : IDisposable
     private readonly Meter<WindowsCounters> _meter;
     private readonly TcpTableInfo _tcpTableInfo;
 
-    public WindowsCounters(IOptions<WindowsCountersOptions> options, Meter<WindowsCounters> meter)
+    public WindowsCounters(IOptions<ResourceMonitoringOptions> options, Meter<WindowsCounters> meter)
     {
         _tcpTableInfo = new TcpTableInfo(options);
 

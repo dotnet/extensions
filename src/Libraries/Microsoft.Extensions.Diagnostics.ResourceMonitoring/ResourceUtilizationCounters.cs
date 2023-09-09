@@ -6,8 +6,11 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// <summary>
 /// Represents the names of instruments published by this package.
 /// </summary>
+/// <remarks>
+/// These counters are currently only published on Linux.
+/// </remarks>
 /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
-public static class LinuxResourceUtilizationCounters
+public static class ResourceUtilizationCounters
 {
     /// <summary>
     /// Gets the CPU consumption of the running application in percentages.

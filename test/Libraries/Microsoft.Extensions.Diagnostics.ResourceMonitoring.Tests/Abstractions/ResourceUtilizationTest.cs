@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 
-public class UtilizationTest
+public class ResourceUtilizationTest
 {
     private const double CpuPercentage = 50.0;
     private const ulong MemoryUsed = 100;
@@ -17,7 +17,7 @@ public class UtilizationTest
     [Fact]
     public void BasicConstructor()
     {
-        var utilization = new Utilization(CpuPercentage, MemoryUsed, _systemResources);
+        var utilization = new ResourceUtilization(CpuPercentage, MemoryUsed, _systemResources);
         Assert.Equal(CpuPercentage, utilization.CpuUsedPercentage);
         Assert.Equal(MemoryUsed, utilization.MemoryUsedInBytes);
         Assert.Equal(Math.Min(1.0, (double)MemoryUsed / MemoryTotal) * 100.0, utilization.MemoryUsedPercentage);
@@ -26,6 +26,6 @@ public class UtilizationTest
     [Fact]
     public void Constructor_ProvidedNegativeCpuUtilization_ThrowsArgumentOutOfRangeException()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new Utilization(-50.0, 500, _systemResources));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ResourceUtilization(-50.0, 500, _systemResources));
     }
 }

@@ -8,29 +8,29 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
-public sealed class WindowsCountersOptionsCustomValidatorTest
+public sealed class ResourceMonitoringOptionsCustomValidatorTest
 {
     [Fact]
-    public void Test_WindowsCountersOptionsCustomValidator_With_Fake_IPv6_Address()
+    public void Test_ResourceMonitoringOptionsCustomValidator_With_Fake_IPv6_Address()
     {
-        var options = new WindowsCountersOptions
+        var options = new ResourceMonitoringOptions
         {
-            InstanceIpAddresses = new HashSet<string> { "[::]" }
+            SourceIpAddresses = new HashSet<string> { "[::]" }
         };
-        var validator = new WindowsCountersOptionsCustomValidator();
+        var validator = new ResourceMonitoringOptionsCustomValidator();
         var result = validator.Validate("", options);
 
         Assert.True(result.Failed);
     }
 
     [Fact]
-    public void Test_WindowsCountersOptionsCustomValidator_with_Fake_IPv4_Address()
+    public void Test_ResourceMonitoringOptionsCustomValidator_with_Fake_IPv4_Address()
     {
-        var options = new WindowsCountersOptions
+        var options = new ResourceMonitoringOptions
         {
-            InstanceIpAddresses = new HashSet<string> { "127.0.0.1" }
+            SourceIpAddresses = new HashSet<string> { "127.0.0.1" }
         };
-        var validator = new WindowsCountersOptionsCustomValidator();
+        var validator = new ResourceMonitoringOptionsCustomValidator();
         var result = validator.Validate("", options);
 
         Assert.True(result.Succeeded);

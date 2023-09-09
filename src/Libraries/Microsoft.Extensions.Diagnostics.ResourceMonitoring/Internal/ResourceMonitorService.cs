@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 /// background process of periodically inspecting and monitoring the utilization
 /// of an enclosing system.
 /// </remarks>
-internal sealed class ResourceUtilizationTrackerService : BackgroundService, IResourceMonitor
+internal sealed class ResourceMonitorService : BackgroundService, IResourceMonitor
 {
     /// <summary>
     /// The data source.
@@ -38,34 +38,34 @@ internal sealed class ResourceUtilizationTrackerService : BackgroundService, IRe
     /// <summary>
     /// Logger to be used in this class.
     /// </summary>
-    private readonly ILogger<ResourceUtilizationTrackerService> _logger;
+    private readonly ILogger<ResourceMonitorService> _logger;
     private readonly TimeProvider _timeProvider;
 
     /// <summary>
     /// Circular buffer for storing samples.
     /// </summary>
-    private readonly CircularBuffer<ResourceUtilizationSnapshot> _snapshotsStore;
+    private readonly CircularBuffer<Snapshot> _snapshotsStore;
 
     private readonly TimeSpan _samplingInterval;
 
-    private readonly TimeSpan _calculationPeriod;
+    private readonly TimeSpan _publishingWindow;
 
     private readonly TimeSpan _collectionWindow;
 
     private readonly CancellationTokenSource _stoppingTokenSource = new();
 
-    public ResourceUtilizationTrackerService(
+    public ResourceMonitorService(
         ISnapshotProvider provider,
-        ILogger<ResourceUtilizationTrackerService> logger,
+        ILogger<ResourceMonitorService> logger,
         IOptions<ResourceMonitoringOptions> options,
         IEnumerable<IResourceUtilizationPublisher> publishers)
         : this(provider, logger, options, publishers, TimeProvider.System)
     {
     }
 
-    internal ResourceUtilizationTrackerService(
+    internal ResourceMonitorService(
         ISnapshotProvider provider,
-        ILogger<ResourceUtilizationTrackerService> logger,
+        ILogger<ResourceMonitorService> logger,
         IOptions<ResourceMonitoringOptions> options,
         IEnumerable<IResourceUtilizationPublisher> publishers,
         TimeProvider timeProvider)
@@ -74,7 +74,7 @@ internal sealed class ResourceUtilizationTrackerService : BackgroundService, IRe
         _logger = logger;
         _timeProvider = timeProvider;
         var optionsValue = Throw.IfMemberNull(options, options.Value);
-        _calculationPeriod = optionsValue.CalculationPeriod;
+        _publishingWindow = optionsValue.PublishingWindow;
         _samplingInterval = optionsValue.SamplingInterval;
         _collectionWindow = optionsValue.CollectionWindow;
 
@@ -84,7 +84,7 @@ internal sealed class ResourceUtilizationTrackerService : BackgroundService, IRe
 
         var firstSnapshot = _provider.GetSnapshot();
 
-        _snapshotsStore = new CircularBuffer<ResourceUtilizationSnapshot>(bufferSize + 1, firstSnapshot);
+        _snapshotsStore = new CircularBuffer<Snapshot>(bufferSize + 1, firstSnapshot);
     }
 
     /// <summary>
@@ -97,13 +97,13 @@ internal sealed class ResourceUtilizationTrackerService : BackgroundService, IRe
     }
 
     /// <inheritdoc />
-    public Utilization GetUtilization(TimeSpan window)
+    public ResourceUtilization GetUtilization(TimeSpan window)
     {
         _ = Throw.IfLessThanOrEqual(window.Ticks, 0);
         _ = Throw.IfGreaterThan(window.Ticks, _collectionWindow.Ticks);
 
         var samplesToRead = (int)(window.Ticks / _samplingInterval.Ticks) + 1;
-        (ResourceUtilizationSnapshot first, ResourceUtilizationSnapshot last) t;
+        (Snapshot first, Snapshot last) t;
 
         lock (_snapshotsStore)
         {
@@ -128,7 +128,7 @@ internal sealed class ResourceUtilizationTrackerService : BackgroundService, IRe
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally Consume All. Allow no escapes.")]
     internal async Task PublishUtilizationAsync(CancellationToken cancellationToken)
     {
-        var u = GetUtilization(_calculationPeriod);
+        var u = GetUtilization(_publishingWindow);
         foreach (var publisher in _publishers)
         {
             try

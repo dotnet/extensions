@@ -16,11 +16,11 @@ public class ResourceUtilizationSnapshotTest
         var time = new FakeTimeProvider();
 
         // Constructor provided TimeSpan
-        var snapshot = new ResourceUtilizationSnapshot(TimeSpan.FromTicks(time.GetUtcNow().Ticks), TimeSpan.Zero, TimeSpan.FromSeconds(1), 10);
+        var snapshot = new Snapshot(TimeSpan.FromTicks(time.GetUtcNow().Ticks), TimeSpan.Zero, TimeSpan.FromSeconds(1), 10);
         Assert.Equal(time.GetUtcNow().Ticks, snapshot.TotalTimeSinceStart.Ticks);
 
         // Constructor provided IClock
-        snapshot = new ResourceUtilizationSnapshot(time, TimeSpan.Zero, TimeSpan.FromSeconds(1), 10);
+        snapshot = new Snapshot(time, TimeSpan.Zero, TimeSpan.FromSeconds(1), 10);
         Assert.Equal(time.GetUtcNow().Ticks, snapshot.TotalTimeSinceStart.Ticks);
     }
 
@@ -28,13 +28,13 @@ public class ResourceUtilizationSnapshotTest
     public void Constructor_ProvidedWithNegativeValueOfKernelTimeSinceStart_ThrowsArgumentOutOfRangeException()
     {
         Assert.Throws<ArgumentOutOfRangeException>(()
-            => new ResourceUtilizationSnapshot(new FakeTimeProvider(), TimeSpan.MinValue, TimeSpan.FromSeconds(1), 1000));
+            => new Snapshot(new FakeTimeProvider(), TimeSpan.MinValue, TimeSpan.FromSeconds(1), 1000));
     }
 
     [Fact]
     public void Constructor_ProvidedWithNegativeValueOfUserTimeSinceStart_ThrowsArgumentOutOfRangeException()
     {
         Assert.Throws<ArgumentOutOfRangeException>(()
-            => new ResourceUtilizationSnapshot(new FakeTimeProvider(), TimeSpan.Zero, TimeSpan.MinValue, 1000));
+            => new Snapshot(new FakeTimeProvider(), TimeSpan.Zero, TimeSpan.MinValue, 1000));
     }
 }

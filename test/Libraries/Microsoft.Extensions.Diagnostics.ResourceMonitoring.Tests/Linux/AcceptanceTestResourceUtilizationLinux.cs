@@ -27,30 +27,13 @@ public sealed class AcceptanceTestResourceUtilizationLinux
     public void Adding_Linux_Resource_Utilization_Allows_To_Query_Snapshot_Provider()
     {
         using var services = new ServiceCollection()
-            .AddResourceMonitoring(x => x.AddLinuxProvider())
+            .AddResourceMonitoring()
             .BuildServiceProvider();
 
         var provider = services.GetRequiredService<ISnapshotProvider>();
 
         Assert.NotEqual(default, provider.Resources);
         Assert.NotEqual(default, provider.GetSnapshot());
-    }
-
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Want to see if it throws on windows.")]
-    public async Task Adding_Linux_Resource_Utilization_On_Windows_Throws()
-    {
-        var e = await Record.ExceptionAsync(async () =>
-        {
-            var h = FakeHost.CreateBuilder().ConfigureServices((_, s) => s.AddResourceMonitoring(x => x.AddLinuxProvider())
-                .AddSingleton<IUserHz>(new FakeUserHz(100)))
-            .Build();
-
-            await h.StartAsync();
-            await h.StopAsync();
-        });
-
-        Assert.IsAssignableFrom<NotSupportedException>(e);
     }
 
     [ConditionalFact]
@@ -63,21 +46,21 @@ public sealed class AcceptanceTestResourceUtilizationLinux
 
         var config = new KeyValuePair<string, string?>[]
             {
-                new($"{nameof(LinuxResourceUtilizationProviderOptions)}:{nameof(LinuxResourceUtilizationProviderOptions.CpuConsumptionRefreshInterval)}", cpuRefresh.ToString()),
-                new($"{nameof(LinuxResourceUtilizationProviderOptions)}:{nameof(LinuxResourceUtilizationProviderOptions.MemoryConsumptionRefreshInterval)}", memoryRefresh.ToString()),
+                new($"{nameof(ResourceMonitoringOptions)}:{nameof(ResourceMonitoringOptions.CpuConsumptionRefreshInterval)}", cpuRefresh.ToString()),
+                new($"{nameof(ResourceMonitoringOptions)}:{nameof(ResourceMonitoringOptions.MemoryConsumptionRefreshInterval)}", memoryRefresh.ToString()),
             };
 
         var section = new ConfigurationBuilder()
             .AddInMemoryCollection(config)
             .Build()
-            .GetSection(nameof(LinuxResourceUtilizationProviderOptions));
+            .GetSection(nameof(ResourceMonitoringOptions));
 
         using var services = new ServiceCollection()
             .AddSingleton<IOperatingSystem>(new FakeOperatingSystem(isLinux: true))
-            .AddResourceMonitoring(x => x.AddLinuxProvider(section))
+            .AddResourceMonitoring(x => x.ConfigureMonitor(section))
             .BuildServiceProvider();
 
-        var options = services.GetRequiredService<IOptions<LinuxResourceUtilizationProviderOptions>>();
+        var options = services.GetRequiredService<IOptions<ResourceMonitoringOptions>>();
 
         Assert.NotNull(options.Value);
         Assert.Equal(cpuRefresh, options.Value.CpuConsumptionRefreshInterval);
@@ -93,14 +76,14 @@ public sealed class AcceptanceTestResourceUtilizationLinux
 
         using var services = new ServiceCollection()
             .AddSingleton<IOperatingSystem>(new FakeOperatingSystem(isLinux: true))
-            .AddResourceMonitoring(x => x.AddLinuxProvider(options =>
+            .AddResourceMonitoring(x => x.ConfigureMonitor(options =>
             {
                 options.CpuConsumptionRefreshInterval = cpuRefresh;
                 options.MemoryConsumptionRefreshInterval = memoryRefresh;
             }))
             .BuildServiceProvider();
 
-        var options = services.GetRequiredService<IOptions<LinuxResourceUtilizationProviderOptions>>();
+        var options = services.GetRequiredService<IOptions<ResourceMonitoringOptions>>();
 
         Assert.NotNull(options.Value);
         Assert.Equal(cpuRefresh, options.Value.CpuConsumptionRefreshInterval);
@@ -117,14 +100,14 @@ public sealed class AcceptanceTestResourceUtilizationLinux
 
         var config = new KeyValuePair<string, string?>[]
             {
-                new($"{nameof(LinuxResourceUtilizationProviderOptions)}:{nameof(LinuxResourceUtilizationProviderOptions.CpuConsumptionRefreshInterval)}", cpuRefresh.ToString()),
-                new($"{nameof(LinuxResourceUtilizationProviderOptions)}:{nameof(LinuxResourceUtilizationProviderOptions.MemoryConsumptionRefreshInterval)}", memoryRefresh.ToString()),
+                new($"{nameof(ResourceMonitoringOptions)}:{nameof(ResourceMonitoringOptions.CpuConsumptionRefreshInterval)}", cpuRefresh.ToString()),
+                new($"{nameof(ResourceMonitoringOptions)}:{nameof(ResourceMonitoringOptions.MemoryConsumptionRefreshInterval)}", memoryRefresh.ToString()),
             };
 
         var section = new ConfigurationBuilder()
             .AddInMemoryCollection(config)
             .Build()
-            .GetSection(nameof(LinuxResourceUtilizationProviderOptions));
+            .GetSection(nameof(ResourceMonitoringOptions));
 
         using var services = new ServiceCollection()
             .AddSingleton<IOperatingSystem>(new FakeOperatingSystem(isLinux: true))
@@ -139,7 +122,7 @@ public sealed class AcceptanceTestResourceUtilizationLinux
                 { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "12"},
                 { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_period_us"), "6"},
             }))
-            .AddResourceMonitoring(x => x.AddLinuxProvider(section))
+            .AddResourceMonitoring(x => x.ConfigureMonitor(section))
             .BuildServiceProvider();
 
         var provider = services.GetService<ISnapshotProvider>();
@@ -178,8 +161,8 @@ public sealed class AcceptanceTestResourceUtilizationLinux
 
         listener.InstrumentPublished = (i, m) =>
         {
-            if (i.Name == LinuxResourceUtilizationCounters.CpuConsumptionPercentage
-            || i.Name == LinuxResourceUtilizationCounters.MemoryConsumptionPercentage)
+            if (i.Name == ResourceUtilizationCounters.CpuConsumptionPercentage
+            || i.Name == ResourceUtilizationCounters.MemoryConsumptionPercentage)
             {
                 m.EnableMeasurementEvents(i);
             }
@@ -187,11 +170,11 @@ public sealed class AcceptanceTestResourceUtilizationLinux
 
         listener.SetMeasurementEventCallback<double>((m, f, _, _) =>
         {
-            if (m.Name == LinuxResourceUtilizationCounters.CpuConsumptionPercentage)
+            if (m.Name == ResourceUtilizationCounters.CpuConsumptionPercentage)
             {
                 cpuFromGauge = f;
             }
-            else if (m.Name == LinuxResourceUtilizationCounters.MemoryConsumptionPercentage)
+            else if (m.Name == ResourceUtilizationCounters.MemoryConsumptionPercentage)
             {
                 memoryFromGauge = f;
             }
@@ -206,7 +189,7 @@ public sealed class AcceptanceTestResourceUtilizationLinux
             .AddSingleton<IUserHz>(new FakeUserHz(100))
             .AddSingleton<IFileSystem>(fileSystem)
             .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
-            .AddResourceMonitoring(x => x.AddLinuxProvider()))
+            .AddResourceMonitoring())
             .Build();
 
         var tracker = host.Services.GetService<IResourceMonitor>();

@@ -16,10 +16,10 @@ public sealed class ResourceUtilizationTrackerOptionsValidatorTest
         {
             CollectionWindow = TimeSpan.FromMilliseconds(100),
             SamplingInterval = TimeSpan.FromMilliseconds(10),
-            CalculationPeriod = TimeSpan.FromSeconds(200)
+            PublishingWindow = TimeSpan.FromSeconds(200)
         };
 
-        var validator = new ResourceUtilizationTrackerOptionsValidator();
+        var validator = new ResourceMonitoringOptionsValidator();
 
         var isValid = validator.Validate(nameof(options), options).Succeeded;
 
@@ -33,10 +33,10 @@ public sealed class ResourceUtilizationTrackerOptionsValidatorTest
         {
             CollectionWindow = TimeSpan.FromTicks(1),
             SamplingInterval = TimeSpan.FromSeconds(1),
-            CalculationPeriod = TimeSpan.FromSeconds(200)
+            PublishingWindow = TimeSpan.FromSeconds(200)
         };
 
-        var validator = new ResourceUtilizationTrackerOptionsValidator();
+        var validator = new ResourceMonitoringOptionsValidator();
 
         Assert.True(validator.Validate(nameof(options), options).Failed);
     }
@@ -48,10 +48,10 @@ public sealed class ResourceUtilizationTrackerOptionsValidatorTest
         {
             CollectionWindow = TimeSpan.FromMilliseconds(100),
             SamplingInterval = TimeSpan.FromMilliseconds(0),
-            CalculationPeriod = TimeSpan.FromSeconds(200)
+            PublishingWindow = TimeSpan.FromSeconds(200)
         };
 
-        var validator = new ResourceUtilizationTrackerOptionsValidator();
+        var validator = new ResourceMonitoringOptionsValidator();
 
         Assert.True(validator.Validate(nameof(options), options).Failed);
     }
@@ -63,10 +63,10 @@ public sealed class ResourceUtilizationTrackerOptionsValidatorTest
         {
             CollectionWindow = TimeSpan.FromMilliseconds(100),
             SamplingInterval = TimeSpan.FromMilliseconds(1),
-            CalculationPeriod = TimeSpan.FromSeconds(-5)
+            PublishingWindow = TimeSpan.FromSeconds(-5)
         };
 
-        var validator = new ResourceUtilizationTrackerOptionsValidator();
+        var validator = new ResourceMonitoringOptionsValidator();
 
         Assert.True(validator.Validate(nameof(options), options).Failed);
     }
@@ -108,10 +108,10 @@ public sealed class ResourceUtilizationTrackerOptionsValidatorTest
         {
             CollectionWindow = TimeSpan.FromMilliseconds(samplingWindow),
             SamplingInterval = TimeSpan.FromMilliseconds(samplingPeriod),
-            CalculationPeriod = TimeSpan.FromMilliseconds(calculationPeriod)
+            PublishingWindow = TimeSpan.FromMilliseconds(calculationPeriod)
         };
 
-        var validator = new ResourceUtilizationTrackerOptionsValidator();
+        var validator = new ResourceMonitoringOptionsValidator();
 
         Assert.Equal(isError, validator.Validate(nameof(options), options).Failed);
     }

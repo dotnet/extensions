@@ -13,5 +13,5 @@ internal class DummyTracker : IResourceMonitor
     public const ulong MemoryTotal = 1000;
     public const uint CpuUnits = 1;
 
-    public Utilization GetUtilization(TimeSpan aggregationPeriod) => new(CpuPercentage, MemoryUsed, new SystemResources(CpuUnits, CpuUnits, MemoryTotal, MemoryTotal));
+    public ResourceUtilization GetUtilization(TimeSpan aggregationPeriod) => new(CpuPercentage, MemoryUsed, new SystemResources(CpuUnits, CpuUnits, MemoryTotal, MemoryTotal));
 }

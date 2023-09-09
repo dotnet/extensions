@@ -14,22 +14,22 @@ internal sealed class TcpTableInfo
 {
     private readonly object _lock = new();
     private readonly FrozenSet<uint> _localIPAddresses;
-    private readonly TimeSpan _cachingInterval;
+    private readonly TimeSpan _samplingInterval;
     internal delegate uint GetTcpTableDelegate(IntPtr pTcpTable, ref uint pdwSize, bool bOrder);
     private static GetTcpTableDelegate _getTcpTable = SafeNativeMethods.GetTcpTable;
     private TcpStateInfo _snapshot = new();
     private DateTimeOffset _refreshAfter;
     private TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
-    public TcpTableInfo(IOptions<WindowsCountersOptions> options)
+    public TcpTableInfo(IOptions<ResourceMonitoringOptions> options)
     {
-        var stringAddresses = options.Value.InstanceIpAddresses;
+        var stringAddresses = options.Value.SourceIpAddresses;
         _localIPAddresses = stringAddresses
 #pragma warning disable CS0618
             .Select(s => (uint)IPAddress.Parse(s).Address)
 #pragma warning restore CS0618
             .ToFrozenSet();
-        _cachingInterval = options.Value.CachingInterval;
+        _samplingInterval = options.Value.SamplingInterval;
         _refreshAfter = default;
     }
 
@@ -41,7 +41,7 @@ internal sealed class TcpTableInfo
             if (_refreshAfter < utcNow)
             {
                 _snapshot = GetSnapshot();
-                _refreshAfter = utcNow.Add(_cachingInterval);
+                _refreshAfter = utcNow.Add(_samplingInterval);
             }
         }
 

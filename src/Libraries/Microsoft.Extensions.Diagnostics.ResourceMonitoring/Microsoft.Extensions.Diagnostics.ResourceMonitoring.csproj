@@ -25,8 +25,8 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <Compile Remove="Linux\*.cs" />
-    <Compile Remove="Linux\*\*.cs" />
+    <Compile Remove="Linux*.cs" />
+    <Compile Remove="Internal\Linux\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +48,10 @@
     <InternalsVisibleToDynamicProxyGenAssembly2 Remove="IResourceMonitor.cs" />
     <InternalsVisibleToDynamicProxyGenAssembly2 Remove="IResourceMonitorBuilder.cs" />
     <InternalsVisibleToDynamicProxyGenAssembly2 Remove="ResourceMonitoringOptions.cs" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="ResourceMonitoringOptions.Linux.cs" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="ResourceMonitoringOptions.Windows.cs" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="ResourceUtilization.cs" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="ResourceUtilizationCounters.cs" />
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
   </ItemGroup>
 </Project>

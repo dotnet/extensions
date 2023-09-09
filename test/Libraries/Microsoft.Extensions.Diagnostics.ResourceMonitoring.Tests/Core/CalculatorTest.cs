@@ -16,7 +16,7 @@ public sealed class CalculatorTest
     private const double CpuUnits = 1;
     private const ulong TotalMemoryInBytes = 1000;
 
-    private readonly ResourceUtilizationSnapshot _firstSnapshot = new(
+    private readonly Snapshot _firstSnapshot = new(
         totalTimeSinceStart: TimeSpan.FromTicks(new FakeTimeProvider().GetUtcNow().Ticks),
         kernelTimeSinceStart: TimeSpan.FromTicks(0),
         userTimeSinceStart: TimeSpan.FromTicks(0),
@@ -34,7 +34,7 @@ public sealed class CalculatorTest
         // Now, what's the total number of available ticks between the two samples (for a single core)
         var totalAvailableTicks = secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks;
 
-        var second = new ResourceUtilizationSnapshot(
+        var second = new Snapshot(
             totalTimeSinceStart: secondSnapshotTimeSpan,
 
             // assign 25% to kernel time
@@ -69,7 +69,7 @@ public sealed class CalculatorTest
         // Now, what's the total number of available ticks between the two samples (for a single core)
         var totalAvailableTicks = secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks;
 
-        var second = new ResourceUtilizationSnapshot(
+        var second = new Snapshot(
             totalTimeSinceStart: secondSnapshotTimeSpan,
 
             // assign 25% to kernel time
@@ -92,7 +92,7 @@ public sealed class CalculatorTest
     public void Zeroes()
     {
         // No changes in the second snapshot
-        var secondSnapshot = new ResourceUtilizationSnapshot(
+        var secondSnapshot = new Snapshot(
             totalTimeSinceStart: _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5)),
             memoryUsageInBytes: 0,
             kernelTimeSinceStart: _firstSnapshot.KernelTimeSinceStart,
@@ -119,12 +119,12 @@ public sealed class CalculatorTest
     [Fact]
     public void TimeGoesBackwards()
     {
-        var firstSnapshot = new ResourceUtilizationSnapshot(
+        var firstSnapshot = new Snapshot(
         totalTimeSinceStart: TimeSpan.FromTicks(new FakeTimeProvider().GetUtcNow().Ticks),
         kernelTimeSinceStart: TimeSpan.FromTicks(1000),
         userTimeSinceStart: TimeSpan.FromTicks(1000),
         memoryUsageInBytes: 0);
-        var secondSnapshot = new ResourceUtilizationSnapshot(
+        var secondSnapshot = new Snapshot(
             totalTimeSinceStart: firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5)),
             memoryUsageInBytes: 0,
             kernelTimeSinceStart: TimeSpan.FromTicks(firstSnapshot.KernelTimeSinceStart.Ticks - 1),
@@ -147,7 +147,7 @@ public sealed class CalculatorTest
         // Now, what's the total number of available ticks between the two samples.
         var totalAvailableTicks = secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks;
 
-        var secondSnapshot = new ResourceUtilizationSnapshot(
+        var secondSnapshot = new Snapshot(
             totalTimeSinceStart: secondSnapshotTimeSpan,
             kernelTimeSinceStart: TimeSpan.FromTicks(totalAvailableTicks / 2),
             userTimeSinceStart: TimeSpan.FromTicks(totalAvailableTicks / 2),
@@ -175,7 +175,7 @@ public sealed class CalculatorTest
         // Now, what's the total number of available ticks between the two samples.
         var totalAvailableTicks = secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks;
 
-        var secondSnapshot = new ResourceUtilizationSnapshot(
+        var secondSnapshot = new Snapshot(
             totalTimeSinceStart: secondSnapshotTimeSpan,
 
             // Set each of kernel and uesr time to all the available ticks between

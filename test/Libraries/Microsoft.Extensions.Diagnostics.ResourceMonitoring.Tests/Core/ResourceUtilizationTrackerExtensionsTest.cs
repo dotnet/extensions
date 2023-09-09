@@ -34,7 +34,7 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
         var trackerService = provider.GetRequiredService<IResourceMonitor>();
 
         Assert.NotNull(trackerService);
-        Assert.IsType<ResourceUtilizationTrackerService>(trackerService);
+        Assert.IsType<ResourceMonitorService>(trackerService);
         Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
@@ -52,10 +52,10 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
             .BuildServiceProvider();
 
         var allHostedServices = provider.GetServices<IHostedService>();
-        var trackerService = allHostedServices.Single(s => s is ResourceUtilizationTrackerService);
+        var trackerService = allHostedServices.Single(s => s is ResourceMonitorService);
 
         Assert.NotNull(trackerService);
-        Assert.IsType<ResourceUtilizationTrackerService>(trackerService);
+        Assert.IsType<ResourceMonitorService>(trackerService);
         Assert.IsAssignableFrom<IResourceMonitor>(trackerService);
     }
 
@@ -63,12 +63,14 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
     public void ConfigureResourceUtilization_InitializeTrackerProperly()
     {
         using var host = FakeHost.CreateBuilder()
-            .ConfigureResourceMonitoring(
-            builder =>
+            .ConfigureServices(services =>
             {
-                builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
-                builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
-                builder.AddPublisher<EmptyPublisher>();
+                services.AddResourceMonitoring(builder =>
+                {
+                    builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
+                    builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
+                    builder.AddPublisher<EmptyPublisher>();
+                });
             })
             .Build();
 
@@ -90,24 +92,25 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
         const int CalculationPeriodValue = 2;
 
         using var host = FakeHost.CreateBuilder()
-            .ConfigureResourceMonitoring(
-                builder =>
+            .ConfigureServices(services =>
+            {
+                services.AddResourceMonitoring(builder =>
                 {
                     builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
                     builder.AddPublisher<EmptyPublisher>();
                     builder.ConfigureMonitor(options =>
                     {
                         options.CollectionWindow = TimeSpan.FromSeconds(SamplingWindowValue);
-                        options.CalculationPeriod = TimeSpan.FromSeconds(CalculationPeriodValue);
+                        options.PublishingWindow = TimeSpan.FromSeconds(CalculationPeriodValue);
                     });
-                })
-            .Build();
+                });
+            }).Build();
 
         var options = host.Services.GetService<IOptions<ResourceMonitoringOptions>>();
 
         Assert.NotNull(options);
         Assert.Equal(TimeSpan.FromSeconds(SamplingWindowValue), options!.Value.CollectionWindow);
-        Assert.Equal(TimeSpan.FromSeconds(CalculationPeriodValue), options!.Value.CalculationPeriod);
+        Assert.Equal(TimeSpan.FromSeconds(CalculationPeriodValue), options!.Value.PublishingWindow);
     }
 
     [Fact]
@@ -124,7 +127,7 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
                     = TimeSpan.FromSeconds(SamplingWindowValue).ToString(),
                 [$"{nameof(ResourceMonitoringOptions)}:{nameof(ResourceMonitoringOptions.SamplingInterval)}"]
                     = TimeSpan.FromSeconds(SamplingPeriodValue).ToString(),
-                [$"{nameof(ResourceMonitoringOptions)}:{nameof(ResourceMonitoringOptions.CalculationPeriod)}"]
+                [$"{nameof(ResourceMonitoringOptions)}:{nameof(ResourceMonitoringOptions.PublishingWindow)}"]
                         = TimeSpan.FromSeconds(CalculationPeriod).ToString()
             })
             .Build();
@@ -133,42 +136,44 @@ public sealed class ResourceUtilizationTrackerExtensionsTest
             .GetSection(nameof(ResourceMonitoringOptions));
 
         using var host = FakeHost.CreateBuilder()
-            .ConfigureResourceMonitoring(
-                builder =>
+            .ConfigureServices(services =>
+            {
+                services.AddResourceMonitoring(builder =>
                 {
                     builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
                     builder.AddPublisher<EmptyPublisher>();
                     builder.ConfigureMonitor(configurationSection);
-                })
-            .Build();
+                });
+            }).Build();
 
         var options = host.Services.GetService<IOptions<ResourceMonitoringOptions>>();
 
         Assert.NotNull(options);
         Assert.Equal(TimeSpan.FromSeconds(SamplingWindowValue), options!.Value.CollectionWindow);
         Assert.Equal(TimeSpan.FromSeconds(SamplingPeriodValue), options!.Value.SamplingInterval);
-        Assert.Equal(TimeSpan.FromSeconds(CalculationPeriod), options!.Value.CalculationPeriod);
+        Assert.Equal(TimeSpan.FromSeconds(CalculationPeriod), options!.Value.PublishingWindow);
     }
 
     [Fact]
     public void Registering_Resource_Utilization_Adds_Only_One_Object_Of_Type_ResourceUtilizationService_To_DI_Container()
     {
         using var host = FakeHost.CreateBuilder()
-            .ConfigureResourceMonitoring(
-                builder =>
+            .ConfigureServices(services =>
+            {
+                services.AddResourceMonitoring(builder =>
                 {
                     builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
                     builder.AddPublisher<EmptyPublisher>();
-                })
-            .Build();
+                });
+            }).Build();
 
         var trackers = host.Services.GetServices<IResourceMonitor>().ToArray();
-        var backgrounds = host.Services.GetServices<IHostedService>().Where(x => x is ResourceUtilizationTrackerService).ToArray();
+        var backgrounds = host.Services.GetServices<IHostedService>().Where(x => x is ResourceMonitorService).ToArray();
 
         var tracker = Assert.Single(trackers);
         var background = Assert.Single(backgrounds);
-        Assert.IsAssignableFrom<ResourceUtilizationTrackerService>(tracker);
-        Assert.IsAssignableFrom<ResourceUtilizationTrackerService>(background);
-        Assert.Same(tracker as ResourceUtilizationTrackerService, background as ResourceUtilizationTrackerService);
+        Assert.IsAssignableFrom<ResourceMonitorService>(tracker);
+        Assert.IsAssignableFrom<ResourceMonitorService>(background);
+        Assert.Same(tracker as ResourceMonitorService, background as ResourceMonitorService);
     }
 }

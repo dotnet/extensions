@@ -15,7 +15,7 @@ public sealed class ResourceUtilizationTrackerOptionsTest
         {
             CollectionWindow = TimeSpan.FromMilliseconds(100),
             SamplingInterval = TimeSpan.FromMilliseconds(10),
-            CalculationPeriod = TimeSpan.FromSeconds(50)
+            PublishingWindow = TimeSpan.FromSeconds(50)
         };
 
         Assert.NotNull(options);

@@ -6,6 +6,6 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 [OptionsValidator]
-internal sealed partial class WindowsCountersOptionsValidator : IValidateOptions<WindowsCountersOptions>
+internal sealed partial class ResourceMonitoringOptionsValidator : IValidateOptions<ResourceMonitoringOptions>
 {
 }

@@ -82,14 +82,14 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         Resources = new SystemResources(cpuUnits, cpuUnits, memory, memory);
     }
 
-    public ResourceUtilizationSnapshot GetSnapshot()
+    public Snapshot GetSnapshot()
     {
         // Gather the information
         // Cpu kernel and user ticks
         using var jobHandle = _createJobHandleObject();
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
 
-        return new ResourceUtilizationSnapshot(
+        return new Snapshot(
             TimeSpan.FromTicks(TimeProvider.GetUtcNow().Ticks),
             TimeSpan.FromTicks(basicAccountingInfo.TotalKernelTime),
             TimeSpan.FromTicks(basicAccountingInfo.TotalUserTime),

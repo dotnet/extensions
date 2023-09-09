@@ -19,7 +19,7 @@ public sealed class LinuxCountersTest
     public void LinuxCounters_Registers_Instruments()
     {
         var meterName = Guid.NewGuid().ToString();
-        var options = Microsoft.Extensions.Options.Options.Create<LinuxResourceUtilizationProviderOptions>(new());
+        var options = Microsoft.Extensions.Options.Options.Create<ResourceMonitoringOptions>(new());
         using var meter = new Meter<LinuxUtilizationProvider>();
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -57,9 +57,9 @@ public sealed class LinuxCountersTest
         listener.RecordObservableInstruments();
 
         Assert.Equal(2, samples.Count);
-        Assert.Equal(LinuxResourceUtilizationCounters.CpuConsumptionPercentage, samples[0].instrument.Name);
+        Assert.Equal(ResourceUtilizationCounters.CpuConsumptionPercentage, samples[0].instrument.Name);
         Assert.Equal(double.NaN, samples[0].value);
-        Assert.Equal(LinuxResourceUtilizationCounters.MemoryConsumptionPercentage, samples[1].instrument.Name);
+        Assert.Equal(ResourceUtilizationCounters.MemoryConsumptionPercentage, samples[1].instrument.Name);
         Assert.Equal(50, samples[1].value);
     }
 }

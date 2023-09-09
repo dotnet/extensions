@@ -30,7 +30,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     public SystemResources Resources { get; }
 
-    public LinuxUtilizationProvider(IOptions<LinuxResourceUtilizationProviderOptions> options, LinuxUtilizationParser parser,
+    public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, LinuxUtilizationParser parser,
         Meter<LinuxUtilizationProvider> meter, IOperatingSystem os, TimeProvider? timeProvider = null)
     {
         if (!os.IsLinux)
@@ -56,8 +56,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _scale = hostCpus * Hundred / availableCpus;
         _scaleForTrackerApi = hostCpus / availableCpus;
 
-        _ = meter.CreateObservableGauge<double>(name: LinuxResourceUtilizationCounters.CpuConsumptionPercentage, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge<double>(name: LinuxResourceUtilizationCounters.MemoryConsumptionPercentage, observeValue: MemoryPercentage);
+        _ = meter.CreateObservableGauge<double>(name: ResourceUtilizationCounters.CpuConsumptionPercentage, observeValue: CpuPercentage);
+        _ = meter.CreateObservableGauge<double>(name: ResourceUtilizationCounters.MemoryConsumptionPercentage, observeValue: MemoryPercentage);
 
         Resources = new SystemResources(1, hostCpus, _totalMemoryInBytes, hostMemory);
     }
@@ -140,13 +140,13 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     /// The snapshot provider is called in intervals configured by the tracker.
     /// We multiply by scale to make hardcoded algorithm in tracker's calculator to produce right results.
     /// </remarks>
-    public ResourceUtilizationSnapshot GetSnapshot()
+    public Snapshot GetSnapshot()
     {
         var hostTime = _parser.GetHostCpuUsageInNanoseconds();
         var cgroupTime = _parser.GetCgroupCpuUsageInNanoseconds();
         var memoryUsed = _parser.GetMemoryUsageInBytes();
 
-        return new ResourceUtilizationSnapshot(
+        return new Snapshot(
             totalTimeSinceStart: TimeSpan.FromTicks(hostTime / (long)Hundred),
             kernelTimeSinceStart: TimeSpan.Zero,
             userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / (long)Hundred * _scaleForTrackerApi)),

@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// Captures resource usage at a given point in time.
 /// </summary>
 [SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Comparing instances is not an expected scenario")]
-public readonly struct Utilization
+public readonly struct ResourceUtilization
 {
     private const double Hundred = 100.0;
 
@@ -29,16 +29,12 @@ public readonly struct Utilization
     /// </summary>
     /// <remarks>
     /// This percentage is calculated relative to the <see cref="SystemResources.GuaranteedMemoryInBytes"/>.
-    /// This is an instantaneous measure when the utilization was computed, NOT an average.
     /// </remarks>
     public double MemoryUsedPercentage { get; }
 
     /// <summary>
     /// Gets the total memory used.
     /// </summary>
-    /// <remarks>
-    /// This is an instantaneous measure when the utilization was computed, NOT an average.
-    /// </remarks>
     public ulong MemoryUsedInBytes { get; }
 
     /// <summary>
@@ -46,18 +42,15 @@ public readonly struct Utilization
     /// </summary>
     public SystemResources SystemResources { get; }
 
-    /// <summary>
-    /// Gets the latest snapshot of resource utilization.
-    /// </summary>
-    internal ResourceUtilizationSnapshot Snapshot { get; } = new(new TimeSpan(0), new TimeSpan(0), new TimeSpan(0), 0);
+    internal Snapshot Snapshot { get; } = default;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Utilization"/> struct.
+    /// Initializes a new instance of the <see cref="ResourceUtilization"/> struct.
     /// </summary>
     /// <param name="cpuUsedPercentage">CPU utilization.</param>
     /// <param name="memoryUsedInBytes">Memory used in bytes (instantaneous).</param>
     /// <param name="systemResources">CPU and memory limits.</param>
-    public Utilization(double cpuUsedPercentage, ulong memoryUsedInBytes, SystemResources systemResources)
+    public ResourceUtilization(double cpuUsedPercentage, ulong memoryUsedInBytes, SystemResources systemResources)
     {
         CpuUsedPercentage = Throw.IfLessThan(cpuUsedPercentage, 0.0);
         MemoryUsedInBytes = Throw.IfLessThan(memoryUsedInBytes, 0);
@@ -66,13 +59,13 @@ public readonly struct Utilization
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Utilization"/> struct.
+    /// Initializes a new instance of the <see cref="ResourceUtilization"/> struct.
     /// </summary>
     /// <param name="cpuUsedPercentage">CPU utilization.</param>
     /// <param name="memoryUsedInBytes">Memory used in bytes (instantaneous).</param>
     /// <param name="systemResources">CPU and memory limits.</param>
     /// <param name="snapShot">Latest ResourceUtilizationSnapshot.</param>
-    internal Utilization(double cpuUsedPercentage, ulong memoryUsedInBytes, SystemResources systemResources, ResourceUtilizationSnapshot snapShot)
+    internal ResourceUtilization(double cpuUsedPercentage, ulong memoryUsedInBytes, SystemResources systemResources, Snapshot snapShot)
         : this(cpuUsedPercentage, memoryUsedInBytes, systemResources)
     {
         Snapshot = snapShot;
