@@ -18,6 +18,6 @@ internal interface ISnapshotProvider
     /// </summary>
     /// <returns>An appropriate sample.</returns>
 #pragma warning disable S4049 // Properties should be preferred
-    ResourceUtilizationSnapshot GetSnapshot();
+    Snapshot GetSnapshot();
 #pragma warning restore S4049 // Properties should be preferred
 }

@@ -2,20 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Data.Validation;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 /// <summary>
-/// Options for <see cref="IResourceMonitor"/>.
+/// Options to control resource monitoring behavior.
 /// </summary>
-public class ResourceMonitoringOptions
+public partial class ResourceMonitoringOptions
 {
-    /// <remarks>
-    /// Internal for testing.
-    /// </remarks>
     internal const int MinimumSamplingWindow = 100;
     internal const int MaximumSamplingWindow = 900000; // 15 minutes.
     internal const int MinimumSamplingPeriod = 1;
@@ -29,6 +24,10 @@ public class ResourceMonitoringOptions
     /// <value>
     /// The default value is 5 seconds.
     /// </value>
+    /// <remarks>
+    /// This value represents the total amount of time for which the resource monitor tracks utilization
+    /// information for the system.
+    /// </remarks>
     [TimeSpan(MinimumSamplingWindow, MaximumSamplingWindow)]
     public TimeSpan CollectionWindow { get; set; } = DefaultCollectionWindow;
 
@@ -38,20 +37,21 @@ public class ResourceMonitoringOptions
     /// <value>
     /// The default value is 1 second.
     /// </value>
+    /// <remarks>
+    /// This value must be &lt;= to <see cref="CollectionWindow"/>.
+    /// </remarks>
     [TimeSpan(MinimumSamplingPeriod, MaximumSamplingPeriod)]
     public TimeSpan SamplingInterval { get; set; } = DefaultSamplingInterval;
 
     /// <summary>
-    /// Gets or sets the default period used for utilization calculation.
+    /// Gets or sets the observation window used to calculate the <see cref="ResourceUtilization"/> instances pushed to publishers.
     /// </summary>
     /// <value>
     /// The default value is 5 seconds.
     /// </value>
     /// <remarks>
-    /// The value needs to be less than or equal to the <see cref="CollectionWindow"/>.
-    /// Most importantly, this period is used to calculate <see cref="Utilization"/> instances pushed to publishers.
+    /// The value needs to be &lt;= to <see cref="CollectionWindow"/>.
     /// </remarks>
-    [Experimental(diagnosticId: Experiments.ResourceMonitoring, UrlFormat = Experiments.UrlFormat)]
     [TimeSpan(MinimumSamplingWindow, MaximumSamplingWindow)]
-    public TimeSpan CalculationPeriod { get; set; } = DefaultCollectionWindow;
+    public TimeSpan PublishingWindow { get; set; } = DefaultCollectionWindow;
 }

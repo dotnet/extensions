@@ -171,10 +171,10 @@ public sealed class TcpTableInfoTest
     public void Test_TcpTableInfo_Get_UnsuccessfulStatus_All_The_Time()
     {
         TcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithUnsuccessfulStatusAllTheTime);
-        var options = new WindowsCountersOptions
+        var options = new ResourceMonitoringOptions
         {
-            InstanceIpAddresses = new HashSet<string> { "127.0.0.1" },
-            CachingInterval = DefaultTimeSpan
+            SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
+            SamplingInterval = DefaultTimeSpan
         };
         TcpTableInfo tcpTableInfo = new TcpTableInfo(Microsoft.Extensions.Options.Options.Create(options));
         Assert.Throws<InvalidOperationException>(() =>
@@ -187,10 +187,10 @@ public sealed class TcpTableInfoTest
     public void Test_TcpTableInfo_Get_InsufficientBuffer_Then_Get_InvalidParameter()
     {
         TcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithInsufficientBufferAndInvalidParameter);
-        var options = new WindowsCountersOptions
+        var options = new ResourceMonitoringOptions
         {
-            InstanceIpAddresses = new HashSet<string> { "127.0.0.1" },
-            CachingInterval = DefaultTimeSpan
+            SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
+            SamplingInterval = DefaultTimeSpan
         };
         TcpTableInfo tcpTableInfo = new TcpTableInfo(Microsoft.Extensions.Options.Options.Create(options));
         Assert.Throws<InvalidOperationException>(() =>
@@ -205,10 +205,10 @@ public sealed class TcpTableInfoTest
         StartTimestamp = DateTimeOffset.UtcNow;
         NextTimestamp = StartTimestamp.Add(DefaultTimeSpan);
         TcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithFakeInformation);
-        var options = new WindowsCountersOptions
+        var options = new ResourceMonitoringOptions
         {
-            InstanceIpAddresses = new HashSet<string> { "127.0.0.1" },
-            CachingInterval = DefaultTimeSpan
+            SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
+            SamplingInterval = DefaultTimeSpan
         };
         TcpTableInfo tcpTableInfo = new TcpTableInfo(Microsoft.Extensions.Options.Options.Create(options));
         var tcpStateInfo = tcpTableInfo.GetCachingSnapshot();
