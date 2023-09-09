@@ -190,7 +190,7 @@ internal sealed partial class ExtendedLogger : ILogger
 
         // redact
         JustInTimeRedactor? jitRedactors = null;
-        for (int i = 0; i < msgState.NumClassifiedTags; i++)
+        for (int i = 0; i < msgState.ClassifiedTagsCount; i++)
         {
             ref var cp = ref msgState.ClassifiedTagArray[i];
             if (cp.Value != null)

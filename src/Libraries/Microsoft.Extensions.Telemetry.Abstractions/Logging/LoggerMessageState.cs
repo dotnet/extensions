@@ -47,15 +47,15 @@ public sealed partial class LoggerMessageState
     /// <returns>The index in the <see cref="TagArray"/> where to store the tags.</returns>
     public int ReserveTagSpace(int count)
     {
-        int avail = _tags.Length - NumTags;
+        int avail = _tags.Length - TagsCount;
         if (count > avail)
         {
             var need = _tags.Length + (count - avail);
             Array.Resize(ref _tags, need);
         }
 
-        var index = NumTags;
-        NumTags += count;
+        var index = TagsCount;
+        TagsCount += count;
         return index;
     }
 
@@ -66,7 +66,7 @@ public sealed partial class LoggerMessageState
     /// <returns>The index in the <see cref="ClassifiedTagArray"/> where to store the classified tags.</returns>
     public int ReserveClassifiedTagSpace(int count)
     {
-        int avail = _classifiedTags.Length - NumClassifiedTags;
+        int avail = _classifiedTags.Length - ClassifiedTagsCount;
         if (count > avail)
         {
             var need = _classifiedTags.Length + (count - avail);
@@ -74,8 +74,8 @@ public sealed partial class LoggerMessageState
             Array.Resize(ref _redactedTags, need);
         }
 
-        var index = NumClassifiedTags;
-        NumClassifiedTags += count;
+        var index = ClassifiedTagsCount;
+        ClassifiedTagsCount += count;
         return index;
     }
 
@@ -107,23 +107,23 @@ public sealed partial class LoggerMessageState
     /// </summary>
     public void Clear()
     {
-        Array.Clear(_tags, 0, NumTags);
-        Array.Clear(_classifiedTags, 0, NumClassifiedTags);
-        Array.Clear(_redactedTags, 0, NumClassifiedTags);
-        NumTags = 0;
-        NumClassifiedTags = 0;
+        Array.Clear(_tags, 0, TagsCount);
+        Array.Clear(_classifiedTags, 0, ClassifiedTagsCount);
+        Array.Clear(_redactedTags, 0, ClassifiedTagsCount);
+        TagsCount = 0;
+        ClassifiedTagsCount = 0;
         TagNamePrefix = string.Empty;
     }
 
     /// <summary>
     /// Gets a value indicating the number of unclassified tags currently in this instance.
     /// </summary>
-    public int NumTags { get; private set; }
+    public int TagsCount { get; private set; }
 
     /// <summary>
     /// Gets a value indicating the number of classified tags currently in this instance.
     /// </summary>
-    public int NumClassifiedTags { get; private set; }
+    public int ClassifiedTagsCount { get; private set; }
 
     /// <summary>
     /// Returns a string representation of this object.
@@ -133,7 +133,7 @@ public sealed partial class LoggerMessageState
     {
         var sb = PoolFactory.SharedStringBuilderPool.Get();
 
-        for (int i = 0; i < NumTags; i++)
+        for (int i = 0; i < TagsCount; i++)
         {
             if (sb.Length > 0)
             {
@@ -145,7 +145,7 @@ public sealed partial class LoggerMessageState
             _ = sb.Append(_tags[i].Value);
         }
 
-        for (int i = 0; i < NumClassifiedTags; i++)
+        for (int i = 0; i < ClassifiedTagsCount; i++)
         {
             if (sb.Length > 0)
             {
