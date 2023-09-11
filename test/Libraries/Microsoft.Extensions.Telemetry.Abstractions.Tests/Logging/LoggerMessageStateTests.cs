@@ -23,30 +23,30 @@ public static class LoggerMessageStateTests
 
         var index = lms.ReserveTagSpace(1);
         lms.TagArray[index] = new(PropName, Value);
-        Assert.Equal(1, lms.NumTags);
+        Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
         Assert.Equal("Property Name=Value", lms.ToString());
 
         lms.Clear();
-        Assert.Equal(0, lms.NumTags);
+        Assert.Equal(0, lms.TagsCount);
         Assert.Equal("", lms.ToString());
 
         index = lms.ReserveTagSpace(1);
         lms.TagArray[index] = new(PropName, Value);
-        Assert.Equal(1, lms.NumTags);
+        Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
         Assert.Equal("Property Name=Value", lms.ToString());
 
         index = lms.ReserveClassifiedTagSpace(1);
         lms.ClassifiedTagArray[index] = new(PropName, Value, SimpleClassifications.PrivateData);
-        Assert.Equal(1, lms.NumTags);
+        Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
         Assert.Equal("Property Name=Value,Property Name=Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy:2", lms.ToString());
 
-        Assert.Equal(1, lms.NumClassifiedTags);
+        Assert.Equal(1, lms.ClassifiedTagsCount);
         Assert.Equal(PropName, lms.ClassifiedTagArray[0].Name);
         Assert.Equal(Value, lms.ClassifiedTagArray[0].Value);
         Assert.Equal(SimpleClassifications.PrivateData, lms.ClassifiedTagArray[0].Classification);
@@ -54,7 +54,7 @@ public static class LoggerMessageStateTests
 
         index = lms.ReserveTagSpace(1);
         lms.TagArray[index] = new(PropName + "X", Value);
-        Assert.Equal(2, lms.NumTags);
+        Assert.Equal(2, lms.TagsCount);
         Assert.Equal(2, lms.TagArray.Length);
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
@@ -72,8 +72,8 @@ public static class LoggerMessageStateTests
 
         collector.Add("K1", "V1");
 
-        Assert.Equal(1, lms.NumTags);
-        Assert.Equal(0, lms.NumClassifiedTags);
+        Assert.Equal(1, lms.TagsCount);
+        Assert.Equal(0, lms.ClassifiedTagsCount);
 
         Assert.Equal("K1", lms.TagArray[0].Key);
         Assert.Equal("V1", lms.TagArray[0].Value);
@@ -92,34 +92,34 @@ public static class LoggerMessageStateTests
         lms.TagNamePrefix = PropertyNamPrefix;
 
         collector.Add(PropName, Value);
-        Assert.Equal(1, lms.NumTags);
+        Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
 
         collector.Add(PropName, Value, SimpleClassifications.PrivateData);
-        Assert.Equal(1, lms.NumTags);
+        Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
 
-        Assert.Equal(1, lms.NumClassifiedTags);
+        Assert.Equal(1, lms.ClassifiedTagsCount);
         Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.ClassifiedTagArray[0].Name);
         Assert.Equal(Value, lms.ClassifiedTagArray[0].Value);
         Assert.Equal(SimpleClassifications.PrivateData, lms.ClassifiedTagArray[0].Classification);
 
         lms.Clear();
-        Assert.Equal(0, lms.NumTags);
+        Assert.Equal(0, lms.TagsCount);
 
         collector.Add(PropName, Value);
-        Assert.Equal(1, lms.NumTags);
+        Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
 
         collector.Add(PropName, Value, SimpleClassifications.PrivateData);
-        Assert.Equal(1, lms.NumTags);
+        Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
 
-        Assert.Equal(1, lms.NumClassifiedTags);
+        Assert.Equal(1, lms.ClassifiedTagsCount);
         Assert.Equal(PropName, lms.ClassifiedTagArray[0].Name);
         Assert.Equal(Value, lms.ClassifiedTagArray[0].Value);
         Assert.Equal(SimpleClassifications.PrivateData, lms.ClassifiedTagArray[0].Classification);

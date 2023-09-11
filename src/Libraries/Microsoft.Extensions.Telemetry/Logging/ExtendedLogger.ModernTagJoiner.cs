@@ -46,10 +46,10 @@ internal sealed partial class ExtendedLogger
         public void SetIncomingTags(LoggerMessageState value)
         {
             _incomingTags = value.TagArray;
-            _incomingTagsCount = value.NumTags;
+            _incomingTagsCount = value.TagsCount;
 
             _redactedTags = value.RedactedTagArray;
-            _redactedTagsCount = value.NumClassifiedTags;
+            _redactedTagsCount = value.ClassifiedTagsCount;
         }
 
         public KeyValuePair<string, object?> this[int index]
