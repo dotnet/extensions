@@ -24,8 +24,6 @@ public class LoggingOptions
     private const IncomingPathLoggingMode DefaultRequestPathLoggingMode = IncomingPathLoggingMode.Formatted;
     private const HttpRouteParameterRedactionMode DefaultPathParameterRedactionMode = HttpRouteParameterRedactionMode.Strict;
 
-    private static readonly TimeSpan _defaultReadTimeout = TimeSpan.FromSeconds(1);
-
     /// <summary>
     /// Gets or sets a value indicating whether the request is logged additionally before any further processing.
     /// </summary>
@@ -78,10 +76,10 @@ public class LoggingOptions
     /// The default value is 1 second.
     /// </value>
     /// <remarks>
-    /// The number should be above 1 millisecond and below 1 minute.
+    /// The value should be in the range of 1 millisecond to 1 minute.
     /// </remarks>
     [TimeSpan(Millisecond, Minute)]
-    public TimeSpan RequestBodyReadTimeout { get; set; } = _defaultReadTimeout;
+    public TimeSpan RequestBodyReadTimeout { get; set; } = TimeSpan.FromMinutes(1);
 
     /// <summary>
     /// Gets or sets the maximum number of bytes of the request/response body to be read.
@@ -90,7 +88,7 @@ public class LoggingOptions
     /// The default is ≈ 32K.
     /// </value>
     /// <remarks>
-    /// The number should ideally be below 85K to not be allocated on the <see href="https://learn.microsoft.com/dotnet/standard/garbage-collection/large-object-heap">large object heap</see>.
+    /// The number should ideally be below 85000 bytes to not be allocated on the <see href="https://learn.microsoft.com/dotnet/standard/garbage-collection/large-object-heap">large object heap</see>.
     /// </remarks>
     [Range(1, MaxBodyReadSize)]
     public int BodySizeLimit { get; set; } = DefaultBodyReadSizeLimit;

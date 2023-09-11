@@ -17,7 +17,7 @@ public static partial class AutoActivationExtensions
     /// </summary>
     /// <typeparam name="TService">The type of the service to activate.</typeparam>
     /// <param name="services">The service collection containing the service.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
     [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
     public static IServiceCollection ActivateKeyedSingleton<TService>(
@@ -55,7 +55,7 @@ public static partial class AutoActivationExtensions
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
     /// <param name="serviceType">The type of the service to activate.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
     [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
     [UnconditionalSuppressMessage(
@@ -97,7 +97,7 @@ public static partial class AutoActivationExtensions
     /// Adds an auto-activated keyed singleton service.
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <param name="implementationFactory">The factory that creates the service.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
@@ -122,7 +122,7 @@ public static partial class AutoActivationExtensions
     /// Adds an auto-activated keyed singleton service.
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
     /// <returns>The value of <paramref name="services" />.</returns>
@@ -142,7 +142,7 @@ public static partial class AutoActivationExtensions
     /// Adds an auto-activated keyed singleton service.
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <param name="implementationFactory">The factory that creates the service.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     /// <returns>The value of <paramref name="services" />.</returns>
@@ -162,7 +162,7 @@ public static partial class AutoActivationExtensions
     /// Adds an auto-activated keyed singleton service.
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     /// <returns>The value of <paramref name="services" />.</returns>
     [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
@@ -181,7 +181,7 @@ public static partial class AutoActivationExtensions
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
     /// <param name="serviceType">The type of the service to register and the implementation to use.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
     [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
     public static IServiceCollection AddActivatedKeyedSingleton(
@@ -202,7 +202,7 @@ public static partial class AutoActivationExtensions
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
     /// <param name="serviceType">The type of the service to register.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <param name="implementationFactory">The factory that creates the service.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
     [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
@@ -226,7 +226,7 @@ public static partial class AutoActivationExtensions
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
     /// <param name="serviceType">The type of the service to register.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <param name="implementationType">The implementation type of the service.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
     [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
@@ -250,7 +250,7 @@ public static partial class AutoActivationExtensions
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
     /// <param name="serviceType">The type of the service to register.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
     public static void TryAddActivatedKeyedSingleton(
         this IServiceCollection services,
@@ -268,7 +268,7 @@ public static partial class AutoActivationExtensions
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
     /// <param name="serviceType">The type of the service to register.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <param name="implementationType">The implementation type of the service.</param>
     [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
     public static void TryAddActivatedKeyedSingleton(
@@ -289,7 +289,7 @@ public static partial class AutoActivationExtensions
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
     /// <param name="serviceType">The type of the service to register.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <param name="implementationFactory">The factory that creates the service.</param>
     [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
     public static void TryAddActivatedKeyedSingleton(
@@ -309,7 +309,7 @@ public static partial class AutoActivationExtensions
     /// Tries to add an auto-activated keyed singleton service.
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
     public static void TryAddActivatedKeyedSingleton<TService>(
@@ -326,7 +326,7 @@ public static partial class AutoActivationExtensions
     /// Tries to add an auto-activated keyed singleton service.
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
     [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
@@ -345,7 +345,7 @@ public static partial class AutoActivationExtensions
     /// Tries to add an auto-activated keyed singleton service.
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
-    /// <param name="serviceKey">An object used to uniquely identity the specific service.</param>
+    /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <param name="implementationFactory">The factory that creates the service.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
