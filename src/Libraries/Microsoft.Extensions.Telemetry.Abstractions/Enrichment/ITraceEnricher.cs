@@ -6,7 +6,7 @@ using System.Diagnostics;
 namespace Microsoft.Extensions.Telemetry.Enrichment;
 
 /// <summary>
-/// Augments tracing state with additional tags.
+/// Represents a component that augments tracing state with additional tags.
 /// </summary>
 public interface ITraceEnricher
 {
