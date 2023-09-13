@@ -24,7 +24,7 @@ internal sealed class FaultInjectionContextMessageHandler : DelegatingHandler
 
         if (context == null)
         {
-            context = new Context();
+            context = [];
             request.SetPolicyExecutionContext(context);
         }
 

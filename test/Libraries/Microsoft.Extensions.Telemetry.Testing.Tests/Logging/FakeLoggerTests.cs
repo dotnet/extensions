@@ -75,10 +75,10 @@ public class FakeLoggerTests
 
         var l = new List<KeyValuePair<string, object?>>
         {
-            new KeyValuePair<string, object?>("K0", "V0"),
-            new KeyValuePair<string, object?>("K1", "V1"),
-            new KeyValuePair<string, object?>("K2", null),
-            new KeyValuePair<string, object?>("K3", new[] { 0, 1, 2 }),
+            new("K0", "V0"),
+            new("K1", "V1"),
+            new("K2", null),
+            new("K3", new[] { 0, 1, 2 }),
         };
 
         logger.Log(LogLevel.Debug, new EventId(1), l, null, (_, _) => "Nothing");
@@ -118,7 +118,7 @@ public class FakeLoggerTests
 
             var l = new List<KeyValuePair<string, object?>>
             {
-                new KeyValuePair<string, object?>("K0", dt),
+                new("K0", dt),
             };
 
             logger.Log(LogLevel.Debug, new EventId(1), l, null, (_, _) => "Nothing");

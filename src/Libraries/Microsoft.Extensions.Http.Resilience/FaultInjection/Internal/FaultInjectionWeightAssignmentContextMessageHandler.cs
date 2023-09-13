@@ -25,7 +25,7 @@ internal sealed class FaultInjectionWeightAssignmentContextMessageHandler : Dele
 
         if (context == null)
         {
-            context = new Context();
+            context = [];
             request.SetPolicyExecutionContext(context);
         }
 

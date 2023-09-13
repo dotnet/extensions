@@ -19,7 +19,7 @@ internal sealed class HardcodedValueFileSystem : IFileSystem
     public HardcodedValueFileSystem(string fallback)
     {
         _fallback = fallback;
-        _fileContent = new();
+        _fileContent = [];
     }
 
     public HardcodedValueFileSystem(Dictionary<FileInfo, string> fileContent, string fallback = "")

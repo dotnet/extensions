@@ -23,9 +23,7 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
 
         Assert.True(validationResult.Failed);
 
-#if NET8_0_OR_GREATER
-        // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
-        // and as such the API is available in .NET 8 onwards.
+#if NET6_0_OR_GREATER
         validationResult.Failures.Should().HaveCount(3);
 #endif
     }

@@ -16,12 +16,12 @@ internal sealed class MetricFactoryEmitter : EmitterBase
 {
     public string Emit(IReadOnlyList<MetricType> metricClasses, CancellationToken cancellationToken)
     {
-        Dictionary<string, List<MetricType>> metricClassesDict = new();
+        Dictionary<string, List<MetricType>> metricClassesDict = [];
         foreach (var cl in metricClasses)
         {
             if (!metricClassesDict.TryGetValue(cl.Namespace, out var list))
             {
-                list = new List<MetricType>();
+                list = [];
                 metricClassesDict.Add(cl.Namespace, list);
             }
 

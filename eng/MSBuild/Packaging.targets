@@ -20,10 +20,6 @@
                             Condition="'$(MinimumSupportedTfmForPackaging)' != '' and
                                        '$(ConditionalNet462)' != '' and
                                        ($(TargetFrameworks.Contains('$(MinimumSupportedTfmForPackaging)')) and $(TargetFrameworks.Contains('$(ConditionalNet462)')))" />
-    <NETStandardCompatError Include="netcoreapp3.1"
-                            Supported="$(MinimumSupportedTfmForPackaging)"
-                            Condition="'$(MinimumSupportedTfmForPackaging)' != '' and
-                                       ($(TargetFrameworks.Contains('$(MinimumSupportedTfmForPackaging)')) and $(TargetFrameworks.Contains('netcoreapp3.1')))" />
   </ItemGroup>
 
   <!-- Verify that the minimum supported TFM is actually used. -->

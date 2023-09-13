@@ -68,9 +68,7 @@ public static class RedactorTest
         Assert.Equal(extBuffer.ToString(), buffer.ToString());
     }
 
-#if NET8_0_OR_GREATER
-    // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
-    // and as such the API is available in .NET 8 onwards.
+#if NET6_0_OR_GREATER
     [Theory]
     [InlineData(100)]
     [InlineData(1000)]

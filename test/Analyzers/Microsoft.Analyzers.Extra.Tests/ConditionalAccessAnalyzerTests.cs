@@ -106,9 +106,7 @@ public static class ConditionalAccessAnalyzerTests
             null,
             new[] { Source }).ConfigureAwait(false);
 
-#if NET8_0_OR_GREATER
-        // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
-        // and as such the API is available in .NET 8 onwards.
+#if NET6_0_OR_GREATER
         Assert.Equal(8, d.Count);
         for (int i = 0; i < d.Count; i++)
         {
