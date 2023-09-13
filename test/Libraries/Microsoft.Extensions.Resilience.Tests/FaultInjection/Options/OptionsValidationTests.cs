@@ -134,7 +134,7 @@ public class OptionsValidationTests
     {
         var results = new List<ValidationResult>
         {
-            new ValidationResult(null!)
+            new(null!)
         };
         var messages = FaultInjectionOptionsValidator.GenerateFailureMessages(results);
 

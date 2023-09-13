@@ -399,7 +399,7 @@ public static class ExtendedLoggerTests
         Exception ex;
         try
         {
-            List<Exception> exceptions = new();
+            List<Exception> exceptions = [];
             try
             {
                 throw new ArgumentNullException("ARG1");

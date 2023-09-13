@@ -242,7 +242,7 @@ internal sealed class Parser
     {
         string? httpClientName = null;
         string? customDependencyName = null;
-        Dictionary<string, string> staticHeaders = new();
+        Dictionary<string, string> staticHeaders = [];
 
         foreach (var classAttribute in classAttributes)
         {
@@ -320,10 +320,10 @@ internal sealed class Parser
 
     private static ParseMethodAttributesResult ParseMethodAttributes(ImmutableArray<AttributeData> methodAttributes, SymbolHolder symbols)
     {
-        List<string?> httpMethods = new();
+        List<string?> httpMethods = [];
         string? requestName = null;
         string? path = null;
-        Dictionary<string, string> staticHeaders = new();
+        Dictionary<string, string> staticHeaders = [];
 
         foreach (var methodAttribute in methodAttributes)
         {

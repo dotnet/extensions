@@ -45,12 +45,12 @@ internal sealed class Emitter : EmitterBase
 
     public string EmitRestApis(IReadOnlyList<RestApiType> restApiTypes, CancellationToken cancellationToken)
     {
-        Dictionary<string, List<RestApiType>> metricClassesDict = new();
+        Dictionary<string, List<RestApiType>> metricClassesDict = [];
         foreach (var cl in restApiTypes)
         {
             if (!metricClassesDict.TryGetValue(cl.Namespace, out var list))
             {
-                list = new List<RestApiType>();
+                list = [];
                 metricClassesDict.Add(cl.Namespace, list);
             }
 

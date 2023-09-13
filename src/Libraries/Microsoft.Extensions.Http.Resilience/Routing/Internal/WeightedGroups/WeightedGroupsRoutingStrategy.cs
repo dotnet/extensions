@@ -21,7 +21,7 @@ internal sealed class WeightedGroupsRoutingStrategy : RequestRoutingStrategy
     public WeightedGroupsRoutingStrategy(Randomizer randomizer, ObjectPool<WeightedGroupsRoutingStrategy> pool)
         : base(randomizer)
     {
-        _groups = new List<WeightedEndpointGroup>();
+        _groups = [];
         _pool = pool;
     }
 
