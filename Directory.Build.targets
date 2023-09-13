@@ -16,6 +16,9 @@
     <!-- This is false for local development, but set to true in the CI system -->
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">false</TreatWarningsAsErrors>
 
+    <!-- See https://github.com/dotnet/extensions/issues/4395 -->
+    <NoWarn>$(NoWarn);TBD</NoWarn>
+
     <!-- TODO: to be re-enabled and all warnings fixed (https://github.com/dotnet/extensions/issues/4002) -->
     <NoWarn>$(NoWarn);IL2026;IL2087;IL2067;IL2075;IL2091;IL2072;IL2090;CA1825;IL2070;IL2098;IL2057</NoWarn>
 
