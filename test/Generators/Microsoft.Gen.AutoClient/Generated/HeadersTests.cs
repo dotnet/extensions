@@ -98,7 +98,7 @@ public class HeadersTests : IDisposable
                 message.Method == HttpMethod.Get &&
                 message.RequestUri != null &&
                 message.RequestUri.PathAndQuery == "/api/users" &&
-                message.Headers.GetValues("X-MyHeader3").First() == "MyValueWith\"Escaped\"Stuff"),
+                message.Headers.GetValues("X-MyHeader3").First() == "MyValueWith\"Escaped\"Stuff\t\b\u03a0"),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
             {
