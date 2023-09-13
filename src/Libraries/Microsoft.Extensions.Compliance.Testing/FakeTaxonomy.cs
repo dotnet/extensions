@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Compliance.Testing;
 /// Classes of data used for simple scenarios.
 /// </summary>
 [Flags]
-public enum SimpleTaxonomy : ulong
+public enum FakeTaxonomy : ulong
 {
     /// <summary>
     /// No data classification.

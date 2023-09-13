@@ -11,9 +11,9 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Compliance.Redaction;
 
 /// <summary>
-/// Redactor that uses xxHash3 hashing to redact data.
+/// Redactor that uses XxHash3 hashing to redact data.
 /// </summary>
-internal sealed class XXHash3Redactor : Redactor
+internal sealed class XxHash3Redactor : Redactor
 {
     internal const int HashSize = 16;
     internal const string Prefix = "<xxhash:";
@@ -23,10 +23,10 @@ internal sealed class XXHash3Redactor : Redactor
     private readonly ulong _seed;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="XXHash3Redactor"/> class.
+    /// Initializes a new instance of the <see cref="XxHash3Redactor"/> class.
     /// </summary>
     /// <param name="options">The options to control the redactor.</param>
-    public XXHash3Redactor(IOptions<XXHash3RedactorOptions> options)
+    public XxHash3Redactor(IOptions<XxHash3RedactorOptions> options)
     {
         _seed = options.Value.HashSeed;
     }

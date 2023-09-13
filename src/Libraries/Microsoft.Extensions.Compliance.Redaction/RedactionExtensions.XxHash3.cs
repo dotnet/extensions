@@ -20,7 +20,7 @@ public static partial class RedactionExtensions
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="configure" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
-    public static IRedactionBuilder SetXXHash3Redactor(this IRedactionBuilder builder, Action<XXHash3RedactorOptions> configure, params DataClassification[] classifications)
+    public static IRedactionBuilder SetXxHash3Redactor(this IRedactionBuilder builder, Action<XxHash3RedactorOptions> configure, params DataClassification[] classifications)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
@@ -28,10 +28,10 @@ public static partial class RedactionExtensions
 
         _ = builder
                 .Services
-                .AddOptions<XXHash3RedactorOptions>()
+                .AddOptions<XxHash3RedactorOptions>()
                 .Configure(configure);
 
-        return builder.SetRedactor<XXHash3Redactor>(classifications);
+        return builder.SetRedactor<XxHash3Redactor>(classifications);
     }
 
     /// <summary>
@@ -42,21 +42,21 @@ public static partial class RedactionExtensions
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="section" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(XXHash3RedactorOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(XxHash3RedactorOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Addressed with [DynamicDependency]")]
-    public static IRedactionBuilder SetXXHash3Redactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications)
+    public static IRedactionBuilder SetXxHash3Redactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
         _ = Throw.IfNull(classifications);
 
         _ = builder
-                .Services.AddOptions<XXHash3RedactorOptions>()
-                .Services.Configure<XXHash3RedactorOptions>(section);
+                .Services.AddOptions<XxHash3RedactorOptions>()
+                .Services.Configure<XxHash3RedactorOptions>(section);
 
-        return builder.SetRedactor<XXHash3Redactor>(classifications);
+        return builder.SetRedactor<XxHash3Redactor>(classifications);
     }
 }

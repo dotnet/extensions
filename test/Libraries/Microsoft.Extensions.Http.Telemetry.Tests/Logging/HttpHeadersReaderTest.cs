@@ -42,23 +42,23 @@ public class HttpHeadersReaderTest
         using var httpResponse = new HttpResponseMessage();
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
-        mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), SimpleClassifications.PrivateData))
+        mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), FakeClassifications.PrivateData))
             .Returns(Redacted);
-        mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), SimpleClassifications.PublicData))
+        mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), FakeClassifications.PublicData))
             .Returns<IEnumerable<string>, DataClassification>((x, _) => string.Join(",", x));
 
         var options = new LoggingOptions
         {
             RequestHeadersDataClasses = new Dictionary<string, DataClassification>
             {
-                { "Header1", SimpleClassifications.PrivateData },
-                { "Header2", SimpleClassifications.PrivateData }
+                { "Header1", FakeClassifications.PrivateData },
+                { "Header2", FakeClassifications.PrivateData }
             },
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification>
             {
-                { "Header3", SimpleClassifications.PublicData },
-                { "Header4", SimpleClassifications.PublicData },
-                { "hEaDeR7", SimpleClassifications.PrivateData }
+                { "Header3", FakeClassifications.PublicData },
+                { "Header4", FakeClassifications.PublicData },
+                { "hEaDeR7", FakeClassifications.PrivateData }
             },
         };
 

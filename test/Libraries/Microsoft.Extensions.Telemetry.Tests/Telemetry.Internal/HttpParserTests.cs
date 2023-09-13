@@ -18,7 +18,7 @@ public class HttpParserTests
     public void TryExtractParameters_NullRouteParametersArray_ReturnsFalse(HttpRouteParameterRedactionMode redactionMode)
     {
         HttpRouteParser httpParser = CreateHttpRouteParser();
-        Dictionary<string, DataClassification> parametersToRedact = new() { { "chatId", SimpleClassifications.PrivateData } };
+        Dictionary<string, DataClassification> parametersToRedact = new() { { "chatId", FakeClassifications.PrivateData } };
 
         string httpPath = "api/routes/routeId123/chats/chatId123";
         string httpRoute = "/api/routes/{routeId}/chats/{chatId}";
@@ -35,7 +35,7 @@ public class HttpParserTests
     public void TryExtractParameters_RouteParametersArraySmallerThanActualParamCount_ReturnsFalse(HttpRouteParameterRedactionMode redactionMode)
     {
         HttpRouteParser httpParser = CreateHttpRouteParser();
-        Dictionary<string, DataClassification> parametersToRedact = new() { { "chatId", SimpleClassifications.PrivateData } };
+        Dictionary<string, DataClassification> parametersToRedact = new() { { "chatId", FakeClassifications.PrivateData } };
 
         string httpPath = "api/routes/routeId123/chats/chatId123";
         string httpRoute = "/api/routes/{routeId}/chats/{chatId}";
@@ -54,7 +54,7 @@ public class HttpParserTests
     public void TryExtractParameters_InvalidHttpRouteParameterRedactionMode_Throws(int redactionMode)
     {
         HttpRouteParser httpParser = CreateHttpRouteParser();
-        Dictionary<string, DataClassification> parametersToRedact = new() { { "routeId", SimpleClassifications.PrivateData } };
+        Dictionary<string, DataClassification> parametersToRedact = new() { { "routeId", FakeClassifications.PrivateData } };
 
         string httpPath = "routeId123/chats/chatId123/";
         string httpRoute = "{routeId}/chats/{chatId}/";
@@ -74,7 +74,7 @@ public class HttpParserTests
         string redactedPrefix = isRedacted ? "Redacted:" : string.Empty;
 
         HttpRouteParser httpParser = CreateHttpRouteParser();
-        Dictionary<string, DataClassification> parametersToRedact = new() { { "routeId", SimpleClassifications.PrivateData } };
+        Dictionary<string, DataClassification> parametersToRedact = new() { { "routeId", FakeClassifications.PrivateData } };
 
         string httpPath = "routeId123/chats/chatId123/";
         string httpRoute = "{routeId}/chats/{chatId}/";
@@ -120,7 +120,7 @@ public class HttpParserTests
     public void TryExtractParameters_NoParameters_ReturnEmptyArray(HttpRouteParameterRedactionMode redactionMode)
     {
         HttpRouteParser httpParser = CreateHttpRouteParser();
-        Dictionary<string, DataClassification> parametersToRedact = new() { { "routeId", SimpleClassifications.PrivateData } };
+        Dictionary<string, DataClassification> parametersToRedact = new() { { "routeId", FakeClassifications.PrivateData } };
 
         string httpPath = "users/chats/messages";
         string httpRoute = "users/chats/messages";
@@ -152,7 +152,7 @@ public class HttpParserTests
         string redactedPrefix = isRedacted ? "Redacted:" : string.Empty;
 
         HttpRouteParser httpParser = CreateHttpRouteParser();
-        Dictionary<string, DataClassification> parametersToRedact = new() { { "chatId", SimpleClassifications.PrivateData } };
+        Dictionary<string, DataClassification> parametersToRedact = new() { { "chatId", FakeClassifications.PrivateData } };
 
         // Route ends with text
         string httpPath = "api/routes/routeId123/chats/chatId123";
@@ -195,7 +195,7 @@ public class HttpParserTests
         ValidateRouteParameter(httpRouteParameters[1], "chatId", $"{redactedPrefix}chatId123", isRedacted);
 
         // Route ends with parameter that doesn't need to be redacted
-        parametersToRedact.Add("routeId", SimpleClassifications.PrivateData);
+        parametersToRedact.Add("routeId", FakeClassifications.PrivateData);
         parametersToRedact.Remove("chatId");
         httpPath = "api/routes/routeId123/chats/chatId123";
         httpRoute = "/api/routes/{routeId}/chats/{chatId}";
@@ -223,7 +223,7 @@ public class HttpParserTests
         string redactedPrefix = isRedacted ? "Redacted:" : string.Empty;
 
         HttpRouteParser httpParser = CreateHttpRouteParser();
-        Dictionary<string, DataClassification> parametersToRedact = new() { { "chatId", SimpleClassifications.PrivateData } };
+        Dictionary<string, DataClassification> parametersToRedact = new() { { "chatId", FakeClassifications.PrivateData } };
 
         // Route ends with text
         string httpPath = "api/routes/routeId123/chats/chatId123";
@@ -277,7 +277,7 @@ public class HttpParserTests
         string redactedPrefix = isRedacted ? "Redacted:" : string.Empty;
 
         HttpRouteParser httpParser = CreateHttpRouteParser();
-        Dictionary<string, DataClassification> parametersToRedact = new() { { "filter", SimpleClassifications.PrivateData } };
+        Dictionary<string, DataClassification> parametersToRedact = new() { { "filter", FakeClassifications.PrivateData } };
         HttpRouteParameter[] httpRouteParameters = new HttpRouteParameter[3];
 
         const string HttpRoute = "{controller=home}/{action=index}/{filter=all}";
@@ -322,8 +322,8 @@ public class HttpParserTests
 
         // A well known parameter is redacted when it is explicitly specified in an http path,
         // and is not redacted when it is omitted.
-        parametersToRedact.Add("controller", SimpleClassifications.PrivateData);
-        parametersToRedact.Add("action", SimpleClassifications.PrivateData);
+        parametersToRedact.Add("controller", FakeClassifications.PrivateData);
+        parametersToRedact.Add("action", FakeClassifications.PrivateData);
 
         httpPath = "users";
 
@@ -346,8 +346,8 @@ public class HttpParserTests
         HttpRouteParser httpParser = CreateHttpRouteParser();
         Dictionary<string, DataClassification> parametersToRedact = new()
         {
-            { "routeId", SimpleClassifications.PrivateData },
-            { "chatId", SimpleClassifications.PrivateData },
+            { "routeId", FakeClassifications.PrivateData },
+            { "chatId", FakeClassifications.PrivateData },
         };
         HttpRouteParameter[] httpRouteParameters = new HttpRouteParameter[2];
 

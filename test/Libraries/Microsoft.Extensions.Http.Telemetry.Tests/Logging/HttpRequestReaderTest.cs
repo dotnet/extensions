@@ -58,8 +58,8 @@ public class HttpRequestReaderTest
 
         var options = new LoggingOptions
         {
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, SimpleClassifications.PrivateData }, { header3.Key, SimpleClassifications.PrivateData } },
-            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, SimpleClassifications.PrivateData }, { header3.Key, SimpleClassifications.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeClassifications.PrivateData }, { header3.Key, FakeClassifications.PrivateData } },
+            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, FakeClassifications.PrivateData }, { header3.Key, FakeClassifications.PrivateData } },
             RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
             ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
             BodyReadTimeout = TimeSpan.FromSeconds(100000),
@@ -202,15 +202,15 @@ public class HttpRequestReaderTest
 
         var opts = new LoggingOptions
         {
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, SimpleClassifications.PrivateData } },
-            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, SimpleClassifications.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeClassifications.PrivateData } },
+            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, FakeClassifications.PrivateData } },
             RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
             ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
         };
 
-        opts.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
+        opts.RouteParameterDataClasses.Add("userId", FakeClassifications.PrivateData);
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
@@ -285,15 +285,15 @@ public class HttpRequestReaderTest
         {
             LogRequestStart = true,
             LogBody = true,
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, SimpleClassifications.PrivateData } },
-            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, SimpleClassifications.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeClassifications.PrivateData } },
+            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, FakeClassifications.PrivateData } },
             RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
             ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured
         };
 
-        opts.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
+        opts.RouteParameterDataClasses.Add("userId", FakeClassifications.PrivateData);
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
@@ -366,13 +366,13 @@ public class HttpRequestReaderTest
             LogRequestStart = true,
             LogBody = true,
             RequestPathParameterRedactionMode = HttpRouteParameterRedactionMode.None,
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, SimpleClassifications.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeClassifications.PrivateData } },
             RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured
         };
 
-        opts.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
+        opts.RouteParameterDataClasses.Add("userId", FakeClassifications.PrivateData);
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
@@ -431,15 +431,15 @@ public class HttpRequestReaderTest
 
         var opts = new LoggingOptions
         {
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, SimpleClassifications.PrivateData } },
-            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, SimpleClassifications.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeClassifications.PrivateData } },
+            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, FakeClassifications.PrivateData } },
             RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
             ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
         };
 
-        opts.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
+        opts.RouteParameterDataClasses.Add("userId", FakeClassifications.PrivateData);
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
@@ -513,15 +513,15 @@ public class HttpRequestReaderTest
 
         var opts = new LoggingOptions
         {
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, SimpleClassifications.PrivateData } },
-            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, SimpleClassifications.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeClassifications.PrivateData } },
+            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, FakeClassifications.PrivateData } },
             RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
             ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
         };
 
-        opts.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
+        opts.RouteParameterDataClasses.Add("userId", FakeClassifications.PrivateData);
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
@@ -590,15 +590,15 @@ public class HttpRequestReaderTest
 
         var opts = new LoggingOptions
         {
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, SimpleClassifications.PrivateData } },
-            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, SimpleClassifications.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeClassifications.PrivateData } },
+            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, FakeClassifications.PrivateData } },
             RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
             ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
         };
 
-        opts.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
+        opts.RouteParameterDataClasses.Add("userId", FakeClassifications.PrivateData);
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);

@@ -129,17 +129,17 @@ public class HttpClientLoggingExtensionsTest
 
         using var provider = services
             .AddHttpClient("")
-            .AddHttpClientLogging(o => o.RequestHeadersDataClasses.Add("test1", SimpleClassifications.PrivateData))
+            .AddHttpClientLogging(o => o.RequestHeadersDataClasses.Add("test1", FakeClassifications.PrivateData))
             .Services
             .AddHttpClient("")
-            .AddHttpClientLogging(o => o.RequestHeadersDataClasses.Add("test2", SimpleClassifications.PrivateData))
+            .AddHttpClientLogging(o => o.RequestHeadersDataClasses.Add("test2", FakeClassifications.PrivateData))
             .Services
             .BuildServiceProvider();
 
         var options = provider.GetRequiredService<IOptions<LoggingOptions>>().Value;
         options.RequestHeadersDataClasses.Should().HaveCount(2);
         options.RequestHeadersDataClasses.Should().ContainKeys(new List<string> { "test1", "test2" });
-        options.RequestHeadersDataClasses.Should().ContainValues(new List<DataClassification> { SimpleClassifications.PrivateData });
+        options.RequestHeadersDataClasses.Should().ContainValues(new List<DataClassification> { FakeClassifications.PrivateData });
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public class HttpClientLoggingExtensionsTest
         var formatRequestPath = _fixture.Create<OutgoingPathLoggingMode>();
         var formatRequestPathParameters = _fixture.Create<HttpRouteParameterRedactionMode>();
         var logStart = _fixture.Create<bool>();
-        var paramToRedact = new KeyValuePair<string, DataClassification>("userId", SimpleClassifications.PrivateData);
+        var paramToRedact = new KeyValuePair<string, DataClassification>("userId", FakeClassifications.PrivateData);
 
         var services = new ServiceCollection();
 
@@ -168,8 +168,8 @@ public class HttpClientLoggingExtensionsTest
                 options.BodySizeLimit = bodySizeLimit;
                 options.RequestPathLoggingMode = formatRequestPath;
                 options.RequestPathParameterRedactionMode = formatRequestPathParameters;
-                options.RequestHeadersDataClasses.Add(requestHeader, SimpleClassifications.PrivateData);
-                options.ResponseHeadersDataClasses.Add(responseHeader, SimpleClassifications.PrivateData);
+                options.RequestHeadersDataClasses.Add(requestHeader, FakeClassifications.PrivateData);
+                options.ResponseHeadersDataClasses.Add(responseHeader, FakeClassifications.PrivateData);
                 options.RouteParameterDataClasses.Add(paramToRedact);
                 options.LogRequestStart = logStart;
             });
@@ -187,9 +187,9 @@ public class HttpClientLoggingExtensionsTest
         options.RequestPathLoggingMode.Should().Be(formatRequestPath);
         options.RequestPathParameterRedactionMode.Should().Be(formatRequestPathParameters);
         options.RequestHeadersDataClasses.Should().ContainSingle();
-        options.RequestHeadersDataClasses.Should().Contain(requestHeader, SimpleClassifications.PrivateData);
+        options.RequestHeadersDataClasses.Should().Contain(requestHeader, FakeClassifications.PrivateData);
         options.ResponseHeadersDataClasses.Should().ContainSingle();
-        options.ResponseHeadersDataClasses.Should().Contain(responseHeader, SimpleClassifications.PrivateData);
+        options.ResponseHeadersDataClasses.Should().Contain(responseHeader, FakeClassifications.PrivateData);
         options.RouteParameterDataClasses.Should().ContainSingle();
         options.RouteParameterDataClasses.Should().Contain(paramToRedact);
         options.LogRequestStart.Should().Be(logStart);
@@ -263,7 +263,7 @@ public class HttpClientLoggingExtensionsTest
         var formatRequestPath = _fixture.Create<OutgoingPathLoggingMode>();
         var formatRequestPathParameters = _fixture.Create<HttpRouteParameterRedactionMode>();
         var logStart = _fixture.Create<bool>();
-        var paramToRedact = new KeyValuePair<string, DataClassification>("userId", SimpleClassifications.PrivateData);
+        var paramToRedact = new KeyValuePair<string, DataClassification>("userId", FakeClassifications.PrivateData);
 
         var services = new ServiceCollection();
 
@@ -278,8 +278,8 @@ public class HttpClientLoggingExtensionsTest
                 options.BodySizeLimit = bodySizeLimit;
                 options.RequestPathLoggingMode = formatRequestPath;
                 options.RequestPathParameterRedactionMode = formatRequestPathParameters;
-                options.RequestHeadersDataClasses.Add(requestHeader, SimpleClassifications.PrivateData);
-                options.ResponseHeadersDataClasses.Add(responseHeader, SimpleClassifications.PrivateData);
+                options.RequestHeadersDataClasses.Add(requestHeader, FakeClassifications.PrivateData);
+                options.ResponseHeadersDataClasses.Add(responseHeader, FakeClassifications.PrivateData);
                 options.RouteParameterDataClasses.Add(paramToRedact);
                 options.LogRequestStart = logStart;
             });
@@ -297,9 +297,9 @@ public class HttpClientLoggingExtensionsTest
         options.RequestPathLoggingMode.Should().Be(formatRequestPath);
         options.RequestPathParameterRedactionMode.Should().Be(formatRequestPathParameters);
         options.RequestHeadersDataClasses.Should().ContainSingle();
-        options.RequestHeadersDataClasses.Should().Contain(requestHeader, SimpleClassifications.PrivateData);
+        options.RequestHeadersDataClasses.Should().Contain(requestHeader, FakeClassifications.PrivateData);
         options.ResponseHeadersDataClasses.Should().ContainSingle();
-        options.ResponseHeadersDataClasses.Should().Contain(responseHeader, SimpleClassifications.PrivateData);
+        options.ResponseHeadersDataClasses.Should().Contain(responseHeader, FakeClassifications.PrivateData);
         options.RouteParameterDataClasses.Should().ContainSingle();
         options.RouteParameterDataClasses.Should().Contain(paramToRedact);
         options.LogRequestStart.Should().Be(logStart);
@@ -339,12 +339,12 @@ public class HttpClientLoggingExtensionsTest
             .AddHttpClientLogging(x =>
             {
                 x.BodySizeLimit = 100500;
-                x.RequestHeadersDataClasses.Add(ClientName, SimpleClassifications.PublicData);
+                x.RequestHeadersDataClasses.Add(ClientName, FakeClassifications.PublicData);
             }).Services
             .AddDefaultHttpClientLogging(x =>
             {
                 x.BodySizeLimit = 347;
-                x.RequestHeadersDataClasses.Add("default", SimpleClassifications.PrivateData);
+                x.RequestHeadersDataClasses.Add("default", FakeClassifications.PrivateData);
             })
             .BuildServiceProvider();
 

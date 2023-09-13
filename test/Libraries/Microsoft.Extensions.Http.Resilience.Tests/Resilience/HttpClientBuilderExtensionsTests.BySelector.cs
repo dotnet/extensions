@@ -62,7 +62,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     public void SelectPipelineByAuthority_ErasingRedactor_InvalidOperationException()
     {
         _builder.Services.AddRedaction();
-        var builder = _builder.AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1))).SelectPipelineByAuthority(SimpleClassifications.PrivateData);
+        var builder = _builder.AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1))).SelectPipelineByAuthority(FakeClassifications.PrivateData);
         var provider = PipelineKeyProviderHelper.GetPipelineKeyProvider(builder.Services.BuildServiceProvider(), builder.PipelineName)!;
 
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");

@@ -57,7 +57,7 @@ public class IncomingHttpRouteUtilityTests
         var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, new Dictionary<string, DataClassification>(StringComparer.Ordinal));
         Assert.Single(sensitiveParameters);
         Assert.True(sensitiveParameters.ContainsKey("userId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
     }
 
     [Fact]
@@ -95,9 +95,9 @@ public class IncomingHttpRouteUtilityTests
         var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, new Dictionary<string, DataClassification>(StringComparer.Ordinal));
         Assert.Equal(2, sensitiveParameters.Count);
         Assert.True(sensitiveParameters.ContainsKey("userId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
         Assert.True(sensitiveParameters.ContainsKey("teamId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
     }
 
     [Fact]
@@ -135,9 +135,9 @@ public class IncomingHttpRouteUtilityTests
         var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, new Dictionary<string, DataClassification>(StringComparer.Ordinal));
         Assert.Equal(2, sensitiveParameters.Count);
         Assert.True(sensitiveParameters.ContainsKey("userId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
         Assert.True(sensitiveParameters.ContainsKey("teamId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
 
         Assert.False(sensitiveParameters.ContainsKey("chatId"));
     }
@@ -176,12 +176,12 @@ public class IncomingHttpRouteUtilityTests
         var routeUtility = new IncomingHttpRouteUtility();
         var d = new Dictionary<string, DataClassification>
         {
-            { "testKey", SimpleClassifications.PrivateData }
+            { "testKey", FakeClassifications.PrivateData }
         };
         var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
         Assert.Single(sensitiveParameters);
         Assert.True(sensitiveParameters.ContainsKey("testKey"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("testKey"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("testKey"));
     }
 
     [Fact]
@@ -219,12 +219,12 @@ public class IncomingHttpRouteUtilityTests
 
         var d = new Dictionary<string, DataClassification>
         {
-            { "testKey", SimpleClassifications.PrivateData }
+            { "testKey", FakeClassifications.PrivateData }
         };
         var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
         Assert.Single(sensitiveParameters);
         Assert.True(sensitiveParameters.ContainsKey("testKey"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("testKey"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("testKey"));
 
         Assert.False(sensitiveParameters.ContainsKey("userId"));
         Assert.False(sensitiveParameters.ContainsKey("teamId"));
@@ -305,19 +305,19 @@ public class IncomingHttpRouteUtilityTests
 
         var d = new Dictionary<string, DataClassification>
         {
-            { "testKey", SimpleClassifications.PrivateData },
-            { "teamId", SimpleClassifications.PrivateData }
+            { "testKey", FakeClassifications.PrivateData },
+            { "teamId", FakeClassifications.PrivateData }
         };
 
         var routeUtility = new IncomingHttpRouteUtility();
         var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
         Assert.Equal(3, sensitiveParameters.Count);
         Assert.True(sensitiveParameters.ContainsKey("userId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
         Assert.True(sensitiveParameters.ContainsKey("teamId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
         Assert.True(sensitiveParameters.ContainsKey("testKey"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("testKey"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("testKey"));
     }
 
     [Fact]
@@ -353,16 +353,16 @@ public class IncomingHttpRouteUtilityTests
 
         var d = new Dictionary<string, DataClassification>
         {
-            { "userId", SimpleClassifications.PublicData }
+            { "userId", FakeClassifications.PublicData }
         };
 
         var routeUtility = new IncomingHttpRouteUtility();
         var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
         Assert.Equal(2, sensitiveParameters.Count);
         Assert.True(sensitiveParameters.ContainsKey("userId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
         Assert.True(sensitiveParameters.ContainsKey("teamId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
     }
 
     [Fact]
@@ -402,18 +402,18 @@ public class IncomingHttpRouteUtilityTests
         var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
         Assert.Equal(2, sensitiveParameters.Count);
         Assert.True(sensitiveParameters.ContainsKey("userId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
         Assert.True(sensitiveParameters.ContainsKey("teamId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
 
-        d.Add("testKey", SimpleClassifications.PrivateData);
-        d.Add("userId", SimpleClassifications.PublicData);
+        d.Add("testKey", FakeClassifications.PrivateData);
+        d.Add("userId", FakeClassifications.PublicData);
         sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
         Assert.Equal(2, sensitiveParameters.Count);
         Assert.True(sensitiveParameters.ContainsKey("userId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("userId"));
         Assert.True(sensitiveParameters.ContainsKey("teamId"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("teamId"));
     }
 
     [Fact]
@@ -437,12 +437,12 @@ public class IncomingHttpRouteUtilityTests
         var routeUtility = new IncomingHttpRouteUtility();
         var d = new Dictionary<string, DataClassification>
         {
-            { "testKey", SimpleClassifications.PrivateData }
+            { "testKey", FakeClassifications.PrivateData }
         };
         var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
         Assert.Single(sensitiveParameters);
         Assert.True(sensitiveParameters.ContainsKey("testKey"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("testKey"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("testKey"));
     }
 
     [Fact]
@@ -459,12 +459,12 @@ public class IncomingHttpRouteUtilityTests
         var routeUtility = new IncomingHttpRouteUtility();
         var d = new Dictionary<string, DataClassification>
         {
-            { "testKey", SimpleClassifications.PrivateData }
+            { "testKey", FakeClassifications.PrivateData }
         };
         var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
         Assert.Single(sensitiveParameters);
         Assert.True(sensitiveParameters.ContainsKey("testKey"));
-        Assert.Equal(SimpleClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("testKey"));
+        Assert.Equal(FakeClassifications.PrivateData, sensitiveParameters.GetValueOrDefault("testKey"));
     }
 #else
     [Fact]
@@ -479,13 +479,13 @@ public class IncomingHttpRouteUtilityTests
         var routeUtility = new IncomingHttpRouteUtility();
         var d = new Dictionary<string, DataClassification>
         {
-            { "testKey", SimpleClassifications.PrivateData }
+            { "testKey", FakeClassifications.PrivateData }
         };
         var sensitiveParameters = routeUtility.GetSensitiveParameters(httpRoute, mockHttpRequest.Object, d);
         Assert.Single(sensitiveParameters);
         Assert.True(sensitiveParameters.ContainsKey("testKey"));
         Assert.True(sensitiveParameters.TryGetValue("testKey", out DataClassification classification));
-        Assert.Equal(SimpleClassifications.PrivateData, classification);
+        Assert.Equal(FakeClassifications.PrivateData, classification);
     }
 #endif
 }

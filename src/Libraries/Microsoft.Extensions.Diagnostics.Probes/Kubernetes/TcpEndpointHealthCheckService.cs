@@ -72,7 +72,7 @@ internal sealed class TcpEndpointHealthCheckService : BackgroundService
         while (!stoppingToken.IsCancellationRequested)
         {
             await UpdateHealthStatusAsync(stoppingToken).ConfigureAwait(false);
-            await TimeProvider.Delay(_options.Period, stoppingToken).ConfigureAwait(false);
+            await TimeProvider.Delay(_options.HealthAssessmentPeriod, stoppingToken).ConfigureAwait(false);
         }
 
         _listener.Stop();

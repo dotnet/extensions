@@ -233,7 +233,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         var clientBuilder = new ServiceCollection().AddLogging().RegisterMetrics().AddRedaction()
             .AddHttpClient("my-client")
             .AddResilienceHandler("my-pipeline", ConfigureBuilder)
-            .SelectPipelineByAuthority(SimpleClassifications.PrivateData);
+            .SelectPipelineByAuthority(FakeClassifications.PrivateData);
 
         var factory = clientBuilder.Services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>();
 

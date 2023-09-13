@@ -78,15 +78,15 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses = new Dictionary<string, DataClassification>
             {
-                { HeaderKey1, SimpleClassifications.PrivateData },
-                { HeaderKey4, SimpleClassifications.PublicData }
+                { HeaderKey1, FakeClassifications.PrivateData },
+                { HeaderKey4, FakeClassifications.PublicData }
             }
         };
 
         Mock<IRedactorProvider> redactorProviderMock = new Mock<IRedactorProvider>();
-        redactorProviderMock.Setup(x => x.GetRedactor(SimpleClassifications.PublicData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PublicData))
             .Returns(new FakeRedactor());
-        redactorProviderMock.Setup(x => x.GetRedactor(SimpleClassifications.PrivateData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PrivateData))
             .Returns(FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "redacted:{0}" }));
 
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), redactorProviderMock.Object);
@@ -111,13 +111,13 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses = new Dictionary<string, DataClassification>
             {
-                { HeaderKey1, SimpleClassifications.PrivateData },
-                { HeaderKey2, SimpleClassifications.PublicData }
+                { HeaderKey1, FakeClassifications.PrivateData },
+                { HeaderKey2, FakeClassifications.PublicData }
             }
         };
 
         Mock<IRedactorProvider> redactorProviderMock = new Mock<IRedactorProvider>();
-        redactorProviderMock.Setup(x => x.GetRedactor(SimpleClassifications.PrivateData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PrivateData))
             .Returns(FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "REDACTED:{0}" }));
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), redactorProviderMock.Object);
 
@@ -141,8 +141,8 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses = new Dictionary<string, DataClassification>
             {
-                { HeaderKey1, SimpleClassifications.PublicData },
-                { HeaderKey3, SimpleClassifications.PublicData }
+                { HeaderKey1, FakeClassifications.PublicData },
+                { HeaderKey3, FakeClassifications.PublicData }
             }
         };
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
@@ -168,8 +168,8 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses = new Dictionary<string, DataClassification>
             {
-                { HeaderKey1, SimpleClassifications.PublicData },
-                { headerKey2, SimpleClassifications.PublicData }
+                { HeaderKey1, FakeClassifications.PublicData },
+                { headerKey2, FakeClassifications.PublicData }
             }
         };
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
@@ -193,7 +193,7 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses = new Dictionary<string, DataClassification>
             {
-                { HeaderKey1, SimpleClassifications.PublicData }
+                { HeaderKey1, FakeClassifications.PublicData }
             }
         };
 
@@ -220,7 +220,7 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses = new Dictionary<string, DataClassification>
             {
-                { HeaderKey1, SimpleClassifications.PublicData }
+                { HeaderKey1, FakeClassifications.PublicData }
             }
         };
 

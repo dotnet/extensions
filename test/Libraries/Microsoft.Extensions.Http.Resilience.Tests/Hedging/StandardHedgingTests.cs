@@ -197,7 +197,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         Builder.Services.AddSingleton(provider.Object);
         if (customKey == null)
         {
-            Builder.SelectPipelineByAuthority(SimpleClassifications.PublicData);
+            Builder.SelectPipelineByAuthority(FakeClassifications.PublicData);
         }
         else
         {
