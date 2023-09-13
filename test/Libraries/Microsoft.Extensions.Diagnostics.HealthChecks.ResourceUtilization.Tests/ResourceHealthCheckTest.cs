@@ -101,7 +101,7 @@ public class ResourceHealthCheckTest
         var samplingWindow = TimeSpan.FromSeconds(1);
         dataTracker
             .Setup(tracker => tracker.GetUtilization(samplingWindow))
-            .Returns(new Utilization(cpuUsedPercentage: utilization, memoryUsedInBytes: 0, systemResources));
+            .Returns(new ResourceUtilization(cpuUsedPercentage: utilization, memoryUsedInBytes: 0, systemResources));
 
         var checkContext = new HealthCheckContext();
         var cpuCheckOptions = new ResourceUtilizationHealthCheckOptions
@@ -131,7 +131,7 @@ public class ResourceHealthCheckTest
         var samplingWindow = TimeSpan.FromSeconds(1);
         dataTracker
             .Setup(tracker => tracker.GetUtilization(samplingWindow))
-            .Returns(new Utilization(cpuUsedPercentage: 0, memoryUsedInBytes: memoryUsed, systemResources));
+            .Returns(new ResourceUtilization(cpuUsedPercentage: 0, memoryUsedInBytes: memoryUsed, systemResources));
 
         var checkContext = new HealthCheckContext();
         var memCheckOptions = new ResourceUtilizationHealthCheckOptions

@@ -20,10 +20,10 @@ public sealed class WindowsCountersTest
         TcpTableInfoTest.StartTimestamp = DateTimeOffset.UtcNow;
         TcpTableInfoTest.NextTimestamp = TcpTableInfoTest.StartTimestamp.Add(TcpTableInfoTest.DefaultTimeSpan);
         TcpTableInfo.SetGetTcpTableDelegate(TcpTableInfoTest.FakeGetTcpTableWithFakeInformation);
-        var options = new WindowsCountersOptions
+        var options = new ResourceMonitoringOptions
         {
-            InstanceIpAddresses = new HashSet<string> { "127.0.0.1" },
-            CachingInterval = TimeSpan.FromSeconds(5)
+            SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
+            SamplingInterval = TimeSpan.FromSeconds(5)
         };
         using var meter = new Meter<WindowsCounters>();
         using var windowsCounters = new WindowsCounters(Microsoft.Extensions.Options.Options.Create(options), meter);
@@ -74,10 +74,10 @@ public sealed class WindowsCountersTest
     public void WindowsCounters_Got_Unsuccessful()
     {
         TcpTableInfo.SetGetTcpTableDelegate(TcpTableInfoTest.FakeGetTcpTableWithUnsuccessfulStatusAllTheTime);
-        var options = new WindowsCountersOptions
+        var options = new ResourceMonitoringOptions
         {
-            InstanceIpAddresses = new HashSet<string> { "127.0.0.1" },
-            CachingInterval = TimeSpan.FromSeconds(5)
+            SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
+            SamplingInterval = TimeSpan.FromSeconds(5)
         };
         using var meter = new Meter<WindowsCounters>();
         using var windowsCounters = new WindowsCounters(Microsoft.Extensions.Options.Options.Create(options), meter);

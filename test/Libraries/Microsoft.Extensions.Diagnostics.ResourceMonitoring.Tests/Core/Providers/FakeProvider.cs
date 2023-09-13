@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Providers;
 
 internal sealed class FakeProvider : ISnapshotProvider
 {
-    private ResourceUtilizationSnapshot _snapshot = new(
+    private Snapshot _snapshot = new(
             TimeSpan.FromTicks(new FakeTimeProvider().GetUtcNow().Ticks),
             TimeSpan.FromSeconds(1),
             TimeSpan.FromSeconds(1),
@@ -17,12 +17,12 @@ internal sealed class FakeProvider : ISnapshotProvider
 
     public SystemResources Resources => new(1.0, 1.0, 1000, 1000);
 
-    public ResourceUtilizationSnapshot GetSnapshot()
+    public Snapshot GetSnapshot()
     {
         return _snapshot;
     }
 
-    public void SetNextSnapshot(ResourceUtilizationSnapshot snapshot)
+    public void SetNextSnapshot(Snapshot snapshot)
     {
         _snapshot = snapshot;
     }

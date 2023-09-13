@@ -20,13 +20,13 @@
 
   <PropertyGroup>
     <Stage>normal</Stage>
-    <MinCodeCoverage>98</MinCodeCoverage>
+    <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>90</MinMutationScore>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <Compile Remove="Linux\*.cs" />
-    <Compile Remove="Linux\*\*.cs" />
+    <Compile Remove="Linux*.cs" />
+    <Compile Remove="Internal\Linux\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,9 +45,6 @@
 
   <ItemGroup>
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
-    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="IResourceMonitor.cs" />
-    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="IResourceMonitorBuilder.cs" />
-    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="ResourceMonitoringOptions.cs" />
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
   </ItemGroup>
 </Project>

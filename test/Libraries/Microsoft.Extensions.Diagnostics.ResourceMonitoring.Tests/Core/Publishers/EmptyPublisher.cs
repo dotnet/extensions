@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 internal sealed class EmptyPublisher : IResourceUtilizationPublisher
 {
     /// <inheritdoc/>
-    public ValueTask PublishAsync(Utilization utilization, CancellationToken cancellationToken)
+    public ValueTask PublishAsync(ResourceUtilization utilization, CancellationToken cancellationToken)
     {
         return default;
     }
