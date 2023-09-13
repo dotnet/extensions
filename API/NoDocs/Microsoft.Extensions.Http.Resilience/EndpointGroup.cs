@@ -1,15 +1,15 @@
 // Assembly 'Microsoft.Extensions.Http.Resilience'
 
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Options;
-using Microsoft.Shared.Data.Validation;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
 public class EndpointGroup
 {
-    [Microsoft.Shared.Data.Validation.Length(1)]
+    [Length(1, int.MaxValue)]
     [ValidateEnumeratedItems]
     public IList<WeightedEndpoint> Endpoints { get; set; }
     public EndpointGroup();

@@ -5,11 +5,11 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
-public readonly struct Utilization
+public readonly struct ResourceUtilization
 {
     public double CpuUsedPercentage { get; }
     public double MemoryUsedPercentage { get; }
     public ulong MemoryUsedInBytes { get; }
     public SystemResources SystemResources { get; }
-    public Utilization(double cpuUsedPercentage, ulong memoryUsedInBytes, SystemResources systemResources);
+    public ResourceUtilization(double cpuUsedPercentage, ulong memoryUsedInBytes, SystemResources systemResources);
 }

@@ -5,9 +5,9 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.Extensions.Compliance.Redaction;
 
 /// <summary>
-/// Options for the xxHash redactor.
+/// Options for the XxHash3 redactor.
 /// </summary>
-public class XXHash3RedactorOptions
+public class XxHash3RedactorOptions
 {
     /// <summary>
     /// Gets or sets a hash seed used when computing hashes during redaction.
@@ -22,5 +22,5 @@ public class XXHash3RedactorOptions
     /// </remarks>
     public ulong HashSeed { get; set; }
 
-    public XXHash3RedactorOptions();
+    public XxHash3RedactorOptions();
 }

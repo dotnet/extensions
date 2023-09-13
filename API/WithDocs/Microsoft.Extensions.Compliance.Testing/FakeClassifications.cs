@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Compliance.Testing;
 /// <summary>
 /// Simple data classifications.
 /// </summary>
-public static class SimpleClassifications
+public static class FakeClassifications
 {
     /// <summary>
     /// Gets the name of this classification taxonomy.

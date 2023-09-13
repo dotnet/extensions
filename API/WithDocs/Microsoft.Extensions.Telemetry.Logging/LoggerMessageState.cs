@@ -62,12 +62,12 @@ public sealed class LoggerMessageState : IEnrichmentTagCollector, IReadOnlyList<
     /// <summary>
     /// Gets a value indicating the number of unclassified tags currently in this instance.
     /// </summary>
-    public int NumTags { get; }
+    public int TagsCount { get; }
 
     /// <summary>
     /// Gets a value indicating the number of classified tags currently in this instance.
     /// </summary>
-    public int NumClassifiedTags { get; }
+    public int ClassifiedTagsCount { get; }
 
     /// <inheritdoc />
     public KeyValuePair<string, object?> this[int index] { get; }

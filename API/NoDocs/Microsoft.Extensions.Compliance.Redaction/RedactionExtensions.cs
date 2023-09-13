@@ -16,6 +16,6 @@ public static class RedactionExtensions
     public static IHostBuilder ConfigureRedaction(this IHostBuilder builder, Action<IRedactionBuilder> configure);
     public static IServiceCollection AddRedaction(this IServiceCollection services);
     public static IServiceCollection AddRedaction(this IServiceCollection services, Action<IRedactionBuilder> configure);
-    public static IRedactionBuilder SetXXHash3Redactor(this IRedactionBuilder builder, Action<XXHash3RedactorOptions> configure, params DataClassification[] classifications);
-    public static IRedactionBuilder SetXXHash3Redactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications);
+    public static IRedactionBuilder SetXxHash3Redactor(this IRedactionBuilder builder, Action<XxHash3RedactorOptions> configure, params DataClassification[] classifications);
+    public static IRedactionBuilder SetXxHash3Redactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications);
 }

@@ -17,7 +17,7 @@ public class KubernetesProbesOptions
         [Range(1, 10000)]
         public int MaxPendingConnections { get; set; }
         [TimeSpan("00:00:05", "00:05:00")]
-        public TimeSpan Period { get; set; }
+        public TimeSpan HealthAssessmentPeriod { get; set; }
         public Func<HealthCheckRegistration, bool>? FilterChecks { get; set; }
         public EndpointOptions();
     }

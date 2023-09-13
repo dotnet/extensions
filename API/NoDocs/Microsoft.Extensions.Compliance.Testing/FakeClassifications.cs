@@ -4,7 +4,7 @@ using Microsoft.Extensions.Compliance.Classification;
 
 namespace Microsoft.Extensions.Compliance.Testing;
 
-public static class SimpleClassifications
+public static class FakeClassifications
 {
     public static string TaxonomyName { get; }
     public static DataClassification PrivateData { get; }

@@ -91,7 +91,7 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     /// <param name="right">The second classification to combine.</param>
     /// <returns>A new classification object representing the combination of the two input classifications.</returns>
     /// <exception cref="T:System.ArgumentException">The two classifications aren't part of the same taxonomy.</exception>
-    public static DataClassification Combine(DataClassification left, DataClassification right);
+    public static DataClassification Or(DataClassification left, DataClassification right);
 
     /// <summary>
     /// Combines together two data classifications.

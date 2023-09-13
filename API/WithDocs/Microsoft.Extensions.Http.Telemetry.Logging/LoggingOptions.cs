@@ -122,10 +122,10 @@ public class LoggingOptions
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; }
 
     /// <summary>
-    /// Gets the route parameters to redact with their corresponding data classes to apply appropriate redaction.
+    /// Gets or sets the route parameters to redact with their corresponding data classes to apply appropriate redaction.
     /// </summary>
     [Required]
-    public IDictionary<string, DataClassification> RouteParameterDataClasses { get; }
+    public IDictionary<string, DataClassification> RouteParameterDataClasses { get; set; }
 
     public LoggingOptions();
 }

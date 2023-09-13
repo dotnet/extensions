@@ -68,7 +68,7 @@ public static class RedactionExtensions
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="T:System.ArgumentNullException"><paramref name="builder" />, <paramref name="configure" /> or <paramref name="classifications" /> are <see langword="null" />.</exception>
-    public static IRedactionBuilder SetXXHash3Redactor(this IRedactionBuilder builder, Action<XXHash3RedactorOptions> configure, params DataClassification[] classifications);
+    public static IRedactionBuilder SetXxHash3Redactor(this IRedactionBuilder builder, Action<XxHash3RedactorOptions> configure, params DataClassification[] classifications);
 
     /// <summary>
     /// Sets the xxHash3 redactor to use for a set of data classes.
@@ -78,5 +78,5 @@ public static class RedactionExtensions
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="T:System.ArgumentNullException"><paramref name="builder" />, <paramref name="section" /> or <paramref name="classifications" /> are <see langword="null" />.</exception>
-    public static IRedactionBuilder SetXXHash3Redactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications);
+    public static IRedactionBuilder SetXxHash3Redactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications);
 }

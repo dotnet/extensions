@@ -30,6 +30,6 @@ public class LoggingOptions
     [Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; }
     [Required]
-    public IDictionary<string, DataClassification> RouteParameterDataClasses { get; }
+    public IDictionary<string, DataClassification> RouteParameterDataClasses { get; set; }
     public LoggingOptions();
 }

@@ -19,7 +19,7 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     public override int GetHashCode();
     public static bool operator ==(DataClassification left, DataClassification right);
     public static bool operator !=(DataClassification left, DataClassification right);
-    public static DataClassification Combine(DataClassification left, DataClassification right);
+    public static DataClassification Or(DataClassification left, DataClassification right);
     public static DataClassification operator |(DataClassification left, DataClassification right);
     public override string ToString();
 }

@@ -23,7 +23,7 @@ public sealed class AutoClientOptionsValidator : IValidateOptions<AutoClientOpti
     /// <param name="name">The name of the options instance being validated.</param>
     /// <param name="options">The options instance.</param>
     /// <returns>Validation result.</returns>
-    [GeneratedCode("Microsoft.Extensions.Options.SourceGeneration", "8.0.8.43109")]
+    [GeneratedCode("Microsoft.Extensions.Options.SourceGeneration", "8.0.8.45707")]
     public ValidateOptionsResult Validate(string? name, AutoClientOptions options);
 
     public AutoClientOptionsValidator();

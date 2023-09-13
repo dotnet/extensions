@@ -6,5 +6,5 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 public interface IResourceMonitor
 {
-    Utilization GetUtilization(TimeSpan window);
+    ResourceUtilization GetUtilization(TimeSpan window);
 }

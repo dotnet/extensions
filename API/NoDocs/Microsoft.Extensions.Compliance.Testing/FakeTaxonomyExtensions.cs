@@ -4,7 +4,7 @@ using Microsoft.Extensions.Compliance.Classification;
 
 namespace Microsoft.Extensions.Compliance.Testing;
 
-public static class SimpleTaxonomyExtensions
+public static class FakeTaxonomyExtensions
 {
-    public static SimpleTaxonomy AsSimpleTaxonomy(this DataClassification classification);
+    public static FakeTaxonomy AsFakeTaxonomy(this DataClassification classification);
 }

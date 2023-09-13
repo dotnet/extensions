@@ -25,8 +25,8 @@ public sealed class LoggerMessageState : IEnrichmentTagCollector, IReadOnlyList<
     public KeyValuePair<string, object?>[] TagArray { get; }
     public KeyValuePair<string, object?>[] RedactedTagArray { get; }
     public ClassifiedTag[] ClassifiedTagArray { get; }
-    public int NumTags { get; }
-    public int NumClassifiedTags { get; }
+    public int TagsCount { get; }
+    public int ClassifiedTagsCount { get; }
     public KeyValuePair<string, object?> this[int index] { get; }
     public string TagNamePrefix { get; set; }
     public int ReserveTagSpace(int count);

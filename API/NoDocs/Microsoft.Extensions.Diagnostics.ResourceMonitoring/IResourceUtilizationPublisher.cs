@@ -7,5 +7,5 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 public interface IResourceUtilizationPublisher
 {
-    ValueTask PublishAsync(Utilization utilization, CancellationToken cancellationToken);
+    ValueTask PublishAsync(ResourceUtilization utilization, CancellationToken cancellationToken);
 }

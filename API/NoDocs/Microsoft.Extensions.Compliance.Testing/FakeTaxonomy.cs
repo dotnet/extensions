@@ -5,7 +5,7 @@ using System;
 namespace Microsoft.Extensions.Compliance.Testing;
 
 [Flags]
-public enum SimpleTaxonomy : ulong
+public enum FakeTaxonomy : ulong
 {
     None = 0uL,
     PublicData = 1uL,
