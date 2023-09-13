@@ -87,26 +87,6 @@ public static class ResourceMonitoringExtensions
         return builder.ConfigureMonitorInternal(optionsBuilder => optionsBuilder.Bind(section));
     }
 
-    /// <summary>
-    /// Registers a publisher that emits resource utilization information as a Windows performance counter.
-    /// </summary>
-    /// <param name="builder">The builder instance used to configure the tracker.</param>
-    /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
-    [ExcludeFromCodeCoverage]
-    public static IResourceMonitorBuilder AddWindowsPerfCounterPublisher(this IResourceMonitorBuilder builder)
-    {
-        _ = Throw.IfNull(builder);
-
-        var os = Environment.OSVersion;
-        if (os.Platform != PlatformID.Win32NT)
-        {
-            throw new NotSupportedException("AddWindowsPerfCounterPublisher is only available on Windows.");
-        }
-
-        return builder.AddPublisher<WindowsPerfCounterPublisher>();
-    }
-
     private static IServiceCollection AddResourceMonitoringInternal(
         this IServiceCollection services,
         Action<IResourceMonitorBuilder> configure)
