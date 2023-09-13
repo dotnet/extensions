@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// </summary>
 public static class HttpRequestMessageExtensions
 {
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     private static readonly HttpRequestOptionsKey<ResilienceContext?> _resilienceContextKey = new("Resilience.Http.ResilienceContext");
 #else
     private const string ResilienceContextKey = "Resilience.Http.ResilienceContext";
@@ -27,7 +27,7 @@ public static class HttpRequestMessageExtensions
     {
         _ = Throw.IfNull(requestMessage);
 
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
         if (requestMessage.Options.TryGetValue(_resilienceContextKey, out var context))
         {
             return context;
@@ -50,7 +50,7 @@ public static class HttpRequestMessageExtensions
     public static void SetResilienceContext(this HttpRequestMessage requestMessage, ResilienceContext? resilienceContext)
     {
         _ = Throw.IfNull(requestMessage);
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
         requestMessage.Options.Set(_resilienceContextKey, resilienceContext);
 #else
         requestMessage.Properties[ResilienceContextKey] = resilienceContext;
