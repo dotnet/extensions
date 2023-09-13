@@ -139,8 +139,10 @@ public class LoggingOptions
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>
-    /// Gets the route parameters to redact with their corresponding data classes to apply appropriate redaction.
+    /// Gets or sets the route parameters to redact with their corresponding data classes to apply appropriate redaction.
     /// </summary>
     [Required]
-    public IDictionary<string, DataClassification> RouteParameterDataClasses { get; } = new Dictionary<string, DataClassification>();
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
+        Justification = "Options pattern.")]
+    public IDictionary<string, DataClassification> RouteParameterDataClasses { get; set; } = new Dictionary<string, DataClassification>();
 }

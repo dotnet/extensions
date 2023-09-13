@@ -21,7 +21,11 @@ public class EndpointGroup
     /// </remarks>
 #pragma warning disable CA2227 // Collection properties should be read only
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+#if NET8_0_OR_GREATER
+    [System.ComponentModel.DataAnnotations.Length(1, int.MaxValue)]
+#else
     [Microsoft.Shared.Data.Validation.Length(1)]
+#endif
     [ValidateEnumeratedItems]
     public IList<WeightedEndpoint> Endpoints { get; set; } = new List<WeightedEndpoint>();
 #pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code

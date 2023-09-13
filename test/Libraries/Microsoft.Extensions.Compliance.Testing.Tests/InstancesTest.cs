@@ -10,7 +10,7 @@ public static class InstancesTest
     [Fact]
     public static void Basic()
     {
-        Assert.Equal(SimpleTaxonomy.PrivateData, (SimpleTaxonomy)SimpleClassifications.PrivateData.Value);
-        Assert.Equal(SimpleTaxonomy.PublicData, (SimpleTaxonomy)SimpleClassifications.PublicData.Value);
+        Assert.Equal(FakeTaxonomy.PrivateData, (FakeTaxonomy)FakeClassifications.PrivateData.Value);
+        Assert.Equal(FakeTaxonomy.PublicData, (FakeTaxonomy)FakeClassifications.PublicData.Value);
     }
 }

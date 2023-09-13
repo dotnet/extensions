@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Http.Telemetry, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Http.Telemetry, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "static class Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryExtensions",
@@ -187,7 +187,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RouteParameterDataClasses { get; }",
+          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RouteParameterDataClasses { get; set; }",
           "Stage": "Stable"
         }
       ]

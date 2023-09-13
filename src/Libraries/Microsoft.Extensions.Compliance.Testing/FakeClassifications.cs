@@ -8,20 +8,20 @@ namespace Microsoft.Extensions.Compliance.Testing;
 /// <summary>
 /// Simple data classifications.
 /// </summary>
-public static class SimpleClassifications
+public static class FakeClassifications
 {
     /// <summary>
     /// Gets the name of this classification taxonomy.
     /// </summary>
-    public static string TaxonomyName => typeof(SimpleTaxonomy).FullName!;
+    public static string TaxonomyName => typeof(FakeTaxonomy).FullName!;
 
     /// <summary>
     /// Gets the private data classification.
     /// </summary>
-    public static DataClassification PrivateData => new(TaxonomyName, (ulong)SimpleTaxonomy.PrivateData);
+    public static DataClassification PrivateData => new(TaxonomyName, (ulong)FakeTaxonomy.PrivateData);
 
     /// <summary>
     /// Gets the public data classification.
     /// </summary>
-    public static DataClassification PublicData => new(TaxonomyName, (ulong)SimpleTaxonomy.PublicData);
+    public static DataClassification PublicData => new(TaxonomyName, (ulong)FakeTaxonomy.PublicData);
 }

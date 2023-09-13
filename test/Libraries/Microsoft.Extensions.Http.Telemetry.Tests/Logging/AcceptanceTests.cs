@@ -135,9 +135,9 @@ public class AcceptanceTests
              .AddHttpClient("namedClient1")
              .AddHttpClientLogging(o =>
              {
-                 o.ResponseHeadersDataClasses.Add("ResponseHeader", SimpleClassifications.PrivateData);
-                 o.RequestHeadersDataClasses.Add("RequestHeader", SimpleClassifications.PrivateData);
-                 o.RequestHeadersDataClasses.Add("RequestHeaderFirst", SimpleClassifications.PrivateData);
+                 o.ResponseHeadersDataClasses.Add("ResponseHeader", FakeClassifications.PrivateData);
+                 o.RequestHeadersDataClasses.Add("RequestHeader", FakeClassifications.PrivateData);
+                 o.RequestHeadersDataClasses.Add("RequestHeaderFirst", FakeClassifications.PrivateData);
                  o.RequestBodyContentTypes.Add("application/json");
                  o.ResponseBodyContentTypes.Add("application/json");
                  o.LogBody = true;
@@ -145,9 +145,9 @@ public class AcceptanceTests
              .AddHttpClient("namedClient2")
              .AddHttpClientLogging(o =>
              {
-                 o.ResponseHeadersDataClasses.Add("ResponseHeader", SimpleClassifications.PrivateData);
-                 o.RequestHeadersDataClasses.Add("RequestHeader", SimpleClassifications.PrivateData);
-                 o.RequestHeadersDataClasses.Add("RequestHeaderSecond", SimpleClassifications.PrivateData);
+                 o.ResponseHeadersDataClasses.Add("ResponseHeader", FakeClassifications.PrivateData);
+                 o.RequestHeadersDataClasses.Add("RequestHeader", FakeClassifications.PrivateData);
+                 o.RequestHeadersDataClasses.Add("RequestHeaderSecond", FakeClassifications.PrivateData);
                  o.RequestBodyContentTypes.Add("application/json");
                  o.ResponseBodyContentTypes.Add("application/json");
                  o.LogBody = true;
@@ -214,9 +214,9 @@ public class AcceptanceTests
             .AddHttpClient<ITestHttpClient1, TestHttpClient1>()
             .AddHttpClientLogging(x =>
             {
-                x.ResponseHeadersDataClasses.Add("ResponseHeader", SimpleClassifications.PrivateData);
-                x.RequestHeadersDataClasses.Add("RequestHeader", SimpleClassifications.PrivateData);
-                x.RequestHeadersDataClasses.Add("RequestHeader2", SimpleClassifications.PrivateData);
+                x.ResponseHeadersDataClasses.Add("ResponseHeader", FakeClassifications.PrivateData);
+                x.RequestHeadersDataClasses.Add("RequestHeader", FakeClassifications.PrivateData);
+                x.RequestHeadersDataClasses.Add("RequestHeader2", FakeClassifications.PrivateData);
                 x.RequestBodyContentTypes.Add("application/json");
                 x.ResponseBodyContentTypes.Add("application/json");
                 x.BodySizeLimit = 10000;
@@ -225,9 +225,9 @@ public class AcceptanceTests
             .AddHttpClient<ITestHttpClient2, TestHttpClient2>()
             .AddHttpClientLogging(x =>
             {
-                x.ResponseHeadersDataClasses.Add("ResponseHeader", SimpleClassifications.PrivateData);
-                x.RequestHeadersDataClasses.Add("RequestHeader", SimpleClassifications.PrivateData);
-                x.RequestHeadersDataClasses.Add("RequestHeader2", SimpleClassifications.PrivateData);
+                x.ResponseHeadersDataClasses.Add("ResponseHeader", FakeClassifications.PrivateData);
+                x.RequestHeadersDataClasses.Add("RequestHeader", FakeClassifications.PrivateData);
+                x.RequestHeadersDataClasses.Add("RequestHeader2", FakeClassifications.PrivateData);
                 x.RequestBodyContentTypes.Add("application/json");
                 x.ResponseBodyContentTypes.Add("application/json");
                 x.BodySizeLimit = 20000;
@@ -296,7 +296,7 @@ public class AcceptanceTests
             .AddHttpClient()
             .AddDefaultHttpClientLogging(o =>
             {
-                o.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
+                o.RouteParameterDataClasses.Add("userId", FakeClassifications.PrivateData);
                 o.RequestPathParameterRedactionMode = parameterRedactionMode;
             })
             .BlockRemoteCall()
@@ -336,7 +336,7 @@ public class AcceptanceTests
             .AddHttpClient("test")
             .AddHttpClientLogging(o =>
             {
-                o.RouteParameterDataClasses.Add("userId", SimpleClassifications.PrivateData);
+                o.RouteParameterDataClasses.Add("userId", FakeClassifications.PrivateData);
                 o.RequestPathParameterRedactionMode = parameterRedactionMode;
             })
             .Services
@@ -376,14 +376,14 @@ public class AcceptanceTests
             .AddHttpClientLogging(options =>
             {
                 options.LogRequestStart = true;
-                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test1", SimpleClassifications.PrivateData } };
+                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test1", FakeClassifications.PrivateData } };
             })
             .Services
             .AddHttpClient(SecondClientName)
             .AddHttpClientLogging(options =>
             {
                 options.LogRequestStart = false;
-                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test2", SimpleClassifications.PrivateData } };
+                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test2", FakeClassifications.PrivateData } };
             })
             .Services
             .BuildServiceProvider();
@@ -412,14 +412,14 @@ public class AcceptanceTests
             .AddHttpClientLogging(options =>
             {
                 options.LogRequestStart = true;
-                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test1", SimpleClassifications.PrivateData } };
+                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test1", FakeClassifications.PrivateData } };
             })
             .Services
             .AddHttpClient<ITestHttpClient2, TestHttpClient2>()
             .AddHttpClientLogging(options =>
             {
                 options.LogRequestStart = false;
-                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test2", SimpleClassifications.PrivateData } };
+                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test2", FakeClassifications.PrivateData } };
             })
             .Services
             .BuildServiceProvider();
@@ -446,36 +446,36 @@ public class AcceptanceTests
             .AddHttpClient<ITestHttpClient1, TestHttpClient1>()
             .AddHttpClientLogging(options =>
             {
-                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test1", SimpleClassifications.PrivateData } };
+                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test1", FakeClassifications.PrivateData } };
             })
             .Services
             .AddHttpClient<ITestHttpClient2, TestHttpClient2>()
             .AddHttpClientLogging(options =>
             {
-                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test2", SimpleClassifications.PrivateData } };
+                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test2", FakeClassifications.PrivateData } };
             })
             .Services
             .AddHttpClient("testClient3")
             .AddHttpClientLogging(options =>
             {
-                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test3", SimpleClassifications.PrivateData } };
+                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test3", FakeClassifications.PrivateData } };
             })
             .Services
             .AddHttpClient("testClient4")
             .AddHttpClientLogging(options =>
             {
-                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test4", SimpleClassifications.PrivateData } };
+                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test4", FakeClassifications.PrivateData } };
             })
             .Services
             .AddHttpClient<ITestHttpClient1, TestHttpClient1>("testClient5")
             .AddHttpClientLogging(options =>
             {
-                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test5", SimpleClassifications.PrivateData } };
+                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test5", FakeClassifications.PrivateData } };
             })
             .Services
             .AddDefaultHttpClientLogging(options =>
             {
-                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test6", SimpleClassifications.PrivateData } };
+                options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test6", FakeClassifications.PrivateData } };
             })
             .BuildServiceProvider();
 
@@ -587,9 +587,9 @@ public class AcceptanceTests
              .AddHttpClient(nameof(HttpClientLoggingHandler_LogsBodyDataUpToSpecifiedLimit))
              .AddHttpClientLogging(x =>
              {
-                 x.ResponseHeadersDataClasses.Add("ResponseHeader", SimpleClassifications.PrivateData);
-                 x.RequestHeadersDataClasses.Add("RequestHeader", SimpleClassifications.PrivateData);
-                 x.RequestHeadersDataClasses.Add("RequestHeader2", SimpleClassifications.PrivateData);
+                 x.ResponseHeadersDataClasses.Add("ResponseHeader", FakeClassifications.PrivateData);
+                 x.RequestHeadersDataClasses.Add("RequestHeader", FakeClassifications.PrivateData);
+                 x.RequestHeadersDataClasses.Add("RequestHeader2", FakeClassifications.PrivateData);
                  x.RequestBodyContentTypes.Add("application/json");
                  x.ResponseBodyContentTypes.Add("application/json");
                  x.BodySizeLimit = limit;
