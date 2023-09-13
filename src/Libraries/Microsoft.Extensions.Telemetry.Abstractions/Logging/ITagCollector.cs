@@ -9,7 +9,7 @@ using Microsoft.Shared.DiagnosticIds;
 namespace Microsoft.Extensions.Telemetry.Logging;
 
 /// <summary>
-/// Interface given to custom tag providers, enabling them to emit tags.
+/// Represents a custom tag provider and enables it to emit tags.
 /// </summary>
 /// <remarks>
 /// See <see cref="TagProviderAttribute"/> for details on how this interface is used.
@@ -23,7 +23,7 @@ public interface ITagCollector
     /// <param name="tagValue">The value of the tag to add.</param>
     /// <exception cref="ArgumentNullException"><paramref name="tagName"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="tagName" /> is empty or contains exclusively whitespace,
-    /// or when a tag of the same name has already been added.
+    /// or a tag of the same name has already been added.
     /// </exception>
     void Add(string tagName, object? tagValue);
 
@@ -35,7 +35,7 @@ public interface ITagCollector
     /// <param name="classification">The data classification of the tag value.</param>
     /// <exception cref="ArgumentNullException"><paramref name="tagName"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="tagName" /> is empty or contains exclusively whitespace,
-    /// or when a tag of the same name has already been added.
+    /// or a tag of the same name has already been added.
     /// </exception>
     [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     void Add(string tagName, object? tagValue, DataClassification classification);
