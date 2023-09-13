@@ -2,16 +2,6 @@
   "Name": "Microsoft.Extensions.Diagnostics.ResourceMonitoring, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.Extensions.Diagnostics.ResourceMonitoring.CountersSetup",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static void Microsoft.Extensions.Diagnostics.ResourceMonitoring.CountersSetup.PreparePerformanceCounters();",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "interface Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitor",
       "Stage": "Stable",
       "Methods": [
@@ -57,10 +47,6 @@
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.AddResourceMonitoring(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.AddWindowsPerfCounterPublisher(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder);",
           "Stage": "Stable"
         },
         {
