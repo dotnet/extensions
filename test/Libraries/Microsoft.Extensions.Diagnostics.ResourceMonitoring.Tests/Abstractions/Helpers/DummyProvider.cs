@@ -23,9 +23,9 @@ internal class DummyProvider : ISnapshotProvider
         DummyProvider.MemoryTotalInBytes,
         DummyProvider.MemoryTotalInBytes);
 
-    public ResourceUtilizationSnapshot GetSnapshot()
+    public Snapshot GetSnapshot()
     {
-        return new ResourceUtilizationSnapshot(
+        return new Snapshot(
             totalTimeSinceStart: TimeSpan.FromTicks(SnapshotTimeClock.GetUtcNow().Ticks),
             kernelTimeSinceStart: DummyProvider.KernelTimeSinceStart,
             userTimeSinceStart: DummyProvider.UserTimeSinceStart,

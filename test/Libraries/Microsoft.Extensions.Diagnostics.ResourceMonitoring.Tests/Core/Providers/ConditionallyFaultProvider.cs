@@ -25,14 +25,14 @@ internal sealed class ConditionallyFaultProvider : ISnapshotProvider
 
     public SystemResources Resources => new(CpuUnits, CpuUnits, TotalMemory, TotalMemory);
 
-    public ResourceUtilizationSnapshot GetSnapshot()
+    public Snapshot GetSnapshot()
     {
         if (CanThrow)
         {
             throw new InvalidOperationException(_errorGuid.ToString());
         }
 
-        return new ResourceUtilizationSnapshot(
+        return new Snapshot(
             TimeSpan.FromTicks(new FakeTimeProvider().GetUtcNow().Ticks),
             TimeSpan.FromSeconds(1),
             TimeSpan.FromSeconds(1),
