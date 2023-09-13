@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.Extensions.Telemetry.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Gen.Shared;
 using Xunit;
 using Xunit.Abstractions;

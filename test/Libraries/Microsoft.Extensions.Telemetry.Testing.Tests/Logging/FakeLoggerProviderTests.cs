@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Logging.Test;
+namespace Microsoft.Extensions.Logging.Testing.Test;
 
 public class FakeLoggerProviderTests
 {
@@ -29,7 +29,7 @@ public class FakeLoggerProviderTests
         Assert.Equal(logger.Collector, loggerProvider.Collector);
         logger.LogDebug("M3");
         Assert.Equal(3, logger.Collector.Count);
-        Assert.Equal("Microsoft.Extensions.Telemetry.Testing.Logging.Test.FakeLoggerProviderTests", logger.LatestRecord.Category);
+        Assert.Equal("Microsoft.Extensions.Logging.Testing.Test.FakeLoggerProviderTests", logger.LatestRecord.Category);
     }
 
     [Fact]

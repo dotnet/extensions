@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics.Tracing;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 [EventSource(Name = "Logging-Instrumentation")]
 internal sealed class LoggingEventSource : EventSource

@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Metrics;
+namespace Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 /// <summary>
 /// Represents a single measurement performed by an instrument.

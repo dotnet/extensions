@@ -3,9 +3,8 @@
 
 using System;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Telemetry.Latency;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Internal;
 
 /// <summary>
 /// Class used to add tags.

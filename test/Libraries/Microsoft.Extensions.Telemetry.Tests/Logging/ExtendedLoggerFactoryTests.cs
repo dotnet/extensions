@@ -8,11 +8,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Logging.Test;
+namespace Microsoft.Extensions.Logging.Test;
 
 public static class ExtendedLoggerFactoryTests
 {

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Logging;
+namespace Microsoft.Extensions.Logging.Testing;
 
 [ExcludeFromCodeCoverage/* (Justification = "Only used in debugger") */]
 internal sealed class FakeLogCollectorDebugView

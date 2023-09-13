@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading;
-using Microsoft.Extensions.Telemetry.Latency;
+using Microsoft.Extensions.Diagnostics.Latency;
 
 namespace Microsoft.Extensions.Http.Telemetry.Latency.Internal;
 

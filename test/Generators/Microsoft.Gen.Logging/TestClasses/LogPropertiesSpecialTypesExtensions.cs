@@ -5,7 +5,6 @@ using System;
 using System.Net;
 using System.Numerics;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace TestClasses
 {

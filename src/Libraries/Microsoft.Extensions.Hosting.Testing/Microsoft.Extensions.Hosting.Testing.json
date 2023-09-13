@@ -106,7 +106,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.GetFakeLogCollector(this Microsoft.Extensions.Hosting.IHost host);",
+          "Member": "static Microsoft.Extensions.Logging.Testing.FakeLogCollector Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.GetFakeLogCollector(this Microsoft.Extensions.Hosting.IHost host);",
           "Stage": "Experimental"
         },
         {

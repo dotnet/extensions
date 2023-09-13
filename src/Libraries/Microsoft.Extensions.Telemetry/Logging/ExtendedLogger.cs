@@ -7,7 +7,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Pools;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 #pragma warning disable CA1031
 

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 internal sealed partial class ExtendedLogger
 {

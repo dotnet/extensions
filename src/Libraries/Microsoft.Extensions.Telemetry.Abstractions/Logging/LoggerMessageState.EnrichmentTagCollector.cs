@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Telemetry.Enrichment;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 public partial class LoggerMessageState : IEnrichmentTagCollector
 {

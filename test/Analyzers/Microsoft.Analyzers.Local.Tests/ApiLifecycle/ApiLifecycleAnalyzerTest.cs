@@ -14,8 +14,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.LocalAnalyzers.Resource.Test;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Logging;
 using Xunit;
 
 namespace Microsoft.Extensions.LocalAnalyzers.ApiLifecycle.Test;

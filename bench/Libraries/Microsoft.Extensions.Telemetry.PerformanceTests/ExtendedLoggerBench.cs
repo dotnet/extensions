@@ -8,7 +8,6 @@ using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Enrichment;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.Extensions.Telemetry.Bench;
 

@@ -5,9 +5,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Http.Resilience.FaultInjection.Internal;
 using Microsoft.Extensions.Resilience.FaultInjection;
-using Microsoft.Extensions.Telemetry.Metrics;
 using Polly;
 using Xunit;
 

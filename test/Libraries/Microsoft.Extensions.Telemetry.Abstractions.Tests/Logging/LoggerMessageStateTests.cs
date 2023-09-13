@@ -9,7 +9,7 @@ using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Telemetry.Enrichment;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Logging.Test;
+namespace Microsoft.Extensions.Logging.Test;
 
 public static class LoggerMessageStateTests
 {

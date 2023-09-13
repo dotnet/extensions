@@ -1,9 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Telemetry.Latency.Internal;
+using Microsoft.Extensions.Diagnostics.Latency.Internal;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Test.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Test.Internal;
 
 internal static class LatencyContextExtensions
 {

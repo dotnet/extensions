@@ -3,15 +3,14 @@
 
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Latency.Internal;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Latency;
-using Microsoft.Extensions.Telemetry.Latency.Internal;
 using Microsoft.Shared.Pools;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Test.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Test.Internal;
 
 public class LatencyContextTest
 {

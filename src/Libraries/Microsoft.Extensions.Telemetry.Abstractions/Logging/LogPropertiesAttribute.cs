@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Marks a logging method parameter whose public tags need to be logged.

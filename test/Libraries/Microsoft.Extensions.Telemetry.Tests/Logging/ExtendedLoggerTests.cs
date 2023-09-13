@@ -6,14 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Enrichment;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Logging.Test.Log;
+namespace Microsoft.Extensions.Logging.Test.Log;
 
 public static class ExtendedLoggerTests
 {

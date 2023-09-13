@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Enrichment;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
 

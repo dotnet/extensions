@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Logging;
+namespace Microsoft.Extensions.Logging.Testing;
 
 /// <summary>
 /// Extensions for configuring fake logging, used in unit tests.

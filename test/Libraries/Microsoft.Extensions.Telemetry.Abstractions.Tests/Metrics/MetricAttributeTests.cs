@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Metrics.Test;
+namespace Microsoft.Extensions.Diagnostics.Metrics.Test;
 
 public class MetricAttributeTests
 {

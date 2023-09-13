@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace TestClasses
 {

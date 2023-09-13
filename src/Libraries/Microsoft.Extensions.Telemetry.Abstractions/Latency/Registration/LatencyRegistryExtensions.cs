@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Latency;
+namespace Microsoft.Extensions.Diagnostics.Latency;
 
 /// <summary>
 /// Extensions to configure a latency context.

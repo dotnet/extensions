@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 #pragma warning disable CA2227 // Collection properties should be read only
 
-namespace Microsoft.Extensions.Telemetry.Testing.Logging;
+namespace Microsoft.Extensions.Logging.Testing;
 
 /// <summary>
 /// Options for the fake logger.

@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.Extensions.Telemetry.Metrics;
+namespace Microsoft.Extensions.Diagnostics.Metrics;
 
 #pragma warning disable SA1649 // File name should match first type name
 
