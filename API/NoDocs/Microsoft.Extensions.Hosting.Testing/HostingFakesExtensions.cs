@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
+using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.Extensions.Hosting.Testing;
 
