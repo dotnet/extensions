@@ -13,8 +13,8 @@ using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;

@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Telemetry.Latency;
+namespace Microsoft.Extensions.Diagnostics.Latency;
 
 [OptionsValidator]
 internal sealed partial class LatencyContextRegistrationOptionsValidator : IValidateOptions<LatencyContextRegistrationOptions>

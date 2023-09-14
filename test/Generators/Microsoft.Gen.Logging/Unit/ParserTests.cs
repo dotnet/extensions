@@ -387,7 +387,7 @@ public partial class ParserTests
                     public enum LogLevel {}
                     public interface ILogger {}
                 }
-                namespace Microsoft.Extensions.Telemetry.Logging
+                namespace Microsoft.Extensions.Logging
                 {
                     public class LoggerMessageAttribute : System.Attribute {}
                 }
@@ -409,7 +409,7 @@ public partial class ParserTests
                     public enum LogLevel {}
                     public interface ILogger {}
                 }
-                namespace Microsoft.Extensions.Telemetry.Logging
+                namespace Microsoft.Extensions.Logging
                 {
                     public class LoggerMessageAttribute : System.Attribute {}
                     public class LogPropertiesAttribute : System.Attribute {}
@@ -440,7 +440,7 @@ public partial class ParserTests
     public async Task MissingILoggerType()
     {
         await RunGenerator(@"
-                namespace Microsoft.Extensions.Telemetry.Logging
+                namespace Microsoft.Extensions.Logging
                 {
                     public sealed class LoggerMessageAttribute : System.Attribute {}
                 }
@@ -454,7 +454,7 @@ public partial class ParserTests
     public async Task MissingLogLevelType()
     {
         await RunGenerator(@"
-                namespace Microsoft.Extensions.Telemetry.Logging
+                namespace Microsoft.Extensions.Logging
                 {
                     public sealed class LoggerMessageAttribute : System.Attribute {}
                 }
@@ -773,7 +773,7 @@ public partial class ParserTests
             text = $@"
                     {nspaceStart}
                     using Microsoft.Extensions.Logging;
-                    using Microsoft.Extensions.Telemetry.Logging;
+                    using Microsoft.Extensions.Logging;
                     {code}
                     {nspaceEnd}";
         }

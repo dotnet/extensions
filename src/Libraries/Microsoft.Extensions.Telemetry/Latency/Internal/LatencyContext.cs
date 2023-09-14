@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Telemetry.Latency;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Internal;
 
 /// <summary>
 /// Implementation of <see cref="ILatencyContext"/>.

@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Telemetry.Latency;
-using Microsoft.Extensions.Telemetry.Latency.Internal;
+using Microsoft.Extensions.Diagnostics.Latency;
+using Microsoft.Extensions.Diagnostics.Latency.Internal;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Test.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Test.Internal;
 
 public class TagCollectionTest
 {

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Pools;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Performs delayed redaction in order to avoid allocating intermediate strings and redact from span to span.

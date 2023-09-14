@@ -6,12 +6,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Latency.Internal;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Latency;
-using Microsoft.Extensions.Telemetry.Latency.Internal;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Test;
+namespace Microsoft.Extensions.Diagnostics.Latency.Test;
 
 public class LatencyContextExtensionTest
 {

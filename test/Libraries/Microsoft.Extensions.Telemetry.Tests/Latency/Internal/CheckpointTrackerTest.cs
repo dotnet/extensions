@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
-using Microsoft.Extensions.Telemetry.Latency.Internal;
+using Microsoft.Extensions.Diagnostics.Latency.Internal;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Test.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Test.Internal;
 
 public class CheckpointTrackerTest
 {

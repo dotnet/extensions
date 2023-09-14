@@ -4,7 +4,7 @@
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Pools;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Internal;
 
 internal sealed class ResetOnGetObjectPool<T> : ObjectPool<T>
     where T : class, IResettable

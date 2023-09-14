@@ -7,12 +7,12 @@ namespace Microsoft.Gen.Metrics;
 
 internal static class SymbolLoader
 {
-    internal const string CounterTAttribute = "Microsoft.Extensions.Telemetry.Metrics.CounterAttribute`1";
-    internal const string HistogramTAttribute = "Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute`1";
-    internal const string GaugeAttribute = "Microsoft.Extensions.Telemetry.Metrics.GaugeAttribute";
-    internal const string CounterAttribute = "Microsoft.Extensions.Telemetry.Metrics.CounterAttribute";
-    internal const string HistogramAttribute = "Microsoft.Extensions.Telemetry.Metrics.HistogramAttribute";
-    internal const string TagNameAttribute = "Microsoft.Extensions.Telemetry.Metrics.TagNameAttribute";
+    internal const string CounterTAttribute = "Microsoft.Extensions.Diagnostics.Metrics.CounterAttribute`1";
+    internal const string HistogramTAttribute = "Microsoft.Extensions.Diagnostics.Metrics.HistogramAttribute`1";
+    internal const string GaugeAttribute = "Microsoft.Extensions.Diagnostics.Metrics.GaugeAttribute";
+    internal const string CounterAttribute = "Microsoft.Extensions.Diagnostics.Metrics.CounterAttribute";
+    internal const string HistogramAttribute = "Microsoft.Extensions.Diagnostics.Metrics.HistogramAttribute";
+    internal const string TagNameAttribute = "Microsoft.Extensions.Diagnostics.Metrics.TagNameAttribute";
     internal const string MeterClass = "System.Diagnostics.Metrics.Meter";
 
     internal static SymbolHolder? LoadSymbols(Compilation compilation)

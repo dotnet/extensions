@@ -3,7 +3,6 @@
 
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 #pragma warning disable IDE1006 // Naming Styles
 

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.Telemetry.Metrics;
+namespace Microsoft.Extensions.Diagnostics.Metrics;
 
 /// <summary>
 /// Provides tag information for strongly-typed metrics.

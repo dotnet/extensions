@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using Microsoft.Extensions.Telemetry.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Telemetry.Http.Logging;
 

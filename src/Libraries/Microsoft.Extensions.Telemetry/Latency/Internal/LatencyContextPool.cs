@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Internal;
 
 /// <summary>
 /// Object pools for instruments used for latency measurement.

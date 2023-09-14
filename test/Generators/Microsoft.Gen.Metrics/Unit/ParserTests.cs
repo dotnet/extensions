@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Telemetry.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Gen.Shared;
 using Xunit;
 
@@ -481,14 +481,14 @@ public partial class ParserTests
     public async Task MissingMeterType()
     {
         var d = await RunGenerator(@"
-            namespace Microsoft.Extensions.Telemetry.Metrics
+            namespace Microsoft.Extensions.Diagnostics.Metrics
             {
                 public sealed class CounterAttribute : System.Attribute {}
                 public sealed class HistogramAttribute : System.Attribute {}
             }
             partial class C
             {
-                [Microsoft.Extensions.Telemetry.Metrics.Counter]
+                [Microsoft.Extensions.Diagnostics.Metrics.Counter]
                 static partial MetricName1 CreateMetricName(Meter meter);
             }",
             wrap: false,
@@ -507,13 +507,13 @@ public partial class ParserTests
             {
                 public class Meter {}
             }
-            namespace Microsoft.Extensions.Telemetry.Metrics
+            namespace Microsoft.Extensions.Diagnostics.Metrics
             {
                 public class HistogramAttribute : System.Attribute {} 
             }
             partial class C
             {
-                [Microsoft.Extensions.Telemetry.Metrics.Histogram]
+                [Microsoft.Extensions.Diagnostics.Metrics.Histogram]
                 static partial MetricName1 CreateMetricName(Meter meter);
             }",
             wrap: false,
@@ -531,13 +531,13 @@ public partial class ParserTests
             {
                 public class Meter {}
             }
-            namespace Microsoft.Extensions.Telemetry.Metrics
+            namespace Microsoft.Extensions.Diagnostics.Metrics
             {
                 public class CounterAttribute : System.Attribute {}
             }
             partial class C
             {
-                [Microsoft.Extensions.Telemetry.Metrics.Counter]
+                [Microsoft.Extensions.Diagnostics.Metrics.Counter]
                 static partial MetricName1 CreateMetricName(Meter meter);
             }",
             wrap: false,
@@ -763,7 +763,7 @@ public partial class ParserTests
 
             text = $@"
                     {nspaceStart}
-                    using Microsoft.Extensions.Telemetry.Metrics;
+                    using Microsoft.Extensions.Diagnostics.Metrics;
                     using System.Diagnostics.Metrics;
                     {code}
                     {nspaceEnd}

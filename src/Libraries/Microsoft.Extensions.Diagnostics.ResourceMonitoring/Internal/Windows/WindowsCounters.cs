@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Metrics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
