@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.EnumStrings, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.EnumStrings, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.EnumStrings.EnumStringsAttribute : System.Attribute",

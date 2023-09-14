@@ -69,7 +69,7 @@ internal static class HttpClientFactory
     private static void AddHedging(this IServiceCollection services, HedgingClientType clientType)
     {
         var clientBuilder = services.AddHttpClient(clientType.ToString(), client => client.Timeout = Timeout.InfiniteTimeSpan);
-        var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectPipelineByAuthority(SimpleClassifications.PublicData);
+        var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectPipelineByAuthority(FakeClassifications.PublicData);
         _ = clientBuilder.AddHttpMessageHandler<NoRemoteCallHandler>();
 
         if (clientType.HasFlag(HedgingClientType.NoRoutes))

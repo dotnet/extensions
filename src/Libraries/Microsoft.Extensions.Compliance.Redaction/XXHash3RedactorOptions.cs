@@ -4,9 +4,9 @@
 namespace Microsoft.Extensions.Compliance.Redaction;
 
 /// <summary>
-/// Options for the xxHash redactor.
+/// Options for the XxHash3 redactor.
 /// </summary>
-public class XXHash3RedactorOptions
+public class XxHash3RedactorOptions
 {
     /// <summary>
     /// Gets or sets a hash seed used when computing hashes during redaction.

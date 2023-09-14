@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Compliance.Abstractions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Compliance.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "readonly struct Microsoft.Extensions.Compliance.Classification.DataClassification : System.IEquatable<Microsoft.Extensions.Compliance.Classification.DataClassification>",
@@ -11,10 +11,6 @@
         },
         {
           "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification.DataClassification();",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Classification.DataClassification.Combine(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
           "Stage": "Stable"
         },
         {
@@ -39,6 +35,10 @@
         },
         {
           "Member": "static bool Microsoft.Extensions.Compliance.Classification.DataClassification.operator !=(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Classification.DataClassification.Or(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
           "Stage": "Stable"
         },
         {

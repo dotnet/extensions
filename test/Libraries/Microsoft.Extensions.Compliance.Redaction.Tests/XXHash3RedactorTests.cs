@@ -6,35 +6,35 @@ using Xunit;
 
 namespace Microsoft.Extensions.Compliance.Redaction.Tests;
 
-public class XXHash3RedactorTests
+public class XxHash3RedactorTests
 {
     [Fact]
     public void Basic()
     {
-        var redactor = new XXHash3Redactor(Microsoft.Extensions.Options.Options.Create(new XXHash3RedactorOptions
+        var redactor = new XxHash3Redactor(Microsoft.Extensions.Options.Options.Create(new XxHash3RedactorOptions
         {
             HashSeed = 101,
         }));
 
-        Assert.Equal(XXHash3Redactor.RedactedSize, redactor.GetRedactedLength(" "));
-        Assert.Equal(XXHash3Redactor.RedactedSize, redactor.GetRedactedLength("--"));
-        Assert.Equal(XXHash3Redactor.RedactedSize, redactor.GetRedactedLength("XXXXXXXXXXXXXXXXXXXXXXX"));
+        Assert.Equal(XxHash3Redactor.RedactedSize, redactor.GetRedactedLength(" "));
+        Assert.Equal(XxHash3Redactor.RedactedSize, redactor.GetRedactedLength("--"));
+        Assert.Equal(XxHash3Redactor.RedactedSize, redactor.GetRedactedLength("XXXXXXXXXXXXXXXXXXXXXXX"));
 
-        var s1 = new char[XXHash3Redactor.RedactedSize];
+        var s1 = new char[XxHash3Redactor.RedactedSize];
         var r1 = redactor.Redact("Hello", s1);
 
-        var s2 = new char[XXHash3Redactor.RedactedSize];
+        var s2 = new char[XxHash3Redactor.RedactedSize];
         var r2 = redactor.Redact("Hello", s2);
 
         Assert.Equal(r1, r2);
         Assert.Equal(s1, s2);
 
-        redactor = new XXHash3Redactor(Microsoft.Extensions.Options.Options.Create(new XXHash3RedactorOptions
+        redactor = new XxHash3Redactor(Microsoft.Extensions.Options.Options.Create(new XxHash3RedactorOptions
         {
             HashSeed = 10101,
         }));
 
-        var s3 = new char[XXHash3Redactor.RedactedSize];
+        var s3 = new char[XxHash3Redactor.RedactedSize];
         for (int i = 0; i < s3.Length; i++)
         {
             s3[i] = '@';
@@ -50,7 +50,7 @@ public class XXHash3RedactorTests
     [Fact]
     public void XXHashRedactor_Does_Nothing_With_Empty_Input()
     {
-        var redactor = new XXHash3Redactor(Microsoft.Extensions.Options.Options.Create(new XXHash3RedactorOptions
+        var redactor = new XxHash3Redactor(Microsoft.Extensions.Options.Options.Create(new XxHash3RedactorOptions
         {
             HashSeed = 101,
         }));

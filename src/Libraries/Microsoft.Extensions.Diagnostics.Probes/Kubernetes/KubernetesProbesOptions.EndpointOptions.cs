@@ -46,7 +46,7 @@ public partial class KubernetesProbesOptions
         /// The default value is 30 seconds.
         /// </value>
         [TimeSpan("00:00:05", "00:05:00")]
-        public TimeSpan Period { get; set; } = TimeSpan.FromSeconds(30);
+        public TimeSpan HealthAssessmentPeriod { get; set; } = TimeSpan.FromSeconds(30);
 
         /// <summary>
         /// Gets or sets a predicate that is used to include health checks based on user-defined criteria.

@@ -12,14 +12,14 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 /// </summary>
 internal sealed class GenericPublisher : IResourceUtilizationPublisher
 {
-    private readonly Action<Utilization> _publish;
-    public GenericPublisher(Action<Utilization> publish)
+    private readonly Action<ResourceUtilization> _publish;
+    public GenericPublisher(Action<ResourceUtilization> publish)
     {
         _publish = publish;
     }
 
     /// <inheritdoc/>
-    public ValueTask PublishAsync(Utilization utilization, CancellationToken cancellationToken)
+    public ValueTask PublishAsync(ResourceUtilization utilization, CancellationToken cancellationToken)
     {
         _publish(utilization);
         return default;

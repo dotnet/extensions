@@ -74,8 +74,4 @@
     <PackageVersion Include="Microsoft.AspNetCore.Routing" Version="2.2.2" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageVersion Include="Microsoft.AspNetCore.Http.Features" Version="3.1.22" />
-    <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-  </ItemGroup>
 </Project>

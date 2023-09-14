@@ -30,7 +30,7 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
 
     public DownstreamDependencyMetadataManager(IEnumerable<IDownstreamDependencyMetadata> downstreamDependencyMetadata)
     {
-        Dictionary<string, RequestMetadataTrieNode> dependencyTrieMap = new();
+        Dictionary<string, RequestMetadataTrieNode> dependencyTrieMap = [];
         foreach (var dependency in downstreamDependencyMetadata)
         {
             AddDependency(dependency, dependencyTrieMap);
@@ -153,7 +153,7 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
 
     private static Dictionary<string, ProcessedMetadata> ProcessDownstreamDependencyMetadata(Dictionary<string, RequestMetadataTrieNode> dependencyTrieMap)
     {
-        Dictionary<string, ProcessedMetadata> finalArrayDict = new();
+        Dictionary<string, ProcessedMetadata> finalArrayDict = [];
         foreach (var dep in dependencyTrieMap)
         {
             var finalArray = ProcessDownstreamDependencyMetadataInternal(dep.Value);

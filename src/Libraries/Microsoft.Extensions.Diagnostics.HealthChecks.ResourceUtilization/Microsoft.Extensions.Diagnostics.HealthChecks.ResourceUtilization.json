@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "class Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUsageThresholds",

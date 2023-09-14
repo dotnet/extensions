@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Diagnostics.Probes, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Diagnostics.Probes, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "class Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions",
@@ -16,11 +16,11 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "int Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.MaxPendingConnections { get; set; }",
+          "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.HealthAssessmentPeriod { get; set; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "System.TimeSpan Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.Period { get; set; }",
+          "Member": "int Microsoft.Extensions.Diagnostics.Probes.KubernetesProbesOptions.EndpointOptions.MaxPendingConnections { get; set; }",
           "Stage": "Experimental"
         },
         {

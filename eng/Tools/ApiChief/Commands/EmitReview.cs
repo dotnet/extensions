@@ -183,7 +183,7 @@ internal static class EmitReview
                 var result = writer.ToString();
 
                 var file = type.FullName.Replace("<", "_").Replace(">", "_");
-                var index = file.LastIndexOf(".", StringComparison.OrdinalIgnoreCase);
+                var index = file.LastIndexOf('.');
                 if (index >= 0)
                 {
                     file = file.Substring(0, index) + "/" + file.Substring(index + 1);

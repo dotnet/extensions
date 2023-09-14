@@ -231,12 +231,12 @@ public class TimeSpanAttributeTests
 
         var options1 = new BadOptions1();
         context = new ValidationContext(options1);
-        results = new List<ValidationResult>();
+        results = [];
         Assert.Throws<InvalidOperationException>(() => _ = Validator.TryValidateObject(options1, context, results, true));
 
         var options3 = new BadOptions3();
         context = new ValidationContext(options3);
-        results = new List<ValidationResult>();
+        results = [];
         Assert.Throws<InvalidOperationException>(() => _ = Validator.TryValidateObject(options3, context, results, true));
     }
 

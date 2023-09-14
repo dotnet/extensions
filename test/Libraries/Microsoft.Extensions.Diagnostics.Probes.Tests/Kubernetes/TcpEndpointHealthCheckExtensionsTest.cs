@@ -49,7 +49,7 @@ public class TcpEndpointHealthCheckExtensionsTest
                 .AddTcpEndpointHealthCheck(o =>
                 {
                     o.FilterChecks = _ => false;
-                    o.Period = TimeSpan.FromSeconds(15);
+                    o.HealthAssessmentPeriod = TimeSpan.FromSeconds(15);
                 });
         });
 
@@ -58,7 +58,7 @@ public class TcpEndpointHealthCheckExtensionsTest
 
         Assert.Single(hostedServices);
         var config = Assert.Single(configurations);
-        Assert.Equal(TimeSpan.FromSeconds(15), config.Value.Period);
+        Assert.Equal(TimeSpan.FromSeconds(15), config.Value.HealthAssessmentPeriod);
     }
 
     [Fact]
@@ -86,7 +86,7 @@ public class TcpEndpointHealthCheckExtensionsTest
                 .AddTcpEndpointHealthCheck("Liveness", o =>
                 {
                     o.FilterChecks = _ => false;
-                    o.Period = TimeSpan.FromSeconds(5);
+                    o.HealthAssessmentPeriod = TimeSpan.FromSeconds(5);
                 });
         });
 
@@ -96,7 +96,7 @@ public class TcpEndpointHealthCheckExtensionsTest
         Assert.Single(hostedServices);
         var config = Assert.Single(configurations);
         Assert.NotNull(config.Get("Liveness"));
-        Assert.Equal(TimeSpan.FromSeconds(5), config.Get("Liveness").Period);
+        Assert.Equal(TimeSpan.FromSeconds(5), config.Get("Liveness").HealthAssessmentPeriod);
     }
 
     [Fact]
