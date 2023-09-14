@@ -439,20 +439,6 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher.Enrich(System.Diagnostics.Activity activity);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher.EnrichOnActivityStart(System.Diagnostics.Activity activity);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "class Microsoft.Extensions.Diagnostics.Latency.LatencyContextRegistrationOptions",
       "Stage": "Stable",
       "Methods": [
