@@ -19,7 +19,7 @@ public class EmitterUtilsTests
     [InlineData("special \n chars \r within \n\n a \"string\"", "special \\n chars \\r within \\n\\n a \\\"string\\\"")]
     public void ShouldEscapeMessageStringCorrectly(string input, string expected)
     {
-        Assert.Equal(expected, Emitter.EscapeMessageString(input));
+        Assert.Equal("\"" + expected + "\"", Emitter.EscapeMessageString(input));
     }
 
     [Theory]

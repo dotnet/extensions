@@ -106,7 +106,7 @@ internal sealed partial class Emitter : EmitterBase
         {
             var template = EscapeMessageString(lm.Message);
             template = AddAtSymbolsToTemplates(template, lm.Parameters);
-            OutLn($@"return global::System.FormattableString.Invariant($""{template}"");");
+            OutLn($@"return global::System.FormattableString.Invariant(${template});");
         }
         else if (string.IsNullOrEmpty(lm.Message))
         {
@@ -114,7 +114,7 @@ internal sealed partial class Emitter : EmitterBase
         }
         else
         {
-            OutLn($@"return ""{EscapeMessageString(lm.Message)}"";");
+            OutLn($@"return {EscapeMessageString(lm.Message)};");
         }
 
         OutCloseBraceWithExtra(");");
@@ -335,7 +335,7 @@ internal sealed partial class Emitter : EmitterBase
 
                 if (!string.IsNullOrEmpty(lm.Message))
                 {
-                    OutLn($"{stateName}.TagArray[{--count}] = new(\"{{OriginalFormat}}\", \"{EscapeMessageString(lm.Message)}\");");
+                    OutLn($"{stateName}.TagArray[{--count}] = new(\"{{OriginalFormat}}\", {EscapeMessageString(lm.Message)});");
                 }
             }
 
