@@ -226,7 +226,22 @@ internal sealed class Emitter : EmitterBase
         OutLn();
         OutOpenBrace();
 
-        var pathSb = new StringBuilder(restApiMethod.Path);
+        var encodedPath = restApiMethod.Path;
+
+        if (encodedPath != null)
+        {
+            foreach (var param in restApiMethod.AllParameters.Where(m => !m.IsQuery && !m.IsHeader && !m.IsBody && !m.IsCancellationToken))
+            {
+                var escapedParamName = $"{param.Name}Escaped";
+                OutLn($"var {escapedParamName} = {Uri}.EscapeDataString($\"{{{param.Name}}}\");");
+
+                encodedPath = encodedPath.Replace($"{{{param.Name}}}", $"{{{escapedParamName}}}");
+            }
+
+            OutLn();
+        }
+
+        var pathSb = new StringBuilder(encodedPath);
 
         var firstQuery = true;
         foreach (var param in restApiMethod.AllParameters.Where(m => m.IsQuery))
