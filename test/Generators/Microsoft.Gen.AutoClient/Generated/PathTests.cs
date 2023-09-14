@@ -80,6 +80,27 @@ public class PathTests : IDisposable
         Assert.Equal("Success!", response);
     }
 
+    [Fact]
+    public async Task EncodedPathParameters()
+    {
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users/some%2Fvalue/3"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
+
+        var response = await _sut.GetUserFromTenant("some/value", 3);
+
+        Assert.Equal("Success!", response);
+    }
+
     protected virtual void Dispose(bool disposing)
     {
         if (disposing)
