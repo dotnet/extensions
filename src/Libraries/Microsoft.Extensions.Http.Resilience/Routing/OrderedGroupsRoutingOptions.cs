@@ -18,11 +18,15 @@ public class OrderedGroupsRoutingOptions
     /// <summary>
     /// Gets or sets the collection of ordered endpoints groups.
     /// </summary>
-    [Required]
-    [Microsoft.Shared.Data.Validation.Length(1)]
-    [ValidateEnumeratedItems]
 #pragma warning disable CA2227 // Collection properties should be read only
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+    [Required]
+#if NET8_0_OR_GREATER
+    [System.ComponentModel.DataAnnotations.Length(1, int.MaxValue)]
+#else
+    [Microsoft.Shared.Data.Validation.Length(1)]
+#endif
+    [ValidateEnumeratedItems]
     public IList<EndpointGroup> Groups { get; set; } = new List<EndpointGroup>();
 #pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 #pragma warning restore CA2227 // Collection properties should be read only
