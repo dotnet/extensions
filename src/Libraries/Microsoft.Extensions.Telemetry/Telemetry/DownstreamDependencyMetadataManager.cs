@@ -350,9 +350,8 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
             return hostMetadata.RequestMetadata;
         }
 
-
         ReadOnlySpan<char> requestRouteAsSpan;
-        if (requestPath[requestPath.Length -1] == '/')
+        if (requestPath[requestPath.Length - 1] == '/')
         {
             requestRouteAsSpan = requestPath.AsSpan(0, requestPath.Length - 1);
         }
