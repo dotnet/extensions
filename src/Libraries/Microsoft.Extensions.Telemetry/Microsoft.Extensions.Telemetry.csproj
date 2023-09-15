@@ -55,7 +55,4 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Telemetry.Middleware" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Tracing.Sampling\Internal\" />
-  </ItemGroup>
 </Project>
