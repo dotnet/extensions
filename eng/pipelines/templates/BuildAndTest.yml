@@ -35,7 +35,7 @@ steps:
   #       Get-ChildItem env:* | Sort-Object Name  
   #   displayName: Debug
 
-  - ${{ if and(eq(variables._RunAsPublic, True), eq(variables['Build.Reason'], 'PullRequest')) }}:
+  - ${{ if and(eq(variables['runAsPublic'], True), eq(variables['Build.Reason'], 'PullRequest')) }}:
     - task: GitHubComment@0
       inputs:
         gitHubConnection: dotnet-comment-bot-service-connection
