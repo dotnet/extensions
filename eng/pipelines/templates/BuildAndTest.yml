@@ -34,7 +34,7 @@ steps:
         repositoryName: '$(Build.Repository.Name)'
         id: $(System.PullRequest.PullRequestNumber)
         comment: 'Hello world'
-    displayName: GitHub comment
+      displayName: GitHub comment
 
   - pwsh: |
         function Export { param($i); Write-Host "$i"; Write-Host "##$i" }
