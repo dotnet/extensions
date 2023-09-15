@@ -32,8 +32,8 @@ steps:
         # Write-Host 'isWindows: ${{ parameters.isWindows }}'
         # Write-Host 'skipTests: ${{ parameters.skipTests }}'
         # Write-Host 'skipQualityGates: ${{ parameters.skipQualityGates }}'
-        Write-Host 'runAsPublic: ${{ variables['runAsPublic'] }}'
-        Write-Host 'Build.Reason: ${{ variables['Build.Reason'] }}'
+        Write-Host "runAsPublic: ${{ variables['runAsPublic'] }}"
+        Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
         Get-ChildItem env:* | Sort-Object Name  
     displayName: Debug
 
