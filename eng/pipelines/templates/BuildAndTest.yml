@@ -24,16 +24,6 @@ parameters:
 steps:
   # Debug
   - pwsh: |
-        # Write-Host 'buildScript: ${{ parameters.buildScript }}'
-        # Write-Host 'buildConfig: ${{ parameters.buildConfig }}'
-        # Write-Host 'repoLogPath: ${{ parameters.repoLogPath }}'
-        # Write-Host 'repoTestResultsPath: ${{ parameters.repoTestResultsPath }}'
-        # Write-Host 'isDeltaBuild: ${{ parameters.isDeltaBuild }}'
-        # Write-Host 'isWindows: ${{ parameters.isWindows }}'
-        # Write-Host 'skipTests: ${{ parameters.skipTests }}'
-        # Write-Host 'skipQualityGates: ${{ parameters.skipQualityGates }}'
-        Write-Host "runAsPublic: ${{ variables['runAsPublic'] }}"
-        Write-Host "Build.Reason: ${{ variables['Build.Reason'] }}"
         Get-ChildItem env:* | Sort-Object Name  
     displayName: Debug
 
