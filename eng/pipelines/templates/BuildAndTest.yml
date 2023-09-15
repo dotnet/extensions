@@ -27,14 +27,14 @@ steps:
         Get-ChildItem env:* | Sort-Object Name  
     displayName: Debug
 
-  - ${{ if and(eq(variables['runAsPublic'], 'true'), eq(variables['Build.Reason'], 'PullRequest')) }}:
-    - task: GitHubComment@0
-      inputs:
-        gitHubConnection: dotnet-comment-bot-service-connection
-        repositoryName: '$(Build.Repository.Name)'
-        id: $(System.PullRequest.PullRequestNumber)
-        comment: 'Hello world'
-      displayName: GitHub comment
+  #- ${{ if and(eq(variables['runAsPublic'], 'true'), eq(variables['Build.Reason'], 'PullRequest')) }}:
+  - task: GitHubComment@0
+    inputs:
+      gitHubConnection: dotnet-comment-bot-service-connection
+      repositoryName: '$(Build.Repository.Name)'
+      id: $(System.PullRequest.PullRequestNumber)
+      comment: 'Hello world'
+    displayName: GitHub comment
 
   - pwsh: |
         function Export { param($i); Write-Host "$i"; Write-Host "##$i" }
