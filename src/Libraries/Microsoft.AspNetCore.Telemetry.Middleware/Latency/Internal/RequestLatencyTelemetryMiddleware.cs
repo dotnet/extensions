@@ -60,7 +60,10 @@ internal sealed class RequestLatencyTelemetryMiddleware : IMiddleware
             context.Response.OnStarting(ctx =>
             {
                 var httpContext = (HttpContext)ctx;
-                httpContext.Response.Headers.Append(TelemetryConstants.ServerApplicationNameHeader, _applicationName);
+
+                // Set server name header to the current one.
+                httpContext.Response.Headers[TelemetryConstants.ServerApplicationNameHeader] = _applicationName;
+
                 return Task.CompletedTask;
             }, context);
         }
