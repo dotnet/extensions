@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 /// Keep this Test to distinguish different tests for IPv6.
 /// </summary>
 [Collection("Tcp Connection Tests")]
+[OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
 public sealed class Tcp6TableInfoTest
 {
     public static readonly TimeSpan DefaultTimeSpan = TimeSpan.FromSeconds(5);
@@ -224,7 +225,7 @@ public sealed class Tcp6TableInfoTest
         return (uint)NTSTATUS.Success;
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Test_Tcp6TableInfo_Get_UnsuccessfulStatus_All_The_Time()
     {
         var options = new ResourceMonitoringOptions
@@ -240,7 +241,7 @@ public sealed class Tcp6TableInfoTest
         });
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Test_Tcp6TableInfo_Get_InsufficientBuffer_Then_Get_InvalidParameter()
     {
         var options = new ResourceMonitoringOptions
@@ -256,7 +257,7 @@ public sealed class Tcp6TableInfoTest
         });
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Test_Tcp6TableInfo_Get_Correct_Information()
     {
         StartTimestamp = DateTimeOffset.UtcNow;

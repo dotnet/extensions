@@ -11,6 +11,7 @@ using Xunit;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
 [Collection("Tcp Connection Tests")]
+[OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
 public sealed class TcpTableInfoTest
 {
     public static readonly TimeSpan DefaultTimeSpan = TimeSpan.FromSeconds(5);
@@ -167,7 +168,7 @@ public sealed class TcpTableInfoTest
         return (uint)NTSTATUS.Success;
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Test_TcpTableInfo_Get_UnsuccessfulStatus_All_The_Time()
     {
         var options = new ResourceMonitoringOptions
@@ -183,7 +184,7 @@ public sealed class TcpTableInfoTest
         });
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Test_TcpTableInfo_Get_InsufficientBuffer_Then_Get_InvalidParameter()
     {
         var options = new ResourceMonitoringOptions
@@ -199,7 +200,7 @@ public sealed class TcpTableInfoTest
         });
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Test_TcpTableInfo_Get_Correct_Information()
     {
         StartTimestamp = DateTimeOffset.UtcNow;
@@ -260,7 +261,7 @@ public sealed class TcpTableInfoTest
         Assert.Equal(2, tcpStateInfo.DeleteTcbCount);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Test_TcpTableInfo_CalculateCount_default_branch()
     {
         TcpStateInfo tcpStateInfo = new();
