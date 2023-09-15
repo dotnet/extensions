@@ -3,9 +3,9 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Metrics;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 

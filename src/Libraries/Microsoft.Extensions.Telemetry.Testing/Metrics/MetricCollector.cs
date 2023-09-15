@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Metrics;
+namespace Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 /// <summary>
 /// Collects the measurements published from an <see cref="Instrument{T}"/> or <see cref="ObservableInstrument{T}"/>.

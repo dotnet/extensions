@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Latency;
+namespace Microsoft.Extensions.Diagnostics.Latency;
 
 /// <summary>
 /// Extensions to add a no-op latency context.

@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 public sealed partial class LoggerMessageState : IReadOnlyList<KeyValuePair<string, object?>>
 {

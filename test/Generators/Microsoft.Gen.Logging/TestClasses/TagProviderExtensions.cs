@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 using Microsoft.Shared.Text;
 
 namespace TestClasses

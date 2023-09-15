@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Telemetry.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Gen.Metrics.Model;
 using Microsoft.Gen.Shared;
 using Xunit;
@@ -79,7 +79,7 @@ public class EmitterTests
                         new MetricParameter
                         {
                             Name = "meter",
-                            Type = "global::Microsoft.Extensions.Telemetry.Metrics.IMeter",
+                            Type = "global::Microsoft.Extensions.Diagnostics.Metrics.IMeter",
                             IsMeter = true
                         }
                     }

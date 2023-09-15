@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Extensions.Telemetry.Latency;
+namespace Microsoft.Extensions.Diagnostics.Latency;
 
 /// <summary>
 /// Encapsulates the state accumulated while measuring the latency of an operaiton.

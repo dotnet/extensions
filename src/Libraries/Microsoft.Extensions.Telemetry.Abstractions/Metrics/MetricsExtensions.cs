@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.Extensions.Telemetry.Metrics;
+namespace Microsoft.Extensions.Diagnostics.Metrics;
 
 /// <summary>
 /// Extensions to control metering integration.

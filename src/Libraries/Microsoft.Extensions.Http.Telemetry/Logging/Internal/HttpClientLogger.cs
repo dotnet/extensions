@@ -14,7 +14,6 @@ using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Logging;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging;

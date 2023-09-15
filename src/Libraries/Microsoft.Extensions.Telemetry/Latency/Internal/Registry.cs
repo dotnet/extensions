@@ -6,7 +6,7 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Internal;
 
 /// <summary>
 /// Provides registry functionality.

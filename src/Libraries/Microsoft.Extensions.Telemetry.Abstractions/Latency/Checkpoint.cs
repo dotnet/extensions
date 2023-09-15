@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.Telemetry.Latency;
+namespace Microsoft.Extensions.Diagnostics.Latency;
 
 /// <summary>
 /// Represents an event and the time it occurred relative to a well-known starting point.

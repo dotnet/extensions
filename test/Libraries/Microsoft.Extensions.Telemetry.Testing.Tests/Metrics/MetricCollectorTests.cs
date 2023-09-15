@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Metrics.Test;
+namespace Microsoft.Extensions.Diagnostics.Metrics.Testing.Test;
 
 public static class MetricCollectorTests
 {

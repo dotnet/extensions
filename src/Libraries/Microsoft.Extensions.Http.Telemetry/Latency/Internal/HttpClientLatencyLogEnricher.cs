@@ -6,10 +6,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http.Telemetry.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Telemetry.Enrichment;
-using Microsoft.Extensions.Telemetry.Latency;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Http.Telemetry.Latency.Internal;

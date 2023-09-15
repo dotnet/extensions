@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Metrics;
+namespace Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 /// <summary>
 /// Extensions to simplify working with lists of measurements.

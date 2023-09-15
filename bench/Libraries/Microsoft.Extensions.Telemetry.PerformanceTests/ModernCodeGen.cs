@@ -11,7 +11,7 @@ internal static class ModernCodeGen
     /// </summary>
     public static void RefTypes(global::Microsoft.Extensions.Logging.ILogger logger, string connectionId, string type, string streamId, string length, string flags, string other)
     {
-        var state = global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper.ThreadLocalState;
+        var state = global::Microsoft.Extensions.Logging.LoggerMessageHelper.ThreadLocalState;
 
         _ = state.ReserveTagSpace(7);
         state.TagArray[6] = new("connectionId", connectionId);
@@ -46,7 +46,7 @@ internal static class ModernCodeGen
     /// </summary>
     public static void ValueTypes(global::Microsoft.Extensions.Logging.ILogger logger, long start, long end, int options, global::System.Guid guid)
     {
-        var state = global::Microsoft.Extensions.Telemetry.Logging.LoggerMessageHelper.ThreadLocalState;
+        var state = global::Microsoft.Extensions.Logging.LoggerMessageHelper.ThreadLocalState;
 
         _ = state.ReserveTagSpace(5);
         state.TagArray[4] = new("start", start);

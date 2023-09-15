@@ -9,13 +9,12 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Metrics;
 using Polly;
 using Polly.Registry;
-using Polly.Retry;
 using Polly.Testing;
 using Xunit;
 

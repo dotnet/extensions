@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Internal;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.AspNetCore.Telemetry.Http.Logging;
 

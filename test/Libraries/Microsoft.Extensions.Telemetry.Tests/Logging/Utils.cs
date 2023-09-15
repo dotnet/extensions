@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Telemetry.Logging.Test;
+namespace Microsoft.Extensions.Logging.Test;
 
 internal static class Utils
 {

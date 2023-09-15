@@ -7,7 +7,7 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 
-namespace Microsoft.Extensions.Telemetry.Logging.Test;
+namespace Microsoft.Extensions.Logging.Test;
 
 internal class TestConfiguration : JsonConfigurationProvider
 {

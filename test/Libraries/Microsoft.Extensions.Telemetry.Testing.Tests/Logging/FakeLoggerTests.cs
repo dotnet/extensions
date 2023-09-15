@@ -7,11 +7,11 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Logging.Test;
+namespace Microsoft.Extensions.Logging.Testing.Test;
 
 public class FakeLoggerTests
 {

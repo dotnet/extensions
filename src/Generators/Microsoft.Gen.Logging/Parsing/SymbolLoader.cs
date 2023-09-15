@@ -10,10 +10,10 @@ namespace Microsoft.Gen.Logging.Parsing;
 internal static class SymbolLoader
 {
     internal const string LoggerMessageAttribute = "Microsoft.Extensions.Logging.LoggerMessageAttribute";
-    internal const string LogPropertiesAttribute = "Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute";
-    internal const string TagProviderAttribute = "Microsoft.Extensions.Telemetry.Logging.TagProviderAttribute";
-    internal const string LogPropertyIgnoreAttribute = "Microsoft.Extensions.Telemetry.Logging.LogPropertyIgnoreAttribute";
-    internal const string ITagCollectorType = "Microsoft.Extensions.Telemetry.Logging.ITagCollector";
+    internal const string LogPropertiesAttribute = "Microsoft.Extensions.Logging.LogPropertiesAttribute";
+    internal const string TagProviderAttribute = "Microsoft.Extensions.Logging.TagProviderAttribute";
+    internal const string LogPropertyIgnoreAttribute = "Microsoft.Extensions.Logging.LogPropertyIgnoreAttribute";
+    internal const string ITagCollectorType = "Microsoft.Extensions.Logging.ITagCollector";
     internal const string ILoggerType = "Microsoft.Extensions.Logging.ILogger";
     internal const string LogLevelType = "Microsoft.Extensions.Logging.LogLevel";
     internal const string ExceptionType = "System.Exception";

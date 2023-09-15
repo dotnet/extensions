@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using TestClasses;
 using Xunit;
 

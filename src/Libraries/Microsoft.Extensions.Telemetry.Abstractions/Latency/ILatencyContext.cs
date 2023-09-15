@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.Telemetry.Latency;
+namespace Microsoft.Extensions.Diagnostics.Latency;
 
 /// <summary>
 /// Abstraction that provides the context for latency measurement and diagnostics.

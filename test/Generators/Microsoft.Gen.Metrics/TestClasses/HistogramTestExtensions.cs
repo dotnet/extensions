@@ -3,7 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
-using Microsoft.Extensions.Telemetry.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics;
 
 namespace TestClasses
 {

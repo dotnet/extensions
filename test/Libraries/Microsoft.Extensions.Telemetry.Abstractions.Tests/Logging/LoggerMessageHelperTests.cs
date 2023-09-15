@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Logging.Test;
+namespace Microsoft.Extensions.Logging.Test;
 
 public static class LoggerMessageHelperTests
 {

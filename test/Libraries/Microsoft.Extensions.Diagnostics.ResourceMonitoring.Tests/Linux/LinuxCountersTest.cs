@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
-using Microsoft.Extensions.Telemetry.Metrics;
 using Microsoft.TestUtilities;
 using Xunit;
 

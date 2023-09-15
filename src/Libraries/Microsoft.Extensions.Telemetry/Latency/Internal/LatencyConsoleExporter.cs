@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Shared.Memoization;
 using Microsoft.Shared.Pools;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Internal;
 
 internal sealed class LatencyConsoleExporter : ILatencyDataExporter
 {

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Logging;
+namespace Microsoft.Extensions.Logging.Testing;
 
 /// <summary>
 /// A single log record tracked by <see cref="FakeLogger"/>.

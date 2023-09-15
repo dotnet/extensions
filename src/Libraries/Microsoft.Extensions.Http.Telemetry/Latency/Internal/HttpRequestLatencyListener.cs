@@ -7,7 +7,7 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading;
-using Microsoft.Extensions.Telemetry.Latency;
+using Microsoft.Extensions.Diagnostics.Latency;
 
 namespace Microsoft.Extensions.Http.Telemetry.Latency.Internal;
 

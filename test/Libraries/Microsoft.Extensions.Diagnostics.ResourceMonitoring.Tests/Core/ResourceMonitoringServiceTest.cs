@@ -11,7 +11,7 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Providers;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;

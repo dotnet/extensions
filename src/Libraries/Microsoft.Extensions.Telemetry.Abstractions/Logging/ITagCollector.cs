@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Represents a custom tag provider and enables it to emit tags.

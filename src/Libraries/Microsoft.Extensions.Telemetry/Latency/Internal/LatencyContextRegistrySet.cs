@@ -4,10 +4,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Latency;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Internal;
 
 /// <summary>
 /// Class that holds registry of names used with <see cref="LatencyContext"/> APIs.

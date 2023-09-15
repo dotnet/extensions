@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 internal sealed class ExtendedLoggerFactory : ILoggerFactory
 {

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using TestClasses;
 using Xunit;
 

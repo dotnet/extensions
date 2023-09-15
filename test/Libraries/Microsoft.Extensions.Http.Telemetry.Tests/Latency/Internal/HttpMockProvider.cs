@@ -3,8 +3,8 @@
 
 using System.Diagnostics.Tracing;
 using System.Threading;
+using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http.Telemetry.Latency.Internal;
-using Microsoft.Extensions.Telemetry.Latency;
 using Moq;
 
 namespace Microsoft.Extensions.Http.Telemetry.Latency.Test.Internal;

@@ -178,7 +178,7 @@ public class AttributeParserTests
                 using Microsoft.Extensions.Compliance.Testing;
                 using Microsoft.Extensions.Compliance.Redaction;
                 using Microsoft.Extensions.Logging;
-                using Microsoft.Extensions.Telemetry.Logging;
+                using Microsoft.Extensions.Logging;
                 {code}
                 }}
             ";

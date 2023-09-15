@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Test;
+namespace Microsoft.Extensions.Diagnostics.Latency.Test;
 
 public class LatencyRegistryExtensionsTest
 {

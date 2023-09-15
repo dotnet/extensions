@@ -3,7 +3,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Extensions.Telemetry.Logging;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Telemetry.Http.Logging.Test;

@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Metrics;
+namespace Microsoft.Extensions.Diagnostics.Metrics;
 
 /// <summary>
 /// Provides information to guide the production of a strongly typed histogram metric factory method and associated type.

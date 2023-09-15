@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 public partial class LoggerMessageState
 {

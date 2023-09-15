@@ -6,11 +6,9 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Logging;
+namespace Microsoft.Extensions.Logging.Testing;
 
 /// <summary>
 /// A logger which captures everything logged to it and enables inspection.

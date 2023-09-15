@@ -5,11 +5,11 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Telemetry.Latency;
-using Microsoft.Extensions.Telemetry.Latency.Internal;
+using Microsoft.Extensions.Diagnostics.Latency;
+using Microsoft.Extensions.Diagnostics.Latency.Internal;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Test.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Test.Internal;
 
 [Collection("StdoutUsage")]
 public class LatencyConsoleExporterTests

@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Logging.Test.Log;
+namespace Microsoft.Extensions.Logging.Test.Log;
 
 public static class LoggerEnrichmentOptionsTests
 {

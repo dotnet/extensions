@@ -3,7 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
-using Microsoft.Extensions.Telemetry.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics;
 
 // Generator emits the code without compilation errors only when
 // a class named 'TestClassesNspace' is a 'part' of the namespace 'TestClassesNspace.Metrics'.
