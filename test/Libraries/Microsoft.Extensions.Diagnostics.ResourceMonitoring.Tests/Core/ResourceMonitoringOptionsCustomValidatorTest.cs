@@ -14,12 +14,13 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 public sealed class ResourceMonitoringOptionsCustomValidatorTest
 {
     [Fact]
-    public void Test_ResourceMonitoringOptionsCustomValidator_With_Fake_IPv6_Address()
+    public void Test_WindowsCountersOptionsCustomValidator_With_Wrong_IP_Address()
     {
         var options = new ResourceMonitoringOptions
         {
-            SourceIpAddresses = new HashSet<string> { "[::]" }
+            SourceIpAddresses = new HashSet<string> { "" }
         };
+        var tcpTableInfo = new TcpTableInfo(Options.Options.Create(options));
         var validator = new ResourceMonitoringOptionsCustomValidator();
         var result = validator.Validate("", options);
 
@@ -27,11 +28,11 @@ public sealed class ResourceMonitoringOptionsCustomValidatorTest
     }
 
     [Fact]
-    public void Test_ResourceMonitoringOptionsCustomValidator_with_Fake_IPv4_Address()
+    public void Test_WindowsCountersOptionsCustomValidator_with_Fake_IPv4_and_IPv6_Address()
     {
         var options = new ResourceMonitoringOptions
         {
-            SourceIpAddresses = new HashSet<string> { "127.0.0.1" }
+            SourceIpAddresses = new HashSet<string> { "127.0.0.1", "[::]" }
         };
         var validator = new ResourceMonitoringOptionsCustomValidator();
         var result = validator.Validate("", options);

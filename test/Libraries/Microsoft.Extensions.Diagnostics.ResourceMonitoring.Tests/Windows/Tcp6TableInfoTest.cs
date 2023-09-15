@@ -11,28 +11,35 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
+/// <summary>
+/// Keep this Test to distinguish different tests for IPv6.
+/// </summary>
 [Collection("Tcp Connection Tests")]
 [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
-public sealed class TcpTableInfoTest
+public sealed class Tcp6TableInfoTest
 {
     public static readonly TimeSpan DefaultTimeSpan = TimeSpan.FromSeconds(5);
     public static DateTimeOffset StartTimestamp = DateTimeOffset.UtcNow;
     public static DateTimeOffset NextTimestamp = StartTimestamp.Add(DefaultTimeSpan);
 
-    // Each MIB_TCPROW needs 20. In experiments, the size should be 20 * MIB_TCPROW_count + 12.
-    private const uint FakeSize = 272;
+    // Each MIB_TCP6ROW needs 52. In experiments, the size should be 52 * MIB_TCP6ROW_count + 12.
+    private const uint FakeSize = 688;
 
     // Add 13 rows more.
-    private const uint FakeSize2 = FakeSize + (20 * 13);
+    private const uint FakeSize2 = FakeSize + (52 * 13);
     private const uint FakeNumberOfEntries = 13;
     private const uint FakeNumberOfEntries2 = FakeNumberOfEntries * 2;
 
-    public static uint FakeGetTcpTableWithUnsuccessfulStatusAllTheTime(IntPtr pTcpTable, ref uint pdwSize, bool bOrder)
+    // Fake Local IPv6 Address
+    private static readonly byte[] _fakeAddress = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+    private static readonly byte[] _fakeAddress2 = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2 };
+
+    public static uint FakeGetTcp6TableWithUnsuccessfulStatusAllTheTime(IntPtr pTcp6Table, ref uint pdwSize, bool bOrder)
     {
         return (uint)NTSTATUS.UnsuccessfulStatus;
     }
 
-    public static uint FakeGetTcpTableWithInsufficientBufferAndInvalidParameter(IntPtr pTcpTable, ref uint pdwSize, bool bOrder)
+    public static uint FakeGetTcp6TableWithInsufficientBufferAndInvalidParameter(IntPtr pTcp6Table, ref uint pdwSize, bool bOrder)
     {
         if (pdwSize < FakeSize)
         {
@@ -43,7 +50,7 @@ public sealed class TcpTableInfoTest
         return (uint)NTSTATUS.InvalidParameter;
     }
 
-    public static unsafe uint FakeGetTcpTableWithFakeInformation(IntPtr pTcpTable, ref uint pdwSize, bool bOrder)
+    public static uint FakeGetTcp6TableWithFakeInformation(IntPtr pTcp6Table, ref uint pdwSize, bool bOrder)
     {
         if (DateTimeOffset.UtcNow < NextTimestamp)
         {
@@ -53,23 +60,29 @@ public sealed class TcpTableInfoTest
                 return (uint)NTSTATUS.InsufficientBuffer;
             }
 
-            MIB_TCPTABLE fakeTcpTable = new()
+            MIB_TCP6TABLE fakeTcp6Table = new()
             {
                 NumberOfEntries = FakeNumberOfEntries
             };
-            MIB_TCPROW[] fakeRows = new MIB_TCPROW[FakeNumberOfEntries];
+            MIB_TCP6ROW[] fakeRows = new MIB_TCP6ROW[FakeNumberOfEntries];
             for (int i = 0; i < 12; ++i)
             {
-                fakeRows[i] = new MIB_TCPROW
+                fakeRows[i] = new MIB_TCP6ROW
                 {
                     State = (MIB_TCP_STATE)(i + 1),
 
-                    // 16_777_343 means 127.0.0.1.
-                    LocalAddr = 16_777_343
+                    LocalAddr = new IN6_ADDR
+                    {
+                        Byte = _fakeAddress
+                    },
+                    RemoteAddr = new IN6_ADDR
+                    {
+                        Byte = new byte[16]
+                    }
                 };
             }
 
-            fakeRows[12] = new MIB_TCPROW
+            fakeRows[12] = new MIB_TCP6ROW
             {
                 State = MIB_TCP_STATE.DELETE_TCB,
             };
@@ -77,23 +90,44 @@ public sealed class TcpTableInfoTest
             // True means the result should be sorted.
             if (bOrder)
             {
-                fakeRows[12].LocalAddr = 16_777_343 + 1;
+                fakeRows[12].LocalAddr = new IN6_ADDR
+                {
+                    Byte = _fakeAddress2
+                };
+                fakeRows[12].RemoteAddr = new IN6_ADDR
+                {
+                    Byte = _fakeAddress2
+                };
             }
             else
             {
-                fakeRows[11].LocalAddr = 16_777_343 + 1;
-                fakeRows[12].LocalAddr = 16_777_343;
+                fakeRows[11].LocalAddr = new IN6_ADDR
+                {
+                    Byte = _fakeAddress2
+                };
+                fakeRows[12].LocalAddr = new IN6_ADDR
+                {
+                    Byte = _fakeAddress
+                };
+                fakeRows[11].RemoteAddr = new IN6_ADDR
+                {
+                    Byte = _fakeAddress2
+                };
+                fakeRows[12].RemoteAddr = new IN6_ADDR
+                {
+                    Byte = _fakeAddress
+                };
             }
 
-            fakeTcpTable.Table = fakeRows[0];
-            Marshal.StructureToPtr(fakeTcpTable, pTcpTable, false);
-            var offset = Marshal.OffsetOf<MIB_TCPTABLE>(nameof(MIB_TCPTABLE.Table)).ToInt32();
-            var fakePtr = IntPtr.Add(pTcpTable, offset);
+            fakeTcp6Table.Table = fakeRows[0];
+            Marshal.StructureToPtr(fakeTcp6Table, pTcp6Table, false);
+            var offset = Marshal.OffsetOf<MIB_TCP6TABLE>(nameof(MIB_TCP6TABLE.Table)).ToInt32();
+            var fakePtr = IntPtr.Add(pTcp6Table, offset);
 
-            for (int i = 0; i < fakeTcpTable.NumberOfEntries; ++i)
+            for (int i = 0; i < fakeTcp6Table.NumberOfEntries; ++i)
             {
                 Marshal.StructureToPtr(fakeRows[i], fakePtr, false);
-                fakePtr = IntPtr.Add(fakePtr, sizeof(MIB_TCPROW));
+                fakePtr = IntPtr.Add(fakePtr, Marshal.SizeOf<MIB_TCP6ROW>());
             }
         }
         else
@@ -104,38 +138,43 @@ public sealed class TcpTableInfoTest
                 return (uint)NTSTATUS.InsufficientBuffer;
             }
 
-            MIB_TCPTABLE fakeTcpTable = new()
+            MIB_TCP6TABLE fakeTcp6Table = new()
             {
                 NumberOfEntries = FakeNumberOfEntries2
             };
-            MIB_TCPROW[] fakeRows = new MIB_TCPROW[FakeNumberOfEntries2];
+            var test = _fakeAddress;
+            MIB_TCP6ROW[] fakeRows = new MIB_TCP6ROW[FakeNumberOfEntries2];
             for (int i = 0; i < 12; ++i)
             {
-                fakeRows[i] = new MIB_TCPROW
+                fakeRows[i] = new MIB_TCP6ROW
                 {
                     State = (MIB_TCP_STATE)(i + 1),
 
-                    // 16_777_343 means 127.0.0.1.
-                    LocalAddr = 16_777_343
+                    LocalAddr = new IN6_ADDR
+                    {
+                        Byte = _fakeAddress
+                    }
                 };
             }
 
             for (int i = 13; i < 25; ++i)
             {
-                fakeRows[i] = new MIB_TCPROW
+                fakeRows[i] = new MIB_TCP6ROW
                 {
                     State = (MIB_TCP_STATE)(i + 1 - 13),
 
-                    // 16_777_343 means 127.0.0.1.
-                    LocalAddr = 16_777_343
+                    LocalAddr = new IN6_ADDR
+                    {
+                        Byte = _fakeAddress
+                    }
                 };
             }
 
-            fakeRows[12] = new MIB_TCPROW
+            fakeRows[12] = new MIB_TCP6ROW
             {
                 State = MIB_TCP_STATE.DELETE_TCB,
             };
-            fakeRows[25] = new MIB_TCPROW
+            fakeRows[25] = new MIB_TCP6ROW
             {
                 State = MIB_TCP_STATE.DELETE_TCB,
             };
@@ -143,26 +182,44 @@ public sealed class TcpTableInfoTest
             // True means the result should be sorted.
             if (bOrder)
             {
-                fakeRows[12].LocalAddr = 16_777_343 + 1;
-                fakeRows[25].LocalAddr = 16_777_343 + 1;
+                fakeRows[12].LocalAddr = new IN6_ADDR
+                {
+                    Byte = _fakeAddress2
+                };
+                fakeRows[25].LocalAddr = new IN6_ADDR
+                {
+                    Byte = _fakeAddress2
+                };
             }
             else
             {
-                fakeRows[11].LocalAddr = 16_777_343 + 1;
-                fakeRows[12].LocalAddr = 16_777_343;
-                fakeRows[24].LocalAddr = 16_777_343 + 1;
-                fakeRows[25].LocalAddr = 16_777_343;
+                fakeRows[11].LocalAddr = new IN6_ADDR
+                {
+                    Byte = _fakeAddress2
+                };
+                fakeRows[12].LocalAddr = new IN6_ADDR
+                {
+                    Byte = _fakeAddress
+                };
+                fakeRows[24].LocalAddr = new IN6_ADDR
+                {
+                    Byte = _fakeAddress2
+                };
+                fakeRows[25].LocalAddr = new IN6_ADDR
+                {
+                    Byte = _fakeAddress
+                };
             }
 
-            fakeTcpTable.Table = fakeRows[0];
-            Marshal.StructureToPtr(fakeTcpTable, pTcpTable, false);
-            var offset = Marshal.OffsetOf<MIB_TCPTABLE>(nameof(MIB_TCPTABLE.Table)).ToInt32();
-            var fakePtr = IntPtr.Add(pTcpTable, offset);
+            fakeTcp6Table.Table = fakeRows[0];
+            Marshal.StructureToPtr(fakeTcp6Table, pTcp6Table, false);
+            var offset = Marshal.OffsetOf<MIB_TCP6TABLE>(nameof(MIB_TCP6TABLE.Table)).ToInt32();
+            var fakePtr = IntPtr.Add(pTcp6Table, offset);
 
-            for (int i = 0; i < fakeTcpTable.NumberOfEntries; ++i)
+            for (int i = 0; i < fakeTcp6Table.NumberOfEntries; ++i)
             {
                 Marshal.StructureToPtr(fakeRows[i], fakePtr, false);
-                fakePtr = IntPtr.Add(fakePtr, sizeof(MIB_TCPROW));
+                fakePtr = IntPtr.Add(fakePtr, Marshal.SizeOf<MIB_TCP6ROW>());
             }
         }
 
@@ -170,50 +227,50 @@ public sealed class TcpTableInfoTest
     }
 
     [ConditionalFact]
-    public void Test_TcpTableInfo_Get_UnsuccessfulStatus_All_The_Time()
+    public void Test_Tcp6TableInfo_Get_UnsuccessfulStatus_All_The_Time()
     {
         var options = new ResourceMonitoringOptions
         {
-            SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
+            SourceIpAddresses = new HashSet<string> { "[::1]" },
             SamplingInterval = DefaultTimeSpan
         };
-        TcpTableInfo tcpTableInfo = new TcpTableInfo(Options.Options.Create(options));
-        tcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithUnsuccessfulStatusAllTheTime);
+        TcpTableInfo tcp6TableInfo = new TcpTableInfo(Options.Options.Create(options));
+        tcp6TableInfo.SetGetTcp6TableDelegate(FakeGetTcp6TableWithUnsuccessfulStatusAllTheTime);
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var tcpStateInfo = tcpTableInfo.GetIPv4CachingSnapshot();
+            var tcpStateInfo = tcp6TableInfo.GetIPv6CachingSnapshot();
         });
     }
 
     [ConditionalFact]
-    public void Test_TcpTableInfo_Get_InsufficientBuffer_Then_Get_InvalidParameter()
+    public void Test_Tcp6TableInfo_Get_InsufficientBuffer_Then_Get_InvalidParameter()
     {
         var options = new ResourceMonitoringOptions
         {
-            SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
+            SourceIpAddresses = new HashSet<string> { "[::1]" },
             SamplingInterval = DefaultTimeSpan
         };
-        TcpTableInfo tcpTableInfo = new TcpTableInfo(Options.Options.Create(options));
-        tcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithInsufficientBufferAndInvalidParameter);
+        TcpTableInfo tcp6TableInfo = new TcpTableInfo(Options.Options.Create(options));
+        tcp6TableInfo.SetGetTcp6TableDelegate(FakeGetTcp6TableWithInsufficientBufferAndInvalidParameter);
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var tcpStateInfo = tcpTableInfo.GetIPv4CachingSnapshot();
+            var tcpStateInfo = tcp6TableInfo.GetIPv6CachingSnapshot();
         });
     }
 
     [ConditionalFact]
-    public void Test_TcpTableInfo_Get_Correct_Information()
+    public void Test_Tcp6TableInfo_Get_Correct_Information()
     {
         StartTimestamp = DateTimeOffset.UtcNow;
         NextTimestamp = StartTimestamp.Add(DefaultTimeSpan);
         var options = new ResourceMonitoringOptions
         {
-            SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
+            SourceIpAddresses = new HashSet<string> { "[::1]" },
             SamplingInterval = DefaultTimeSpan
         };
-        TcpTableInfo tcpTableInfo = new TcpTableInfo(Options.Options.Create(options));
-        tcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithFakeInformation);
-        var tcpStateInfo = tcpTableInfo.GetIPv4CachingSnapshot();
+        TcpTableInfo tcp6TableInfo = new TcpTableInfo(Options.Options.Create(options));
+        tcp6TableInfo.SetGetTcp6TableDelegate(FakeGetTcp6TableWithFakeInformation);
+        var tcpStateInfo = tcp6TableInfo.GetIPv6CachingSnapshot();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(1, tcpStateInfo.ClosedCount);
         Assert.Equal(1, tcpStateInfo.ListenCount);
@@ -229,7 +286,7 @@ public sealed class TcpTableInfoTest
         Assert.Equal(1, tcpStateInfo.DeleteTcbCount);
 
         // Second calling in a small interval.
-        tcpStateInfo = tcpTableInfo.GetIPv4CachingSnapshot();
+        tcpStateInfo = tcp6TableInfo.GetIPv6CachingSnapshot();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(1, tcpStateInfo.ClosedCount);
         Assert.Equal(1, tcpStateInfo.ListenCount);
@@ -246,7 +303,7 @@ public sealed class TcpTableInfoTest
 
         // Third calling in a long interval.
         Thread.Sleep(6000);
-        tcpStateInfo = tcpTableInfo.GetIPv4CachingSnapshot();
+        tcpStateInfo = tcp6TableInfo.GetIPv6CachingSnapshot();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(2, tcpStateInfo.ClosedCount);
         Assert.Equal(2, tcpStateInfo.ListenCount);
@@ -261,26 +318,5 @@ public sealed class TcpTableInfoTest
         Assert.Equal(2, tcpStateInfo.TimeWaitCount);
         Assert.Equal(2, tcpStateInfo.DeleteTcbCount);
     }
-
-    [ConditionalFact]
-    public void Test_TcpTableInfo_CalculateCount_default_branch()
-    {
-        TcpStateInfo tcpStateInfo = new();
-
-        // Add this case to increase coverage, but 0 will not happen in actual case.
-        TcpTableInfo.CalculateCount(tcpStateInfo, 0);
-        Assert.NotNull(tcpStateInfo);
-        Assert.Equal(0, tcpStateInfo.ClosedCount);
-        Assert.Equal(0, tcpStateInfo.ListenCount);
-        Assert.Equal(0, tcpStateInfo.SynSentCount);
-        Assert.Equal(0, tcpStateInfo.SynRcvdCount);
-        Assert.Equal(0, tcpStateInfo.EstabCount);
-        Assert.Equal(0, tcpStateInfo.FinWait1Count);
-        Assert.Equal(0, tcpStateInfo.FinWait2Count);
-        Assert.Equal(0, tcpStateInfo.CloseWaitCount);
-        Assert.Equal(0, tcpStateInfo.ClosingCount);
-        Assert.Equal(0, tcpStateInfo.LastAckCount);
-        Assert.Equal(0, tcpStateInfo.TimeWaitCount);
-        Assert.Equal(0, tcpStateInfo.DeleteTcbCount);
-    }
 }
+

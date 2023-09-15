@@ -133,6 +133,9 @@ public static class ResourceMonitoringExtensions
             .AddActivatedSingleton<WindowsCounters>()
             .RegisterMetrics();
 
+        _ = builder.Services
+            .AddActivatedSingleton<TcpTableInfo>();
+
         return builder;
     }
 
