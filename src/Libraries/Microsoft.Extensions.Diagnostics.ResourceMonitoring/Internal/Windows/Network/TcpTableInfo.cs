@@ -212,7 +212,6 @@ internal sealed class TcpTableInfo
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         public static extern uint GetTcpTable(IntPtr pTcpTable, ref uint pdwSize, bool bOrder);
 
-
         /// <summary>
         /// Import of GetTcp6Table win32 function.
         /// </summary>
