@@ -228,14 +228,14 @@ internal sealed class Emitter : EmitterBase
 
         var encodedPath = restApiMethod.Path;
 
-        if (encodedPath != null)
+        if (encodedPath != null && restApiMethod.FormatParameters.Count > 0)
         {
-            foreach (var param in restApiMethod.AllParameters.Where(m => !m.IsQuery && !m.IsHeader && !m.IsBody && !m.IsCancellationToken))
+            foreach (var param in restApiMethod.FormatParameters)
             {
-                var escapedParamName = $"{param.Name}Escaped";
-                OutLn($"var {escapedParamName} = {Uri}.EscapeDataString($\"{{{param.Name}}}\");");
+                var escapedParamName = $"{param}Escaped";
+                OutLn($"var {escapedParamName} = {Uri}.EscapeDataString($\"{{{param}}}\");");
 
-                encodedPath = encodedPath.Replace($"{{{param.Name}}}", $"{{{escapedParamName}}}");
+                encodedPath = encodedPath.Replace($"{{{param}}}", $"{{{escapedParamName}}}");
             }
 
             OutLn();
