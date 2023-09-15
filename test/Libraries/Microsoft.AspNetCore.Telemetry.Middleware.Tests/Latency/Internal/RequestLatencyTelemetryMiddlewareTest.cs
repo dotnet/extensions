@@ -88,7 +88,7 @@ public class RequestLatencyTelemetryMiddlewareTest
         var httpContextMock = GetHttpContext(lc.Object);
         var fakeHttpResponseFeature = new FakeHttpResponseFeature();
         httpContextMock.Features.Set<IHttpResponseFeature>(fakeHttpResponseFeature);
-        httpContextMock.Response.Headers.Add(TelemetryConstants.ServerApplicationNameHeader, "testValue");
+        httpContextMock.Response.Headers.Append(TelemetryConstants.ServerApplicationNameHeader, "testValue");
         var nextInvoked = false;
         await m.InvokeAsync(httpContextMock, (_) =>
         {
