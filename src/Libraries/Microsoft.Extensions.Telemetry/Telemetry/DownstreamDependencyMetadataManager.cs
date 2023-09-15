@@ -101,12 +101,27 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
         var trieCurrent = routeMetadataTrieRoot;
         trieCurrent.Parent = trieCurrent;
 
+        ReadOnlySpan<char> requestRouteAsSpan;
+
         if (routeMetadata.RequestRoute[0] != '/')
         {
-            routeMetadata.RequestRoute = $"/{routeMetadata.RequestRoute}";
+            requestRouteAsSpan = $"/{routeMetadata.RequestRoute}".AsSpan();
+        }
+        else if (routeMetadata.RequestRoute.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+        {
+            requestRouteAsSpan = routeMetadata.RequestRoute.AsSpan(1);
+        }
+        else
+        {
+            requestRouteAsSpan = routeMetadata.RequestRoute.AsSpan();
         }
 
-        var route = _routeRegex.Replace(routeMetadata.RequestRoute, "*");
+        if (requestRouteAsSpan[requestRouteAsSpan.Length - 1] == '/')
+        {
+            requestRouteAsSpan = requestRouteAsSpan.Slice(0, requestRouteAsSpan.Length - 1);
+        }
+
+        var route = _routeRegex.Replace(requestRouteAsSpan.ToString(), "*");
         route = route.ToUpperInvariant();
         for (int i = 0; i < route.Length; i++)
         {
@@ -335,12 +350,28 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
             return hostMetadata.RequestMetadata;
         }
 
+
+        ReadOnlySpan<char> requestRouteAsSpan;
+        if (requestPath[requestPath.Length -1] == '/')
+        {
+            requestRouteAsSpan = requestPath.AsSpan(0, requestPath.Length - 1);
+        }
+        else
+        {
+            requestRouteAsSpan = requestPath.AsSpan();
+        }
+
+        if (requestPath.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+        {
+            requestRouteAsSpan = requestRouteAsSpan.Slice(1);
+        }
+
         var trieCurrent = routeMetadataTrieRoot.Nodes[0];
         var lastStartNode = trieCurrent;
-        var requestPathEndIndex = requestPath.Length;
+        var requestPathEndIndex = requestRouteAsSpan.Length;
         for (int i = 0; i < requestPathEndIndex; i++)
         {
-            char ch = _toUpper[requestPath[i]];
+            char ch = _toUpper[requestRouteAsSpan[i]];
             var childNode = GetChildNode(ch, trieCurrent, routeMetadataTrieRoot);
             if (childNode == null)
             {
@@ -359,11 +390,12 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
                     break;
                 }
 
-                var nextDelimiterIndex = requestPath.IndexOf(trieCurrent.Delimiter, i, requestPathEndIndex - i);
+                // we add i to the index, because the index returned from ReadOnlySpan<char> is the index in the new slice, not in the original slice.
+                var nextDelimiterIndex = requestRouteAsSpan.Slice(i, requestPathEndIndex - i).IndexOf(trieCurrent.Delimiter) + i;
 
                 // if we reached end of the request path or end of trie, break
                 var delimChildNode = GetChildNode(trieCurrent.Delimiter, trieCurrent, routeMetadataTrieRoot);
-                if (nextDelimiterIndex == -1 || delimChildNode == null)
+                if (nextDelimiterIndex == i - 1 || delimChildNode == null)
                 {
                     break;
                 }
