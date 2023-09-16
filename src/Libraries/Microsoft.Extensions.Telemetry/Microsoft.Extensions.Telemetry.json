@@ -268,34 +268,6 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.ServiceTraceEnricherOptions();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.ApplicationName { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.BuildVersion { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.DeploymentRing { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Telemetry.Enrichment.ServiceTraceEnricherOptions.EnvironmentName { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.Telemetry.TelemetryExtensions",
       "Stage": "Stable",
       "Methods": [
