@@ -167,13 +167,14 @@ public class LogPropertiesTests
             P7 = 2,
             P8 = null,
             P9 = default,
+            P10 = default,
         };
 
         LogPropertiesNullHandlingExtensions.M0(logger, props);
         Assert.Equal(1, collector.Count);
 
         var ss = collector.LatestRecord.StructuredState!.ToDictionary(x => x.Key, x => x.Value);
-        Assert.Equal(10, ss.Count);
+        Assert.Equal(11, ss.Count);
         Assert.Null(ss["p_P0"]);
         Assert.Null(ss["p_P1"]);
         Assert.Equal(props.P2.ToString(null, CultureInfo.InvariantCulture), ss["p_P2"]);
@@ -184,6 +185,7 @@ public class LogPropertiesTests
         Assert.Equal("-", ss["p_P7"]);
         Assert.Null(ss["p_P8"]);
         Assert.Equal("------------------------", ss["p_P9"]);
+        Assert.Equal("null", ss["p_P10"]);
 
         collector.Clear();
         LogPropertiesNullHandlingExtensions.M1(logger, props);
