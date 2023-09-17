@@ -226,7 +226,7 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         category: Category);
 
     public static DiagnosticDescriptor InvalidAttributeUsage { get; } = Make(
-        id: "LOGGEN033",
+        id: "LOGGEN034",
         title: Resources.InvalidAttributeUsageTitle,
         messageFormat: Resources.InvalidAttributeUsageMessage,
         category: Category);

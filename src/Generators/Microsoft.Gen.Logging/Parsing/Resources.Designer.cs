@@ -79,7 +79,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cant combine the [LogProperties] or [TagProvider] attributes with data classification attributes.
+        ///   Looks up a localized string similar to Can&apos;t combine the [LogProperties] or [TagProvider] attributes with data classification attributes.
         /// </summary>
         internal static string CantUseDataClassificationWithLogPropertiesOrTagProviderMessage {
             get {
@@ -88,7 +88,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cant combine the [LogProperties] or [TagProvider] attributes with data classification attributes.
+        ///   Looks up a localized string similar to Can&apos;t combine the [LogProperties] or [TagProvider] attributes with data classification attributes.
         /// </summary>
         internal static string CantUseDataClassificationWithLogPropertiesOrTagProviderTitle {
             get {
@@ -304,7 +304,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Method parameter can&apos;t be used for properties logging.
+        ///   Looks up a localized string similar to Method parameter can&apos;t be used to log properties.
         /// </summary>
         internal static string LogPropertiesInvalidUsageTitle {
             get {
@@ -574,7 +574,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Method parameter can&apos;t be used for with a tag provider.
+        ///   Looks up a localized string similar to Method parameter can&apos;t be used with a tag provider.
         /// </summary>
         internal static string TagProviderInvalidUsageTitle {
             get {
