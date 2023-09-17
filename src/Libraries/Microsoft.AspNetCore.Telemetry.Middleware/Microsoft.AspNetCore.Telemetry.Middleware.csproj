@@ -38,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
   </ItemGroup>
 </Project>
