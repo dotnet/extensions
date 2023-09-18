@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Gen.AutoClient.Model;
 using Microsoft.Gen.Shared;
 
@@ -303,20 +304,28 @@ internal sealed class Emitter : EmitterBase
 
         foreach (var header in restApiType.StaticHeaders.OrderBy(static h => h.Key))
         {
-            OutLn(@$"{httpRequestMessageName}.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
+            OutLn(@$"{httpRequestMessageName}.Headers.Add({SymbolDisplay.FormatLiteral(header.Key, true)}, {SymbolDisplay.FormatLiteral(header.Value, true)});");
         }
 
         foreach (var header in restApiMethod.StaticHeaders.OrderBy(static h => h.Key))
         {
-            OutLn(@$"{httpRequestMessageName}.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
+            OutLn(@$"{httpRequestMessageName}.Headers.Add({SymbolDisplay.FormatLiteral(header.Key, true)}, {SymbolDisplay.FormatLiteral(header.Value, true)});");
         }
 
         foreach (var param in restApiMethod.AllParameters.Where(m => m.IsHeader))
         {
-            OutLn($"if ({param.Name} != null)");
-            OutOpenBrace();
+            if (param.Nullable)
+            {
+                OutLn($"if ({param.Name} != null)");
+                OutOpenBrace();
+            }
+
             OutLn(@$"{httpRequestMessageName}.Headers.Add(""{param.HeaderName}"", {param.Name}.ToString());");
-            OutCloseBrace();
+
+            if (param.Nullable)
+            {
+                OutCloseBrace();
+            }
         }
 
         OutLn();
