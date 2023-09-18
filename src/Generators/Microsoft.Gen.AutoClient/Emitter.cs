@@ -229,6 +229,16 @@ internal sealed class Emitter : EmitterBase
 
         var pathSb = new StringBuilder(restApiMethod.Path);
 
+        foreach (var param in restApiMethod.FormatParameters)
+        {
+            var escapedParamName = $"{param}Escaped";
+            OutLn($"var {escapedParamName} = {Uri}.EscapeDataString($\"{{{param}}}\");");
+
+            _ = pathSb.Replace($"{{{param}}}", $"{{{escapedParamName}}}");
+        }
+
+        OutLn();
+
         var firstQuery = true;
         foreach (var param in restApiMethod.AllParameters.Where(m => m.IsQuery))
         {
