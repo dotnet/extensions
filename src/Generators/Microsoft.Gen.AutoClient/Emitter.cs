@@ -232,17 +232,24 @@ internal sealed class Emitter : EmitterBase
         var firstQuery = true;
         foreach (var param in restApiMethod.AllParameters.Where(m => m.IsQuery))
         {
+            var escapedParamName = $"{param.Name}Escaped";
+
+            // Use interpolated string to handle any null values from any type like nullable value types or reference types.
+            OutLn($"var {escapedParamName} = {Uri}.EscapeDataString($\"{{{param.Name}}}\");");
+
             if (firstQuery)
             {
-                _ = pathSb.Append($"?{param.QueryKey}={{{param.Name}}}");
+                _ = pathSb.Append($"?{param.QueryKey}={{{escapedParamName}}}");
             }
             else
             {
-                _ = pathSb.Append($"&{param.QueryKey}={{{param.Name}}}");
+                _ = pathSb.Append($"&{param.QueryKey}={{{escapedParamName}}}");
             }
 
             firstQuery = false;
         }
+
+        OutLn();
 
         var definePath = restApiMethod.FormatParameters.Count > 0 || !firstQuery;
         var body = restApiMethod.AllParameters.FirstOrDefault(m => m.IsBody);
