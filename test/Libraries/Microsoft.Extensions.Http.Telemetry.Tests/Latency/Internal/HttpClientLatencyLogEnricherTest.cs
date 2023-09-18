@@ -3,9 +3,9 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http.Telemetry.Latency.Internal;
-using Microsoft.Extensions.Telemetry.Enrichment;
 using Moq;
 using Xunit;
 

@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.AmbientMetadata;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment;
+namespace Microsoft.Extensions.Diagnostics.Enrichment;
 
 /// <summary>
 /// Options for the service log enricher.

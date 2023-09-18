@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
-using Microsoft.Extensions.Telemetry.Enrichment;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Test;

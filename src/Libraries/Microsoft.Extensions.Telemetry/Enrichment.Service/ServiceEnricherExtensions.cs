@@ -5,10 +5,10 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Telemetry.Enrichment;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment;
+namespace Microsoft.Extensions.Diagnostics.Enrichment;
 
 /// <summary>
 /// Provides extension methods for setting up the service enrichers in an <see cref="IServiceCollection" />.

@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Enrichment;
 using Moq;
 using Xunit;
 

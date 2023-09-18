@@ -5,8 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Enrichment;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.AspNetCore.Telemetry;

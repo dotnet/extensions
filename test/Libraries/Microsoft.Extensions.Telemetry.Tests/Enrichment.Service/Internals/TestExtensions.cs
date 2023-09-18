@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Options;
 using Moq;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment.Service.Test.Internals;
+namespace Microsoft.Extensions.Diagnostics.Enrichment.Service.Test.Internals;
 
 internal static class TestExtensions
 {

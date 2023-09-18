@@ -6,8 +6,8 @@ using System.Collections.Frozen;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.AspNetCore.Telemetry;
