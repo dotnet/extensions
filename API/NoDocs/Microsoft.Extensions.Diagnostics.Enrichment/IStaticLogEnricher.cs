@@ -2,7 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment;
+namespace Microsoft.Extensions.Diagnostics.Enrichment;
 
 [Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public interface IStaticLogEnricher

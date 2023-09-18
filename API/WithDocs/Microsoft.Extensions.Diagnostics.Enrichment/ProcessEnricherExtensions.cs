@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment;
+namespace Microsoft.Extensions.Diagnostics.Enrichment;
 
 /// <summary>
 /// Provides extension methods for setting up Process enrichers in an <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" />.
@@ -24,7 +24,7 @@ public static class ProcessEnricherExtensions
     /// Adds an instance of the process enricher to the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> to add the process enricher to.</param>
-    /// <param name="configure">The <see cref="T:Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions" /> configuration delegate.</param>
+    /// <param name="configure">The <see cref="T:Microsoft.Extensions.Diagnostics.Enrichment.ProcessLogEnricherOptions" /> configuration delegate.</param>
     /// <returns>The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> so that additional calls can be chained.</returns>
     /// <exception cref="T:System.ArgumentNullException">Any of the arguments is <see langword="null" />.</exception>
     public static IServiceCollection AddProcessLogEnricher(this IServiceCollection services, Action<ProcessLogEnricherOptions> configure);
@@ -33,7 +33,7 @@ public static class ProcessEnricherExtensions
     /// Adds an instance of the host enricher to the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> to add the process enricher to.</param>
-    /// <param name="section">The <see cref="T:Microsoft.Extensions.Configuration.IConfigurationSection" /> to use for configuring <see cref="T:Microsoft.Extensions.Telemetry.Enrichment.ProcessLogEnricherOptions" /> in the process enricher.</param>
+    /// <param name="section">The <see cref="T:Microsoft.Extensions.Configuration.IConfigurationSection" /> to use for configuring <see cref="T:Microsoft.Extensions.Diagnostics.Enrichment.ProcessLogEnricherOptions" /> in the process enricher.</param>
     /// <returns>The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> so that additional calls can be chained.</returns>
     /// <exception cref="T:System.ArgumentNullException">Any of the arguments is <see langword="null" />.</exception>
     public static IServiceCollection AddProcessLogEnricher(this IServiceCollection services, IConfigurationSection section);

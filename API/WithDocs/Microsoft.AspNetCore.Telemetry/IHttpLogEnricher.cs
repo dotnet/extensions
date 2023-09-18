@@ -1,7 +1,7 @@
 // Assembly 'Microsoft.AspNetCore.Telemetry.Middleware'
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Telemetry.Enrichment;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 
 namespace Microsoft.AspNetCore.Telemetry;
 

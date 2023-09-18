@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Telemetry.Enrichment;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 
 namespace Microsoft.Extensions.Logging;
 

@@ -3,7 +3,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment;
+namespace Microsoft.Extensions.Diagnostics.Enrichment;
 
 /// <summary>
 /// Lets you register telemetry enrichers in a dependency injection container.

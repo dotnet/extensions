@@ -1,6 +1,6 @@
 // Assembly 'Microsoft.Extensions.Telemetry.Abstractions'
 
-namespace Microsoft.Extensions.Telemetry.Enrichment;
+namespace Microsoft.Extensions.Diagnostics.Enrichment;
 
 /// <summary>
 /// Augments log records with additional properties.

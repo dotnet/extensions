@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 [OptionsValidator]
 public sealed class AutoClientOptionsValidator : IValidateOptions<AutoClientOptions>
 {
-    [GeneratedCode("Microsoft.Extensions.Options.SourceGeneration", "8.0.8.45707")]
+    [GeneratedCode("Microsoft.Extensions.Options.SourceGeneration", "8.0.8.46416")]
     public ValidateOptionsResult Validate(string? name, AutoClientOptions options);
     public AutoClientOptionsValidator();
 }

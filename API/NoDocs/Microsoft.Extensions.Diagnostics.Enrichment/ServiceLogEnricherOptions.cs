@@ -2,7 +2,7 @@
 
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment;
+namespace Microsoft.Extensions.Diagnostics.Enrichment;
 
 public class ServiceLogEnricherOptions
 {
