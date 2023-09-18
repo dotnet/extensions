@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
+using Microsoft.Extensions.Diagnostics.Enrichment.Process.Test.Internals;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Enrichment.Process.Test.Internals;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment.Process.Test;
+namespace Microsoft.Extensions.Diagnostics.Enrichment.Process.Test;
 
 public class ProcessLogEnricherTests
 {

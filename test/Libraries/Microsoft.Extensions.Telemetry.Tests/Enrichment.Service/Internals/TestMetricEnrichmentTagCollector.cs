@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment.Service.Test.Internals;
+namespace Microsoft.Extensions.Diagnostics.Enrichment.Service.Test.Internals;
 
 public class TestMetricEnrichmentTagCollector : IEnrichmentTagCollector
 {

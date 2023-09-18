@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment.Test;
+namespace Microsoft.Extensions.Diagnostics.Enrichment.Test;
 
 public class EnricherExtensionsTests
 {

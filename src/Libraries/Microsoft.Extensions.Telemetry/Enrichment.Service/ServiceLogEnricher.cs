@@ -4,10 +4,9 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.AmbientMetadata;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment;
+namespace Microsoft.Extensions.Diagnostics.Enrichment;
 
 internal sealed class ServiceLogEnricher : IStaticLogEnricher
 {

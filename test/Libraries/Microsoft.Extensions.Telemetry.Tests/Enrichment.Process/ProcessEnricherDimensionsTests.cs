@@ -7,7 +7,7 @@ using System.Reflection;
 using FluentAssertions;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment.Process.Test;
+namespace Microsoft.Extensions.Diagnostics.Enrichment.Process.Test;
 
 public class ProcessEnricherDimensionsTests
 {

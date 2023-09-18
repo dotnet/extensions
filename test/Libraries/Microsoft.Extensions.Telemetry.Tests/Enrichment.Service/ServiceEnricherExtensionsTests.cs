@@ -7,11 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Enrichment;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment.Service.Test;
+namespace Microsoft.Extensions.Diagnostics.Enrichment.Service.Test;
 
 public class ServiceEnricherExtensionsTests
 {

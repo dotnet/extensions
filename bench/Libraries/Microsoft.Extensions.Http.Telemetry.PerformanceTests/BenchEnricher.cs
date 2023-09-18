@@ -3,7 +3,7 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.Extensions.Telemetry.Enrichment;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Bench;
 
