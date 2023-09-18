@@ -229,7 +229,7 @@
     <value>Parameter "{0}" is annotated for property logging but it has special semantics (ILogger, LogLevel, Exception, etc.)</value>
   </data>
   <data name="LogPropertiesInvalidUsageTitle" xml:space="preserve">
-    <value>Method parameter can't be used for properties logging</value>
+    <value>Method parameter can't be used to log properties</value>
   </data>
   <data name="LogPropertiesParameterSkippedMessage" xml:space="preserve">
     <value>Type "{0}" used with parameter "{1}" doesn't have any public properties to log</value>
@@ -304,10 +304,10 @@
     <value>A logging message template starts with "@"</value>
   </data>
   <data name="CantUseDataClassificationWithLogPropertiesOrTagProviderMessage" xml:space="preserve">
-    <value>Cant combine the [LogProperties] or [TagProvider] attributes with data classification attributes</value>
+    <value>Can't combine the [LogProperties] or [TagProvider] attributes with data classification attributes</value>
   </data>
   <data name="CantUseDataClassificationWithLogPropertiesOrTagProviderTitle" xml:space="preserve">
-    <value>Cant combine the [LogProperties] or [TagProvider] attributes with data classification attributes</value>
+    <value>Can't combine the [LogProperties] or [TagProvider] attributes with data classification attributes</value>
   </data>
   <data name="CantMixAttributesMessage" xml:space="preserve">
     <value>Can only have one of [LogProperties], [TagProvider], and [LogPropertyIgnore]</value>
@@ -319,7 +319,7 @@
     <value>Parameter "{0}" is annotated to use a tag provider but it has special semantics (ILogger, LogLevel, Exception, etc.)</value>
   </data>
   <data name="TagProviderInvalidUsageTitle" xml:space="preserve">
-    <value>Method parameter can't be used for with a tag provider</value>
+    <value>Method parameter can't be used with a tag provider</value>
   </data>
   <data name="InvalidAttributeUsageMessage" xml:space="preserve">
     <value>Attribute [{0}] can't be used in this context</value>

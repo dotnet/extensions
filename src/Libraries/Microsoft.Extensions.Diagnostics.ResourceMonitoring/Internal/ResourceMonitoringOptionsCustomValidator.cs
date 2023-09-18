@@ -23,9 +23,9 @@ internal sealed class ResourceMonitoringOptionsCustomValidator : IValidateOption
         foreach (var s in options.SourceIpAddresses)
         {
             if (!IPAddress.TryParse(s, out var ipAddress)
-                || ipAddress.AddressFamily != AddressFamily.InterNetwork)
+                || (ipAddress.AddressFamily != AddressFamily.InterNetwork && ipAddress.AddressFamily != AddressFamily.InterNetworkV6))
             {
-                builder.AddError(nameof(options.SourceIpAddresses), "must only contain IPv4 addresses");
+                builder.AddError(nameof(options.SourceIpAddresses), "must contain IPv4 or IPv6 addresses only");
             }
         }
 

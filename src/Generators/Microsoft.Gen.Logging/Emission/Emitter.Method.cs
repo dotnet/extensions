@@ -429,16 +429,29 @@ internal sealed partial class Emitter : EmitterBase
                                 ? $"{LoggerMessageHelperType}.Stringify({accessExpression})"
                                 : ts;
 
-                            if (member.PotentiallyNull && !member.IsEnumerable)
+                            if (member.PotentiallyNull)
                             {
-                                OutOpenBrace();
-                                OutLn($"var {tmpVarName} = {value};");
-                                OutLn($"if ({tmpVarName} != null)");
-                                OutOpenBrace();
-                                OutLn($"{stateName}.AddTag(\"{propName}\", {tmpVarName});");
-                                OutCloseBrace();
-                                OutCloseBrace();
-                                OutLn();
+                                if (member.IsEnumerable)
+                                {
+                                    OutOpenBrace();
+                                    OutLn($"if ({accessExpression} != null)");
+                                    OutOpenBrace();
+                                    OutLn($"{stateName}.AddTag(\"{propName}\", {value});");
+                                    OutCloseBrace();
+                                    OutCloseBrace();
+                                    OutLn();
+                                }
+                                else
+                                {
+                                    OutOpenBrace();
+                                    OutLn($"var {tmpVarName} = {value};");
+                                    OutLn($"if ({tmpVarName} != null)");
+                                    OutOpenBrace();
+                                    OutLn($"{stateName}.AddTag(\"{propName}\", {tmpVarName});");
+                                    OutCloseBrace();
+                                    OutCloseBrace();
+                                    OutLn();
+                                }
                             }
                             else
                             {

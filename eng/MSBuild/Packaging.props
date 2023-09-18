@@ -18,7 +18,6 @@
   <!-- packaging control -->
   <PropertyGroup>
     <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <!-- packaging metadata -->
