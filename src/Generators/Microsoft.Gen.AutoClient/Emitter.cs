@@ -331,10 +331,18 @@ internal sealed class Emitter : EmitterBase
 
         foreach (var param in restApiMethod.AllParameters.Where(m => m.IsHeader))
         {
-            OutLn($"if ({param.Name} != null)");
-            OutOpenBrace();
+            if (param.Nullable)
+            {
+                OutLn($"if ({param.Name} != null)");
+                OutOpenBrace();
+            }
+
             OutLn(@$"{httpRequestMessageName}.Headers.Add(""{param.HeaderName}"", {param.Name}.ToString());");
-            OutCloseBrace();
+
+            if (param.Nullable)
+            {
+                OutCloseBrace();
+            }
         }
 
         OutLn();

@@ -16,6 +16,12 @@ namespace TestClasses
         [Get("/api/users")]
         public Task<string> GetUsersObject([Header("X-MyHeader")] CustomObject headerValue, CancellationToken cancellationToken = default);
 
+        [Get("/api/users")]
+        public Task<string> GetUsersInt32([Header("X-MyHeader")] int headerValue, CancellationToken cancellationToken = default);
+
+        [Get("/api/users")]
+        public Task<string> GetUsersNullableInt32([Header("X-MyHeader")] int? headerValue, CancellationToken cancellationToken = default);
+
         public class CustomObject
         {
             public override string? ToString() => "CustomObjectToString";
