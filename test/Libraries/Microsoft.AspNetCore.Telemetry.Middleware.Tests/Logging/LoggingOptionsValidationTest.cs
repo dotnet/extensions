@@ -8,9 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
 using Xunit;
-using TOpt = System.Action<Microsoft.AspNetCore.Telemetry.LoggingOptions>;
+using TOpt = System.Action<Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions>;
 
-namespace Microsoft.AspNetCore.Telemetry.Http.Logging.Test;
+namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 
 public class LoggingOptionsValidationTest
 {

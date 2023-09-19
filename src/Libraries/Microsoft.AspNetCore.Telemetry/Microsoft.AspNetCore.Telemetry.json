@@ -1,36 +1,36 @@
 {
-  "Name": "Microsoft.AspNetCore.Telemetry, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.AspNetCore.Diagnostics, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.AspNetCore.Telemetry.RequestHeadersEnricherExtensions",
+      "Type": "static class Microsoft.AspNetCore.Diagnostics.RequestHeadersEnricherExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Telemetry.RequestHeadersEnricherExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.RequestHeadersEnricherExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Telemetry.RequestHeadersEnricherExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Telemetry.RequestHeadersLogEnricherOptions> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.RequestHeadersEnricherExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Diagnostics.RequestHeadersLogEnricherOptions> configure);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Telemetry.RequestHeadersEnricherExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.RequestHeadersEnricherExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "class Microsoft.AspNetCore.Telemetry.RequestHeadersLogEnricherOptions",
+      "Type": "class Microsoft.AspNetCore.Diagnostics.RequestHeadersLogEnricherOptions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.AspNetCore.Telemetry.RequestHeadersLogEnricherOptions.RequestHeadersLogEnricherOptions();",
+          "Member": "Microsoft.AspNetCore.Diagnostics.RequestHeadersLogEnricherOptions.RequestHeadersLogEnricherOptions();",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Telemetry.RequestHeadersLogEnricherOptions.HeadersDataClasses { get; set; }",
+          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Diagnostics.RequestHeadersLogEnricherOptions.HeadersDataClasses { get; set; }",
           "Stage": "Experimental"
         }
       ]

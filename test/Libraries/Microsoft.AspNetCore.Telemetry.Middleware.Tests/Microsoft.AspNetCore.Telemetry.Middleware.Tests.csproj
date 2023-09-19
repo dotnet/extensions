@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.AspNetCore.Telemetry</RootNamespace>
+    <RootNamespace>Microsoft.AspNetCore.Diagnostics</RootNamespace>
     <Description>Unit tests for Microsoft.AspNetCore.Telemetry.Middleware.</Description>
   </PropertyGroup>
 
@@ -26,5 +26,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.TestHost" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Latency\Internal\" />
+    <Folder Include="Telemetry.Internal.Http\" />
   </ItemGroup>
 </Project>
