@@ -4,9 +4,9 @@
 using System;
 using System.Diagnostics.Tracing;
 using Microsoft.Extensions.Compliance.Testing;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Enrichment;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Test.Log;

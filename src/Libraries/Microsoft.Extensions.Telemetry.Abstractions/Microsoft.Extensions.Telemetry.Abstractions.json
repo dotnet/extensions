@@ -74,7 +74,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Logging.LoggerMessageState : Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.IEnumerable, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Logging.ITagCollector",
+      "Type": "sealed class Microsoft.Extensions.Logging.LoggerMessageState : Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.IEnumerable, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Logging.ITagCollector",
       "Stage": "Experimental",
       "Methods": [
         {
@@ -158,23 +158,23 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions",
+      "Type": "static class Microsoft.Extensions.Diagnostics.Enrichment.EnricherExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.EnricherExtensions.AddLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher enricher);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.EnricherExtensions.AddLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Diagnostics.Enrichment.ILogEnricher enricher);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddStaticLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.EnricherExtensions.AddStaticLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddStaticLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Telemetry.Enrichment.IStaticLogEnricher enricher);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.EnricherExtensions.AddStaticLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Diagnostics.Enrichment.IStaticLogEnricher enricher);",
           "Stage": "Experimental"
         }
       ]
@@ -309,11 +309,11 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector",
+      "Type": "interface Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector.Add(string tagName, object tagValue);",
+          "Member": "void Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector.Add(string tagName, object tagValue);",
           "Stage": "Stable"
         }
       ]
@@ -389,11 +389,11 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher",
+      "Type": "interface Microsoft.Extensions.Diagnostics.Enrichment.ILogEnricher",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector);",
+          "Member": "void Microsoft.Extensions.Diagnostics.Enrichment.ILogEnricher.Enrich(Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector collector);",
           "Stage": "Stable"
         }
       ]
@@ -415,11 +415,11 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.IStaticLogEnricher",
+      "Type": "interface Microsoft.Extensions.Diagnostics.Enrichment.IStaticLogEnricher",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IStaticLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector);",
+          "Member": "void Microsoft.Extensions.Diagnostics.Enrichment.IStaticLogEnricher.Enrich(Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector collector);",
           "Stage": "Experimental"
         }
       ]
@@ -537,7 +537,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Logging.LogMethodHelper : System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Logging.ITagCollector, Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector, Microsoft.Extensions.ObjectPool.IResettable",
+      "Type": "sealed class Microsoft.Extensions.Logging.LogMethodHelper : System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Logging.ITagCollector, Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector, Microsoft.Extensions.ObjectPool.IResettable",
       "Stage": "Stable",
       "Methods": [
         {

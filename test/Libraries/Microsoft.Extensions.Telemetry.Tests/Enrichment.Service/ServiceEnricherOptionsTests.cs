@@ -4,7 +4,7 @@
 using FluentAssertions;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment.Service.Test;
+namespace Microsoft.Extensions.Diagnostics.Enrichment.Service.Test;
 
 public class ServiceEnricherOptionsTests
 {

@@ -4,7 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Telemetry.Enrichment;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Test;

@@ -4,7 +4,7 @@
 using System;
 using System.Collections;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment;
+namespace Microsoft.Extensions.Diagnostics.Enrichment;
 
 /// <summary>
 /// Allows enrichers to report enrichment properties.

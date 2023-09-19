@@ -3,13 +3,13 @@
 
 using System;
 using Microsoft.Extensions.AmbientMetadata;
+using Microsoft.Extensions.Diagnostics.Enrichment.Service.Test.Internals;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Enrichment.Service.Test.Internals;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment.Service.Test;
+namespace Microsoft.Extensions.Diagnostics.Enrichment.Service.Test;
 
 public class ServiceLogEnricherTests
 {

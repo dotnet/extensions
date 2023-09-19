@@ -89,7 +89,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.AspNetCore.Telemetry.IHttpLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector, Microsoft.AspNetCore.Http.HttpRequest request, Microsoft.AspNetCore.Http.HttpResponse response);",
+          "Member": "void Microsoft.AspNetCore.Telemetry.IHttpLogEnricher.Enrich(Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector collector, Microsoft.AspNetCore.Http.HttpRequest request, Microsoft.AspNetCore.Http.HttpResponse response);",
           "Stage": "Stable"
         }
       ]
