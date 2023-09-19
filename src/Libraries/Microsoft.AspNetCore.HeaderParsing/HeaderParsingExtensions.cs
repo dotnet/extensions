@@ -3,12 +3,10 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Metrics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Diagnostics;
 
@@ -34,7 +32,7 @@ public static class HeaderParsingExtensions
                 .AddSingleton<IHeaderRegistry, HeaderRegistry>()
                 .AddScoped(provider => provider.GetRequiredService<ObjectPool<HeaderParsingFeature.PoolHelper>>().Get())
                 .AddScoped(provider => provider.GetRequiredService<HeaderParsingFeature.PoolHelper>().Feature)
-                .AddKeyedSingleton(HeaderParsingFeature.PoolHelper.MeterName, static (sp, key) => sp.GetRequiredService<IMeterFactory>().Create(key!.ToString()!))
+                .AddSingleton<HeaderParsingMetrics>()
                 .AddMetrics();
         }
 
