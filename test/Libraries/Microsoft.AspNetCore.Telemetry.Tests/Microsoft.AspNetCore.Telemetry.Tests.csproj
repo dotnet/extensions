@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.AspNetCore.Telemetry.Test</RootNamespace>
+    <RootNamespace>Microsoft.AspNetCore.Diagnostics.Test</RootNamespace>
     <Description>Unit tests for Microsoft.AspNetCore.Telemetry.</Description>
   </PropertyGroup>
 

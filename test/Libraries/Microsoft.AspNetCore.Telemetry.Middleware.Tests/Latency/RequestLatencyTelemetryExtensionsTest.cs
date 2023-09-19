@@ -3,14 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Telemetry.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Telemetry.Test;
+namespace Microsoft.AspNetCore.Diagnostics.Latency.Test;
 
 public class RequestLatencyTelemetryExtensionsTest
 {

@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 /// <summary>
 /// Interface for implementing log enrichers for incoming HTTP requests.

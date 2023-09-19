@@ -4,8 +4,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Telemetry.Http.Logging;
-using Microsoft.AspNetCore.Telemetry.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -14,7 +12,7 @@ using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.IO;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 /// <summary>
 /// Extension methods to register the HTTP logging feature within the service.

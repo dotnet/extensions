@@ -10,9 +10,9 @@ using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.Logging.Test;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Telemetry.Http.Logging.Test.Internal;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
@@ -27,11 +27,11 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.Shared.Text;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Telemetry.Http.Logging.Test;
+namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 
 public partial class AcceptanceTest
 {
-    private const string LoggingCategory = "Microsoft.AspNetCore.Telemetry.Http.Logging.HttpLoggingMiddleware";
+    private const string LoggingCategory = "Microsoft.AspNetCore.Diagnostics.Http.Logging.HttpLoggingMiddleware";
     private const int ErrorRouteProcessingTimeMs = 1_000;
     private const int SlashRouteProcessingTimeMs = 2_000;
     private static readonly TimeSpan _defaultLogTimeout = TimeSpan.FromSeconds(5);
@@ -108,7 +108,7 @@ public partial class AcceptanceTest
                 .AddFilter("Microsoft.Hosting", LogLevel.Warning)
                 .AddFilter("Microsoft.Extensions.Hosting", LogLevel.Warning)
                 .AddFilter("Microsoft.AspNetCore", LogLevel.Warning)
-                .AddFilter("Microsoft.AspNetCore.Telemetry", level)
+                .AddFilter("Microsoft.AspNetCore.Diagnostics", level)
                 .SetMinimumLevel(level)
                 .AddFakeLogging())
             .ConfigureServices(x => x.AddSingleton<TestBodyPipeFeatureMiddleware>())

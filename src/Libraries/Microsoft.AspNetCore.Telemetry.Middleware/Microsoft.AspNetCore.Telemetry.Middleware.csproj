@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.AspNetCore.Telemetry</RootNamespace>
+    <RootNamespace>Microsoft.AspNetCore.Diagnostics</RootNamespace>
     <Description>ASP.NET Core middleware for collecting high-quality telemetry.</Description>
     <PackageTags>$(PackageTags);aspnetcore</PackageTags>
     <Workstream>Telemetry</Workstream>

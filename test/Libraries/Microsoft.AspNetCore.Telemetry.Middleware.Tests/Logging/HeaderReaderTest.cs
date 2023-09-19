@@ -10,7 +10,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Telemetry.Http.Logging.Test;
+namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 
 public class HeaderReaderTest
 {

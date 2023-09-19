@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Telemetry.Http.Logging.Test.Controllers;
+using Microsoft.AspNetCore.Diagnostics.Logging.Test.Controllers;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Telemetry;
@@ -15,7 +15,7 @@ using Microsoft.Shared.Text;
 using Xunit;
 using static Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode;
 
-namespace Microsoft.AspNetCore.Telemetry.Http.Logging.Test;
+namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 
 public partial class AcceptanceTest
 {

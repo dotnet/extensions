@@ -10,7 +10,7 @@ using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Pools;
 
-namespace Microsoft.AspNetCore.Telemetry.Bench;
+namespace Microsoft.AspNetCore.Diagnostics.Bench;
 
 [GcServer(true)]
 [MinColumn]
