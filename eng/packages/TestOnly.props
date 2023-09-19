@@ -8,7 +8,7 @@
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.3" />
     <PackageVersion Include="Moq.AutoMock" Version="3.1.0" />
     <PackageVersion Include="Moq" Version="4.18.4" />
-    <PackageVersion Include="Polly.Testing" Version="8.0.0-alpha.8" />
+    <PackageVersion Include="Polly.Testing" Version="8.0.0-beta.1" />
     <PackageVersion Include="StrongNamer" Version="0.2.5" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerVersion)" />
     <PackageVersion Include="Xunit.Combinatorial" Version="1.5.25" />
@@ -18,11 +18,6 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageVersion Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="2.2.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.32" />
-    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="3.1.32" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">

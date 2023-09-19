@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Metering;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
-using Microsoft.Extensions.Telemetry.Testing.Metering;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks.Common.Tests;

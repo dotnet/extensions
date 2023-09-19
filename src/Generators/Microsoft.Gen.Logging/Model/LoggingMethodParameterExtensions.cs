@@ -14,21 +14,19 @@ internal static class LoggingMethodParameterExtensions
     {
         var propertyChain = new LinkedList<LoggingProperty>();
 
-        LoggingProperty firstProperty = new(
-            parameter.NameWithAt,
-            parameter.Type,
-            null,
-            false,
-            parameter.IsNullable,
-            parameter.IsReference,
-            parameter.IsEnumerable,
-            false,
-            false,
-            Array.Empty<LoggingProperty>());
+        var firstProperty = new LoggingProperty
+        {
+            Name = parameter.Name,
+            NeedsAtSign = parameter.NeedsAtSign,
+            Type = parameter.Type,
+            IsNullable = parameter.IsNullable,
+            IsReference = parameter.IsReference,
+            IsEnumerable = parameter.IsEnumerable
+        };
 
         _ = propertyChain.AddFirst(firstProperty);
 
-        TraverseParameterPropertiesTransitively(propertyChain, parameter.PropertiesToLog, callback);
+        TraverseParameterPropertiesTransitively(propertyChain, parameter.Properties, callback);
     }
 
     private static void TraverseParameterPropertiesTransitively(
@@ -38,10 +36,10 @@ internal static class LoggingMethodParameterExtensions
     {
         foreach (var propertyToLog in propertiesToLog)
         {
-            if (propertyToLog.TransitiveMembers.Count > 0)
+            if (propertyToLog.Properties.Count > 0)
             {
                 _ = propertyChain.AddLast(propertyToLog);
-                TraverseParameterPropertiesTransitively(propertyChain, propertyToLog.TransitiveMembers, callback);
+                TraverseParameterPropertiesTransitively(propertyChain, propertyToLog.Properties, callback);
                 propertyChain.RemoveLast();
             }
             else

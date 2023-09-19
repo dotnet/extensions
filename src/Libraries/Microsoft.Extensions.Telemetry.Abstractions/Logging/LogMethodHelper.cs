@@ -7,14 +7,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Utility type to support generated logging methods.
@@ -175,34 +174,6 @@ public sealed class LogMethodHelper : List<KeyValuePair<string, object?>>, ITagC
     {
         _ = Throw.IfNullOrEmpty(tagName);
         Add(new KeyValuePair<string, object?>(tagName, tagValue));
-    }
-
-    /// <inheritdoc/>
-    void IEnrichmentTagCollector.Add(string tagName, string tagValue)
-    {
-        _ = Throw.IfNullOrEmpty(tagName);
-        Add(new KeyValuePair<string, object?>(tagName, tagValue));
-    }
-
-    /// <inheritdoc/>
-    void IEnrichmentTagCollector.Add(ReadOnlySpan<KeyValuePair<string, object>> tags)
-    {
-        foreach (var p in tags)
-        {
-            // we're going from KVP<string, object> to KVP<string, object?> which is strictly correct, so ignore the complaint
-#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
-            Add(p);
-#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
-        }
-    }
-
-    /// <inheritdoc/>
-    void IEnrichmentTagCollector.Add(ReadOnlySpan<KeyValuePair<string, string>> tags)
-    {
-        foreach (var p in tags)
-        {
-            Add(new KeyValuePair<string, object?>(p.Key, p.Value));
-        }
     }
 
     /// <summary>

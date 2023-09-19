@@ -4,13 +4,12 @@
 using System;
 using System.Diagnostics.Tracing;
 using Microsoft.Extensions.Compliance.Testing;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Diagnostics.Enrichment;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Enrichment;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Logging.Test.Log;
+namespace Microsoft.Extensions.Logging.Test.Log;
 
 [CollectionDefinition("Serial Tests", DisableParallelization = true)]
 public static class SerialExtendedLoggerTests

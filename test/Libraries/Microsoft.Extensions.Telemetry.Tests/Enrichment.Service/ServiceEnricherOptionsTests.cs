@@ -4,7 +4,7 @@
 using FluentAssertions;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Enrichment.Service.Test;
+namespace Microsoft.Extensions.Diagnostics.Enrichment.Service.Test;
 
 public class ServiceEnricherOptionsTests
 {
@@ -12,16 +12,6 @@ public class ServiceEnricherOptionsTests
     public void ServiceLogEnricherOptions_EnsureDefaultValues()
     {
         var options = new ServiceLogEnricherOptions();
-        options.EnvironmentName.Should().BeTrue();
-        options.ApplicationName.Should().BeTrue();
-        options.BuildVersion.Should().BeFalse();
-        options.DeploymentRing.Should().BeFalse();
-    }
-
-    [Fact]
-    public void ServiceTraceEnricherOptions_EnsureDefaultValues()
-    {
-        var options = new ServiceTraceEnricherOptions();
         options.EnvironmentName.Should().BeTrue();
         options.ApplicationName.Should().BeTrue();
         options.BuildVersion.Should().BeFalse();

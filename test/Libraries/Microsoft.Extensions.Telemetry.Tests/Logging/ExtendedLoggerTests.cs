@@ -6,14 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Diagnostics.Enrichment;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Enrichment;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Logging.Test.Log;
+namespace Microsoft.Extensions.Logging.Test.Log;
 
 public static class ExtendedLoggerTests
 {
@@ -63,8 +62,8 @@ public static class ExtendedLoggerTests
         lms.TagArray[index] = new("PK2", "PV2");
 
         index = lms.ReserveClassifiedTagSpace(2);
-        lms.ClassifiedTagArray[index] = new("PK3", "PV3", SimpleClassifications.PrivateData);
-        lms.ClassifiedTagArray[index + 1] = new("PK4", null, SimpleClassifications.PrivateData);
+        lms.ClassifiedTagArray[index] = new("PK3", "PV3", FakeClassifications.PrivateData);
+        lms.ClassifiedTagArray[index + 1] = new("PK4", null, FakeClassifications.PrivateData);
 
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
 
@@ -399,7 +398,7 @@ public static class ExtendedLoggerTests
         Exception ex;
         try
         {
-            List<Exception> exceptions = new();
+            List<Exception> exceptions = [];
             try
             {
                 throw new ArgumentNullException("ARG1");
@@ -887,7 +886,10 @@ public static class ExtendedLoggerTests
             if (_objectVersion)
             {
                 var p = (KeyValuePair<string, object>[])(object)_values;
-                collector.Add(p.AsSpan());
+                foreach (var kvp in p)
+                {
+                    collector.Add(kvp.Key, kvp.Value);
+                }
             }
             else
             {
@@ -898,7 +900,10 @@ public static class ExtendedLoggerTests
                     a[i++] = new(kvp.Key, (string)kvp.Value!);
                 }
 
-                collector.Add(a.AsSpan());
+                foreach (var kvp in a)
+                {
+                    collector.Add(kvp.Key, kvp.Value);
+                }
             }
         }
     }

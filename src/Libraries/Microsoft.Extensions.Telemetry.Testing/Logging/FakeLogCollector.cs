@@ -7,7 +7,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Logging;
+namespace Microsoft.Extensions.Logging.Testing;
 
 /// <summary>
 /// Collects log records sent to the fake logger.

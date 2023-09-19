@@ -11,7 +11,7 @@
 
     <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <UseMeteringReportsGenerator>true</UseMeteringReportsGenerator>
+    <UseMetricsReportsGenerator>true</UseMetricsReportsGenerator>
     <InjectGetOrAddOnLegacy>false</InjectGetOrAddOnLegacy>
     <InjectTaskWaitAsyncOnLegacy>true</InjectTaskWaitAsyncOnLegacy>
     <InjectExperimentalAttributeOnLegacy>false</InjectExperimentalAttributeOnLegacy>
@@ -27,7 +27,7 @@
 
   <PropertyGroup>
     <Stage>normal</Stage>
-    <MinCodeCoverage>92</MinCodeCoverage>
+    <MinCodeCoverage>98</MinCodeCoverage>
     <MinMutationScore>78</MinMutationScore>
   </PropertyGroup>
 

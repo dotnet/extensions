@@ -6,11 +6,13 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
+using Microsoft.TestUtilities;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
 [Collection("Tcp Connection Tests")]
+[OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
 public sealed class TcpTableInfoTest
 {
     public static readonly TimeSpan DefaultTimeSpan = TimeSpan.FromSeconds(5);
@@ -167,51 +169,51 @@ public sealed class TcpTableInfoTest
         return (uint)NTSTATUS.Success;
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Test_TcpTableInfo_Get_UnsuccessfulStatus_All_The_Time()
     {
-        TcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithUnsuccessfulStatusAllTheTime);
-        var options = new WindowsCountersOptions
+        var options = new ResourceMonitoringOptions
         {
-            InstanceIpAddresses = new HashSet<string> { "127.0.0.1" },
-            CachingInterval = DefaultTimeSpan
+            SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
+            SamplingInterval = DefaultTimeSpan
         };
-        TcpTableInfo tcpTableInfo = new TcpTableInfo(Microsoft.Extensions.Options.Options.Create(options));
+        TcpTableInfo tcpTableInfo = new TcpTableInfo(Options.Options.Create(options));
+        tcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithUnsuccessfulStatusAllTheTime);
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var tcpStateInfo = tcpTableInfo.GetCachingSnapshot();
+            var tcpStateInfo = tcpTableInfo.GetIPv4CachingSnapshot();
         });
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Test_TcpTableInfo_Get_InsufficientBuffer_Then_Get_InvalidParameter()
     {
-        TcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithInsufficientBufferAndInvalidParameter);
-        var options = new WindowsCountersOptions
+        var options = new ResourceMonitoringOptions
         {
-            InstanceIpAddresses = new HashSet<string> { "127.0.0.1" },
-            CachingInterval = DefaultTimeSpan
+            SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
+            SamplingInterval = DefaultTimeSpan
         };
-        TcpTableInfo tcpTableInfo = new TcpTableInfo(Microsoft.Extensions.Options.Options.Create(options));
+        TcpTableInfo tcpTableInfo = new TcpTableInfo(Options.Options.Create(options));
+        tcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithInsufficientBufferAndInvalidParameter);
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var tcpStateInfo = tcpTableInfo.GetCachingSnapshot();
+            var tcpStateInfo = tcpTableInfo.GetIPv4CachingSnapshot();
         });
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Test_TcpTableInfo_Get_Correct_Information()
     {
         StartTimestamp = DateTimeOffset.UtcNow;
         NextTimestamp = StartTimestamp.Add(DefaultTimeSpan);
-        TcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithFakeInformation);
-        var options = new WindowsCountersOptions
+        var options = new ResourceMonitoringOptions
         {
-            InstanceIpAddresses = new HashSet<string> { "127.0.0.1" },
-            CachingInterval = DefaultTimeSpan
+            SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
+            SamplingInterval = DefaultTimeSpan
         };
-        TcpTableInfo tcpTableInfo = new TcpTableInfo(Microsoft.Extensions.Options.Options.Create(options));
-        var tcpStateInfo = tcpTableInfo.GetCachingSnapshot();
+        TcpTableInfo tcpTableInfo = new TcpTableInfo(Options.Options.Create(options));
+        tcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithFakeInformation);
+        var tcpStateInfo = tcpTableInfo.GetIPv4CachingSnapshot();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(1, tcpStateInfo.ClosedCount);
         Assert.Equal(1, tcpStateInfo.ListenCount);
@@ -227,7 +229,7 @@ public sealed class TcpTableInfoTest
         Assert.Equal(1, tcpStateInfo.DeleteTcbCount);
 
         // Second calling in a small interval.
-        tcpStateInfo = tcpTableInfo.GetCachingSnapshot();
+        tcpStateInfo = tcpTableInfo.GetIPv4CachingSnapshot();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(1, tcpStateInfo.ClosedCount);
         Assert.Equal(1, tcpStateInfo.ListenCount);
@@ -244,7 +246,7 @@ public sealed class TcpTableInfoTest
 
         // Third calling in a long interval.
         Thread.Sleep(6000);
-        tcpStateInfo = tcpTableInfo.GetCachingSnapshot();
+        tcpStateInfo = tcpTableInfo.GetIPv4CachingSnapshot();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(2, tcpStateInfo.ClosedCount);
         Assert.Equal(2, tcpStateInfo.ListenCount);
@@ -258,5 +260,27 @@ public sealed class TcpTableInfoTest
         Assert.Equal(2, tcpStateInfo.LastAckCount);
         Assert.Equal(2, tcpStateInfo.TimeWaitCount);
         Assert.Equal(2, tcpStateInfo.DeleteTcbCount);
+    }
+
+    [ConditionalFact]
+    public void Test_TcpTableInfo_CalculateCount_default_branch()
+    {
+        TcpStateInfo tcpStateInfo = new();
+
+        // Add this case to increase coverage, but 0 will not happen in actual case.
+        TcpTableInfo.CalculateCount(tcpStateInfo, 0);
+        Assert.NotNull(tcpStateInfo);
+        Assert.Equal(0, tcpStateInfo.ClosedCount);
+        Assert.Equal(0, tcpStateInfo.ListenCount);
+        Assert.Equal(0, tcpStateInfo.SynSentCount);
+        Assert.Equal(0, tcpStateInfo.SynRcvdCount);
+        Assert.Equal(0, tcpStateInfo.EstabCount);
+        Assert.Equal(0, tcpStateInfo.FinWait1Count);
+        Assert.Equal(0, tcpStateInfo.FinWait2Count);
+        Assert.Equal(0, tcpStateInfo.CloseWaitCount);
+        Assert.Equal(0, tcpStateInfo.ClosingCount);
+        Assert.Equal(0, tcpStateInfo.LastAckCount);
+        Assert.Equal(0, tcpStateInfo.TimeWaitCount);
+        Assert.Equal(0, tcpStateInfo.DeleteTcbCount);
     }
 }

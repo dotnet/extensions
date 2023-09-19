@@ -21,88 +21,88 @@ namespace Microsoft.Extensions.Http.Resilience;
 public static partial class HttpClientBuilderExtensions
 {
     /// <summary>
-    /// Adds a resilience strategy handler that uses a named inline resilience strategy.
+    /// Adds a resilience pipeline handler that uses a named inline resilience pipeline.
     /// </summary>
     /// <param name="builder">The builder instance.</param>
-    /// <param name="strategyName">The custom identifier for the resilience strategy, used in the name of the strategy.</param>
-    /// <param name="configure">The callback that configures the strategy.</param>
-    /// <returns>The HTTP strategy builder instance.</returns>
+    /// <param name="pipelineName">The custom identifier for the resilience pipeline, used in the name of the pipeline.</param>
+    /// <param name="configure">The callback that configures the pipeline.</param>
+    /// <returns>The HTTP pipeline builder instance.</returns>
     /// <remarks>
-    /// The final strategy name is combination of <see cref="IHttpClientBuilder.Name"/> and <paramref name="strategyName"/>.
-    /// Use strategy name identifier if your HTTP client contains multiple resilience handlers.
+    /// The final pipeline name is combination of <see cref="IHttpClientBuilder.Name"/> and <paramref name="pipelineName"/>.
+    /// Use pipeline name identifier if your HTTP client contains multiple resilience handlers.
     /// </remarks>
-    public static IHttpResilienceStrategyBuilder AddResilienceHandler(
+    public static IHttpResiliencePipelineBuilder AddResilienceHandler(
         this IHttpClientBuilder builder,
-        string strategyName,
-        Action<CompositeStrategyBuilder<HttpResponseMessage>> configure)
+        string pipelineName,
+        Action<ResiliencePipelineBuilder<HttpResponseMessage>> configure)
     {
         _ = Throw.IfNull(builder);
-        _ = Throw.IfNullOrEmpty(strategyName);
+        _ = Throw.IfNullOrEmpty(pipelineName);
         _ = Throw.IfNull(configure);
 
-        return builder.AddResilienceHandler(strategyName, ConfigureBuilder);
+        return builder.AddResilienceHandler(pipelineName, ConfigureBuilder);
 
-        void ConfigureBuilder(CompositeStrategyBuilder<HttpResponseMessage> builder, ResilienceHandlerContext context) => configure(builder);
+        void ConfigureBuilder(ResiliencePipelineBuilder<HttpResponseMessage> builder, ResilienceHandlerContext context) => configure(builder);
     }
 
     /// <summary>
-    /// Adds a resilience strategy handler that uses a named inline resilience strategy.
+    /// Adds a resilience pipeline handler that uses a named inline resilience pipeline.
     /// </summary>
     /// <param name="builder">The builder instance.</param>
-    /// <param name="strategyName">The custom identifier for the resilience strategy, used in the name of the strategy.</param>
-    /// <param name="configure">The callback that configures the strategy.</param>
-    /// <returns>The HTTP strategy builder instance.</returns>
+    /// <param name="pipelineName">The custom identifier for the resilience pipeline, used in the name of the pipeline.</param>
+    /// <param name="configure">The callback that configures the pipeline.</param>
+    /// <returns>The HTTP pipeline builder instance.</returns>
     /// <remarks>
-    /// The final strategy name is combination of <see cref="IHttpClientBuilder.Name"/> and <paramref name="strategyName"/>.
-    /// Use strategy name identifier if your HTTP client contains multiple resilience handlers.
+    /// The final pipeline name is combination of <see cref="IHttpClientBuilder.Name"/> and <paramref name="pipelineName"/>.
+    /// Use pipeline name identifier if your HTTP client contains multiple resilience handlers.
     /// </remarks>
-    public static IHttpResilienceStrategyBuilder AddResilienceHandler(
+    public static IHttpResiliencePipelineBuilder AddResilienceHandler(
         this IHttpClientBuilder builder,
-        string strategyName,
-        Action<CompositeStrategyBuilder<HttpResponseMessage>, ResilienceHandlerContext> configure)
+        string pipelineName,
+        Action<ResiliencePipelineBuilder<HttpResponseMessage>, ResilienceHandlerContext> configure)
     {
         _ = Throw.IfNull(builder);
-        _ = Throw.IfNullOrEmpty(strategyName);
+        _ = Throw.IfNullOrEmpty(pipelineName);
         _ = Throw.IfNull(configure);
 
-        var strategyBuilder = builder.AddHttpResilienceStrategy(strategyName, configure);
+        var pipelineBuilder = builder.AddHttpResiliencePipeline(pipelineName, configure);
 
         _ = builder.AddHttpMessageHandler(serviceProvider =>
         {
-            var selector = CreateStrategySelector(serviceProvider, strategyBuilder.StrategyName);
-            var provider = serviceProvider.GetRequiredService<ResilienceStrategyProvider<HttpKey>>();
+            var selector = CreatePipelineSelector(serviceProvider, pipelineBuilder.PipelineName);
+            var provider = serviceProvider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
 
             return new ResilienceHandler(selector);
         });
 
-        return strategyBuilder;
+        return pipelineBuilder;
     }
 
-    private static Func<HttpRequestMessage, ResilienceStrategy<HttpResponseMessage>> CreateStrategySelector(IServiceProvider serviceProvider, string strategyName)
+    private static Func<HttpRequestMessage, ResiliencePipeline<HttpResponseMessage>> CreatePipelineSelector(IServiceProvider serviceProvider, string pipelineName)
     {
-        var resilienceProvider = serviceProvider.GetRequiredService<ResilienceStrategyProvider<HttpKey>>();
-        var strategyKeyProvider = serviceProvider.GetStrategyKeyProvider(strategyName);
+        var resilienceProvider = serviceProvider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
+        var pipelineKeyProvider = serviceProvider.GetPipelineKeyProvider(pipelineName);
 
-        if (strategyKeyProvider == null)
+        if (pipelineKeyProvider == null)
         {
-            var strategy = resilienceProvider.GetStrategy<HttpResponseMessage>(new HttpKey(strategyName, string.Empty));
-            return _ => strategy;
+            var pipeline = resilienceProvider.GetPipeline<HttpResponseMessage>(new HttpKey(pipelineName, string.Empty));
+            return _ => pipeline;
         }
         else
         {
-            TouchStrategyKey(strategyKeyProvider);
+            TouchPipelineKey(pipelineKeyProvider);
 
             return request =>
             {
-                var key = strategyKeyProvider(request);
-                return resilienceProvider.GetStrategy<HttpResponseMessage>(new HttpKey(strategyName, key));
+                var key = pipelineKeyProvider(request);
+                return resilienceProvider.GetPipeline<HttpResponseMessage>(new HttpKey(pipelineName, key));
             };
         }
     }
 
-    private static void TouchStrategyKey(Func<HttpRequestMessage, string> provider)
+    private static void TouchPipelineKey(Func<HttpRequestMessage, string> provider)
     {
-        // this piece of code eagerly checks that the strategy key provider is correctly configured
+        // this piece of code eagerly checks that the pipeline key provider is correctly configured
         // combined with HttpClient auto-activation we can detect any issues on startup
 #pragma warning disable S1075 // URIs should not be hardcoded - this URL is not used for any real request, nor in any telemetry
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:123");
@@ -110,19 +110,19 @@ public static partial class HttpClientBuilderExtensions
         _ = provider(request);
     }
 
-    private static HttpResilienceStrategyBuilder AddHttpResilienceStrategy(
+    private static HttpResiliencePipelineBuilder AddHttpResiliencePipeline(
         this IHttpClientBuilder builder,
         string name,
-        Action<CompositeStrategyBuilder<HttpResponseMessage>, ResilienceHandlerContext> configure)
+        Action<ResiliencePipelineBuilder<HttpResponseMessage>, ResilienceHandlerContext> configure)
     {
-        var strategyName = StrategyNameHelper.GetName(builder.Name, name);
-        var key = new HttpKey(strategyName, string.Empty);
+        var pipelineName = PipelineNameHelper.GetName(builder.Name, name);
+        var key = new HttpKey(pipelineName, string.Empty);
 
-        _ = builder.Services.AddResilienceStrategy<HttpKey, HttpResponseMessage>(key, (builder, context) => configure(builder, new ResilienceHandlerContext(context)));
+        _ = builder.Services.AddResiliencePipeline<HttpKey, HttpResponseMessage>(key, (builder, context) => configure(builder, new ResilienceHandlerContext(context)));
 
         ConfigureHttpServices(builder.Services);
 
-        return new(strategyName, builder.Services);
+        return new(pipelineName, builder.Services);
     }
 
     private static void ConfigureHttpServices(IServiceCollection services)
@@ -136,7 +136,7 @@ public static partial class HttpClientBuilderExtensions
         services.Add(Marker.ServiceDescriptor);
 
         // This code configure the multi-instance support of the registry
-        _ = services.Configure<ResilienceStrategyRegistryOptions<HttpKey>>(options =>
+        _ = services.Configure<ResiliencePipelineRegistryOptions<HttpKey>>(options =>
         {
             options.BuilderNameFormatter = key => key.Name;
             options.InstanceNameFormatter = key => key.InstanceName;
@@ -163,5 +163,5 @@ public static partial class HttpClientBuilderExtensions
         public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Marker, Marker>();
     }
 
-    private record HttpResilienceStrategyBuilder(string StrategyName, IServiceCollection Services) : IHttpResilienceStrategyBuilder;
+    private record HttpResiliencePipelineBuilder(string PipelineName, IServiceCollection Services) : IHttpResiliencePipelineBuilder;
 }

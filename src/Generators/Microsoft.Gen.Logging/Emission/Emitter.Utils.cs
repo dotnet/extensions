@@ -1,10 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Gen.Logging.Model;
 using Microsoft.Gen.Shared;
 
@@ -14,35 +13,7 @@ namespace Microsoft.Gen.Logging.Emission;
 
 internal sealed partial class Emitter : EmitterBase
 {
-    private static readonly char[] _specialChars = { '\n', '\r', '"', '\\' };
-
-    internal static string EscapeMessageString(string s)
-    {
-        int index = s.IndexOfAny(_specialChars);
-        if (index < 0)
-        {
-            return s;
-        }
-
-        var sb = new StringBuilder(s.Length + 1); // we use +1 because we will add at least one symbol
-        _ = sb.Append(s, 0, index);
-
-        while (index < s.Length)
-        {
-            _ = s[index] switch
-            {
-                '\n' => sb.Append("\\n"),
-                '\r' => sb.Append("\\r"),
-                '"' => sb.Append("\\\""),
-                '\\' => sb.Append("\\\\"),
-                var other => sb.Append(other),
-            };
-
-            index++;
-        }
-
-        return sb.ToString();
-    }
+    internal static string EscapeMessageString(string s) => SymbolDisplay.FormatLiteral(s, true);
 
     private static readonly char[] _specialCharsForXmlDocumentation = { '\n', '\r', '<', '>' };
 
@@ -72,22 +43,6 @@ internal sealed partial class Emitter : EmitterBase
         }
 
         return sb.ToString();
-    }
-
-    internal static IReadOnlyCollection<string> GetLogPropertiesAttributes(LoggingMethod lm)
-    {
-        var result = new HashSet<string?>();
-        var parametersWithLogProps = lm.Parameters.Where(x => x.HasProperties && !x.HasTagProvider);
-        foreach (var parameter in parametersWithLogProps)
-        {
-            parameter.TraverseParameterPropertiesTransitively((_, property) => result.Add(property.ClassificationAttributeType));
-        }
-
-        // Remove null values (no data classification attribute)
-        return result
-            .Where(x => x != null)
-            .Select(x => x!)
-            .ToArray();
     }
 
     internal static string GetLoggerMethodLogLevel(LoggingMethod lm)

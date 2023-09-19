@@ -29,8 +29,8 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// </list>
 /// </para>
 /// The last three strategies are assigned to each individual endpoint. The selection of endpoint can be customized by
-/// <see cref="StandardHedgingHandlerBuilderExtensions.SelectStrategyByAuthority(IStandardHedgingHandlerBuilder, DataClassification)"/> or
-/// <see cref="StandardHedgingHandlerBuilderExtensions.SelectStrategyBy(IStandardHedgingHandlerBuilder, Func{IServiceProvider, Func{System.Net.Http.HttpRequestMessage, string}})"/> extensions.
+/// <see cref="StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(IStandardHedgingHandlerBuilder, DataClassification)"/> or
+/// <see cref="StandardHedgingHandlerBuilderExtensions.SelectPipelineBy(IStandardHedgingHandlerBuilder, Func{IServiceProvider, Func{System.Net.Http.HttpRequestMessage, string}})"/> extensions.
 /// <para>
 /// By default, the endpoint is selected by authority (scheme + host + port).
 /// </para>
@@ -48,7 +48,7 @@ public class HttpStandardHedgingResilienceOptions
     [ValidateObjectMembers]
     public HttpTimeoutStrategyOptions TotalRequestTimeoutOptions { get; set; } = new HttpTimeoutStrategyOptions
     {
-        Name = StandardHedgingStrategyNames.TotalRequestTimeout
+        Name = StandardHedgingPipelineNames.TotalRequestTimeout
     };
 
     /// <summary>
@@ -61,7 +61,7 @@ public class HttpStandardHedgingResilienceOptions
     [ValidateObjectMembers]
     public HttpHedgingStrategyOptions HedgingOptions { get; set; } = new HttpHedgingStrategyOptions
     {
-        Name = StandardHedgingStrategyNames.Hedging
+        Name = StandardHedgingPipelineNames.Hedging
     };
 
     /// <summary>

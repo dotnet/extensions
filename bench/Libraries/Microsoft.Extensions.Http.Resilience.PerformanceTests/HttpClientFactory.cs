@@ -9,9 +9,9 @@ using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Telemetry.Metering;
 
 #pragma warning disable EA0006 // Replace uses of 'Enum.GetName' and 'Enum.ToString' with the '[EnumStrings]' code generator for improved performance
 
@@ -39,7 +39,7 @@ internal static class HttpClientFactory
     {
         var services = new ServiceCollection();
         services
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddSingleton<IRedactorProvider>(NullRedactorProvider.Instance)
             .AddTransient<NoRemoteCallHandler>()
             .AddHttpClient(StandardClient, client => client.Timeout = Timeout.InfiniteTimeSpan)
@@ -69,7 +69,7 @@ internal static class HttpClientFactory
     private static void AddHedging(this IServiceCollection services, HedgingClientType clientType)
     {
         var clientBuilder = services.AddHttpClient(clientType.ToString(), client => client.Timeout = Timeout.InfiniteTimeSpan);
-        var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectStrategyByAuthority(SimpleClassifications.PublicData);
+        var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectPipelineByAuthority(FakeClassifications.PublicData);
         _ = clientBuilder.AddHttpMessageHandler<NoRemoteCallHandler>();
 
         if (clientType.HasFlag(HedgingClientType.NoRoutes))

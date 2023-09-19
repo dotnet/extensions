@@ -10,15 +10,17 @@ namespace Microsoft.Gen.Logging.Parsing;
 internal static class SymbolLoader
 {
     internal const string LoggerMessageAttribute = "Microsoft.Extensions.Logging.LoggerMessageAttribute";
-    internal const string LogPropertiesAttribute = "Microsoft.Extensions.Telemetry.Logging.LogPropertiesAttribute";
-    internal const string LogPropertyIgnoreAttribute = "Microsoft.Extensions.Telemetry.Logging.LogPropertyIgnoreAttribute";
-    internal const string ITagCollectorType = "Microsoft.Extensions.Telemetry.Logging.ITagCollector";
+    internal const string LogPropertiesAttribute = "Microsoft.Extensions.Logging.LogPropertiesAttribute";
+    internal const string TagProviderAttribute = "Microsoft.Extensions.Logging.TagProviderAttribute";
+    internal const string LogPropertyIgnoreAttribute = "Microsoft.Extensions.Logging.LogPropertyIgnoreAttribute";
+    internal const string ITagCollectorType = "Microsoft.Extensions.Logging.ITagCollector";
     internal const string ILoggerType = "Microsoft.Extensions.Logging.ILogger";
     internal const string LogLevelType = "Microsoft.Extensions.Logging.LogLevel";
     internal const string ExceptionType = "System.Exception";
     internal const string DataClassificationAttribute = "Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute";
-    internal const string IEnrichmentPropertyBag = "Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag";
+    internal const string IEnrichmentPropertyBag = "Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag";
     internal const string IFormatProviderType = "System.IFormatProvider";
+    internal const string ISpanFormattableType = "System.ISpanFormattable";
 
     private static readonly string[] _ignored = new[]
     {
@@ -52,6 +54,7 @@ internal static class SymbolLoader
         var logLevelSymbol = compilation.GetTypeByMetadataName(LogLevelType);
         var logMethodAttributeSymbol = compilation.GetTypeByMetadataName(LoggerMessageAttribute);
         var logPropertiesAttributeSymbol = compilation.GetTypeByMetadataName(LogPropertiesAttribute);
+        var tagProviderAttributeSymbol = compilation.GetTypeByMetadataName(TagProviderAttribute);
         var tagCollectorSymbol = compilation.GetTypeByMetadataName(ITagCollectorType);
         var logPropertyIgnoreAttributeSymbol = compilation.GetTypeByMetadataName(LogPropertyIgnoreAttribute);
         var dataClassificationAttribute = compilation.GetTypeByMetadataName(DataClassificationAttribute);
@@ -61,6 +64,7 @@ internal static class SymbolLoader
             || logLevelSymbol == null
             || logMethodAttributeSymbol == null
             || logPropertiesAttributeSymbol == null
+            || tagProviderAttributeSymbol == null
             || tagCollectorSymbol == null
             || logPropertyIgnoreAttributeSymbol == null)
         {
@@ -78,6 +82,7 @@ internal static class SymbolLoader
 
         var enumerableSymbol = compilation.GetSpecialType(SpecialType.System_Collections_IEnumerable);
         var formatProviderSymbol = compilation.GetTypeByMetadataName(IFormatProviderType)!;
+        var spanFormattableSymbol = compilation.GetTypeByMetadataName(ISpanFormattableType);
 
         var ignorePropsSymbols = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
 
@@ -94,6 +99,7 @@ internal static class SymbolLoader
             compilation,
             logMethodAttributeSymbol,
             logPropertiesAttributeSymbol,
+            tagProviderAttributeSymbol,
             logPropertyIgnoreAttributeSymbol,
             tagCollectorSymbol,
             loggerSymbol,
@@ -102,6 +108,7 @@ internal static class SymbolLoader
             ignorePropsSymbols,
             enumerableSymbol,
             formatProviderSymbol,
+            spanFormattableSymbol,
             dataClassificationAttribute);
     }
 }

@@ -3,7 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Microsoft.Extensions.Telemetry.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 

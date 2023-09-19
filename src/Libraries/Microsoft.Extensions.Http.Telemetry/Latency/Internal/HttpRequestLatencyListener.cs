@@ -7,7 +7,7 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading;
-using Microsoft.Extensions.Telemetry.Latency;
+using Microsoft.Extensions.Diagnostics.Latency;
 
 namespace Microsoft.Extensions.Http.Telemetry.Latency.Internal;
 
@@ -121,19 +121,19 @@ internal sealed class HttpRequestLatencyListener : EventListener
 
         public EventToCheckpointToken(ILatencyContextTokenIssuer tokenIssuer)
         {
-            Dictionary<string, CheckpointToken> socket = new();
+            Dictionary<string, CheckpointToken> socket = [];
             foreach (string key in _socketMap.Keys)
             {
                 socket[key] = tokenIssuer.GetCheckpointToken(_socketMap[key]);
             }
 
-            Dictionary<string, CheckpointToken> nameResolution = new();
+            Dictionary<string, CheckpointToken> nameResolution = [];
             foreach (string key in _nameResolutionMap.Keys)
             {
                 nameResolution[key] = tokenIssuer.GetCheckpointToken(_nameResolutionMap[key]);
             }
 
-            Dictionary<string, CheckpointToken> http = new();
+            Dictionary<string, CheckpointToken> http = [];
             foreach (string key in _httpMap.Keys)
             {
                 http[key] = tokenIssuer.GetCheckpointToken(_httpMap[key]);

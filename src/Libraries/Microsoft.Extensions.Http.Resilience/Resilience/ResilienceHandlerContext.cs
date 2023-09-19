@@ -3,18 +3,18 @@
 
 using System;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Polly.Extensions.DependencyInjection;
+using Polly.DependencyInjection;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// The context used when building a resilience strategy HTTP handler.
+/// The context used when building a resilience pipeline HTTP handler.
 /// </summary>
 public sealed class ResilienceHandlerContext
 {
-    private readonly AddResilienceStrategyContext<HttpKey> _context;
+    private readonly AddResiliencePipelineContext<HttpKey> _context;
 
-    internal ResilienceHandlerContext(AddResilienceStrategyContext<HttpKey> context)
+    internal ResilienceHandlerContext(AddResiliencePipelineContext<HttpKey> context)
     {
         _context = context;
     }
@@ -27,15 +27,15 @@ public sealed class ResilienceHandlerContext
     /// <summary>
     /// Gets the name of the builder being built.
     /// </summary>
-    public string BuilderName => _context.StrategyKey.Name;
+    public string BuilderName => _context.PipelineKey.Name;
 
     /// <summary>
-    /// Gets the instance name of resilience strategy being built.
+    /// Gets the instance name of resilience pipeline being built.
     /// </summary>
-    public string InstanceName => _context.StrategyKey.InstanceName;
+    public string InstanceName => _context.PipelineKey.InstanceName;
 
     /// <summary>
-    /// Enables dynamic reloading of the resilience strategy whenever the <typeparamref name="TOptions"/> options are changed.
+    /// Enables dynamic reloading of the resilience pipeline whenever the <typeparamref name="TOptions"/> options are changed.
     /// </summary>
     /// <typeparam name="TOptions">The options type to listen to.</typeparam>
     /// <param name="name">The named options, if any.</param>

@@ -50,27 +50,27 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.SetXXHash3Redactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, System.Action<Microsoft.Extensions.Compliance.Redaction.XXHash3RedactorOptions> configure, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.SetXxHash3Redactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, System.Action<Microsoft.Extensions.Compliance.Redaction.XxHash3RedactorOptions> configure, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.SetXXHash3Redactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.SetXxHash3Redactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Compliance.Redaction.XXHash3RedactorOptions",
+      "Type": "class Microsoft.Extensions.Compliance.Redaction.XxHash3RedactorOptions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Compliance.Redaction.XXHash3RedactorOptions.XXHash3RedactorOptions();",
+          "Member": "Microsoft.Extensions.Compliance.Redaction.XxHash3RedactorOptions.XxHash3RedactorOptions();",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "ulong Microsoft.Extensions.Compliance.Redaction.XXHash3RedactorOptions.HashSeed { get; set; }",
+          "Member": "ulong Microsoft.Extensions.Compliance.Redaction.XxHash3RedactorOptions.HashSeed { get; set; }",
           "Stage": "Stable"
         }
       ]

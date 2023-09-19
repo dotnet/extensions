@@ -14,10 +14,6 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Classification.DataClassification.Combine(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
-          "Stage": "Stable"
-        },
-        {
           "Member": "override bool Microsoft.Extensions.Compliance.Classification.DataClassification.Equals(object? obj);",
           "Stage": "Stable"
         },
@@ -39,6 +35,10 @@
         },
         {
           "Member": "static bool Microsoft.Extensions.Compliance.Classification.DataClassification.operator !=(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Classification.DataClassification.Or(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
           "Stage": "Stable"
         },
         {

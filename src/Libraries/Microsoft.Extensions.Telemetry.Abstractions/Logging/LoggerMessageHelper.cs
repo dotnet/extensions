@@ -10,7 +10,7 @@ using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Pools;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Utility type to support generated logging methods.

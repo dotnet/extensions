@@ -4,7 +4,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Telemetry.Metering;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Polly;
 using Xunit;
 
@@ -53,7 +53,7 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
                 options =>
                 {
@@ -124,7 +124,7 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
             options =>
             {
@@ -159,7 +159,7 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
             options =>
             {
@@ -194,7 +194,7 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
             options =>
             {
@@ -248,7 +248,7 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
             options =>
             {
@@ -283,7 +283,7 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
             options =>
             {
@@ -318,7 +318,7 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetering()
+            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
             options =>
             {

@@ -54,7 +54,7 @@ public class LoggingOptions
     /// The default value is ≈ 32K.
     /// </value>
     /// <remarks>
-    /// The number should ideally be below 85K to not be allocated on the <see href="https://learn.microsoft.com/dotnet/standard/garbage-collection/large-object-heap">large object heap</see>.
+    /// The number should ideally be below 85000 bytes to not be allocated on the <see href="https://learn.microsoft.com/dotnet/standard/garbage-collection/large-object-heap">large object heap</see>.
     /// </remarks>
     [Range(1, MaxIncomingBodySize)]
     public int BodySizeLimit { get; set; } = DefaultReadSizeLimit;
@@ -66,7 +66,7 @@ public class LoggingOptions
     /// The default value is 1 second.
     /// </value>
     /// <remarks>
-    /// The number should be above 1 millisecond and below 1 hour.
+    /// The value should be in the range of 1 millisecond to 1 minute.
     /// </remarks>
     [TimeSpan(Millisecond, Hour)]
     public TimeSpan BodyReadTimeout { get; set; } = TimeSpan.FromSeconds(1);
@@ -139,8 +139,10 @@ public class LoggingOptions
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>
-    /// Gets the route parameters to redact with their corresponding data classes to apply appropriate redaction.
+    /// Gets or sets the route parameters to redact with their corresponding data classes to apply appropriate redaction.
     /// </summary>
     [Required]
-    public IDictionary<string, DataClassification> RouteParameterDataClasses { get; } = new Dictionary<string, DataClassification>();
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
+        Justification = "Options pattern.")]
+    public IDictionary<string, DataClassification> RouteParameterDataClasses { get; set; } = new Dictionary<string, DataClassification>();
 }

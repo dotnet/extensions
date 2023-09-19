@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 /// <summary>
-/// Helps building resource monitoring infra.
+/// Helps building the resource monitoring infrastructure.
 /// </summary>
 public interface IResourceMonitorBuilder
 {
@@ -16,10 +16,10 @@ public interface IResourceMonitorBuilder
     IServiceCollection Services { get; }
 
     /// <summary>
-    /// Adds implementation of the utilization data publisher.
+    /// Adds a resource utilization publisher that gets invoked whenever resource utilization is computed.
     /// </summary>
-    /// <typeparam name="T">An implementation of <see cref="IResourceUtilizationPublisher"/> that is used by the tracker to publish <see cref="Utilization"/> to 3rd parties.</typeparam>
-    /// <returns>Instance of <see cref="IResourceMonitorBuilder"/> for further configurations.</returns>
+    /// <typeparam name="T">The publisher's implementation type.</typeparam>
+    /// <returns>The value of the object instance.</returns>
     IResourceMonitorBuilder AddPublisher<T>()
         where T : class, IResourceUtilizationPublisher;
 }

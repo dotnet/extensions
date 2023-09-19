@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <UseMeteringGenerator>true</UseMeteringGenerator>
+    <UseMetricsGenerator>true</UseMetricsGenerator>
     <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
     <InjectSharedPools>true</InjectSharedPools>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>

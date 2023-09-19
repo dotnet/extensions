@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Gen.AutoClient.Model;
 using Microsoft.Gen.Shared;
 
@@ -45,12 +46,12 @@ internal sealed class Emitter : EmitterBase
 
     public string EmitRestApis(IReadOnlyList<RestApiType> restApiTypes, CancellationToken cancellationToken)
     {
-        Dictionary<string, List<RestApiType>> metricClassesDict = new();
+        Dictionary<string, List<RestApiType>> metricClassesDict = [];
         foreach (var cl in restApiTypes)
         {
             if (!metricClassesDict.TryGetValue(cl.Namespace, out var list))
             {
-                list = new List<RestApiType>();
+                list = [];
                 metricClassesDict.Add(cl.Namespace, list);
             }
 
@@ -228,20 +229,37 @@ internal sealed class Emitter : EmitterBase
 
         var pathSb = new StringBuilder(restApiMethod.Path);
 
+        foreach (var param in restApiMethod.FormatParameters)
+        {
+            var escapedParamName = $"{param}Escaped";
+            OutLn($"var {escapedParamName} = {Uri}.EscapeDataString($\"{{{param}}}\");");
+
+            _ = pathSb.Replace($"{{{param}}}", $"{{{escapedParamName}}}");
+        }
+
+        OutLn();
+
         var firstQuery = true;
         foreach (var param in restApiMethod.AllParameters.Where(m => m.IsQuery))
         {
+            var escapedParamName = $"{param.Name}Escaped";
+
+            // Use interpolated string to handle any null values from any type like nullable value types or reference types.
+            OutLn($"var {escapedParamName} = {Uri}.EscapeDataString($\"{{{param.Name}}}\");");
+
             if (firstQuery)
             {
-                _ = pathSb.Append($"?{param.QueryKey}={{{param.Name}}}");
+                _ = pathSb.Append($"?{param.QueryKey}={{{escapedParamName}}}");
             }
             else
             {
-                _ = pathSb.Append($"&{param.QueryKey}={{{param.Name}}}");
+                _ = pathSb.Append($"&{param.QueryKey}={{{escapedParamName}}}");
             }
 
             firstQuery = false;
         }
+
+        OutLn();
 
         var definePath = restApiMethod.FormatParameters.Count > 0 || !firstQuery;
         var body = restApiMethod.AllParameters.FirstOrDefault(m => m.IsBody);
@@ -303,20 +321,28 @@ internal sealed class Emitter : EmitterBase
 
         foreach (var header in restApiType.StaticHeaders.OrderBy(static h => h.Key))
         {
-            OutLn(@$"{httpRequestMessageName}.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
+            OutLn(@$"{httpRequestMessageName}.Headers.Add({SymbolDisplay.FormatLiteral(header.Key, true)}, {SymbolDisplay.FormatLiteral(header.Value, true)});");
         }
 
         foreach (var header in restApiMethod.StaticHeaders.OrderBy(static h => h.Key))
         {
-            OutLn(@$"{httpRequestMessageName}.Headers.Add(""{header.Key}"", ""{header.Value.Replace("\"", "\\\"")}"");");
+            OutLn(@$"{httpRequestMessageName}.Headers.Add({SymbolDisplay.FormatLiteral(header.Key, true)}, {SymbolDisplay.FormatLiteral(header.Value, true)});");
         }
 
         foreach (var param in restApiMethod.AllParameters.Where(m => m.IsHeader))
         {
-            OutLn($"if ({param.Name} != null)");
-            OutOpenBrace();
+            if (param.Nullable)
+            {
+                OutLn($"if ({param.Name} != null)");
+                OutOpenBrace();
+            }
+
             OutLn(@$"{httpRequestMessageName}.Headers.Add(""{param.HeaderName}"", {param.Name}.ToString());");
-            OutCloseBrace();
+
+            if (param.Nullable)
+            {
+                OutCloseBrace();
+            }
         }
 
         OutLn();

@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Telemetry.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Latency;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Telemetry.Test;

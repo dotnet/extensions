@@ -119,10 +119,10 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.MultipleLoggerFieldsMessage,
         category: Category);
 
-    public static DiagnosticDescriptor MultipleDataClassificationAttributes { get; } = Make(
+    public static DiagnosticDescriptor CantUseDataClassificationWithLogPropertiesOrTagProvider { get; } = Make(
         id: "LOGGEN017",
-        title: Resources.MultipleDataClassificationAttributesTitle,
-        messageFormat: Resources.MultipleDataClassificationAttributesMessage,
+        title: Resources.CantUseDataClassificationWithLogPropertiesOrTagProviderTitle,
+        messageFormat: Resources.CantUseDataClassificationWithLogPropertiesOrTagProviderMessage,
         category: Category);
 
     public static DiagnosticDescriptor InvalidTypeToLogProperties { get; } = Make(
@@ -211,5 +211,23 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         id: "LOGGEN031",
         title: Resources.TemplateStartsWithAtSymbolTitle,
         messageFormat: Resources.TemplateStartsWithAtSymbolMessage,
+        category: Category);
+
+    public static DiagnosticDescriptor CantMixAttributes { get; } = Make(
+        id: "LOGGEN032",
+        title: Resources.CantMixAttributesTitle,
+        messageFormat: Resources.CantMixAttributesMessage,
+        category: Category);
+
+    public static DiagnosticDescriptor TagProviderInvalidUsage { get; } = Make(
+        id: "LOGGEN033",
+        title: Resources.TagProviderInvalidUsageTitle,
+        messageFormat: Resources.TagProviderInvalidUsageMessage,
+        category: Category);
+
+    public static DiagnosticDescriptor InvalidAttributeUsage { get; } = Make(
+        id: "LOGGEN034",
+        title: Resources.InvalidAttributeUsageTitle,
+        messageFormat: Resources.InvalidAttributeUsageMessage,
         category: Category);
 }

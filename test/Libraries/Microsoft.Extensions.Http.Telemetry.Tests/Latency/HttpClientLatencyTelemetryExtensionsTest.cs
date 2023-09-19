@@ -8,9 +8,9 @@ using System.Net.Http;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http.Telemetry.Latency.Internal;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Latency;
 using Moq;
 using Xunit;
 

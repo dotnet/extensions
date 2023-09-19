@@ -27,7 +27,7 @@
     <None Include="buildTransitive\**\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <!-- In netcoreapp3.1 and net462 TFMs we automatically add package buildtransitive target files, so we need to Include
+  <!-- For net462 we automatically add package buildtransitive target files, so we need to Include
   the code that will disable the Microsoft.Extensions.Logging.Abstractions source generator. -->
   <PropertyGroup>
     <_AdditionalNETStandardCompatErrorFileContents>
@@ -42,14 +42,14 @@
 
   <ItemGroup>
     <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Logging\Microsoft.Gen.Logging.csproj" />
-    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Metering\Microsoft.Gen.Metering.csproj" />
+    <AnalyzerReference Include="..\..\Generators\Microsoft.Gen.Metrics\Microsoft.Gen.Metrics.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
-    <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
   </ItemGroup>
 
   <ItemGroup>

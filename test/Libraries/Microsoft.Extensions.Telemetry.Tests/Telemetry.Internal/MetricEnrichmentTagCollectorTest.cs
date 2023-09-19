@@ -78,7 +78,10 @@ public class MetricEnrichmentTagCollectorTest
         };
 #pragma warning restore S3257 // Declarations and initializations should be as concise as possible
 
-        collector.Add(props);
+        foreach (var prop in props)
+        {
+            collector.Add(prop.Key, prop.Value);
+        }
 
         Assert.Equal("key1", collector[0].Key);
         Assert.Equal("10", collector[0].Value);
@@ -103,7 +106,10 @@ public class MetricEnrichmentTagCollectorTest
         };
 #pragma warning restore S3257 // Declarations and initializations should be as concise as possible
 
-        collector.Add(props);
+        foreach (var prop in props)
+        {
+            collector.Add(prop.Key, prop.Value);
+        }
 
         Assert.Equal("key1", collector[0].Key);
         Assert.Equal("10", collector[0].Value);
@@ -125,7 +131,10 @@ public class MetricEnrichmentTagCollectorTest
         };
 #pragma warning restore S3257 // Declarations and initializations should be as concise as possible
 
-        collector.Add(props);
+        foreach (var prop in props)
+        {
+            collector.Add(prop.Key, prop.Value);
+        }
 
         Assert.Equal("key1", collector[0].Key);
         Assert.Equal("10", collector[0].Value);

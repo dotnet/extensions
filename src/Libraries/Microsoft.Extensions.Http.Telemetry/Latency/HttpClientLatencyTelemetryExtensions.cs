@@ -6,9 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http.Telemetry.Latency.Internal;
 using Microsoft.Extensions.Http.Telemetry.Logging;
-using Microsoft.Extensions.Telemetry.Latency;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Telemetry.Latency;

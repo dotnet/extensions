@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Telemetry.Internal;
 using Microsoft.Extensions.AmbientMetadata;
+using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Latency;
 using Moq;
 using Xunit;
 
@@ -70,6 +70,36 @@ public class RequestLatencyTelemetryMiddlewareTest
         await fakeHttpResponseFeature.StartAsync();
         lc.Verify(c => c.Freeze());
         Assert.False(httpContextMock.Response.Headers.TryGetValue(TelemetryConstants.ServerApplicationNameHeader, out var val));
+        Assert.True(nextInvoked);
+        Assert.True(ex1.Invoked == 1);
+        Assert.True(ex2.Invoked == 1);
+    }
+
+    [Fact]
+    public async Task RequestLatency_WithServerNameHeadersSet_ReturnsLastServerName()
+    {
+        var ex1 = new TestExporter();
+        var ex2 = new TestExporter();
+        string serverName = "AppServer";
+        var m = new RequestLatencyTelemetryMiddleware(
+            Options.Create(new RequestLatencyTelemetryOptions()), new List<ILatencyDataExporter> { ex1, ex2 },
+            Options.Create(new ApplicationMetadata { ApplicationName = serverName }));
+        var lc = GetMockLatencyContext();
+        var httpContextMock = GetHttpContext(lc.Object);
+        var fakeHttpResponseFeature = new FakeHttpResponseFeature();
+        httpContextMock.Features.Set<IHttpResponseFeature>(fakeHttpResponseFeature);
+        httpContextMock.Response.Headers.Append(TelemetryConstants.ServerApplicationNameHeader, "testValue");
+        var nextInvoked = false;
+        await m.InvokeAsync(httpContextMock, (_) =>
+        {
+            nextInvoked = true;
+            return Task.CompletedTask;
+        });
+        await fakeHttpResponseFeature.StartAsync();
+        lc.Verify(c => c.Freeze());
+        var header = httpContextMock.Response.Headers[TelemetryConstants.ServerApplicationNameHeader];
+        Assert.NotEmpty(header);
+        Assert.Equal(serverName, header[0]);
         Assert.True(nextInvoked);
         Assert.True(ex1.Invoked == 1);
         Assert.True(ex2.Invoked == 1);

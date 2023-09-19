@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Logging.Test;
+namespace Microsoft.Extensions.Logging.Testing.Test;
 
 public class FakeLogCollectorOptionsTests
 {

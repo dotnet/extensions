@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 internal sealed class FaultPublisher : IResourceUtilizationPublisher
 {
     /// <inheritdoc/>
-    public async ValueTask PublishAsync(Utilization utilization, CancellationToken cancellationToken)
+    public async ValueTask PublishAsync(ResourceUtilization utilization, CancellationToken cancellationToken)
     {
         await default(ValueTask);
         throw new InvalidOperationException();

@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Telemetry;
-using Microsoft.Extensions.Telemetry.Latency;
+using Microsoft.Extensions.Diagnostics.Latency;
 using Moq;
 using Xunit;
 

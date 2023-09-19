@@ -16,15 +16,15 @@ namespace Microsoft.Extensions.Resilience.Bench;
 public class ResilienceEnrichmentBenchmark
 {
     private MeterListener? _listener;
-    private ResilienceStrategy? _strategy;
-    private ResilienceStrategy? _strategyEnriched;
+    private ResiliencePipeline? _pipeline;
+    private ResiliencePipeline? _pipelineEnriched;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
-        _listener = MeteringUtil.ListenPollyMetrics();
-        _strategy = CreateResilienceStrategy(_ => { });
-        _strategyEnriched = CreateResilienceStrategy(services =>
+        _listener = MetricsUtil.ListenPollyMetrics();
+        _pipeline = CreateResiliencePipeline(_ => { });
+        _pipelineEnriched = CreateResiliencePipeline(services =>
         {
             services.AddResilienceEnrichment();
             services.ConfigureFailureResultContext<string>(res => FailureResultContext.Create("dummy", "dummy", "dummy"));
@@ -35,21 +35,21 @@ public class ResilienceEnrichmentBenchmark
     public void Cleanup() => _listener?.Dispose();
 
     [Benchmark(Baseline = true)]
-    public void ReportTelemetry() => _strategy!.Execute(() => "dummy-result");
+    public void ReportTelemetry() => _pipeline!.Execute(() => "dummy-result");
 
     [Benchmark]
-    public void ReportTelemetry_Enriched() => _strategyEnriched!.Execute(() => "dummy-result");
+    public void ReportTelemetry_Enriched() => _pipelineEnriched!.Execute(() => "dummy-result");
 
-    private static ResilienceStrategy CreateResilienceStrategy(Action<IServiceCollection> configure)
+    private static ResiliencePipeline CreateResiliencePipeline(Action<IServiceCollection> configure)
     {
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddExceptionSummarizer();
-        services.AddResilienceStrategy("my-strategy", builder => builder.AddStrategy(context => new DummyStrategy(context.Telemetry), new DummyOptions()));
+        services.AddResiliencePipeline("my-pipeline", builder => builder.AddStrategy(context => new DummyStrategy(context.Telemetry), new DummyOptions()));
         services.AddLogging();
         configure(services);
 
-        return services.BuildServiceProvider().GetRequiredService<ResilienceStrategyProvider<string>>().GetStrategy("my-strategy");
+        return services.BuildServiceProvider().GetRequiredService<ResiliencePipelineProvider<string>>().GetPipeline("my-pipeline");
     }
 
     private class DummyStrategy : ResilienceStrategy

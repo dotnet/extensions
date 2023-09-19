@@ -344,22 +344,22 @@ public class LengthAttributeTests
 
         var options1 = new BadOptions1();
         context = new ValidationContext(options1);
-        results = new List<ValidationResult>();
+        results = [];
         Assert.Throws<InvalidOperationException>(() => _ = Validator.TryValidateObject(options1, context, results, true));
 
         var options2 = new BadOptions2();
         context = new ValidationContext(options2);
-        results = new List<ValidationResult>();
+        results = [];
         Assert.Throws<InvalidOperationException>(() => _ = Validator.TryValidateObject(options2, context, results, true));
 
         var options3 = new BadOptions3();
         context = new ValidationContext(options3);
-        results = new List<ValidationResult>();
+        results = [];
         Assert.Throws<InvalidOperationException>(() => _ = Validator.TryValidateObject(options3, context, results, true));
 
         var options4 = new BadOptions4();
         context = new ValidationContext(options4);
-        results = new List<ValidationResult>();
+        results = [];
         Assert.Throws<InvalidOperationException>(() => _ = Validator.TryValidateObject(options4, context, results, true));
     }
 

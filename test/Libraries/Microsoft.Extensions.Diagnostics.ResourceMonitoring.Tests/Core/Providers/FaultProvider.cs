@@ -15,7 +15,7 @@ internal sealed class FaultProvider : ISnapshotProvider
 
     public SystemResources Resources => new(1.0, 1.0, 1000, 1000);
 
-    public ResourceUtilizationSnapshot GetSnapshot()
+    public Snapshot GetSnapshot()
     {
         if (ShouldThrow)
         {
@@ -23,6 +23,6 @@ internal sealed class FaultProvider : ISnapshotProvider
         }
 
         // return a dummy value.
-        return new ResourceUtilizationSnapshot(TimeSpan.FromTicks(_clock.GetUtcNow().Ticks), TimeSpan.Zero, TimeSpan.Zero, ulong.MaxValue);
+        return new Snapshot(TimeSpan.FromTicks(_clock.GetUtcNow().Ticks), TimeSpan.Zero, TimeSpan.Zero, ulong.MaxValue);
     }
 }

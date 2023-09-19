@@ -23,9 +23,7 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
 
         Assert.True(validationResult.Failed);
 
-#if NET8_0_OR_GREATER
-        // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
-        // and as such the API is available in .NET 8 onwards.
+#if NET6_0_OR_GREATER
         validationResult.Failures.Should().HaveCount(3);
 #endif
     }
@@ -57,12 +55,12 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
 
             options = new HttpStandardHedgingResilienceOptions();
             options.HedgingOptions.MaxHedgedAttempts = 1;
-            options.HedgingOptions.HedgingDelay = options.TotalRequestTimeoutOptions.Timeout;
+            options.HedgingOptions.Delay = options.TotalRequestTimeoutOptions.Timeout;
             yield return new object[] { options };
 
             options = new HttpStandardHedgingResilienceOptions();
-            options.HedgingOptions.HedgingDelay = TimeSpan.FromDays(1);
-            options.HedgingOptions.HedgingDelayGenerator = _ => new ValueTask<TimeSpan>(TimeSpan.FromDays(1));
+            options.HedgingOptions.Delay = TimeSpan.FromDays(1);
+            options.HedgingOptions.DelayGenerator = _ => new ValueTask<TimeSpan>(TimeSpan.FromDays(1));
             yield return new object[] { options };
         }
     }
@@ -87,10 +85,6 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
 
             options = new HttpStandardHedgingResilienceOptions();
             options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(2);
-            yield return new object[] { options };
-
-            options = new HttpStandardHedgingResilienceOptions();
-            options.HedgingOptions.HedgingDelay = TimeSpan.FromDays(1);
             yield return new object[] { options };
 
             options = new HttpStandardHedgingResilienceOptions();

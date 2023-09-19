@@ -4,9 +4,8 @@
 using System;
 using System.Threading;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Telemetry.Latency;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Internal;
 
 /// <summary>
 /// Class that tracks checkpoints.

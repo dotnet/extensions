@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace TestClasses
 {
@@ -38,6 +37,10 @@ namespace TestClasses
             [PrivateData]
             public string GetOnlyProperty => "GetOnlyProperty";
 
+            [PrivateData]
+            public NonFormattable NonFormattableProperty { get; set; }
+
+            [LogProperties]
             public MyTransitiveClass TransitiveProp { get; set; } = new();
         }
 

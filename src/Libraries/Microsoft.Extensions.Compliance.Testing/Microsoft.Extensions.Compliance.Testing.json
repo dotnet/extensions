@@ -2,6 +2,24 @@
   "Name": "Microsoft.Extensions.Compliance.Testing, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
+      "Type": "static class Microsoft.Extensions.Compliance.Testing.FakeClassifications",
+      "Stage": "Stable",
+      "Properties": [
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.FakeClassifications.PrivateData { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.FakeClassifications.PublicData { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string Microsoft.Extensions.Compliance.Testing.FakeClassifications.TaxonomyName { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector",
       "Stage": "Stable",
       "Methods": [
@@ -124,6 +142,48 @@
       ]
     },
     {
+      "Type": "enum Microsoft.Extensions.Compliance.Testing.FakeTaxonomy : ulong",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.FakeTaxonomy();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.None",
+          "Stage": "Stable",
+          "Value": "0"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.PrivateData",
+          "Stage": "Stable",
+          "Value": "2"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.PublicData",
+          "Stage": "Stable",
+          "Value": "1"
+        },
+        {
+          "Member": "const Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.Unknown",
+          "Stage": "Stable",
+          "Value": "9223372036854775808"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Compliance.Testing.FakeTaxonomyExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Testing.FakeTaxonomyExtensions.AsFakeTaxonomy(this Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.Compliance.Testing.PrivateDataAttribute : Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute",
       "Stage": "Stable",
       "Methods": [
@@ -231,66 +291,6 @@
         },
         {
           "Member": "int Microsoft.Extensions.Compliance.Testing.RedactorRequested.SequenceNumber { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Compliance.Testing.SimpleClassifications",
-      "Stage": "Stable",
-      "Properties": [
-        {
-          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.SimpleClassifications.PrivateData { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.SimpleClassifications.PublicData { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static string Microsoft.Extensions.Compliance.Testing.SimpleClassifications.TaxonomyName { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "enum Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy : ulong",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.SimpleTaxonomy();",
-          "Stage": "Stable"
-        }
-      ],
-      "Fields": [
-        {
-          "Member": "const Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.None",
-          "Stage": "Stable",
-          "Value": "0"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.PrivateData",
-          "Stage": "Stable",
-          "Value": "2"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.PublicData",
-          "Stage": "Stable",
-          "Value": "1"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy.Unknown",
-          "Stage": "Stable",
-          "Value": "9223372036854775808"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Compliance.Testing.SimpleTaxonomyExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.Compliance.Testing.SimpleTaxonomy Microsoft.Extensions.Compliance.Testing.SimpleTaxonomyExtensions.AsSimpleTaxonomy(this Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
           "Stage": "Stable"
         }
       ]

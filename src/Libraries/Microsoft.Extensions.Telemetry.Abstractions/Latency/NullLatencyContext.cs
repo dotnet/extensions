@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.Telemetry.Latency;
+namespace Microsoft.Extensions.Diagnostics.Latency;
 
 /// <summary>
 /// No-op implementation of a latency context.

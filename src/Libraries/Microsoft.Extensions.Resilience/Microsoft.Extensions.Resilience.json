@@ -284,15 +284,15 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Resilience.Resilience.ResilienceContextExtensions",
+      "Type": "static class Microsoft.Extensions.Resilience.ResilienceContextExtensions",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Resilience.Resilience.ResilienceContextExtensions.GetRequestMetadata(this Polly.ResilienceContext context);",
+          "Member": "static Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Resilience.ResilienceContextExtensions.GetRequestMetadata(this Polly.ResilienceContext context);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static void Microsoft.Extensions.Resilience.Resilience.ResilienceContextExtensions.SetRequestMetadata(this Polly.ResilienceContext context, Microsoft.Extensions.Http.Telemetry.RequestMetadata requestMetadata);",
+          "Member": "static void Microsoft.Extensions.Resilience.ResilienceContextExtensions.SetRequestMetadata(this Polly.ResilienceContext context, Microsoft.Extensions.Http.Telemetry.RequestMetadata requestMetadata);",
           "Stage": "Experimental"
         }
       ]

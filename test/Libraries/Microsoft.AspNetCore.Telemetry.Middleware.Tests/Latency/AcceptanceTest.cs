@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
-using Microsoft.Extensions.Telemetry.Latency;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Telemetry.Latency.Test;

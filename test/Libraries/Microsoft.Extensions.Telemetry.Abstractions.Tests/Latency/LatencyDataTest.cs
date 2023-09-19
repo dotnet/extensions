@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Test;
+namespace Microsoft.Extensions.Diagnostics.Latency.Test;
 
 public class LatencyDataTest
 {

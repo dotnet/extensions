@@ -11,7 +11,7 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.Extensions.Telemetry.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Logging
 {

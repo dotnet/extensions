@@ -20,7 +20,7 @@ namespace TestClasses
         public Task<string> GetUsersHeaders(CancellationToken cancellationToken = default);
 
         [Get("/api/users")]
-        [StaticHeader("X-MyHeader3", "MyValueWith\"Escaped\"Stuff")]
+        [StaticHeader("X-MyHeader3", "MyValueWith\"Escaped\"Stuff\t\b\u03a0")]
         public Task<string> GetUsersHeadersEscaped(CancellationToken cancellationToken = default);
     }
 }

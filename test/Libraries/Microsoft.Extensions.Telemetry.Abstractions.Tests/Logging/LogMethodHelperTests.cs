@@ -1,15 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Telemetry.Enrichment;
-using Microsoft.Extensions.Telemetry.Logging;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Logging.Test;
+namespace Microsoft.Extensions.Logging.Test;
 
 public static class LogMethodHelperTests
 {
@@ -44,24 +42,6 @@ public static class LogMethodHelperTests
 
         _ = list.TryReset();
         collector.Add(PropName, Value);
-        Assert.Single(list);
-        Assert.Equal(PropName, list[0].Key);
-        Assert.Equal(Value, list[0].Value);
-
-        _ = list.TryReset();
-        collector.Add(PropName, (object)Value);
-        Assert.Single(list);
-        Assert.Equal(PropName, list[0].Key);
-        Assert.Equal(Value, list[0].Value);
-
-        _ = list.TryReset();
-        collector.Add(new[] { new KeyValuePair<string, object>(PropName, Value) }.AsSpan());
-        Assert.Single(list);
-        Assert.Equal(PropName, list[0].Key);
-        Assert.Equal(Value, list[0].Value);
-
-        _ = list.TryReset();
-        collector.Add(new[] { new KeyValuePair<string, string>(PropName, Value) }.AsSpan());
         Assert.Single(list);
         Assert.Equal(PropName, list[0].Key);
         Assert.Equal(Value, list[0].Value);
@@ -129,9 +109,7 @@ public static class LogMethodHelperTests
         LogMethodHelper.ReturnHelper(list);
     }
 
-#if NET8_0_OR_GREATER
-    // Whilst LogMethodHelper.SkipEnabledCheckOptions is marked as NET6_0_OR_GREATER we don't build .NET 6.0,
-    // and as such the API is available in .NET 8 onwards.
+#if NET6_0_OR_GREATER
     [Fact]
     public static void Options()
     {

@@ -5,8 +5,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AmbientMetadata;
+using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Latency;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Telemetry.Latency.Internal;

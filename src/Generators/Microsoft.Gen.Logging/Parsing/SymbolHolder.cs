@@ -12,6 +12,7 @@ internal sealed record class SymbolHolder(
     Compilation Compilation,
     INamedTypeSymbol LoggerMessageAttribute,
     INamedTypeSymbol LogPropertiesAttribute,
+    INamedTypeSymbol TagProviderAttribute,
     INamedTypeSymbol? LogPropertyIgnoreAttribute,
     INamedTypeSymbol ITagCollectorSymbol,
     INamedTypeSymbol ILoggerSymbol,
@@ -20,4 +21,5 @@ internal sealed record class SymbolHolder(
     HashSet<INamedTypeSymbol> IgnorePropertiesSymbols,
     INamedTypeSymbol EnumerableSymbol,
     INamedTypeSymbol FormatProviderSymbol,
+    INamedTypeSymbol? SpanFormattableSymbol,
     INamedTypeSymbol? DataClassificationAttribute);

@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Telemetry.Testing.Logging.Test;
+namespace Microsoft.Extensions.Logging.Testing.Test;
 
 internal static partial class TestLog
 {

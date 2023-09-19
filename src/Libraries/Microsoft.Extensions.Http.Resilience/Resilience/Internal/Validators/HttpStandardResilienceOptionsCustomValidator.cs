@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Extensions.Options;
-using Polly.Retry;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal.Validators;
 
@@ -28,18 +27,6 @@ internal sealed class HttpStandardResilienceOptionsCustomValidator : IValidateOp
                 $"an attempt timeout strategy’s timeout interval, in order to be effective. " +
                 $"Sampling Duration: {options.CircuitBreakerOptions.SamplingDuration.TotalSeconds}s," +
                 $"Attempt Timeout: {options.AttemptTimeoutOptions.Timeout.TotalSeconds}s");
-        }
-
-        if (options.RetryOptions.RetryCount > 0)
-        {
-            TimeSpan retrySum = ValidationHelper.GetAggregatedDelay(options.RetryOptions);
-
-            if (retrySum > options.TotalRequestTimeoutOptions.Timeout)
-            {
-                builder.AddError($"The cumulative delay of the retry strategy cannot be larger than total request timeout policy interval. " +
-                $"Cumulative Delay: {retrySum.TotalSeconds}s," +
-                $"Total Request Timeout: {options.TotalRequestTimeoutOptions.Timeout.TotalSeconds}s");
-            }
         }
 
         return builder.Build();

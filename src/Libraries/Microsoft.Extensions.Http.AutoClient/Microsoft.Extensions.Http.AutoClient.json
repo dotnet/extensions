@@ -30,7 +30,11 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Http.AutoClient.AutoClientException.AutoClientException(string? message, string path, Microsoft.Extensions.Http.AutoClient.AutoClientHttpError? error = null);",
+          "Member": "Microsoft.Extensions.Http.AutoClient.AutoClientException.AutoClientException(string message, string path, Microsoft.Extensions.Http.AutoClient.AutoClientHttpError? error = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Http.AutoClient.AutoClientException.AutoClientException(string message, System.Exception innerException, string path, Microsoft.Extensions.Http.AutoClient.AutoClientHttpError? error = null);",
           "Stage": "Stable"
         }
       ],

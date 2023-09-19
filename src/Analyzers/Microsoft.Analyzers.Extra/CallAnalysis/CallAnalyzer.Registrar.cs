@@ -34,7 +34,7 @@ public partial class CallAnalyzer
         {
             if (!_state.Methods.TryGetValue(method, out var l))
             {
-                l = new();
+                l = [];
                 _state.Methods.Add(method, l);
             }
 
@@ -88,7 +88,7 @@ public partial class CallAnalyzer
         {
             if (!_state.Ctors.TryGetValue(ctor, out var l))
             {
-                l = new();
+                l = [];
                 _state.Ctors.Add(ctor, l);
             }
 
@@ -128,7 +128,7 @@ public partial class CallAnalyzer
         {
             if (!_state.Props.TryGetValue(prop, out var l))
             {
-                l = new();
+                l = [];
                 _state.Props.Add(prop, l);
             }
 
@@ -166,7 +166,7 @@ public partial class CallAnalyzer
         {
             if (!_state.Interfaces.TryGetValue(method.ContainingType, out var handlers))
             {
-                handlers = new();
+                handlers = [];
                 _state.Interfaces.Add(method.ContainingType, handlers);
             }
 
@@ -227,7 +227,7 @@ public partial class CallAnalyzer
                 {
                     if (!_state.ExceptionTypes.TryGetValue(type, out var l))
                     {
-                        l = new();
+                        l = [];
                         _state.ExceptionTypes.Add(type, l);
                     }
 

@@ -1,12 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Diagnostics.Latency.Internal;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Latency.Internal;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Telemetry.Latency.Test.Internal;
+namespace Microsoft.Extensions.Diagnostics.Latency.Test.Internal;
 
 public class LatencyContextTokenIssuerTest
 {

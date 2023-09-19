@@ -131,7 +131,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentTagCollector collector, System.Net.Http.HttpRequestMessage request, System.Net.Http.HttpResponseMessage? response, System.Exception? exception);",
+          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector collector, System.Net.Http.HttpRequestMessage request, System.Net.Http.HttpResponseMessage? response, System.Exception? exception);",
           "Stage": "Stable"
         }
       ]
@@ -187,7 +187,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RouteParameterDataClasses { get; }",
+          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RouteParameterDataClasses { get; set; }",
           "Stage": "Stable"
         }
       ]

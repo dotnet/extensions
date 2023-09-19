@@ -3,14 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Resilience.FaultInjection;
-using Microsoft.Extensions.Telemetry.Metering;
 
 namespace Microsoft.Extensions.Http.Resilience.FaultInjection.PerformanceTests;
 
@@ -36,7 +35,7 @@ public class FaultInjectionRequestBenchmarks
                 });
 
             services
-                .RegisterMetering()
+                .RegisterMetrics()
                 .AddHttpClientFaultInjection(action);
         }
 

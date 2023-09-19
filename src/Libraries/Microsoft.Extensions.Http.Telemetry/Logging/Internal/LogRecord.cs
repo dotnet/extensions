@@ -3,8 +3,8 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
 

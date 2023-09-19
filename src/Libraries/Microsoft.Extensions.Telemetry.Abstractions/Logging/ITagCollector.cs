@@ -6,13 +6,13 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Interface given to custom tag providers, enabling them to emit tags.
 /// </summary>
 /// <remarks>
-/// See <see cref="LogPropertiesAttribute(Type, string)"/> for details on how this interface is used.
+/// See <see cref="TagProviderAttribute"/> for details on how this interface is used.
 /// </remarks>
 public interface ITagCollector
 {

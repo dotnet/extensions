@@ -50,8 +50,22 @@ public class AutoClientException : Exception
     /// <param name="message">The exception message.</param>
     /// <param name="path">The path of the request.</param>
     /// <param name="error">The HTTP error details.</param>
-    public AutoClientException(string? message, string path, AutoClientHttpError? error = null)
+    public AutoClientException(string message, string path, AutoClientHttpError? error = null)
         : base(message)
+    {
+        Path = Throw.IfNull(path);
+        HttpError = error;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AutoClientException"/> class.
+    /// </summary>
+    /// <param name="message">The exception message.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception.</param>
+    /// <param name="path">The path of the request.</param>
+    /// <param name="error">The HTTP error details.</param>
+    public AutoClientException(string message, Exception innerException, string path, AutoClientHttpError? error = null)
+        : base(message, innerException)
     {
         Path = Throw.IfNull(path);
         HttpError = error;

@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.AmbientMetadata;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Latency;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.AspNetCore.Telemetry.Internal;
@@ -60,7 +60,10 @@ internal sealed class RequestLatencyTelemetryMiddleware : IMiddleware
             context.Response.OnStarting(ctx =>
             {
                 var httpContext = (HttpContext)ctx;
-                httpContext.Response.Headers.Append(TelemetryConstants.ServerApplicationNameHeader, _applicationName);
+
+                // Set server name header to the current one.
+                httpContext.Response.Headers[TelemetryConstants.ServerApplicationNameHeader] = _applicationName;
+
                 return Task.CompletedTask;
             }, context);
         }

@@ -7,7 +7,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Pools;
 
-namespace Microsoft.Extensions.Telemetry.Logging;
+namespace Microsoft.Extensions.Logging;
 
 #pragma warning disable CA1031
 
@@ -190,7 +190,7 @@ internal sealed partial class ExtendedLogger : ILogger
 
         // redact
         JustInTimeRedactor? jitRedactors = null;
-        for (int i = 0; i < msgState.NumClassifiedTags; i++)
+        for (int i = 0; i < msgState.ClassifiedTagsCount; i++)
         {
             ref var cp = ref msgState.ClassifiedTagArray[i];
             if (cp.Value != null)
