@@ -34,10 +34,12 @@ public class LoggerEnrichmentOptions
     /// <summary>
     /// Gets or sets a value indicating whether to consult debugging files (PDB files) when producing stack traces.
     /// </summary>
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
     /// <remarks>
     /// Reading available debugging files produces richer stack traces, but can cost a substantial amount of time
     /// to generate. As a result, this option should only be turned on in development scenarios, not for production use.
-    /// This defaults to <see langword="false"/>.
     /// </remarks>
     public bool UseFileInfoForStackTraces { get; set; }
 
