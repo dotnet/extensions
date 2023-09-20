@@ -2,16 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Diagnostics.Logging;
+using Microsoft.AspNetCore.Diagnostics.RequestHeaders.Test.Internals;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Telemetry.RequestHeaders.Test.Internals;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Telemetry.RequestHeaders.Test;
+namespace Microsoft.AspNetCore.Diagnostics.RequestHeaders.Test;
 
 public class RequestHeadersEnricherTests
 {
