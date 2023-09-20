@@ -1,32 +1,28 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.Metrics;
 
 namespace Microsoft.AspNetCore.HeaderParsing;
 
-internal sealed class HeaderParsingMetrics : IDisposable
+internal sealed class HeaderParsingMetrics
 {
     private const string MeterName = "Microsoft.AspNetCore.HeaderParsing";
 
-    private readonly Meter _meter;
-    private readonly ParsingErrorCounter _parsingErrorCounter;
-    private readonly CacheAccessCounter _cacheAccessCounter;
-
     public HeaderParsingMetrics(IMeterFactory meterFactory)
     {
-        _meter = meterFactory.Create(MeterName);
-        _parsingErrorCounter = Metric.CreateParsingErrorCounter(_meter);
-        _cacheAccessCounter = Metric.CreateCacheAccessCounter(_meter);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        // We don't dispose the meter because IMeterFactory handles that
+        // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
+        // Related documentation: https://github.com/dotnet/docs/pull/37170
+        var meter = meterFactory.Create(MeterName);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+        ParsingErrorCounter = Metric.CreateParsingErrorCounter(meter);
+        CacheAccessCounter = Metric.CreateCacheAccessCounter(meter);
     }
 
-    public void CacheAccessed(string headerName, string type)
-        => _cacheAccessCounter.Add(1, headerName, type);
+    public ParsingErrorCounter ParsingErrorCounter { get; }
 
-    public void ParsingErrorOccurred(string headerName, string? kind)
-        => _parsingErrorCounter.Add(1, headerName, kind);
-
-    public void Dispose()
-        => _meter.Dispose();
+    public CacheAccessCounter CacheAccessCounter { get; }
 }

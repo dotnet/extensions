@@ -143,7 +143,7 @@ public sealed partial class HeaderParsingFeature
                         var o = header.GetCachedValue(values);
                         if (o != null)
                         {
-                            feature._metrics.CacheAccessed(header.Name, "Hit");
+                            feature._metrics.CacheAccessCounter.Add(1, header.Name, "Hit");
                             var b = (Box<T>)o;
                             b.CopyTo(this);
                             value = _value;
@@ -151,7 +151,7 @@ public sealed partial class HeaderParsingFeature
                             return result == ParsingResult.Success;
                         }
 
-                        feature._metrics.CacheAccessed(header.Name, "Miss");
+                        feature._metrics.CacheAccessCounter.Add(1, header.Name, "Miss");
                     }
 
                     if (header.TryParse(values, out _value, out var error))
@@ -169,7 +169,7 @@ public sealed partial class HeaderParsingFeature
                     {
                         _state = BoxState.Error;
                         feature.LogParsingError(header.Name, error!);
-                        feature._metrics.ParsingErrorOccurred(header.Name, error);
+                        feature._metrics.ParsingErrorCounter.Add(1, header.Name, error);
                     }
                 }
                 else if (header.HasDefaultValue)
