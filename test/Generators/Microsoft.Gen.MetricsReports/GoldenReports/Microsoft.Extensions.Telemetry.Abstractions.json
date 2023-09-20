@@ -146,23 +146,23 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions",
+      "Type": "static class Microsoft.Extensions.Diagnostics.Enrichment.EnricherExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.EnricherExtensions.AddLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher enricher);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.EnricherExtensions.AddLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Diagnostics.Enrichment.ILogEnricher enricher);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddMetricEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.EnricherExtensions.AddMetricEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.Enrichment.EnricherExtensions.AddMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher enricher);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.EnricherExtensions.AddMetricEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Diagnostics.Enrichment.IMetricEnricher enricher);",
           "Stage": "Stable"
         }
       ]
@@ -297,23 +297,23 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag",
+      "Type": "interface Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(string key, object value);",
+          "Member": "void Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag.Add(string key, object value);",
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(string key, string value);",
+          "Member": "void Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag.Add(string key, string value);",
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string, object>> properties);",
+          "Member": "void Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string, object>> properties);",
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string, string>> properties);",
+          "Member": "void Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag.Add(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string, string>> properties);",
           "Stage": "Stable"
         }
       ]
@@ -389,11 +389,11 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher",
+      "Type": "interface Microsoft.Extensions.Diagnostics.Enrichment.ILogEnricher",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.ILogEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag bag);",
+          "Member": "void Microsoft.Extensions.Diagnostics.Enrichment.ILogEnricher.Enrich(Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag bag);",
           "Stage": "Stable"
         }
       ]
@@ -409,11 +409,11 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher",
+      "Type": "interface Microsoft.Extensions.Diagnostics.Enrichment.IMetricEnricher",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.IMetricEnricher.Enrich(Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag bag);",
+          "Member": "void Microsoft.Extensions.Diagnostics.Enrichment.IMetricEnricher.Enrich(Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag bag);",
           "Stage": "Stable"
         }
       ]
@@ -435,15 +435,15 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher",
+      "Type": "interface Microsoft.Extensions.Diagnostics.Enrichment.ITraceEnricher",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher.Enrich(System.Diagnostics.Activity activity);",
+          "Member": "void Microsoft.Extensions.Diagnostics.Enrichment.ITraceEnricher.Enrich(System.Diagnostics.Activity activity);",
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Telemetry.Enrichment.ITraceEnricher.EnrichOnActivityStart(System.Diagnostics.Activity activity);",
+          "Member": "void Microsoft.Extensions.Diagnostics.Enrichment.ITraceEnricher.EnrichOnActivityStart(System.Diagnostics.Activity activity);",
           "Stage": "Stable"
         }
       ]
@@ -587,7 +587,7 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Logging.LogMethodHelper : System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Logging.ITagCollector, Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag, Microsoft.Extensions.ObjectPool.IResettable",
+      "Type": "sealed class Microsoft.Extensions.Logging.LogMethodHelper : System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Logging.ITagCollector, Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag, Microsoft.Extensions.ObjectPool.IResettable",
       "Stage": "Stable",
       "Methods": [
         {

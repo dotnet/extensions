@@ -60,6 +60,27 @@ public class QueryTests : IDisposable
     }
 
     [Fact]
+    public async Task QueryIsEscaped()
+    {
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users?paramQuery=http%3A%2F%2Fmicrosoft.com"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
+
+        var response = await _sut.GetUsers("http://microsoft.com");
+
+        Assert.Equal("Success!", response);
+    }
+
+    [Fact]
     public async Task QueryFromParameterCustom()
     {
         _handlerMock

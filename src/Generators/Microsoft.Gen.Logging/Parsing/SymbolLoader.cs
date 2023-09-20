@@ -18,7 +18,7 @@ internal static class SymbolLoader
     internal const string LogLevelType = "Microsoft.Extensions.Logging.LogLevel";
     internal const string ExceptionType = "System.Exception";
     internal const string DataClassificationAttribute = "Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute";
-    internal const string IEnrichmentPropertyBag = "Microsoft.Extensions.Telemetry.Enrichment.IEnrichmentPropertyBag";
+    internal const string IEnrichmentPropertyBag = "Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag";
     internal const string IFormatProviderType = "System.IFormatProvider";
     internal const string ISpanFormattableType = "System.ISpanFormattable";
 
