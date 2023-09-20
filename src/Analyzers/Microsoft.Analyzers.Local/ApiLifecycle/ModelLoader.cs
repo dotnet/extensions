@@ -4,15 +4,25 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.LocalAnalyzers.ApiLifecycle.Model;
-using Microsoft.Extensions.LocalAnalyzers.Json;
 
 namespace Microsoft.Extensions.LocalAnalyzers.ApiLifecycle;
 
 internal static class ModelLoader
 {
+    private static JsonSerializerOptions _serializationOptions = new()
+    {
+        Converters =
+        {
+            new TypeDefConverter(),
+            new JsonStringEnumConverter<Stage>()
+        }
+    };
+
 #pragma warning disable RS1012 // Start action has no registered actions
     internal static bool TryLoadAssemblyModel(CompilationStartAnalysisContext context, out Assembly? assembly)
 #pragma warning restore RS1012 // Start action has no registered actions
@@ -61,11 +71,9 @@ internal static class ModelLoader
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
-            using var reader = new StringReader(publicInterface);
-            var value = JsonReader.Parse(reader);
+            assembly = JsonSerializer.Deserialize<Assembly>(publicInterface!, _serializationOptions);
 
-            assembly = new Assembly(value.AsJsonObject!);
-            if (!assembly.Name.Contains(assemblyName))
+            if (assembly == null || !assembly.Name.Contains(assemblyName))
             {
                 return false;
             }
