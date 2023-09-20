@@ -1,6 +1,6 @@
 // Assembly 'Microsoft.AspNetCore.Telemetry.Middleware'
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 /// <summary>
 /// Strategy to decide how request path is logged.

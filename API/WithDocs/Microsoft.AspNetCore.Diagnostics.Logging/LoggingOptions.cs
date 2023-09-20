@@ -9,7 +9,7 @@ using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Shared.Data.Validation;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 /// <summary>
 /// Top-level model for formatting incoming HTTP requests and their corresponding responses.
@@ -43,11 +43,11 @@ public class LoggingOptions
     /// Gets or sets a strategy how request path should be logged.
     /// </summary>
     /// <value>
-    /// The default value is <see cref="F:Microsoft.AspNetCore.Telemetry.IncomingPathLoggingMode.Formatted" />.
+    /// The default value is <see cref="F:Microsoft.AspNetCore.Diagnostics.Logging.IncomingPathLoggingMode.Formatted" />.
     /// </value>
     /// <remarks>
     /// Make sure you add redactors to ensure that sensitive information doesn't find its way into your log records.
-    /// This option only applies when the <see cref="P:Microsoft.AspNetCore.Telemetry.LoggingOptions.RequestPathParameterRedactionMode" />
+    /// This option only applies when the <see cref="P:Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.RequestPathParameterRedactionMode" />
     /// option is not set to <see cref="F:Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.None" />.
     /// </remarks>
     public IncomingPathLoggingMode RequestPathLoggingMode { get; set; }

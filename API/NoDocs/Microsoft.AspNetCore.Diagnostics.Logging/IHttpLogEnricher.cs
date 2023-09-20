@@ -3,7 +3,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 public interface IHttpLogEnricher
 {

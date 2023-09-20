@@ -3,7 +3,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Latency;
 
 /// <summary>
 /// Extensions used to register Request Checkpoint feature.

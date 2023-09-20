@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 public static class RequestHeadersEnricherExtensions
 {

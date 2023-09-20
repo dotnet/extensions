@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 /// <summary>
 /// Constants used for incoming HTTP request logging tags.

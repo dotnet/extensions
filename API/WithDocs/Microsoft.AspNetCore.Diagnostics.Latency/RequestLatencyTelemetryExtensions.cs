@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Latency;
 
 /// <summary>
 /// Extensions for registering the request latency telemetry middleware.
@@ -25,7 +25,7 @@ public static class RequestLatencyTelemetryExtensions
     /// Adds request latency telemetry middleware to the specified <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> to add to.</param>
-    /// <param name="configure">Configuration of <see cref="T:Microsoft.AspNetCore.Telemetry.RequestLatencyTelemetryOptions" />.</param>
+    /// <param name="configure">Configuration of <see cref="T:Microsoft.AspNetCore.Diagnostics.Latency.RequestLatencyTelemetryOptions" />.</param>
     /// <returns>Provided service collection with request latency telemetry middleware added.</returns>
     /// <exception cref="T:System.ArgumentNullException">Either <paramref name="services" /> or <paramref name="configure" /> is <see langword="null" />.</exception>
     public static IServiceCollection AddRequestLatencyTelemetry(this IServiceCollection services, Action<RequestLatencyTelemetryOptions> configure);
@@ -34,7 +34,7 @@ public static class RequestLatencyTelemetryExtensions
     /// Adds request latency telemetry middleware to the specified <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" />.
     /// </summary>
     /// <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> to add to.</param>
-    /// <param name="section">Configuration of <see cref="T:Microsoft.AspNetCore.Telemetry.RequestLatencyTelemetryOptions" />.</param>
+    /// <param name="section">Configuration of <see cref="T:Microsoft.AspNetCore.Diagnostics.Latency.RequestLatencyTelemetryOptions" />.</param>
     /// <returns>Provided service collection with request latency telemetry middleware added.</returns>
     /// <exception cref="T:System.ArgumentNullException">Either <paramref name="services" /> or <paramref name="section" /> is <see langword="null" />.</exception>
     public static IServiceCollection AddRequestLatencyTelemetry(this IServiceCollection services, IConfigurationSection section);

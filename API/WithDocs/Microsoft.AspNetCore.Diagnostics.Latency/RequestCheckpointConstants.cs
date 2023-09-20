@@ -1,6 +1,6 @@
 // Assembly 'Microsoft.AspNetCore.Telemetry.Middleware'
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Latency;
 
 /// <summary>
 /// Project constants.
@@ -18,7 +18,7 @@ public static class RequestCheckpointConstants
     public const string ElapsedTillFinished = "eltltf";
 
     /// <summary>
-    /// The time elapsed before hitting the <see cref="T:Microsoft.AspNetCore.Telemetry.CapturePipelineExitMiddleware" /> middleware.
+    /// The time elapsed before hitting the <see cref="T:Microsoft.AspNetCore.Diagnostics.Latency.CapturePipelineExitMiddleware" /> middleware.
     /// </summary>
     public const string ElapsedTillPipelineExitMiddleware = "eltexm";
 

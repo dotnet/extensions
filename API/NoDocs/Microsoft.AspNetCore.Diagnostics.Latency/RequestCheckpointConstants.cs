@@ -1,6 +1,6 @@
 // Assembly 'Microsoft.AspNetCore.Telemetry.Middleware'
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Latency;
 
 public static class RequestCheckpointConstants
 {

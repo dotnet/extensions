@@ -9,7 +9,7 @@ using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Shared.Data.Validation;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 public class LoggingOptions
 {

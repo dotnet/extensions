@@ -4,7 +4,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Shared.Data.Validation;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Latency;
 
 public class RequestLatencyTelemetryOptions
 {
