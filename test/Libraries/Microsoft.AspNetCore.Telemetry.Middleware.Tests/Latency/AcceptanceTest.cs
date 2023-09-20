@@ -13,7 +13,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Telemetry.Latency.Test;
+namespace Microsoft.AspNetCore.Diagnostics.Latency.Test;
+
 public class AcceptanceTest
 {
     [Fact]

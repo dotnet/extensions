@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Options;
 using Moq;
 
-namespace Microsoft.AspNetCore.Telemetry.RequestHeaders.Test.Internals;
+namespace Microsoft.AspNetCore.Diagnostics.RequestHeaders.Test.Internals;
 
 internal static class TestExtensions
 {

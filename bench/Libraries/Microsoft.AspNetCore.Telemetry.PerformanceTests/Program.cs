@@ -6,7 +6,7 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
 
-namespace Microsoft.AspNetCore.Telemetry.Bench;
+namespace Microsoft.AspNetCore.Diagnostics.Bench;
 
 internal static class Program
 {

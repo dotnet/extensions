@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading;
-using Microsoft.AspNetCore.Telemetry.Internal;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Telemetry.Internal;
@@ -12,7 +11,7 @@ using Moq;
 using Xunit;
 using IOptionsFactory = Microsoft.Extensions.Options.Options;
 
-namespace Microsoft.AspNetCore.Telemetry.Http.Logging.Test;
+namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 
 public class LoggingMiddlewareTest
 {

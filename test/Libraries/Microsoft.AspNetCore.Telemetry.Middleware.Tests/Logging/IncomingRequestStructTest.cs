@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Telemetry.Http.Logging.Test;
+namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 
 public class IncomingRequestStructTest
 {

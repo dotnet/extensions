@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.AspNetCore.Telemetry</RootNamespace>
+    <RootNamespace>Microsoft.AspNetCore.Diagnostics</RootNamespace>
     <Description>Provides canonical implementations of telemetry abstractions which depend on the ASP.NET pipeline</Description>
     <PackageTags>$(PackageTags);aspnetcore</PackageTags>
     <Workstream>Telemetry</Workstream>
