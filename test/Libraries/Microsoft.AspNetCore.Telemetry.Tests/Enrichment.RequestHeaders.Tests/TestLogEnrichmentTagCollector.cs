@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 
-namespace Microsoft.AspNetCore.Telemetry.RequestHeaders.Test;
+namespace Microsoft.AspNetCore.Diagnostics.RequestHeaders.Test;
 
 public class TestLogEnrichmentTagCollector : IEnrichmentTagCollector
 {

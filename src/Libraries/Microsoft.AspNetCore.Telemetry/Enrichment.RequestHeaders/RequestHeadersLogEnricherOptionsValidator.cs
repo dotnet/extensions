@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 [OptionsValidator]
 internal sealed partial class RequestHeadersLogEnricherOptionsValidator : IValidateOptions<RequestHeadersLogEnricherOptions>

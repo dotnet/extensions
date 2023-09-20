@@ -10,7 +10,7 @@ using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 /// <summary>
 /// Enriches logs with Request headers information.

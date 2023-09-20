@@ -16,7 +16,7 @@ using Microsoft.Extensions.Telemetry;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Telemetry.Http.Logging.Test;
+namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 
 public class HttpLoggingServiceExtensionsTest
 {

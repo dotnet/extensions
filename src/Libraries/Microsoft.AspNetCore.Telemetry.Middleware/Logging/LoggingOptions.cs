@@ -5,12 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Diagnostics.Logging;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Shared.Data.Validation;
 using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.AspNetCore.Telemetry;
+namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 /// <summary>
 /// Top-level model for formatting incoming HTTP requests and their corresponding responses.
