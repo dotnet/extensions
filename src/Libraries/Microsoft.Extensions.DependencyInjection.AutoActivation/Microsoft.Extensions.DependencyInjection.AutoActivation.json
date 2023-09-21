@@ -7,47 +7,47 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.ActivateKeyedSingleton<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, object? serviceKey);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.ActivateKeyedSingleton(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Type serviceType, object? serviceKey);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.ActivateSingleton<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.ActivateSingleton(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Type serviceType);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.AddActivatedKeyedSingleton<TService, TImplementation>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, object? serviceKey, System.Func<System.IServiceProvider, object?, TImplementation> implementationFactory);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.AddActivatedKeyedSingleton<TService, TImplementation>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, object? serviceKey);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.AddActivatedKeyedSingleton<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, object? serviceKey, System.Func<System.IServiceProvider, object?, TService> implementationFactory);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.AddActivatedKeyedSingleton<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, object? serviceKey);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.AddActivatedKeyedSingleton(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Type serviceType, object? serviceKey);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.AddActivatedKeyedSingleton(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Type serviceType, object? serviceKey, System.Func<System.IServiceProvider, object?, object> implementationFactory);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.AddActivatedKeyedSingleton(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Type serviceType, object? serviceKey, System.Type implementationType);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.AddActivatedSingleton<TService, TImplementation>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Func<System.IServiceProvider, TImplementation> implementationFactory);",
@@ -79,27 +79,27 @@
         },
         {
           "Member": "static void Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.TryAddActivatedKeyedSingleton(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Type serviceType, object? serviceKey);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static void Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.TryAddActivatedKeyedSingleton(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Type serviceType, object? serviceKey, System.Type implementationType);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static void Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.TryAddActivatedKeyedSingleton(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Type serviceType, object? serviceKey, System.Func<System.IServiceProvider, object?, object> implementationFactory);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static void Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.TryAddActivatedKeyedSingleton<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, object? serviceKey);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static void Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.TryAddActivatedKeyedSingleton<TService, TImplementation>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, object? serviceKey);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static void Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.TryAddActivatedKeyedSingleton<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, object? serviceKey, System.Func<System.IServiceProvider, object?, TService> implementationFactory);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static void Microsoft.Extensions.DependencyInjection.AutoActivationExtensions.TryAddActivatedSingleton(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Type serviceType);",

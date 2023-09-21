@@ -8,7 +8,8 @@
 
   <PropertyGroup>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <InjectExperimentalAttributeOnLegacy>false</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
     <InjectDiagnosticAttributesOnLegacy>false</InjectDiagnosticAttributesOnLegacy>
     <InjectCallerAttributesOnLegacy>false</InjectCallerAttributesOnLegacy>

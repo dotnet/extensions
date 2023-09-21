@@ -3,9 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging;
@@ -16,7 +13,6 @@ namespace Microsoft.Extensions.Logging;
 /// <seealso cref="LoggerMessageAttribute"/>
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
 [Conditional("CODE_GENERATION_ATTRIBUTES")]
-[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 public sealed class TagProviderAttribute : Attribute
 {
     /// <summary>

@@ -74,34 +74,6 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Logging.LoggerMessageState : Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.IEnumerable, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Logging.ITagCollector",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.ClassifiedTag(string name, object? value, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.ClassifiedTag();",
-          "Stage": "Experimental"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.Classification { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "string Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.Name { get; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "object? Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.Value { get; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "sealed class Microsoft.Extensions.Diagnostics.Metrics.CounterAttribute : System.Attribute",
       "Stage": "Stable",
       "Methods": [
@@ -171,11 +143,11 @@
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.EnricherExtensions.AddStaticLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.EnricherExtensions.AddStaticLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Diagnostics.Enrichment.IStaticLogEnricher enricher);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -416,11 +388,11 @@
     },
     {
       "Type": "interface Microsoft.Extensions.Diagnostics.Enrichment.IStaticLogEnricher",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "void Microsoft.Extensions.Diagnostics.Enrichment.IStaticLogEnricher.Enrich(Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector collector);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -434,7 +406,7 @@
         },
         {
           "Member": "void Microsoft.Extensions.Logging.ITagCollector.Add(string tagName, object? tagValue, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -518,21 +490,113 @@
     },
     {
       "Type": "static class Microsoft.Extensions.Logging.LoggerMessageHelper",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "static string Microsoft.Extensions.Logging.LoggerMessageHelper.Stringify(System.Collections.IEnumerable? enumerable);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static string Microsoft.Extensions.Logging.LoggerMessageHelper.Stringify<TKey, TValue>(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>? enumerable);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "static Microsoft.Extensions.Logging.LoggerMessageState Microsoft.Extensions.Logging.LoggerMessageHelper.ThreadLocalState { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Logging.LoggerMessageState : Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector, System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object?>>, System.Collections.IEnumerable, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Logging.ITagCollector",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.LoggerMessageState.LoggerMessageState();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Logging.LoggerMessageState.AddClassifiedTag(string name, object? value, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Logging.LoggerMessageState.AddTag(string name, object? value);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Logging.LoggerMessageState.Clear();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Logging.LoggerMessageState.ReserveClassifiedTagSpace(int count);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Logging.LoggerMessageState.ReserveTagSpace(int count);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.Logging.LoggerMessageState.ToString();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag[] Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTagArray { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTagsCount { get; private set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.KeyValuePair<string, object?> Microsoft.Extensions.Logging.LoggerMessageState.this[int index] { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.KeyValuePair<string, object?>[] Microsoft.Extensions.Logging.LoggerMessageState.RedactedTagArray { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.KeyValuePair<string, object?>[] Microsoft.Extensions.Logging.LoggerMessageState.TagArray { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Logging.LoggerMessageState.TagNamePrefix { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Logging.LoggerMessageState.TagsCount { get; private set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "readonly struct Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.ClassifiedTag(string name, object? value, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.ClassifiedTag();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.Classification { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.Name { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.Value { get; }",
+          "Stage": "Stable"
         }
       ]
     },
@@ -550,7 +614,7 @@
         },
         {
           "Member": "void Microsoft.Extensions.Logging.LogMethodHelper.Add(string tagName, object? tagValue, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.Logging.LogMethodHelper Microsoft.Extensions.Logging.LogMethodHelper.GetHelper();",
@@ -786,25 +850,25 @@
     },
     {
       "Type": "sealed class Microsoft.Extensions.Logging.TagProviderAttribute : System.Attribute",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Logging.TagProviderAttribute.TagProviderAttribute(System.Type providerType, string providerMethod);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "bool Microsoft.Extensions.Logging.TagProviderAttribute.OmitReferenceName { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "string Microsoft.Extensions.Logging.TagProviderAttribute.ProviderMethod { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Type Microsoft.Extensions.Logging.TagProviderAttribute.ProviderType { get; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -838,7 +902,7 @@
       "Fields": [
         {
           "Member": "const string Microsoft.Extensions.Http.Telemetry.TelemetryConstants.ClientApplicationNameHeader",
-          "Stage": "Experimental",
+          "Stage": "Stable",
           "Value": "X-ClientApplication"
         },
         {
@@ -853,7 +917,7 @@
         },
         {
           "Member": "const string Microsoft.Extensions.Http.Telemetry.TelemetryConstants.ServerApplicationNameHeader",
-          "Stage": "Experimental",
+          "Stage": "Stable",
           "Value": "X-ServerApplication"
         },
         {

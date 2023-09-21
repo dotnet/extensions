@@ -4,14 +4,12 @@
 #if NET5_0_OR_GREATER
 using System.Collections.Generic;
 #endif
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Telemetry;
 using Microsoft.Extensions.Telemetry.Internal;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry;
@@ -26,7 +24,6 @@ public static class TelemetryExtensions
     /// </summary>
     /// <param name="request"><see cref="HttpWebRequest"/> object.</param>
     /// <param name="metadata">Metadata for the request.</param>
-    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static void SetRequestMetadata(this HttpWebRequest request, RequestMetadata metadata)
     {
         _ = Throw.IfNull(request);
@@ -59,7 +56,6 @@ public static class TelemetryExtensions
     /// </summary>
     /// <param name="request"><see cref="HttpWebRequest"/> object.</param>
     /// <returns>Request metadata.</returns>
-    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public static RequestMetadata? GetRequestMetadata(this HttpWebRequest request)
     {
         _ = Throw.IfNull(request);

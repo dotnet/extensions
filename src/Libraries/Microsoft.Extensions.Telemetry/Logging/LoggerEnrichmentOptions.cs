@@ -2,15 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Options for logging enrichment features.
 /// </summary>
-[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 public class LoggerEnrichmentOptions
 {
     private const int MaxDefinedStackTraceLength = 32768;
