@@ -32,7 +32,6 @@
 
     <!-- All the .NET TFMs we're testing against -->
     <TestNetCoreTargetFrameworks>$(NetCoreTargetFrameworks)</TestNetCoreTargetFrameworks>
-    <TestNetCoreTargetFrameworks Condition="'$(CustomTargetFrameworks)' == ''">$(TestNetCoreTargetFrameworks);net6.0</TestNetCoreTargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
