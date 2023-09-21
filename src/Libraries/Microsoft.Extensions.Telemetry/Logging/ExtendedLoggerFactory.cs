@@ -251,8 +251,14 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private LoggerConfig ComputeConfig(LoggerEnrichmentOptions? enrichmentOptions)
     {
         return enrichmentOptions == null
-            ? new(Array.Empty<KeyValuePair<string, object?>>(), Array.Empty<Action<IEnrichmentTagCollector>>(), false, false, 0, _redactorProvider)
-            : new(_staticTags, _enrichers, enrichmentOptions.CaptureStackTraces, enrichmentOptions.UseFileInfoForStackTraces, enrichmentOptions.MaxStackTraceLength, _redactorProvider);
+            ? new(Array.Empty<KeyValuePair<string, object?>>(), Array.Empty<Action<IEnrichmentTagCollector>>(), false, false, false, 0, _redactorProvider)
+            : new(_staticTags,
+                _enrichers,
+                enrichmentOptions.CaptureStackTraces,
+                enrichmentOptions.UseFileInfoForStackTraces,
+                enrichmentOptions.IncludeExceptionMessageInStackTraces,
+                enrichmentOptions.MaxStackTraceLength,
+                _redactorProvider);
     }
 
     private void UpdateStackTraceOptions(LoggerEnrichmentOptions enrichmentOptions) => Config = ComputeConfig(enrichmentOptions);
