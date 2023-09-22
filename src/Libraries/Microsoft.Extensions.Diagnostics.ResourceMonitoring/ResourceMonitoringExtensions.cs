@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
@@ -131,7 +130,7 @@ public static class ResourceMonitoringExtensions
 
         _ = builder.Services
             .AddActivatedSingleton<WindowsCounters>()
-            .RegisterMetrics();
+            .AddMetrics();
 
         _ = builder.Services
             .AddActivatedSingleton<TcpTableInfo>();
@@ -158,7 +157,7 @@ public static class ResourceMonitoringExtensions
         _ = Throw.IfNull(builder);
 
         builder.Services
-             .RegisterMetrics()
+             .AddMetrics()
              .TryAddActivatedSingleton<ISnapshotProvider, LinuxUtilizationProvider>();
 
         builder.Services.TryAddSingleton<IFileSystem, OSFileSystem>();

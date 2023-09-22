@@ -39,7 +39,7 @@ public sealed class HeaderParsingFeatureTests
     public void Parses_header()
     {
         using var meter = new Meter("Test");
-        using var metrics = GetMockedMetrics(meter);
+        var metrics = GetMockedMetrics(meter);
 
         var date = DateTimeOffset.Now.ToString("R", CultureInfo.InvariantCulture);
 
@@ -56,7 +56,7 @@ public sealed class HeaderParsingFeatureTests
     public void Parses_multiple_headers()
     {
         using var meter = new Meter("Test");
-        using var metrics = GetMockedMetrics(meter);
+        var metrics = GetMockedMetrics(meter);
 
         var currentDate = DateTimeOffset.Now.ToString("R", CultureInfo.InvariantCulture);
         var futureDate = DateTimeOffset.Now.AddHours(1).ToString("R", CultureInfo.InvariantCulture);
@@ -82,7 +82,7 @@ public sealed class HeaderParsingFeatureTests
     public void Parses_with_late_binding()
     {
         using var meter = new Meter("Test");
-        using var metrics = GetMockedMetrics(meter);
+        var metrics = GetMockedMetrics(meter);
         var date = DateTimeOffset.Now.ToString("R", CultureInfo.InvariantCulture);
 
         Context.Request.Headers["Date"] = date;
@@ -100,7 +100,7 @@ public sealed class HeaderParsingFeatureTests
     public void TryParse_returns_false_on_header_not_found()
     {
         using var meter = new Meter("Test");
-        using var metrics = GetMockedMetrics(meter);
+        var metrics = GetMockedMetrics(meter);
         var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
         var key = Registry.Register(CommonHeaders.Date);
 
@@ -113,7 +113,7 @@ public sealed class HeaderParsingFeatureTests
     public void TryParse_returns_default_on_header_not_found()
     {
         using var meter = new Meter("Test");
-        using var metrics = GetMockedMetrics(meter);
+        var metrics = GetMockedMetrics(meter);
 
         var date = DateTimeOffset.Now.ToString("R", CultureInfo.InvariantCulture);
         _options.Value.DefaultValues.Add("Date", date);
@@ -132,7 +132,7 @@ public sealed class HeaderParsingFeatureTests
     public void TryParse_returns_false_on_error()
     {
         using var meter = new Meter("Test");
-        using var metrics = GetMockedMetrics(meter);
+        var metrics = GetMockedMetrics(meter);
         using var metricCollector = new MetricCollector<long>(meter, @"HeaderParsing.ParsingErrors");
         Context.Request.Headers["Date"] = "Not a date.";
 
@@ -155,7 +155,7 @@ public sealed class HeaderParsingFeatureTests
     public void Dispose_resets_state_and_returns_to_pool()
     {
         using var meter = new Meter("Test");
-        using var metrics = GetMockedMetrics(meter);
+        var metrics = GetMockedMetrics(meter);
 
         var pool = new Mock<ObjectPool<HeaderParsingFeature.PoolHelper>>(MockBehavior.Strict);
         var helper = new HeaderParsingFeature.PoolHelper(pool.Object, Registry, _logger, metrics);
@@ -187,7 +187,7 @@ public sealed class HeaderParsingFeatureTests
     public void CachingWorks()
     {
         using var meter = new Meter("Test");
-        using var metrics = GetMockedMetrics(meter);
+        var metrics = GetMockedMetrics(meter);
         using var metricCollector = new MetricCollector<long>(meter, @"HeaderParsing.CacheAccess");
 
         Context.Request.Headers[HeaderNames.CacheControl] = "max-age=604800";

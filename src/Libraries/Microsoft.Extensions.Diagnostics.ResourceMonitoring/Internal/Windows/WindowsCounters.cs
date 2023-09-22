@@ -1,21 +1,23 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Microsoft.Extensions.Diagnostics.Metrics;
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
-internal sealed class WindowsCounters : IDisposable
+internal sealed class WindowsCounters
 {
-    private readonly Meter<WindowsCounters> _meter;
-
-    public WindowsCounters(Meter<WindowsCounters> meter, TcpTableInfo tcpTableInfo)
+    public WindowsCounters(IMeterFactory meterFactory, TcpTableInfo tcpTableInfo)
     {
-        _meter = meter;
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        // We don't dispose the meter because IMeterFactory handles that
+        // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
+        // Related documentation: https://github.com/dotnet/docs/pull/37170
+        var meter = meterFactory.Create("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv4_tcp_connection_closed_count",
             () =>
             {
@@ -23,7 +25,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.ClosedCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv4_tcp_connection_listen_count",
             () =>
             {
@@ -31,7 +33,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.ListenCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv4_tcp_connection_syn_sent_count",
             () =>
             {
@@ -39,7 +41,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.SynSentCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv4_tcp_connection_syn_received_count",
             () =>
             {
@@ -47,7 +49,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.SynRcvdCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv4_tcp_connection_established_count",
             () =>
             {
@@ -55,7 +57,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.EstabCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv4_tcp_connection_fin_wait_1_count",
             () =>
             {
@@ -63,7 +65,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.FinWait1Count;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv4_tcp_connection_fin_wait_2_count",
             () =>
             {
@@ -71,7 +73,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.FinWait2Count;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv4_tcp_connection_close_wait_count",
             () =>
             {
@@ -79,7 +81,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.CloseWaitCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv4_tcp_connection_closing_count",
             () =>
             {
@@ -87,7 +89,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.ClosingCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv4_tcp_connection_last_ack_count",
             () =>
             {
@@ -95,7 +97,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.LastAckCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv4_tcp_connection_time_wait_count",
             () =>
             {
@@ -103,7 +105,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.TimeWaitCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv4_tcp_connection_delete_tcb_count",
             () =>
             {
@@ -111,7 +113,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.DeleteTcbCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv6_tcp_connection_closed_count",
             () =>
             {
@@ -119,7 +121,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.ClosedCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv6_tcp_connection_listen_count",
             () =>
             {
@@ -127,7 +129,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.ListenCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv6_tcp_connection_syn_sent_count",
             () =>
             {
@@ -135,7 +137,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.SynSentCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv6_tcp_connection_syn_received_count",
             () =>
             {
@@ -143,7 +145,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.SynRcvdCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv6_tcp_connection_established_count",
             () =>
             {
@@ -151,7 +153,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.EstabCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv6_tcp_connection_fin_wait_1_count",
             () =>
             {
@@ -159,7 +161,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.FinWait1Count;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv6_tcp_connection_fin_wait_2_count",
             () =>
             {
@@ -167,7 +169,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.FinWait2Count;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv6_tcp_connection_close_wait_count",
             () =>
             {
@@ -175,7 +177,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.CloseWaitCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv6_tcp_connection_closing_count",
             () =>
             {
@@ -183,7 +185,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.ClosingCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv6_tcp_connection_last_ack_count",
             () =>
             {
@@ -191,7 +193,7 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.LastAckCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv6_tcp_connection_time_wait_count",
             () =>
             {
@@ -199,17 +201,12 @@ internal sealed class WindowsCounters : IDisposable
                 return snapshot.TimeWaitCount;
             });
 
-        _ = _meter.CreateObservableGauge(
+        _ = meter.CreateObservableGauge(
             "ipv6_tcp_connection_delete_tcb_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
                 return snapshot.DeleteTcbCount;
             });
-    }
-
-    public void Dispose()
-    {
-        _meter.Dispose();
     }
 }
