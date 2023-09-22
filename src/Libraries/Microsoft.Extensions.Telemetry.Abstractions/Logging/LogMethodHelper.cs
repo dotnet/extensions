@@ -5,11 +5,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
@@ -37,7 +35,6 @@ public sealed class LogMethodHelper : List<KeyValuePair<string, object?>>, ITagC
     }
 
     /// <inheritdoc/>
-    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public void Add(string tagName, object? tagValue, DataClassification classification) => Add(tagName, tagValue);
 
     /// <summary>

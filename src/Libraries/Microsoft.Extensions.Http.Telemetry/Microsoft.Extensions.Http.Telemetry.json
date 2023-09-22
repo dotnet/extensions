@@ -176,7 +176,7 @@
         },
         {
           "Member": "Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestPathParameterRedactionMode { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.ResponseBodyContentTypes { get; set; }",
