@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 using Microsoft.TestUtilities;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
@@ -19,8 +19,12 @@ public sealed class LinuxCountersTest
     public void LinuxCounters_Registers_Instruments()
     {
         var meterName = Guid.NewGuid().ToString();
-        var options = Microsoft.Extensions.Options.Options.Create<ResourceMonitoringOptions>(new());
-        using var meter = new Meter<LinuxUtilizationProvider>();
+        var options = Options.Options.Create<ResourceMonitoringOptions>(new());
+        using var meter = new Meter(nameof(LinuxCounters_Registers_Instruments));
+        var meterFactoryMock = new Mock<IMeterFactory>();
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+            .Returns(meter);
+
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
             { new FileInfo("/sys/fs/cgroup/memory/memory.limit_in_bytes"), "9223372036854771712" },
@@ -33,8 +37,9 @@ public sealed class LinuxCountersTest
             { new FileInfo("/sys/fs/cgroup/memory/memory.stat"), "total_inactive_file 0"},
             { new FileInfo("/sys/fs/cgroup/memory/memory.usage_in_bytes"), "524288"},
         });
+
         var parser = new LinuxUtilizationParser(fileSystem: fileSystem, new FakeUserHz(100));
-        var provider = new LinuxUtilizationProvider(options, parser, meter, TimeProvider.System);
+        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, TimeProvider.System);
 
         using var listener = new MeterListener
         {

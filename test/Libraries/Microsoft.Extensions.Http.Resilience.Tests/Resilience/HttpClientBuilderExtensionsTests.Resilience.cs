@@ -12,7 +12,6 @@ using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
@@ -134,7 +133,8 @@ public sealed partial class HttpClientBuilderExtensionsTests
         IHttpClientBuilder? builder = services.AddHttpClient("client");
         builder.AddResilienceHandler("test", ConfigureBuilder);
 
-        var registryOptions = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<ResiliencePipelineRegistryOptions<HttpKey>>>().Value;
+        using var serviceProvider = builder.Services.BuildServiceProvider();
+        var registryOptions = serviceProvider.GetRequiredService<IOptions<ResiliencePipelineRegistryOptions<HttpKey>>>().Value;
         registryOptions.BuilderComparer.Equals(new HttpKey("A", "1"), new HttpKey("A", "2")).Should().BeTrue();
         registryOptions.BuilderComparer.Equals(new HttpKey("A", "1"), new HttpKey("B", "1")).Should().BeFalse();
 
@@ -159,7 +159,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     {
         // arrange
         var resilienceProvider = new Mock<ResiliencePipelineProvider<HttpKey>>(MockBehavior.Strict);
-        var services = new ServiceCollection().AddLogging().RegisterMetrics().AddFakeRedaction();
+        var services = new ServiceCollection().AddLogging().AddMetrics().AddFakeRedaction();
         services.AddSingleton(resilienceProvider.Object);
         var builder = services.AddHttpClient("client");
         var pipelineBuilder = builder.AddResilienceHandler("dummy", ConfigureBuilder);
@@ -171,7 +171,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
         builder.AddHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.OK));
 
-        var provider = services.BuildServiceProvider();
+        using var provider = services.BuildServiceProvider();
         if (bySelector)
         {
             resilienceProvider
@@ -198,7 +198,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     public async Task AddResilienceHandlerBySelector_EnsureResiliencePipelineProviderCalled()
     {
         // arrange
-        var services = new ServiceCollection().AddLogging().RegisterMetrics();
+        var services = new ServiceCollection().AddLogging().AddMetrics();
         var providerMock = new Mock<ResiliencePipelineProvider<HttpKey>>(MockBehavior.Strict);
 
         services.AddSingleton(providerMock.Object);
@@ -214,7 +214,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
             .Returns(ResiliencePipeline<HttpResponseMessage>.Empty)
             .Verifiable();
 
-        var provider = services.BuildServiceProvider();
+        using var provider = services.BuildServiceProvider();
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
         var pipelineProvider = provider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
 
@@ -229,12 +229,13 @@ public sealed partial class HttpClientBuilderExtensionsTests
     public void AddResilienceHandler_AuthoritySelectorAndNotConfiguredRedaction_EnsureValidated()
     {
         // arrange
-        var clientBuilder = new ServiceCollection().AddLogging().RegisterMetrics().AddRedaction()
+        var clientBuilder = new ServiceCollection().AddLogging().AddMetrics().AddRedaction()
             .AddHttpClient("my-client")
             .AddResilienceHandler("my-pipeline", ConfigureBuilder)
             .SelectPipelineByAuthority(FakeClassifications.PrivateData);
 
-        var factory = clientBuilder.Services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>();
+        using var serviceProvider = clientBuilder.Services.BuildServiceProvider();
+        var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
 
         var error = Assert.Throws<InvalidOperationException>(() => factory.CreateClient("my-client"));
         Assert.Equal("The redacted pipeline key is an empty string and cannot be used for the pipeline selection. Is redaction correctly configured?", error.Message);
@@ -244,12 +245,13 @@ public sealed partial class HttpClientBuilderExtensionsTests
     public void AddResilienceHandler_AuthorityByCustomSelector_NotValidated()
     {
         // arrange
-        var clientBuilder = new ServiceCollection().AddLogging().RegisterMetrics().AddRedaction()
+        var clientBuilder = new ServiceCollection().AddLogging().AddMetrics().AddRedaction()
             .AddHttpClient("my-client")
             .AddResilienceHandler("my-pipeline", ConfigureBuilder)
             .SelectPipelineBy(_ => _ => string.Empty);
 
-        var factory = clientBuilder.Services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>();
+        using var serviceProvider = clientBuilder.Services.BuildServiceProvider();
+        var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
 
         Assert.NotNull(factory.CreateClient("my-client"));
     }

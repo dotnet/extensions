@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
 using Polly;
 using Xunit;
@@ -28,7 +27,6 @@ public class FaultInjectionExtensionsTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddFaultInjection();
 
         using var serviceProvider = services.BuildServiceProvider();
@@ -56,7 +54,6 @@ public class FaultInjectionExtensionsTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddFaultInjection(_configurationWithPolicyOptions.GetSection("ChaosPolicyConfigurations"));
 
         using var serviceProvider = services.BuildServiceProvider();
@@ -101,7 +98,6 @@ public class FaultInjectionExtensionsTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddFaultInjection(builder =>
                 builder
                     .Configure(_configurationWithPolicyOptions.GetSection("ChaosPolicyConfigurations"))

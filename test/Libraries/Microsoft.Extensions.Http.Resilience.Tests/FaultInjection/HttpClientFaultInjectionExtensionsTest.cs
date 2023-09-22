@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience.FaultInjection;
 using Xunit;
@@ -32,7 +31,6 @@ public class HttpClientFaultInjectionExtensionsTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection();
 
         using var serviceProvider = services.BuildServiceProvider();
@@ -60,7 +58,6 @@ public class HttpClientFaultInjectionExtensionsTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection(_configurationWithPolicyOptions.GetSection("ChaosPolicyConfigurations"));
 
         using var serviceProvider = services.BuildServiceProvider();
@@ -104,7 +101,6 @@ public class HttpClientFaultInjectionExtensionsTest
                 builder.Configure(_configurationWithPolicyOptions.GetSection("ChaosPolicyConfigurations"));
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
 
         using var serviceProvider = services.BuildServiceProvider();
@@ -217,22 +213,20 @@ public class HttpClientFaultInjectionExtensionsTest
         }
     }
 
-    private static System.Net.Http.HttpClient SetupHttpClientWithFaultInjection(Action<HttpFaultInjectionOptionsBuilder> configure)
+    private static HttpClient SetupHttpClientWithFaultInjection(Action<HttpFaultInjectionOptionsBuilder> configure)
     {
         var services = new ServiceCollection();
         var httpClientIdentifier = "HttpClientClass";
 
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection(configure);
         services
             .AddHttpClient<HttpClientClass>()
             .AddHttpMessageHandler(() => new TestMessageHandler());
 
-        var clientFactory = services
-            .BuildServiceProvider()
-            .GetRequiredService<IHttpClientFactory>();
+        using var serviceProvider = services.BuildServiceProvider();
+        var clientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
         return clientFactory.CreateClient(httpClientIdentifier);
     }
 }

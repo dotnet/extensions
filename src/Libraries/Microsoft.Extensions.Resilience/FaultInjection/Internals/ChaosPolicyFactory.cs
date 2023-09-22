@@ -5,8 +5,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Resilience.FaultInjection.Internals;
 using Polly;
 using Polly.Contrib.Simmy;
 using Polly.Contrib.Simmy.Latency;
@@ -28,7 +28,7 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
     private readonly Task<double> _noInjectionRate = Task.FromResult<double>(0);
 
     private readonly ILogger<IChaosPolicyFactory> _logger;
-    private readonly FaultInjectionMetricCounter _counter;
+    private readonly FaultInjectionMetrics _metrics;
     private readonly IFaultInjectionOptionsProvider _optionsProvider;
     private readonly IExceptionRegistry _exceptionRegistry;
     private readonly ICustomResultRegistry _customResultRegistry;
@@ -46,7 +46,7 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
     /// Initializes a new instance of the <see cref="ChaosPolicyFactory"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
-    /// <param name="meter">The meter.</param>
+    /// <param name="metrics">The metrics.</param>
     /// <param name="optionsProvider">The provider of <see cref="FaultInjectionOptions"/>.</param>
     /// <param name="exceptionRegistry">
     /// The registry that contains registered exception instances for fault-injection.
@@ -55,11 +55,11 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
     /// The registry that contains registered custom result object instances for fault-injection.
     /// </param>
     [ExcludeFromCodeCoverage]
-    public ChaosPolicyFactory(ILogger<IChaosPolicyFactory> logger, Meter<IChaosPolicyFactory> meter,
+    public ChaosPolicyFactory(ILogger<IChaosPolicyFactory> logger, FaultInjectionMetrics metrics,
         IFaultInjectionOptionsProvider optionsProvider, IExceptionRegistry exceptionRegistry, ICustomResultRegistry customResultRegistry)
     {
         _logger = logger;
-        _counter = Metric.CreateFaultInjectionMetricCounter(meter);
+        _metrics = metrics;
         _optionsProvider = optionsProvider;
         _exceptionRegistry = exceptionRegistry;
         _customResultRegistry = customResultRegistry;
@@ -189,7 +189,7 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
         var latency = optionsGroup!.LatencyPolicyOptions!.Latency;
 
         FaultInjectionTelemetryHandler.LogAndMeter(
-            _logger, _counter, groupName,
+            _logger, _metrics.FaultInjectionCounter, groupName,
             FaultTypeLatency, latency.ToString());
 
         return Task.FromResult(latency);
@@ -213,7 +213,7 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
         var exception = _exceptionRegistry.GetException(optionsGroup!.ExceptionPolicyOptions!.ExceptionKey);
 
         FaultInjectionTelemetryHandler.LogAndMeter(
-            _logger, _counter, groupName,
+            _logger, _metrics.FaultInjectionCounter, groupName,
             FaultTypeException, exception.GetType().FullName!);
 
         return Task.FromResult(exception);
@@ -236,7 +236,7 @@ internal sealed class ChaosPolicyFactory : IChaosPolicyFactory
         var customResultObj = _customResultRegistry.GetCustomResult(optionsGroup!.CustomResultPolicyOptions!.CustomResultKey);
 
         FaultInjectionTelemetryHandler.LogAndMeter(
-            _logger, _counter, groupName,
+            _logger, _metrics.FaultInjectionCounter, groupName,
             FaultTypeCustomResult, optionsGroup!.CustomResultPolicyOptions!.CustomResultKey);
 
         if (customResultObj is TResult customResult)
