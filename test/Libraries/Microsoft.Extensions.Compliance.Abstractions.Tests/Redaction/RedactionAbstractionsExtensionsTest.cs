@@ -5,7 +5,7 @@ using System;
 using System.Text;
 using Xunit;
 
-namespace Microsoft.Extensions.Compliance.Redaction.Tests;
+namespace Microsoft.Extensions.Compliance.Redaction.Test;
 
 public static class RedactionAbstractionsExtensionsTest
 {

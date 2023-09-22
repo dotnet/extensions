@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.Probes.Tests</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.Probes.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.Diagnostics.Probes</Description>
   </PropertyGroup>
 
@@ -13,9 +13,6 @@
 
   <ItemGroup>
     <PackageReference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net462'" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
   </ItemGroup>
 </Project>
