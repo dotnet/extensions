@@ -6,7 +6,7 @@ using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using Moq;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
+namespace Microsoft.Extensions.Http.Logging.Test.Internal;
 
 internal static class HelperExtensions
 {

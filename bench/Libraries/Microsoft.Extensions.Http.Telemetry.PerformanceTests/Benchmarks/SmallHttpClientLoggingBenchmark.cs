@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Bench.Benchmarks;
+namespace Microsoft.Extensions.Http.Logging.Bench.Benchmarks;
 
 [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Bench")]
 public class SmallHttpClientLoggingBenchmark

@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Bench;
+namespace Microsoft.Extensions.Http.Logging.Bench;
 
 internal static class HttpClientFactory
 {

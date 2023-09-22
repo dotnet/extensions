@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Test;
+namespace Microsoft.Extensions.Http.Diagnostics.Test;
 
 public class AbstractionTests
 {

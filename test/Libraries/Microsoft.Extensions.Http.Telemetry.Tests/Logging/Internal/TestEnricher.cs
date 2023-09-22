@@ -7,7 +7,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
+namespace Microsoft.Extensions.Http.Logging.Test.Internal;
 
 internal class TestEnricher : IHttpClientLogEnricher
 {

@@ -7,13 +7,14 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AmbientMetadata;
-using Microsoft.Extensions.Http.Telemetry.Latency.Internal;
+using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Extensions.Http.Latency.Internal;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Latency.Test.Internal;
+namespace Microsoft.Extensions.Http.Latency.Test.Internal;
 
 public class HttpLatencyTelemetryHandlerTest
 {

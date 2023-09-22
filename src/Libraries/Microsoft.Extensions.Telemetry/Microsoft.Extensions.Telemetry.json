@@ -270,36 +270,6 @@
           "Stage": "Stable"
         }
       ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Telemetry.TelemetryExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.TelemetryExtensions.AddDownstreamDependencyMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata downstreamDependencyMetadata);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Telemetry.TelemetryExtensions.AddDownstreamDependencyMetadata<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Telemetry.TelemetryExtensions.GetRequestMetadata(this System.Net.HttpWebRequest request);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Telemetry.TelemetryExtensions.GetRequestMetadata(this System.Net.Http.HttpRequestMessage request);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static void Microsoft.Extensions.Telemetry.TelemetryExtensions.SetRequestMetadata(this System.Net.HttpWebRequest request, Microsoft.Extensions.Http.Telemetry.RequestMetadata metadata);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static void Microsoft.Extensions.Telemetry.TelemetryExtensions.SetRequestMetadata(this System.Net.Http.HttpRequestMessage request, Microsoft.Extensions.Http.Telemetry.RequestMetadata metadata);",
-          "Stage": "Stable"
-        }
-      ]
     }
   ]
 }

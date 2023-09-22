@@ -5,7 +5,7 @@ using System;
 using System.Net.Http;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging;
+namespace Microsoft.Extensions.Http.Logging;
 
 /// <summary>
 /// Interface for implementing log enrichers for HTTP client requests.

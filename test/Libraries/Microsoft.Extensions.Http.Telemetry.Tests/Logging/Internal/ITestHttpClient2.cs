@@ -4,7 +4,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
+namespace Microsoft.Extensions.Http.Logging.Test.Internal;
 
 internal interface ITestHttpClient2
 {

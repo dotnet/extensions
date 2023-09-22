@@ -9,12 +9,12 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Latency;
-using Microsoft.Extensions.Http.Telemetry.Latency.Internal;
+using Microsoft.Extensions.Http.Latency.Internal;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Latency.Test;
+namespace Microsoft.Extensions.Http.Latency.Test;
 
 public class HttpClientLatencyTelemetryExtensionsTest
 {

@@ -3,7 +3,7 @@
 
 using System.Net.Http;
 
-namespace Microsoft.Extensions.Http.Telemetry.Latency;
+namespace Microsoft.Extensions.Http.Latency;
 
 /// <summary>
 /// Options to configure the http client latency telemetry.

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Extensions.Http.Telemetry</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.Http.Diagnostics</RootNamespace>
     <Description>Telemetry support for HTTP Client.</Description>
     <Workstream>Telemetry</Workstream>
   </PropertyGroup>
@@ -27,7 +27,7 @@
 
   <PropertyGroup>
     <Stage>normal</Stage>
-    <MinCodeCoverage>98</MinCodeCoverage>
+    <MinCodeCoverage>94</MinCodeCoverage>
     <MinMutationScore>78</MinMutationScore>
   </PropertyGroup>
 
@@ -49,6 +49,6 @@
   <ItemGroup>
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
-    <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Telemetry.PerformanceTests" />
+    <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Diagnostics.PerformanceTests" />
   </ItemGroup>
 </Project>

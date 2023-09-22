@@ -18,7 +18,7 @@ using Microsoft.Shared.Pools;
 using System.Buffers;
 #endif
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+namespace Microsoft.Extensions.Http.Logging.Internal;
 
 internal sealed class HttpRequestBodyReader
 {

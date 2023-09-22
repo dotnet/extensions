@@ -7,13 +7,13 @@ using System.Net.Http;
 using FluentAssertions;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
-using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
-using Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
+using Microsoft.Extensions.Http.Logging.Internal;
+using Microsoft.Extensions.Http.Logging.Test.Internal;
 using Microsoft.Extensions.Telemetry.Internal;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
+namespace Microsoft.Extensions.Http.Logging.Test;
 
 public class HttpHeadersReaderTest
 {

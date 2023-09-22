@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Resilience\Microsoft.Extensions.Resilience.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Http.Telemetry\Microsoft.Extensions.Http.Telemetry.csproj" />
   </ItemGroup>
 
   <ItemGroup>

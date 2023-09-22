@@ -6,10 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AmbientMetadata;
 using Microsoft.Extensions.Diagnostics.Latency;
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Http.Telemetry.Latency.Internal;
+namespace Microsoft.Extensions.Http.Latency.Internal;
 
 /// <summary>
 /// This delegating handler creates a <see cref="ILatencyContext"/> for the request if it has not been created for the request.

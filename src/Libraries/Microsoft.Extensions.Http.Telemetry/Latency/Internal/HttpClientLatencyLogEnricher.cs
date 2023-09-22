@@ -8,11 +8,12 @@ using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Diagnostics.Latency;
-using Microsoft.Extensions.Http.Telemetry.Logging;
+using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Pools;
 
-namespace Microsoft.Extensions.Http.Telemetry.Latency.Internal;
+namespace Microsoft.Extensions.Http.Latency.Internal;
 
 /// <summary>
 /// The enricher appends checkpoints for the outgoing http request.

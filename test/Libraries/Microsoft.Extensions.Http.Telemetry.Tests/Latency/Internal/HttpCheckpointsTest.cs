@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Http.Telemetry.Latency.Internal;
+using Microsoft.Extensions.Http.Latency.Internal;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Latency.Test.Internal;
+namespace Microsoft.Extensions.Http.Latency.Test.Internal;
 
 public class HttpCheckpointsTest
 {

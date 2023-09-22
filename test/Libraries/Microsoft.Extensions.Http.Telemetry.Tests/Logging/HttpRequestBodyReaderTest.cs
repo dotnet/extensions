@@ -10,13 +10,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
-using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
-using Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
+using Microsoft.Extensions.Http.Logging.Internal;
+using Microsoft.Extensions.Http.Logging.Test.Internal;
 using Microsoft.Shared.Diagnostics;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
+namespace Microsoft.Extensions.Http.Logging.Test;
 
 public class HttpRequestBodyReaderTest
 {

@@ -5,7 +5,7 @@ using System;
 using System.Net.Http;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Bench;
+namespace Microsoft.Extensions.Http.Logging.Bench;
 
 internal sealed class BenchEnricher : IHttpClientLogEnricher
 {

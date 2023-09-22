@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Bench;
+namespace Microsoft.Extensions.Http.Logging.Bench;
 
 internal sealed class NoRemoteCallHandler : DelegatingHandler
 {

@@ -6,7 +6,7 @@ using System.Reflection;
 using FluentAssertions;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
+namespace Microsoft.Extensions.Http.Logging.Test;
 
 public class HttpClientLoggingTagNamesTest
 {

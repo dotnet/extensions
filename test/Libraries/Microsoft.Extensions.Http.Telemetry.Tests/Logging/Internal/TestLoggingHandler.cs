@@ -7,7 +7,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Http.Logging;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Test.Logging.Internal;
+namespace Microsoft.Extensions.Http.Diagnostics.Test.Logging.Internal;
 
 internal sealed class TestLoggingHandler : DelegatingHandler
 {

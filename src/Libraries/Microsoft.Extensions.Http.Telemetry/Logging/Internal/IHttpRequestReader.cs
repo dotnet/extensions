@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+namespace Microsoft.Extensions.Http.Logging.Internal;
 
 /// <summary>
 /// Methods to read <see cref="HttpResponseMessage"/> or <see cref="HttpRequestMessage"/>.

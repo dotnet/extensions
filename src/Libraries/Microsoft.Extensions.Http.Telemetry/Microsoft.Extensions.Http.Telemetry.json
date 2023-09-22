@@ -2,215 +2,245 @@
   "Name": "Microsoft.Extensions.Http.Telemetry, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryExtensions",
+      "Type": "static class Microsoft.Extensions.Http.Latency.HttpClientLatencyTelemetryExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryExtensions.AddDefaultHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Latency.HttpClientLatencyTelemetryExtensions.AddDefaultHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryExtensions.AddDefaultHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Latency.HttpClientLatencyTelemetryExtensions.AddDefaultHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryExtensions.AddDefaultHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryOptions> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Latency.HttpClientLatencyTelemetryExtensions.AddDefaultHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Http.Latency.HttpClientLatencyTelemetryOptions> configure);",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryOptions",
+      "Type": "class Microsoft.Extensions.Http.Latency.HttpClientLatencyTelemetryOptions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryOptions.HttpClientLatencyTelemetryOptions();",
+          "Member": "Microsoft.Extensions.Http.Latency.HttpClientLatencyTelemetryOptions.HttpClientLatencyTelemetryOptions();",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "bool Microsoft.Extensions.Http.Telemetry.Latency.HttpClientLatencyTelemetryOptions.EnableDetailedLatencyBreakdown { get; set; }",
+          "Member": "bool Microsoft.Extensions.Http.Latency.HttpClientLatencyTelemetryOptions.EnableDetailedLatencyBreakdown { get; set; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions",
+      "Type": "static class Microsoft.Extensions.Http.Logging.HttpClientLoggingExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddDefaultHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Logging.HttpClientLoggingExtensions.AddDefaultHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddDefaultHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Logging.HttpClientLoggingExtensions.AddDefaultHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddDefaultHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Logging.HttpClientLoggingExtensions.AddDefaultHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Http.Logging.LoggingOptions> configure);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddHttpClientLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Logging.HttpClientLoggingExtensions.AddHttpClientLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.Http.Logging.HttpClientLoggingExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.Http.Logging.HttpClientLoggingExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.Http.Logging.HttpClientLoggingExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.Extensions.Http.Logging.LoggingOptions> configure);",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames",
+      "Type": "static class Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames",
       "Stage": "Stable",
       "Fields": [
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.Duration",
+          "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.Duration",
           "Stage": "Stable",
           "Value": "duration"
         },
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.Host",
+          "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.Host",
           "Stage": "Stable",
           "Value": "httpHost"
         },
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.Method",
+          "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.Method",
           "Stage": "Stable",
           "Value": "httpMethod"
         },
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.Path",
+          "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.Path",
           "Stage": "Stable",
           "Value": "httpPath"
         },
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.RequestBody",
+          "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.RequestBody",
           "Stage": "Stable",
           "Value": "httpRequestBody"
         },
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.RequestHeaderPrefix",
+          "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.RequestHeaderPrefix",
           "Stage": "Stable",
           "Value": "httpRequestHeader_"
         },
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.ResponseBody",
+          "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.ResponseBody",
           "Stage": "Stable",
           "Value": "httpResponseBody"
         },
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.ResponseHeaderPrefix",
+          "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.ResponseHeaderPrefix",
           "Stage": "Stable",
           "Value": "httpResponseHeader_"
         },
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.StatusCode",
+          "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.StatusCode",
           "Stage": "Stable",
           "Value": "httpStatusCode"
         }
       ],
       "Properties": [
         {
-          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLoggingTagNames.TagNames { get; }",
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.TagNames { get; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher",
+      "Type": "interface Microsoft.Extensions.Http.Logging.IHttpClientLogEnricher",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Http.Telemetry.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector collector, System.Net.Http.HttpRequestMessage request, System.Net.Http.HttpResponseMessage? response, System.Exception? exception);",
+          "Member": "void Microsoft.Extensions.Http.Logging.IHttpClientLogEnricher.Enrich(Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector collector, System.Net.Http.HttpRequestMessage request, System.Net.Http.HttpResponseMessage? response, System.Exception? exception);",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions",
+      "Type": "class Microsoft.Extensions.Http.Logging.LoggingOptions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.LoggingOptions();",
+          "Member": "Microsoft.Extensions.Http.Logging.LoggingOptions.LoggingOptions();",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "System.TimeSpan Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.BodyReadTimeout { get; set; }",
+          "Member": "System.TimeSpan Microsoft.Extensions.Http.Logging.LoggingOptions.BodyReadTimeout { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "int Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.BodySizeLimit { get; set; }",
+          "Member": "int Microsoft.Extensions.Http.Logging.LoggingOptions.BodySizeLimit { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "bool Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.LogBody { get; set; }",
+          "Member": "bool Microsoft.Extensions.Http.Logging.LoggingOptions.LogBody { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "bool Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.LogRequestStart { get; set; }",
+          "Member": "bool Microsoft.Extensions.Http.Logging.LoggingOptions.LogRequestStart { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestBodyContentTypes { get; set; }",
+          "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Http.Logging.LoggingOptions.RequestBodyContentTypes { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestHeadersDataClasses { get; set; }",
+          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.Extensions.Http.Logging.LoggingOptions.RequestHeadersDataClasses { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestPathLoggingMode { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Logging.OutgoingPathLoggingMode Microsoft.Extensions.Http.Logging.LoggingOptions.RequestPathLoggingMode { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RequestPathParameterRedactionMode { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Logging.LoggingOptions.RequestPathParameterRedactionMode { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.ResponseBodyContentTypes { get; set; }",
+          "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Http.Logging.LoggingOptions.ResponseBodyContentTypes { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.ResponseHeadersDataClasses { get; set; }",
+          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.Extensions.Http.Logging.LoggingOptions.ResponseHeadersDataClasses { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.Extensions.Http.Telemetry.Logging.LoggingOptions.RouteParameterDataClasses { get; set; }",
+          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.Extensions.Http.Logging.LoggingOptions.RouteParameterDataClasses { get; set; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "enum Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode",
+      "Type": "enum Microsoft.Extensions.Http.Logging.OutgoingPathLoggingMode",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode.OutgoingPathLoggingMode();",
+          "Member": "Microsoft.Extensions.Http.Logging.OutgoingPathLoggingMode.OutgoingPathLoggingMode();",
           "Stage": "Stable"
         }
       ],
       "Fields": [
         {
-          "Member": "const Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode.Formatted",
+          "Member": "const Microsoft.Extensions.Http.Logging.OutgoingPathLoggingMode Microsoft.Extensions.Http.Logging.OutgoingPathLoggingMode.Formatted",
           "Stage": "Stable",
           "Value": "0"
         },
         {
-          "Member": "const Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode Microsoft.Extensions.Http.Telemetry.Logging.OutgoingPathLoggingMode.Structured",
+          "Member": "const Microsoft.Extensions.Http.Logging.OutgoingPathLoggingMode Microsoft.Extensions.Http.Logging.OutgoingPathLoggingMode.Structured",
           "Stage": "Stable",
           "Value": "1"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Http.Diagnostics.TelemetryExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Diagnostics.TelemetryExtensions.AddDownstreamDependencyMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Http.Diagnostics.IDownstreamDependencyMetadata downstreamDependencyMetadata);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Http.Diagnostics.TelemetryExtensions.AddDownstreamDependencyMetadata<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Diagnostics.RequestMetadata? Microsoft.Extensions.Http.Diagnostics.TelemetryExtensions.GetRequestMetadata(this System.Net.HttpWebRequest request);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Http.Diagnostics.RequestMetadata? Microsoft.Extensions.Http.Diagnostics.TelemetryExtensions.GetRequestMetadata(this System.Net.Http.HttpRequestMessage request);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.Http.Diagnostics.TelemetryExtensions.SetRequestMetadata(this System.Net.HttpWebRequest request, Microsoft.Extensions.Http.Diagnostics.RequestMetadata metadata);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static void Microsoft.Extensions.Http.Diagnostics.TelemetryExtensions.SetRequestMetadata(this System.Net.Http.HttpRequestMessage request, Microsoft.Extensions.Http.Diagnostics.RequestMetadata metadata);",
+          "Stage": "Stable"
         }
       ]
     }

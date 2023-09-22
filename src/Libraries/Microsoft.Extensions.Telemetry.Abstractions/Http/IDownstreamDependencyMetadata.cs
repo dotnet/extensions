@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.Extensions.Http.Telemetry;
+namespace Microsoft.Extensions.Http.Diagnostics;
 
 /// <summary>
 /// Interface for passing dependency metadata.

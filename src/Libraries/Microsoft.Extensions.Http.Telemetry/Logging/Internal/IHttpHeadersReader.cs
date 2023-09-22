@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+namespace Microsoft.Extensions.Http.Logging.Internal;
 
 /// <summary>
 /// Methods to read HTTP headers.
