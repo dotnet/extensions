@@ -159,7 +159,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.RequestPathParameterRedactionMode { get; set; }",
+          "Member": "Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.RequestPathParameterRedactionMode { get; set; }",
           "Stage": "Experimental"
         },
         {

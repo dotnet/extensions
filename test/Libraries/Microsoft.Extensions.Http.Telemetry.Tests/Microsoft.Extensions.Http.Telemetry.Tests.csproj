@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Extensions.Http.Telemetry.Test</RootNamespace>
-    <Description>Unit tests for Microsoft.Extensions.Http.Telemetry.</Description>
+    <RootNamespace>Microsoft.Extensions.Http.Diagnostics.Test</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.Http.Diagnostics.</Description>
   </PropertyGroup>
 
   <ItemGroup>

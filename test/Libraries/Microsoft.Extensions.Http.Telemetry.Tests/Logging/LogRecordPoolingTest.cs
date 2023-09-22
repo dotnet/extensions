@@ -4,11 +4,11 @@
 using System.Collections.Generic;
 using AutoFixture;
 using FluentAssertions;
-using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Shared.Pools;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
+namespace Microsoft.Extensions.Http.Logging.Test;
 
 public class LogRecordPoolingTest
 {

@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+namespace Microsoft.Extensions.Http.Logging.Internal;
 
 [OptionsValidator]
 internal sealed partial class LoggingOptionsValidator : IValidateOptions<LoggingOptions>

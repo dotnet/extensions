@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
+namespace Microsoft.Extensions.Http.Logging.Test.Internal;
 
 public static class RandomStringGenerator
 {

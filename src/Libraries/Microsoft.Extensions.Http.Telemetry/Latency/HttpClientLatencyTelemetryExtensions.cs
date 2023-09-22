@@ -7,11 +7,11 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Latency;
-using Microsoft.Extensions.Http.Telemetry.Latency.Internal;
-using Microsoft.Extensions.Http.Telemetry.Logging;
+using Microsoft.Extensions.Http.Latency.Internal;
+using Microsoft.Extensions.Http.Logging;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Http.Telemetry.Latency;
+namespace Microsoft.Extensions.Http.Latency;
 
 /// <summary>
 /// Extension methods to add http client latency telemetry.

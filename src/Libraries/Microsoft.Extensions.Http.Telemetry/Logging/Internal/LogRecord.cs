@@ -6,7 +6,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+namespace Microsoft.Extensions.Http.Logging.Internal;
 
 /// <summary>
 /// Parsed HTTP information.

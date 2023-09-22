@@ -13,7 +13,7 @@ using Microsoft.IO;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+namespace Microsoft.Extensions.Http.Logging.Internal;
 
 internal sealed class HttpResponseBodyReader
 {

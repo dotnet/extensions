@@ -9,14 +9,14 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Logging;
-using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Pools;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging;
+namespace Microsoft.Extensions.Http.Logging;
 
 internal sealed class HttpClientLogger : IHttpClientAsyncLogger
 {

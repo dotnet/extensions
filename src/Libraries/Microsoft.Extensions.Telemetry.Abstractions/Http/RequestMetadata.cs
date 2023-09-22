@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Http.Telemetry;
+namespace Microsoft.Extensions.Http.Diagnostics;
 
 /// <summary>
 /// Holds request metadata for use by the telemetry system.

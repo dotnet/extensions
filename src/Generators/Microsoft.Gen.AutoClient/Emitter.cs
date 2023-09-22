@@ -24,8 +24,8 @@ internal sealed class Emitter : EmitterBase
     private const string Uri = "global::System.Uri";
     private const string StringContent = "global::System.Net.Http.StringContent";
     private const string Encoding = "global::System.Text.Encoding";
-    private const string RequestMetadata = "global::Microsoft.Extensions.Http.Telemetry.RequestMetadata";
-    private const string TelemetryExtensions = "global::Microsoft.Extensions.Telemetry.TelemetryExtensions";
+    private const string RequestMetadata = "global::Microsoft.Extensions.Http.Diagnostics.RequestMetadata";
+    private const string TelemetryExtensions = "global::Microsoft.Extensions.Http.Diagnostics.TelemetryExtensions";
     private const string RestApiException = "global::Microsoft.Extensions.Http.AutoClient.AutoClientException";
     private const string HttpClient = "global::System.Net.Http.HttpClient";
     private const string IHttpClientFactory = "global::System.Net.Http.IHttpClientFactory";

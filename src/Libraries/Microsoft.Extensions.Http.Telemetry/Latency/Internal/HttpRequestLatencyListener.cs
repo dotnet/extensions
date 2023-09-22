@@ -9,7 +9,7 @@ using System.Diagnostics.Tracing;
 using System.Threading;
 using Microsoft.Extensions.Diagnostics.Latency;
 
-namespace Microsoft.Extensions.Http.Telemetry.Latency.Internal;
+namespace Microsoft.Extensions.Http.Latency.Internal;
 
 internal sealed class HttpRequestLatencyListener : EventListener
 {

@@ -7,7 +7,7 @@ using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
+namespace Microsoft.Extensions.Http.Logging.Test.Internal;
 
 internal class TestHttpMessageHandlerBuilder : HttpMessageHandlerBuilder
 {

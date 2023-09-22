@@ -11,17 +11,18 @@ using FluentAssertions;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
+using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Extensions.Http.Logging.Test.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
+namespace Microsoft.Extensions.Http.Logging.Test;
 
 public class AcceptanceTests
 {
-    private const string LoggingCategory = "Microsoft.Extensions.Http.Telemetry.Logging.HttpClientLogger";
+    private const string LoggingCategory = "Microsoft.Extensions.Http.Logging.HttpClientLogger";
     private static readonly Uri _unreachableRequestUri = new("https://we.wont.hit.this.doman.anyway");
 
     [Fact]

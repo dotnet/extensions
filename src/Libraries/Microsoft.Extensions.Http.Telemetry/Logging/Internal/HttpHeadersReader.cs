@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Internal;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+namespace Microsoft.Extensions.Http.Logging.Internal;
 
 internal sealed class HttpHeadersReader : IHttpHeadersReader
 {

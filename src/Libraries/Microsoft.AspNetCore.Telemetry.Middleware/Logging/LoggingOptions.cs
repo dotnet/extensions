@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics.Logging;
 using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Http.Telemetry;
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Shared.Data.Validation;
 using Microsoft.Shared.DiagnosticIds;
 

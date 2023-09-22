@@ -6,9 +6,10 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Shared.Data.Validation;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging;
+namespace Microsoft.Extensions.Http.Logging;
 
 /// <summary>
 /// Options to configure HTTP client requests logging.

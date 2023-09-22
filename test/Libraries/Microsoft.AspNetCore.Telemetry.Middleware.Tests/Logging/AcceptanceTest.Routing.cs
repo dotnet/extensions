@@ -9,11 +9,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.Logging.Test.Controllers;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http.Telemetry;
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Text;
 using Xunit;
-using static Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode;
+using static Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode;
 
 namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 

@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Test.Internal;
+namespace Microsoft.Extensions.Http.Logging.Test.Internal;
 
 internal static class LogRecordExtensions
 {

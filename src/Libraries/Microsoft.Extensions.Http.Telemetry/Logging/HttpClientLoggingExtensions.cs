@@ -7,13 +7,12 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Http.Logging;
-using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging;
+namespace Microsoft.Extensions.Http.Logging;
 
 /// <summary>
 /// Extension methods to register HTTP client logging feature.

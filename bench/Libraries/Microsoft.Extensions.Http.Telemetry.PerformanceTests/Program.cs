@@ -9,7 +9,7 @@ using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Bench;
+namespace Microsoft.Extensions.Http.Logging.Bench;
 
 internal static class Program
 {

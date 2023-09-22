@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging;
+namespace Microsoft.Extensions.Http.Logging;
 
 /// <summary>
 /// Constants used for HTTP client logging tags.

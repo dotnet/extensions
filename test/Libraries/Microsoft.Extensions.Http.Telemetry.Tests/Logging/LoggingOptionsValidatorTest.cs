@@ -3,10 +3,10 @@
 
 using System;
 using FluentAssertions;
-using Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+using Microsoft.Extensions.Http.Logging.Internal;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Test;
+namespace Microsoft.Extensions.Http.Logging.Test;
 
 public class LoggingOptionsValidatorTest
 {

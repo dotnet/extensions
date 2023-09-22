@@ -3,11 +3,11 @@
 
 using System.Linq;
 using Microsoft.Extensions.Diagnostics.Latency;
-using Microsoft.Extensions.Http.Telemetry.Latency.Internal;
+using Microsoft.Extensions.Http.Latency.Internal;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Http.Telemetry.Latency.Test.Internal;
+namespace Microsoft.Extensions.Http.Latency.Test.Internal;
 
 public class HttpRequestLatencyListenerTest
 {

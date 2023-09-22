@@ -4,7 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Bench;
+namespace Microsoft.Extensions.Http.Logging.Bench;
 
 internal sealed class DropMessageLoggerProvider : ILoggerProvider
 {

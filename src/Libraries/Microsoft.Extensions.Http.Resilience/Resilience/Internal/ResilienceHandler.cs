@@ -5,8 +5,7 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Http.Telemetry;
-using Microsoft.Extensions.Telemetry;
+using Microsoft.Extensions.Http.Diagnostics;
 using Polly;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal;

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Frozen;
 
-namespace Microsoft.Extensions.Http.Telemetry.Logging.Internal;
+namespace Microsoft.Extensions.Http.Logging.Internal;
 
 // The list of official media types can be found here https://en.wikipedia.org/wiki/Media_type#cite_note-10
 // It is huge and we need better a way to verify allowed / disallowed media types.
