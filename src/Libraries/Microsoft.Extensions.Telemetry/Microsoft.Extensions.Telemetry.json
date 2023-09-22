@@ -79,53 +79,57 @@
     },
     {
       "Type": "class Microsoft.Extensions.Logging.LoggerEnrichmentOptions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Logging.LoggerEnrichmentOptions.LoggerEnrichmentOptions();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "bool Microsoft.Extensions.Logging.LoggerEnrichmentOptions.CaptureStackTraces { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Logging.LoggerEnrichmentOptions.IncludeExceptionMessageInStackTraces { get; set; }",
+          "Stage": "Stable"
         },
         {
           "Member": "int Microsoft.Extensions.Logging.LoggerEnrichmentOptions.MaxStackTraceLength { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "bool Microsoft.Extensions.Logging.LoggerEnrichmentOptions.UseFileInfoForStackTraces { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "static class Microsoft.Extensions.Logging.LoggingEnrichmentExtensions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.LoggingEnrichmentExtensions.EnableEnrichment(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.LoggingEnrichmentExtensions.EnableEnrichment(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Logging.LoggerEnrichmentOptions> configure);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.LoggingEnrichmentExtensions.EnableEnrichment(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "static class Microsoft.Extensions.Logging.LoggingRedactionExtensions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.LoggingRedactionExtensions.EnableRedaction(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -281,7 +285,7 @@
         },
         {
           "Member": "static Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Telemetry.TelemetryExtensions.GetRequestMetadata(this System.Net.HttpWebRequest request);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Telemetry.TelemetryExtensions.GetRequestMetadata(this System.Net.Http.HttpRequestMessage request);",
@@ -289,7 +293,7 @@
         },
         {
           "Member": "static void Microsoft.Extensions.Telemetry.TelemetryExtensions.SetRequestMetadata(this System.Net.HttpWebRequest request, Microsoft.Extensions.Http.Telemetry.RequestMetadata metadata);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static void Microsoft.Extensions.Telemetry.TelemetryExtensions.SetRequestMetadata(this System.Net.Http.HttpRequestMessage request, Microsoft.Extensions.Http.Telemetry.RequestMetadata metadata);",

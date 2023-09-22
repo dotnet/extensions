@@ -27,11 +27,11 @@
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions> configure);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static void Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.ReportHealthy(this Microsoft.Extensions.Diagnostics.HealthChecks.IManualHealthCheck manualHealthCheck);",
@@ -59,17 +59,17 @@
     },
     {
       "Type": "class Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions.TelemetryHealthCheckPublisherOptions();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "bool Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions.LogOnlyUnhealthy { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     }

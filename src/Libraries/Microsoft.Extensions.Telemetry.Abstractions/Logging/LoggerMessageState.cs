@@ -4,10 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Logging;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Logging;
@@ -15,7 +13,6 @@ namespace Microsoft.Extensions.Logging;
 /// <summary>
 /// Additional state to use with <see cref="ILogger.Log"/>.
 /// </summary>
-[Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed partial class LoggerMessageState
 {

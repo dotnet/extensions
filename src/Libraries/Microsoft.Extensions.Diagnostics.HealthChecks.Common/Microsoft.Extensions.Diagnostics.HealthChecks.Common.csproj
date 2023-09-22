@@ -10,8 +10,6 @@
     <UseMetricsGenerator>true</UseMetricsGenerator>
     <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
     <InjectSharedPools>true</InjectSharedPools>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
   </PropertyGroup>
 
   <PropertyGroup>

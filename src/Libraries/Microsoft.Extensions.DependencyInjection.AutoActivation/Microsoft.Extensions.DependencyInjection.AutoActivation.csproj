@@ -6,11 +6,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <Stage>normal</Stage>
     <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>100</MinMutationScore>

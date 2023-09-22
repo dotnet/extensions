@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Logging;
 
@@ -37,6 +35,5 @@ public interface ITagCollector
     /// <exception cref="ArgumentException"><paramref name="tagName" /> is empty or contains exclusively whitespace,
     /// or when a tag of the same name has already been added.
     /// </exception>
-    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     void Add(string tagName, object? tagValue, DataClassification classification);
 }

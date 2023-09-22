@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
-
 namespace Microsoft.Extensions.Http.Telemetry;
 
 /// <summary>
@@ -29,12 +26,10 @@ public static class TelemetryConstants
     /// <summary>
     /// Represents the header for client application name, sent on an outgoing HTTP call.
     /// </summary>
-    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public const string ClientApplicationNameHeader = "X-ClientApplication";
 
     /// <summary>
     /// Represents the header for server application name, sent on a HTTP request.
     /// </summary>
-    [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public const string ServerApplicationNameHeader = "X-ServerApplication";
 }

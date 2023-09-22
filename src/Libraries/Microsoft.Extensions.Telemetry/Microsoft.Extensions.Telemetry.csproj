@@ -6,14 +6,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedText>true</InjectSharedText>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedPools>true</InjectSharedPools>
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
     <InjectSharedMemoization>true</InjectSharedMemoization>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <UseLoggingGenerator>true</UseLoggingGenerator>
   </PropertyGroup>
