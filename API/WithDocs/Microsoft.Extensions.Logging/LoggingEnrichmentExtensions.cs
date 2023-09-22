@@ -1,7 +1,6 @@
 // Assembly 'Microsoft.Extensions.Telemetry'
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.Logging;
@@ -9,7 +8,6 @@ namespace Microsoft.Extensions.Logging;
 /// <summary>
 /// Extensions for configuring logging enrichment features.
 /// </summary>
-[Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public static class LoggingEnrichmentExtensions
 {
     /// <summary>

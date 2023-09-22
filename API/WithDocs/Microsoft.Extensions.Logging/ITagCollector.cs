@@ -1,6 +1,5 @@
 // Assembly 'Microsoft.Extensions.Telemetry.Abstractions'
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 
 namespace Microsoft.Extensions.Logging;
@@ -34,6 +33,5 @@ public interface ITagCollector
     /// <exception cref="T:System.ArgumentException"><paramref name="tagName" /> is empty or contains exclusively whitespace,
     /// or when a tag of the same name has already been added.
     /// </exception>
-    [Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     void Add(string tagName, object? tagValue, DataClassification classification);
 }

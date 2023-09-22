@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Shared.Data.Validation;
@@ -118,7 +117,6 @@ public class LoggingOptions
     /// <value>
     /// The default value is <see cref="F:Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.Strict" />.
     /// </value>
-    [Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; }
 
     /// <summary>

@@ -1,6 +1,5 @@
 // Assembly 'Microsoft.Extensions.Telemetry.Abstractions'
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Diagnostics.Enrichment;
@@ -35,7 +34,6 @@ public static class EnricherExtensions
     /// <typeparam name="T">Enricher type.</typeparam>
     /// <returns>The value of <paramref name="services" />.</returns>
     /// <exception cref="T:System.ArgumentNullException"><paramref name="services" /> is <see langword="null" />.</exception>
-    [Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IServiceCollection AddStaticLogEnricher<T>(this IServiceCollection services) where T : class, IStaticLogEnricher;
 
     /// <summary>
@@ -45,6 +43,5 @@ public static class EnricherExtensions
     /// <param name="enricher">The enricher instance to add.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
     /// <exception cref="T:System.ArgumentNullException"><paramref name="services" /> or <paramref name="enricher" /> is <see langword="null" />.</exception>
-    [Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IServiceCollection AddStaticLogEnricher(this IServiceCollection services, IStaticLogEnricher enricher);
 }

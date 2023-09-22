@@ -1,6 +1,5 @@
 // Assembly 'Microsoft.Extensions.Telemetry'
 
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +17,6 @@ public static class TelemetryExtensions
     /// </summary>
     /// <param name="request"><see cref="T:System.Net.HttpWebRequest" /> object.</param>
     /// <param name="metadata">Metadata for the request.</param>
-    [Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static void SetRequestMetadata(this HttpWebRequest request, RequestMetadata metadata);
 
     /// <summary>
@@ -33,7 +31,6 @@ public static class TelemetryExtensions
     /// </summary>
     /// <param name="request"><see cref="T:System.Net.HttpWebRequest" /> object.</param>
     /// <returns>Request metadata.</returns>
-    [Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static RequestMetadata? GetRequestMetadata(this HttpWebRequest request);
 
     /// <summary>

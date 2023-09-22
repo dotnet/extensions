@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -78,7 +77,6 @@ public static class CommonHealthChecksExtensions
     /// <param name="section">Configuration for <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions" />.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
     /// <exception cref="T:System.ArgumentNullException"><paramref name="services" /> or <paramref name="section" /> is <see langword="null" />.</exception>
-    [Experimental("EXTEXP0007", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services, IConfigurationSection section);
 
     /// <summary>
@@ -88,6 +86,5 @@ public static class CommonHealthChecksExtensions
     /// <param name="configure">Configuration for <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions" />.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
     /// <exception cref="T:System.ArgumentNullException"><paramref name="services" /> or <paramref name="configure" /> is <see langword="null" />.</exception>
-    [Experimental("EXTEXP0007", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services, Action<TelemetryHealthCheckPublisherOptions> configure);
 }

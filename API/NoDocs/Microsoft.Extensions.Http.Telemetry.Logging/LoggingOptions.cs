@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Shared.Data.Validation;
@@ -27,7 +26,6 @@ public class LoggingOptions
     [Required]
     public IDictionary<string, DataClassification> ResponseHeadersDataClasses { get; set; }
     public OutgoingPathLoggingMode RequestPathLoggingMode { get; set; }
-    [Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; }
     [Required]
     public IDictionary<string, DataClassification> RouteParameterDataClasses { get; set; }

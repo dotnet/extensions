@@ -3,14 +3,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 
 namespace Microsoft.Extensions.Logging;
 
-[Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class LoggerMessageState : IEnrichmentTagCollector, IReadOnlyList<KeyValuePair<string, object?>>, IEnumerable<KeyValuePair<string, object?>>, IEnumerable, IReadOnlyCollection<KeyValuePair<string, object?>>, ITagCollector
 {

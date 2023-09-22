@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,8 +16,6 @@ public static class CommonHealthChecksExtensions
     public static void ReportHealthy(this IManualHealthCheck manualHealthCheck);
     public static void ReportUnhealthy(this IManualHealthCheck manualHealthCheck, string reason);
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services);
-    [Experimental("EXTEXP0007", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services, IConfigurationSection section);
-    [Experimental("EXTEXP0007", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services, Action<TelemetryHealthCheckPublisherOptions> configure);
 }

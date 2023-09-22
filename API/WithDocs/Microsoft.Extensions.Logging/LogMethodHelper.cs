@@ -3,7 +3,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Diagnostics.Enrichment;
@@ -35,7 +34,6 @@ public sealed class LogMethodHelper : List<KeyValuePair<string, object?>>, ITagC
     public void Add(string tagName, object? tagValue);
 
     /// <inheritdoc />
-    [Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public void Add(string tagName, object? tagValue, DataClassification classification);
 
     /// <summary>

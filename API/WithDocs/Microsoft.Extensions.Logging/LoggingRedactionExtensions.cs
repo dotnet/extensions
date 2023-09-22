@@ -1,13 +1,10 @@
 // Assembly 'Microsoft.Extensions.Telemetry'
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Extensions for configuring logging redaction features.
 /// </summary>
-[Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public static class LoggingRedactionExtensions
 {
     /// <summary>

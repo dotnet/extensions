@@ -1,7 +1,5 @@
 // Assembly 'Microsoft.Extensions.Telemetry.Abstractions'
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.Extensions.Http.Telemetry;
 
 /// <summary>
@@ -27,12 +25,10 @@ public static class TelemetryConstants
     /// <summary>
     /// Represents the header for client application name, sent on an outgoing HTTP call.
     /// </summary>
-    [Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public const string ClientApplicationNameHeader = "X-ClientApplication";
 
     /// <summary>
     /// Represents the header for server application name, sent on a HTTP request.
     /// </summary>
-    [Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public const string ServerApplicationNameHeader = "X-ServerApplication";
 }

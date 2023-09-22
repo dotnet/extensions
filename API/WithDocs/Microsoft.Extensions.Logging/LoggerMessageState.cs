@@ -3,7 +3,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Diagnostics.Enrichment;
@@ -13,7 +12,6 @@ namespace Microsoft.Extensions.Logging;
 /// <summary>
 /// Additional state to use with <see cref="M:Microsoft.Extensions.Logging.ILogger.Log``1(Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,``0,System.Exception,System.Func{``0,System.Exception,System.String})" />.
 /// </summary>
-[Experimental("EXTEXP0003", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class LoggerMessageState : IEnrichmentTagCollector, IReadOnlyList<KeyValuePair<string, object?>>, IEnumerable<KeyValuePair<string, object?>>, IEnumerable, IReadOnlyCollection<KeyValuePair<string, object?>>, ITagCollector
 {
