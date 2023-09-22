@@ -45,8 +45,4 @@
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
   </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="HeaderParsingMetrics.cs" />
-  </ItemGroup>
 </Project>
