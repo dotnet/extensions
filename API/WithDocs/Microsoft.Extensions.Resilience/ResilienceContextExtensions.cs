@@ -1,7 +1,7 @@
 // Assembly 'Microsoft.Extensions.Resilience'
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Http.Telemetry;
+using Microsoft.Extensions.Http.Diagnostics;
 using Polly;
 
 namespace Microsoft.Extensions.Resilience;
@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Resilience;
 public static class ResilienceContextExtensions
 {
     /// <summary>
-    /// Sets the <see cref="T:Microsoft.Extensions.Http.Telemetry.RequestMetadata" /> to the <see cref="T:Polly.ResilienceContext" />.
+    /// Sets the <see cref="T:Microsoft.Extensions.Http.Diagnostics.RequestMetadata" /> to the <see cref="T:Polly.ResilienceContext" />.
     /// </summary>
     /// <param name="context">The context instance.</param>
     /// <param name="requestMetadata">The request metadata.</param>
@@ -21,10 +21,10 @@ public static class ResilienceContextExtensions
     public static void SetRequestMetadata(this ResilienceContext context, RequestMetadata requestMetadata);
 
     /// <summary>
-    /// Gets the <see cref="T:Microsoft.Extensions.Http.Telemetry.RequestMetadata" /> from the <see cref="T:Polly.ResilienceContext" />.
+    /// Gets the <see cref="T:Microsoft.Extensions.Http.Diagnostics.RequestMetadata" /> from the <see cref="T:Polly.ResilienceContext" />.
     /// </summary>
     /// <param name="context">The context instance.</param>
-    /// <returns>The instance of <see cref="T:Microsoft.Extensions.Http.Telemetry.RequestMetadata" /> or <see langword="null" />.</returns>
+    /// <returns>The instance of <see cref="T:Microsoft.Extensions.Http.Diagnostics.RequestMetadata" /> or <see langword="null" />.</returns>
     /// <exception cref="T:System.ArgumentNullException"><paramref name="context" /> is <see langword="null" />.</exception>
     public static RequestMetadata? GetRequestMetadata(this ResilienceContext context);
 }

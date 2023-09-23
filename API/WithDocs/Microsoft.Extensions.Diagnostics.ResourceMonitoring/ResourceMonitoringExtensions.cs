@@ -4,7 +4,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;

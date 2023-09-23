@@ -1,7 +1,6 @@
 // Assembly 'Microsoft.Extensions.Diagnostics.ResourceMonitoring'
 
 using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 

@@ -27,7 +27,7 @@ public static class ResilienceServiceCollectionExtensions
     /// Result enrichment based on <see cref="M:Microsoft.Extensions.Resilience.ResilienceServiceCollectionExtensions.ConfigureFailureResultContext``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{``0,Microsoft.Extensions.Resilience.FailureResultContext})" /> and <see cref="T:Microsoft.Extensions.Resilience.FailureResultContext" />.</description>
     /// </item>
     /// <item><description>
-    /// Request metadata enrichment based on <see cref="T:Microsoft.Extensions.Http.Telemetry.RequestMetadata" />.</description>
+    /// Request metadata enrichment based on <see cref="T:Microsoft.Extensions.Http.Diagnostics.RequestMetadata" />.</description>
     /// </item>
     /// </list>
     /// </remarks>

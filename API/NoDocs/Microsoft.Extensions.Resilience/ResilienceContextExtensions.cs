@@ -1,7 +1,7 @@
 // Assembly 'Microsoft.Extensions.Resilience'
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Http.Telemetry;
+using Microsoft.Extensions.Http.Diagnostics;
 using Polly;
 
 namespace Microsoft.Extensions.Resilience;
