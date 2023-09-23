@@ -2,47 +2,47 @@
   "Name": "Microsoft.Extensions.Options.Contextual, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions",
+      "Type": "static class Microsoft.Extensions.DependencyInjection.ContextualOptionsServiceCollectionExtensions",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.AddContextualOptions(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ContextualOptionsServiceCollectionExtensions.AddContextualOptions(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.Configure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Func<Microsoft.Extensions.Options.Contextual.IOptionsContext, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<Microsoft.Extensions.Options.Contextual.IConfigureContextualOptions<TOptions>>> loadOptions);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ContextualOptionsServiceCollectionExtensions.Configure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Func<Microsoft.Extensions.Options.Contextual.IOptionsContext, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<Microsoft.Extensions.Options.Contextual.IConfigureContextualOptions<TOptions>>> loadOptions);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.Configure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string name, System.Func<Microsoft.Extensions.Options.Contextual.IOptionsContext, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<Microsoft.Extensions.Options.Contextual.IConfigureContextualOptions<TOptions>>> loadOptions);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ContextualOptionsServiceCollectionExtensions.Configure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string name, System.Func<Microsoft.Extensions.Options.Contextual.IOptionsContext, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<Microsoft.Extensions.Options.Contextual.IConfigureContextualOptions<TOptions>>> loadOptions);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.Configure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext, TOptions> configureOptions);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ContextualOptionsServiceCollectionExtensions.Configure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext, TOptions> configureOptions);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.Configure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string name, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext, TOptions> configureOptions);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ContextualOptionsServiceCollectionExtensions.Configure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string name, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext, TOptions> configureOptions);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.PostConfigure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext, TOptions> configureOptions);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ContextualOptionsServiceCollectionExtensions.PostConfigure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext, TOptions> configureOptions);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.PostConfigure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string? name, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext, TOptions> configureOptions);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ContextualOptionsServiceCollectionExtensions.PostConfigure<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string? name, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext, TOptions> configureOptions);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.PostConfigureAll<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext, TOptions> configureOptions);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ContextualOptionsServiceCollectionExtensions.PostConfigureAll<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Options.Contextual.IOptionsContext, TOptions> configureOptions);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.ValidateContextualOptions<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Func<TOptions, bool> validate, string failureMessage);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ContextualOptionsServiceCollectionExtensions.ValidateContextualOptions<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Func<TOptions, bool> validate, string failureMessage);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Options.Contextual.ContextualOptionsServiceCollectionExtensions.ValidateContextualOptions<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string name, System.Func<TOptions, bool> validate, string failureMessage);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ContextualOptionsServiceCollectionExtensions.ValidateContextualOptions<TOptions>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, string name, System.Func<TOptions, bool> validate, string failureMessage);",
           "Stage": "Experimental"
         }
       ]

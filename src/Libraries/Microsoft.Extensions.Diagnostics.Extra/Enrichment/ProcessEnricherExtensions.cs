@@ -4,11 +4,10 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.Enrichment;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Provides extension methods for setting up Process enrichers in an <see cref="IServiceCollection" />.
@@ -19,7 +18,7 @@ public static class ProcessEnricherExtensions
     /// Adds an instance of the process enricher to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the process enricher to.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     public static IServiceCollection AddProcessLogEnricher(this IServiceCollection services)
     {
@@ -34,7 +33,7 @@ public static class ProcessEnricherExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the process enricher to.</param>
     /// <param name="configure">The <see cref="ProcessLogEnricherOptions"/> configuration delegate.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static IServiceCollection AddProcessLogEnricher(this IServiceCollection services, Action<ProcessLogEnricherOptions> configure)
     {
@@ -52,7 +51,7 @@ public static class ProcessEnricherExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the process enricher to.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ProcessLogEnricherOptions"/> in the process enricher.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static IServiceCollection AddProcessLogEnricher(this IServiceCollection services, IConfigurationSection section)
     {

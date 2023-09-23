@@ -30,7 +30,7 @@ public class FakesExtensionsTests
     public async Task UseTestStartup_UsesFakeStartup()
     {
         using var host = FakeHost.CreateBuilder()
-            .ConfigureWebHost(webHost => webHost.UseTestStartup().ListenHttpOnAnyPort())
+            .ConfigureWebHost(webHost => webHost.UseFakeStartup().ListenHttpOnAnyPort())
             .Build();
 
         Assert.Null(await Record.ExceptionAsync(() => host.StartAsync()));
@@ -40,7 +40,7 @@ public class FakesExtensionsTests
     public async Task ListenHttpOnAnyPort_AddsListener()
     {
         using var host = await FakeHost.CreateBuilder()
-            .ConfigureWebHost(webHost => webHost.ListenHttpOnAnyPort().UseTestStartup())
+            .ConfigureWebHost(webHost => webHost.ListenHttpOnAnyPort().UseFakeStartup())
             .StartAsync();
 
         Assert.Null(Record.Exception(() => host.GetListenUris()));

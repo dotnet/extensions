@@ -168,35 +168,19 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Logging.Testing.FakeLoggerExtensions",
+      "Type": "static class Microsoft.Extensions.Logging.FakeLoggerBuilderExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.Testing.FakeLoggerExtensions.AddFakeLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.FakeLoggerBuilderExtensions.AddFakeLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.Testing.FakeLoggerExtensions.AddFakeLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions> configure);",
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.FakeLoggerBuilderExtensions.AddFakeLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions> configure);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.Testing.FakeLoggerExtensions.AddFakeLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Logging.Testing.FakeLoggerExtensions.AddFakeLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Logging.Testing.FakeLoggerExtensions.AddFakeLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Logging.Testing.FakeLoggerExtensions.AddFakeLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Logging.Testing.FakeLogCollector Microsoft.Extensions.Logging.Testing.FakeLoggerExtensions.GetFakeLogCollector(this System.IServiceProvider services);",
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.FakeLoggerBuilderExtensions.AddFakeLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
           "Stage": "Stable"
         }
       ]
@@ -233,6 +217,34 @@
       "Properties": [
         {
           "Member": "Microsoft.Extensions.Logging.Testing.FakeLogCollector Microsoft.Extensions.Logging.Testing.FakeLoggerProvider.Collector { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.FakeLoggerServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.FakeLoggerServiceCollectionExtensions.AddFakeLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.FakeLoggerServiceCollectionExtensions.AddFakeLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.FakeLoggerServiceCollectionExtensions.AddFakeLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class System.FakeLoggerServiceProviderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Logging.Testing.FakeLogCollector System.FakeLoggerServiceProviderExtensions.GetFakeLogCollector(this System.IServiceProvider services);",
           "Stage": "Stable"
         }
       ]

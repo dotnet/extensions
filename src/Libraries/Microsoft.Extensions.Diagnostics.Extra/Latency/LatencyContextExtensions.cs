@@ -4,13 +4,12 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Diagnostics.Latency.Internal;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.Latency;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extensions to add latency context.
@@ -46,7 +45,7 @@ public static class LatencyContextExtensions
 
         _ = services.Configure(configure);
 
-        return AddLatencyContext(services);
+        return services.AddLatencyContext();
     }
 
     /// <summary>
@@ -67,6 +66,6 @@ public static class LatencyContextExtensions
 
         _ = services.Configure<LatencyContextOptions>(section);
 
-        return AddLatencyContext(services);
+        return services.AddLatencyContext();
     }
 }

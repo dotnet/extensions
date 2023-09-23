@@ -28,9 +28,7 @@ public static class RoutingStrategyBuilderExtensions
     /// </summary>
     /// <param name="builder">The routing builder.</param>
     /// <param name="section">The section that the <see cref="OrderedGroupsRoutingOptions"/> will bind against.</param>
-    /// <returns>
-    /// The same routing builder instance.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(OrderedGroupsRoutingOptions))]
     public static IRoutingStrategyBuilder ConfigureOrderedGroups(this IRoutingStrategyBuilder builder, IConfigurationSection section)
     {
@@ -46,9 +44,7 @@ public static class RoutingStrategyBuilderExtensions
     /// </summary>
     /// <param name="builder">The routing builder.</param>
     /// <param name="configure">The callback that configures <see cref="OrderedGroupsRoutingOptions"/>.</param>
-    /// <returns>
-    /// The same routing builder instance.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     public static IRoutingStrategyBuilder ConfigureOrderedGroups(this IRoutingStrategyBuilder builder, Action<OrderedGroupsRoutingOptions> configure)
     {
         _ = Throw.IfNull(builder);
@@ -62,9 +58,7 @@ public static class RoutingStrategyBuilderExtensions
     /// </summary>
     /// <param name="builder">The routing builder.</param>
     /// <param name="configure">The callback that configures <see cref="OrderedGroupsRoutingOptions"/>.</param>
-    /// <returns>
-    /// The same routing builder instance.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public static IRoutingStrategyBuilder ConfigureOrderedGroups(this IRoutingStrategyBuilder builder, Action<OrderedGroupsRoutingOptions, IServiceProvider> configure)
     {
@@ -81,9 +75,7 @@ public static class RoutingStrategyBuilderExtensions
     /// </summary>
     /// <param name="builder">The routing builder.</param>
     /// <param name="section">The section that the <see cref="WeightedGroupsRoutingOptions"/> will bind against.</param>
-    /// <returns>
-    /// The same routing builder instance.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WeightedGroupsRoutingOptions))]
     public static IRoutingStrategyBuilder ConfigureWeightedGroups(this IRoutingStrategyBuilder builder, IConfigurationSection section)
     {
@@ -100,9 +92,7 @@ public static class RoutingStrategyBuilderExtensions
     /// </summary>
     /// <param name="builder">The routing builder.</param>
     /// <param name="configure">The callback that configures <see cref="WeightedGroupsRoutingOptions"/>.</param>
-    /// <returns>
-    /// The same routing builder instance.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     public static IRoutingStrategyBuilder ConfigureWeightedGroups(this IRoutingStrategyBuilder builder, Action<WeightedGroupsRoutingOptions> configure)
     {
         _ = Throw.IfNull(builder);
@@ -116,9 +106,7 @@ public static class RoutingStrategyBuilderExtensions
     /// </summary>
     /// <param name="builder">The routing builder.</param>
     /// <param name="configure">The callback that configures <see cref="WeightedGroupsRoutingOptions"/>.</param>
-    /// <returns>
-    /// The same routing builder instance.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public static IRoutingStrategyBuilder ConfigureWeightedGroups(this IRoutingStrategyBuilder builder, Action<WeightedGroupsRoutingOptions, IServiceProvider> configure)
     {

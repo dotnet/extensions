@@ -40,12 +40,12 @@
   <ItemGroup>
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
     <InternalsVisibleToTest Include="Microsoft.AspNetCore.Diagnostics.Middleware.Tests" />
-    <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Telemetry.Tests" />
-    <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Telemetry.PerformanceTests" />
+    <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Diagnostics.Tests" />
+    <InternalsVisibleToTest Include="Microsoft.Extensions.Http.Diagnostics.PerformanceTests" />
     <InternalsVisibleToTest Include="Microsoft.Extensions.Diagnostics.Extra.PerformanceTests" />
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
 
-    <InternalsVisibleTo Include="Microsoft.Extensions.Http.Telemetry" />
+    <InternalsVisibleTo Include="Microsoft.Extensions.Http.Diagnostics" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Diagnostics.Middleware" />
   </ItemGroup>
 </Project>

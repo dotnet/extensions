@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.HealthChecks;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Controls resource utilization health check features.
@@ -69,7 +69,7 @@ public static class ResourceUtilizationHealthCheckExtensions
         _ = Throw.IfNull(section);
 
         _ = builder.Services.Configure<ResourceUtilizationHealthCheckOptions>(section);
-        return AddResourceUtilizationHealthCheck(builder);
+        return builder.AddResourceUtilizationHealthCheck();
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ public static class ResourceUtilizationHealthCheckExtensions
         _ = Throw.IfNull(tags);
 
         _ = builder.Services.Configure<ResourceUtilizationHealthCheckOptions>(section);
-        return AddResourceUtilizationHealthCheck(builder, tags);
+        return builder.AddResourceUtilizationHealthCheck(tags);
     }
 
     /// <summary>
@@ -121,7 +121,7 @@ public static class ResourceUtilizationHealthCheckExtensions
         _ = Throw.IfNull(tags);
 
         _ = builder.Services.Configure<ResourceUtilizationHealthCheckOptions>(section);
-        return AddResourceUtilizationHealthCheck(builder, tags);
+        return builder.AddResourceUtilizationHealthCheck(tags);
     }
 
     /// <summary>
@@ -139,7 +139,7 @@ public static class ResourceUtilizationHealthCheckExtensions
         _ = Throw.IfNull(configure);
 
         _ = builder.Services.Configure(configure);
-        return AddResourceUtilizationHealthCheck(builder);
+        return builder.AddResourceUtilizationHealthCheck();
     }
 
     /// <summary>
@@ -160,7 +160,7 @@ public static class ResourceUtilizationHealthCheckExtensions
         _ = Throw.IfNull(tags);
 
         _ = builder.Services.Configure(configure);
-        return AddResourceUtilizationHealthCheck(builder, tags);
+        return builder.AddResourceUtilizationHealthCheck(tags);
     }
 
     /// <summary>
@@ -181,6 +181,6 @@ public static class ResourceUtilizationHealthCheckExtensions
         _ = Throw.IfNull(tags);
 
         _ = builder.Services.Configure(configure);
-        return AddResourceUtilizationHealthCheck(builder, tags);
+        return builder.AddResourceUtilizationHealthCheck(tags);
     }
 }

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.Http.Diagnostics.Bench</RootNamespace>
+    <Description>Benchmarks for Microsoft.Extensions.Http.Diagnostics.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="HugeBody.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="MediumBody.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="SmallBody.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Http.Diagnostics\Microsoft.Extensions.Http.Diagnostics.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Testing\Microsoft.Extensions.Compliance.Testing.csproj" />
+  </ItemGroup>
+</Project>

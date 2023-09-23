@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Diagnostics.Latency;
 /// </summary>
 public class RequestLatencyTelemetryOptions
 {
-    private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
-
     /// <summary>
     /// Gets or sets the amount of time to wait for export of latency data.
     /// </summary>
@@ -20,5 +18,5 @@ public class RequestLatencyTelemetryOptions
     /// The default value is 5 seconds.
     /// </value>
     [TimeSpan(RequestLatencyTelemetryOptionsValidator.MinimumTimeoutInMs)]
-    public TimeSpan LatencyDataExportTimeout { get; set; } = _defaultTimeout;
+    public TimeSpan LatencyDataExportTimeout { get; set; } = TimeSpan.FromSeconds(5);
 }

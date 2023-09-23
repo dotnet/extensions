@@ -118,6 +118,8 @@ public static partial class AutoActivationExtensions
         where TService : class
         where TImplementation : class, TService
     {
+        _ = Throw.IfNull(services);
+
         return services
             .AddSingleton<TService, TImplementation>()
             .ActivateSingleton<TService>();
@@ -133,6 +135,9 @@ public static partial class AutoActivationExtensions
     public static IServiceCollection AddActivatedSingleton<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
         where TService : class
     {
+        _ = Throw.IfNull(services);
+        _ = Throw.IfNull(implementationFactory);
+
         return services
             .AddSingleton<TService>(implementationFactory)
             .ActivateSingleton<TService>();
@@ -147,6 +152,8 @@ public static partial class AutoActivationExtensions
     public static IServiceCollection AddActivatedSingleton<TService>(this IServiceCollection services)
         where TService : class
     {
+        _ = Throw.IfNull(services);
+
         return services
             .AddSingleton<TService>()
             .ActivateSingleton<TService>();

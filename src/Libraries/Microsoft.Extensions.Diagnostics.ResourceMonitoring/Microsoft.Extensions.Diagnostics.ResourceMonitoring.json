@@ -38,23 +38,15 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions",
+      "Type": "static class Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringBuilderExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.AddResourceMonitoring(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringBuilderExtensions.ConfigureMonitor(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions> configure);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.AddResourceMonitoring(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.ConfigureMonitor(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringExtensions.ConfigureMonitor(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringBuilderExtensions.ConfigureMonitor(this Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         }
       ]
@@ -91,6 +83,20 @@
         },
         {
           "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitoringOptions.SourceIpAddresses { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.ResourceMonitoringServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ResourceMonitoringServiceCollectionExtensions.AddResourceMonitoring(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ResourceMonitoringServiceCollectionExtensions.AddResourceMonitoring(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.ResourceMonitoring.IResourceMonitorBuilder> configure);",
           "Stage": "Stable"
         }
       ]

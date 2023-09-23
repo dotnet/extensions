@@ -24,11 +24,10 @@ public class ChecpointAcceptanceTests
     {
         builder.ConfigureWebHost(webBuilder => webBuilder
                 .UseTestServer()
-                .ConfigureServices(services => services
+                .ConfigureServices(services => RequestLatencyTelemetryServiceCollectionExtensions.AddRequestCheckpoint(services
                     .AddRouting()
-                    .AddLatencyContext()
-                    .AddRequestCheckpoint()
-                    .AddScoped(p => p.GetRequiredService<ILatencyContextProvider>().CreateContext())));
+                    .AddLatencyContext())
+                .AddScoped(p => p.GetRequiredService<ILatencyContextProvider>().CreateContext())));
     }
 
     [Fact]

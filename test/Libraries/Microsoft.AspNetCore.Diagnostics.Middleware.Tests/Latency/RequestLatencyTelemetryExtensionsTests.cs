@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Latency;
@@ -17,13 +18,13 @@ public class RequestLatencyTelemetryExtensionsTests
     public void RequestLatencyExtensions_NullArguments()
     {
         Assert.Throws<ArgumentNullException>(() =>
-        RequestLatencyTelemetryExtensions.AddRequestLatencyTelemetry(null!));
+        RequestLatencyTelemetryServiceCollectionExtensions.AddRequestLatencyTelemetry(null!));
         Assert.Throws<ArgumentNullException>(() =>
-        RequestLatencyTelemetryExtensions.AddRequestLatencyTelemetry(new ServiceCollection(), configure: null!));
+        RequestLatencyTelemetryServiceCollectionExtensions.AddRequestLatencyTelemetry(new ServiceCollection(), configure: null!));
         Assert.Throws<ArgumentNullException>(() =>
-        RequestLatencyTelemetryExtensions.AddRequestLatencyTelemetry(new ServiceCollection(), section: null!));
+        RequestLatencyTelemetryServiceCollectionExtensions.AddRequestLatencyTelemetry(new ServiceCollection(), section: null!));
         Assert.Throws<ArgumentNullException>(() =>
-        RequestLatencyTelemetryExtensions.UseRequestLatencyTelemetry(null!));
+        RequestLatencyTelemetryApplicationBuilderExtensions.UseRequestLatencyTelemetry(null!));
     }
 
     [Fact]

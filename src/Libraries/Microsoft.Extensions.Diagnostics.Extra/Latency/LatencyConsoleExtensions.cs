@@ -4,12 +4,12 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Diagnostics.Latency.Internal;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.Latency;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extensions to add console latency data exporter.
@@ -46,7 +46,7 @@ public static class LatencyConsoleExtensions
 
         _ = services.Configure(configure);
 
-        return AddConsoleLatencyDataExporter(services);
+        return services.AddConsoleLatencyDataExporter();
     }
 
     /// <summary>
@@ -68,6 +68,6 @@ public static class LatencyConsoleExtensions
 
         _ = services.Configure<LatencyConsoleOptions>(section);
 
-        return AddConsoleLatencyDataExporter(services);
+        return services.AddConsoleLatencyDataExporter();
     }
 }

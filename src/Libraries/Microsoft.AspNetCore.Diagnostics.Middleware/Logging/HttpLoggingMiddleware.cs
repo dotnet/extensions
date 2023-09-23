@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -116,7 +117,7 @@ internal sealed class HttpLoggingMiddleware : IMiddleware
         // so log a warning and hope that "LogLevel.Warning" is enabled:
         if (!_logger.IsEnabled(Log.DefaultLogLevel))
         {
-            _logger.MiddlewareIsMisused(Log.DefaultLogLevel, nameof(HttpLoggingServiceExtensions.UseHttpLoggingMiddleware));
+            _logger.MiddlewareIsMisused(Log.DefaultLogLevel, nameof(HttpLoggingApplicationBuilderExtensions.UseHttpLoggingMiddleware));
         }
     }
 
