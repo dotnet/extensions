@@ -1,0 +1,275 @@
+{
+  "Name": "Microsoft.Extensions.Diagnostics.Extra, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "static class Microsoft.Extensions.Diagnostics.Latency.LatencyConsoleExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Latency.LatencyConsoleExtensions.AddConsoleLatencyDataExporter(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Latency.LatencyConsoleExtensions.AddConsoleLatencyDataExporter(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.Latency.LatencyConsoleOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Latency.LatencyConsoleExtensions.AddConsoleLatencyDataExporter(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.Latency.LatencyConsoleOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Latency.LatencyConsoleOptions.LatencyConsoleOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Latency.LatencyConsoleOptions.OutputCheckpoints { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Latency.LatencyConsoleOptions.OutputMeasures { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Latency.LatencyConsoleOptions.OutputTags { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Diagnostics.Latency.LatencyContextExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Latency.LatencyContextExtensions.AddLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Latency.LatencyContextExtensions.AddLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.Latency.LatencyContextOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Latency.LatencyContextExtensions.AddLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.Latency.LatencyContextOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Latency.LatencyContextOptions.LatencyContextOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Latency.LatencyContextOptions.ThrowOnUnregisteredNames { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Logging.LoggerEnrichmentOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.LoggerEnrichmentOptions.LoggerEnrichmentOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Logging.LoggerEnrichmentOptions.CaptureStackTraces { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Logging.LoggerEnrichmentOptions.IncludeExceptionMessageInStackTraces { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Logging.LoggerEnrichmentOptions.MaxStackTraceLength { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Logging.LoggerEnrichmentOptions.UseFileInfoForStackTraces { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Logging.LoggingEnrichmentExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.LoggingEnrichmentExtensions.EnableEnrichment(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.LoggingEnrichmentExtensions.EnableEnrichment(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Logging.LoggerEnrichmentOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.LoggingEnrichmentExtensions.EnableEnrichment(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Logging.LoggingRedactionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.LoggingRedactionExtensions.EnableRedaction(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Diagnostics.Enrichment.ProcessEnricherExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.ProcessEnricherExtensions.AddProcessLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.ProcessEnricherExtensions.AddProcessLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.Enrichment.ProcessLogEnricherOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.ProcessEnricherExtensions.AddProcessLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Diagnostics.Enrichment.ProcessEnricherTagNames",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ProcessEnricherTagNames.ProcessId",
+          "Stage": "Stable",
+          "Value": "pid"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ProcessEnricherTagNames.ThreadId",
+          "Stage": "Stable",
+          "Value": "tid"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Diagnostics.Enrichment.ProcessEnricherTagNames.DimensionNames { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.Enrichment.ProcessLogEnricherOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Enrichment.ProcessLogEnricherOptions.ProcessLogEnricherOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ProcessLogEnricherOptions.ProcessId { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ProcessLogEnricherOptions.ThreadId { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherTags",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherTags.ApplicationName",
+          "Stage": "Stable",
+          "Value": "env_app_name"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherTags.BuildVersion",
+          "Stage": "Stable",
+          "Value": "env_cloud_roleVer"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherTags.DeploymentRing",
+          "Stage": "Stable",
+          "Value": "env_cloud_deploymentRing"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherTags.EnvironmentName",
+          "Stage": "Stable",
+          "Value": "env_cloud_env"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherTags.DimensionNames { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions.ServiceLogEnricherOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions.ApplicationName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions.BuildVersion { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions.DeploymentRing { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions.EnvironmentName { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

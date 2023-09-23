@@ -21,7 +21,6 @@ using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 

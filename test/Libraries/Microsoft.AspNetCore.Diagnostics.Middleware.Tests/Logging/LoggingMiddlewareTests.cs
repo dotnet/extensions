@@ -4,8 +4,8 @@
 using System;
 using System.Threading;
 using Microsoft.Extensions.Compliance.Redaction;
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.Shared.Diagnostics;
 using Moq;
 using Xunit;
