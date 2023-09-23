@@ -7,7 +7,7 @@ using Microsoft.Extensions.Time.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.Extensions.Logging.Testing.Test;
+namespace Microsoft.Extensions.Logging.Testing.Test.Logging;
 
 public class FakeLogCollectorTests
 {

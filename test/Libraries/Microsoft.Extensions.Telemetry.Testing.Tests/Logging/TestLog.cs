@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Logging.Testing.Test;
+namespace Microsoft.Extensions.Logging.Testing.Test.Logging;
 
 internal static partial class TestLog
 {
