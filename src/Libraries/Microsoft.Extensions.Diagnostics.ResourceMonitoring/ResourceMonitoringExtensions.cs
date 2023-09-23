@@ -7,7 +7,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.Metrics;
-using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
+#if !NETFRAMEWORK
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
+#endif
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Network;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 

@@ -11,7 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Xunit;
 
-namespace Microsoft.Extensions.Compliance.Redaction.Tests;
+namespace Microsoft.Extensions.Compliance.Redaction.Test;
 
 public class XxHash3RedactorExtensionsTests
 {

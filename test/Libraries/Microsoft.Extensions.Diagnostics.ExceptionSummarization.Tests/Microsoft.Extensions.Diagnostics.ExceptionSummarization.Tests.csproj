@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.ExceptionSummarization.Tests</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.Diagnostics.ExceptionSummarization.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Extensions.Diagnostics.ExceptionSummarization</Description>
   </PropertyGroup>
 

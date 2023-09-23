@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.AspNetCore.Diagnostics</RootNamespace>
+    <Description>ASP.NET Core middleware for collecting high-quality telemetry.</Description>
+    <PackageTags>$(PackageTags);aspnetcore</PackageTags>
+    <Workstream>Telemetry</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <InjectSharedThrow>false</InjectSharedThrow>
+    <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
+    <InjectSharedDebugger>true</InjectSharedDebugger>
+    <InjectSharedDataValidation>false</InjectSharedDataValidation>
+    <InjectSharedPools>false</InjectSharedPools>
+    <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
+    <InjectSharedNumericExtensions>false</InjectSharedNumericExtensions>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>99</MinCodeCoverage>
+    <MinMutationScore>85</MinMutationScore>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.AutoActivation\Microsoft.Extensions.DependencyInjection.AutoActivation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" />
+    <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
+    <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+  </ItemGroup>
+</Project>

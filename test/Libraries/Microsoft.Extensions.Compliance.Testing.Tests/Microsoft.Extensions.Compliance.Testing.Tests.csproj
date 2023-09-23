@@ -12,6 +12,5 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 </Project>
