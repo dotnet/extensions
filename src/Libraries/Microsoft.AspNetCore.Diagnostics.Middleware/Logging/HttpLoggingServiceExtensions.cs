@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Internal;
 using Microsoft.IO;
 using Microsoft.Shared.Diagnostics;
 

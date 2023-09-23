@@ -18,8 +18,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Generators\Microsoft.Gen.AutoClient\Microsoft.Gen.AutoClient.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" />
-    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Http.AutoClient\Microsoft.Extensions.Http.AutoClient.csproj"  />
-    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj"  />
+    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Http.AutoClient\Microsoft.Extensions.Http.AutoClient.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.Extra\Microsoft.Extensions.Diagnostics.Extra.csproj" />
   </ItemGroup>
 
   <ItemGroup>

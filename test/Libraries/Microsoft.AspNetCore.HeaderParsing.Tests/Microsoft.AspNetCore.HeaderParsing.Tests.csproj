@@ -11,6 +11,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.AspNetCore.HeaderParsing\Microsoft.AspNetCore.HeaderParsing.csproj" ProjectUnderTest="true" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" />
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Testing\Microsoft.Extensions.Telemetry.Testing.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.Testing\Microsoft.Extensions.Diagnostics.Testing.csproj" />
   </ItemGroup>
 </Project>
