@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.Testing.Test;
+namespace Microsoft.Extensions.Logging.Testing.Test.Logging;
 
 public class FakeLogCollectorOptionsTests
 {

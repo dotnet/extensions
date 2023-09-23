@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.Testing.Test;
+namespace Microsoft.Extensions.Logging.Testing.Test.Logging;
 
 public class FakeLoggerTests
 {
