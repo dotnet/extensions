@@ -16,7 +16,7 @@ public static class HttpResiliencePipelineBuilderExtensions
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="classification">The data class associated with the authority.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     /// <remarks>The authority is redacted using <see cref="T:Microsoft.Extensions.Compliance.Redaction.Redactor" /> retrieved for <paramref name="classification" />.</remarks>
     public static IHttpResiliencePipelineBuilder SelectPipelineByAuthority(this IHttpResiliencePipelineBuilder builder, DataClassification classification);
 
@@ -25,7 +25,7 @@ public static class HttpResiliencePipelineBuilderExtensions
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="selectorFactory">The factory that returns a key selector.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     /// <remarks>The pipeline key is used in metrics and logs, so don't return any sensitive values.</remarks>
     public static IHttpResiliencePipelineBuilder SelectPipelineBy(this IHttpResiliencePipelineBuilder builder, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory);
 }

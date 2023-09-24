@@ -1,4 +1,4 @@
-// Assembly 'Microsoft.Extensions.Http.Telemetry'
+// Assembly 'Microsoft.Extensions.Http.Diagnostics'
 
 namespace Microsoft.Extensions.Http.Logging;
 

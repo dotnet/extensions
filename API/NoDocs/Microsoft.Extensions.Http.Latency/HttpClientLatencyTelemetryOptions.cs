@@ -1,4 +1,4 @@
-// Assembly 'Microsoft.Extensions.Http.Telemetry'
+// Assembly 'Microsoft.Extensions.Http.Diagnostics'
 
 using System.Runtime.CompilerServices;
 

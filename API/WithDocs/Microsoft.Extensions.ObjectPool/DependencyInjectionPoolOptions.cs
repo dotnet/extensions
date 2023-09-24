@@ -1,6 +1,5 @@
 // Assembly 'Microsoft.Extensions.ObjectPool.DependencyInjection'
 
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.ObjectPool;
@@ -8,7 +7,6 @@ namespace Microsoft.Extensions.ObjectPool;
 /// <summary>
 /// Contains configuration for pools.
 /// </summary>
-[Experimental("EXTEXP0010", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public sealed class DependencyInjectionPoolOptions
 {
     /// <summary>

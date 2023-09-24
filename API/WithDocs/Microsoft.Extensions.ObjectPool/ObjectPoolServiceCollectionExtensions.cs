@@ -10,7 +10,6 @@ namespace Microsoft.Extensions.ObjectPool;
 /// <summary>
 /// Extension methods for adding <see cref="T:Microsoft.Extensions.ObjectPool.ObjectPool`1" /> to DI container.
 /// </summary>
-[Experimental("EXTEXP0010", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public static class ObjectPoolServiceCollectionExtensions
 {
     /// <summary>
@@ -48,7 +47,7 @@ public static class ObjectPoolServiceCollectionExtensions
     /// <typeparam name="TService">The type of objects to pool.</typeparam>
     /// <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> to add the services to.</param>
     /// <param name="configure">The action used to configure the options.</param>
-    /// <returns>The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services" />.</returns>
     public static IServiceCollection ConfigurePool<TService>(this IServiceCollection services, Action<DependencyInjectionPoolOptions> configure) where TService : class;
 
     /// <summary>
@@ -56,6 +55,6 @@ public static class ObjectPoolServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> to add to.</param>
     /// <param name="section">The configuration section to bind.</param>
-    /// <returns>The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services" />.</returns>
     public static IServiceCollection ConfigurePools(this IServiceCollection services, IConfigurationSection section);
 }

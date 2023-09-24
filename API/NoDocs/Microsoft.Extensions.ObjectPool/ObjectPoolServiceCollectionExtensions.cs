@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.ObjectPool;
 
-[Experimental("EXTEXP0010", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
 public static class ObjectPoolServiceCollectionExtensions
 {
     public static IServiceCollection AddPooled<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(this IServiceCollection services, Action<DependencyInjectionPoolOptions>? configure = null) where TService : class;

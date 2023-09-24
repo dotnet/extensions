@@ -18,9 +18,7 @@ public static class RoutingStrategyBuilderExtensions
     /// </summary>
     /// <param name="builder">The routing builder.</param>
     /// <param name="section">The section that the <see cref="T:Microsoft.Extensions.Http.Resilience.OrderedGroupsRoutingOptions" /> will bind against.</param>
-    /// <returns>
-    /// The same routing builder instance.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     public static IRoutingStrategyBuilder ConfigureOrderedGroups(this IRoutingStrategyBuilder builder, IConfigurationSection section);
 
     /// <summary>
@@ -28,9 +26,7 @@ public static class RoutingStrategyBuilderExtensions
     /// </summary>
     /// <param name="builder">The routing builder.</param>
     /// <param name="configure">The callback that configures <see cref="T:Microsoft.Extensions.Http.Resilience.OrderedGroupsRoutingOptions" />.</param>
-    /// <returns>
-    /// The same routing builder instance.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     public static IRoutingStrategyBuilder ConfigureOrderedGroups(this IRoutingStrategyBuilder builder, Action<OrderedGroupsRoutingOptions> configure);
 
     /// <summary>
@@ -38,9 +34,7 @@ public static class RoutingStrategyBuilderExtensions
     /// </summary>
     /// <param name="builder">The routing builder.</param>
     /// <param name="configure">The callback that configures <see cref="T:Microsoft.Extensions.Http.Resilience.OrderedGroupsRoutingOptions" />.</param>
-    /// <returns>
-    /// The same routing builder instance.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     [Experimental("EXTEXP0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IRoutingStrategyBuilder ConfigureOrderedGroups(this IRoutingStrategyBuilder builder, Action<OrderedGroupsRoutingOptions, IServiceProvider> configure);
 
@@ -49,9 +43,7 @@ public static class RoutingStrategyBuilderExtensions
     /// </summary>
     /// <param name="builder">The routing builder.</param>
     /// <param name="section">The section that the <see cref="T:Microsoft.Extensions.Http.Resilience.WeightedGroupsRoutingOptions" /> will bind against.</param>
-    /// <returns>
-    /// The same routing builder instance.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     public static IRoutingStrategyBuilder ConfigureWeightedGroups(this IRoutingStrategyBuilder builder, IConfigurationSection section);
 
     /// <summary>
@@ -59,9 +51,7 @@ public static class RoutingStrategyBuilderExtensions
     /// </summary>
     /// <param name="builder">The routing builder.</param>
     /// <param name="configure">The callback that configures <see cref="T:Microsoft.Extensions.Http.Resilience.WeightedGroupsRoutingOptions" />.</param>
-    /// <returns>
-    /// The same routing builder instance.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     public static IRoutingStrategyBuilder ConfigureWeightedGroups(this IRoutingStrategyBuilder builder, Action<WeightedGroupsRoutingOptions> configure);
 
     /// <summary>
@@ -69,9 +59,7 @@ public static class RoutingStrategyBuilderExtensions
     /// </summary>
     /// <param name="builder">The routing builder.</param>
     /// <param name="configure">The callback that configures <see cref="T:Microsoft.Extensions.Http.Resilience.WeightedGroupsRoutingOptions" />.</param>
-    /// <returns>
-    /// The same routing builder instance.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     [Experimental("EXTEXP0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IRoutingStrategyBuilder ConfigureWeightedGroups(this IRoutingStrategyBuilder builder, Action<WeightedGroupsRoutingOptions, IServiceProvider> configure);
 }

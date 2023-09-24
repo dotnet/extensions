@@ -18,7 +18,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// </summary>
     /// <param name="builder">The pipeline builder.</param>
     /// <param name="section">The section that the options will bind against.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, IConfigurationSection section);
 
     /// <summary>
@@ -26,7 +26,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// </summary>
     /// <param name="builder">The pipeline builder.</param>
     /// <param name="configure">The configure method.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, Action<HttpStandardHedgingResilienceOptions> configure);
 
     /// <summary>
@@ -34,7 +34,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// </summary>
     /// <param name="builder">The pipeline builder.</param>
     /// <param name="configure">The configure method.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     [Experimental("EXTEXP0001", UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}")]
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, Action<HttpStandardHedgingResilienceOptions, IServiceProvider> configure);
 
@@ -43,7 +43,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="classification">The data class associated with the authority.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     /// <remarks>The authority is redacted using <see cref="T:Microsoft.Extensions.Compliance.Redaction.Redactor" /> retrieved for <paramref name="classification" />.</remarks>
     public static IStandardHedgingHandlerBuilder SelectPipelineByAuthority(this IStandardHedgingHandlerBuilder builder, DataClassification classification);
 
@@ -52,7 +52,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="selectorFactory">The factory that returns key selector.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder" />.</returns>
     /// <remarks>The pipeline key is used in metrics and logs, do not return any sensitive value.</remarks>
     public static IStandardHedgingHandlerBuilder SelectPipelineBy(this IStandardHedgingHandlerBuilder builder, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory);
 }
