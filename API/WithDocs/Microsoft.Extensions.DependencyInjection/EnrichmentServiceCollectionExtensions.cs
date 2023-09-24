@@ -1,13 +1,13 @@
 // Assembly 'Microsoft.Extensions.Diagnostics.ExtraAbstractions'
 
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 
-namespace Microsoft.Extensions.Diagnostics.Enrichment;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Lets you register telemetry enrichers in a dependency injection container.
 /// </summary>
-public static class EnricherExtensions
+public static class EnrichmentServiceCollectionExtensions
 {
     /// <summary>
     /// Registers a log enricher type.

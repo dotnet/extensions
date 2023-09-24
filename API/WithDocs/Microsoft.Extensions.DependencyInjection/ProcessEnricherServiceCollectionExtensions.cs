@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Provides extension methods for setting up Process enrichers in an <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" />.
 /// </summary>
-public static class ProcessEnricherExtensions
+public static class ProcessEnricherServiceCollectionExtensions
 {
     /// <summary>
     /// Adds an instance of the process enricher to the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" />.

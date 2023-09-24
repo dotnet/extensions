@@ -7,7 +7,7 @@ using Microsoft.Extensions.Diagnostics.Enrichment;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static class ServiceEnricherExtensions
+public static class ServiceEnricherServiceCollectionExtensions
 {
     public static IServiceCollection AddServiceLogEnricher(this IServiceCollection services);
     public static IServiceCollection AddServiceLogEnricher(this IServiceCollection services, Action<ServiceLogEnricherOptions> configure);

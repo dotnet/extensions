@@ -1,10 +1,10 @@
 // Assembly 'Microsoft.Extensions.Diagnostics.ExtraAbstractions'
 
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 
-namespace Microsoft.Extensions.Diagnostics.Enrichment;
+namespace Microsoft.Extensions.DependencyInjection;
 
-public static class EnricherExtensions
+public static class EnrichmentServiceCollectionExtensions
 {
     public static IServiceCollection AddLogEnricher<T>(this IServiceCollection services) where T : class, ILogEnricher;
     public static IServiceCollection AddLogEnricher(this IServiceCollection services, ILogEnricher enricher);
