@@ -3,11 +3,9 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.IO;
@@ -46,7 +44,7 @@ public static class HttpLoggingServiceCollectionExtensions
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configure);
 
-        return AddHttpLoggingInternal(services, x => x.Configure(configure));
+        return AddHttpLoggingInternal(services, builder => builder.Configure(configure));
     }
 
     /// <summary>
@@ -68,7 +66,7 @@ public static class HttpLoggingServiceCollectionExtensions
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(section);
 
-        return AddHttpLoggingInternal(services, x => x.Bind(section));
+        return AddHttpLoggingInternal(services, builder => builder.Bind(section));
     }
 
     /// <summary>
@@ -82,80 +80,6 @@ public static class HttpLoggingServiceCollectionExtensions
         where T : class, IHttpLogEnricher
         => Throw.IfNull(services)
         .AddActivatedSingleton<IHttpLogEnricher, T>();
-
-    /// <summary>
-    /// Adds an instance of Request Headers Log Enricher to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the Request Headers Log Enricher to.</param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
-    public static IServiceCollection AddRequestHeadersLogEnricher(this IServiceCollection services)
-    {
-        _ = Throw.IfNull(services);
-
-        return services
-            .AddLogEnricherOptions(_ => { })
-            .RegisterRequestHeadersEnricher();
-    }
-
-    /// <summary>
-    /// Adds an instance of Request Headers Log Enricher to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the Request Headers Log Enricher to.</param>
-    /// <param name="configure">The <see cref="RequestHeadersLogEnricherOptions"/> configuration delegate.</param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
-    public static IServiceCollection AddRequestHeadersLogEnricher(this IServiceCollection services, Action<RequestHeadersLogEnricherOptions> configure)
-    {
-        _ = Throw.IfNull(services);
-        _ = Throw.IfNull(configure);
-
-        return services
-            .AddLogEnricherOptions(configure)
-            .RegisterRequestHeadersEnricher();
-    }
-
-    /// <summary>
-    /// Adds an instance of Request Headers Log Enricher to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the Request Headers Log Enricher to.</param>
-    /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="RequestHeadersLogEnricherOptions"/>
-    /// in the Request Headers Log Enricher.</param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(RequestHeadersLogEnricherOptions))]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed with [DynamicDependency]")]
-    public static IServiceCollection AddRequestHeadersLogEnricher(this IServiceCollection services, IConfigurationSection section)
-    {
-        _ = Throw.IfNull(services);
-        _ = Throw.IfNull(section);
-
-        return services
-            .Configure<RequestHeadersLogEnricherOptions>(section)
-            .AddLogEnricherOptions(_ => { })
-            .RegisterRequestHeadersEnricher();
-    }
-
-    private static IServiceCollection RegisterRequestHeadersEnricher(this IServiceCollection services)
-    {
-        return services
-            .AddHttpContextAccessor()
-            .AddLogEnricher<RequestHeadersLogEnricher>();
-    }
-
-    private static IServiceCollection AddLogEnricherOptions(
-        this IServiceCollection services,
-        Action<RequestHeadersLogEnricherOptions> configure)
-    {
-        _ = services
-            .AddOptionsWithValidateOnStart<RequestHeadersLogEnricherOptions, RequestHeadersLogEnricherOptionsValidator>()
-            .Configure(configure);
-
-        return services;
-    }
 
     private static IServiceCollection AddHttpLoggingInternal(
         this IServiceCollection services,
