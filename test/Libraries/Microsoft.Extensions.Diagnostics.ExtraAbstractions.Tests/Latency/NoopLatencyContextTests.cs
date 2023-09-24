@@ -13,7 +13,7 @@ public class NoopLatencyContextTests
     public void ServiceCollection_Null()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            NullLatencyContextExtensions.AddNullLatencyContext(null!));
+            NullLatencyContextServiceCollectionExtensions.AddNullLatencyContext(null!));
     }
 
     [Fact]

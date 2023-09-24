@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Latency;
 using Microsoft.Extensions.Http.Latency.Internal;

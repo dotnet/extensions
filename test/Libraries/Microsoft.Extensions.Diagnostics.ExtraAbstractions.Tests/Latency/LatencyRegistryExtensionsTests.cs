@@ -14,25 +14,25 @@ public class LatencyRegistryExtensionsTests
     public void LatencyRegistryExtension_NullArguments()
     {
         Assert.Throws<ArgumentNullException>(
-            () => LatencyRegistryExtensions.RegisterCheckpointNames(new ServiceCollection(), null!));
+            () => LatencyRegistryServiceCollectionExtensions.RegisterCheckpointNames(new ServiceCollection(), null!));
         Assert.Throws<ArgumentNullException>(
-            () => LatencyRegistryExtensions.RegisterCheckpointNames(null!, new string[0]));
+            () => LatencyRegistryServiceCollectionExtensions.RegisterCheckpointNames(null!, new string[0]));
         Assert.Throws<ArgumentNullException>(
-            () => LatencyRegistryExtensions.RegisterMeasureNames(null!, new string[0]));
+            () => LatencyRegistryServiceCollectionExtensions.RegisterMeasureNames(null!, new string[0]));
         Assert.Throws<ArgumentNullException>(
-            () => LatencyRegistryExtensions.RegisterMeasureNames(new ServiceCollection(), null!));
+            () => LatencyRegistryServiceCollectionExtensions.RegisterMeasureNames(new ServiceCollection(), null!));
         Assert.Throws<ArgumentNullException>(
-            () => LatencyRegistryExtensions.RegisterTagNames(null!, new string[0]));
+            () => LatencyRegistryServiceCollectionExtensions.RegisterTagNames(null!, new string[0]));
         Assert.Throws<ArgumentNullException>(
-            () => LatencyRegistryExtensions.RegisterTagNames(new ServiceCollection(), null!));
+            () => LatencyRegistryServiceCollectionExtensions.RegisterTagNames(new ServiceCollection(), null!));
     }
 
     [Fact]
     public void LatencyRegistryExtension_EmptyNames()
     {
-        Assert.Throws<ArgumentException>(() => LatencyRegistryExtensions.RegisterCheckpointNames(new ServiceCollection(), ""));
-        Assert.Throws<ArgumentException>(() => LatencyRegistryExtensions.RegisterMeasureNames(new ServiceCollection(), ""));
-        Assert.Throws<ArgumentException>(() => LatencyRegistryExtensions.RegisterTagNames(new ServiceCollection(), ""));
+        Assert.Throws<ArgumentException>(() => LatencyRegistryServiceCollectionExtensions.RegisterCheckpointNames(new ServiceCollection(), ""));
+        Assert.Throws<ArgumentException>(() => LatencyRegistryServiceCollectionExtensions.RegisterMeasureNames(new ServiceCollection(), ""));
+        Assert.Throws<ArgumentException>(() => LatencyRegistryServiceCollectionExtensions.RegisterTagNames(new ServiceCollection(), ""));
     }
 
     [Fact]

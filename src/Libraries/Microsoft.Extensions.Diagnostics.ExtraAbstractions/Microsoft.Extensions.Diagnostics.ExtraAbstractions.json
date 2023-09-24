@@ -471,19 +471,19 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Diagnostics.Latency.LatencyRegistryExtensions",
+      "Type": "static class Microsoft.Extensions.DependencyInjection.LatencyRegistryServiceCollectionExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Latency.LatencyRegistryExtensions.RegisterCheckpointNames(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, params string[] names);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.LatencyRegistryServiceCollectionExtensions.RegisterCheckpointNames(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, params string[] names);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Latency.LatencyRegistryExtensions.RegisterMeasureNames(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, params string[] names);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.LatencyRegistryServiceCollectionExtensions.RegisterMeasureNames(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, params string[] names);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Latency.LatencyRegistryExtensions.RegisterTagNames(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, params string[] names);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.LatencyRegistryServiceCollectionExtensions.RegisterTagNames(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, params string[] names);",
           "Stage": "Stable"
         }
       ]
@@ -767,11 +767,11 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Diagnostics.Latency.NullLatencyContextExtensions",
+      "Type": "static class Microsoft.Extensions.DependencyInjection.NullLatencyContextServiceCollectionExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Latency.NullLatencyContextExtensions.AddNullLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.NullLatencyContextServiceCollectionExtensions.AddNullLatencyContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         }
       ]
