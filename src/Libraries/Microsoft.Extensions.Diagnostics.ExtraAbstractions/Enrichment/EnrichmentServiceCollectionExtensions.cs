@@ -2,15 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.Enrichment;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Lets you register telemetry enrichers in a dependency injection container.
 /// </summary>
-public static class EnricherExtensions
+public static class EnrichmentServiceCollectionExtensions
 {
     /// <summary>
     /// Registers a log enricher type.
@@ -21,11 +21,7 @@ public static class EnricherExtensions
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddLogEnricher<T>(this IServiceCollection services)
         where T : class, ILogEnricher
-    {
-        _ = Throw.IfNull(services);
-
-        return services.AddSingleton<ILogEnricher, T>();
-    }
+        => Throw.IfNull(services).AddSingleton<ILogEnricher, T>();
 
     /// <summary>
     /// Registers a log enricher instance.
@@ -35,12 +31,7 @@ public static class EnricherExtensions
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="enricher"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddLogEnricher(this IServiceCollection services, ILogEnricher enricher)
-    {
-        _ = Throw.IfNull(services);
-        _ = Throw.IfNull(enricher);
-
-        return services.AddSingleton(enricher);
-    }
+        => Throw.IfNull(services).AddSingleton(Throw.IfNull(enricher));
 
     /// <summary>
     /// Registers a static log enricher type.
@@ -51,11 +42,7 @@ public static class EnricherExtensions
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddStaticLogEnricher<T>(this IServiceCollection services)
         where T : class, IStaticLogEnricher
-    {
-        _ = Throw.IfNull(services);
-
-        return services.AddSingleton<IStaticLogEnricher, T>();
-    }
+        => Throw.IfNull(services).AddSingleton<IStaticLogEnricher, T>();
 
     /// <summary>
     /// Registers a static log enricher instance.
@@ -65,10 +52,5 @@ public static class EnricherExtensions
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> or <paramref name="enricher"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddStaticLogEnricher(this IServiceCollection services, IStaticLogEnricher enricher)
-    {
-        _ = Throw.IfNull(services);
-        _ = Throw.IfNull(enricher);
-
-        return services.AddSingleton(enricher);
-    }
+        => Throw.IfNull(services).AddSingleton(Throw.IfNull(enricher));
 }

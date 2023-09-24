@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Provides extension methods for setting up the service enrichers in an <see cref="IServiceCollection" />.
 /// </summary>
-public static class ServiceEnricherExtensions
+public static class ServiceEnricherServiceCollectionExtensions
 {
     /// <summary>
     /// Adds an instance of the service enricher to the <see cref="IServiceCollection"/>.
