@@ -1,13 +1,11 @@
 // Assembly 'Microsoft.Extensions.Diagnostics.ExtraAbstractions'
 
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Microsoft.Extensions.Diagnostics.Latency;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extensions to add a no-op latency context.
 /// </summary>
-public static class NullLatencyContextExtensions
+public static class NullLatencyContextServiceCollectionExtensions
 {
     /// <summary>
     /// Adds a no-op latency context to a dependency injection container.

@@ -1,14 +1,14 @@
 // Assembly 'Microsoft.Extensions.Diagnostics.ExtraAbstractions'
 
 using System;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Latency;
 
-namespace Microsoft.Extensions.Diagnostics.Latency;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extensions to configure a latency context.
 /// </summary>
-public static class LatencyRegistryExtensions
+public static class LatencyRegistryServiceCollectionExtensions
 {
     /// <summary>
     /// Registers a set of checkpoint names for a latency context.
@@ -24,7 +24,7 @@ public static class LatencyRegistryExtensions
     /// </summary>
     /// <param name="services">The dependency injection container to add the names to.</param>
     /// <param name="names">Set of measure names.</param>
-    /// <returns>Provided service collection.</returns>
+    /// <returns>The value of <paramref name="services" />.</returns>
     /// <exception cref="T:System.ArgumentNullException"><paramref name="services" /> or <paramref name="names" /> is <see langword="null" />.</exception>
     public static IServiceCollection RegisterMeasureNames(this IServiceCollection services, params string[] names);
 
@@ -33,7 +33,7 @@ public static class LatencyRegistryExtensions
     /// </summary>
     /// <param name="services">The dependency injection container to add the names to.</param>
     /// <param name="names">Set of tag names.</param>
-    /// <returns>Provided service collection.</returns>
+    /// <returns>The value of <paramref name="services" />.</returns>
     /// <exception cref="T:System.ArgumentNullException"><paramref name="services" /> or <paramref name="names" /> is <see langword="null" />.</exception>
     public static IServiceCollection RegisterTagNames(this IServiceCollection services, params string[] names);
 }

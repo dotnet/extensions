@@ -1,10 +1,8 @@
 // Assembly 'Microsoft.Extensions.Diagnostics.ExtraAbstractions'
 
-using Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.Diagnostics.Latency;
-
-public static class NullLatencyContextExtensions
+public static class NullLatencyContextServiceCollectionExtensions
 {
     public static IServiceCollection AddNullLatencyContext(this IServiceCollection services);
 }
