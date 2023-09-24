@@ -2,27 +2,45 @@
   "Name": "Microsoft.AspNetCore.Diagnostics.Middleware, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingServiceExtensions",
+      "Type": "static class Microsoft.AspNetCore.Builder.HttpLoggingApplicationBuilderExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingServiceExtensions.AddHttpLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.AspNetCore.Builder.IApplicationBuilder Microsoft.AspNetCore.Builder.HttpLoggingApplicationBuilderExtensions.UseHttpLoggingMiddleware(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddHttpLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingServiceExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingServiceExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions> configure);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingServiceExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.AspNetCore.Builder.IApplicationBuilder Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingServiceExtensions.UseHttpLoggingMiddleware(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Diagnostics.RequestHeadersLogEnricherOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         }
       ]
@@ -208,38 +226,6 @@
       ]
     },
     {
-      "Type": "static class Microsoft.AspNetCore.Diagnostics.Latency.RequestCheckpointExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.Latency.RequestCheckpointExtensions.AddRequestCheckpoint(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.AspNetCore.Builder.IApplicationBuilder Microsoft.AspNetCore.Diagnostics.Latency.RequestCheckpointExtensions.UseRequestCheckpoint(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.AspNetCore.Diagnostics.Logging.RequestHeadersEnricherExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.Logging.RequestHeadersEnricherExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.Logging.RequestHeadersEnricherExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Diagnostics.RequestHeadersLogEnricherOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.Logging.RequestHeadersEnricherExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "class Microsoft.AspNetCore.Diagnostics.RequestHeadersLogEnricherOptions",
       "Stage": "Stable",
       "Methods": [
@@ -256,23 +242,15 @@
       ]
     },
     {
-      "Type": "static class Microsoft.AspNetCore.Diagnostics.Latency.RequestLatencyTelemetryExtensions",
+      "Type": "static class Microsoft.AspNetCore.Builder.RequestLatencyTelemetryApplicationBuilderExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.Latency.RequestLatencyTelemetryExtensions.AddRequestLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.AspNetCore.Builder.IApplicationBuilder Microsoft.AspNetCore.Builder.RequestLatencyTelemetryApplicationBuilderExtensions.UseRequestCheckpoint(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.Latency.RequestLatencyTelemetryExtensions.AddRequestLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Diagnostics.Latency.RequestLatencyTelemetryOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.Diagnostics.Latency.RequestLatencyTelemetryExtensions.AddRequestLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.AspNetCore.Builder.IApplicationBuilder Microsoft.AspNetCore.Diagnostics.Latency.RequestLatencyTelemetryExtensions.UseRequestLatencyTelemetry(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder);",
+          "Member": "static Microsoft.AspNetCore.Builder.IApplicationBuilder Microsoft.AspNetCore.Builder.RequestLatencyTelemetryApplicationBuilderExtensions.UseRequestLatencyTelemetry(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder);",
           "Stage": "Stable"
         }
       ]
@@ -289,6 +267,28 @@
       "Properties": [
         {
           "Member": "System.TimeSpan Microsoft.AspNetCore.Diagnostics.Latency.RequestLatencyTelemetryOptions.LatencyDataExportTimeout { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.RequestLatencyTelemetryServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.RequestLatencyTelemetryServiceCollectionExtensions.AddRequestCheckpoint(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.RequestLatencyTelemetryServiceCollectionExtensions.AddRequestLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.RequestLatencyTelemetryServiceCollectionExtensions.AddRequestLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Diagnostics.Latency.RequestLatencyTelemetryOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.RequestLatencyTelemetryServiceCollectionExtensions.AddRequestLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         }
       ]

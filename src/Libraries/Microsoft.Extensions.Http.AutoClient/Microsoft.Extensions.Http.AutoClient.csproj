@@ -28,7 +28,7 @@
          applications using this package to invoke the auto client code generator will inherit
          this reference, such that the generated code will work.
     -->
-    <ProjectReference Include="../Microsoft.Extensions.Http.Telemetry/Microsoft.Extensions.Http.Telemetry.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Http.Diagnostics\Microsoft.Extensions.Http.Diagnostics.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,11 +4,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options.Contextual;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Options.Contextual;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extension methods for adding contextual options services to the DI container.
@@ -19,7 +19,7 @@ public static class ContextualOptionsServiceCollectionExtensions
     /// Adds services required for using contextual options.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     public static IServiceCollection AddContextualOptions(this IServiceCollection services)
     {
         _ = Throw.IfNull(services).AddOptions();
@@ -37,12 +37,12 @@ public static class ContextualOptionsServiceCollectionExtensions
     /// <typeparam name="TOptions">The options type to be configured.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="loadOptions">The action used to configure the options.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     public static IServiceCollection Configure<TOptions>(
         this IServiceCollection services,
         Func<IOptionsContext, CancellationToken, ValueTask<IConfigureContextualOptions<TOptions>>> loadOptions)
         where TOptions : class
-        => services.Configure(Microsoft.Extensions.Options.Options.DefaultName, Throw.IfNull(loadOptions));
+        => services.Configure(Options.Options.DefaultName, Throw.IfNull(loadOptions));
 
     /// <summary>
     /// Registers an action used to configure a particular type of options.
@@ -51,7 +51,7 @@ public static class ContextualOptionsServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="name">The name of the options to configure.</param>
     /// <param name="loadOptions">The action used to configure the options.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     public static IServiceCollection Configure<TOptions>(
         this IServiceCollection services,
         string name,
@@ -70,10 +70,10 @@ public static class ContextualOptionsServiceCollectionExtensions
     /// <typeparam name="TOptions">The options type to be configured.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configureOptions">The action used to configure the options.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     public static IServiceCollection Configure<TOptions>(this IServiceCollection services, Action<IOptionsContext, TOptions> configureOptions)
         where TOptions : class
-        => services.Configure(Microsoft.Extensions.Options.Options.DefaultName, Throw.IfNull(configureOptions));
+        => services.Configure(Options.Options.DefaultName, Throw.IfNull(configureOptions));
 
     /// <summary>
     /// Registers an action used to configure a particular type of options.
@@ -82,7 +82,7 @@ public static class ContextualOptionsServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="name">The name of the options to configure.</param>
     /// <param name="configureOptions">The action used to configure the options.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     public static IServiceCollection Configure<TOptions>(this IServiceCollection services, string name, Action<IOptionsContext, TOptions> configureOptions)
         where TOptions : class
     {
@@ -100,7 +100,7 @@ public static class ContextualOptionsServiceCollectionExtensions
     /// <typeparam name="TOptions">The options type to be configured.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configureOptions">The action used to configure the options.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     public static IServiceCollection PostConfigureAll<TOptions>(this IServiceCollection services, Action<IOptionsContext, TOptions> configureOptions)
         where TOptions : class
         => services.PostConfigure(null, Throw.IfNull(configureOptions));
@@ -111,10 +111,10 @@ public static class ContextualOptionsServiceCollectionExtensions
     /// <typeparam name="TOptions">The options type to be configured.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configureOptions">The action used to configure the options.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     public static IServiceCollection PostConfigure<TOptions>(this IServiceCollection services, Action<IOptionsContext, TOptions> configureOptions)
         where TOptions : class
-        => services.PostConfigure(Microsoft.Extensions.Options.Options.DefaultName, Throw.IfNull(configureOptions));
+        => services.PostConfigure(Options.Options.DefaultName, Throw.IfNull(configureOptions));
 
     /// <summary>
     /// Registers an action used to initialize a particular type of options.
@@ -123,7 +123,7 @@ public static class ContextualOptionsServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="name">The name of the options instance.</param>
     /// <param name="configureOptions">The action used to configure the options.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     public static IServiceCollection PostConfigure<TOptions>(this IServiceCollection services, string? name, Action<IOptionsContext, TOptions> configureOptions)
         where TOptions : class
         => services
@@ -138,10 +138,10 @@ public static class ContextualOptionsServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="validate">The validation function.</param>
     /// <param name="failureMessage">The failure message to use when validation fails.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     public static IServiceCollection ValidateContextualOptions<TOptions>(this IServiceCollection services, Func<TOptions, bool> validate, string failureMessage)
         where TOptions : class
-        => services.ValidateContextualOptions(Microsoft.Extensions.Options.Options.DefaultName, Throw.IfNull(validate), Throw.IfNull(failureMessage));
+        => services.ValidateContextualOptions(Options.Options.DefaultName, Throw.IfNull(validate), Throw.IfNull(failureMessage));
 
     /// <summary>
     /// Register a validation action for an options type.
@@ -151,7 +151,7 @@ public static class ContextualOptionsServiceCollectionExtensions
     /// <param name="name">The name of the options instance.</param>
     /// <param name="validate">The validation function.</param>
     /// <param name="failureMessage">The failure message to use when validation fails.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     public static IServiceCollection ValidateContextualOptions<TOptions>(this IServiceCollection services, string name, Func<TOptions, bool> validate, string failureMessage)
         where TOptions : class
         => services

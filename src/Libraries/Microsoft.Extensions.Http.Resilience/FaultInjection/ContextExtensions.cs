@@ -22,9 +22,7 @@ public static class ContextExtensions
     /// </summary>
     /// <param name="context">The context instance.</param>
     /// <param name="request">The calling request.</param>
-    /// <returns>
-    /// The <see cref="Context"/> so that additional calls can be chained.
-    /// </returns>
+    /// <returns>The value of <paramref name="context"/>.</returns>
     public static Context WithCallingRequestMessage(this Context context, HttpRequestMessage request)
     {
         _ = Throw.IfNull(context);

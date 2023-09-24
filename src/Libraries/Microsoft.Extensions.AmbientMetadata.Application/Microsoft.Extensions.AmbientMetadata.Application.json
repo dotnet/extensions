@@ -30,23 +30,35 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.AmbientMetadata.ApplicationMetadataExtensions",
+      "Type": "static class Microsoft.Extensions.Configuration.ApplicationMetadataConfigurationBuilderExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Configuration.IConfigurationBuilder Microsoft.Extensions.AmbientMetadata.ApplicationMetadataExtensions.AddApplicationMetadata(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, Microsoft.Extensions.Hosting.IHostEnvironment hostEnvironment, string sectionName = \"ambientmetadata:application\");",
+          "Member": "static Microsoft.Extensions.Configuration.IConfigurationBuilder Microsoft.Extensions.Configuration.ApplicationMetadataConfigurationBuilderExtensions.AddApplicationMetadata(this Microsoft.Extensions.Configuration.IConfigurationBuilder builder, Microsoft.Extensions.Hosting.IHostEnvironment hostEnvironment, string sectionName = \"ambientmetadata:application\");",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Hosting.ApplicationMetadataHostBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.ApplicationMetadataHostBuilderExtensions.UseApplicationMetadata(this Microsoft.Extensions.Hosting.IHostBuilder builder, string sectionName = \"ambientmetadata:application\");",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.ApplicationMetadataServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ApplicationMetadataServiceCollectionExtensions.AddApplicationMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.AmbientMetadata.ApplicationMetadataExtensions.AddApplicationMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.AmbientMetadata.ApplicationMetadataExtensions.AddApplicationMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.AmbientMetadata.ApplicationMetadata> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.AmbientMetadata.ApplicationMetadataExtensions.UseApplicationMetadata(this Microsoft.Extensions.Hosting.IHostBuilder builder, string sectionName = \"ambientmetadata:application\");",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ApplicationMetadataServiceCollectionExtensions.AddApplicationMetadata(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.AmbientMetadata.ApplicationMetadata> configure);",
           "Stage": "Stable"
         }
       ]

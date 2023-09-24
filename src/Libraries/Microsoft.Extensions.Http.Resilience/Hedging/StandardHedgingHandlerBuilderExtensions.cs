@@ -26,18 +26,15 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// </summary>
     /// <param name="builder">The pipeline builder.</param>
     /// <param name="section">The section that the options will bind against.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HttpStandardHedgingResilienceOptions))]
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
-        var options = Throw.IfNull(section.Get<HttpStandardHedgingResilienceOptions>());
 
-        _ = builder.Services.Configure<HttpStandardHedgingResilienceOptions>(
-            builder.Name,
-            section,
-            o => o.ErrorOnUnknownConfiguration = true);
+        var options = Throw.IfNull(section.Get<HttpStandardHedgingResilienceOptions>());
+        _ = builder.Services.Configure<HttpStandardHedgingResilienceOptions>(builder.Name, section, o => o.ErrorOnUnknownConfiguration = true);
 
         return builder;
     }
@@ -47,7 +44,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// </summary>
     /// <param name="builder">The pipeline builder.</param>
     /// <param name="configure">The configure method.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, Action<HttpStandardHedgingResilienceOptions> configure)
     {
         _ = Throw.IfNull(builder);
@@ -61,7 +58,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// </summary>
     /// <param name="builder">The pipeline builder.</param>
     /// <param name="configure">The configure method.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, Action<HttpStandardHedgingResilienceOptions, IServiceProvider> configure)
     {
@@ -78,13 +75,13 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="classification">The data class associated with the authority.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>The authority is redacted using <see cref="Redactor"/> retrieved for <paramref name="classification"/>.</remarks>
     public static IStandardHedgingHandlerBuilder SelectPipelineByAuthority(this IStandardHedgingHandlerBuilder builder, DataClassification classification)
     {
         _ = Throw.IfNull(builder);
 
-        var pipelineName = PipelineNameHelper.GetName(builder.Name, HttpClientBuilderExtensions.StandardInnerHandlerPostfix);
+        var pipelineName = PipelineNameHelper.GetName(builder.Name, HttpResilienceHedgingHttpClientBuilderExtensions.StandardInnerHandlerPostfix);
 
         PipelineKeyProviderHelper.SelectPipelineByAuthority(builder.Services, pipelineName, classification);
 
@@ -96,14 +93,14 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="selectorFactory">The factory that returns key selector.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>The pipeline key is used in metrics and logs, do not return any sensitive value.</remarks>
     public static IStandardHedgingHandlerBuilder SelectPipelineBy(this IStandardHedgingHandlerBuilder builder, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(selectorFactory);
 
-        var pipelineName = PipelineNameHelper.GetName(builder.Name, HttpClientBuilderExtensions.StandardInnerHandlerPostfix);
+        var pipelineName = PipelineNameHelper.GetName(builder.Name, HttpResilienceHedgingHttpClientBuilderExtensions.StandardInnerHandlerPostfix);
 
         PipelineKeyProviderHelper.SelectPipelineBy(builder.Services, pipelineName, selectorFactory);
 

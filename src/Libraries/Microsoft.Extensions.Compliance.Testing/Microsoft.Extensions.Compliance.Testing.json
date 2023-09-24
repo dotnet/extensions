@@ -20,6 +20,24 @@
       ]
     },
     {
+      "Type": "static class Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, System.Action<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions> configure, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector",
       "Stage": "Stable",
       "Methods": [
@@ -48,31 +66,25 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions",
+      "Type": "static class Microsoft.Extensions.DependencyInjection.FakeRedactionServiceCollectionExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.AddFakeRedaction(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.FakeRedactionServiceCollectionExtensions.AddFakeRedaction(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.AddFakeRedaction(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.FakeRedactionServiceCollectionExtensions.AddFakeRedaction(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions> configure);",
           "Stage": "Stable"
-        },
+        }
+      ]
+    },
+    {
+      "Type": "static class System.FakeRedactionServiceProviderExtensions",
+      "Stage": "Stable",
+      "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.GetFakeRedactionCollector(this System.IServiceProvider serviceProvider);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, System.Action<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions> configure, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Testing.FakeRedactionExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Member": "static Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector System.FakeRedactionServiceProviderExtensions.GetFakeRedactionCollector(this System.IServiceProvider serviceProvider);",
           "Stage": "Stable"
         }
       ]
@@ -174,11 +186,11 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Compliance.Testing.FakeTaxonomyExtensions",
+      "Type": "static class Microsoft.Extensions.Compliance.Classification.FakeTaxonomyExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Testing.FakeTaxonomyExtensions.AsFakeTaxonomy(this Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "static Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Classification.FakeTaxonomyExtensions.AsFakeTaxonomy(this Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
           "Stage": "Stable"
         }
       ]

@@ -14,8 +14,8 @@ public static class RedactionAbstractionsExtensionsTest
     {
         string s = null!;
 
-        Assert.Throws<ArgumentNullException>(() => RedactionAbstractionsExtensions.AppendRedacted(null!, NullRedactor.Instance, s));
-        Assert.Throws<ArgumentNullException>(() => RedactionAbstractionsExtensions.AppendRedacted(new StringBuilder(), null!, ""));
+        Assert.Throws<ArgumentNullException>(() => RedactionStringBuilderExtensions.AppendRedacted(null!, NullRedactor.Instance, s));
+        Assert.Throws<ArgumentNullException>(() => RedactionStringBuilderExtensions.AppendRedacted(new StringBuilder(), null!, ""));
     }
 
     [Fact]

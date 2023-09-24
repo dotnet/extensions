@@ -25,13 +25,13 @@ public class HttpLoggingServiceExtensionsTests
     {
         var services = Mock.Of<IServiceCollection>();
 
-        Assert.Throws<ArgumentNullException>(static () => HttpLoggingServiceExtensions.AddHttpLogging(null!));
-        Assert.Throws<ArgumentNullException>(static () => HttpLoggingServiceExtensions.AddHttpLogEnricher<TestHttpLogEnricher>(null!));
+        Assert.Throws<ArgumentNullException>(static () => HttpLoggingServiceCollectionExtensions.AddHttpLogging(null!));
+        Assert.Throws<ArgumentNullException>(static () => HttpLoggingServiceCollectionExtensions.AddHttpLogEnricher<TestHttpLogEnricher>(null!));
         Assert.Throws<ArgumentNullException>(
-            () => HttpLoggingServiceExtensions.AddHttpLogging(services, (Action<LoggingOptions>)null!));
+            () => HttpLoggingServiceCollectionExtensions.AddHttpLogging(services, (Action<LoggingOptions>)null!));
 
         Assert.Throws<ArgumentNullException>(
-            () => HttpLoggingServiceExtensions.AddHttpLogging(services, (IConfigurationSection)null!));
+            () => HttpLoggingServiceCollectionExtensions.AddHttpLogging(services, (IConfigurationSection)null!));
     }
 
 #if FIXME

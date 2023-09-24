@@ -13,7 +13,7 @@ public class AsyncContextServiceCollectionExtensionsTests
     [Fact]
     public void AddAsyncStateCore_Throws_WhenNullService()
     {
-        Assert.Throws<ArgumentNullException>(() => AsyncStateExtensions.AddAsyncStateCore(null!));
+        Assert.Throws<ArgumentNullException>(() => AsyncStateExtensions.AddAsyncState(null!));
     }
 
     [Fact]
@@ -23,7 +23,7 @@ public class AsyncContextServiceCollectionExtensionsTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddAsyncStateCore();
+        services.AddAsyncState();
 
         // Assert
         var serviceDescriptor = services.First(x => x.ServiceType == typeof(IAsyncContext<>));

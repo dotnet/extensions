@@ -25,7 +25,7 @@ internal sealed class Emitter : EmitterBase
     private const string StringContent = "global::System.Net.Http.StringContent";
     private const string Encoding = "global::System.Text.Encoding";
     private const string RequestMetadata = "global::Microsoft.Extensions.Http.Diagnostics.RequestMetadata";
-    private const string TelemetryExtensions = "global::Microsoft.Extensions.Http.Diagnostics.TelemetryExtensions";
+    private const string HttpDiagnosticsHttpRequestMessageExtensions = "global::System.Net.Http.HttpDiagnosticsHttpRequestMessageExtensions";
     private const string RestApiException = "global::Microsoft.Extensions.Http.AutoClient.AutoClientException";
     private const string HttpClient = "global::System.Net.Http.HttpClient";
     private const string IHttpClientFactory = "global::System.Net.Http.IHttpClientFactory";
@@ -317,7 +317,7 @@ internal sealed class Emitter : EmitterBase
         OutLn("try");
         OutOpenBrace();
 
-        OutLn($"{TelemetryExtensions}.SetRequestMetadata({httpRequestMessageName}, {staticsName}.RequestMetadata{requestName});");
+        OutLn($"{HttpDiagnosticsHttpRequestMessageExtensions}.SetRequestMetadata({httpRequestMessageName}, {staticsName}.RequestMetadata{requestName});");
 
         foreach (var header in restApiType.StaticHeaders.OrderBy(static h => h.Key))
         {

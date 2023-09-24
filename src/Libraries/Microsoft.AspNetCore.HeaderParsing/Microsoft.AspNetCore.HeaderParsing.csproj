@@ -33,4 +33,9 @@
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="HeaderParsingHttpRequestExtensions.cs" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="HeaderParsingServiceCollectionExtensions.cs" />
+  </ItemGroup>
 </Project>

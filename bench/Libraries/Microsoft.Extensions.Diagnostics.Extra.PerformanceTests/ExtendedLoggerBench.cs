@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Telemetry.Bench;

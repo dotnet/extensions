@@ -4,9 +4,10 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Probes;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.Probes;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extensions for setting up probes for Kubernetes.
