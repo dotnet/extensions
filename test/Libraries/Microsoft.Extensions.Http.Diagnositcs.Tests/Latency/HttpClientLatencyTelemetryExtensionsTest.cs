@@ -8,7 +8,6 @@ using System.Net.Http;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http.Latency.Internal;
 using Microsoft.Extensions.Options;
 using Moq;
