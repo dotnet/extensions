@@ -165,8 +165,13 @@ internal sealed partial class ExtendedLogger : ILogger
 
             _ = sb.Append(exception.GetType());
             _ = sb.Append(": ");
-            _ = sb.AppendLine(exception.Message);
-            _ = sb.Append(indentStr);
+
+            if (config.IncludeExceptionMessageInStackTraces)
+            {
+                _ = sb.AppendLine(exception.Message);
+                _ = sb.Append(indentStr);
+            }
+
             _ = sb.Append(trace);
 
             if (exception is AggregateException aggregateException)

@@ -40,8 +40,23 @@ public class LoggerEnrichmentOptions
     /// <remarks>
     /// Reading available debugging files produces richer stack traces, but can cost a substantial amount of time
     /// to generate. As a result, this option should only be turned on in development scenarios, not for production use.
+    ///
+    /// This property has no effect if <see cref="CaptureStackTraces"/> is <see langword="false"/>.
+    /// 
+    /// This defaults to <see langword="false"/>.
     /// </remarks>
     public bool UseFileInfoForStackTraces { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to include exception messages in stack traces.
+    /// </summary>
+    /// <value>
+    /// This defaults to <see langword="false"/>.
+    /// </value>
+    /// <remarks>
+    /// This property has no effect if <see cref="CaptureStackTraces"/> is <see langword="false"/>.
+    /// </remarks>
+    public bool IncludeExceptionMessageInStackTraces { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum stack trace length to emit for a given log record.
@@ -51,6 +66,8 @@ public class LoggerEnrichmentOptions
     /// </value>
     /// <remarks>
     /// When set to a value less than 2 KB or greater than 32 KB, an exception will be thrown.
+    ///
+    /// This property has no effect if <see cref="CaptureStackTraces"/> is <see langword="false"/>.
     /// </remarks>
     [Range(MinDefinedStackTraceLength, MaxDefinedStackTraceLength)]
     public int MaxStackTraceLength { get; set; } = DefaultStackTraceLength;

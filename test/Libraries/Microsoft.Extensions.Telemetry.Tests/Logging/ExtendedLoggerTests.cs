@@ -371,8 +371,10 @@ public static class ExtendedLoggerTests
         Assert.Equal("PAYLOAD", snap[0].StructuredState!.GetValue("{OriginalFormat}"));
     }
 
-    [Fact]
-    public static void Exceptions()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public static void Exceptions(bool includeExceptionMessage)
     {
         const string Category = "C1";
 
@@ -382,6 +384,7 @@ public static class ExtendedLoggerTests
             CaptureStackTraces = true,
             UseFileInfoForStackTraces = true,
             MaxStackTraceLength = 4096,
+            IncludeExceptionMessageInStackTraces = includeExceptionMessage,
         };
 
         using var lf = new ExtendedLoggerFactory(
@@ -401,7 +404,7 @@ public static class ExtendedLoggerTests
             List<Exception> exceptions = [];
             try
             {
-                throw new ArgumentNullException("ARG1");
+                throw new ArgumentNullException("EM1", (Exception?)null);
             }
             catch (ArgumentNullException e)
             {
@@ -410,7 +413,7 @@ public static class ExtendedLoggerTests
 
             try
             {
-                throw new ArgumentOutOfRangeException("ARG2");
+                throw new ArgumentOutOfRangeException("EM2", (Exception?)null);
             }
             catch (ArgumentOutOfRangeException e)
             {
@@ -419,14 +422,14 @@ public static class ExtendedLoggerTests
 
             try
             {
-                throw new InvalidOperationException("Doing crazy things");
+                throw new InvalidOperationException("EM3");
             }
             catch (InvalidOperationException e)
             {
                 exceptions.Add(e);
             }
 
-            throw new AggregateException("Outer", exceptions);
+            throw new AggregateException("EM4", exceptions);
         }
         catch (AggregateException e)
         {
@@ -487,6 +490,21 @@ public static class ExtendedLoggerTests
         Assert.Contains("ArgumentNullException", stackTrace);
         Assert.Contains("ArgumentOutOfRangeException", stackTrace);
         Assert.Contains("InvalidOperationException", stackTrace);
+
+        if (includeExceptionMessage)
+        {
+            Assert.Contains("EM1", stackTrace);
+            Assert.Contains("EM2", stackTrace);
+            Assert.Contains("EM3", stackTrace);
+            Assert.Contains("EM4", stackTrace);
+        }
+        else
+        {
+            Assert.DoesNotContain("EM1", stackTrace);
+            Assert.DoesNotContain("EM2", stackTrace);
+            Assert.DoesNotContain("EM3", stackTrace);
+            Assert.DoesNotContain("EM4", stackTrace);
+        }
     }
 
 #if false
