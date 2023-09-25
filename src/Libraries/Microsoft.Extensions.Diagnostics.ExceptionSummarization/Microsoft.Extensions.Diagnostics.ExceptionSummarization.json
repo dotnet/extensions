@@ -2,19 +2,25 @@
   "Name": "Microsoft.Extensions.Diagnostics.ExceptionSummarization, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummarizationExtensions",
+      "Type": "static class Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummarizationBuilderExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummarizationExtensions.AddExceptionSummarizer(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummarizationBuilderExtensions.AddHttpProvider(this Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder builder);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.ExceptionSummarizationServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ExceptionSummarizationServiceCollectionExtensions.AddExceptionSummarizer(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummarizationExtensions.AddExceptionSummarizer(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder Microsoft.Extensions.Diagnostics.ExceptionSummarization.ExceptionSummarizationExtensions.AddHttpProvider(this Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder builder);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ExceptionSummarizationServiceCollectionExtensions.AddExceptionSummarizer(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.ExceptionSummarization.IExceptionSummarizationBuilder> configure);",
           "Stage": "Stable"
         }
       ]

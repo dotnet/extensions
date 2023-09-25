@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Generators\Microsoft.Gen.MetricsReports\Microsoft.Gen.MetricsReports.csproj" ProjectUnderTest="true" />
-    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.ExtraAbstractions\Microsoft.Extensions.Diagnostics.ExtraAbstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

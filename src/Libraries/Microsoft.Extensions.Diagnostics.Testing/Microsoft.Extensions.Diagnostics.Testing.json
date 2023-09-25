@@ -1,0 +1,391 @@
+{
+  "Name": "Microsoft.Extensions.Diagnostics.Testing, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Types": [
+    {
+      "Type": "sealed class Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T> where T : struct",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>.ContainsTags(params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>.ContainsTags(params string[] tags);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>.MatchesTags(params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>.MatchesTags(params string[] tags);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Collections.Generic.IReadOnlyDictionary<string, object?> Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>.Tags { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.DateTimeOffset Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>.Timestamp { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "T Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>.Value { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Logging.Testing.FakeLogCollector",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogCollector.FakeLogCollector(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions> options);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogCollector.FakeLogCollector();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Logging.Testing.FakeLogCollector.Clear();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.Testing.FakeLogCollector Microsoft.Extensions.Logging.Testing.FakeLogCollector.Create(Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions options);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Logging.Testing.FakeLogRecord> Microsoft.Extensions.Logging.Testing.FakeLogCollector.GetSnapshot(bool clear = false);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Logging.Testing.FakeLogCollector.Count { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogRecord Microsoft.Extensions.Logging.Testing.FakeLogCollector.LatestRecord { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions.FakeLogCollectorOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions.CollectRecordsForDisabledLogLevels { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions.FilteredCategories { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.ISet<Microsoft.Extensions.Logging.LogLevel> Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions.FilteredLevels { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Func<Microsoft.Extensions.Logging.Testing.FakeLogRecord, string> Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions.OutputFormatter { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Action<string>? Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions.OutputSink { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.TimeProvider Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions.TimeProvider { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Logging.Testing.FakeLogger : Microsoft.Extensions.Logging.ILogger",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogger.FakeLogger(Microsoft.Extensions.Logging.Testing.FakeLogCollector? collector = null, string? category = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogger.FakeLogger(System.Action<string> outputSink, string? category = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.IDisposable? Microsoft.Extensions.Logging.Testing.FakeLogger.BeginScope<TState>(TState state);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Logging.Testing.FakeLogger.ControlLevel(Microsoft.Extensions.Logging.LogLevel logLevel, bool enabled);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Logging.Testing.FakeLogger.IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Logging.Testing.FakeLogger.Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, System.Exception? exception, System.Func<TState, System.Exception?, string> formatter);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.Logging.Testing.FakeLogger.Category { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogCollector Microsoft.Extensions.Logging.Testing.FakeLogger.Collector { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogRecord Microsoft.Extensions.Logging.Testing.FakeLogger.LatestRecord { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Logging.Testing.FakeLogger<T> : Microsoft.Extensions.Logging.Testing.FakeLogger, Microsoft.Extensions.Logging.ILogger<T>, Microsoft.Extensions.Logging.ILogger",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogger<T>.FakeLogger(Microsoft.Extensions.Logging.Testing.FakeLogCollector? collector = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogger<T>.FakeLogger(System.Action<string> outputSink);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Logging.FakeLoggerBuilderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.FakeLoggerBuilderExtensions.AddFakeLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.FakeLoggerBuilderExtensions.AddFakeLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder, System.Action<Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.ILoggingBuilder Microsoft.Extensions.Logging.FakeLoggerBuilderExtensions.AddFakeLogging(this Microsoft.Extensions.Logging.ILoggingBuilder builder);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Logging.Testing.FakeLoggerProvider : Microsoft.Extensions.Logging.ILoggerProvider, System.IDisposable, Microsoft.Extensions.Logging.ISupportExternalScope",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLoggerProvider.FakeLoggerProvider(Microsoft.Extensions.Logging.Testing.FakeLogCollector? collector = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogger Microsoft.Extensions.Logging.Testing.FakeLoggerProvider.CreateLogger(string? categoryName);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Logging.Testing.FakeLoggerProvider.Dispose();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "virtual void Microsoft.Extensions.Logging.Testing.FakeLoggerProvider.Dispose(bool disposing);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLoggerProvider.~FakeLoggerProvider();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Logging.Testing.FakeLoggerProvider.SetScopeProvider(Microsoft.Extensions.Logging.IExternalScopeProvider scopeProvider);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogCollector Microsoft.Extensions.Logging.Testing.FakeLoggerProvider.Collector { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.FakeLoggerServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.FakeLoggerServiceCollectionExtensions.AddFakeLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.FakeLoggerServiceCollectionExtensions.AddFakeLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.FakeLoggerServiceCollectionExtensions.AddFakeLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class System.FakeLoggerServiceProviderExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Logging.Testing.FakeLogCollector System.FakeLoggerServiceProviderExtensions.GetFakeLogCollector(this System.IServiceProvider services);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Logging.Testing.FakeLogRecord",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Logging.Testing.FakeLogRecord.FakeLogRecord(Microsoft.Extensions.Logging.LogLevel level, Microsoft.Extensions.Logging.EventId id, object? state, System.Exception? exception, string message, System.Collections.Generic.IReadOnlyList<object?> scopes, string? category, bool enabled, System.DateTimeOffset timestamp);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.Logging.Testing.FakeLogRecord.ToString();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string? Microsoft.Extensions.Logging.Testing.FakeLogRecord.Category { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Exception? Microsoft.Extensions.Logging.Testing.FakeLogRecord.Exception { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.EventId Microsoft.Extensions.Logging.Testing.FakeLogRecord.Id { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Logging.LogLevel Microsoft.Extensions.Logging.Testing.FakeLogRecord.Level { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Logging.Testing.FakeLogRecord.LevelEnabled { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string Microsoft.Extensions.Logging.Testing.FakeLogRecord.Message { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<object?> Microsoft.Extensions.Logging.Testing.FakeLogRecord.Scopes { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "object? Microsoft.Extensions.Logging.Testing.FakeLogRecord.State { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, string?>>? Microsoft.Extensions.Logging.Testing.FakeLogRecord.StructuredState { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.DateTimeOffset Microsoft.Extensions.Logging.Testing.FakeLogRecord.Timestamp { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Diagnostics.Metrics.Testing.MeasurementExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static System.Collections.Generic.IEnumerable<Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>> Microsoft.Extensions.Diagnostics.Metrics.Testing.MeasurementExtensions.ContainsTags<T>(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>> measurements, params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Collections.Generic.IEnumerable<Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>> Microsoft.Extensions.Diagnostics.Metrics.Testing.MeasurementExtensions.ContainsTags<T>(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>> measurements, params string[] tags);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static T Microsoft.Extensions.Diagnostics.Metrics.Testing.MeasurementExtensions.EvaluateAsCounter<T>(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>> measurements);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Collections.Generic.IEnumerable<Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>> Microsoft.Extensions.Diagnostics.Metrics.Testing.MeasurementExtensions.MatchesTags<T>(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>> measurements, params System.Collections.Generic.KeyValuePair<string, object?>[] tags);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static System.Collections.Generic.IEnumerable<Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>> Microsoft.Extensions.Diagnostics.Metrics.Testing.MeasurementExtensions.MatchesTags<T>(this System.Collections.Generic.IEnumerable<Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>> measurements, params string[] tags);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "sealed class Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T> : System.IDisposable where T : struct",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.Instrument<T> instrument, System.TimeProvider? timeProvider = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.ObservableInstrument<T> instrument, System.TimeProvider? timeProvider = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.MetricCollector(object? meterScope, string meterName, string instrumentName, System.TimeProvider? timeProvider = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.Meter meter, string instrumentName, System.TimeProvider? timeProvider = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.Clear();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.Dispose();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>> Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.GetMeasurementSnapshot(bool clear = false);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.RecordObservableInstruments();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.WaitForMeasurementsAsync(int minCount, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "System.Threading.Tasks.Task Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.WaitForMeasurementsAsync(int minCount, System.TimeSpan timeout);",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Diagnostics.Metrics.Instrument? Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.Instrument { get; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T>? Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.LastMeasurement { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    }
+  ]
+}

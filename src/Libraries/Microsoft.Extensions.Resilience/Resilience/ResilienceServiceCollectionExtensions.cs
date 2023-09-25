@@ -4,16 +4,16 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
-using Microsoft.Extensions.Http.Telemetry;
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Resilience;
 using Microsoft.Extensions.Resilience.Internal;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly.Telemetry;
 
-namespace Microsoft.Extensions.Resilience;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extension class for the Service Collection DI container.

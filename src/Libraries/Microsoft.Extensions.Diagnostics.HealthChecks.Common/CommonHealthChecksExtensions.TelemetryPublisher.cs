@@ -4,10 +4,11 @@
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.HealthChecks;
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static partial class CommonHealthChecksExtensions
 {

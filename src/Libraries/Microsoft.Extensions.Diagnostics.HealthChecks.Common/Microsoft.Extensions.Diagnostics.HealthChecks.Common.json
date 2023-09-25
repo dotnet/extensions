@@ -2,43 +2,43 @@
   "Name": "Microsoft.Extensions.Diagnostics.HealthChecks.Common, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions",
+      "Type": "static class Microsoft.Extensions.DependencyInjection.CommonHealthChecksExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddApplicationLifecycleHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, params string[] tags);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.CommonHealthChecksExtensions.AddApplicationLifecycleHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, params string[] tags);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddApplicationLifecycleHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Collections.Generic.IEnumerable<string> tags);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.CommonHealthChecksExtensions.AddApplicationLifecycleHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Collections.Generic.IEnumerable<string> tags);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddManualHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, params string[] tags);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.CommonHealthChecksExtensions.AddManualHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, params string[] tags);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddManualHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Collections.Generic.IEnumerable<string> tags);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder Microsoft.Extensions.DependencyInjection.CommonHealthChecksExtensions.AddManualHealthCheck(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder builder, System.Collections.Generic.IEnumerable<string> tags);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.CommonHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.CommonHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.CommonHealthChecksExtensions.AddTelemetryHealthCheckPublisher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.TelemetryHealthCheckPublisherOptions> configure);",
           "Stage": "Stable"
         },
         {
-          "Member": "static void Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.ReportHealthy(this Microsoft.Extensions.Diagnostics.HealthChecks.IManualHealthCheck manualHealthCheck);",
+          "Member": "static void Microsoft.Extensions.DependencyInjection.CommonHealthChecksExtensions.ReportHealthy(this Microsoft.Extensions.Diagnostics.HealthChecks.IManualHealthCheck manualHealthCheck);",
           "Stage": "Stable"
         },
         {
-          "Member": "static void Microsoft.Extensions.Diagnostics.HealthChecks.CommonHealthChecksExtensions.ReportUnhealthy(this Microsoft.Extensions.Diagnostics.HealthChecks.IManualHealthCheck manualHealthCheck, string reason);",
+          "Member": "static void Microsoft.Extensions.DependencyInjection.CommonHealthChecksExtensions.ReportUnhealthy(this Microsoft.Extensions.Diagnostics.HealthChecks.IManualHealthCheck manualHealthCheck, string reason);",
           "Stage": "Stable"
         }
       ]

@@ -25,8 +25,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Generators\Microsoft.Gen.ComplianceReports\Microsoft.Gen.ComplianceReports.csproj" ProjectUnderTest="true" />
     <ProjectReference Include="..\..\..\..\src\Generators\Microsoft.Gen.Logging\Microsoft.Gen.Logging.csproj" OutputItemType="Analyzer" />
-    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj"  />
-    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj "  />
+    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.ExtraAbstractions\Microsoft.Extensions.Diagnostics.ExtraAbstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
