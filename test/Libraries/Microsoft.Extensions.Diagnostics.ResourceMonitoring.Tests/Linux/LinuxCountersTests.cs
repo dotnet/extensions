@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
-using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.TestUtilities;
 using Moq;
 using Xunit;

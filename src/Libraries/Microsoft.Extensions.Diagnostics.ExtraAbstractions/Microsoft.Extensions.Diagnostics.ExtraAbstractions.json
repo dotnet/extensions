@@ -747,7 +747,7 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Diagnostics.Latency.NullLatencyContextExtensions",
+      "Type": "static class Microsoft.Extensions.DependencyInjection.NullLatencyContextServiceCollectionExtensions",
       "Stage": "Stable",
       "Methods": [
         {

@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 #if !NETFRAMEWORK
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;

@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.EnumStrings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Resilience.FaultInjection;
