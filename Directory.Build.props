@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\Net9Workarounds.props" />
 
   <!-- TFMs and their permutations -->
   <PropertyGroup>
     <TargetFrameworkName>net</TargetFrameworkName>
-    <TargetFrameworkMajorVersion>8</TargetFrameworkMajorVersion>
+    <TargetFrameworkMajorVersion>9</TargetFrameworkMajorVersion>
     <TargetFrameworkMinorVersion>0</TargetFrameworkMinorVersion>
     <TargetFrameworkVersion>$(TargetFrameworkMajorVersion).$(TargetFrameworkMinorVersion)</TargetFrameworkVersion>
 

@@ -1,0 +1,65 @@
+<Project>
+  <PropertyGroup>
+    <!-- Workaround while there is no SDK available that understands the TFM; suppress unsupported version errors. -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+
+    <UpdateAspNetCoreKnownFramework
+      Condition=" '$(UpdateAspNetCoreKnownFramework)' == '' ">true</UpdateAspNetCoreKnownFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Update="Microsoft.NETCore.App"
+                        RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimewinx64Version)" />
+
+    <!-- Workaround when there is no vNext SDK available; copy known packs info from 8.0. -->
+    <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net8.0'))"
+                     TargetFramework="$(LatestTargetFramework)"
+                     Condition="'@(KnownAppHostPack->Count())' != '0' AND
+                                 !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(LatestTargetFramework)')))" />
+    <KnownRuntimePack Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net8.0'))"
+                     TargetFramework="$(LatestTargetFramework)"
+                     Condition="'@(KnownRuntimePack->Count())' != '0' AND
+                                 !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '$(LatestTargetFramework)')))" />
+    <KnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net8.0'))"
+                     TargetFramework="$(LatestTargetFramework)"
+                     Condition="'@(KnownFrameworkReference->Count())' != '0' AND
+                                 !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(LatestTargetFramework)')))" />
+
+    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+      <LatestRuntimeFrameworkVersion
+          Condition=" '%(TargetFramework)' == '$(LatestTargetFramework)' ">$(MicrosoftNETCoreAppRuntimewinx64Version)</LatestRuntimeFrameworkVersion>
+      <TargetingPackVersion
+          Condition=" '%(TargetFramework)' == '$(LatestTargetFramework)' ">$(MicrosoftNETCoreAppRefVersion)</TargetingPackVersion>
+      <!--
+        Change the default shared framework version only when _not_ servicing. Avoid bumping version used in most
+        projects.
+      -->
+      <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
+          '%(TargetFramework)' == '$(LatestTargetFramework)'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
+    </KnownFrameworkReference>
+
+    <KnownFrameworkReference Update="Microsoft.AspNetCore.App">
+      <LatestRuntimeFrameworkVersion
+          Condition=" '%(TargetFramework)' == '$(LatestTargetFramework)' ">$(MicrosoftNETCoreAppRuntimewinx64Version)</LatestRuntimeFrameworkVersion>
+      <TargetingPackVersion
+          Condition=" '%(TargetFramework)' == '$(LatestTargetFramework)' ">$(MicrosoftNETCoreAppRefVersion)</TargetingPackVersion>
+      <!--
+        Change the default shared framework version only when _not_ servicing. Avoid bumping version used in most
+        projects.
+      -->
+      <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
+          '%(TargetFramework)' == '$(LatestTargetFramework)'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
+    </KnownFrameworkReference>
+
+    <KnownAppHostPack Update="Microsoft.NETCore.App">
+      <AppHostPackVersion
+        Condition=" '%(TargetFramework)' == '$(LatestTargetFramework)' ">$(MicrosoftNETCoreAppRuntimewinx64Version)</AppHostPackVersion>
+    </KnownAppHostPack>
+
+    <KnownRuntimePack Update="Microsoft.NETCore.App">
+      <LatestRuntimeFrameworkVersion
+        Condition=" '%(TargetFramework)' == '$(LatestTargetFramework)' ">$(MicrosoftNETCoreAppRuntimewinx64Version)</LatestRuntimeFrameworkVersion>
+    </KnownRuntimePack>
+  </ItemGroup>
+
+</Project>
