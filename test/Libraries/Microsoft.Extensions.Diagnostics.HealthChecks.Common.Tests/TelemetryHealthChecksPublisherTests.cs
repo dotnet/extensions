@@ -90,7 +90,7 @@ public class TelemetryHealthChecksPublisherTests
         string expectedMetricHealthy,
         string expectedMetricStatus)
     {
-        using var meter = new Meter("Test");
+        using var meter = new Meter(nameof(PublishAsync));
         var metrics = GetMockedMetrics(meter);
         using var healthyMetricCollector = new MetricCollector<long>(meter, HealthReportMetricName);
         using var unhealthyMetricCollector = new MetricCollector<long>(meter, UnhealthyHealthCheckMetricName);
@@ -134,7 +134,7 @@ public class TelemetryHealthChecksPublisherTests
     [Fact]
     public void Ctor_ThrowsWhenOptionsValueNull()
     {
-        using var meter = new Meter("Test");
+        using var meter = new Meter(nameof(Ctor_ThrowsWhenOptionsValueNull));
         var metrics = GetMockedMetrics(meter);
         var logger = new FakeLogger<TelemetryHealthCheckPublisher>();
 
