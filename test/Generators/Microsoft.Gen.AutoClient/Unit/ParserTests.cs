@@ -544,6 +544,122 @@ public class ParserTests
     }
 
     [Fact]
+    public async Task NullPath()
+    {
+        var ds = await RunGenerator(@$"
+        [AutoClient(""MyClient"")]
+        public interface IClient
+        {{
+            [Get(null!)]
+            public Task<string> GetUsers(CancellationToken token);
+        }}");
+
+        Assert.Contains(DiagDescriptors.ErrorMissingMethodAttribute.Id, ds.Select(x => x.Id));
+    }
+
+    [Fact]
+    public async Task EmptyPath()
+    {
+        var ds = await RunGenerator(@$"
+        [AutoClient(""MyClient"")]
+        public interface IClient
+        {{
+            [Get("""")]
+            public Task<string> GetUsers(CancellationToken token);
+        }}");
+
+        Assert.Contains(DiagDescriptors.ErrorMissingMethodAttribute.Id, ds.Select(x => x.Id));
+    }
+
+    [Fact]
+    public async Task NullStaticHeaderKey()
+    {
+        var ds = await RunGenerator(@$"
+        [AutoClient(""MyClient"")]
+        public interface IClient
+        {{
+            [Get(""/api/users"")]
+            [StaticHeader(null!, ""value"")]
+            public Task<string> GetUsers(CancellationToken token);
+        }}");
+
+        Assert.Contains(DiagDescriptors.ErrorInvalidHeaderName.Id, ds.Select(x => x.Id));
+    }
+
+    [Fact]
+    public async Task NullStaticHeaderValue_NoError()
+    {
+        var ds = await RunGenerator(@$"
+        [AutoClient(""MyClient"")]
+        public interface IClient
+        {{
+            [Get(""/api/users"")]
+            [StaticHeader(""key"", null!)]
+            public Task<string> GetUsers(CancellationToken token);
+        }}");
+
+        Assert.Empty(ds);
+    }
+
+    [Fact]
+    public async Task EmptyStaticHeaderKey()
+    {
+        var ds = await RunGenerator(@$"
+        [AutoClient(""MyClient"")]
+        public interface IClient
+        {{
+            [Get(""/api/users"")]
+            [StaticHeader("""", ""value"")]
+            public Task<string> GetUsers(CancellationToken token);
+        }}");
+
+        Assert.Contains(DiagDescriptors.ErrorInvalidHeaderName.Id, ds.Select(x => x.Id));
+    }
+
+    [Fact]
+    public async Task EmptyStaticHeaderValue_NoError()
+    {
+        var ds = await RunGenerator(@$"
+        [AutoClient(""MyClient"")]
+        public interface IClient
+        {{
+            [Get(""/api/users"")]
+            [StaticHeader(""key"", """")]
+            public Task<string> GetUsers(CancellationToken token);
+        }}");
+
+        Assert.Empty(ds);
+    }
+
+    [Fact]
+    public async Task NullRequestName()
+    {
+        var ds = await RunGenerator(@$"
+        [AutoClient(""MyClient"")]
+        public interface IClient
+        {{
+            [Get(""/api/users"", RequestName = null!)]
+            public Task<string> GetUsers(CancellationToken token);
+        }}");
+
+        Assert.Contains(DiagDescriptors.ErrorInvalidRequestName.Id, ds.Select(x => x.Id));
+    }
+
+    [Fact]
+    public async Task EmptyRequestName()
+    {
+        var ds = await RunGenerator(@$"
+        [AutoClient(""MyClient"")]
+        public interface IClient
+        {{
+            [Get(""/api/users"", RequestName = """")]
+            public Task<string> GetUsers(CancellationToken token);
+        }}");
+
+        Assert.Contains(DiagDescriptors.ErrorInvalidRequestName.Id, ds.Select(x => x.Id));
+    }
+
+    [Fact]
     public async Task InvalidRequestName()
     {
         foreach (var invalidChar in _unsupportedCharactersHeaderValues)
