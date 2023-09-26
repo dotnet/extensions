@@ -2,11 +2,11 @@
   "Name": "Microsoft.AspNetCore.AsyncState, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.AspNetCore.AsyncState.AsyncStateHttpContextExtensions",
+      "Type": "static class Microsoft.Extensions.DependencyInjection.AsyncStateHttpContextExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.AsyncState.AsyncStateHttpContextExtensions.AddAsyncStateHttpContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.AsyncStateHttpContextExtensions.AddAsyncStateHttpContext(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         }
       ]

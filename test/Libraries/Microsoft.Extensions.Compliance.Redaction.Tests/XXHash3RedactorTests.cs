@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.Extensions.Compliance.Redaction.Tests;
+namespace Microsoft.Extensions.Compliance.Redaction.Test;
 
 public class XxHash3RedactorTests
 {

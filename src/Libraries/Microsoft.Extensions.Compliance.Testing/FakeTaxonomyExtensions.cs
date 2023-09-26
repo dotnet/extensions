@@ -1,11 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Microsoft.Extensions.Compliance.Classification;
+using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Compliance.Testing;
+namespace Microsoft.Extensions.Compliance.Classification;
 
 /// <summary>
 /// Extensions for working with the simple data classification taxonomy.

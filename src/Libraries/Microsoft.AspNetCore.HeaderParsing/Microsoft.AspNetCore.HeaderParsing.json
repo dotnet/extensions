@@ -106,36 +106,6 @@
       ]
     },
     {
-      "Type": "static class Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions.AddHeaderParsing(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions.AddHeaderParsing(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions> configuration);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions.AddHeaderParsing(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.AspNetCore.HeaderParsing.HeaderParsingFeature Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions.GetHeaderParsing(this Microsoft.AspNetCore.Http.HttpRequest request);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static bool Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions.TryGetHeaderValue<T>(this Microsoft.AspNetCore.Http.HttpRequest request, Microsoft.AspNetCore.HeaderParsing.HeaderKey<T> header, out T? value);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static bool Microsoft.AspNetCore.HeaderParsing.HeaderParsingExtensions.TryGetHeaderValue<T>(this Microsoft.AspNetCore.Http.HttpRequest request, Microsoft.AspNetCore.HeaderParsing.HeaderKey<T> header, out T? value, out Microsoft.AspNetCore.HeaderParsing.ParsingResult result);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "sealed class Microsoft.AspNetCore.HeaderParsing.HeaderParsingFeature",
       "Stage": "Stable",
       "Methods": [
@@ -145,6 +115,24 @@
         },
         {
           "Member": "bool Microsoft.AspNetCore.HeaderParsing.HeaderParsingFeature.TryGetHeaderValue<T>(Microsoft.AspNetCore.HeaderParsing.HeaderKey<T> header, out T? value, out Microsoft.AspNetCore.HeaderParsing.ParsingResult result);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.AspNetCore.Http.HeaderParsingHttpRequestExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.AspNetCore.HeaderParsing.HeaderParsingFeature Microsoft.AspNetCore.Http.HeaderParsingHttpRequestExtensions.GetHeaderParsing(this Microsoft.AspNetCore.Http.HttpRequest request);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.AspNetCore.Http.HeaderParsingHttpRequestExtensions.TryGetHeaderValue<T>(this Microsoft.AspNetCore.Http.HttpRequest request, Microsoft.AspNetCore.HeaderParsing.HeaderKey<T> header, out T? value);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static bool Microsoft.AspNetCore.Http.HeaderParsingHttpRequestExtensions.TryGetHeaderValue<T>(this Microsoft.AspNetCore.Http.HttpRequest request, Microsoft.AspNetCore.HeaderParsing.HeaderKey<T> header, out T? value, out Microsoft.AspNetCore.HeaderParsing.ParsingResult result);",
           "Stage": "Stable"
         }
       ]
@@ -169,6 +157,24 @@
         },
         {
           "Member": "System.Collections.Generic.IDictionary<string, int> Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions.MaxCachedValuesPerHeader { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.HeaderParsingServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HeaderParsingServiceCollectionExtensions.AddHeaderParsing(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HeaderParsingServiceCollectionExtensions.AddHeaderParsing(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions> configuration);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HeaderParsingServiceCollectionExtensions.AddHeaderParsing(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         }
       ]

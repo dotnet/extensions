@@ -2,14 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.Metrics;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.HealthChecks;
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static partial class CommonHealthChecksExtensions
 {
@@ -31,7 +30,6 @@ public static partial class CommonHealthChecksExtensions
     /// <param name="section">Configuration for <see cref="TelemetryHealthCheckPublisherOptions"/>.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services" /> or <paramref name="section"/> is <see langword="null" />.</exception>
-    [Experimental(diagnosticId: Experiments.HealthChecks, UrlFormat = Experiments.UrlFormat)]
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services, IConfigurationSection section)
         => Throw.IfNull(services)
             .Configure<TelemetryHealthCheckPublisherOptions>(Throw.IfNull(section))
@@ -45,7 +43,6 @@ public static partial class CommonHealthChecksExtensions
     /// <param name="configure">Configuration for <see cref="TelemetryHealthCheckPublisherOptions"/>.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services" /> or <paramref name="configure"/> is <see langword="null" />.</exception>
-    [Experimental(diagnosticId: Experiments.HealthChecks, UrlFormat = Experiments.UrlFormat)]
     public static IServiceCollection AddTelemetryHealthCheckPublisher(this IServiceCollection services, Action<TelemetryHealthCheckPublisherOptions> configure)
         => Throw.IfNull(services)
             .Configure(Throw.IfNull(configure))

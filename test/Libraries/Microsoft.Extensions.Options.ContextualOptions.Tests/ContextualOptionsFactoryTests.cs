@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Options.Contextual.Tests;
+namespace Microsoft.Extensions.Options.Contextual.Test;
 
 public class ContextualOptionsFactoryTests
 {

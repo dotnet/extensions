@@ -252,46 +252,46 @@
       ]
     },
     {
-      "Type": "enum Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode",
+      "Type": "enum Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.HttpRouteParameterRedactionMode();",
+          "Member": "Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode.HttpRouteParameterRedactionMode();",
           "Stage": "Stable"
         }
       ],
       "Fields": [
         {
-          "Member": "const Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.Loose",
+          "Member": "const Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode.Loose",
           "Stage": "Stable",
           "Value": "1"
         },
         {
-          "Member": "const Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.None",
+          "Member": "const Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode.None",
           "Stage": "Stable",
           "Value": "2"
         },
         {
-          "Member": "const Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Telemetry.HttpRouteParameterRedactionMode.Strict",
+          "Member": "const Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode.Strict",
           "Stage": "Stable",
           "Value": "0"
         }
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata",
+      "Type": "interface Microsoft.Extensions.Http.Diagnostics.IDownstreamDependencyMetadata",
       "Stage": "Stable",
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata.DependencyName { get; }",
+          "Member": "string Microsoft.Extensions.Http.Diagnostics.IDownstreamDependencyMetadata.DependencyName { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.ISet<Microsoft.Extensions.Http.Telemetry.RequestMetadata> Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata.RequestMetadata { get; }",
+          "Member": "System.Collections.Generic.ISet<Microsoft.Extensions.Http.Diagnostics.RequestMetadata> Microsoft.Extensions.Http.Diagnostics.IDownstreamDependencyMetadata.RequestMetadata { get; }",
           "Stage": "Stable"
         },
         {
-          "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Http.Telemetry.IDownstreamDependencyMetadata.UniqueHostNameSuffixes { get; }",
+          "Member": "System.Collections.Generic.ISet<string> Microsoft.Extensions.Http.Diagnostics.IDownstreamDependencyMetadata.UniqueHostNameSuffixes { get; }",
           "Stage": "Stable"
         }
       ]
@@ -419,17 +419,17 @@
       ]
     },
     {
-      "Type": "interface Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext",
+      "Type": "interface Microsoft.Extensions.Http.Diagnostics.IOutgoingRequestContext",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "void Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext.SetRequestMetadata(Microsoft.Extensions.Http.Telemetry.RequestMetadata metadata);",
+          "Member": "void Microsoft.Extensions.Http.Diagnostics.IOutgoingRequestContext.SetRequestMetadata(Microsoft.Extensions.Http.Diagnostics.RequestMetadata metadata);",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Http.Telemetry.IOutgoingRequestContext.RequestMetadata { get; }",
+          "Member": "Microsoft.Extensions.Http.Diagnostics.RequestMetadata? Microsoft.Extensions.Http.Diagnostics.IOutgoingRequestContext.RequestMetadata { get; }",
           "Stage": "Stable"
         }
       ]
@@ -771,33 +771,33 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Telemetry.RequestMetadata",
+      "Type": "class Microsoft.Extensions.Http.Diagnostics.RequestMetadata",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestMetadata();",
+          "Member": "Microsoft.Extensions.Http.Diagnostics.RequestMetadata.RequestMetadata();",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestMetadata(string methodType, string requestRoute, string requestName = \"unknown\");",
+          "Member": "Microsoft.Extensions.Http.Diagnostics.RequestMetadata.RequestMetadata(string methodType, string requestRoute, string requestName = \"unknown\");",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "string Microsoft.Extensions.Http.Telemetry.RequestMetadata.DependencyName { get; set; }",
+          "Member": "string Microsoft.Extensions.Http.Diagnostics.RequestMetadata.DependencyName { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string Microsoft.Extensions.Http.Telemetry.RequestMetadata.MethodType { get; set; }",
+          "Member": "string Microsoft.Extensions.Http.Diagnostics.RequestMetadata.MethodType { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestName { get; set; }",
+          "Member": "string Microsoft.Extensions.Http.Diagnostics.RequestMetadata.RequestName { get; set; }",
           "Stage": "Stable"
         },
         {
-          "Member": "string Microsoft.Extensions.Http.Telemetry.RequestMetadata.RequestRoute { get; set; }",
+          "Member": "string Microsoft.Extensions.Http.Diagnostics.RequestMetadata.RequestRoute { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -851,31 +851,31 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Http.Telemetry.TelemetryConstants",
+      "Type": "static class Microsoft.Extensions.Http.Diagnostics.TelemetryConstants",
       "Stage": "Stable",
       "Fields": [
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.TelemetryConstants.ClientApplicationNameHeader",
+          "Member": "const string Microsoft.Extensions.Http.Diagnostics.TelemetryConstants.ClientApplicationNameHeader",
           "Stage": "Experimental",
           "Value": "X-ClientApplication"
         },
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.TelemetryConstants.Redacted",
+          "Member": "const string Microsoft.Extensions.Http.Diagnostics.TelemetryConstants.Redacted",
           "Stage": "Stable",
           "Value": "REDACTED"
         },
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.TelemetryConstants.RequestMetadataKey",
+          "Member": "const string Microsoft.Extensions.Http.Diagnostics.TelemetryConstants.RequestMetadataKey",
           "Stage": "Stable",
           "Value": "R9-RequestMetadata"
         },
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.TelemetryConstants.ServerApplicationNameHeader",
+          "Member": "const string Microsoft.Extensions.Http.Diagnostics.TelemetryConstants.ServerApplicationNameHeader",
           "Stage": "Experimental",
           "Value": "X-ServerApplication"
         },
         {
-          "Member": "const string Microsoft.Extensions.Http.Telemetry.TelemetryConstants.Unknown",
+          "Member": "const string Microsoft.Extensions.Http.Diagnostics.TelemetryConstants.Unknown",
           "Stage": "Stable",
           "Value": "unknown"
         }

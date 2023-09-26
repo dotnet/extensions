@@ -8,7 +8,6 @@
   <PropertyGroup>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
   </PropertyGroup>
 

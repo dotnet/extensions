@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Generators\Microsoft.Gen.Metrics\Microsoft.Gen.Metrics.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" />
-    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Testing\Microsoft.Extensions.Telemetry.Testing.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.Testing\Microsoft.Extensions.Diagnostics.Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>

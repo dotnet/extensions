@@ -6,7 +6,7 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
-using Microsoft.Extensions.Http.Telemetry;
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
 using Polly.Telemetry;
 

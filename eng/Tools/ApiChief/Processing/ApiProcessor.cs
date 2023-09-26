@@ -25,6 +25,11 @@ internal class ApiProcessor
 
         foreach (var currentType in publicTypes)
         {
+            if (currentType.DeclaringType != null)
+            {
+                continue;
+            }
+
             var typeString = Formatter.TypeToString(currentType, decompiler);
             var parsedCurrentType = new ParsedMember(currentType, decompiler.TypeSystem.MainModule);
             var currentTypeModel = new ApiType

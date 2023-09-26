@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.AspNetCore.Testing</RootNamespace>
+    <RootNamespace>Microsoft.AspNetCore.Testing.Test</RootNamespace>
     <Description>Unit tests for Microsoft.AspNetCore.Testing</Description>
   </PropertyGroup>
 

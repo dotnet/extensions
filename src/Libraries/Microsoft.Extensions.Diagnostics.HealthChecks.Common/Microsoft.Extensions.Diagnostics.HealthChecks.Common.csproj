@@ -10,8 +10,6 @@
     <UseMetricsGenerator>true</UseMetricsGenerator>
     <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
     <InjectSharedPools>true</InjectSharedPools>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -21,13 +19,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExtraAbstractions\Microsoft.Extensions.Diagnostics.ExtraAbstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.EnumStrings\Microsoft.Extensions.EnumStrings.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <XPackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
   </ItemGroup>
 

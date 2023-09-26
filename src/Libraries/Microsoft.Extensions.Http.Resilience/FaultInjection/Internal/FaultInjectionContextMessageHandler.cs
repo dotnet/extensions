@@ -4,7 +4,7 @@
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Resilience.FaultInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Polly;
 
 namespace Microsoft.Extensions.Http.Resilience.FaultInjection.Internal;

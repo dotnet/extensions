@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
-    <ProjectReference Include="..\..\Libraries\Microsoft.Extensions.DependencyInjection.AutoActivation\Microsoft.Extensions.DependencyInjection.AutoActivation.csproj" />
   </ItemGroup>
 
   <ItemGroup>
