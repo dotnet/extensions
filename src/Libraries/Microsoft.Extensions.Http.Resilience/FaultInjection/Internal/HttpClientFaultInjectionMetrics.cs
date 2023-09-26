@@ -5,7 +5,6 @@ using System.Diagnostics.Metrics;
 
 namespace Microsoft.Extensions.Http.Resilience.FaultInjection.Internal;
 
-// TODO: can be also a generic Http[Client]ResilienceMetrics class
 internal sealed class HttpClientFaultInjectionMetrics
 {
     public HttpClientFaultInjectionMetrics(IMeterFactory meterFactory)

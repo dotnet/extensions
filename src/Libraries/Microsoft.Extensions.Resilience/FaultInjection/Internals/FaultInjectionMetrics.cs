@@ -5,7 +5,6 @@ using System.Diagnostics.Metrics;
 
 namespace Microsoft.Extensions.Resilience.FaultInjection.Internals;
 
-// TODO: can be also a generic ResilienceMetrics class
 internal sealed class FaultInjectionMetrics
 {
     public FaultInjectionMetrics(IMeterFactory meterFactory)
