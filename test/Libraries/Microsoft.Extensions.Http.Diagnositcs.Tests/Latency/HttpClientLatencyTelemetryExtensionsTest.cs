@@ -20,13 +20,13 @@ public class HttpClientLatencyTelemetryExtensionsTest
     [Fact]
     public void HttpClientLatencyTelemtry_NullParameter_ThrowsException()
     {
-        var act = () => ((IServiceCollection)null!).AddDefaultHttpClientLatencyTelemetry();
+        var act = () => ((IServiceCollection)null!).AddHttpClientLatencyTelemetry();
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => Mock.Of<IServiceCollection>().AddDefaultHttpClientLatencyTelemetry((Action<HttpClientLatencyTelemetryOptions>)null!);
+        act = () => Mock.Of<IServiceCollection>().AddHttpClientLatencyTelemetry((Action<HttpClientLatencyTelemetryOptions>)null!);
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => Mock.Of<IServiceCollection>().AddDefaultHttpClientLatencyTelemetry((IConfigurationSection)null!);
+        act = () => Mock.Of<IServiceCollection>().AddHttpClientLatencyTelemetry((IConfigurationSection)null!);
         act.Should().Throw<ArgumentNullException>();
     }
 
@@ -36,7 +36,7 @@ public class HttpClientLatencyTelemetryExtensionsTest
         using var sp = new ServiceCollection()
             .AddHttpClient()
             .AddNullLatencyContext()
-            .AddDefaultHttpClientLatencyTelemetry()
+            .AddHttpClientLatencyTelemetry()
             .BuildServiceProvider();
 
         var listener = sp.GetRequiredService<HttpRequestLatencyListener>();
@@ -60,7 +60,7 @@ public class HttpClientLatencyTelemetryExtensionsTest
         using var sp = new ServiceCollection()
             .AddNullLatencyContext()
             .AddHttpClient()
-            .AddDefaultHttpClientLatencyTelemetry()
+            .AddHttpClientLatencyTelemetry()
             .BuildServiceProvider();
 
         using var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
@@ -73,7 +73,7 @@ public class HttpClientLatencyTelemetryExtensionsTest
         bool invoked = false;
         using var sp = new ServiceCollection()
             .AddNullLatencyContext()
-            .AddDefaultHttpClientLatencyTelemetry(a =>
+            .AddHttpClientLatencyTelemetry(a =>
             {
                 invoked = true;
                 a.EnableDetailedLatencyBreakdown = false;
@@ -97,7 +97,7 @@ public class HttpClientLatencyTelemetryExtensionsTest
         var config = GetConfigSection(expectedOptions);
         using var sp = new ServiceCollection()
           .AddNullLatencyContext()
-          .AddDefaultHttpClientLatencyTelemetry(config)
+          .AddHttpClientLatencyTelemetry(config)
           .BuildServiceProvider();
 
         var options = sp.GetRequiredService<IOptions<HttpClientLatencyTelemetryOptions>>().Value;

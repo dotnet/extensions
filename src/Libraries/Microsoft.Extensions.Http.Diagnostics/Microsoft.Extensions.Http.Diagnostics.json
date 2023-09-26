@@ -6,15 +6,15 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpClientLatencyTelemetryExtensions.AddDefaultHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpClientLatencyTelemetryExtensions.AddHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpClientLatencyTelemetryExtensions.AddDefaultHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpClientLatencyTelemetryExtensions.AddHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpClientLatencyTelemetryExtensions.AddDefaultHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Http.Latency.HttpClientLatencyTelemetryOptions> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpClientLatencyTelemetryExtensions.AddHttpClientLatencyTelemetry(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Http.Latency.HttpClientLatencyTelemetryOptions> configure);",
           "Stage": "Stable"
         }
       ]
@@ -40,15 +40,15 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.HttpClientLoggingHttpClientBuilderExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.HttpClientLoggingHttpClientBuilderExtensions.AddExtendedHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.HttpClientLoggingHttpClientBuilderExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.HttpClientLoggingHttpClientBuilderExtensions.AddExtendedHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.HttpClientLoggingHttpClientBuilderExtensions.AddHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.Extensions.Http.Logging.LoggingOptions> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.HttpClientLoggingHttpClientBuilderExtensions.AddExtendedHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.Extensions.Http.Logging.LoggingOptions> configure);",
           "Stage": "Stable"
         }
       ]
@@ -58,15 +58,15 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpClientLoggingServiceCollectionExtensions.AddDefaultHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpClientLoggingServiceCollectionExtensions.AddExtendedHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpClientLoggingServiceCollectionExtensions.AddDefaultHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpClientLoggingServiceCollectionExtensions.AddExtendedHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpClientLoggingServiceCollectionExtensions.AddDefaultHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Http.Logging.LoggingOptions> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpClientLoggingServiceCollectionExtensions.AddExtendedHttpClientLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Http.Logging.LoggingOptions> configure);",
           "Stage": "Stable"
         },
         {
