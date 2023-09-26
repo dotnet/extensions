@@ -318,11 +318,13 @@ internal sealed class Parser
         return result;
     }
 
-    private static ParseMethodAttributesResult ParseMethodAttributes(ImmutableArray<AttributeData> methodAttributes, SymbolHolder symbols)
+    private ParseMethodAttributesResult ParseMethodAttributes(ImmutableArray<AttributeData> methodAttributes, SymbolHolder symbols)
     {
         List<string?> httpMethods = [];
         string? requestName = null;
         string? path = null;
+        bool requestNameFailed = false;
+        bool headersParsingFailed = false;
         Dictionary<string, string> staticHeaders = [];
 
         foreach (var methodAttribute in methodAttributes)
@@ -342,7 +344,19 @@ internal sealed class Parser
                     continue;
                 }
 
-                path = methodAttribute.ConstructorArguments[0].Value as string;
+                var methodArg = methodAttribute.ConstructorArguments[0];
+                if (methodArg.IsNull)
+                {
+                    continue;
+                }
+
+                var argString = methodArg.Value as string;
+                if (string.IsNullOrEmpty(argString))
+                {
+                    continue;
+                }
+
+                path = argString;
             }
             else if (attributeSymbol.Equals(symbols.RestPostAttribute, SymbolEqualityComparer.Default))
             {
@@ -353,7 +367,19 @@ internal sealed class Parser
                     continue;
                 }
 
-                path = methodAttribute.ConstructorArguments[0].Value as string;
+                var methodArg = methodAttribute.ConstructorArguments[0];
+                if (methodArg.IsNull)
+                {
+                    continue;
+                }
+
+                var argString = methodArg.Value as string;
+                if (string.IsNullOrEmpty(argString))
+                {
+                    continue;
+                }
+
+                path = argString;
             }
             else if (attributeSymbol.Equals(symbols.RestPutAttribute, SymbolEqualityComparer.Default))
             {
@@ -364,7 +390,19 @@ internal sealed class Parser
                     continue;
                 }
 
-                path = methodAttribute.ConstructorArguments[0].Value as string;
+                var methodArg = methodAttribute.ConstructorArguments[0];
+                if (methodArg.IsNull)
+                {
+                    continue;
+                }
+
+                var argString = methodArg.Value as string;
+                if (string.IsNullOrEmpty(argString))
+                {
+                    continue;
+                }
+
+                path = argString;
             }
             else if (attributeSymbol.Equals(symbols.RestDeleteAttribute, SymbolEqualityComparer.Default))
             {
@@ -375,7 +413,19 @@ internal sealed class Parser
                     continue;
                 }
 
-                path = methodAttribute.ConstructorArguments[0].Value as string;
+                var methodArg = methodAttribute.ConstructorArguments[0];
+                if (methodArg.IsNull)
+                {
+                    continue;
+                }
+
+                var argString = methodArg.Value as string;
+                if (string.IsNullOrEmpty(argString))
+                {
+                    continue;
+                }
+
+                path = argString;
             }
             else if (attributeSymbol.Equals(symbols.RestPatchAttribute, SymbolEqualityComparer.Default))
             {
@@ -386,7 +436,19 @@ internal sealed class Parser
                     continue;
                 }
 
-                path = methodAttribute.ConstructorArguments[0].Value as string;
+                var methodArg = methodAttribute.ConstructorArguments[0];
+                if (methodArg.IsNull)
+                {
+                    continue;
+                }
+
+                var argString = methodArg.Value as string;
+                if (string.IsNullOrEmpty(argString))
+                {
+                    continue;
+                }
+
+                path = argString;
             }
             else if (attributeSymbol.Equals(symbols.RestOptionsAttribute, SymbolEqualityComparer.Default))
             {
@@ -397,7 +459,19 @@ internal sealed class Parser
                     continue;
                 }
 
-                path = methodAttribute.ConstructorArguments[0].Value as string;
+                var methodArg = methodAttribute.ConstructorArguments[0];
+                if (methodArg.IsNull)
+                {
+                    continue;
+                }
+
+                var argString = methodArg.Value as string;
+                if (string.IsNullOrEmpty(argString))
+                {
+                    continue;
+                }
+
+                path = argString;
             }
             else if (attributeSymbol.Equals(symbols.RestHeadAttribute, SymbolEqualityComparer.Default))
             {
@@ -408,7 +482,19 @@ internal sealed class Parser
                     continue;
                 }
 
-                path = methodAttribute.ConstructorArguments[0].Value as string;
+                var methodArg = methodAttribute.ConstructorArguments[0];
+                if (methodArg.IsNull)
+                {
+                    continue;
+                }
+
+                var argString = methodArg.Value as string;
+                if (string.IsNullOrEmpty(argString))
+                {
+                    continue;
+                }
+
+                path = argString;
             }
             else if (attributeSymbol.Equals(symbols.RestStaticHeaderAttribute, SymbolEqualityComparer.Default))
             {
@@ -417,28 +503,63 @@ internal sealed class Parser
                     continue;
                 }
 
-                var key = methodAttribute.ConstructorArguments[0].Value as string;
-                var value = methodAttribute.ConstructorArguments[1].Value as string;
+                var keyArg = methodAttribute.ConstructorArguments[0];
+                var valueArg = methodAttribute.ConstructorArguments[1];
 
-                if (key == null || value == null)
+                if (valueArg.IsNull)
                 {
                     continue;
                 }
 
-                staticHeaders.Add(key, value);
+                if (keyArg.IsNull)
+                {
+                    Diag(DiagDescriptors.ErrorInvalidHeaderName, attributeSymbol.GetLocation());
+                    headersParsingFailed = true;
+                    continue;
+                }
+
+                var keyString = keyArg.Value as string;
+                var valueString = valueArg.Value as string;
+
+                if (string.IsNullOrEmpty(keyString))
+                {
+                    Diag(DiagDescriptors.ErrorInvalidHeaderName, attributeSymbol.GetLocation());
+                    headersParsingFailed = true;
+                    continue;
+                }
+
+                if (valueString == null)
+                {
+                    continue;
+                }
+
+                staticHeaders.Add(keyString!, valueString);
             }
 
             foreach (var a in methodAttribute.NamedArguments)
             {
                 if (a.Key == RequestNamePropertyName)
                 {
-                    requestName = (string)a.Value.Value!;
+                    if (a.Value.IsNull)
+                    {
+                        requestNameFailed = true;
+                        continue;
+                    }
+
+                    var valueString = a.Value.Value as string;
+                    if (string.IsNullOrEmpty(valueString))
+                    {
+                        requestNameFailed = true;
+                        continue;
+                    }
+
+                    requestName = valueString;
                     break;
                 }
             }
         }
 
-        return new(httpMethods, path, requestName, staticHeaders);
+        return new(httpMethods, path, requestName, requestNameFailed, headersParsingFailed, staticHeaders);
     }
 
     private RestApiMethod? ProcessMethod(
@@ -471,6 +592,18 @@ internal sealed class Parser
         if (methodAttrResult.HttpMethods.Count > 1)
         {
             Diag(DiagDescriptors.ErrorApiMethodMoreThanOneAttribute, methodSymbol.GetLocation());
+            hasErrors = true;
+        }
+
+        if (methodAttrResult.RequestNameParsingFailed)
+        {
+            Diag(DiagDescriptors.ErrorInvalidRequestName, methodSymbol.GetLocation());
+            hasErrors = true;
+        }
+
+        if (methodAttrResult.HeadersParsingFailed)
+        {
+            // Diagnostics are already emitted from the parsing method
             hasErrors = true;
         }
 
@@ -662,5 +795,7 @@ internal sealed class Parser
         List<string?> HttpMethods,
         string? Path,
         string? RequestName,
+        bool RequestNameParsingFailed,
+        bool HeadersParsingFailed,
         Dictionary<string, string> StaticHeaders);
 }
