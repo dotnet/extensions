@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Resilience.Internal.Validators;
 using Microsoft.Extensions.Options;
 
@@ -29,7 +28,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// </list>
 /// </para>
 /// The last three strategies are assigned to each individual endpoint. The selection of endpoint can be customized by
-/// <see cref="StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(IStandardHedgingHandlerBuilder, DataClassification)"/> or
+/// <see cref="StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(IStandardHedgingHandlerBuilder)"/> or
 /// <see cref="StandardHedgingHandlerBuilderExtensions.SelectPipelineBy(IStandardHedgingHandlerBuilder, Func{IServiceProvider, Func{System.Net.Http.HttpRequestMessage, string}})"/> extensions.
 /// <para>
 /// By default, the endpoint is selected by authority (scheme + host + port).
