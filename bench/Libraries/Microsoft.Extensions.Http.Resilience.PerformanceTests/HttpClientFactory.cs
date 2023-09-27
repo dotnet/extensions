@@ -85,15 +85,15 @@ internal static class HttpClientFactory
             {
                 options.Groups = Enumerable.Repeat(0, routes).Select(_ =>
                 {
-                    return new EndpointGroup
+                    return new UriEndpointGroup
                     {
                         Endpoints = new[]
                         {
-                            new WeightedEndpoint
+                            new WeightedUriEndpoint
                             {
                                 Uri = new Uri(PrimaryEndpoint)
                             },
-                            new WeightedEndpoint
+                            new WeightedUriEndpoint
                             {
                                 Uri = new Uri(SecondaryEndpoint)
                             }
@@ -108,15 +108,15 @@ internal static class HttpClientFactory
             {
                 options.Groups = Enumerable.Repeat(0, routes).Select(_ =>
                 {
-                    return new WeightedEndpointGroup
+                    return new WeightedUriEndpointGroup
                     {
                         Endpoints = new[]
                         {
-                            new WeightedEndpoint
+                            new WeightedUriEndpoint
                             {
                                 Uri = new Uri(PrimaryEndpoint)
                             },
-                            new WeightedEndpoint
+                            new WeightedUriEndpoint
                             {
                                 Uri = new Uri(SecondaryEndpoint)
                             }

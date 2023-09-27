@@ -7,9 +7,9 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Represents a collection of <see cref="WeightedEndpoint"/>.
+/// Represents a collection of <see cref="WeightedUriEndpoint"/>.
 /// </summary>
-public class EndpointGroup
+public class UriEndpointGroup
 {
     /// <summary>
     /// Gets or sets the endpoints in this endpoint group.
@@ -27,7 +27,7 @@ public class EndpointGroup
     [Microsoft.Shared.Data.Validation.Length(1)]
 #endif
     [ValidateEnumeratedItems]
-    public IList<WeightedEndpoint> Endpoints { get; set; } = new List<WeightedEndpoint>();
+    public IList<WeightedUriEndpoint> Endpoints { get; set; } = new List<WeightedUriEndpoint>();
 #pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 #pragma warning restore CA2227 // Collection properties should be read only
 }

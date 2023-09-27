@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// <summary>
 /// Represents an URI based endpoint.
 /// </summary>
-public class Endpoint
+public class UriEndpoint
 {
     private Uri? _uri;
 
