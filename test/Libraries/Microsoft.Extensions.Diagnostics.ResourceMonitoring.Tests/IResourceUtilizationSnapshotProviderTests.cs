@@ -19,7 +19,7 @@ public class IResourceUtilizationSnapshotProviderTests
     }
 
     [Fact]
-    public void GetSnapshot_Returns_ValidResourceUilizationSnapshot()
+    public void GetSnapshot_Returns_ValidResourceUtilizationSnapshot()
     {
         var snapshot = new DummyProvider().GetSnapshot();
         Assert.Equal(DummyProvider.KernelTimeSinceStart, snapshot.KernelTimeSinceStart);

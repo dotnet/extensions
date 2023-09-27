@@ -22,7 +22,7 @@ internal static class HttpClientFactory
             .AddSingleton(_ => NoRemoteCallHandler.Create(fileName))
             .AddHttpClientLogEnricher<BenchEnricher>()
             .AddHttpClient(nameof(fileName))
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.BodySizeLimit = readLimit;
                 options.RequestBodyContentTypes.Add(new("application/json"));
@@ -45,7 +45,7 @@ internal static class HttpClientFactory
             .AddFakeRedaction()
             .AddSingleton(_ => NoRemoteCallHandler.Create(fileName))
             .AddHttpClient(nameof(fileName))
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.BodySizeLimit = readLimit;
                 options.ResponseBodyContentTypes.Add(new("application/json"));
@@ -68,7 +68,7 @@ internal static class HttpClientFactory
             .AddFakeRedaction()
             .AddSingleton(_ => NoRemoteCallHandler.Create(fileName))
             .AddHttpClient(nameof(fileName))
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.BodySizeLimit = readLimit;
 
@@ -95,7 +95,7 @@ internal static class HttpClientFactory
             .AddFakeRedaction()
             .AddSingleton(_ => NoRemoteCallNotSeekableHandler.Create(fileName))
             .AddHttpClient(nameof(fileName))
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.BodySizeLimit = readLimit;
                 options.RequestBodyContentTypes.Add("application/json");
@@ -118,7 +118,7 @@ internal static class HttpClientFactory
             .AddFakeRedaction()
             .AddSingleton(_ => NoRemoteCallNotSeekableHandler.Create(fileName))
             .AddHttpClient(nameof(fileName))
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.BodySizeLimit = readLimit;
                 options.ResponseBodyContentTypes.Add("application/json");
@@ -141,7 +141,7 @@ internal static class HttpClientFactory
             .AddFakeRedaction()
             .AddSingleton(_ => NoRemoteCallNotSeekableHandler.Create(fileName))
             .AddHttpClient(nameof(fileName))
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.BodySizeLimit = readLimit;
 

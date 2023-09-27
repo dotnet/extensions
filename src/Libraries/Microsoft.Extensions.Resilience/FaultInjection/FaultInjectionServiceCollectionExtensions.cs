@@ -7,8 +7,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Resilience.FaultInjection;
+using Microsoft.Extensions.Resilience.FaultInjection.Internals;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
@@ -76,7 +76,8 @@ public static class FaultInjectionServiceCollectionExtensions
         var builder = new FaultInjectionOptionsBuilder(services);
         configure.Invoke(builder);
 
-        _ = services.RegisterMetrics();
+        services.AddMetrics()
+            .TryAddSingleton<FaultInjectionMetrics>();
 
         services.TryAddSingleton<IFaultInjectionOptionsProvider, FaultInjectionOptionsProvider>();
         services.TryAddSingleton<IExceptionRegistry, ExceptionRegistry>();

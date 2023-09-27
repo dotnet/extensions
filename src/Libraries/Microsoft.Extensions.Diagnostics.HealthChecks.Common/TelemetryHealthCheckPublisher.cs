@@ -3,7 +3,6 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
@@ -16,25 +15,22 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 /// </summary>
 internal sealed class TelemetryHealthCheckPublisher : IHealthCheckPublisher
 {
-    private readonly HealthCheckReportCounter _healthCheckReportCounter;
-    private readonly UnhealthyHealthCheckCounter _unhealthyHealthCheckCounter;
+    private readonly HealthCheckMetrics _metrics;
     private readonly ILogger _logger;
     private readonly bool _logOnlyUnhealthy;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TelemetryHealthCheckPublisher"/> class.
     /// </summary>
-    /// <param name="meter">The meter.</param>
+    /// <param name="metrics">The metrics.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="options">Creation options.</param>
-    public TelemetryHealthCheckPublisher(Meter<TelemetryHealthCheckPublisher> meter, ILogger<TelemetryHealthCheckPublisher> logger, IOptions<TelemetryHealthCheckPublisherOptions> options)
+    public TelemetryHealthCheckPublisher(HealthCheckMetrics metrics, ILogger<TelemetryHealthCheckPublisher> logger, IOptions<TelemetryHealthCheckPublisherOptions> options)
     {
         var value = Throw.IfMemberNull(options, options.Value);
         _logOnlyUnhealthy = Throw.IfMemberNull(options, options.Value.LogOnlyUnhealthy);
-
+        _metrics = metrics;
         _logger = logger;
-        _healthCheckReportCounter = Metric.CreateHealthCheckReportCounter(meter);
-        _unhealthyHealthCheckCounter = Metric.CreateUnhealthyHealthCheckCounter(meter);
     }
 
     /// <summary>
@@ -54,7 +50,7 @@ internal sealed class TelemetryHealthCheckPublisher : IHealthCheckPublisher
                 Log.Healthy(_logger, report.Status);
             }
 
-            _healthCheckReportCounter.RecordMetric(true, report.Status);
+            _metrics.HealthCheckReportCounter.RecordMetric(true, report.Status);
         }
         else
         {
@@ -66,7 +62,7 @@ internal sealed class TelemetryHealthCheckPublisher : IHealthCheckPublisher
             {
                 if (entry.Value.Status != HealthStatus.Healthy)
                 {
-                    _unhealthyHealthCheckCounter.RecordMetric(entry.Key, entry.Value.Status);
+                    _metrics.UnhealthyHealthCheckCounter.RecordMetric(entry.Key, entry.Value.Status);
                 }
 
                 _ = stringBuilder.Append(separator)
@@ -77,13 +73,14 @@ internal sealed class TelemetryHealthCheckPublisher : IHealthCheckPublisher
                     .Append(", description: ")
                     .Append(entry.Value.Description)
                     .Append('}');
+
                 separator = ", ";
             }
 
             Log.Unhealthy(_logger, report.Status, stringBuilder);
             PoolFactory.SharedStringBuilderPool.Return(stringBuilder);
 
-            _healthCheckReportCounter.RecordMetric(false, report.Status);
+            _metrics.HealthCheckReportCounter.RecordMetric(false, report.Status);
         }
 
         return Task.CompletedTask;

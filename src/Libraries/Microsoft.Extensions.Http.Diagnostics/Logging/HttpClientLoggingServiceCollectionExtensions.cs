@@ -15,7 +15,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extension methods to register HTTP client logging features.
+/// Extensions to register extended HTTP client logging features.
 /// </summary>
 public static class HttpClientLoggingServiceCollectionExtensions
 {
@@ -28,7 +28,7 @@ public static class HttpClientLoggingServiceCollectionExtensions
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Argument <paramref name="services"/> is <see langword="null"/>.</exception>
-    public static IServiceCollection AddDefaultHttpClientLogging(this IServiceCollection services)
+    public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
 
@@ -62,7 +62,7 @@ public static class HttpClientLoggingServiceCollectionExtensions
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Addressed with [DynamicDependency]")]
-    public static IServiceCollection AddDefaultHttpClientLogging(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services, IConfigurationSection section)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(section);
@@ -71,7 +71,7 @@ public static class HttpClientLoggingServiceCollectionExtensions
             .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>()
             .Bind(section);
 
-        return services.AddDefaultHttpClientLogging();
+        return services.AddExtendedHttpClientLogging();
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public static class HttpClientLoggingServiceCollectionExtensions
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
-    public static IServiceCollection AddDefaultHttpClientLogging(this IServiceCollection services, Action<LoggingOptions> configure)
+    public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services, Action<LoggingOptions> configure)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configure);
@@ -93,7 +93,7 @@ public static class HttpClientLoggingServiceCollectionExtensions
             .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>()
             .Configure(configure);
 
-        return services.AddDefaultHttpClientLogging();
+        return services.AddExtendedHttpClientLogging();
     }
 
     /// <summary>
