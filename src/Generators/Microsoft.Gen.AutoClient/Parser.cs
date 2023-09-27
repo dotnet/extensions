@@ -506,14 +506,16 @@ internal sealed class Parser
                 var keyArg = methodAttribute.ConstructorArguments[0];
                 var valueArg = methodAttribute.ConstructorArguments[1];
 
-                if (valueArg.IsNull)
-                {
-                    continue;
-                }
-
                 if (keyArg.IsNull)
                 {
                     Diag(DiagDescriptors.ErrorInvalidHeaderName, attributeSymbol.GetLocation());
+                    headersParsingFailed = true;
+                    continue;
+                }
+
+                if (valueArg.IsNull)
+                {
+                    Diag(DiagDescriptors.ErrorInvalidHeaderValue, attributeSymbol.GetLocation());
                     headersParsingFailed = true;
                     continue;
                 }
@@ -530,6 +532,8 @@ internal sealed class Parser
 
                 if (valueString == null)
                 {
+                    Diag(DiagDescriptors.ErrorInvalidHeaderValue, attributeSymbol.GetLocation());
+                    headersParsingFailed = true;
                     continue;
                 }
 
