@@ -2,16 +2,6 @@
   "Name": "Microsoft.Extensions.Http.Resilience, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.Extensions.Http.Resilience.FaultInjection.ContextExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static Polly.Context Microsoft.Extensions.Http.Resilience.FaultInjection.ContextExtensions.WithCallingRequestMessage(this Polly.Context context, System.Net.Http.HttpRequestMessage request);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "class Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions",
       "Stage": "Stable",
       "Methods": [
@@ -78,36 +68,6 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.HttpFaultInjectionOptionsBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.AddException(string key, System.Exception exception);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.AddHttpContent(string key, System.Net.Http.HttpContent content);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.Configure();",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.Configure(Microsoft.Extensions.Configuration.IConfiguration section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.Configure(System.Action<Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptions> configureOptions);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "class Microsoft.Extensions.Http.Resilience.HttpHedgingStrategyOptions : Polly.Hedging.HedgingStrategyOptions<System.Net.Http.HttpResponseMessage>",
       "Stage": "Stable",
       "Methods": [
@@ -123,42 +83,6 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.Resilience.HttpRateLimiterStrategyOptions.HttpRateLimiterStrategyOptions();",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionHttpBuilderExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionHttpBuilderExtensions.AddFaultInjectionPolicyHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, string chaosPolicyOptionsGroupName);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionHttpBuilderExtensions.AddWeightedFaultInjectionPolicyHandlers(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.Extensions.Resilience.FaultInjection.FaultPolicyWeightAssignmentsOptions> weightAssignmentsConfig);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionHttpBuilderExtensions.AddWeightedFaultInjectionPolicyHandlers(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection weightAssignmentsConfigSection);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionServiceCollectionExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionServiceCollectionExtensions.AddHttpClientFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionServiceCollectionExtensions.AddHttpClientFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionServiceCollectionExtensions.AddHttpClientFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder> configure);",
           "Stage": "Stable"
         }
       ]
@@ -335,16 +259,6 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions.HttpTimeoutStrategyOptions();",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "interface Microsoft.Extensions.Http.Resilience.FaultInjection.IHttpClientChaosPolicyFactory",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Polly.Contrib.Simmy.Outcomes.AsyncInjectOutcomePolicy<System.Net.Http.HttpResponseMessage> Microsoft.Extensions.Http.Resilience.FaultInjection.IHttpClientChaosPolicyFactory.CreateHttpResponsePolicy();",
           "Stage": "Stable"
         }
       ]
