@@ -24,11 +24,8 @@ public class TelemetryHealthChecksPublisherExtensionsTests
         using var serviceProvider = serviceCollection.BuildServiceProvider();
         var publishers = serviceProvider.GetRequiredService<IEnumerable<IHealthCheckPublisher>>();
 
-        Assert.Single(publishers);
-        foreach (var p in publishers)
-        {
-            Assert.True(p is TelemetryHealthCheckPublisher);
-        }
+        var publisher = Assert.Single(publishers);
+        _ = Assert.IsType<TelemetryHealthCheckPublisher>(publisher);
     }
 
     [Fact]
@@ -47,11 +44,8 @@ public class TelemetryHealthChecksPublisherExtensionsTests
         using var serviceProvider = serviceCollection.BuildServiceProvider();
         var publishers = serviceProvider.GetRequiredService<IEnumerable<IHealthCheckPublisher>>();
 
-        Assert.Single(publishers);
-        foreach (var p in publishers)
-        {
-            Assert.True(p is TelemetryHealthCheckPublisher);
-        }
+        var publisher = Assert.Single(publishers);
+        _ = Assert.IsType<TelemetryHealthCheckPublisher>(publisher);
     }
 
     [Fact]
@@ -68,11 +62,8 @@ public class TelemetryHealthChecksPublisherExtensionsTests
         using var serviceProvider = serviceCollection.BuildServiceProvider();
         var publishers = serviceProvider.GetRequiredService<IEnumerable<IHealthCheckPublisher>>();
 
-        Assert.Single(publishers);
-        foreach (var p in publishers)
-        {
-            Assert.True(p is TelemetryHealthCheckPublisher);
-        }
+        var publisher = Assert.Single(publishers);
+        _ = Assert.IsType<TelemetryHealthCheckPublisher>(publisher);
     }
 
     private static IConfiguration SetupTelemetryHealthCheckPublisherConfiguration(string logOnlyUnhealthy)

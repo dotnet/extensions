@@ -22,7 +22,7 @@ public sealed class ResourceMonitoringExtensionsTests
     {
         var services = new ServiceCollection();
 
-        Assert.Throws<ArgumentNullException>(() => ((IResourceMonitorBuilder)null!).ConfigureMonitor((_) => { }));
+        Assert.Throws<ArgumentNullException>(() => ((IResourceMonitorBuilder)null!).ConfigureMonitor(_ => { }));
         Assert.Throws<ArgumentNullException>(() => ((IResourceMonitorBuilder)null!).ConfigureMonitor((IConfigurationSection)null!));
         Assert.Throws<ArgumentNullException>(() => services.AddResourceMonitoring((b) => b.ConfigureMonitor((IConfigurationSection)null!)));
         Assert.Throws<ArgumentNullException>(() => services.AddResourceMonitoring((b) => b.ConfigureMonitor((Action<ResourceMonitoringOptions>)null!)));

@@ -8,7 +8,6 @@ using System.Threading;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -38,7 +37,7 @@ internal static class HttpClientFactory
     {
         var services = new ServiceCollection();
         services
-            .RegisterMetrics()
+            .AddMetrics()
             .AddSingleton<IRedactorProvider>(NullRedactorProvider.Instance)
             .AddTransient<NoRemoteCallHandler>()
             .AddHttpClient(StandardClient, client => client.Timeout = Timeout.InfiniteTimeSpan)

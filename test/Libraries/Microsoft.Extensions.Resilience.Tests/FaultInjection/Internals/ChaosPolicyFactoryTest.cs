@@ -4,7 +4,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Polly;
 using Xunit;
 
@@ -53,12 +52,8 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
-                options =>
-                {
-                    options.ChaosPolicyOptionsGroups.Add(_testOptionsGroupName, _testChaosPolicyOptionsGroup);
-                })
+                    options => options.ChaosPolicyOptionsGroups.Add(_testOptionsGroupName, _testChaosPolicyOptionsGroup))
                 .AddException(_testExceptionKey, _testException)
                 .AddCustomResult(_testCustomResultKey, _testCustomResultInstance));
 
@@ -124,12 +119,8 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
-            options =>
-            {
-                options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions);
-            }));
+                options => options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions)));
 
         using var provider = services.BuildServiceProvider();
         var testPolicyFactory = provider.GetRequiredService<IChaosPolicyFactory>();
@@ -159,7 +150,6 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
             options =>
             {
@@ -194,12 +184,8 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
-            options =>
-            {
-                options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions);
-            }));
+                options => options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions)));
 
         using var provider = services.BuildServiceProvider();
         var testPolicyFactory = provider.GetRequiredService<IChaosPolicyFactory>();
@@ -248,12 +234,8 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
-            options =>
-            {
-                options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions);
-            }));
+                options => options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions)));
 
         using var provider = services.BuildServiceProvider();
         var testPolicyFactory = provider.GetRequiredService<IChaosPolicyFactory>();
@@ -283,12 +265,8 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
-            options =>
-            {
-                options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions);
-            }));
+                options => options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions)));
 
         using var provider = services.BuildServiceProvider();
         var testPolicyFactory = provider.GetRequiredService<IChaosPolicyFactory>();
@@ -318,12 +296,8 @@ public class ChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddFaultInjection(builder => builder.Configure(
-            options =>
-            {
-                options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions);
-            }));
+                options => options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions)));
 
         using var provider = services.BuildServiceProvider();
         var testPolicyFactory = provider.GetRequiredService<IChaosPolicyFactory>();

@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using FluentAssertions;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Network;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
@@ -26,12 +27,17 @@ public sealed class WindowsCountersTests
             SourceIpAddresses = new HashSet<string> { "127.0.0.1", "[::1]" },
             SamplingInterval = TimeSpan.FromSeconds(5)
         };
-        using var meter = new Meter<WindowsCounters>();
+
+        using var meter = new Meter(nameof(WindowsCounters_Registers_Instruments));
+        var meterFactoryMock = new Mock<IMeterFactory>();
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+            .Returns(meter);
+
         var tcpTableInfo = new TcpTableInfo(Options.Options.Create(options));
         tcpTableInfo.SetGetTcpTableDelegate(TcpTableInfoTests.FakeGetTcpTableWithFakeInformation);
         tcpTableInfo.SetGetTcp6TableDelegate(Tcp6TableInfoTests.FakeGetTcp6TableWithFakeInformation);
-        using var windowsCounters = new WindowsCounters(meter, tcpTableInfo);
-        using var listener = new System.Diagnostics.Metrics.MeterListener
+        var windowsCounters = new WindowsCounters(meterFactoryMock.Object, tcpTableInfo);
+        using var listener = new MeterListener
         {
             InstrumentPublished = (instrument, listener) =>
             {
@@ -39,7 +45,7 @@ public sealed class WindowsCountersTests
             }
         };
 
-        var samples = new List<(System.Diagnostics.Metrics.Instrument instrument, long value)>();
+        var samples = new List<(Instrument instrument, long value)>();
         listener.SetMeasurementEventCallback<long>((instrument, value, _, _) =>
         {
             samples.Add((instrument, value));
@@ -106,12 +112,17 @@ public sealed class WindowsCountersTests
             SourceIpAddresses = new HashSet<string> { "127.0.0.1", "[::1]" },
             SamplingInterval = TimeSpan.FromSeconds(5)
         };
-        using var meter = new Meter<WindowsCounters>();
-        var tcpTableInfo = new TcpTableInfo(Microsoft.Extensions.Options.Options.Create(options));
+
+        using var meter = new Meter(nameof(WindowsCounters_Got_Unsuccessful));
+        var meterFactoryMock = new Mock<IMeterFactory>();
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+            .Returns(meter);
+
+        var tcpTableInfo = new TcpTableInfo(Options.Options.Create(options));
         tcpTableInfo.SetGetTcpTableDelegate(TcpTableInfoTests.FakeGetTcpTableWithUnsuccessfulStatusAllTheTime);
         tcpTableInfo.SetGetTcp6TableDelegate(Tcp6TableInfoTests.FakeGetTcp6TableWithUnsuccessfulStatusAllTheTime);
-        using var windowsCounters = new WindowsCounters(meter, tcpTableInfo);
-        using var listener = new System.Diagnostics.Metrics.MeterListener
+        var windowsCounters = new WindowsCounters(meterFactoryMock.Object, tcpTableInfo);
+        using var listener = new MeterListener
         {
             InstrumentPublished = (instrument, listener) =>
             {
@@ -119,7 +130,7 @@ public sealed class WindowsCountersTests
             }
         };
 
-        var samples = new List<(System.Diagnostics.Metrics.Instrument instrument, long value)>();
+        var samples = new List<(Instrument instrument, long value)>();
         listener.SetMeasurementEventCallback<long>((instrument, value, _, _) =>
         {
             samples.Add((instrument, value));
