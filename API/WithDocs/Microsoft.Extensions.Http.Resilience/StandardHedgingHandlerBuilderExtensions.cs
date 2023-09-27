@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
-using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.Http.Resilience;
@@ -42,10 +41,8 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// Instructs the underlying pipeline builder to select the pipeline instance by redacted authority (scheme + host + port).
     /// </summary>
     /// <param name="builder">The builder instance.</param>
-    /// <param name="classification">The data class associated with the authority.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <remarks>The authority is redacted using <see cref="T:Microsoft.Extensions.Compliance.Redaction.Redactor" /> retrieved for <paramref name="classification" />.</remarks>
-    public static IStandardHedgingHandlerBuilder SelectPipelineByAuthority(this IStandardHedgingHandlerBuilder builder, DataClassification classification);
+    public static IStandardHedgingHandlerBuilder SelectPipelineByAuthority(this IStandardHedgingHandlerBuilder builder);
 
     /// <summary>
     /// Instructs the underlying pipeline builder to select the pipeline instance by custom selector.

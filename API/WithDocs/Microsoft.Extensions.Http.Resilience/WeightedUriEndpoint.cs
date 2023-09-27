@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// <summary>
 /// Represents an URI based endpoint with a weight assigned.
 /// </summary>
-public class WeightedEndpoint
+public class WeightedUriEndpoint
 {
     /// <summary>
     /// Gets or sets the URL of the endpoint.
@@ -29,5 +29,5 @@ public class WeightedEndpoint
     [Range(1, 64000)]
     public int Weight { get; set; }
 
-    public WeightedEndpoint();
+    public WeightedUriEndpoint();
 }

@@ -5,9 +5,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
-public class Endpoint
+public class UriEndpoint
 {
     [Required]
     public Uri? Uri { get; set; }
-    public Endpoint();
+    public UriEndpoint();
 }

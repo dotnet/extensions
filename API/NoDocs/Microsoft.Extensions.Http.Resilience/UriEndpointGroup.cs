@@ -7,10 +7,10 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
-public class EndpointGroup
+public class UriEndpointGroup
 {
     [Length(1, int.MaxValue)]
     [ValidateEnumeratedItems]
-    public IList<WeightedEndpoint> Endpoints { get; set; }
-    public EndpointGroup();
+    public IList<WeightedUriEndpoint> Endpoints { get; set; }
+    public UriEndpointGroup();
 }

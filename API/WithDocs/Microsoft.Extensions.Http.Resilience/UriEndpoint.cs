@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// <summary>
 /// Represents an URI based endpoint.
 /// </summary>
-public class Endpoint
+public class UriEndpoint
 {
     /// <summary>
     /// Gets or sets the URL of the endpoint.
@@ -19,5 +19,5 @@ public class Endpoint
     [Required]
     public Uri? Uri { get; set; }
 
-    public Endpoint();
+    public UriEndpoint();
 }

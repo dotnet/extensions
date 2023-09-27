@@ -13,6 +13,6 @@ public class WeightedGroupsRoutingOptions
     [Required]
     [Length(1, int.MaxValue)]
     [ValidateEnumeratedItems]
-    public IList<WeightedEndpointGroup> Groups { get; set; }
+    public IList<WeightedUriEndpointGroup> Groups { get; set; }
     public WeightedGroupsRoutingOptions();
 }

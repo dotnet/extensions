@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// </list>
 /// </para>
 /// The last three strategies are assigned to each individual endpoint. The selection of endpoint can be customized by
-/// <see cref="M:Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder,Microsoft.Extensions.Compliance.Classification.DataClassification)" /> or
+/// <see cref="M:Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder)" /> or
 /// <see cref="M:Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineBy(Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder,System.Func{System.IServiceProvider,System.Func{System.Net.Http.HttpRequestMessage,System.String}})" /> extensions.
 /// <para>
 /// By default, the endpoint is selected by authority (scheme + host + port).

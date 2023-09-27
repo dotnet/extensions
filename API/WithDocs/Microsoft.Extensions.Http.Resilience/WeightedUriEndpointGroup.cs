@@ -6,9 +6,9 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Represents a collection of <see cref="T:Microsoft.Extensions.Http.Resilience.Endpoint" /> with a weight assigned.
+/// Represents a collection of <see cref="T:Microsoft.Extensions.Http.Resilience.UriEndpoint" /> with a weight assigned.
 /// </summary>
-public class WeightedEndpointGroup : EndpointGroup
+public class WeightedUriEndpointGroup : UriEndpointGroup
 {
     /// <summary>
     /// Gets or sets the weight of the group.
@@ -19,5 +19,5 @@ public class WeightedEndpointGroup : EndpointGroup
     [Range(1, 64000)]
     public int Weight { get; set; }
 
-    public WeightedEndpointGroup();
+    public WeightedUriEndpointGroup();
 }

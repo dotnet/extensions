@@ -23,7 +23,7 @@ public static class HttpResilienceHedgingHttpClientBuilderExtensions
     /// The standard hedging uses a pool of circuit breakers to ensure that unhealthy endpoints are not hedged against.
     /// By default, the selection from pool is based on the URL Authority (scheme + host + port).
     /// It is recommended that you configure the way the strategies are selected by calling
-    /// <see cref="M:Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder,Microsoft.Extensions.Compliance.Classification.DataClassification)" />
+    /// <see cref="M:Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder)" />
     /// extensions.
     /// <para>
     /// See <see cref="T:Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions" /> for more details about the used resilience strategies.
@@ -42,7 +42,7 @@ public static class HttpResilienceHedgingHttpClientBuilderExtensions
     /// The standard hedging uses a pool of circuit breakers to ensure that unhealthy endpoints are not hedged against.
     /// By default, the selection from pool is based on the URL Authority (scheme + host + port).
     /// It is recommended that you configure the way the strategies are selected by calling
-    /// <see cref="M:Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder,Microsoft.Extensions.Compliance.Classification.DataClassification)" />
+    /// <see cref="M:Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder)" />
     /// extensions.
     /// <para>
     /// See <see cref="T:Microsoft.Extensions.Http.Resilience.HttpStandardHedgingResilienceOptions" /> for more details about the used resilience strategies.

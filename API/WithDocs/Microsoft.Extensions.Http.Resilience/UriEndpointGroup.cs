@@ -8,9 +8,9 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Represents a collection of <see cref="T:Microsoft.Extensions.Http.Resilience.WeightedEndpoint" />.
+/// Represents a collection of <see cref="T:Microsoft.Extensions.Http.Resilience.WeightedUriEndpoint" />.
 /// </summary>
-public class EndpointGroup
+public class UriEndpointGroup
 {
     /// <summary>
     /// Gets or sets the endpoints in this endpoint group.
@@ -22,7 +22,7 @@ public class EndpointGroup
     /// </remarks>
     [Length(1, int.MaxValue)]
     [ValidateEnumeratedItems]
-    public IList<WeightedEndpoint> Endpoints { get; set; }
+    public IList<WeightedUriEndpoint> Endpoints { get; set; }
 
-    public EndpointGroup();
+    public UriEndpointGroup();
 }

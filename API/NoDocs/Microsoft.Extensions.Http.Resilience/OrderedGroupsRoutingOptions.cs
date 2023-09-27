@@ -12,6 +12,6 @@ public class OrderedGroupsRoutingOptions
     [Required]
     [Length(1, int.MaxValue)]
     [ValidateEnumeratedItems]
-    public IList<EndpointGroup> Groups { get; set; }
+    public IList<UriEndpointGroup> Groups { get; set; }
     public OrderedGroupsRoutingOptions();
 }
