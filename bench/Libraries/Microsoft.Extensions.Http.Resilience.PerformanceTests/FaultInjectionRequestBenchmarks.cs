@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Resilience.FaultInjection;
 
 namespace Microsoft.Extensions.Http.Resilience.FaultInjection.PerformanceTests;
@@ -18,7 +17,7 @@ public class FaultInjectionRequestBenchmarks
     private const string HttpClientIdentifier = "HttpClientClass";
     private static readonly Uri _defaultUrl = new("https://www.google.ca/");
     private ServiceProvider _serviceProvider = null!;
-    private System.Net.Http.HttpClient _client = null!;
+    private HttpClient _client = null!;
 
     [GlobalSetup]
     public void GlobalSetup()
@@ -34,9 +33,7 @@ public class FaultInjectionRequestBenchmarks
                     option.ChaosPolicyOptionsGroups = new Dictionary<string, ChaosPolicyOptionsGroup>();
                 });
 
-            services
-                .RegisterMetrics()
-                .AddHttpClientFaultInjection(action);
+            services.AddHttpClientFaultInjection(action);
         }
 
         services.AddHttpClient(HttpClientIdentifier);

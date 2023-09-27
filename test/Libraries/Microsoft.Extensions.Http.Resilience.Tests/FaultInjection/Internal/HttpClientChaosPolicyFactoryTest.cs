@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Http.Resilience.FaultInjection.Internal;
 using Microsoft.Extensions.Resilience.FaultInjection;
 using Polly;
@@ -39,7 +38,6 @@ public class HttpClientChaosPolicyFactoryTest
                 });
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
 
         using var provider = services.BuildServiceProvider();
@@ -69,7 +67,6 @@ public class HttpClientChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection();
 
         using var provider = services.BuildServiceProvider();
@@ -100,12 +97,10 @@ public class HttpClientChaosPolicyFactoryTest
         Action<HttpFaultInjectionOptionsBuilder> action =
             builder => builder.Configure(
                 options =>
-                {
-                    options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions);
-                });
+                    options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions));
+
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
 
         using var provider = services.BuildServiceProvider();
@@ -134,7 +129,6 @@ public class HttpClientChaosPolicyFactoryTest
         var services = new ServiceCollection();
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection();
 
         using var provider = services.BuildServiceProvider();
@@ -165,12 +159,10 @@ public class HttpClientChaosPolicyFactoryTest
         Action<HttpFaultInjectionOptionsBuilder> action =
             builder => builder.Configure(
                 options =>
-                {
-                    options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions);
-                });
+                    options.ChaosPolicyOptionsGroups.Add(testGroupName, tesOptionsGroupNoPolicyOptions));
+
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
 
         using var provider = services.BuildServiceProvider();

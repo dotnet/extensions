@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Resilience;
 using Microsoft.Extensions.Resilience.Internal;
 using Moq;
 using Polly.Telemetry;

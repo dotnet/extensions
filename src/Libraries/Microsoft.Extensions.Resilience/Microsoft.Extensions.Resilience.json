@@ -110,36 +110,6 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions.AddFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions.AddFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions.AddFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static string? Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions.GetFaultInjectionGroupName(this Polly.Context context);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Polly.Context Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions.WithFaultInjection(this Polly.Context context, string groupName);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Polly.Context Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionExtensions.WithFaultInjection(this Polly.Context context, Microsoft.Extensions.Resilience.FaultInjection.FaultPolicyWeightAssignmentsOptions weightAssignments);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "class Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptions",
       "Stage": "Stable",
       "Methods": [
@@ -182,6 +152,36 @@
         {
           "Member": "Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder.Configure(System.Action<Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptions> configureOptions);",
           "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.FaultInjectionServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.FaultInjectionServiceCollectionExtensions.AddFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.FaultInjectionServiceCollectionExtensions.AddFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration section);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.FaultInjectionServiceCollectionExtensions.AddFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptionsBuilder> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static string? Microsoft.Extensions.DependencyInjection.FaultInjectionServiceCollectionExtensions.GetFaultInjectionGroupName(this Polly.Context context);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Polly.Context Microsoft.Extensions.DependencyInjection.FaultInjectionServiceCollectionExtensions.WithFaultInjection(this Polly.Context context, string groupName);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Polly.Context Microsoft.Extensions.DependencyInjection.FaultInjectionServiceCollectionExtensions.WithFaultInjection(this Polly.Context context, Microsoft.Extensions.Resilience.FaultInjection.FaultPolicyWeightAssignmentsOptions weightAssignments);",
+          "Stage": "Experimental"
         }
       ]
     },
@@ -288,25 +288,25 @@
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Http.Telemetry.RequestMetadata? Microsoft.Extensions.Resilience.ResilienceContextExtensions.GetRequestMetadata(this Polly.ResilienceContext context);",
+          "Member": "static Microsoft.Extensions.Http.Diagnostics.RequestMetadata? Microsoft.Extensions.Resilience.ResilienceContextExtensions.GetRequestMetadata(this Polly.ResilienceContext context);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static void Microsoft.Extensions.Resilience.ResilienceContextExtensions.SetRequestMetadata(this Polly.ResilienceContext context, Microsoft.Extensions.Http.Telemetry.RequestMetadata requestMetadata);",
+          "Member": "static void Microsoft.Extensions.Resilience.ResilienceContextExtensions.SetRequestMetadata(this Polly.ResilienceContext context, Microsoft.Extensions.Http.Diagnostics.RequestMetadata requestMetadata);",
           "Stage": "Experimental"
         }
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Resilience.ResilienceServiceCollectionExtensions",
+      "Type": "static class Microsoft.Extensions.DependencyInjection.ResilienceServiceCollectionExtensions",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Resilience.ResilienceServiceCollectionExtensions.AddResilienceEnrichment(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ResilienceServiceCollectionExtensions.AddResilienceEnrichment(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Resilience.ResilienceServiceCollectionExtensions.ConfigureFailureResultContext<TResult>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Func<TResult, Microsoft.Extensions.Resilience.FailureResultContext> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ResilienceServiceCollectionExtensions.ConfigureFailureResultContext<TResult>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Func<TResult, Microsoft.Extensions.Resilience.FailureResultContext> configure);",
           "Stage": "Experimental"
         }
       ]

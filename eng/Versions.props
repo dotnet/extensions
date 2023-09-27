@@ -22,7 +22,7 @@
     DO NOT UPDATE THESE MANUALLY. Use the `darc` command line tool to update this file so it stays in sync with
     Version.Details.xml.
 
-    See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md for instructions on using darc.
+    See https://github.com/dotnet/arcade/blob/main/Documentation/Darc.md for instructions on using darc.
 
   -->
   <PropertyGroup Label="Automated">
@@ -37,6 +37,7 @@
     <MicrosoftExtensionsConfigurationVersion>8.0.0-rc.2.23464.16</MicrosoftExtensionsConfigurationVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>8.0.0-rc.2.23464.16</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>8.0.0-rc.2.23464.16</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDiagnosticsVersion>8.0.0-rc.2.23464.16</MicrosoftExtensionsDiagnosticsVersion>
     <MicrosoftExtensionsHostingAbstractionsVersion>8.0.0-rc.2.23464.16</MicrosoftExtensionsHostingAbstractionsVersion>
     <MicrosoftExtensionsHostingVersion>8.0.0-rc.2.23464.16</MicrosoftExtensionsHostingVersion>
     <MicrosoftExtensionsHttpVersion>8.0.0-rc.2.23464.16</MicrosoftExtensionsHttpVersion>
@@ -60,15 +61,15 @@
     <SystemTextJsonVersion>8.0.0-rc.2.23464.16</SystemTextJsonVersion>
     <SystemRuntimeCachingVersion>8.0.0-rc.2.23464.16</SystemRuntimeCachingVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRuntimewinx64Version>8.0.0-rtm.23468.24</MicrosoftAspNetCoreAppRuntimewinx64Version>
-    <MicrosoftAspNetCoreMvcTestingVersion>8.0.0-rtm.23468.24</MicrosoftAspNetCoreMvcTestingVersion>
-    <MicrosoftAspNetCoreTestHostVersion>8.0.0-rtm.23468.24</MicrosoftAspNetCoreTestHostVersion>
-    <MicrosoftExtensionsCachingStackExchangeRedisVersion>8.0.0-rtm.23468.24</MicrosoftExtensionsCachingStackExchangeRedisVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>8.0.0-rtm.23468.24</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>8.0.0-rtm.23468.24</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
-    <MicrosoftExtensionsFeaturesVersion>8.0.0-rtm.23468.24</MicrosoftExtensionsFeaturesVersion>
-    <MicrosoftExtensionsHttpPollyVersion>8.0.0-rtm.23468.24</MicrosoftExtensionsHttpPollyVersion>
-    <MicrosoftExtensionsObjectPoolVersion>8.0.0-rtm.23468.24</MicrosoftExtensionsObjectPoolVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>8.0.0-rtm.23475.5</MicrosoftAspNetCoreAppRuntimewinx64Version>
+    <MicrosoftAspNetCoreMvcTestingVersion>8.0.0-rtm.23475.5</MicrosoftAspNetCoreMvcTestingVersion>
+    <MicrosoftAspNetCoreTestHostVersion>8.0.0-rtm.23475.5</MicrosoftAspNetCoreTestHostVersion>
+    <MicrosoftExtensionsCachingStackExchangeRedisVersion>8.0.0-rtm.23475.5</MicrosoftExtensionsCachingStackExchangeRedisVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>8.0.0-rtm.23475.5</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>8.0.0-rtm.23475.5</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
+    <MicrosoftExtensionsFeaturesVersion>8.0.0-rtm.23475.5</MicrosoftExtensionsFeaturesVersion>
+    <MicrosoftExtensionsHttpPollyVersion>8.0.0-rtm.23475.5</MicrosoftExtensionsHttpPollyVersion>
+    <MicrosoftExtensionsObjectPoolVersion>8.0.0-rtm.23475.5</MicrosoftExtensionsObjectPoolVersion>
   </PropertyGroup>
   <!--
 

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -22,7 +21,6 @@ public static partial class AutoActivationExtensions
     /// <typeparam name="TService">The type of the service to activate.</typeparam>
     /// <param name="services">The service collection containing the service.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
     public static IServiceCollection ActivateSingleton<TService>(this IServiceCollection services)
         where TService : class
     {
@@ -57,7 +55,6 @@ public static partial class AutoActivationExtensions
     /// <param name="services">The service collection containing the service.</param>
     /// <param name="serviceType">The type of the service to activate.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    [Experimental(diagnosticId: Experiments.AutoActivation, UrlFormat = Experiments.UrlFormat)]
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
@@ -121,6 +118,8 @@ public static partial class AutoActivationExtensions
         where TService : class
         where TImplementation : class, TService
     {
+        _ = Throw.IfNull(services);
+
         return services
             .AddSingleton<TService, TImplementation>()
             .ActivateSingleton<TService>();
@@ -136,6 +135,9 @@ public static partial class AutoActivationExtensions
     public static IServiceCollection AddActivatedSingleton<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
         where TService : class
     {
+        _ = Throw.IfNull(services);
+        _ = Throw.IfNull(implementationFactory);
+
         return services
             .AddSingleton<TService>(implementationFactory)
             .ActivateSingleton<TService>();
@@ -150,6 +152,8 @@ public static partial class AutoActivationExtensions
     public static IServiceCollection AddActivatedSingleton<TService>(this IServiceCollection services)
         where TService : class
     {
+        _ = Throw.IfNull(services);
+
         return services
             .AddSingleton<TService>()
             .ActivateSingleton<TService>();

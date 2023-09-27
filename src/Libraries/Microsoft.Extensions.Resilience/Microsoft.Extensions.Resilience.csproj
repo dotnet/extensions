@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExceptionSummarization\Microsoft.Extensions.Diagnostics.ExceptionSummarization.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.Extra\Microsoft.Extensions.Diagnostics.Extra.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +36,7 @@
     <PackageReference Include="Polly.RateLimiting" />
     <PackageReference Include="Polly.Contrib.Simmy" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))" />
   </ItemGroup>

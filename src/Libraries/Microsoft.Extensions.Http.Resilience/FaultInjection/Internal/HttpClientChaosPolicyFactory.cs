@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.EnumStrings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Resilience.FaultInjection;
@@ -30,7 +30,7 @@ internal sealed class HttpClientChaosPolicyFactory : IHttpClientChaosPolicyFacto
     private readonly Task<double> _noInjectionRate = Task.FromResult<double>(0);
 
     private readonly ILogger<IHttpClientChaosPolicyFactory> _logger;
-    private readonly HttpClientFaultInjectionMetricCounter _counter;
+    private readonly HttpClientFaultInjectionMetrics _metrics;
     private readonly IFaultInjectionOptionsProvider _optionsProvider;
     private readonly IHttpContentOptionsRegistry _httpContentOptionsRegistry;
     private readonly Func<Context, CancellationToken, Task<HttpResponseMessage>> _getHttpResponseMessageAsync;
@@ -41,15 +41,15 @@ internal sealed class HttpClientChaosPolicyFactory : IHttpClientChaosPolicyFacto
     /// Initializes a new instance of the <see cref="HttpClientChaosPolicyFactory"/> class.
     /// </summary>
     /// <param name="logger">The logger.</param>
-    /// <param name="meter">The meter.</param>
+    /// <param name="metrics">The metrics.</param>
     /// <param name="optionsProvider">The provider of <see cref="FaultInjectionOptions"/>.</param>
     /// <param name="httpContentOptionsRegistry">The registry that contains registered http content options.</param>
     public HttpClientChaosPolicyFactory(
-        ILogger<IHttpClientChaosPolicyFactory> logger, Meter<IHttpClientChaosPolicyFactory> meter,
+        ILogger<IHttpClientChaosPolicyFactory> logger, HttpClientFaultInjectionMetrics metrics,
         IFaultInjectionOptionsProvider optionsProvider, IHttpContentOptionsRegistry httpContentOptionsRegistry)
     {
         _logger = logger;
-        _counter = Metric.CreateHttpClientFaultInjectionMetricCounter(meter);
+        _metrics = metrics;
         _optionsProvider = optionsProvider;
         _httpContentOptionsRegistry = httpContentOptionsRegistry;
         _getHttpResponseMessageAsync = GetHttpResponseMessageAsync;
@@ -92,7 +92,7 @@ internal sealed class HttpClientChaosPolicyFactory : IHttpClientChaosPolicyFacto
         response.RequestMessage = context.GetCallingRequestMessage();
 
         FaultInjectionTelemetryHandler.LogAndMeter(
-            _logger, _counter, groupName,
+            _logger, _metrics.FaultInjectionCounter, groupName,
             FaultTypeHttpStatus, statusCode.ToInvariantString(), httpContentKey);
 
         return Task.FromResult(response);

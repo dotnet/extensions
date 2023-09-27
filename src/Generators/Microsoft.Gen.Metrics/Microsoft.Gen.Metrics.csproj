@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Gen.Metrics</RootNamespace>
-    <Description>Code generator to support Microsoft.Extensions.Telemetry's metering features.</Description>
+    <Description>Code generator to support Microsoft.Extensions.Diagnostics.Extra's metering features.</Description>
     <Workstream>Telemetry</Workstream>
   </PropertyGroup>
 

@@ -6,9 +6,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- disable Published symbols cannot be deleted to maintain compatibility" because we have different APIs for different TFMs -->
-    <NoWarn Condition="'$(TargetFramework)' == 'net462'">$(NoWarn);LA0006</NoWarn>
-
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
@@ -25,17 +22,17 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <Compile Remove="Linux*.cs" />
-    <Compile Remove="Internal\Linux\*.cs" />
+    <Compile Remove="Linux\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
-    <ProjectReference Include="..\..\Libraries\Microsoft.Extensions.DependencyInjection.AutoActivation\Microsoft.Extensions.DependencyInjection.AutoActivation.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExtraAbstractions\Microsoft.Extensions.Diagnostics.ExtraAbstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.AutoActivation\Microsoft.Extensions.DependencyInjection.AutoActivation.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Condition="'$(TargetFramework)' == 'net462'" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
@@ -45,6 +42,8 @@
 
   <ItemGroup>
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="ResourceMonitoringBuilderExtensions.cs" />
+    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="ResourceMonitoringServiceCollectionExtensions.cs" />
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
   </ItemGroup>
 </Project>

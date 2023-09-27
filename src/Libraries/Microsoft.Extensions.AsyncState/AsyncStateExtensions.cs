@@ -2,14 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.AsyncState;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.AsyncState;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extension methods to manipulate async state.
+/// Extensions to manipulate async state.
 /// </summary>
 public static class AsyncStateExtensions
 {
@@ -19,12 +19,12 @@ public static class AsyncStateExtensions
     /// <param name="services">The dependency injection container to add the implementations to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
-    public static IServiceCollection AddAsyncStateCore(this IServiceCollection services)
+    public static IServiceCollection AddAsyncState(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
 
         services.TryAddSingleton(typeof(IAsyncContext<>), typeof(AsyncContext<>));
-        services.TryAddActivatedSingleton<IAsyncState, AsyncState>();
+        services.TryAddActivatedSingleton<IAsyncState, Microsoft.Extensions.AsyncState.AsyncState>();
         services.TryAddSingleton(typeof(IAsyncLocalContext<>), typeof(AsyncContext<>));
 
         return services;

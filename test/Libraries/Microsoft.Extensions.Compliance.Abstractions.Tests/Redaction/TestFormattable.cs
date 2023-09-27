@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.Compliance.Redaction.Tests;
+namespace Microsoft.Extensions.Compliance.Redaction.Test;
 
 internal sealed class TestFormattable : IFormattable
 {

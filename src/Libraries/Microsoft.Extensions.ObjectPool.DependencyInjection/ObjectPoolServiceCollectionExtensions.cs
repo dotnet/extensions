@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.ObjectPool;
@@ -16,7 +15,6 @@ namespace Microsoft.Extensions.ObjectPool;
 /// <summary>
 /// Extension methods for adding <see cref="ObjectPool{T}"/> to DI container.
 /// </summary>
-[Experimental(diagnosticId: Experiments.ObjectPool, UrlFormat = Experiments.UrlFormat)]
 public static class ObjectPoolServiceCollectionExtensions
 {
     /// <summary>
@@ -67,7 +65,7 @@ public static class ObjectPoolServiceCollectionExtensions
     /// <typeparam name="TService">The type of objects to pool.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configure">The action used to configure the options.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     public static IServiceCollection ConfigurePool<TService>(this IServiceCollection services, Action<DependencyInjectionPoolOptions> configure)
         where TService : class
     {
@@ -79,7 +77,7 @@ public static class ObjectPoolServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
     /// <param name="section">The configuration section to bind.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(DependencyInjectionPoolOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",

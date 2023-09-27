@@ -7,10 +7,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
-using Microsoft.Extensions.Http.Telemetry;
-using Microsoft.Extensions.Telemetry;
 using Polly;
 using Xunit;
 
