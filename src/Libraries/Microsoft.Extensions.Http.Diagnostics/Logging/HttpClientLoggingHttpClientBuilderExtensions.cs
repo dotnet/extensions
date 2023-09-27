@@ -16,7 +16,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extension methods to register HTTP client logging feature.
+/// Extensions to register extended HTTP client logging features.
 /// </summary>
 public static class HttpClientLoggingHttpClientBuilderExtensions
 {
@@ -24,18 +24,16 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// Adds an <see cref="IHttpClientAsyncLogger" /> to emit logs for outgoing requests for a named <see cref="HttpClient"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder" />.</param>
-    /// <returns>
-    /// An <see cref="IHttpClientBuilder" /> that can be used to configure the client.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Argument <paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static IHttpClientBuilder AddHttpClientLogging(this IHttpClientBuilder builder)
+    public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder)
     {
         _ = Throw.IfNull(builder);
 
-        return AddNamedClientLoggingInternal(builder);
+        return AddExtendedHttpClientLoggingInternal(builder);
     }
 
     /// <summary>
@@ -43,9 +41,7 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder" />.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="LoggingOptions"/>.</param>
-    /// <returns>
-    /// An <see cref="IHttpClientBuilder" /> that can be used to configure the client.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
     /// </remarks>
@@ -54,12 +50,12 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Addressed with [DynamicDependency]")]
-    public static IHttpClientBuilder AddHttpClientLogging(this IHttpClientBuilder builder, IConfigurationSection section)
+    public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        return AddNamedClientLoggingInternal(builder, options => options.Bind(section));
+        return AddExtendedHttpClientLoggingInternal(builder, options => options.Bind(section));
     }
 
     /// <summary>
@@ -67,9 +63,7 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder" />.</param>
     /// <param name="configure">The delegate to configure <see cref="LoggingOptions"/> with.</param>
-    /// <returns>
-    /// An <see cref="IHttpClientBuilder" /> that can be used to configure the client.
-    /// </returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
     /// </remarks>
@@ -78,15 +72,15 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Addressed with [DynamicDependency]")]
-    public static IHttpClientBuilder AddHttpClientLogging(this IHttpClientBuilder builder, Action<LoggingOptions> configure)
+    public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, Action<LoggingOptions> configure)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
 
-        return AddNamedClientLoggingInternal(builder, options => options.Configure(configure));
+        return AddExtendedHttpClientLoggingInternal(builder, options => options.Configure(configure));
     }
 
-    private static IHttpClientBuilder AddNamedClientLoggingInternal(IHttpClientBuilder builder, Action<OptionsBuilder<LoggingOptions>>? configureOptionsBuilder = null)
+    private static IHttpClientBuilder AddExtendedHttpClientLoggingInternal(IHttpClientBuilder builder, Action<OptionsBuilder<LoggingOptions>>? configureOptionsBuilder = null)
     {
         var optionsBuilder = builder.Services
             .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>(builder.Name);

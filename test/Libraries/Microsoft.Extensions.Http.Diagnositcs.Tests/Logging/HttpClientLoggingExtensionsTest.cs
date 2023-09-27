@@ -34,38 +34,38 @@ public class HttpClientLoggingExtensionsTest
     [Fact]
     public void AddHttpClientLogging_AnyArgumentIsNull_Throws()
     {
-        var act = () => ((IHttpClientBuilder)null!).AddHttpClientLogging();
+        var act = () => ((IHttpClientBuilder)null!).AddExtendedHttpClientLogging();
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => ((IHttpClientBuilder)null!).AddHttpClientLogging(_ => { });
+        act = () => ((IHttpClientBuilder)null!).AddExtendedHttpClientLogging(_ => { });
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => ((IHttpClientBuilder)null!).AddHttpClientLogging(Mock.Of<IConfigurationSection>());
+        act = () => ((IHttpClientBuilder)null!).AddExtendedHttpClientLogging(Mock.Of<IConfigurationSection>());
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => Mock.Of<IHttpClientBuilder>().AddHttpClientLogging((Action<LoggingOptions>)null!);
+        act = () => Mock.Of<IHttpClientBuilder>().AddExtendedHttpClientLogging((Action<LoggingOptions>)null!);
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => Mock.Of<IHttpClientBuilder>().AddHttpClientLogging((IConfigurationSection)null!);
+        act = () => Mock.Of<IHttpClientBuilder>().AddExtendedHttpClientLogging((IConfigurationSection)null!);
         act.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
     public void AddHttpClientLogging_ServiceCollection_AnyArgumentIsNull_Throws()
     {
-        var act = () => ((IServiceCollection)null!).AddDefaultHttpClientLogging();
+        var act = () => ((IServiceCollection)null!).AddExtendedHttpClientLogging();
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => ((IServiceCollection)null!).AddDefaultHttpClientLogging(_ => { });
+        act = () => ((IServiceCollection)null!).AddExtendedHttpClientLogging(_ => { });
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => ((IServiceCollection)null!).AddDefaultHttpClientLogging(Mock.Of<IConfigurationSection>());
+        act = () => ((IServiceCollection)null!).AddExtendedHttpClientLogging(Mock.Of<IConfigurationSection>());
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => Mock.Of<IServiceCollection>().AddDefaultHttpClientLogging((Action<LoggingOptions>)null!);
+        act = () => Mock.Of<IServiceCollection>().AddExtendedHttpClientLogging((Action<LoggingOptions>)null!);
         act.Should().Throw<ArgumentNullException>();
 
-        act = () => Mock.Of<IServiceCollection>().AddDefaultHttpClientLogging((IConfigurationSection)null!);
+        act = () => Mock.Of<IServiceCollection>().AddExtendedHttpClientLogging((IConfigurationSection)null!);
         act.Should().Throw<ArgumentNullException>();
     }
 
@@ -83,10 +83,10 @@ public class HttpClientLoggingExtensionsTest
 
         using var provider = services
             .AddHttpClient("test1")
-            .AddHttpClientLogging(options => options.BodyReadTimeout = TimeSpan.FromSeconds(1))
+            .AddExtendedHttpClientLogging(options => options.BodyReadTimeout = TimeSpan.FromSeconds(1))
             .Services
             .AddHttpClient("test2")
-            .AddHttpClientLogging(options => options.BodyReadTimeout = TimeSpan.FromSeconds(2))
+            .AddExtendedHttpClientLogging(options => options.BodyReadTimeout = TimeSpan.FromSeconds(2))
             .Services
             .BuildServiceProvider();
 
@@ -106,10 +106,10 @@ public class HttpClientLoggingExtensionsTest
 
         using var provider = services
             .AddHttpClient<ITestHttpClient1, TestHttpClient1>()
-            .AddHttpClientLogging(options => options.BodyReadTimeout = TimeSpan.FromSeconds(1))
+            .AddExtendedHttpClientLogging(options => options.BodyReadTimeout = TimeSpan.FromSeconds(1))
             .Services
             .AddHttpClient<ITestHttpClient2, TestHttpClient2>()
-            .AddHttpClientLogging(options => options.BodyReadTimeout = TimeSpan.FromSeconds(2))
+            .AddExtendedHttpClientLogging(options => options.BodyReadTimeout = TimeSpan.FromSeconds(2))
             .Services
             .BuildServiceProvider();
 
@@ -129,10 +129,10 @@ public class HttpClientLoggingExtensionsTest
 
         using var provider = services
             .AddHttpClient("")
-            .AddHttpClientLogging(o => o.RequestHeadersDataClasses.Add("test1", FakeClassifications.PrivateData))
+            .AddExtendedHttpClientLogging(o => o.RequestHeadersDataClasses.Add("test1", FakeClassifications.PrivateData))
             .Services
             .AddHttpClient("")
-            .AddHttpClientLogging(o => o.RequestHeadersDataClasses.Add("test2", FakeClassifications.PrivateData))
+            .AddExtendedHttpClientLogging(o => o.RequestHeadersDataClasses.Add("test2", FakeClassifications.PrivateData))
             .Services
             .BuildServiceProvider();
 
@@ -160,7 +160,7 @@ public class HttpClientLoggingExtensionsTest
 
         services
             .AddHttpClient("test")
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.RequestBodyContentTypes.Add(requestBodyContentType);
                 options.ResponseBodyContentTypes.Add(responseBodyContentType);
@@ -204,7 +204,7 @@ public class HttpClientLoggingExtensionsTest
                 services
                     .AddFakeRedaction()
                     .AddHttpClient("test")
-                    .AddHttpClientLogging(options =>
+                    .AddExtendedHttpClientLogging(options =>
                     {
                         options.BodyReadTimeout = TimeSpan.Zero;
                         options.BodySizeLimit = -1;
@@ -228,7 +228,7 @@ public class HttpClientLoggingExtensionsTest
 
         using var provider = new ServiceCollection()
             .AddHttpClient("test")
-            .AddHttpClientLogging(TestConfiguration.GetHttpClientLoggingConfigurationSection(timeoutValue))
+            .AddExtendedHttpClientLogging(TestConfiguration.GetHttpClientLoggingConfigurationSection(timeoutValue))
             .Services
             .BuildServiceProvider();
         var options = provider
@@ -270,7 +270,7 @@ public class HttpClientLoggingExtensionsTest
         services
             .AddFakeRedaction()
             .AddHttpClient()
-            .AddDefaultHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.RequestBodyContentTypes.Add(requestBodyContentType);
                 options.ResponseBodyContentTypes.Add(responseBodyContentType);
@@ -314,7 +314,7 @@ public class HttpClientLoggingExtensionsTest
         using var provider = new ServiceCollection()
             .AddFakeRedaction()
             .AddHttpClient()
-            .AddDefaultHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.BodyReadTimeout = TimeSpan.Zero;
                 options.BodySizeLimit = -1;
@@ -336,12 +336,12 @@ public class HttpClientLoggingExtensionsTest
         using var provider = new ServiceCollection()
             .AddFakeRedaction()
             .AddHttpClient(ClientName)
-            .AddHttpClientLogging(x =>
+            .AddExtendedHttpClientLogging(x =>
             {
                 x.BodySizeLimit = 100500;
                 x.RequestHeadersDataClasses.Add(ClientName, FakeClassifications.PublicData);
             }).Services
-            .AddDefaultHttpClientLogging(x =>
+            .AddExtendedHttpClientLogging(x =>
             {
                 x.BodySizeLimit = 347;
                 x.RequestHeadersDataClasses.Add("default", FakeClassifications.PrivateData);
@@ -358,10 +358,10 @@ public class HttpClientLoggingExtensionsTest
 
         using var provider = new ServiceCollection()
             .AddFakeRedaction()
-            .AddDefaultHttpClientLogging()
+            .AddExtendedHttpClientLogging()
             .AddHttpClient(ClientName)
-            .AddHttpClientLogging().Services
-            .BuildServiceProvider();
+            .AddExtendedHttpClientLogging()
+            .Services.BuildServiceProvider();
 
         EnsureSingleLogger<HttpClientLogger>(provider, ClientName);
     }
@@ -379,7 +379,7 @@ public class HttpClientLoggingExtensionsTest
         using var provider = new ServiceCollection()
             .AddFakeRedaction()
             .AddHttpClient()
-            .AddDefaultHttpClientLogging(TestConfiguration.GetHttpClientLoggingConfigurationSection(timeoutValue))
+            .AddExtendedHttpClientLogging(TestConfiguration.GetHttpClientLoggingConfigurationSection(timeoutValue))
             .BuildServiceProvider();
         var options = provider
             .GetRequiredService<IOptions<LoggingOptions>>().Value;
@@ -397,7 +397,7 @@ public class HttpClientLoggingExtensionsTest
         using var sp = new ServiceCollection()
             .AddFakeRedaction()
             .AddHttpClient()
-            .AddDefaultHttpClientLogging()
+            .AddExtendedHttpClientLogging()
             .BuildServiceProvider();
 
         using var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
