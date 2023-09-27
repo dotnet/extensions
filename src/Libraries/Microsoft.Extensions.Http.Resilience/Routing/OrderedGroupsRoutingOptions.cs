@@ -27,7 +27,7 @@ public class OrderedGroupsRoutingOptions
     [Microsoft.Shared.Data.Validation.Length(1)]
 #endif
     [ValidateEnumeratedItems]
-    public IList<EndpointGroup> Groups { get; set; } = new List<EndpointGroup>();
+    public IList<UriEndpointGroup> Groups { get; set; } = new List<UriEndpointGroup>();
 #pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 #pragma warning restore CA2227 // Collection properties should be read only
 }

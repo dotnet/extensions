@@ -14,7 +14,7 @@ internal sealed class OrderedGroupsRoutingStrategy : RequestRoutingStrategy, IRe
 {
     private readonly ObjectPool<OrderedGroupsRoutingStrategy> _pool;
     private int _lastUsedIndex;
-    private IList<EndpointGroup>? _groups;
+    private IList<UriEndpointGroup>? _groups;
 
     public OrderedGroupsRoutingStrategy(Randomizer randomizer, ObjectPool<OrderedGroupsRoutingStrategy> pool)
         : base(randomizer)
@@ -22,7 +22,7 @@ internal sealed class OrderedGroupsRoutingStrategy : RequestRoutingStrategy, IRe
         _pool = pool;
     }
 
-    public void Initialize(IList<EndpointGroup> groups)
+    public void Initialize(IList<UriEndpointGroup> groups)
     {
         _ = TryReset();
 
@@ -55,7 +55,7 @@ internal sealed class OrderedGroupsRoutingStrategy : RequestRoutingStrategy, IRe
         return true;
     }
 
-    private bool TryGetNextGroup(out EndpointGroup? nextGroup)
+    private bool TryGetNextGroup(out UriEndpointGroup? nextGroup)
     {
         if (_lastUsedIndex >= _groups!.Count)
         {
