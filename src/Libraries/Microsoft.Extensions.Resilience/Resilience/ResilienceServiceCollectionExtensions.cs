@@ -51,7 +51,8 @@ public static class ResilienceServiceCollectionExtensions
             return services;
         }
 
-        services.TryAddActivatedSingleton<ResilienceMetricsEnricher>();
+        services.AddExceptionSummarizer()
+                .TryAddActivatedSingleton<ResilienceMetricsEnricher>();
 
         _ = services
             .AddOptions<TelemetryOptions>()
