@@ -3,8 +3,6 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -12,13 +10,11 @@ namespace Microsoft.Extensions.Http.Resilience.Internal;
 
 internal static class PipelineKeyProviderHelper
 {
-    public static void SelectPipelineByAuthority(IServiceCollection services, string pipelineName, DataClassification classification)
+    public static void SelectPipelineByAuthority(IServiceCollection services, string pipelineName)
     {
         UsePipelineKeyProvider(services, pipelineName, serviceProvider =>
         {
-            var redactor = serviceProvider.GetRequiredService<IRedactorProvider>().GetRedactor(classification);
-
-            return new ByAuthorityPipelineKeyProvider(redactor).GetPipelineKey;
+            return new ByAuthorityPipelineKeyProvider().GetPipelineKey;
         });
     }
 
