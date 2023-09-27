@@ -52,7 +52,6 @@ public static class ResilienceServiceCollectionExtensions
             return services;
         }
 
-
         services.TryAddSingleton<ResilienceMetricsEnricher>();
 
         _ = services
