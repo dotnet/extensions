@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
@@ -35,7 +34,7 @@ public static class HttpResilienceHedgingHttpClientBuilderExtensions
     /// The standard hedging uses a pool of circuit breakers to ensure that unhealthy endpoints are not hedged against.
     /// By default, the selection from pool is based on the URL Authority (scheme + host + port).
     /// It is recommended that you configure the way the strategies are selected by calling
-    /// <see cref="StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(IStandardHedgingHandlerBuilder, DataClassification)"/>
+    /// <see cref="StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(IStandardHedgingHandlerBuilder)"/>
     /// extensions.
     /// <para>
     /// See <see cref="HttpStandardHedgingResilienceOptions"/> for more details about the used resilience strategies.
@@ -64,7 +63,7 @@ public static class HttpResilienceHedgingHttpClientBuilderExtensions
     /// The standard hedging uses a pool of circuit breakers to ensure that unhealthy endpoints are not hedged against.
     /// By default, the selection from pool is based on the URL Authority (scheme + host + port).
     /// It is recommended that you configure the way the strategies are selected by calling
-    /// <see cref="StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(IStandardHedgingHandlerBuilder, DataClassification)"/>
+    /// <see cref="StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(IStandardHedgingHandlerBuilder)"/>
     /// extensions.
     /// <para>
     /// See <see cref="HttpStandardHedgingResilienceOptions"/> for more details about the used resilience strategies.
@@ -137,7 +136,7 @@ public static class HttpResilienceHedgingHttpClientBuilderExtensions
                     .AddCircuitBreaker(options.EndpointOptions.CircuitBreakerOptions)
                     .AddTimeout(options.EndpointOptions.TimeoutOptions);
             })
-            .SelectPipelineByAuthority(DataClassification.Unknown);
+            .SelectPipelineByAuthority();
 
         return new StandardHedgingHandlerBuilder(builder.Name, builder.Services, routingBuilder);
     }

@@ -8,8 +8,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Http.Diagnostics;
@@ -164,7 +162,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         var expectedPipelineKey = "client-dummy";
         if (bySelector)
         {
-            pipelineBuilder.SelectPipelineByAuthority(DataClassification.Unknown);
+            pipelineBuilder.SelectPipelineByAuthority();
         }
 
         builder.AddHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.OK));
@@ -221,22 +219,6 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
         // assert
         providerMock.VerifyAll();
-    }
-
-    [Fact]
-    public void AddResilienceHandler_AuthoritySelectorAndNotConfiguredRedaction_EnsureValidated()
-    {
-        // arrange
-        var clientBuilder = new ServiceCollection().AddLogging().AddMetrics().AddRedaction()
-            .AddHttpClient("my-client")
-            .AddResilienceHandler("my-pipeline", ConfigureBuilder)
-            .SelectPipelineByAuthority(FakeClassifications.PrivateData);
-
-        using var serviceProvider = clientBuilder.Services.BuildServiceProvider();
-        var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-
-        var error = Assert.Throws<InvalidOperationException>(() => factory.CreateClient("my-client"));
-        Assert.Equal("The redacted pipeline key is an empty string and cannot be used for the pipeline selection. Is redaction correctly configured?", error.Message);
     }
 
     [Fact]

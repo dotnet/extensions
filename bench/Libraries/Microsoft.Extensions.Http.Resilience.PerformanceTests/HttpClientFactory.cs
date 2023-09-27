@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Compliance.Redaction;
-using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -68,7 +67,7 @@ internal static class HttpClientFactory
     private static void AddHedging(this IServiceCollection services, HedgingClientType clientType)
     {
         var clientBuilder = services.AddHttpClient(clientType.ToString(), client => client.Timeout = Timeout.InfiniteTimeSpan);
-        var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectPipelineByAuthority(FakeClassifications.PublicData);
+        var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectPipelineByAuthority();
         _ = clientBuilder.AddHttpMessageHandler<NoRemoteCallHandler>();
 
         if (clientType.HasFlag(HedgingClientType.NoRoutes))
