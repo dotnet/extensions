@@ -17,8 +17,10 @@ internal sealed class WindowsCounters
         var meter = meterFactory.Create("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
+        // TODO: these should be heavily rewritten to align with
+        // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/system/system-metrics.md#metric-systemnetworkconnections
         _ = meter.CreateObservableGauge(
-            "ipv4_tcp_connection_closed_count",
+            "process.network.tcp.ipv4_connection_closed_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -26,7 +28,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv4_tcp_connection_listen_count",
+            "process.network.tcp.ipv4_connection_listen_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -34,7 +36,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv4_tcp_connection_syn_sent_count",
+            "process.network.tcp.ipv4_connection_syn_sent_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -42,7 +44,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv4_tcp_connection_syn_received_count",
+            "process.network.tcp.ipv4_connection_syn_received_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -50,7 +52,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv4_tcp_connection_established_count",
+            "process.network.tcp.ipv4_connection_established_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -58,7 +60,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv4_tcp_connection_fin_wait_1_count",
+            "process.network.tcp.ipv4_connection_fin_wait_1_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -66,7 +68,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv4_tcp_connection_fin_wait_2_count",
+            "process.network.tcp.ipv4_connection_fin_wait_2_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -74,7 +76,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv4_tcp_connection_close_wait_count",
+            "process.network.tcp.ipv4_connection_close_wait_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -82,7 +84,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv4_tcp_connection_closing_count",
+            "process.network.tcp.ipv4_connection_closing_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -90,7 +92,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv4_tcp_connection_last_ack_count",
+            "process.network.tcp.ipv4_connection_last_ack_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -98,7 +100,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv4_tcp_connection_time_wait_count",
+            "process.network.tcp.ipv4_connection_time_wait_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -106,7 +108,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv4_tcp_connection_delete_tcb_count",
+            "process.network.tcp.ipv4_connection_delete_tcb_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -114,7 +116,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv6_tcp_connection_closed_count",
+            "process.network.tcp.ipv6_connection_closed_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -122,7 +124,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv6_tcp_connection_listen_count",
+            "process.network.tcp.ipv6_connection_listen_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -130,7 +132,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv6_tcp_connection_syn_sent_count",
+            "process.network.tcp.ipv6_connection_syn_sent_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -138,7 +140,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv6_tcp_connection_syn_received_count",
+            "process.network.tcp.ipv6_connection_syn_received_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -146,7 +148,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv6_tcp_connection_established_count",
+            "process.network.tcp.ipv6_connection_established_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -154,7 +156,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv6_tcp_connection_fin_wait_1_count",
+            "process.network.tcp.ipv6_connection_fin_wait_1_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -162,7 +164,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv6_tcp_connection_fin_wait_2_count",
+            "process.network.tcp.ipv6_connection_fin_wait_2_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -170,7 +172,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv6_tcp_connection_close_wait_count",
+            "process.network.tcp.ipv6_connection_close_wait_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -178,7 +180,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv6_tcp_connection_closing_count",
+            "process.network.tcp.ipv6_connection_closing_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -186,7 +188,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv6_tcp_connection_last_ack_count",
+            "process.network.tcp.ipv6_connection_last_ack_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -194,7 +196,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv6_tcp_connection_time_wait_count",
+            "process.network.tcp.ipv6_connection_time_wait_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -202,7 +204,7 @@ internal sealed class WindowsCounters
             });
 
         _ = meter.CreateObservableGauge(
-            "ipv6_tcp_connection_delete_tcb_count",
+            "process.network.tcp.ipv6_connection_delete_tcb_count",
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();

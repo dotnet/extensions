@@ -8,9 +8,9 @@ namespace Microsoft.AspNetCore.HeaderParsing;
 
 internal static partial class Metric
 {
-    [Counter("HeaderName", "Kind", Name = @"HeaderParsing.ParsingErrors")]
+    [Counter("header.name", "error.kind", Name = "aspnetcore.header_parsing.parse_errors")]
     public static partial ParsingErrorCounter CreateParsingErrorCounter(Meter meter);
 
-    [Counter("HeaderName", "Type", Name = @"HeaderParsing.CacheAccess")]
+    [Counter("header.name", "access.type", Name = "aspnetcore.header_parsing.cache_accesses")]
     public static partial CacheAccessCounter CreateCacheAccessCounter(Meter meter);
 }
