@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class HttpClientLoggingHttpClientBuilderExtensions
 {
-    public static IHttpClientBuilder AddHttpClientLogging(this IHttpClientBuilder builder);
-    public static IHttpClientBuilder AddHttpClientLogging(this IHttpClientBuilder builder, IConfigurationSection section);
-    public static IHttpClientBuilder AddHttpClientLogging(this IHttpClientBuilder builder, Action<LoggingOptions> configure);
+    public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder);
+    public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, IConfigurationSection section);
+    public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, Action<LoggingOptions> configure);
 }

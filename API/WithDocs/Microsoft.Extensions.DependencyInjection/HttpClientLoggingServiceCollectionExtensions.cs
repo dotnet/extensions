@@ -8,7 +8,7 @@ using Microsoft.Extensions.Http.Logging;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extension methods to register HTTP client logging features.
+/// Extensions to register extended HTTP client logging features.
 /// </summary>
 public static class HttpClientLoggingServiceCollectionExtensions
 {
@@ -21,7 +21,7 @@ public static class HttpClientLoggingServiceCollectionExtensions
     /// All other loggers are removed - including the default one, registered via <see cref="M:Microsoft.Extensions.DependencyInjection.HttpClientBuilderExtensions.AddDefaultLogger(Microsoft.Extensions.DependencyInjection.IHttpClientBuilder)" />.
     /// </remarks>
     /// <exception cref="T:System.ArgumentNullException">Argument <paramref name="services" /> is <see langword="null" />.</exception>
-    public static IServiceCollection AddDefaultHttpClientLogging(this IServiceCollection services);
+    public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services);
 
     /// <summary>
     /// Adds an <see cref="T:Microsoft.Extensions.Http.Logging.IHttpClientAsyncLogger" /> to emit logs for outgoing requests for all HTTP clients created with <see cref="T:System.Net.Http.IHttpClientFactory" />.
@@ -33,7 +33,7 @@ public static class HttpClientLoggingServiceCollectionExtensions
     /// All other loggers are removed - including the default one, registered via <see cref="M:Microsoft.Extensions.DependencyInjection.HttpClientBuilderExtensions.AddDefaultLogger(Microsoft.Extensions.DependencyInjection.IHttpClientBuilder)" />.
     /// </remarks>
     /// <exception cref="T:System.ArgumentNullException">Any of the arguments is <see langword="null" />.</exception>
-    public static IServiceCollection AddDefaultHttpClientLogging(this IServiceCollection services, IConfigurationSection section);
+    public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services, IConfigurationSection section);
 
     /// <summary>
     /// Adds an <see cref="T:Microsoft.Extensions.Http.Logging.IHttpClientAsyncLogger" /> to emit logs for outgoing requests for all HTTP clients created with <see cref="T:System.Net.Http.IHttpClientFactory" />.
@@ -45,7 +45,7 @@ public static class HttpClientLoggingServiceCollectionExtensions
     /// All other loggers are removed - including the default one, registered via <see cref="M:Microsoft.Extensions.DependencyInjection.HttpClientBuilderExtensions.AddDefaultLogger(Microsoft.Extensions.DependencyInjection.IHttpClientBuilder)" />.
     /// </remarks>
     /// <exception cref="T:System.ArgumentNullException">Any of the arguments is <see langword="null" />.</exception>
-    public static IServiceCollection AddDefaultHttpClientLogging(this IServiceCollection services, Action<LoggingOptions> configure);
+    public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services, Action<LoggingOptions> configure);
 
     /// <summary>
     /// Adds an enricher instance of <typeparamref name="T" /> to the <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> to enrich <see cref="T:System.Net.Http.HttpClient" /> logs.

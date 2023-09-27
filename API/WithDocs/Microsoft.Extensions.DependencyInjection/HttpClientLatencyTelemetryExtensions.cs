@@ -21,7 +21,7 @@ public static class HttpClientLatencyTelemetryExtensions
     /// </remarks>
     /// <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" />.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    public static IServiceCollection AddDefaultHttpClientLatencyTelemetry(this IServiceCollection services);
+    public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services);
 
     /// <summary>
     /// Adds a <see cref="T:System.Net.Http.DelegatingHandler" /> to collect latency information and enrich outgoing request log for all http clients.
@@ -32,7 +32,7 @@ public static class HttpClientLatencyTelemetryExtensions
     /// <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" />.</param>
     /// <param name="section">The <see cref="T:Microsoft.Extensions.Configuration.IConfigurationSection" /> to use for configuring <see cref="T:Microsoft.Extensions.Http.Latency.HttpClientLatencyTelemetryOptions" />.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    public static IServiceCollection AddDefaultHttpClientLatencyTelemetry(this IServiceCollection services, IConfigurationSection section);
+    public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services, IConfigurationSection section);
 
     /// <summary>
     /// Adds a <see cref="T:System.Net.Http.DelegatingHandler" /> to collect latency information and enrich outgoing request log for all http clients.
@@ -43,5 +43,5 @@ public static class HttpClientLatencyTelemetryExtensions
     /// <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" />.</param>
     /// <param name="configure">The delegate to configure <see cref="T:Microsoft.Extensions.Http.Latency.HttpClientLatencyTelemetryOptions" /> with.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    public static IServiceCollection AddDefaultHttpClientLatencyTelemetry(this IServiceCollection services, Action<HttpClientLatencyTelemetryOptions> configure);
+    public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services, Action<HttpClientLatencyTelemetryOptions> configure);
 }

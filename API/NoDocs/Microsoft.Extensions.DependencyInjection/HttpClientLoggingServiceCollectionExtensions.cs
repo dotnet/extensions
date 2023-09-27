@@ -9,8 +9,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class HttpClientLoggingServiceCollectionExtensions
 {
-    public static IServiceCollection AddDefaultHttpClientLogging(this IServiceCollection services);
-    public static IServiceCollection AddDefaultHttpClientLogging(this IServiceCollection services, IConfigurationSection section);
-    public static IServiceCollection AddDefaultHttpClientLogging(this IServiceCollection services, Action<LoggingOptions> configure);
+    public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services);
+    public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services, IConfigurationSection section);
+    public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services, Action<LoggingOptions> configure);
     public static IServiceCollection AddHttpClientLogEnricher<T>(this IServiceCollection services) where T : class, IHttpClientLogEnricher;
 }
