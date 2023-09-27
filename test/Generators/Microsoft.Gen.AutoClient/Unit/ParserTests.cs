@@ -587,7 +587,7 @@ public class ParserTests
     }
 
     [Fact]
-    public async Task NullStaticHeaderValue_NoError()
+    public async Task NullStaticHeaderValue()
     {
         var ds = await RunGenerator(@$"
         [AutoClient(""MyClient"")]
@@ -598,7 +598,7 @@ public class ParserTests
             public Task<string> GetUsers(CancellationToken token);
         }}");
 
-        Assert.Empty(ds);
+        Assert.Contains(DiagDescriptors.ErrorInvalidHeaderValue.Id, ds.Select(x => x.Id));
     }
 
     [Fact]
