@@ -78,7 +78,7 @@ public class WeightedRoutingStrategyTest : RoutingStrategyTest
             var group = CreateGroup("https://b/");
             group.Weight = 20;
 
-            var groups = new List<WeightedEndpointGroup>(options.Groups)
+            var groups = new List<WeightedUriEndpointGroup>(options.Groups)
             {
                 group
             };
@@ -109,7 +109,7 @@ public class WeightedRoutingStrategyTest : RoutingStrategyTest
             var group = CreateGroup("https://dummy");
             group.Weight = 0;
 
-            var groups = new List<WeightedEndpointGroup>(options.Groups)
+            var groups = new List<WeightedUriEndpointGroup>(options.Groups)
             {
                 group
             };
@@ -121,7 +121,7 @@ public class WeightedRoutingStrategyTest : RoutingStrategyTest
             var group = CreateGroup("https://dummy");
             group.Weight = 99999;
 
-            var groups = new List<WeightedEndpointGroup>(options.Groups)
+            var groups = new List<WeightedUriEndpointGroup>(options.Groups)
             {
                 group
             };
@@ -133,7 +133,7 @@ public class WeightedRoutingStrategyTest : RoutingStrategyTest
             var group = CreateGroup("https://dummy");
             group.Endpoints.Single().Weight = 0;
 
-            var groups = new List<WeightedEndpointGroup>(options.Groups)
+            var groups = new List<WeightedUriEndpointGroup>(options.Groups)
             {
                 group
             };
@@ -145,7 +145,7 @@ public class WeightedRoutingStrategyTest : RoutingStrategyTest
             var group = CreateGroup("https://dummy");
             group.Endpoints.Single().Weight = 99999;
 
-            var groups = new List<WeightedEndpointGroup>(options.Groups)
+            var groups = new List<WeightedUriEndpointGroup>(options.Groups)
             {
                 group
             };
@@ -154,7 +154,7 @@ public class WeightedRoutingStrategyTest : RoutingStrategyTest
 
         yield return builder => builder.ConfigureWeightedGroups(options =>
         {
-            var groups = new List<WeightedEndpointGroup>(options.Groups)
+            var groups = new List<WeightedUriEndpointGroup>(options.Groups)
             {
                 null!
             };
@@ -164,14 +164,14 @@ public class WeightedRoutingStrategyTest : RoutingStrategyTest
 
     internal override RequestRoutingStrategy CreateEmptyStrategy() => new WeightedGroupsRoutingStrategy(Mock.Of<Randomizer>(), Mock.Of<ObjectPool<WeightedGroupsRoutingStrategy>>());
 
-    private static WeightedEndpointGroup CreateGroup(params string[] endpoints)
+    private static WeightedUriEndpointGroup CreateGroup(params string[] endpoints)
     {
-        return CreateGroup(endpoints.Select(v => new WeightedEndpoint { Uri = new Uri(v) }).ToArray());
+        return CreateGroup(endpoints.Select(v => new WeightedUriEndpoint { Uri = new Uri(v) }).ToArray());
     }
 
-    private static WeightedEndpointGroup CreateGroup(params WeightedEndpoint[] endpoint)
+    private static WeightedUriEndpointGroup CreateGroup(params WeightedUriEndpoint[] endpoint)
     {
-        return new WeightedEndpointGroup
+        return new WeightedUriEndpointGroup
         {
             Endpoints = endpoint.ToList()
         };

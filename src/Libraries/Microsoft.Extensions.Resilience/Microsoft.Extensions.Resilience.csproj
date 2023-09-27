@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Resilience</RootNamespace>
     <Description>Mechanisms to harden applications against transient failures.</Description>
@@ -26,15 +26,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExceptionSummarization\Microsoft.Extensions.Diagnostics.ExceptionSummarization.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.Extra\Microsoft.Extensions.Diagnostics.Extra.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExtraAbstractions\Microsoft.Extensions.Diagnostics.ExtraAbstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Polly" />
     <PackageReference Include="Polly.Core" />
     <PackageReference Include="Polly.Extensions" />
     <PackageReference Include="Polly.RateLimiting" />
-    <PackageReference Include="Polly.Contrib.Simmy" />
     <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
