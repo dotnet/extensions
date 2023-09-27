@@ -40,6 +40,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>a3d5300baee03169bf737cfc4e9b1f7dbece4d05</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Diagnostics" Version="8.0.0-rtm.23475.7" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>9cdbc87dadbf358206f20f17fed005cdcb253452</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0-rtm.23475.7" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>a3d5300baee03169bf737cfc4e9b1f7dbece4d05</Sha>

@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Resilience.FaultInjection;
 using Polly;
 using Xunit;
@@ -58,7 +57,6 @@ public class HttpClientBuilderExtensionsTest
         Action<HttpFaultInjectionOptionsBuilder> action = builder => { };
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
 
         var builder = services.AddHttpClient<HttpClientClass>();
@@ -102,15 +100,15 @@ public class HttpClientBuilderExtensionsTest
                 {
                     option.ChaosPolicyOptionsGroups = new Dictionary<string, ChaosPolicyOptionsGroup>
                     {
-                            { "TestA", chaosPolicyOptionsGroup1 },
-                            { "TestB", chaosPolicyOptionsGroup2 },
+                        { "TestA", chaosPolicyOptionsGroup1 },
+                        { "TestB", chaosPolicyOptionsGroup2 },
                     };
                 });
 
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
+
         services
             .AddHttpClient<HttpClientClass>()
             .AddWeightedFaultInjectionPolicyHandlers(weightAssignmentsOptions =>
@@ -120,9 +118,8 @@ public class HttpClientBuilderExtensionsTest
             })
             .AddHttpMessageHandler(() => new TestMessageHandler());
 
-        var clientFactory = services
-            .BuildServiceProvider()
-            .GetRequiredService<IHttpClientFactory>();
+        using var serviceProvider = services.BuildServiceProvider();
+        var clientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
         var httpClient = clientFactory.CreateClient(httpClientIdentifier);
 
         for (int i = 0; i < 100; i++)
@@ -172,16 +169,16 @@ public class HttpClientBuilderExtensionsTest
 
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
+
         services
             .AddHttpClient<HttpClientClass>()
             .AddWeightedFaultInjectionPolicyHandlers(_configurationWithPolicyOptions.GetSection("FaultPolicyWeightAssignments"))
             .AddHttpMessageHandler(() => new TestMessageHandler());
 
-        var clientFactory = services
-            .BuildServiceProvider()
-            .GetRequiredService<IHttpClientFactory>();
+        using var serviceProvider = services.BuildServiceProvider();
+        var clientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+
         var httpClient = clientFactory.CreateClient(httpClientIdentifier);
 
         for (int i = 0; i < 100; i++)
@@ -209,7 +206,6 @@ public class HttpClientBuilderExtensionsTest
         Action<HttpFaultInjectionOptionsBuilder> action = builder => { };
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
 
         var builder = services.AddHttpClient<HttpClientClass>();
@@ -237,7 +233,7 @@ public class HttpClientBuilderExtensionsTest
         }
     }
 
-    private static System.Net.Http.HttpClient SetupHttpClientWithFaultInjection(string chaosPolicyOptionsGroupName)
+    private static HttpClient SetupHttpClientWithFaultInjection(string chaosPolicyOptionsGroupName)
     {
         var services = new ServiceCollection();
         var httpClientIdentifier = "HttpClientClass";
@@ -256,21 +252,21 @@ public class HttpClientBuilderExtensionsTest
                 {
                     option.ChaosPolicyOptionsGroups = new Dictionary<string, ChaosPolicyOptionsGroup>
                     {
-                            { chaosPolicyOptionsGroupName, chaosPolicyOptionsGroup1 }
+                        { chaosPolicyOptionsGroupName, chaosPolicyOptionsGroup1 }
                     };
                 });
+
         services
             .AddLogging()
-            .RegisterMetrics()
             .AddHttpClientFaultInjection(action);
+
         services
             .AddHttpClient<HttpClientClass>()
             .AddFaultInjectionPolicyHandler(chaosPolicyOptionsGroupName)
             .AddHttpMessageHandler(() => new TestMessageHandler());
 
-        var clientFactory = services
-            .BuildServiceProvider()
-            .GetRequiredService<IHttpClientFactory>();
+        using var serviceProvider = services.BuildServiceProvider();
+        var clientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
         return clientFactory.CreateClient(httpClientIdentifier);
     }
 }

@@ -79,6 +79,7 @@ public static class HttpResilienceFaultInjectionServiceCollectionExtensions
         configure.Invoke(builder);
 
         _ = services.AddFaultInjection();
+        services.TryAddSingleton<HttpClientFaultInjectionMetrics>();
         services.TryAddSingleton<IHttpClientChaosPolicyFactory, HttpClientChaosPolicyFactory>();
         services.TryAddSingleton<IHttpContentOptionsRegistry, HttpContentOptionsRegistry>();
 

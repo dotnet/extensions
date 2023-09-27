@@ -1,12 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
 using FluentAssertions;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Resilience.FaultInjection;
 using Moq;
 using Xunit;
 
@@ -21,7 +20,7 @@ public class FaultInjectionTelemetryHandlerTests
     {
         var logger = new FakeLogger();
 
-        using var meter = new Meter<IChaosPolicyFactory>();
+        using var meter = new Meter(nameof(LogAndMeter_WithHttpContentKey));
         using var metricCollector = new MetricCollector<long>(meter, MetricName);
         var counter = meter.CreateCounter<long>(MetricName);
         var metricCounter = new HttpClientFaultInjectionMetricCounter(counter);
@@ -56,7 +55,7 @@ public class FaultInjectionTelemetryHandlerTests
     {
         var logger = Mock.Of<ILogger<IHttpClientChaosPolicyFactory>>();
 
-        using var meter = new Meter<IChaosPolicyFactory>();
+        using var meter = new Meter(nameof(LogAndMeter_WithoutHttpContentKey));
         using var metricCollector = new MetricCollector<long>(meter, MetricName);
         var counter = meter.CreateCounter<long>(MetricName);
         var metricCounter = new HttpClientFaultInjectionMetricCounter(counter);

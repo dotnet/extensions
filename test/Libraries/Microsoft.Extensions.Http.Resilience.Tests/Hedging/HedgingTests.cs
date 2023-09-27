@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
@@ -44,7 +43,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         _requestRoutingStrategyMock = new Mock<RequestRoutingStrategy>(MockBehavior.Strict, new Randomizer());
         _requestRoutingStrategyFactory = () => _requestRoutingStrategyMock.Object;
 
-        _services = new ServiceCollection().RegisterMetrics().AddLogging();
+        _services = new ServiceCollection().AddMetrics().AddLogging();
         _services.AddSingleton<IRedactorProvider>(NullRedactorProvider.Instance);
 
         var httpClient = _services.AddHttpClient(ClientId);
