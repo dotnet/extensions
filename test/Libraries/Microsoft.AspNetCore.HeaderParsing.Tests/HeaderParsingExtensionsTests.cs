@@ -18,7 +18,7 @@ public class HeaderParsingExtensionsTests
     [Fact]
     public void AddHeaderParsing_configures_options_using_delegate()
     {
-        var services = new ServiceCollection()
+        using var services = new ServiceCollection()
             .AddHeaderParsing(options => options.DefaultValues.Add("Test", "9"))
             .BuildServiceProvider();
 
@@ -30,7 +30,7 @@ public class HeaderParsingExtensionsTests
     [Fact]
     public void AddHeaderParsing_configures_invalid_options()
     {
-        var services = new ServiceCollection()
+        using var services = new ServiceCollection()
             .AddHeaderParsing(options => options.DefaultMaxCachedValuesPerHeader = -1)
             .BuildServiceProvider();
 
@@ -40,7 +40,7 @@ public class HeaderParsingExtensionsTests
     [Fact]
     public void AddHeaderParsing_configures_invalid_options_MaxCachedValuesPerHeader()
     {
-        var services = new ServiceCollection()
+        using var services = new ServiceCollection()
             .AddHeaderParsing(options => options.MaxCachedValuesPerHeader["Date"] = -1)
             .BuildServiceProvider();
 
@@ -50,7 +50,7 @@ public class HeaderParsingExtensionsTests
     [Fact]
     public void AddHeaderParsing_section()
     {
-        var services = new ServiceCollection()
+        using var services = new ServiceCollection()
             .AddHeaderParsing(GetConfigurationSection())
             .BuildServiceProvider();
 

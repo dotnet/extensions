@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.Extensions.Diagnostics.Metrics;
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
@@ -31,7 +31,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     public SystemResources Resources { get; }
 
     public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, LinuxUtilizationParser parser,
-        Meter<LinuxUtilizationProvider> meter, TimeProvider? timeProvider = null)
+        IMeterFactory meterFactory, TimeProvider? timeProvider = null)
     {
         _parser = parser;
         _timeProvider = timeProvider ?? TimeProvider.System;
@@ -50,6 +50,13 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         _scale = hostCpus * Hundred / availableCpus;
         _scaleForTrackerApi = hostCpus / availableCpus;
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        // We don't dispose the meter because IMeterFactory handles that
+        // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
+        // Related documentation: https://github.com/dotnet/docs/pull/37170
+        var meter = meterFactory.Create("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         _ = meter.CreateObservableGauge(name: ResourceUtilizationCounters.CpuConsumptionPercentage, observeValue: CpuPercentage);
         _ = meter.CreateObservableGauge(name: ResourceUtilizationCounters.MemoryConsumptionPercentage, observeValue: MemoryPercentage);

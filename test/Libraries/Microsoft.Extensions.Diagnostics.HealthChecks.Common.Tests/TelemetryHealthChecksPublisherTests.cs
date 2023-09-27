@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks.Test;
@@ -89,19 +90,20 @@ public class TelemetryHealthChecksPublisherTests
         string expectedMetricHealthy,
         string expectedMetricStatus)
     {
-        using var meter = new Meter<TelemetryHealthCheckPublisher>();
+        using var meter = new Meter(nameof(PublishAsync));
+        var metrics = GetMockedMetrics(meter);
         using var healthyMetricCollector = new MetricCollector<long>(meter, HealthReportMetricName);
         using var unhealthyMetricCollector = new MetricCollector<long>(meter, UnhealthyHealthCheckMetricName);
 
         var logger = new FakeLogger<TelemetryHealthCheckPublisher>();
         var collector = logger.Collector;
 
-        var options = Microsoft.Extensions.Options.Options.Create(new TelemetryHealthCheckPublisherOptions
+        var options = Options.Options.Create(new TelemetryHealthCheckPublisherOptions
         {
             LogOnlyUnhealthy = logOnlyUnhealthy,
         });
 
-        var publisher = new TelemetryHealthCheckPublisher(meter, logger, options);
+        var publisher = new TelemetryHealthCheckPublisher(metrics, logger, options);
 
         await publisher.PublishAsync(CreateHealthReport(healthStatuses), CancellationToken.None);
         Assert.Equal(expectedLogCount, collector.Count);
@@ -132,9 +134,11 @@ public class TelemetryHealthChecksPublisherTests
     [Fact]
     public void Ctor_ThrowsWhenOptionsValueNull()
     {
-        using var meter = new Meter<TelemetryHealthCheckPublisher>();
+        using var meter = new Meter(nameof(Ctor_ThrowsWhenOptionsValueNull));
+        var metrics = GetMockedMetrics(meter);
         var logger = new FakeLogger<TelemetryHealthCheckPublisher>();
-        Assert.Throws<ArgumentException>(() => new TelemetryHealthCheckPublisher(meter, logger, Microsoft.Extensions.Options.Options.Create<TelemetryHealthCheckPublisherOptions>(null!)));
+
+        Assert.Throws<ArgumentException>(() => new TelemetryHealthCheckPublisher(metrics, logger, Options.Options.Create<TelemetryHealthCheckPublisherOptions>(null!)));
     }
 
     private static long GetValue(IReadOnlyCollection<CollectedMeasurement<long>> counters, string healthy, string status)
@@ -167,4 +171,13 @@ public class TelemetryHealthChecksPublisherTests
     }
 
     private static string GetKey(int index) => $"id{index}";
+
+    private static HealthCheckMetrics GetMockedMetrics(Meter meter)
+    {
+        var meterFactoryMock = new Mock<IMeterFactory>();
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+            .Returns(meter);
+
+        return new HealthCheckMetrics(meterFactoryMock.Object);
+    }
 }

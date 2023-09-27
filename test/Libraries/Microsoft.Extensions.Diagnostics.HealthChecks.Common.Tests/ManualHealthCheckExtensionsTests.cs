@@ -53,7 +53,7 @@ public class ManualHealthCheckExtensionsTests
         Assert.Single(registrations);
         foreach (var r in registrations)
         {
-            Assert.True(r.Factory(serviceProvider) is T);
+            _ = Assert.IsType<T>(r.Factory(serviceProvider));
             Assert.Equal(r.Name, name);
         }
     }

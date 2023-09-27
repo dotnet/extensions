@@ -4,7 +4,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 #if !NETFRAMEWORK
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
@@ -58,6 +57,8 @@ public static class ResourceMonitoringServiceCollectionExtensions
     {
         var builder = new ResourceMonitorBuilder(services);
 
+        _ = services.AddMetrics();
+
 #if NETFRAMEWORK
         _ = builder.AddWindowsProvider();
 #else
@@ -95,8 +96,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         builder.PickWindowsSnapshotProvider();
 
         _ = builder.Services
-            .AddActivatedSingleton<WindowsCounters>()
-            .RegisterMetrics();
+            .AddActivatedSingleton<WindowsCounters>();
 
         _ = builder.Services
             .AddActivatedSingleton<TcpTableInfo>();
@@ -122,9 +122,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
     {
         _ = Throw.IfNull(builder);
 
-        builder.Services
-             .RegisterMetrics()
-             .TryAddActivatedSingleton<ISnapshotProvider, LinuxUtilizationProvider>();
+        builder.Services.TryAddActivatedSingleton<ISnapshotProvider, LinuxUtilizationProvider>();
 
         builder.Services.TryAddSingleton<IFileSystem, OSFileSystem>();
         builder.Services.TryAddSingleton<IUserHz, UserHz>();
@@ -132,6 +130,5 @@ public static class ResourceMonitoringServiceCollectionExtensions
 
         return builder;
     }
-
 #endif
 }

@@ -747,26 +747,6 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Diagnostics.Metrics.Meter<TMeterName> : System.Diagnostics.Metrics.Meter",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Meter<TMeterName>.Meter();",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Diagnostics.Metrics.MetricsExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.Diagnostics.Metrics.MetricsExtensions.RegisterMetrics(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.DependencyInjection.NullLatencyContextServiceCollectionExtensions",
       "Stage": "Stable",
       "Methods": [
