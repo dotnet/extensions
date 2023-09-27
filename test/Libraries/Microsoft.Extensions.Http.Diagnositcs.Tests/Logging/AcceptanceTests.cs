@@ -31,7 +31,7 @@ public class AcceptanceTests
         await using var sp = new ServiceCollection()
             .AddFakeLogging()
             .AddFakeRedaction()
-            .AddDefaultHttpClientLogging()
+            .AddExtendedHttpClientLogging()
             .AddHttpClientLogEnricher<EnricherWithCounter>()
             .AddSingleton<IHttpClientLogEnricher>(static _ => null!)
             .BlockRemoteCall()
@@ -63,7 +63,7 @@ public class AcceptanceTests
         await using var sp = new ServiceCollection()
             .AddFakeLogging()
             .AddFakeRedaction()
-            .AddDefaultHttpClientLogging()
+            .AddExtendedHttpClientLogging()
             .AddSingleton<IHttpClientLogEnricher, TestEnricher>(static _ => new TestEnricher(throwOnEnrich: true))
             .BlockRemoteCall()
             .BuildServiceProvider();
@@ -97,7 +97,7 @@ public class AcceptanceTests
         await using var sp = new ServiceCollection()
             .AddFakeLogging()
             .AddFakeRedaction()
-            .AddDefaultHttpClientLogging()
+            .AddExtendedHttpClientLogging()
             .AddHttpClientLogEnricher<EnricherWithCounter>()
             .AddHttpClientLogEnricher<TestEnricher>()
             .AddHttpClient("testClient").Services
@@ -134,7 +134,7 @@ public class AcceptanceTests
              .AddFakeLogging()
              .AddFakeRedaction()
              .AddHttpClient("namedClient1")
-             .AddHttpClientLogging(o =>
+             .AddExtendedHttpClientLogging(o =>
              {
                  o.ResponseHeadersDataClasses.Add("ResponseHeader", FakeClassifications.PrivateData);
                  o.RequestHeadersDataClasses.Add("RequestHeader", FakeClassifications.PrivateData);
@@ -144,7 +144,7 @@ public class AcceptanceTests
                  o.LogBody = true;
              }).Services
              .AddHttpClient("namedClient2")
-             .AddHttpClientLogging(o =>
+             .AddExtendedHttpClientLogging(o =>
              {
                  o.ResponseHeadersDataClasses.Add("ResponseHeader", FakeClassifications.PrivateData);
                  o.RequestHeadersDataClasses.Add("RequestHeader", FakeClassifications.PrivateData);
@@ -213,7 +213,7 @@ public class AcceptanceTests
             .AddSingleton<ITestHttpClient1, TestHttpClient1>()
             .AddSingleton<ITestHttpClient2, TestHttpClient2>()
             .AddHttpClient<ITestHttpClient1, TestHttpClient1>()
-            .AddHttpClientLogging(x =>
+            .AddExtendedHttpClientLogging(x =>
             {
                 x.ResponseHeadersDataClasses.Add("ResponseHeader", FakeClassifications.PrivateData);
                 x.RequestHeadersDataClasses.Add("RequestHeader", FakeClassifications.PrivateData);
@@ -224,7 +224,7 @@ public class AcceptanceTests
                 x.LogBody = true;
             }).Services
             .AddHttpClient<ITestHttpClient2, TestHttpClient2>()
-            .AddHttpClientLogging(x =>
+            .AddExtendedHttpClientLogging(x =>
             {
                 x.ResponseHeadersDataClasses.Add("ResponseHeader", FakeClassifications.PrivateData);
                 x.RequestHeadersDataClasses.Add("RequestHeader", FakeClassifications.PrivateData);
@@ -295,7 +295,7 @@ public class AcceptanceTests
             .AddFakeLogging()
             .AddFakeRedaction(o => o.RedactionFormat = "REDACTED:{0}")
             .AddHttpClient()
-            .AddDefaultHttpClientLogging(o =>
+            .AddExtendedHttpClientLogging(o =>
             {
                 o.RouteParameterDataClasses.Add("userId", FakeClassifications.PrivateData);
                 o.RequestPathParameterRedactionMode = parameterRedactionMode;
@@ -335,7 +335,7 @@ public class AcceptanceTests
             .AddFakeLogging()
             .AddFakeRedaction(o => o.RedactionFormat = "REDACTED:{0}")
             .AddHttpClient("test")
-            .AddHttpClientLogging(o =>
+            .AddExtendedHttpClientLogging(o =>
             {
                 o.RouteParameterDataClasses.Add("userId", FakeClassifications.PrivateData);
                 o.RequestPathParameterRedactionMode = parameterRedactionMode;
@@ -374,14 +374,14 @@ public class AcceptanceTests
         using var provider = new ServiceCollection()
             .AddFakeRedaction()
             .AddHttpClient(FirstClientName)
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.LogRequestStart = true;
                 options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test1", FakeClassifications.PrivateData } };
             })
             .Services
             .AddHttpClient(SecondClientName)
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.LogRequestStart = false;
                 options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test2", FakeClassifications.PrivateData } };
@@ -410,14 +410,14 @@ public class AcceptanceTests
             .AddSingleton<ITestHttpClient1, TestHttpClient1>()
             .AddSingleton<ITestHttpClient2, TestHttpClient2>()
             .AddHttpClient<ITestHttpClient1, TestHttpClient1>()
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.LogRequestStart = true;
                 options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test1", FakeClassifications.PrivateData } };
             })
             .Services
             .AddHttpClient<ITestHttpClient2, TestHttpClient2>()
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.LogRequestStart = false;
                 options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test2", FakeClassifications.PrivateData } };
@@ -445,36 +445,36 @@ public class AcceptanceTests
             .AddSingleton<ITestHttpClient1, TestHttpClient1>()
             .AddSingleton<ITestHttpClient2, TestHttpClient2>()
             .AddHttpClient<ITestHttpClient1, TestHttpClient1>()
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test1", FakeClassifications.PrivateData } };
             })
             .Services
             .AddHttpClient<ITestHttpClient2, TestHttpClient2>()
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test2", FakeClassifications.PrivateData } };
             })
             .Services
             .AddHttpClient("testClient3")
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test3", FakeClassifications.PrivateData } };
             })
             .Services
             .AddHttpClient("testClient4")
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test4", FakeClassifications.PrivateData } };
             })
             .Services
             .AddHttpClient<ITestHttpClient1, TestHttpClient1>("testClient5")
-            .AddHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test5", FakeClassifications.PrivateData } };
             })
             .Services
-            .AddDefaultHttpClientLogging(options =>
+            .AddExtendedHttpClientLogging(options =>
             {
                 options.ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { "test6", FakeClassifications.PrivateData } };
             })
@@ -509,7 +509,7 @@ public class AcceptanceTests
              .AddFakeLogging()
              .AddFakeRedaction()
              .AddHttpClient("test")
-             .AddHttpClientLogging()
+             .AddExtendedHttpClientLogging()
              .Services
              .BlockRemoteCall()
              .BuildServiceProvider();
@@ -532,7 +532,7 @@ public class AcceptanceTests
              .AddFakeLogging()
              .AddFakeRedaction()
              .AddHttpClient("test")
-             .AddHttpClientLogging()
+             .AddExtendedHttpClientLogging()
              .Services
              .AddHttpClient("normal")
              .Services
@@ -560,7 +560,7 @@ public class AcceptanceTests
              .AddFakeLogging()
              .AddFakeRedaction()
              .AddHttpClient()
-             .AddDefaultHttpClientLogging()
+             .AddExtendedHttpClientLogging()
              .BlockRemoteCall()
              .BuildServiceProvider();
         var options = provider.GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get("test");
@@ -586,7 +586,7 @@ public class AcceptanceTests
              .AddFakeLogging()
              .AddFakeRedaction()
              .AddHttpClient(nameof(HttpClientLoggingHandler_LogsBodyDataUpToSpecifiedLimit))
-             .AddHttpClientLogging(x =>
+             .AddExtendedHttpClientLogging(x =>
              {
                  x.ResponseHeadersDataClasses.Add("ResponseHeader", FakeClassifications.PrivateData);
                  x.RequestHeadersDataClasses.Add("RequestHeader", FakeClassifications.PrivateData);

@@ -26,7 +26,7 @@ public static class HttpClientLatencyTelemetryExtensions
     /// </remarks>
     /// <param name="services">The <see cref="IServiceCollection" />.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection AddDefaultHttpClientLatencyTelemetry(this IServiceCollection services)
+    public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
 
@@ -62,14 +62,14 @@ public static class HttpClientLatencyTelemetryExtensions
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Addressed with [DynamicDependency]")]
-    public static IServiceCollection AddDefaultHttpClientLatencyTelemetry(this IServiceCollection services, IConfigurationSection section)
+    public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services, IConfigurationSection section)
     {
         _ = Throw.IfNull(section);
 
         _ = services
             .Configure<HttpClientLatencyTelemetryOptions>(section);
 
-        return services.AddDefaultHttpClientLatencyTelemetry();
+        return services.AddHttpClientLatencyTelemetry();
     }
 
     /// <summary>
@@ -81,13 +81,13 @@ public static class HttpClientLatencyTelemetryExtensions
     /// <param name="services">The <see cref="IServiceCollection" />.</param>
     /// <param name="configure">The delegate to configure <see cref="HttpClientLatencyTelemetryOptions"/> with.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection AddDefaultHttpClientLatencyTelemetry(this IServiceCollection services, Action<HttpClientLatencyTelemetryOptions> configure)
+    public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services, Action<HttpClientLatencyTelemetryOptions> configure)
     {
         _ = Throw.IfNull(configure);
 
         _ = services
             .Configure(configure);
 
-        return services.AddDefaultHttpClientLatencyTelemetry();
+        return services.AddHttpClientLatencyTelemetry();
     }
 }
