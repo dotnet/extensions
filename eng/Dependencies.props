@@ -58,7 +58,7 @@
     <LatestPackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
     <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.2" />
     <LatestPackageReference Include="Moq" Version="4.10.1" />
-    <LatestPackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <LatestPackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <LatestPackageReference Include="Polly.Extensions.Http" Version="2.0.1" />
     <LatestPackageReference Include="Polly" Version="6.0.1" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" Version="1.4.0" />
