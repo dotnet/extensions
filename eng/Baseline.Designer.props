@@ -99,7 +99,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.Json' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Configuration.KeyPerFile-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Configuration.KeyPerFile' ">
@@ -319,7 +319,7 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.EventSource' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[13.0.3, )" />
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Logging.Testing-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Logging.Testing' ">
