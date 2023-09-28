@@ -34,7 +34,7 @@ public sealed class OptionsAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="OptionsAttribute"/> class.
     /// </summary>
-    /// <param name="path">The path of the request.</param>
+    /// <param name="path">The path of the request. Cannot be empty or null.</param>
     public OptionsAttribute(string path)
     {
         Path = path;

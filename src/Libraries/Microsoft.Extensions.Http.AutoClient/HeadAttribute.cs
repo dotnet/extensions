@@ -34,7 +34,7 @@ public sealed class HeadAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="HeadAttribute"/> class.
     /// </summary>
-    /// <param name="path">The path of the request.</param>
+    /// <param name="path">The path of the request. Cannot be empty or null.</param>
     public HeadAttribute(string path)
     {
         Path = path;
