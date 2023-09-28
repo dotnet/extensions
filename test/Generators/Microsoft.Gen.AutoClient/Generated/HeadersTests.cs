@@ -98,7 +98,7 @@ public class HeadersTests : IDisposable
                 message.Method == HttpMethod.Get &&
                 message.RequestUri != null &&
                 message.RequestUri.PathAndQuery == "/api/users" &&
-                message.Headers.GetValues("X-MyHeader3").First() == "MyValueWith\"Escaped\"Stuff"),
+                message.Headers.GetValues("X-MyHeader3").First() == "MyValueWith\"Escaped\"Stuff\t\b\u03a0"),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
             {
@@ -134,6 +134,50 @@ public class HeadersTests : IDisposable
     }
 
     [Fact]
+    public async Task HeaderFromValueTypeParameter()
+    {
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users" &&
+                message.Headers.GetValues("X-MyHeader").First() == 123.ToString()),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
+
+        var response = await _sutParam.GetUsersInt32(123);
+
+        Assert.Equal("Success!", response);
+    }
+
+    [Fact]
+    public async Task HeaderFromNullableParameter()
+    {
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users" &&
+                message.Headers.GetValues("X-MyHeader").First() == 123.ToString()),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
+
+        var response = await _sutParam.GetUsersNullableInt32(123);
+
+        Assert.Equal("Success!", response);
+    }
+
+    [Fact]
     public async Task HeaderFromParameterNullIsExcluded()
     {
         _handlerMock
@@ -151,6 +195,28 @@ public class HeadersTests : IDisposable
             });
 
         var response = await _sutParam.GetUsers(null);
+
+        Assert.Equal("Success!", response);
+    }
+
+    [Fact]
+    public async Task HeaderFromNullableParameterNullIsExcluded()
+    {
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == "/api/users" &&
+                !message.Headers.Contains("X-MyHeader")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
+
+        var response = await _sutParam.GetUsersNullableInt32(null);
 
         Assert.Equal("Success!", response);
     }

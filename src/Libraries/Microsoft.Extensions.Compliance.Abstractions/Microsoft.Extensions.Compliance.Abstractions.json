@@ -14,10 +14,6 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Classification.DataClassification.Combine(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
-          "Stage": "Stable"
-        },
-        {
           "Member": "override bool Microsoft.Extensions.Compliance.Classification.DataClassification.Equals(object? obj);",
           "Stage": "Stable"
         },
@@ -39,6 +35,10 @@
         },
         {
           "Member": "static bool Microsoft.Extensions.Compliance.Classification.DataClassification.operator !=(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Classification.DataClassification.Or(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
           "Stage": "Stable"
         },
         {
@@ -186,15 +186,15 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Compliance.Redaction.RedactionAbstractionsExtensions",
+      "Type": "static class System.Text.RedactionStringBuilderExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static System.Text.StringBuilder Microsoft.Extensions.Compliance.Redaction.RedactionAbstractionsExtensions.AppendRedacted(this System.Text.StringBuilder stringBuilder, Microsoft.Extensions.Compliance.Redaction.Redactor redactor, string? value);",
+          "Member": "static System.Text.StringBuilder System.Text.RedactionStringBuilderExtensions.AppendRedacted(this System.Text.StringBuilder stringBuilder, Microsoft.Extensions.Compliance.Redaction.Redactor redactor, string? value);",
           "Stage": "Stable"
         },
         {
-          "Member": "static System.Text.StringBuilder Microsoft.Extensions.Compliance.Redaction.RedactionAbstractionsExtensions.AppendRedacted(this System.Text.StringBuilder stringBuilder, Microsoft.Extensions.Compliance.Redaction.Redactor redactor, System.ReadOnlySpan<char> value);",
+          "Member": "static System.Text.StringBuilder System.Text.RedactionStringBuilderExtensions.AppendRedacted(this System.Text.StringBuilder stringBuilder, Microsoft.Extensions.Compliance.Redaction.Redactor redactor, System.ReadOnlySpan<char> value);",
           "Stage": "Stable"
         }
       ]

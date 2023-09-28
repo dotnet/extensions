@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal;
@@ -121,9 +120,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         generator.Invoking(g => g(args)).Should().NotThrow();
     }
 
-#if NET8_0_OR_GREATER
-    // Whilst these API are marked as NET6_0_OR_GREATER we don't build .NET 6.0,
-    // and as such the API is available in .NET 8 onwards.
+#if NET6_0_OR_GREATER
     [Fact]
     public void Configure_InvalidConfigurationSection_ShouldThrow()
     {
@@ -197,7 +194,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         Builder.Services.AddSingleton(provider.Object);
         if (customKey == null)
         {
-            Builder.SelectPipelineByAuthority(SimpleClassifications.PublicData);
+            Builder.SelectPipelineByAuthority();
         }
         else
         {

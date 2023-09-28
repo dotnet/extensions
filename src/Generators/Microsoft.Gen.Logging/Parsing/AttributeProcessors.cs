@@ -1,16 +1,20 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.Gen.Logging.Parsing;
 
 internal static class AttributeProcessors
 {
+    private const string MessageProperty = "Message";
     private const string EventNameProperty = "EventName";
+    private const string EventIdProperty = "EventId";
+    private const string LevelProperty = "Level";
     private const string SkipEnabledCheckProperty = "SkipEnabledCheck";
     private const string SkipNullProperties = "SkipNullProperties";
-    private const string OmitParameterName = "OmitParameterName";
+    private const string OmitReferenceName = "OmitReferenceName";
 
     private const int LogLevelError = 4;
     private const int LogLevelCritical = 5;
@@ -18,15 +22,13 @@ internal static class AttributeProcessors
     public static (int? eventId, int? level, string message, string? eventName, bool skipEnabledCheck)
         ExtractLoggerMessageAttributeValues(AttributeData attr, SymbolHolder symbols)
     {
-        // seven constructor arg shapes:
+        // Five constructor arg shapes:
         //
+        //   ()
         //   (int eventId, LogLevel level, string message)
-        //   (int eventId, LogLevel level)
         //   (LogLevel level, string message)
         //   (LogLevel level)
         //   (string message)
-        //   (int eventId, string message)
-        //   ()
 
         int? eventId = null;
         int? level = null;
@@ -45,7 +47,7 @@ internal static class AttributeProcessors
                     level = l;
                 }
             }
-            else if (a.Type != null && a.Type.SpecialType == SpecialType.System_Int32)
+            else if (a.Type?.SpecialType == SpecialType.System_Int32)
             {
                 var v = a.Value;
                 if (v is int l)
@@ -61,16 +63,52 @@ internal static class AttributeProcessors
 
         foreach (var a in attr.NamedArguments)
         {
-            switch (a.Key)
+            var v = a.Value.Value;
+            if (v != null)
             {
-                case EventNameProperty:
-                    eventName = a.Value.Value as string;
-                    break;
+                switch (a.Key)
+                {
+                    case MessageProperty:
+                        if (v is string m)
+                        {
+                            message = m;
+                        }
 
-                case SkipEnabledCheckProperty:
-                    skipEnabledCheck = (bool)a.Value.Value!;
-                    useDefaultForSkipEnabledCheck = false;
-                    break;
+                        break;
+
+                    case EventNameProperty:
+                        if (v is string e)
+                        {
+                            eventName = e;
+                        }
+
+                        break;
+
+                    case LevelProperty:
+                        if (v is int l)
+                        {
+                            level = l;
+                        }
+
+                        break;
+
+                    case EventIdProperty:
+                        if (v is int id)
+                        {
+                            eventId = id;
+                        }
+
+                        break;
+
+                    case SkipEnabledCheckProperty:
+                        if (v is bool b)
+                        {
+                            skipEnabledCheck = b;
+                            useDefaultForSkipEnabledCheck = false;
+                        }
+
+                        break;
+                }
             }
         }
 
@@ -86,32 +124,60 @@ internal static class AttributeProcessors
         return (eventId, level, message, eventName, skipEnabledCheck);
     }
 
-    public static (bool skipNullProperties, bool omitParameterName, ITypeSymbol? providerType, string? providerMethodName)
-        ExtractLogPropertiesAttributeValues(AttributeData attr)
+    public static (bool skipNullProperties, bool omitReferenceName) ExtractLogPropertiesAttributeValues(AttributeData attr)
     {
         bool skipNullProperties = false;
-        bool omitParameterName = false;
+        bool omitReferenceName = false;
+
+        foreach (var a in attr.NamedArguments)
+        {
+            var v = a.Value.Value;
+            if (v != null)
+            {
+                if (a.Key == SkipNullProperties)
+                {
+                    if (v is bool b)
+                    {
+                        skipNullProperties = b;
+                    }
+                }
+                else if (a.Key == OmitReferenceName)
+                {
+                    if (v is bool b)
+                    {
+                        omitReferenceName = b;
+                    }
+                }
+            }
+        }
+
+        return (skipNullProperties, omitReferenceName);
+    }
+
+    public static (bool omitReferenceName, ITypeSymbol providerType, string providerMethodName) ExtractTagProviderAttributeValues(AttributeData attr)
+    {
+        bool omitReferenceName = false;
         ITypeSymbol? providerType = null;
         string? providerMethodName = null;
 
         foreach (var a in attr.NamedArguments)
         {
-            if (a.Key == SkipNullProperties)
+            var v = a.Value.Value;
+            if (v != null)
             {
-                skipNullProperties = (bool)a.Value.Value!;
-            }
-            else if (a.Key == OmitParameterName)
-            {
-                omitParameterName = (bool)a.Value.Value!;
+                if (a.Key == OmitReferenceName)
+                {
+                    if (v is bool b)
+                    {
+                        omitReferenceName = b;
+                    }
+                }
             }
         }
 
-        if (attr.ConstructorArguments.Length == 2)
-        {
-            providerType = attr.ConstructorArguments[0].Value as ITypeSymbol;
-            providerMethodName = attr.ConstructorArguments[1].Value as string;
-        }
+        providerType = attr.ConstructorArguments[0].Value as ITypeSymbol;
+        providerMethodName = attr.ConstructorArguments[1].Value as string;
 
-        return (skipNullProperties, omitParameterName, providerType, providerMethodName);
+        return (omitReferenceName, providerType!, providerMethodName!);
     }
 }

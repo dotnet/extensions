@@ -61,6 +61,42 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Can only have one of [LogProperties], [TagProvider], and [LogPropertyIgnore].
+        /// </summary>
+        internal static string CantMixAttributesMessage {
+            get {
+                return ResourceManager.GetString("CantMixAttributesMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can only have one of [LogProperties], [TagProvider], and [LogPropertyIgnore].
+        /// </summary>
+        internal static string CantMixAttributesTitle {
+            get {
+                return ResourceManager.GetString("CantMixAttributesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t combine the [LogProperties] or [TagProvider] attributes with data classification attributes.
+        /// </summary>
+        internal static string CantUseDataClassificationWithLogPropertiesOrTagProviderMessage {
+            get {
+                return ResourceManager.GetString("CantUseDataClassificationWithLogPropertiesOrTagProviderMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t combine the [LogProperties] or [TagProvider] attributes with data classification attributes.
+        /// </summary>
+        internal static string CantUseDataClassificationWithLogPropertiesOrTagProviderTitle {
+            get {
+                return ResourceManager.GetString("CantUseDataClassificationWithLogPropertiesOrTagProviderTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Logging method &quot;{0}&quot; doesn&apos;t have anything to be logged.
         /// </summary>
         internal static string EmptyLoggingMethodMessage {
@@ -79,7 +115,25 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Can&apos;t log properties of parameters of type &quot;{0}&quot;.
+        ///   Looks up a localized string similar to Attribute [{0}] can&apos;t be used in this context.
+        /// </summary>
+        internal static string InvalidAttributeUsageMessage {
+            get {
+                return ResourceManager.GetString("InvalidAttributeUsageMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attribute can&apos;t be used in this context.
+        /// </summary>
+        internal static string InvalidAttributeUsageTitle {
+            get {
+                return ResourceManager.GetString("InvalidAttributeUsageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t log properties of items of type &quot;{0}&quot;.
         /// </summary>
         internal static string InvalidTypeToLogPropertiesMessage {
             get {
@@ -88,7 +142,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Can&apos;t log properties of a logging parameter.
+        ///   Looks up a localized string similar to Can&apos;t log properties of a parameter or property.
         /// </summary>
         internal static string InvalidTypeToLogPropertiesTitle {
             get {
@@ -250,7 +304,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Method parameter can&apos;t be used for properties logging.
+        ///   Looks up a localized string similar to Method parameter can&apos;t be used to log properties.
         /// </summary>
         internal static string LogPropertiesInvalidUsageTitle {
             get {
@@ -331,7 +385,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A &quot;LogLevel&quot; value must be supplied in the &quot;LoggerMethod&quot; attribute or as a parameter to the logging method.
+        ///   Looks up a localized string similar to A &quot;LogLevel&quot; value must be supplied in the &quot;LoggerMessage&quot; attribute or as a parameter to the logging method.
         /// </summary>
         internal static string MissingLogLevelMessage {
             get {
@@ -363,24 +417,6 @@ namespace Microsoft.Gen.Logging.Parsing {
         internal static string MissingRequiredTypeTitle {
             get {
                 return ResourceManager.GetString("MissingRequiredTypeTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Can&apos;t have multiple data classification attributes for a single data value.
-        /// </summary>
-        internal static string MultipleDataClassificationAttributesMessage {
-            get {
-                return ResourceManager.GetString("MultipleDataClassificationAttributesMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Can&apos;t have multiple data classification attributes for a single data value.
-        /// </summary>
-        internal static string MultipleDataClassificationAttributesTitle {
-            get {
-                return ResourceManager.GetString("MultipleDataClassificationAttributesTitle", resourceCulture);
             }
         }
         
@@ -525,6 +561,24 @@ namespace Microsoft.Gen.Logging.Parsing {
         internal static string ShouldntReuseEventNamesTitle {
             get {
                 return ResourceManager.GetString("ShouldntReuseEventNamesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; is annotated to use a tag provider but it has special semantics (ILogger, LogLevel, Exception, etc.).
+        /// </summary>
+        internal static string TagProviderInvalidUsageMessage {
+            get {
+                return ResourceManager.GetString("TagProviderInvalidUsageMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Method parameter can&apos;t be used with a tag provider.
+        /// </summary>
+        internal static string TagProviderInvalidUsageTitle {
+            get {
+                return ResourceManager.GetString("TagProviderInvalidUsageTitle", resourceCulture);
             }
         }
         

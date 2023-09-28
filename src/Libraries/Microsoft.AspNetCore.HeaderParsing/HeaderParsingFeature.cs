@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Telemetry.Metering;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.AspNetCore.HeaderParsing;
@@ -18,8 +17,7 @@ public sealed partial class HeaderParsingFeature
 {
     private readonly IHeaderRegistry _registry;
     private readonly ILogger _logger;
-    private readonly ParsingErrorCounter _parsingErrorCounter;
-    private readonly CacheAccessCounter _cacheAccessCounter;
+    private readonly HeaderParsingMetrics _metrics;
 
     // This is a heterogeneous array of Box<T> instances. These boxes let us keep different Ts
     // in a single array, while preventing boxing of the T. The boxes are allocated up front
@@ -28,12 +26,11 @@ public sealed partial class HeaderParsingFeature
 
     internal HttpContext? Context { get; set; }
 
-    internal HeaderParsingFeature(IHeaderRegistry registry, ILogger<HeaderParsingFeature> logger, Meter<HeaderParsingFeature> meter)
+    internal HeaderParsingFeature(IHeaderRegistry registry, ILogger<HeaderParsingFeature> logger, HeaderParsingMetrics metrics)
     {
         _logger = logger;
+        _metrics = metrics;
         _registry = registry;
-        _parsingErrorCounter = Metric.CreateParsingErrorCounter(meter);
-        _cacheAccessCounter = Metric.CreateCacheAccessCounter(meter);
     }
 
     /// <summary>
@@ -89,12 +86,17 @@ public sealed partial class HeaderParsingFeature
     internal sealed class PoolHelper : IDisposable
     {
         public HeaderParsingFeature Feature { get; }
+
         private readonly ObjectPool<PoolHelper> _pool;
 
-        public PoolHelper(ObjectPool<PoolHelper> pool, IHeaderRegistry registry, ILogger<HeaderParsingFeature> logger, Meter<HeaderParsingFeature> meter)
+        public PoolHelper(
+            ObjectPool<PoolHelper> pool,
+            IHeaderRegistry registry,
+            ILogger<HeaderParsingFeature> logger,
+            HeaderParsingMetrics metrics)
         {
             _pool = pool;
-            Feature = new HeaderParsingFeature(registry, logger, meter);
+            Feature = new HeaderParsingFeature(registry, logger, metrics);
         }
 
         public void Dispose()
@@ -141,7 +143,7 @@ public sealed partial class HeaderParsingFeature
                         var o = header.GetCachedValue(values);
                         if (o != null)
                         {
-                            feature._cacheAccessCounter.Add(1, header.Name, "Hit");
+                            feature._metrics.CacheAccessCounter.Add(1, header.Name, "Hit");
                             var b = (Box<T>)o;
                             b.CopyTo(this);
                             value = _value;
@@ -149,7 +151,7 @@ public sealed partial class HeaderParsingFeature
                             return result == ParsingResult.Success;
                         }
 
-                        feature._cacheAccessCounter.Add(1, header.Name, "Miss");
+                        feature._metrics.CacheAccessCounter.Add(1, header.Name, "Miss");
                     }
 
                     if (header.TryParse(values, out _value, out var error))
@@ -167,7 +169,7 @@ public sealed partial class HeaderParsingFeature
                     {
                         _state = BoxState.Error;
                         feature.LogParsingError(header.Name, error!);
-                        feature._parsingErrorCounter.Add(1, header.Name, error);
+                        feature._metrics.ParsingErrorCounter.Add(1, header.Name, error);
                     }
                 }
                 else if (header.HasDefaultValue)

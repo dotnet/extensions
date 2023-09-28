@@ -117,7 +117,7 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     /// <param name="right">The second classification to combine.</param>
     /// <returns>A new classification object representing the combination of the two input classifications.</returns>
     /// <exception cref="ArgumentException">The two classifications aren't part of the same taxonomy.</exception>
-    public static DataClassification Combine(DataClassification left, DataClassification right)
+    public static DataClassification Or(DataClassification left, DataClassification right)
     {
         if (string.IsNullOrEmpty(left.TaxonomyName))
         {
@@ -146,7 +146,7 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     [SuppressMessage("Usage", "CA2225:Operator overloads have named alternates", Justification = "It's called Combine")]
     public static DataClassification operator |(DataClassification left, DataClassification right)
     {
-        return Combine(left, right);
+        return Or(left, right);
     }
 
     /// <summary>

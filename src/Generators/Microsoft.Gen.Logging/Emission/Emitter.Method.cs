@@ -14,9 +14,10 @@ namespace Microsoft.Gen.Logging.Emission;
 
 internal sealed partial class Emitter : EmitterBase
 {
+#pragma warning disable CA1505 // Avoid unmaintainable code
     private void GenLogMethod(LoggingMethod lm)
+#pragma warning restore CA1505
     {
-        var logPropsDataClasses = GetLogPropertiesAttributes(lm);
         string level = GetLoggerMethodLogLevel(lm);
         string extension = lm.IsExtensionMethod ? "this " : string.Empty;
         string eventName = string.IsNullOrWhiteSpace(lm.EventName) ? $"nameof({lm.Name})" : $"\"{lm.EventName}\"";
@@ -105,7 +106,7 @@ internal sealed partial class Emitter : EmitterBase
         {
             var template = EscapeMessageString(lm.Message);
             template = AddAtSymbolsToTemplates(template, lm.Parameters);
-            OutLn($@"return global::System.FormattableString.Invariant($""{template}"");");
+            OutLn($@"return global::System.FormattableString.Invariant(${template});");
         }
         else if (string.IsNullOrEmpty(lm.Message))
         {
@@ -113,7 +114,7 @@ internal sealed partial class Emitter : EmitterBase
         }
         else
         {
-            OutLn($@"return ""{EscapeMessageString(lm.Message)}"";");
+            OutLn($@"return {EscapeMessageString(lm.Message)};");
         }
 
         OutCloseBraceWithExtra(");");
@@ -123,16 +124,52 @@ internal sealed partial class Emitter : EmitterBase
         OutLn($"{stateName}.Clear();");
         OutCloseBrace();
 
-        static bool ShouldStringify(string typeName)
+        static bool ShouldStringifyParameter(LoggingMethodParameter p)
         {
-            // well-known system types should not be stringified, since the logger may have special encodings for these
-            if (typeName.Contains("."))
+            if (p.IsReference)
             {
-                return !typeName.StartsWith("global::System", StringComparison.Ordinal);
+                // pass object as-is
+                return false;
             }
 
-            // a primitive type...
-            return false;
+            if (p.ImplementsISpanFormattable)
+            {
+                // pass object as-is, it will be formatted directly into the output buffer
+                return false;
+            }
+
+            if (!p.Type.Contains("."))
+            {
+                // no . means this is a primitive type, pass as-is 
+                return false;
+            }
+
+            // should convert the object to a string before calling the Log function
+            return true;
+        }
+
+        static bool ShouldStringifyProperty(LoggingProperty p)
+        {
+            if (p.IsReference)
+            {
+                // pass object as is
+                return false;
+            }
+
+            if (p.ImplementsISpanFormattable)
+            {
+                // pass object as it, it will be formatted directly into the output buffer
+                return false;
+            }
+
+            if (!p.Type.Contains("."))
+            {
+                // no . means this is a primitive type, pass as-is 
+                return false;
+            }
+
+            // should convert the object to a string before calling the Log function
+            return true;
         }
 
         static string ConvertParameterToString(LoggingMethodParameter lp, string arg)
@@ -202,6 +239,7 @@ internal sealed partial class Emitter : EmitterBase
         {
             int numUnclassifiedTags = 0;
             int numClassifiedTags = 0;
+            var tmpVarName = PickUniqueName("tmp", lm.Parameters.Select(p => p.Name));
 
             foreach (var p in lm.Parameters)
             {
@@ -261,7 +299,7 @@ internal sealed partial class Emitter : EmitterBase
                         }
                         else
                         {
-                            value = ShouldStringify(p.Type)
+                            value = ShouldStringifyParameter(p)
                                 ? ConvertParameterToString(p, p.NameWithAt)
                                 : p.NameWithAt;
                         }
@@ -278,10 +316,10 @@ internal sealed partial class Emitter : EmitterBase
                         {
                             if (!member.HasDataClassification)
                             {
-                                var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
+                                var propName = PropertyChainToString(propertyChain, member, "_", omitReferenceName: p.OmitReferenceName);
                                 var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
-                                var ts = ShouldStringify(member.Type)
+                                var ts = ShouldStringifyProperty(member)
                                     ? ConvertPropertyToString(member, accessExpression)
                                     : accessExpression;
 
@@ -297,7 +335,7 @@ internal sealed partial class Emitter : EmitterBase
 
                 if (!string.IsNullOrEmpty(lm.Message))
                 {
-                    OutLn($"{stateName}.TagArray[{--count}] = new(\"{{OriginalFormat}}\", \"{EscapeMessageString(lm.Message)}\");");
+                    OutLn($"{stateName}.TagArray[{--count}] = new(\"{{OriginalFormat}}\", {EscapeMessageString(lm.Message)});");
                 }
             }
 
@@ -311,9 +349,9 @@ internal sealed partial class Emitter : EmitterBase
                     if (NeedsASlot(p) && p.HasDataClassification)
                     {
                         var key = $"\"{lm.GetParameterNameInTemplate(p)}\"";
-                        var classification = $"_{EncodeTypeName(p.ClassificationAttributeType!)}_Classification";
+                        var classification = MakeClassificationValue(p.ClassificationAttributeTypes);
 
-                        var value = ShouldStringify(p.Type)
+                        var value = ShouldStringifyParameter(p)
                             ? ConvertParameterToString(p, p.NameWithAt)
                             : p.NameWithAt;
 
@@ -329,11 +367,14 @@ internal sealed partial class Emitter : EmitterBase
                         {
                             if (member.HasDataClassification)
                             {
-                                var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
+                                var propName = PropertyChainToString(propertyChain, member, "_", omitReferenceName: p.OmitReferenceName);
                                 var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
-                                var value = ConvertPropertyToString(member, accessExpression);
-                                var classification = $"_{EncodeTypeName(member.ClassificationAttributeType!)}_Classification";
+                                var value = ShouldStringifyProperty(member)
+                                    ? ConvertPropertyToString(member, accessExpression)
+                                    : accessExpression;
+
+                                var classification = MakeClassificationValue(member.ClassificationAttributeTypes);
 
                                 OutLn($"{stateName}.ClassifiedTagArray[{--count}] = new(\"{propName}\", {value}, {classification});");
                             }
@@ -348,43 +389,81 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
                     {
-                        if (!member.HasDataClassification)
+                        if (member.HasDataClassification)
                         {
-                            var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
+                            var propName = PropertyChainToString(propertyChain, member, "_", omitReferenceName: p.OmitReferenceName);
                             var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
-                            var ts = ShouldStringify(member.Type)
+                            var value = ShouldStringifyProperty(member)
                                 ? ConvertPropertyToString(member, accessExpression)
                                 : accessExpression;
 
-                            var value = member.IsEnumerable ? $"{LoggerMessageHelperType}.Stringify({accessExpression})" : ts;
+                            var classification = MakeClassificationValue(member.ClassificationAttributeTypes);
 
-                            var skipNull = member.PotentiallyNull && !member.IsEnumerable
-                                ? $"if ({value} != null) "
-                                : string.Empty;
-
-                            OutLn($"{skipNull}{stateName}.AddTag(\"{propName}\", {value});");
+                            if (member.PotentiallyNull)
+                            {
+                                OutOpenBrace();
+                                OutLn($"var {tmpVarName} = {value};");
+                                OutLn($"if ({tmpVarName} != null)");
+                                OutOpenBrace();
+                                OutLn($"{stateName}.AddClassifiedTag(\"{propName}\", {tmpVarName}, {classification});");
+                                OutCloseBrace();
+                                OutCloseBrace();
+                                OutLn();
+                            }
+                            else
+                            {
+                                OutLn($"{stateName}.AddClassifiedTag(\"{propName}\", {value}, {classification});");
+                            }
                         }
                         else
                         {
-                            var propName = PropertyChainToString(propertyChain, member, "_", omitParameterName: p.OmitParameterName);
+                            var propName = PropertyChainToString(propertyChain, member, "_", omitReferenceName: p.OmitReferenceName);
                             var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
-                            var value = ConvertPropertyToString(member, accessExpression);
-                            var classification = $"_{EncodeTypeName(member.ClassificationAttributeType!)}_Classification";
+                            var ts = ShouldStringifyProperty(member)
+                                ? ConvertPropertyToString(member, accessExpression)
+                                : accessExpression;
 
-                            var skipNull = member.PotentiallyNull
-                                ? $"if ({value} != null) "
-                                : string.Empty;
+                            var value = member.IsEnumerable
+                                ? $"{LoggerMessageHelperType}.Stringify({accessExpression})"
+                                : ts;
 
-                            OutLn($"{skipNull}{stateName}.AddClassifiedTag(\"{propName}\", {value}, {classification});");
+                            if (member.PotentiallyNull)
+                            {
+                                if (member.IsEnumerable)
+                                {
+                                    OutOpenBrace();
+                                    OutLn($"if ({accessExpression} != null)");
+                                    OutOpenBrace();
+                                    OutLn($"{stateName}.AddTag(\"{propName}\", {value});");
+                                    OutCloseBrace();
+                                    OutCloseBrace();
+                                    OutLn();
+                                }
+                                else
+                                {
+                                    OutOpenBrace();
+                                    OutLn($"var {tmpVarName} = {value};");
+                                    OutLn($"if ({tmpVarName} != null)");
+                                    OutOpenBrace();
+                                    OutLn($"{stateName}.AddTag(\"{propName}\", {tmpVarName});");
+                                    OutCloseBrace();
+                                    OutCloseBrace();
+                                    OutLn();
+                                }
+                            }
+                            else
+                            {
+                                OutLn($"{stateName}.AddTag(\"{propName}\", {value});");
+                            }
                         }
                     });
                 }
 
                 if (p.HasTagProvider)
                 {
-                    if (p.OmitParameterName)
+                    if (p.OmitReferenceName)
                     {
                         OutLn($"{stateName}.TagNamePrefix = string.Empty;");
                     }
@@ -478,6 +557,28 @@ internal sealed partial class Emitter : EmitterBase
         }
     }
 
+    private string MakeClassificationValue(HashSet<string> classificationTypes)
+    {
+        if (classificationTypes.Count == 1)
+        {
+            return _classificationMap[classificationTypes.First()];
+        }
+
+        var sb = _sbPool.GetStringBuilder();
+
+        foreach (var ct in classificationTypes)
+        {
+            if (sb.Length > 0)
+            {
+                _ = sb.Append(" | ");
+            }
+
+            _ = sb.Append(_classificationMap[ct]);
+        }
+
+        return sb.ToString();
+    }
+
     private string AddAtSymbolsToTemplates(string template, IEnumerable<LoggingMethodParameter> parameters)
     {
         StringBuilder? stringBuilder = null;
@@ -527,7 +628,7 @@ internal sealed partial class Emitter : EmitterBase
         LoggingProperty leafProperty,
         string separator,
         string? nonNullSeparator = null,
-        bool omitParameterName = false)
+        bool omitReferenceName = false)
     {
         bool needAts = nonNullSeparator == ".";
         var adjustedNonNullSeparator = nonNullSeparator ?? separator;
@@ -538,7 +639,7 @@ internal sealed partial class Emitter : EmitterBase
             foreach (var property in propertyChain)
             {
                 count++;
-                if (omitParameterName && count == 1)
+                if (omitReferenceName && count == 1)
                 {
                     continue;
                 }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Testing.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Shared.Text;
 using TestClasses;
 using Xunit;
@@ -111,6 +111,37 @@ public class TagProviderTests
         {
             ["param_MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
             ["param_Custom_property_name"] = classToLog.MyStringProperty
+        };
+
+        latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+    }
+
+    [Fact]
+    public void LogsWithNullable()
+    {
+        TagProviderExtensions.Nullable(_logger, LogLevel.Trace, null);
+
+        Assert.Equal(1, _logger.Collector.Count);
+        var latestRecord = _logger.Collector.LatestRecord;
+        Assert.Null(latestRecord.Exception);
+        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.Equal(LogLevel.Trace, latestRecord.Level);
+        Assert.Equal(string.Empty, latestRecord.Message);
+        Assert.Empty(latestRecord.StructuredState!);
+
+        _logger.Collector.Clear();
+        TagProviderExtensions.Nullable(_logger, LogLevel.Trace, 42);
+
+        Assert.Equal(1, _logger.Collector.Count);
+        latestRecord = _logger.Collector.LatestRecord;
+        Assert.Null(latestRecord.Exception);
+        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.Equal(LogLevel.Trace, latestRecord.Level);
+        Assert.Equal(string.Empty, latestRecord.Message);
+
+        var expectedState = new Dictionary<string, string?>
+        {
+            ["param_P1"] = "42",
         };
 
         latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
@@ -284,6 +315,7 @@ public class TagProviderTests
         {
             ["param1_MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
             ["param1_MyStringProperty"] = classToLog.MyStringProperty,
+            ["param1_AnotherStringProperty"] = classToLog.AnotherStringProperty,
             ["param2_MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
             ["param2_Custom_property_name"] = classToLog.MyStringProperty,
             ["{OriginalFormat}"] = "No params."

@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Http.Resilience.Routing.Internal.WeightedGroups;
 
 internal sealed class WeightedGroupsRoutingStrategy : RequestRoutingStrategy
 {
-    private readonly List<WeightedEndpointGroup> _groups;
+    private readonly List<WeightedUriEndpointGroup> _groups;
     private readonly ObjectPool<WeightedGroupsRoutingStrategy> _pool;
     private bool _initialGroupPicked;
     private WeightedGroupSelectionMode _mode;
@@ -21,11 +21,11 @@ internal sealed class WeightedGroupsRoutingStrategy : RequestRoutingStrategy
     public WeightedGroupsRoutingStrategy(Randomizer randomizer, ObjectPool<WeightedGroupsRoutingStrategy> pool)
         : base(randomizer)
     {
-        _groups = new List<WeightedEndpointGroup>();
+        _groups = [];
         _pool = pool;
     }
 
-    public void Initialize(IEnumerable<WeightedEndpointGroup> groups, WeightedGroupSelectionMode mode)
+    public void Initialize(IEnumerable<WeightedUriEndpointGroup> groups, WeightedGroupSelectionMode mode)
     {
         _ = TryReset();
 
@@ -62,7 +62,7 @@ internal sealed class WeightedGroupsRoutingStrategy : RequestRoutingStrategy
         return false;
     }
 
-    private bool TryGetNextGroup(out WeightedEndpointGroup? nextGroup)
+    private bool TryGetNextGroup(out WeightedUriEndpointGroup? nextGroup)
     {
         if (_groups.Count == 0)
         {
@@ -75,7 +75,7 @@ internal sealed class WeightedGroupsRoutingStrategy : RequestRoutingStrategy
         return true;
     }
 
-    private WeightedEndpointGroup PickGroup()
+    private WeightedUriEndpointGroup PickGroup()
     {
         if (!_initialGroupPicked)
         {

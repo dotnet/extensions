@@ -3,25 +3,29 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Gen.Logging.Model;
 
 [DebuggerDisplay("{Name}")]
-[ExcludeFromCodeCoverage]
-internal sealed record LoggingProperty(
-    string Name,
-    string Type,
-    string? ClassificationAttributeType,
-    bool NeedsAtSign,
-    bool IsNullable,
-    bool IsReference,
-    bool IsEnumerable,
-    bool ImplementsIConvertible,
-    bool ImplementsIFormattable,
-    IReadOnlyCollection<LoggingProperty> TransitiveMembers)
+internal sealed class LoggingProperty
 {
-    public bool HasDataClassification => ClassificationAttributeType != null;
+    public string Name = string.Empty;
+    public string Type = string.Empty;
+    public HashSet<string> ClassificationAttributeTypes = new();
+    public bool NeedsAtSign;
+    public bool IsNullable;
+    public bool IsReference;
+    public bool IsEnumerable;
+    public bool ImplementsIConvertible;
+    public bool ImplementsIFormattable;
+    public bool ImplementsISpanFormattable;
+    public List<LoggingProperty> Properties = new();
+    public bool OmitReferenceName;
+    public TagProvider? TagProvider;
+
+    public bool HasDataClassification => ClassificationAttributeTypes.Count > 0;
+    public bool HasProperties => Properties.Count > 0;
+    public bool HasTagProvider => TagProvider is not null;
     public string NameWithAt => NeedsAtSign ? "@" + Name : Name;
     public bool PotentiallyNull => IsReference || IsNullable;
 }

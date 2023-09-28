@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace TestClasses
 {
@@ -13,14 +12,14 @@ namespace TestClasses
         [LoggerMessage(int.MaxValue, LogLevel.Warning, "Custom provided properties for {Param}.")]
         internal static partial void OneParam(
             ILogger logger,
-            [LogProperties(typeof(CustomProviderWithObject), nameof(CustomProviderWithObject.ProvideProperties))] object param);
+            [TagProvider(typeof(CustomProviderWithObject), nameof(CustomProviderWithObject.ProvideProperties))] object param);
 
         [LoggerMessage(int.MinValue, LogLevel.Warning, "Custom provided properties for both complex params and {StringParam}.")]
         internal static partial void TwoParams(
             ILogger logger,
             string stringParam,
-            [LogProperties(typeof(CustomProviderWithObject), nameof(CustomProviderWithObject.ProvideProperties))] object param,
-            [LogProperties(typeof(CustomProviderWithObject), nameof(CustomProviderWithObject.ProvideOtherProperties))] object param2);
+            [TagProvider(typeof(CustomProviderWithObject), nameof(CustomProviderWithObject.ProvideProperties))] object param,
+            [TagProvider(typeof(CustomProviderWithObject), nameof(CustomProviderWithObject.ProvideOtherProperties))] object param2);
     }
 
     internal static class CustomProviderWithObject

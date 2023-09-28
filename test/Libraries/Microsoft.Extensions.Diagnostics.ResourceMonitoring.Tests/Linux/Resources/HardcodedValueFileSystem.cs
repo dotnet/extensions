@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
@@ -19,7 +18,7 @@ internal sealed class HardcodedValueFileSystem : IFileSystem
     public HardcodedValueFileSystem(string fallback)
     {
         _fallback = fallback;
-        _fileContent = new();
+        _fileContent = [];
     }
 
     public HardcodedValueFileSystem(Dictionary<FileInfo, string> fileContent, string fallback = "")

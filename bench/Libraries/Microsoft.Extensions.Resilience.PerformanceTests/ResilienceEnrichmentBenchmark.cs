@@ -6,7 +6,6 @@ using System.Diagnostics.Metrics;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Polly;
 using Polly.Registry;
 using Polly.Telemetry;
@@ -22,7 +21,7 @@ public class ResilienceEnrichmentBenchmark
     [GlobalSetup]
     public void GlobalSetup()
     {
-        _listener = MeteringUtil.ListenPollyMetrics();
+        _listener = MetricsUtil.ListenPollyMetrics();
         _pipeline = CreateResiliencePipeline(_ => { });
         _pipelineEnriched = CreateResiliencePipeline(services =>
         {

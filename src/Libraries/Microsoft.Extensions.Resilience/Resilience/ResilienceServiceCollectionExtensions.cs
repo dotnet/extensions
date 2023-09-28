@@ -4,16 +4,17 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
-using Microsoft.Extensions.Http.Telemetry;
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Resilience;
 using Microsoft.Extensions.Resilience.Internal;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly.Telemetry;
 
-namespace Microsoft.Extensions.Resilience;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extension class for the Service Collection DI container.
@@ -46,16 +47,16 @@ public static class ResilienceServiceCollectionExtensions
         _ = Throw.IfNull(services);
 
         // let's make this call idempotent by checking if ResilienceEnricher is already added
-        if (services.Any(s => s.ServiceType == typeof(ResilienceMeteringEnricher)))
+        if (services.Any(s => s.ServiceType == typeof(ResilienceMetricsEnricher)))
         {
             return services;
         }
 
-        services.TryAddActivatedSingleton<ResilienceMeteringEnricher>();
+        services.TryAddSingleton<ResilienceMetricsEnricher>();
 
         _ = services
             .AddOptions<TelemetryOptions>()
-            .Configure<ResilienceMeteringEnricher>((options, enricher) => options.MeteringEnrichers.Add(enricher));
+            .Configure<ResilienceMetricsEnricher>((options, enricher) => options.MeteringEnrichers.Add(enricher));
 
         return services;
     }

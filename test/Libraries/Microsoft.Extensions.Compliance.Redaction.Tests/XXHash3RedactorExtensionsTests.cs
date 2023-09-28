@@ -1,29 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Hosting.Testing;
 using Xunit;
 
-namespace Microsoft.Extensions.Compliance.Redaction.Tests;
+namespace Microsoft.Extensions.Compliance.Redaction.Test;
 
 public class XXHash3RedactorExtensionsTests
 {
     [Fact]
     public void DelegateBased()
     {
-        using var host = FakeHost.CreateBuilder(options => options.FakeRedaction = false)
-            .ConfigureRedaction((_, redaction) => redaction
-                .SetXXHash3Redactor(o => o.HashSeed = 101, SimpleClassifications.PrivateData))
-            .Build();
-
-        var redactorProvider = host.Services.GetRequiredService<IRedactorProvider>();
+        var redactorProvider = new ServiceCollection()
+            .AddRedaction(redaction => redaction.SetXxHash3Redactor(o => o.HashSeed = 101, FakeClassifications.PrivateData))
+            .BuildServiceProvider()
+            .GetRequiredService<IRedactorProvider>();
 
         CheckProvider(redactorProvider);
     }
@@ -31,15 +26,15 @@ public class XXHash3RedactorExtensionsTests
     [Fact]
     public void HostBuilder_GivenXXHashRedactorWithConfigurationSectionConfig_RegistersItAsHashingRedactorAndRedacts()
     {
-        using var host = FakeHost.CreateBuilder(options => options.FakeRedaction = false)
-            .ConfigureRedaction((_, redaction) =>
+        var redactorProvider = new ServiceCollection()
+            .AddRedaction(redaction =>
             {
                 var section = GetRedactorConfiguration(new ConfigurationBuilder(), 101);
-                redaction.SetXXHash3Redactor(section, SimpleClassifications.PrivateData);
+                redaction.SetXxHash3Redactor(section, FakeClassifications.PrivateData);
             })
-            .Build();
+            .BuildServiceProvider()
+            .GetRequiredService<IRedactorProvider>();
 
-        var redactorProvider = host.Services.GetRequiredService<IRedactorProvider>();
         CheckProvider(redactorProvider);
     }
 
@@ -49,8 +44,8 @@ public class XXHash3RedactorExtensionsTests
 
         var classifications = new[]
         {
-            SimpleClassifications.PublicData,
-            SimpleClassifications.PrivateData
+            FakeClassifications.PublicData,
+            FakeClassifications.PrivateData
         };
 
         foreach (var dc in classifications)
@@ -61,10 +56,10 @@ public class XXHash3RedactorExtensionsTests
             var destination = new char[expectedLength];
             var actualLength = redactor.Redact(Example, destination);
 
-            if (dc == SimpleClassifications.PrivateData)
+            if (dc == FakeClassifications.PrivateData)
             {
-                Assert.Equal(XXHash3Redactor.RedactedSize, expectedLength);
-                Assert.Equal(XXHash3Redactor.RedactedSize, actualLength);
+                Assert.Equal(XxHash3Redactor.RedactedSize, expectedLength);
+                Assert.Equal(XxHash3Redactor.RedactedSize, actualLength);
             }
             else
             {
@@ -76,14 +71,14 @@ public class XXHash3RedactorExtensionsTests
 
     private static IConfigurationSection GetRedactorConfiguration(IConfigurationBuilder builder, ulong hashSeed)
     {
-        XXHash3RedactorOptions options;
+        XxHash3RedactorOptions options;
 
         return builder
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                { $"{nameof(XXHash3RedactorOptions)}:{nameof(options.HashSeed)}", hashSeed.ToString(CultureInfo.InvariantCulture) },
+                { $"{nameof(XxHash3RedactorOptions)}:{nameof(options.HashSeed)}", hashSeed.ToString(CultureInfo.InvariantCulture) },
             })
             .Build()
-            .GetSection(nameof(XXHash3RedactorOptions));
+            .GetSection(nameof(XxHash3RedactorOptions));
     }
 }

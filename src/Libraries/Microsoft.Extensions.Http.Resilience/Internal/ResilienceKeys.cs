@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal;
-using Microsoft.Extensions.Http.Telemetry;
 using Polly;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal;

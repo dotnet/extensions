@@ -3,39 +3,39 @@
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions.DependencyInjectionPoolOptions();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "int Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions.Capacity { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "static class Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions.AddPooled<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions>? configure = null);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions.AddPooled<TService, TImplementation>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions>? configure = null);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions.ConfigurePool<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions> configure);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions.ConfigurePools(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     }

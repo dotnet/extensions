@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Resilience;
 using Microsoft.Extensions.Resilience.Internal;
 using Moq;
 using Polly.Telemetry;
@@ -30,7 +29,7 @@ public class ResilienceServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void AddResilienceEnrichment_EnsureMeteringEnricherRegistered()
+    public void AddResilienceEnrichment_EnsureMetricsEnricherRegistered()
     {
         var count = _services.Count;
 
@@ -38,7 +37,7 @@ public class ResilienceServiceCollectionExtensionsTests
 
         var enrichers = _services.BuildServiceProvider().GetRequiredService<IOptions<TelemetryOptions>>().Value.MeteringEnrichers;
         enrichers.Should().HaveCount(1);
-        enrichers.Single().Should().BeOfType<ResilienceMeteringEnricher>();
+        enrichers.Single().Should().BeOfType<ResilienceMetricsEnricher>();
     }
 
     [Fact]

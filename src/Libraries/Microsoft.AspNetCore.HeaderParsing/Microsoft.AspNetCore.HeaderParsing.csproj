@@ -7,37 +7,30 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
     <UseLoggingGenerator>true</UseLoggingGenerator>
-    <UseMeteringGenerator>true</UseMeteringGenerator>
+    <UseMetricsGenerator>true</UseMetricsGenerator>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>dev</Stage>
+    <Stage>normal</Stage>
     <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>91</MinMutationScore>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExtraAbstractions\Microsoft.Extensions.Diagnostics.ExtraAbstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.ObjectPool.DependencyInjection\Microsoft.Extensions.ObjectPool.DependencyInjection.csproj" />
   </ItemGroup>
 
- <ItemGroup Condition="'$(TargetFramework)' != 'net462'">
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Primitives" />
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <PackageReference Include="Microsoft.AspNetCore.Http" />
-    <PackageReference Include="System.Net.Http" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>

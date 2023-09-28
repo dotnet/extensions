@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Testing;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Gen.Logging.Parsing;
 using Microsoft.Gen.Shared;
 using Xunit;
@@ -18,6 +18,43 @@ namespace Microsoft.Gen.Logging.Test;
 
 public partial class ParserTests
 {
+    [Fact]
+    public async Task IncompatibleAttributes()
+    {
+        await RunGenerator(@$"
+            using Microsoft.Extensions.Compliance.Testing;
+
+            class MyClass2
+            {{
+                public int A {{ get; set; }}
+            }}
+
+            class MyClass
+            {{
+                public string P0 {{ get; set; }} = ""Hello"";
+
+                [PrivateData, LogProperties]
+                public MyClass2 /*0+*/P1/*-0*/ {{ get; set; }} = ""Hello"";
+
+                [PrivateData, TagProvider(typeof(Provider), nameof(Provider.Provide)]
+                public string /*1+*/P2/*-1*/ {{ get; set; }} = ""Hello"";
+            }}
+
+            static class Provider
+            {{
+                public static void Provide(ITagCollector collector, string value) {{ }}
+            }}
+
+            internal partial class C
+            {{
+                [LoggerMessage(0, LogLevel.Debug, ""M0 {{p0}}"")]
+                partial static void M0(ILogger logger, [PrivateData, LogProperties] MyClass /*2+*/p0/*-2*/);
+
+                [LoggerMessage(1, LogLevel.Debug, ""M1 {{p0}}"")]
+                partial static void M1(ILogger logger, [PrivateData, TagProvider(typeof(Provider), nameof(Provider.Provide))] string /*3+*/p0/*-3*/);
+            }}", DiagDescriptors.CantUseDataClassificationWithLogPropertiesOrTagProvider);
+    }
+
     [Fact]
     public async Task NullableStructEnumerable()
     {
@@ -350,7 +387,7 @@ public partial class ParserTests
                     public enum LogLevel {}
                     public interface ILogger {}
                 }
-                namespace Microsoft.Extensions.Telemetry.Logging
+                namespace Microsoft.Extensions.Logging
                 {
                     public class LoggerMessageAttribute : System.Attribute {}
                 }
@@ -372,7 +409,7 @@ public partial class ParserTests
                     public enum LogLevel {}
                     public interface ILogger {}
                 }
-                namespace Microsoft.Extensions.Telemetry.Logging
+                namespace Microsoft.Extensions.Logging
                 {
                     public class LoggerMessageAttribute : System.Attribute {}
                     public class LogPropertiesAttribute : System.Attribute {}
@@ -403,7 +440,7 @@ public partial class ParserTests
     public async Task MissingILoggerType()
     {
         await RunGenerator(@"
-                namespace Microsoft.Extensions.Telemetry.Logging
+                namespace Microsoft.Extensions.Logging
                 {
                     public sealed class LoggerMessageAttribute : System.Attribute {}
                 }
@@ -417,7 +454,7 @@ public partial class ParserTests
     public async Task MissingLogLevelType()
     {
         await RunGenerator(@"
-                namespace Microsoft.Extensions.Telemetry.Logging
+                namespace Microsoft.Extensions.Logging
                 {
                     public sealed class LoggerMessageAttribute : System.Attribute {}
                 }
@@ -736,7 +773,7 @@ public partial class ParserTests
             text = $@"
                     {nspaceStart}
                     using Microsoft.Extensions.Logging;
-                    using Microsoft.Extensions.Telemetry.Logging;
+                    using Microsoft.Extensions.Logging;
                     {code}
                     {nspaceEnd}";
         }

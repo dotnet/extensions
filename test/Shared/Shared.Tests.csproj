@@ -10,11 +10,6 @@
     <TargetFrameworks Condition=" '$(IsWindowsBuild)' == 'true' ">$(TestNetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <!-- See https://github.com/dotnet/r9/issues/65 -->
-    <SkipTests>true</SkipTests>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Shared\Shared.csproj" ProjectUnderTest="true" />
     <ProjectReference Include="..\..\src\Libraries\Microsoft.Extensions.TimeProvider.Testing\Microsoft.Extensions.TimeProvider.Testing.csproj" />

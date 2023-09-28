@@ -3,8 +3,6 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Shared.Diagnostics;
 
@@ -19,14 +17,12 @@ public static class HttpResiliencePipelineBuilderExtensions
     /// Instructs the underlying builder to select the pipeline instance by redacted authority (scheme + host + port).
     /// </summary>
     /// <param name="builder">The builder instance.</param>
-    /// <param name="classification">The data class associated with the authority.</param>
-    /// <returns>The same builder instance.</returns>
-    /// <remarks>The authority is redacted using <see cref="Redactor"/> retrieved for <paramref name="classification"/>.</remarks>
-    public static IHttpResiliencePipelineBuilder SelectPipelineByAuthority(this IHttpResiliencePipelineBuilder builder, DataClassification classification)
+    /// <returns>The value of <paramref name="builder"/>.</returns>
+    public static IHttpResiliencePipelineBuilder SelectPipelineByAuthority(this IHttpResiliencePipelineBuilder builder)
     {
         _ = Throw.IfNull(builder);
 
-        PipelineKeyProviderHelper.SelectPipelineByAuthority(builder.Services, builder.PipelineName, classification);
+        PipelineKeyProviderHelper.SelectPipelineByAuthority(builder.Services, builder.PipelineName);
 
         return builder;
     }
@@ -36,7 +32,7 @@ public static class HttpResiliencePipelineBuilderExtensions
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="selectorFactory">The factory that returns a key selector.</param>
-    /// <returns>The same builder instance.</returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>The pipeline key is used in metrics and logs, so don't return any sensitive values.</remarks>
     public static IHttpResiliencePipelineBuilder SelectPipelineBy(this IHttpResiliencePipelineBuilder builder, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory)
     {

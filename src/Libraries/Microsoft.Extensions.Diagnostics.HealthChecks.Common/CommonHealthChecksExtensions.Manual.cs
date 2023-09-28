@@ -4,9 +4,10 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.HealthChecks;
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static partial class CommonHealthChecksExtensions
 {

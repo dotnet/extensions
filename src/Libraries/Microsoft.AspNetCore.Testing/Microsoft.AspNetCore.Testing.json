@@ -22,7 +22,7 @@
           "Stage": "Experimental"
         },
         {
-          "Member": "static Microsoft.AspNetCore.Hosting.IWebHostBuilder Microsoft.AspNetCore.Testing.ServiceFakesExtensions.UseTestStartup(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder);",
+          "Member": "static Microsoft.AspNetCore.Hosting.IWebHostBuilder Microsoft.AspNetCore.Testing.ServiceFakesExtensions.UseFakeStartup(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder);",
           "Stage": "Experimental"
         }
       ]

@@ -8,8 +8,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Enrichment;
 using Microsoft.Gen.Logging.Parsing;
 using Microsoft.Gen.Shared;
 using Xunit;
@@ -128,20 +128,6 @@ public class AttributeParserTests
     }
 
     [Fact]
-    public async Task MultipleDataClassificationAttributes()
-    {
-        var diagnostics = await RunGenerator(@"
-                internal static partial class C
-                {
-                    [LoggerMessage(0, LogLevel.Debug, ""M {p0}"")]
-                    static partial void M(ILogger logger, IRedactorProvider provider, [PrivateData][PrivateData] string p0);
-                }
-            ");
-
-        Assert.Contains(diagnostics, d => d.Id == DiagDescriptors.MultipleDataClassificationAttributes.Id);
-    }
-
-    [Fact]
     public async Task MissingLogger()
     {
         var diagnostics = await RunGenerator(@"
@@ -192,7 +178,7 @@ public class AttributeParserTests
                 using Microsoft.Extensions.Compliance.Testing;
                 using Microsoft.Extensions.Compliance.Redaction;
                 using Microsoft.Extensions.Logging;
-                using Microsoft.Extensions.Telemetry.Logging;
+                using Microsoft.Extensions.Logging;
                 {code}
                 }}
             ";

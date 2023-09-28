@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Analyzers\Microsoft.Analyzers.Extra\Microsoft.Analyzers.Extra.csproj" ProjectUnderTest="true" />
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.Extra\Microsoft.Extensions.Diagnostics.Extra.csproj" />
     <ProjectReference Include="..\..\..\src\Generators\Microsoft.Gen.Logging\Microsoft.Gen.Logging.csproj" />
   </ItemGroup>
 

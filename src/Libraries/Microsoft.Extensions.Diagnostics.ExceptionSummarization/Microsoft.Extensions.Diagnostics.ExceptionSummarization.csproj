@@ -8,7 +8,6 @@
   <PropertyGroup>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
   </PropertyGroup>
 
@@ -24,7 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
     <PackageReference Include="System.Collections.Immutable" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
   </ItemGroup>
 

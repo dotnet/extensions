@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.AsyncState;
 using Microsoft.Extensions.AsyncState;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.AspNetCore.AsyncState;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extension methods to add the async state feature with the HttpContext lifetime to a dependency injection container.
@@ -15,7 +15,7 @@ public static class AsyncStateHttpContextExtensions
 {
     /// <summary>
     /// Adds default implementations for <see cref="IAsyncState"/>, <see cref="IAsyncContext{T}"/>, and <see cref="IAsyncLocalContext{T}"/> services,
-    /// scoped to the lifetime of <see cref="Microsoft.AspNetCore.Http.HttpContext"/> instances.
+    /// scoped to the lifetime of <see cref="AspNetCore.Http.HttpContext"/> instances.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
@@ -26,7 +26,7 @@ public static class AsyncStateHttpContextExtensions
 
         _ = services
             .AddHttpContextAccessor()
-            .AddAsyncStateCore()
+            .AddAsyncState()
             .AddSingleton(typeof(IAsyncContext<>), typeof(AsyncContextHttpContext<>));
 
         return services;

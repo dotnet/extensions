@@ -22,6 +22,7 @@ public class SymbolLoaderTests
     [InlineData(SymbolLoader.LogPropertiesAttribute)]
     [InlineData(SymbolLoader.ITagCollectorType)]
     [InlineData(SymbolLoader.LogPropertyIgnoreAttribute)]
+    [InlineData(SymbolLoader.TagProviderAttribute)]
     public void Loader_ReturnsNull_WhenTypeIsUnavailable(string type, bool callbackShouldBeCalled = false)
     {
         var compilationMock = new Mock<Compilation>(

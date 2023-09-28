@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Internal;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;

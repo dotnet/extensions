@@ -12,28 +12,34 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Telemetry.Metering;
 using Polly;
 using Polly.Registry;
-using Polly.Retry;
 using Polly.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Resilience.Test;
 
-public sealed partial class HttpClientBuilderExtensionsTests
+public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
 {
     private const string BuilderName = "Name";
     private readonly IHttpClientBuilder _builder;
+    private ServiceProvider? _serviceProvider;
 
     public HttpClientBuilderExtensionsTests()
     {
         _builder = new ServiceCollection().AddHttpClient(BuilderName);
-        _builder.Services.RegisterMetering();
+        _builder.Services.AddMetrics();
         _builder.Services.AddLogging();
     }
 
-    private HttpClient CreateClient(string name = BuilderName) => _builder.Services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient(name);
+    public void Dispose()
+        => _serviceProvider?.Dispose();
+
+    private HttpClient CreateClient(string name = BuilderName)
+    {
+        _serviceProvider ??= _builder.Services.BuildServiceProvider();
+        return _serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(name);
+    }
 
     private static readonly IConfigurationSection _validConfigurationSection =
         ConfigurationStubFactory.Create(
@@ -118,7 +124,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [Theory]
     public void AddStandardResilienceHandler_ConfigurationPropertyWithTypo_Throws(MethodArgs mode)
     {
-        var builder = new ServiceCollection().AddLogging().RegisterMetering().AddHttpClient("test");
+        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
 
         AddStandardResilienceHandler(mode, builder, _invalidConfigurationSection, options => { });
 
@@ -128,13 +134,14 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [Fact]
     public void AddStandardResilienceHandler_EnsureCorrectStrategies()
     {
-        var provider = new ServiceCollection()
+        using var serviceProvider = new ServiceCollection()
             .AddLogging()
-            .RegisterMetering()
+            .AddMetrics()
             .AddHttpClient("test")
             .AddStandardResilienceHandler()
-            .Services.BuildServiceProvider()
-            .GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
+            .Services.BuildServiceProvider();
+
+        var provider = serviceProvider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
 
         var descriptor = provider.GetPipeline<HttpResponseMessage>(new HttpKey("test-standard", string.Empty)).GetPipelineDescriptor();
 
@@ -153,7 +160,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [Theory]
     public void AddStandardResilienceHandler_EnsureValidated(bool wholePipeline)
     {
-        var builder = new ServiceCollection().AddLogging().RegisterMetering().AddHttpClient("test");
+        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
 
         AddStandardResilienceHandler(MethodArgs.ConfigureMethod, builder, null!, options =>
         {
@@ -182,7 +189,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [Theory]
     public void AddStandardResilienceHandler_EnsureConfigured(MethodArgs mode)
     {
-        var builder = new ServiceCollection().AddLogging().RegisterMetering().AddHttpClient("test");
+        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test");
 
         AddStandardResilienceHandler(mode, builder, _validConfigurationSection, options => { });
 
@@ -207,6 +214,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
             options.RetryOptions.Delay = TimeSpan.Zero;
             options.RetryOptions.BackoffType = DelayBackoffType.Constant;
         });
+
         _builder.AddHttpMessageHandler(() => new TestHandlerStub((r, _) =>
         {
             requests.Add(r);

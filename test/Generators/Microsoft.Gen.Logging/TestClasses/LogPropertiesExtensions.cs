@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace TestClasses
 {
@@ -53,6 +52,7 @@ namespace TestClasses
 
             public virtual int TransitiveVirtualProp { get; set; } // Not supposed to be logged (overridden in MyTransitiveDerivedClass)
 
+            [LogProperties]
             public GenericClass<string> TransitiveGenericProp => new()
             {
                 GenericProp = "Hello from MyTransitiveBaseClass!"
@@ -64,6 +64,7 @@ namespace TestClasses
 
             private static decimal PrivateProperty => decimal.MinusOne; // Not supposed to be logged (private & static)
 
+            [LogProperties]
             public LeafTransitiveDerivedClass? InnerTransitiveProperty { get; set; }
         }
 
@@ -94,11 +95,15 @@ namespace TestClasses
             public long LongProperty { get; set; } = long.MaxValue;
 
 #pragma warning disable CA1805 // Do not initialize unnecessarily
+            [LogProperties]
             public MyTransitiveStruct TransitiveStructProperty { get; set; } = default;
+
+            [LogProperties]
             public MyTransitiveStruct? NullableTransitiveStructProperty { get; set; } = default;
 #pragma warning restore CA1805 // Do not initialize unnecessarily
 
             [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1125:Use shorthand for nullable types", Justification = "Testing Nullable<T>")]
+            [LogProperties]
             public Nullable<MyTransitiveStruct> NullableTransitiveStructProperty2 { get; set; } = default;
 
             public MyCustomStruct(object _)
@@ -154,20 +159,26 @@ namespace TestClasses
 
             public int[] TransitivePropertyArray { get; set; } = Array.Empty<int>();
 
+            [LogProperties]
             public MyTransitiveDerivedClass? TransitiveProperty { get; set; }
 
+            [LogProperties]
             public LeafTransitiveBaseClass? AnotherTransitiveProperty { get; set; }
 
+            [LogProperties]
             public GenericClass<int>? PropertyOfGenerics { get; set; }
 
+            [LogProperties]
             public MyCustomStruct CustomStructProperty { get; set; }
 
+            [LogProperties]
             public MyCustomStruct? CustomStructNullableProperty { get; set; }
 
             [LogPropertyIgnore]
             public int IgnoredProp { get; set; }
 
             [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1125:Use shorthand for nullable types", Justification = "Testing Nullable<T>")]
+            [LogProperties]
             public Nullable<MyCustomStruct> CustomStructNullableProperty2 { get; set; }
 
             public MyDerivedClass(double privateFieldValue)
@@ -180,6 +191,7 @@ namespace TestClasses
         {
             public int IntProperty { get; set; }
 
+            [LogProperties]
             public LeafTransitiveBaseClass? TransitiveProp { get; set; }
         }
 
@@ -189,6 +201,7 @@ namespace TestClasses
 
             public string? ClassStringProperty { get; set; }
 
+            [LogProperties]
             public LeafTransitiveBaseClass? TransitiveProp { get; set; }
         }
 

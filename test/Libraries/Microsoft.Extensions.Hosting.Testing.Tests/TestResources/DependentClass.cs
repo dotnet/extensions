@@ -5,7 +5,7 @@ namespace Microsoft.Extensions.Hosting.Testing.Test.TestResources;
 
 public class DependentClass
 {
-    public DependentClass(FakeHostTest _)
+    public DependentClass(FakeHostTests _)
     {
     }
 }

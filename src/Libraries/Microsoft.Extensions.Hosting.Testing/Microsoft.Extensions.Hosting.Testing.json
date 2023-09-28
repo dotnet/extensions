@@ -38,6 +38,48 @@
       ]
     },
     {
+      "Type": "static class Microsoft.Extensions.Hosting.FakeHostingExtensions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.FakeHostingExtensions.AddFakeLoggingOutputSink(this Microsoft.Extensions.Hosting.IHostBuilder builder, System.Action<string> callback);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.FakeHostingExtensions.Configure(this Microsoft.Extensions.Hosting.IHostBuilder builder, System.Action<Microsoft.Extensions.Hosting.IHostBuilder> configure);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.FakeHostingExtensions.ConfigureAppConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder builder, params (string key, string value)[] configurations);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.FakeHostingExtensions.ConfigureAppConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder builder, string key, string value);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.FakeHostingExtensions.ConfigureHostConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder builder, params (string key, string value)[] configurations);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.FakeHostingExtensions.ConfigureHostConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder builder, string key, string value);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Logging.Testing.FakeLogCollector Microsoft.Extensions.Hosting.FakeHostingExtensions.GetFakeLogCollector(this Microsoft.Extensions.Hosting.IHost host);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector Microsoft.Extensions.Hosting.FakeHostingExtensions.GetFakeRedactionCollector(this Microsoft.Extensions.Hosting.IHost host);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static System.Threading.Tasks.Task Microsoft.Extensions.Hosting.FakeHostingExtensions.StartAndStopAsync(this Microsoft.Extensions.Hosting.IHostedService service, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.Hosting.Testing.FakeHostOptions",
       "Stage": "Experimental",
       "Methods": [
@@ -73,48 +115,6 @@
         },
         {
           "Member": "bool Microsoft.Extensions.Hosting.Testing.FakeHostOptions.ValidateScopes { get; set; }",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.AddFakeLoggingOutputSink(this Microsoft.Extensions.Hosting.IHostBuilder builder, System.Action<string> callback);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.Configure(this Microsoft.Extensions.Hosting.IHostBuilder builder, System.Action<Microsoft.Extensions.Hosting.IHostBuilder> configure);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.ConfigureAppConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder builder, params (string key, string value)[] configurations);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.ConfigureAppConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder builder, string key, string value);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.ConfigureHostConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder builder, params (string key, string value)[] configurations);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Hosting.IHostBuilder Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.ConfigureHostConfiguration(this Microsoft.Extensions.Hosting.IHostBuilder builder, string key, string value);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Telemetry.Testing.Logging.FakeLogCollector Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.GetFakeLogCollector(this Microsoft.Extensions.Hosting.IHost host);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Compliance.Testing.FakeRedactionCollector Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.GetFakeRedactionCollector(this Microsoft.Extensions.Hosting.IHost host);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static System.Threading.Tasks.Task Microsoft.Extensions.Hosting.Testing.HostingFakesExtensions.StartAndStopAsync(this Microsoft.Extensions.Hosting.IHostedService service, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));",
           "Stage": "Experimental"
         }
       ]

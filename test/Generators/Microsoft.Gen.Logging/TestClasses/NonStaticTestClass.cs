@@ -4,7 +4,6 @@
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Telemetry.Logging;
 
 namespace TestClasses
 {
@@ -35,7 +34,7 @@ namespace TestClasses
         [LoggerMessage(5, LogLevel.Information, "LogProperties with provider: {P0}, {P1}")]
         internal partial void LogPropertiesWithProvider(
             string p0,
-            [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideProperties))] ClassToLog p1);
+            [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideTags))] ClassToLog p1);
 
         [LoggerMessage(6, LogLevel.Information, "LogProperties with redaction: {P0}")]
         internal partial void LogPropertiesWithRedaction(
@@ -46,7 +45,7 @@ namespace TestClasses
         internal partial void DefaultAttrCtorLogPropertiesWithProvider(
             LogLevel level,
             string p0,
-            [LogProperties(typeof(CustomProvider), nameof(CustomProvider.ProvideProperties))] ClassToLog p1);
+            [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideTags))] ClassToLog p1);
 
         [LoggerMessage]
         internal partial void DefaultAttrCtorLogPropertiesWithRedaction(
