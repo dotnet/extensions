@@ -253,7 +253,7 @@ public sealed class MetricCollector<T> : IDisposable
 #if NET8_0_OR_GREATER
         using var cancellationTokenSource = new CancellationTokenSource(timeout, _timeProvider);
 #else
-        using var cancellationTokenSource = _timeProvider.CreateCancellationTokenSource(timeout);
+        using var cancellationTokenSource = new CancellationTokenSource(timeout);
 #endif
         await WaitForMeasurementsAsync(minCount, cancellationTokenSource.Token).ConfigureAwait(false);
     }
