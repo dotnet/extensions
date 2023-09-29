@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Diagnostics.Enrichment;
 /// <summary>
 /// Options for the service log enricher.
 /// </summary>
-public class ServiceLogEnricherOptions
+public class ApplicationLogEnricherOptions
 {
     /// <summary>
     /// Gets or sets a value indicating whether <see cref="ApplicationMetadata.EnvironmentName"/> is used for logs enrichment.

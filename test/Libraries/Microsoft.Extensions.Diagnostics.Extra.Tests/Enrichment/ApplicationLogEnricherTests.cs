@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Enrichment.Test;
 
-public class ServiceLogEnricherTests
+public class ApplicationLogEnricherTests
 {
     private const string AppName = "appNameTestValue";
     private const string EnvironmentName = "environmentTestValue";
@@ -20,7 +20,7 @@ public class ServiceLogEnricherTests
 
     private readonly Mock<IHostEnvironment> _hostMock;
 
-    public ServiceLogEnricherTests()
+    public ApplicationLogEnricherTests()
     {
         _hostMock = new Mock<IHostEnvironment>(MockBehavior.Strict);
         _hostMock.SetupGet(c => c.EnvironmentName).Returns(EnvironmentName);
@@ -31,20 +31,20 @@ public class ServiceLogEnricherTests
     public void HostLogEnricher_GivenInvalidArguments_Throws()
     {
         // Arrange
-        var options = new ServiceLogEnricherOptions
+        var options = new ApplicationLogEnricherOptions
         {
             BuildVersion = true,
             DeploymentRing = true
         }.ToOptions();
-        var optionsNull = new Mock<IOptions<ServiceLogEnricherOptions>>();
-        optionsNull.Setup(o => o.Value).Returns<IOptions<ServiceLogEnricherOptions>>(null!);
+        var optionsNull = new Mock<IOptions<ApplicationLogEnricherOptions>>();
+        optionsNull.Setup(o => o.Value).Returns<IOptions<ApplicationLogEnricherOptions>>(null!);
 
         var serviceOptionsNull = new Mock<IOptions<ApplicationMetadata>>();
         serviceOptionsNull.Setup(o => o.Value).Returns<IOptions<ApplicationMetadata>>(null!);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new ServiceLogEnricher(optionsNull.Object, null!));
-        Assert.Throws<ArgumentException>(() => new ServiceLogEnricher(options, serviceOptionsNull.Object));
+        Assert.Throws<ArgumentException>(() => new ApplicationLogEnricher(optionsNull.Object, null!));
+        Assert.Throws<ArgumentException>(() => new ApplicationLogEnricher(options, serviceOptionsNull.Object));
     }
 
     [Theory]
@@ -55,7 +55,7 @@ public class ServiceLogEnricherTests
     public void ServiceLogEnricher_Options(bool appName, bool envName, bool buildVer, bool depRing, string? buildVersion, string? deploymentRing)
     {
         // Arrange
-        var options = new ServiceLogEnricherOptions
+        var options = new ApplicationLogEnricherOptions
         {
             ApplicationName = appName,
             EnvironmentName = envName,
@@ -71,7 +71,7 @@ public class ServiceLogEnricherTests
             EnvironmentName = _hostMock.Object.EnvironmentName
         };
 
-        var enricher = new ServiceLogEnricher(options.ToOptions(), serviceOptions.ToOptions());
+        var enricher = new ApplicationLogEnricher(options.ToOptions(), serviceOptions.ToOptions());
         var enrichedProperties = new TestLogEnrichmentTagCollector();
 
         // Act
@@ -81,38 +81,38 @@ public class ServiceLogEnricherTests
         // Assert
         if (appName)
         {
-            Assert.Equal(AppName, enrichedState[ServiceEnricherTags.ApplicationName]);
+            Assert.Equal(AppName, enrichedState[ApplicationEnricherTags.ApplicationName]);
         }
         else
         {
-            Assert.False(enrichedState.ContainsKey(ServiceEnricherTags.ApplicationName));
+            Assert.False(enrichedState.ContainsKey(ApplicationEnricherTags.ApplicationName));
         }
 
         if (envName)
         {
-            Assert.Equal(EnvironmentName, enrichedState[ServiceEnricherTags.EnvironmentName]);
+            Assert.Equal(EnvironmentName, enrichedState[ApplicationEnricherTags.EnvironmentName]);
         }
         else
         {
-            Assert.False(enrichedState.ContainsKey(ServiceEnricherTags.EnvironmentName));
+            Assert.False(enrichedState.ContainsKey(ApplicationEnricherTags.EnvironmentName));
         }
 
         if (buildVer && buildVersion != null)
         {
-            Assert.Equal(BuildVersion, enrichedState[ServiceEnricherTags.BuildVersion]);
+            Assert.Equal(BuildVersion, enrichedState[ApplicationEnricherTags.BuildVersion]);
         }
         else
         {
-            Assert.False(enrichedState.ContainsKey(ServiceEnricherTags.BuildVersion));
+            Assert.False(enrichedState.ContainsKey(ApplicationEnricherTags.BuildVersion));
         }
 
         if (depRing && deploymentRing != null)
         {
-            Assert.Equal(DeploymentRing, enrichedState[ServiceEnricherTags.DeploymentRing]);
+            Assert.Equal(DeploymentRing, enrichedState[ApplicationEnricherTags.DeploymentRing]);
         }
         else
         {
-            Assert.False(enrichedState.ContainsKey(ServiceEnricherTags.DeploymentRing));
+            Assert.False(enrichedState.ContainsKey(ApplicationEnricherTags.DeploymentRing));
         }
     }
 }
