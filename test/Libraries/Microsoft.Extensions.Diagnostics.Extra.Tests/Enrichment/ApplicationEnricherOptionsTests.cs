@@ -6,12 +6,12 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Enrichment.Test;
 
-public class ServiceEnricherOptionsTests
+public class ApplicationEnricherOptionsTests
 {
     [Fact]
     public void ServiceLogEnricherOptions_EnsureDefaultValues()
     {
-        var options = new ServiceLogEnricherOptions();
+        var options = new ApplicationLogEnricherOptions();
         options.EnvironmentName.Should().BeTrue();
         options.ApplicationName.Should().BeTrue();
         options.BuildVersion.Should().BeFalse();

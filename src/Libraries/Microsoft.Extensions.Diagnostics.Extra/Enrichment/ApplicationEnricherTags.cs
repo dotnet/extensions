@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Diagnostics.Enrichment;
 /// <summary>
 /// Constants used for enrichment tags.
 /// </summary>
-public static class ServiceEnricherTags
+public static class ApplicationEnricherTags
 {
     /// <summary>
     /// Application name.
