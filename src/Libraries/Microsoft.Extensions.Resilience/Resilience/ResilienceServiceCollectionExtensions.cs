@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
@@ -51,9 +52,9 @@ public static class ResilienceServiceCollectionExtensions
             return services;
         }
 
+        services.AddExceptionSummarizer().TryAddSingleton<ResilienceMetricsEnricher>();
+
         _ = services
-            .AddExceptionSummarizer()
-            .AddSingleton<ResilienceMetricsEnricher>()
             .AddOptionsWithValidateOnStart<TelemetryOptions>()
             .Configure<ResilienceMetricsEnricher>((options, enricher) => options.MeteringEnrichers.Add(enricher));
 

@@ -9,12 +9,12 @@ namespace Microsoft.Extensions.Http.Resilience;
 public enum WeightedGroupSelectionMode
 {
     /// <summary>
-    /// In this selection mode the weight is used for every pick of <see cref="WeightedEndpointGroup"/>.
+    /// In this selection mode the weight is used for every pick of <see cref="WeightedUriEndpointGroup"/>.
     /// </summary>
     EveryAttempt,
 
     /// <summary>
-    /// In this selection mode the weight is only used to pick initial <see cref="WeightedEndpointGroup"/>.
+    /// In this selection mode the weight is only used to pick initial <see cref="WeightedUriEndpointGroup"/>.
     /// Remaining groups are picked in order, starting from the first, finishing with last and skipping already picked group.
     /// </summary>
     InitialAttempt
