@@ -601,54 +601,6 @@
       ]
     },
     {
-      "Type": "sealed class Microsoft.Extensions.Logging.LogMethodHelper : System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, object?>>, Microsoft.Extensions.Logging.ITagCollector, Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector, Microsoft.Extensions.ObjectPool.IResettable",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Logging.LogMethodHelper.LogMethodHelper();",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "void Microsoft.Extensions.Logging.LogMethodHelper.Add(string tagName, object? tagValue);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "void Microsoft.Extensions.Logging.LogMethodHelper.Add(string tagName, object? tagValue, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Logging.LogMethodHelper Microsoft.Extensions.Logging.LogMethodHelper.GetHelper();",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static void Microsoft.Extensions.Logging.LogMethodHelper.ReturnHelper(Microsoft.Extensions.Logging.LogMethodHelper helper);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static string Microsoft.Extensions.Logging.LogMethodHelper.Stringify(System.Collections.IEnumerable? enumerable);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static string Microsoft.Extensions.Logging.LogMethodHelper.Stringify<TKey, TValue>(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>? enumerable);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Logging.LogMethodHelper.TryReset();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "string Microsoft.Extensions.Logging.LogMethodHelper.ParameterName { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Logging.LogDefineOptions Microsoft.Extensions.Logging.LogMethodHelper.SkipEnabledCheckOptions { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "sealed class Microsoft.Extensions.Logging.LogPropertiesAttribute : System.Attribute",
       "Stage": "Stable",
       "Methods": [
