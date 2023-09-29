@@ -12,7 +12,6 @@ using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Diagnostics;
-using Microsoft.Extensions.Options;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
@@ -29,35 +28,22 @@ public static class HttpLoggingServiceExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configureRedaction">Configures the redaction options.</param>
+    /// <param name="configureLogging">Configures the logging options.</param>
     /// <returns>The original service collection.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
-    public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<LoggingRedactionOptions>? configureRedaction = null)
+    public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<LoggingRedactionOptions>? configureRedaction = null,
+        Action<HttpLoggingOptions>? configureLogging = null)
     {
         _ = Throw.IfNull(services);
 
         _ = services.Configure(configureRedaction ?? (static _ => { }));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpLoggingInterceptor, HttpLoggingRedactionInterceptor>());
 
-        _ = services.AddHttpLogging(static o => { });
-
-        _ = services.AddOptions<HttpLoggingOptions>().Configure<IOptions<LoggingRedactionOptions>>((logging, redaction) =>
+        _ = services.AddHttpLogging(o =>
         {
-            var redactionOptions = redaction.Value;
-            logging.CombineLogs = redactionOptions.CombineLogs;
-            logging.LoggingFields = redactionOptions.LoggingFields;
-            logging.RequestBodyLogLimit = redactionOptions.RequestBodyLogLimit;
-            logging.ResponseBodyLogLimit = redactionOptions.ResponseBodyLogLimit;
-            logging.RequestHeaders.Clear();
-            logging.ResponseHeaders.Clear();
-
-            logging.MediaTypeOptions.Clear();
-            /* TODO: No public way to retrieve the list of media types from MediaTypeOptions
-            foreach (var (key, value) in redactionOptions.MediaTypeOptions)
-            {
-                logging.MediaTypeOptions.Add(key, value);
-            }*/
-
-            // TODO: Other properties
+            o.CombineLogs = true;
+            o.LoggingFields |= HttpLoggingFields.Duration;
+            configureLogging?.Invoke(o);
         });
 
         // Internal stuff for route processing:
@@ -76,8 +62,6 @@ public static class HttpLoggingServiceExtensions
     {
         return services.AddHttpLoggingRedaction(configureRedaction: o =>
         {
-            // TODO: Other properties
-
             o.RequestPathLoggingMode = section.GetSection(nameof(LoggingRedactionOptions.RequestPathLoggingMode)).Get<IncomingPathLoggingMode>();
             o.RequestPathParameterRedactionMode = section.GetSection(nameof(LoggingRedactionOptions.RequestPathParameterRedactionMode)).Get<HttpRouteParameterRedactionMode>();
             var paths = section.GetSection(nameof(LoggingRedactionOptions.ExcludePathStartsWith)).Get<string[]>();
