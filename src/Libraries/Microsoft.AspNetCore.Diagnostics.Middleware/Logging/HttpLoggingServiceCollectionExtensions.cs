@@ -28,11 +28,9 @@ public static class HttpLoggingServiceExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configureRedaction">Configures the redaction options.</param>
-    /// <param name="configureLogging">Configures the logging options.</param>
     /// <returns>The original service collection.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
-    public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<LoggingRedactionOptions>? configureRedaction = null,
-        Action<HttpLoggingOptions>? configureLogging = null)
+    public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<LoggingRedactionOptions>? configureRedaction = null)
     {
         _ = Throw.IfNull(services);
 
@@ -43,7 +41,6 @@ public static class HttpLoggingServiceExtensions
         {
             o.CombineLogs = true;
             o.LoggingFields |= HttpLoggingFields.Duration;
-            configureLogging?.Invoke(o);
         });
 
         // Internal stuff for route processing:

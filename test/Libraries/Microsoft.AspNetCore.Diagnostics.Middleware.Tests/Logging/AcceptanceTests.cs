@@ -157,12 +157,12 @@ public partial class AcceptanceTests
     {
         await RunAsync(
             LogLevel.Information,
-            services => services.AddHttpLoggingRedaction(configureLogging: x =>
+            services => services.AddHttpLogging(x =>
             {
                 x.MediaTypeOptions.Clear();
                 x.MediaTypeOptions.AddText(responseContentTypeToLog);
                 x.LoggingFields |= HttpLoggingFields.ResponseBody;
-            }),
+            }).AddHttpLoggingRedaction(),
             async (logCollector, client) =>
             {
                 const string Content = "Client: hello!";
@@ -217,12 +217,12 @@ public partial class AcceptanceTests
     {
         await RunAsync(
             LogLevel.Information,
-            services => services.AddHttpLoggingRedaction(configureLogging: x =>
+            services => services.AddHttpLogging(x =>
             {
                 x.MediaTypeOptions.Clear();
                 x.MediaTypeOptions.AddText("text/*");
                 x.LoggingFields |= HttpLoggingFields.RequestBody;
-            }),
+            }).AddHttpLoggingRedaction(),
             async (logCollector, client) =>
             {
                 const string Content = "Client: hello!";
@@ -274,7 +274,7 @@ public partial class AcceptanceTests
             {
                 x.RequestHeadersDataClasses.Add(HeaderNames.Accept, DataClassification.None);
                 x.ResponseHeadersDataClasses.Add(HeaderNames.TransferEncoding, DataClassification.None);
-            }, static x =>
+            }).AddHttpLogging(static x =>
             {
                 x.CombineLogs = false;
                 x.LoggingFields = HttpLoggingFields.All;
@@ -464,7 +464,7 @@ public partial class AcceptanceTests
             static x =>
             {
                 x.AddHttpLogEnricher<TestHttpLogEnricher>();
-                x.AddHttpLoggingRedaction(configureLogging: x => x.CombineLogs = false);
+                x.AddHttpLoggingRedaction().AddHttpLogging(x => x.CombineLogs = false);
             },
             async static (logCollector, client) =>
             {
@@ -498,7 +498,7 @@ public partial class AcceptanceTests
     {
         await RunAsync(
             LogLevel.Information,
-            static x => x.AddHttpLoggingRedaction(configureLogging: x => x.CombineLogs = false),
+            static x => x.AddHttpLoggingRedaction().AddHttpLogging(x => x.CombineLogs = false),
             async static (logCollector, client) =>
             {
                 using var firstResponse = await client.DeleteAsync("/").ConfigureAwait(false);
@@ -586,11 +586,11 @@ public partial class AcceptanceTests
     {
         await RunAsync(
             LogLevel.Information,
-            static services => services.AddHttpLoggingRedaction(configureLogging: static x =>
+            static services => services.AddHttpLogging(static x =>
             {
                 x.MediaTypeOptions.AddText(MediaTypeNames.Text.Plain);
                 x.LoggingFields |= HttpLoggingFields.RequestBody | HttpLoggingFields.ResponseBody;
-            }),
+            }).AddHttpLoggingRedaction(),
             async (logCollector, client) =>
             {
                 const string Content = "Client: hello!";
@@ -623,7 +623,8 @@ public partial class AcceptanceTests
     {
         await RunAsync(
             LogLevel.Information,
-            static services => services.AddHttpLoggingRedaction(configureLogging: static x => x.LoggingFields &= ~HttpLoggingFields.ResponseBody),
+            static services => services.AddHttpLogging(static x => x.LoggingFields &= ~HttpLoggingFields.ResponseBody)
+                .AddHttpLoggingRedaction(),
             async (logCollector, client) =>
             {
                 const string Content = "Client: hello!";
