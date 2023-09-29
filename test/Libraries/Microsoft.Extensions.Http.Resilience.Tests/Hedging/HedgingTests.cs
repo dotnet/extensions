@@ -79,7 +79,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         {
             options.OnHedging = args =>
             {
-                args.PrimaryContext.Properties.GetValue(key, "").Should().Be("my-data");
+                args.ActionContext.Properties.GetValue(key, "").Should().Be("my-data");
                 calls++;
                 return default;
             };
