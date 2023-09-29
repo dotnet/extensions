@@ -21,9 +21,7 @@ internal sealed class HeaderReader
     {
         _redactorProvider = redactorProvider;
 
-        _headers = headersToLog.Count == 0
-            ? Array.Empty<KeyValuePair<string, DataClassification>>()
-            : headersToLog.ToArray();
+        _headers = headersToLog.Count == 0 ? [] : headersToLog.ToArray();
     }
 
     public void Read(IHeaderDictionary headers, IList<KeyValuePair<string, object?>> logContext, string prefix)

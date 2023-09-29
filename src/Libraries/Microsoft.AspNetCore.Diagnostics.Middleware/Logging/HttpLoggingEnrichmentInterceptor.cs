@@ -48,27 +48,33 @@ internal sealed class HttpLoggingEnrichmentInterceptor : IHttpLoggingInterceptor
         }
 
         var context = logContext.HttpContext;
-        var enrichmentBag = LogMethodHelper.GetHelper();
-        foreach (var enricher in _enrichers)
+        var loggerMessageState = LoggerMessageHelper.ThreadLocalState;
+
+        try
         {
+            foreach (var enricher in _enrichers)
+            {
 #pragma warning disable CA1031 // Do not catch general exception types
-            try
-            {
-                enricher.Enrich(enrichmentBag, context);
-            }
-            catch (Exception ex)
-            {
-                _logger.EnricherFailed(ex, enricher.GetType().Name);
-            }
+                try
+                {
+                    enricher.Enrich(loggerMessageState, context);
+                }
+                catch (Exception ex)
+                {
+                    _logger.EnricherFailed(ex, enricher.GetType().Name);
+                }
 #pragma warning restore CA1031 // Do not catch general exception types
-        }
+            }
 
-        foreach (var pair in enrichmentBag)
+            foreach (var pair in loggerMessageState)
+            {
+                logContext.Parameters.Add(pair);
+            }
+        }
+        finally
         {
-            logContext.Parameters.Add(pair);
+            loggerMessageState.Clear();
         }
-
-        LogMethodHelper.ReturnHelper(enrichmentBag);
 
         return default;
     }
