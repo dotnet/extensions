@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// Extension methods to register the HTTP logging feature within the service.
 /// </summary>
 [Experimental(diagnosticId: Experiments.HttpLogging, UrlFormat = Experiments.UrlFormat)]
-public static class HttpLoggingServiceExtensions
+public static class HttpLoggingServiceCollectionExtensions
 {
     /// <summary>
     /// Enables redaction of HTTP logging.
@@ -50,7 +50,7 @@ public static class HttpLoggingServiceExtensions
     }
 
     /// <summary>
-    /// Enables redaction of HTTP logging.
+    /// Enables enrichment redaction of HTTP logging.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="section">The configuration section with the redaction settings.</param>
@@ -100,21 +100,6 @@ public static class HttpLoggingServiceExtensions
     }
 
     /// <summary>
-    /// Enables enrichment of HTTP logging.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <returns>The original service collection.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
-    public static IServiceCollection AddHttpLoggingEnrichment(this IServiceCollection services)
-    {
-        _ = Throw.IfNull(services);
-
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpLoggingInterceptor, HttpLoggingEnrichmentInterceptor>());
-
-        return services;
-    }
-
-    /// <summary>
     /// Adds an enricher instance of <typeparamref name="T"/> to the <see cref="IServiceCollection"/> to enrich incoming HTTP requests logs.
     /// </summary>
     /// <typeparam name="T">Type of enricher.</typeparam>
@@ -125,7 +110,7 @@ public static class HttpLoggingServiceExtensions
         where T : class, IHttpLogEnricher
     {
         _ = Throw.IfNull(services);
-        _ = services.AddHttpLoggingEnrichment();
+        _ = services.AddHttpLoggingRedaction();
         return services.AddActivatedSingleton<IHttpLogEnricher, T>();
     }
 }

@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
 {
+    private readonly IHttpLogEnricher[] _enrichers;
     private readonly IncomingPathLoggingMode _requestPathLogMode;
     private readonly HttpRouteParameterRedactionMode _parameterRedactionMode;
     private readonly ILogger<HttpLoggingRedactionInterceptor> _logger;
@@ -36,6 +37,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
     public HttpLoggingRedactionInterceptor(
         IOptions<LoggingRedactionOptions> options,
         ILogger<HttpLoggingRedactionInterceptor> logger,
+        IEnumerable<IHttpLogEnricher> httpLogEnrichers,
         IHttpRouteParser httpRouteParser,
         IHttpRouteFormatter httpRouteFormatter,
         IRedactorProvider redactorProvider,
@@ -43,6 +45,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
     {
         var optionsValue = options.Value;
         _logger = logger;
+        _enrichers = httpLogEnrichers.ToArray();
         _httpRouteParser = httpRouteParser;
         _httpRouteFormatter = httpRouteFormatter;
         _httpRouteUtility = httpRouteUtility;
@@ -133,17 +136,46 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
 
     public ValueTask OnResponseAsync(HttpLoggingInterceptorContext logContext)
     {
-        // Don't redact if we're not going to log any part of the response
-        if (!logContext.IsAnyEnabled(HttpLoggingFields.ResponsePropertiesAndHeaders))
-        {
-            return default;
-        }
-
         var context = logContext.HttpContext;
 
         if (logContext.TryDisable(HttpLoggingFields.ResponseHeaders))
         {
             _responseHeadersReader.Read(context.Response.Headers, logContext.Parameters, HttpLoggingTagNames.ResponseHeaderPrefix);
+        }
+
+        // Don't enrich if we're not going to log any part of the response
+        if (_enrichers.Length == 0
+            || (!logContext.IsAnyEnabled(HttpLoggingFields.Response) && logContext.Parameters.Count == 0))
+        {
+            return default;
+        }
+
+        var loggerMessageState = LoggerMessageHelper.ThreadLocalState;
+
+        try
+        {
+            foreach (var enricher in _enrichers)
+            {
+#pragma warning disable CA1031 // Do not catch general exception types
+                try
+                {
+                    enricher.Enrich(loggerMessageState, context);
+                }
+                catch (Exception ex)
+                {
+                    _logger.EnricherFailed(ex, enricher.GetType().Name);
+                }
+#pragma warning restore CA1031 // Do not catch general exception types
+            }
+
+            foreach (var pair in loggerMessageState)
+            {
+                logContext.Parameters.Add(pair);
+            }
+        }
+        finally
+        {
+            loggerMessageState.Clear();
         }
 
         return default;
