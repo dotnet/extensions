@@ -126,8 +126,6 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
 
         if (logContext.TryDisable(HttpLoggingFields.RequestHeaders))
         {
-            // TODO: HttpLoggingOptions.Request/ResponseHeaders are ignored which could be confusing.
-            // Do we try to reconcile that with LoggingRedactionOptions.RequestHeadersDataClasses?
             _requestHeadersReader.Read(context.Request.Headers, logContext.Parameters, HttpLoggingTagNames.RequestHeaderPrefix);
         }
 
