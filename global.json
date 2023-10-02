@@ -6,10 +6,12 @@
     "dotnet": "9.0.100-alpha.1.23476.6",
     "runtimes": {
       "dotnet/x64": [
-        "6.0.22"
+        "8.0.0-rtm.23475.7",
+        "$(MicrosoftNETCoreAppRuntimewinx64Version)"
       ],
       "aspnetcore/x64": [
-        "6.0.22"
+        "8.0.0-rtm.23475.5",
+        "$(MicrosoftAspNetCoreAppRuntimewinx64Version)"
       ]
     }
   },
