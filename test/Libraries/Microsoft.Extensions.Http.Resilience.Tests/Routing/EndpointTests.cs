@@ -12,7 +12,7 @@ public class EndpointTests
     [Fact]
     public void Uri_OK()
     {
-        var endpoint = new Endpoint
+        var endpoint = new UriEndpoint
         {
             Uri = new Uri("https://localhost:5001")
         };

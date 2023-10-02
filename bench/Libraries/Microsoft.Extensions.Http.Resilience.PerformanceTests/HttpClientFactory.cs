@@ -6,10 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Compliance.Redaction;
-using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -39,7 +37,7 @@ internal static class HttpClientFactory
     {
         var services = new ServiceCollection();
         services
-            .RegisterMetrics()
+            .AddMetrics()
             .AddSingleton<IRedactorProvider>(NullRedactorProvider.Instance)
             .AddTransient<NoRemoteCallHandler>()
             .AddHttpClient(StandardClient, client => client.Timeout = Timeout.InfiniteTimeSpan)
@@ -69,7 +67,7 @@ internal static class HttpClientFactory
     private static void AddHedging(this IServiceCollection services, HedgingClientType clientType)
     {
         var clientBuilder = services.AddHttpClient(clientType.ToString(), client => client.Timeout = Timeout.InfiniteTimeSpan);
-        var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectPipelineByAuthority(FakeClassifications.PublicData);
+        var hedgingBuilder = clientBuilder.AddStandardHedgingHandler().SelectPipelineByAuthority();
         _ = clientBuilder.AddHttpMessageHandler<NoRemoteCallHandler>();
 
         if (clientType.HasFlag(HedgingClientType.NoRoutes))
@@ -85,15 +83,15 @@ internal static class HttpClientFactory
             {
                 options.Groups = Enumerable.Repeat(0, routes).Select(_ =>
                 {
-                    return new EndpointGroup
+                    return new UriEndpointGroup
                     {
                         Endpoints = new[]
                         {
-                            new WeightedEndpoint
+                            new WeightedUriEndpoint
                             {
                                 Uri = new Uri(PrimaryEndpoint)
                             },
-                            new WeightedEndpoint
+                            new WeightedUriEndpoint
                             {
                                 Uri = new Uri(SecondaryEndpoint)
                             }
@@ -108,15 +106,15 @@ internal static class HttpClientFactory
             {
                 options.Groups = Enumerable.Repeat(0, routes).Select(_ =>
                 {
-                    return new WeightedEndpointGroup
+                    return new WeightedUriEndpointGroup
                     {
                         Endpoints = new[]
                         {
-                            new WeightedEndpoint
+                            new WeightedUriEndpoint
                             {
                                 Uri = new Uri(PrimaryEndpoint)
                             },
-                            new WeightedEndpoint
+                            new WeightedUriEndpoint
                             {
                                 Uri = new Uri(SecondaryEndpoint)
                             }

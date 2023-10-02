@@ -57,9 +57,9 @@ public class OrderedRoutingStrategyTest : RoutingStrategyTest
 
         routingBuilder.ConfigureOrderedGroups(options =>
         {
-            var groups = new List<EndpointGroup>(options.Groups)
+            var groups = new List<UriEndpointGroup>(options.Groups)
             {
-                CreateGroup(new WeightedEndpoint { Uri = new Uri("https://b/"), Weight = 20 }),
+                CreateGroup(new WeightedUriEndpoint { Uri = new Uri("https://b/"), Weight = 20 }),
             };
             options.Groups = groups;
         });
@@ -67,7 +67,7 @@ public class OrderedRoutingStrategyTest : RoutingStrategyTest
         routingBuilder.ConfigureOrderedGroups((options, serviceProvider) =>
         {
             serviceProvider.Should().NotBeNull();
-            options.Groups.Add(CreateGroup(new WeightedEndpoint { Uri = new Uri("https://c/"), Weight = 30 }));
+            options.Groups.Add(CreateGroup(new WeightedUriEndpoint { Uri = new Uri("https://c/"), Weight = 30 }));
         });
     }
 
@@ -104,14 +104,14 @@ public class OrderedRoutingStrategyTest : RoutingStrategyTest
         });
     }
 
-    private static EndpointGroup CreateGroup(params string[] endpoints)
+    private static UriEndpointGroup CreateGroup(params string[] endpoints)
     {
-        return CreateGroup(endpoints.Select(v => new WeightedEndpoint { Uri = new Uri(v) }).ToArray());
+        return CreateGroup(endpoints.Select(v => new WeightedUriEndpoint { Uri = new Uri(v) }).ToArray());
     }
 
-    private static EndpointGroup CreateGroup(params WeightedEndpoint[] endpoint)
+    private static UriEndpointGroup CreateGroup(params WeightedUriEndpoint[] endpoint)
     {
-        return new EndpointGroup
+        return new UriEndpointGroup
         {
             Endpoints = endpoint.ToList()
         };

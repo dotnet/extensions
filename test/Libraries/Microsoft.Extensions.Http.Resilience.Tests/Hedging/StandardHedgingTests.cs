@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal;
@@ -195,7 +194,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         Builder.Services.AddSingleton(provider.Object);
         if (customKey == null)
         {
-            Builder.SelectPipelineByAuthority(FakeClassifications.PublicData);
+            Builder.SelectPipelineByAuthority();
         }
         else
         {

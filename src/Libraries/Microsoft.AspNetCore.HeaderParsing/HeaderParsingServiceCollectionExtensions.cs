@@ -6,7 +6,6 @@ using System.Linq;
 using Microsoft.AspNetCore.HeaderParsing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Diagnostics;
 
@@ -32,7 +31,8 @@ public static class HeaderParsingServiceCollectionExtensions
                 .AddSingleton<IHeaderRegistry, HeaderRegistry>()
                 .AddScoped(provider => provider.GetRequiredService<ObjectPool<HeaderParsingFeature.PoolHelper>>().Get())
                 .AddScoped(provider => provider.GetRequiredService<HeaderParsingFeature.PoolHelper>().Feature)
-                .RegisterMetrics();
+                .AddSingleton<HeaderParsingMetrics>()
+                .AddMetrics();
         }
 
         return services;

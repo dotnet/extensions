@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using FluentAssertions;
 using Microsoft.AspNetCore.HeaderParsing.Parsers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
@@ -27,7 +27,9 @@ public sealed class HeaderParsingFeatureTests
     private HttpContext? _context;
 
     private IHeaderRegistry Registry => _registry ??= new HeaderRegistry(_services.BuildServiceProvider(), _options);
-    private HttpContext Context => _context ??= new DefaultHttpContext { RequestServices = _services.BuildServiceProvider() };
+
+    private HttpContext Context
+        => _context ??= new DefaultHttpContext { RequestServices = _services.BuildServiceProvider() };
 
     public HeaderParsingFeatureTests()
     {
@@ -38,14 +40,15 @@ public sealed class HeaderParsingFeatureTests
     [Fact]
     public void Parses_header()
     {
-        using var meter = new Meter<HeaderParsingFeature>();
+        using var meter = new Meter(nameof(Parses_header));
+        var metrics = GetMockedMetrics(meter);
 
         var date = DateTimeOffset.Now.ToString("R", CultureInfo.InvariantCulture);
 
         var key = Registry.Register(CommonHeaders.Date);
         Context.Request.Headers["Date"] = date;
 
-        var feature = new HeaderParsingFeature(Registry, _logger, meter) { Context = Context };
+        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
 
         Assert.True(feature.TryGetHeaderValue(key, out var value, out var _));
         Assert.Equal(date, value.ToString("R", CultureInfo.InvariantCulture));
@@ -54,7 +57,8 @@ public sealed class HeaderParsingFeatureTests
     [Fact]
     public void Parses_multiple_headers()
     {
-        using var meter = new Meter<HeaderParsingFeature>();
+        using var meter = new Meter(nameof(Parses_multiple_headers));
+        var metrics = GetMockedMetrics(meter);
 
         var currentDate = DateTimeOffset.Now.ToString("R", CultureInfo.InvariantCulture);
         var futureDate = DateTimeOffset.Now.AddHours(1).ToString("R", CultureInfo.InvariantCulture);
@@ -63,7 +67,7 @@ public sealed class HeaderParsingFeatureTests
         Context.Request.Headers["Date"] = currentDate;
         Context.Request.Headers["Test"] = futureDate;
 
-        var feature = new HeaderParsingFeature(Registry, _logger, meter) { Context = Context };
+        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
 
         Assert.True(feature.TryGetHeaderValue(key, out var value, out var result));
         Assert.Equal(currentDate, value.ToString("R", CultureInfo.InvariantCulture));
@@ -79,12 +83,13 @@ public sealed class HeaderParsingFeatureTests
     [Fact]
     public void Parses_with_late_binding()
     {
-        using var meter = new Meter<HeaderParsingFeature>();
+        using var meter = new Meter(nameof(Parses_with_late_binding));
+        var metrics = GetMockedMetrics(meter);
         var date = DateTimeOffset.Now.ToString("R", CultureInfo.InvariantCulture);
 
         Context.Request.Headers["Date"] = date;
 
-        var feature = new HeaderParsingFeature(Registry, _logger, meter) { Context = Context };
+        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
 
         var key = Registry.Register(CommonHeaders.Date);
 
@@ -96,8 +101,9 @@ public sealed class HeaderParsingFeatureTests
     [Fact]
     public void TryParse_returns_false_on_header_not_found()
     {
-        using var meter = new Meter<HeaderParsingFeature>();
-        var feature = new HeaderParsingFeature(Registry, _logger, meter) { Context = Context };
+        using var meter = new Meter(nameof(TryParse_returns_false_on_header_not_found));
+        var metrics = GetMockedMetrics(meter);
+        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
         var key = Registry.Register(CommonHeaders.Date);
 
         Assert.False(feature.TryGetHeaderValue(key, out var value, out var _));
@@ -108,12 +114,13 @@ public sealed class HeaderParsingFeatureTests
     [Fact]
     public void TryParse_returns_default_on_header_not_found()
     {
-        using var meter = new Meter<HeaderParsingFeature>();
+        using var meter = new Meter(nameof(TryParse_returns_default_on_header_not_found));
+        var metrics = GetMockedMetrics(meter);
 
         var date = DateTimeOffset.Now.ToString("R", CultureInfo.InvariantCulture);
         _options.Value.DefaultValues.Add("Date", date);
 
-        var feature = new HeaderParsingFeature(Registry, _logger, meter) { Context = Context };
+        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
         var key = Registry.Register(CommonHeaders.Date);
 
         Assert.True(feature.TryGetHeaderValue(key, out var value, out var result));
@@ -126,11 +133,12 @@ public sealed class HeaderParsingFeatureTests
     [Fact]
     public void TryParse_returns_false_on_error()
     {
-        using var meter = new Meter<HeaderParsingFeature>();
+        using var meter = new Meter(nameof(TryParse_returns_false_on_error));
+        var metrics = GetMockedMetrics(meter);
         using var metricCollector = new MetricCollector<long>(meter, @"HeaderParsing.ParsingErrors");
         Context.Request.Headers["Date"] = "Not a date.";
 
-        var feature = new HeaderParsingFeature(Registry, _logger, meter) { Context = Context };
+        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
         var key = Registry.Register(CommonHeaders.Date);
 
         Assert.False(feature.TryGetHeaderValue(key, out var value, out var result));
@@ -148,10 +156,11 @@ public sealed class HeaderParsingFeatureTests
     [Fact]
     public void Dispose_resets_state_and_returns_to_pool()
     {
-        using var meter = new Meter<HeaderParsingFeature>();
+        using var meter = new Meter(nameof(Dispose_resets_state_and_returns_to_pool));
+        var metrics = GetMockedMetrics(meter);
 
         var pool = new Mock<ObjectPool<HeaderParsingFeature.PoolHelper>>(MockBehavior.Strict);
-        var helper = new HeaderParsingFeature.PoolHelper(pool.Object, Registry, _logger, meter);
+        var helper = new HeaderParsingFeature.PoolHelper(pool.Object, Registry, _logger, metrics);
         helper.Feature.Context = Context;
         pool.Setup(x => x.Return(helper));
 
@@ -179,13 +188,14 @@ public sealed class HeaderParsingFeatureTests
     [Fact]
     public void CachingWorks()
     {
-        using var meter = new Meter<HeaderParsingFeature>();
+        using var meter = new Meter(nameof(CachingWorks));
+        var metrics = GetMockedMetrics(meter);
         using var metricCollector = new MetricCollector<long>(meter, @"HeaderParsing.CacheAccess");
 
         Context.Request.Headers[HeaderNames.CacheControl] = "max-age=604800";
 
-        var feature = new HeaderParsingFeature(Registry, _logger, meter) { Context = Context };
-        var feature2 = new HeaderParsingFeature(Registry, _logger, meter) { Context = Context };
+        var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
+        var feature2 = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
         var key = Registry.Register(CommonHeaders.CacheControl);
 
         Assert.True(feature.TryGetHeaderValue(key, out var value1, out var error1));
@@ -198,5 +208,14 @@ public sealed class HeaderParsingFeatureTests
         latest.Value.Should().Be(1);
         latest.Tags["HeaderName"].Should().Be(HeaderNames.CacheControl);
         latest.Tags["Type"].Should().Be("Hit");
+    }
+
+    private static HeaderParsingMetrics GetMockedMetrics(Meter meter)
+    {
+        var meterFactoryMock = new Mock<IMeterFactory>();
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+            .Returns(meter);
+
+        return new HeaderParsingMetrics(meterFactoryMock.Object);
     }
 }

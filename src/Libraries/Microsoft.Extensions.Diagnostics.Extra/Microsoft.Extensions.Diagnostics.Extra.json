@@ -2,6 +2,84 @@
   "Name": "Microsoft.Extensions.Diagnostics.Extra, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
+      "Type": "static class Microsoft.Extensions.DependencyInjection.ApplicationEnricherServiceCollectionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ApplicationEnricherServiceCollectionExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ApplicationEnricherServiceCollectionExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.Enrichment.ApplicationLogEnricherOptions> configure);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ApplicationEnricherServiceCollectionExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.ApplicationName",
+          "Stage": "Stable",
+          "Value": "env_app_name"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.BuildVersion",
+          "Stage": "Stable",
+          "Value": "env_cloud_roleVer"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.DeploymentRing",
+          "Stage": "Stable",
+          "Value": "env_cloud_deploymentRing"
+        },
+        {
+          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.EnvironmentName",
+          "Stage": "Stable",
+          "Value": "env_cloud_env"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.DimensionNames { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Diagnostics.Enrichment.ApplicationLogEnricherOptions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Diagnostics.Enrichment.ApplicationLogEnricherOptions.ApplicationLogEnricherOptions();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ApplicationLogEnricherOptions.ApplicationName { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ApplicationLogEnricherOptions.BuildVersion { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ApplicationLogEnricherOptions.DeploymentRing { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ApplicationLogEnricherOptions.EnvironmentName { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "static class Microsoft.Extensions.DependencyInjection.LatencyConsoleExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -189,84 +267,6 @@
         },
         {
           "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ProcessLogEnricherOptions.ThreadId { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.DependencyInjection.ServiceEnricherServiceCollectionExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ServiceEnricherServiceCollectionExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ServiceEnricherServiceCollectionExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ServiceEnricherServiceCollectionExtensions.AddServiceLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherTags",
-      "Stage": "Stable",
-      "Fields": [
-        {
-          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherTags.ApplicationName",
-          "Stage": "Stable",
-          "Value": "env_app_name"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherTags.BuildVersion",
-          "Stage": "Stable",
-          "Value": "env_cloud_roleVer"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherTags.DeploymentRing",
-          "Stage": "Stable",
-          "Value": "env_cloud_deploymentRing"
-        },
-        {
-          "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherTags.EnvironmentName",
-          "Stage": "Stable",
-          "Value": "env_cloud_env"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.Extensions.Diagnostics.Enrichment.ServiceEnricherTags.DimensionNames { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions.ServiceLogEnricherOptions();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions.ApplicationName { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions.BuildVersion { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions.DeploymentRing { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.Extensions.Diagnostics.Enrichment.ServiceLogEnricherOptions.EnvironmentName { get; set; }",
           "Stage": "Stable"
         }
       ]
