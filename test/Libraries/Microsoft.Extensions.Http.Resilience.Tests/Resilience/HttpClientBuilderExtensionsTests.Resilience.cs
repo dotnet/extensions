@@ -74,7 +74,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [Fact]
     public async Task AddResilienceHandler_EnsureFailureResultContext()
     {
-        using var metricCollector = new MetricCollector<int>(null, "Polly", "resilience-events");
+        using var metricCollector = new MetricCollector<int>(null, "Polly", "resilience.polly.strategy.events");
         var enricher = new TestMetricsEnricher();
         var services = new ServiceCollection()
             .AddResilienceEnrichment()

@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Enrichment.Test;
 
-public class ServiceEnricherExtensionsTests
+public class ApplicationEnricherExtensionsTests
 {
     [Fact]
     public void ServiceLogEnricher_GivenAnyNullArgument_Throws()
@@ -59,7 +59,7 @@ public class ServiceEnricherExtensionsTests
 
         // Assert
         Assert.NotNull(host.Services.GetRequiredService<IStaticLogEnricher>());
-        var options = host.Services.GetRequiredService<IOptions<ServiceLogEnricherOptions>>().Value;
+        var options = host.Services.GetRequiredService<IOptions<ApplicationLogEnricherOptions>>().Value;
         Assert.NotNull(options);
         Assert.False(options.ApplicationName);
         Assert.False(options.EnvironmentName);
@@ -84,8 +84,8 @@ public class ServiceEnricherExtensionsTests
         // Assert
         var enricher = host.Services.GetRequiredService<IStaticLogEnricher>();
         Assert.NotNull(enricher);
-        Assert.IsType<ServiceLogEnricher>(enricher);
-        var options = host.Services.GetRequiredService<IOptions<ServiceLogEnricherOptions>>().Value;
+        Assert.IsType<ApplicationLogEnricher>(enricher);
+        var options = host.Services.GetRequiredService<IOptions<ApplicationLogEnricherOptions>>().Value;
         Assert.NotNull(options);
         Assert.True(options.ApplicationName);
         Assert.False(options.EnvironmentName);
