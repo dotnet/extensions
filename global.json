@@ -11,7 +11,7 @@
       ],
       "aspnetcore/x64": [
         "8.0.0-rtm.23475.5",
-        "$(MicrosoftNETCoreAppRuntimewinx64Version)"
+        "$(MicrosoftAspNetCoreAppRuntimewinx64Version)"
       ]
     }
   },

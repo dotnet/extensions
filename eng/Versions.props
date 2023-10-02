@@ -63,6 +63,7 @@
     <SystemTextEncodingsWebVersion>9.0.0-alpha.1.23470.17</SystemTextEncodingsWebVersion>
     <SystemTextJsonVersion>9.0.0-alpha.1.23470.17</SystemTextJsonVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
+    <MicrosoftAspNetCoreAppRefVersion>9.0.0-alpha.1.23476.39</MicrosoftAspNetCoreAppRefVersion>
     <MicrosoftAspNetCoreAppRuntimewinx64Version>9.0.0-alpha.1.23476.39</MicrosoftAspNetCoreAppRuntimewinx64Version>
     <MicrosoftAspNetCoreMvcTestingVersion>9.0.0-alpha.1.23476.39</MicrosoftAspNetCoreMvcTestingVersion>
     <MicrosoftAspNetCoreTestHostVersion>9.0.0-alpha.1.23476.39</MicrosoftAspNetCoreTestHostVersion>

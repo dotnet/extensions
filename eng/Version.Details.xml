@@ -140,6 +140,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>736dabeca728ccf8b911d96d1b4c575b4d0db7d2</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="9.0.0-alpha.1.23476.39">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>6f8b962b73cd7e252a76f1b562db61202effc310</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="9.0.0-alpha.1.23476.39">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>6f8b962b73cd7e252a76f1b562db61202effc310</Sha>
