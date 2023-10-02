@@ -57,6 +57,8 @@ public static class HttpLoggingServiceCollectionExtensions
     /// <returns>The original service collection.</returns>
     public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, IConfigurationSection section)
     {
+        _ = Throw.IfNull(section);
+
         return services.AddHttpLoggingRedaction(configureRedaction: o =>
         {
             o.RequestPathLoggingMode = section.GetSection(nameof(LoggingRedactionOptions.RequestPathLoggingMode)).Get<IncomingPathLoggingMode>();
@@ -70,30 +72,36 @@ public static class HttpLoggingServiceCollectionExtensions
                 }
             }
 
-            var routeParams = section.GetSection(nameof(LoggingRedactionOptions.RouteParameterDataClasses)).Get<Dictionary<string, DataClassification>>();
-            if (routeParams != null)
+            var routeParams = section.GetSection(nameof(LoggingRedactionOptions.RouteParameterDataClasses));
+            foreach (var entry in routeParams.GetChildren())
             {
-                foreach (var param in routeParams)
+                var taxonomy = entry.GetValue<string>(nameof(DataClassification.TaxonomyName));
+                var value = entry.GetValue<ulong>(nameof(DataClassification.Value));
+                if (taxonomy != null)
                 {
-                    o.RouteParameterDataClasses.Add(param.Key, param.Value);
+                    o.RouteParameterDataClasses.Add(entry.Key, new DataClassification(taxonomy, value));
                 }
             }
 
-            var requestHeaders = section.GetSection(nameof(LoggingRedactionOptions.RequestHeadersDataClasses)).Get<Dictionary<string, DataClassification>>();
-            if (requestHeaders != null)
+            var requestHeaders = section.GetSection(nameof(LoggingRedactionOptions.RequestHeadersDataClasses));
+            foreach (var entry in requestHeaders.GetChildren())
             {
-                foreach (var param in requestHeaders)
+                var taxonomy = entry.GetValue<string>(nameof(DataClassification.TaxonomyName));
+                var value = entry.GetValue<ulong>(nameof(DataClassification.Value));
+                if (taxonomy != null)
                 {
-                    o.RequestHeadersDataClasses.Add(param.Key, param.Value);
+                    o.RequestHeadersDataClasses.Add(entry.Key, new DataClassification(taxonomy, value));
                 }
             }
 
-            var responseHeaders = section.GetSection(nameof(LoggingRedactionOptions.ResponseHeadersDataClasses)).Get<Dictionary<string, DataClassification>>();
-            if (responseHeaders != null)
+            var responseHeaders = section.GetSection(nameof(LoggingRedactionOptions.ResponseHeadersDataClasses));
+            foreach (var entry in responseHeaders.GetChildren())
             {
-                foreach (var param in responseHeaders)
+                var taxonomy = entry.GetValue<string>(nameof(DataClassification.TaxonomyName));
+                var value = entry.GetValue<ulong>(nameof(DataClassification.Value));
+                if (taxonomy != null)
                 {
-                    o.ResponseHeadersDataClasses.Add(param.Key, param.Value);
+                    o.ResponseHeadersDataClasses.Add(entry.Key, new DataClassification(taxonomy, value));
                 }
             }
         });

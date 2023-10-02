@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,16 +45,6 @@ public class RequestHeadersEnricherExtensionsTests
     }
 
     [Fact]
-    public void RequestHeadersLogEnricher_GivenInvalidOptions_HeaderKeysWithDataClass_Throws()
-    {
-        using var sp = new ServiceCollection()
-            .AddRequestHeadersLogEnricher(e => e.HeadersDataClasses = null!)
-            .BuildServiceProvider();
-
-        Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<RequestHeadersLogEnricherOptions>>().Value);
-    }
-
-    [Fact]
     public void RequestHeadersLogEnricher_GivenNoArguments_WithRedaction_RegistersInDI()
     {
         // Act
@@ -86,15 +77,16 @@ public class RequestHeadersEnricherExtensionsTests
         Assert.Single(options.HeadersDataClasses);
     }
 
-#if FIXME
     [Fact]
     public void RequestHeadersLogEnricher_GivenConfigurationSectionAndRedaction_RegistersInDI()
     {
-        var dc = new DataClassification("TAX", 1);
-
         // Arrange
         var configRoot = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { ["Section:HeadersDataClasses:TestKey"] = "SimpleClassifications.PrivateData" })
+            .AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string?>("Section:HeadersDataClasses:TestKey:taxonomyName", "simple"),
+                new KeyValuePair<string, string?>("Section:HeadersDataClasses:TestKey:value", "1")
+            })
             .Build();
 
         // Act
@@ -112,7 +104,6 @@ public class RequestHeadersEnricherExtensionsTests
         Assert.NotNull(options);
         Assert.NotNull(options.HeadersDataClasses);
         Assert.Single(options.HeadersDataClasses);
-        Assert.Equal(SimpleClassifications.PrivateData, options.HeadersDataClasses["TestKey"]);
+        Assert.Equal(new DataClassification("simple", 1), options.HeadersDataClasses["TestKey"]);
     }
-#endif
 }

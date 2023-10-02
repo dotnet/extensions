@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics.Logging;
+using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Shared.Diagnostics;
 
@@ -61,8 +62,19 @@ public static class RequestHeadersEnricherServiceCollectionExtensions
         _ = Throw.IfNull(section);
 
         return services
-            .Configure<RequestHeadersLogEnricherOptions>(section)
-            .AddLogEnricherOptions(_ => { })
+            .AddLogEnricherOptions(o =>
+            {
+                var requestHeaders = section.GetSection(nameof(RequestHeadersLogEnricherOptions.HeadersDataClasses));
+                foreach (var entry in requestHeaders.GetChildren())
+                {
+                    var taxonomy = entry.GetValue<string>(nameof(DataClassification.TaxonomyName));
+                    var value = entry.GetValue<ulong>(nameof(DataClassification.Value));
+                    if (taxonomy != null)
+                    {
+                        o.HeadersDataClasses.Add(entry.Key, new DataClassification(taxonomy, value));
+                    }
+                }
+            })
             .RegisterRequestHeadersEnricher();
     }
 

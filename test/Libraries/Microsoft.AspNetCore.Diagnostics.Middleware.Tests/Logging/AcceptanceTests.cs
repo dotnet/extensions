@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Http.Diagnostics;
@@ -704,6 +705,50 @@ public partial class AcceptanceTests
                     Assert.Equal(7, logCollector.GetSnapshot()[0].StructuredState!.Count);
                 }
             });
+    }
+
+    [Fact]
+    public async Task HttpLogging_LogRecordIsNotCreated_If_Disabled()
+    {
+        await RunAsync(
+            LogLevel.Information,
+            services => services.AddHttpLoggingRedaction(x =>
+            {
+            }).AddHttpLogging(o =>
+            {
+                o.LoggingFields = HttpLoggingFields.None;
+            }),
+            async (logCollector, client) =>
+            {
+                using var response = await client.GetAsync("").ConfigureAwait(false);
+
+                Assert.True(response.IsSuccessStatusCode);
+                Assert.Equal(0, logCollector.Count);
+            });
+    }
+
+    [Fact]
+    public async Task HttpLogging_EnricherThrows_Logged()
+    {
+        await RunAsync(
+            LogLevel.Debug,
+            services => services.AddHttpLoggingRedaction()
+            .AddHttpLogEnricher<ThrowingEnricher>(),
+            async (logCollector, client) =>
+            {
+                using var response = await client.GetAsync("").ConfigureAwait(false);
+
+                Assert.True(response.IsSuccessStatusCode);
+                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
+                Assert.Equal(2, logCollector.Count);
+                Assert.IsType<InvalidOperationException>(logCollector.GetSnapshot()[0].Exception);
+                Assert.Equal(7, logCollector.GetSnapshot()[1].StructuredState!.Count);
+            });
+    }
+
+    private class ThrowingEnricher : IHttpLogEnricher
+    {
+        public void Enrich(IEnrichmentTagCollector collector, HttpContext httpContext) => throw new InvalidOperationException();
     }
 }
 #endif
