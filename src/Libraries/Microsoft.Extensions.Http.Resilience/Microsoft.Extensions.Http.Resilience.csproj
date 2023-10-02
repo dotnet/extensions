@@ -9,7 +9,6 @@
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMetricsGenerator>true</UseMetricsGenerator>
     <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
-    <InjectxxH3OnLegacy>true</InjectxxH3OnLegacy>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedThrow>true</InjectSharedThrow>
     <InjectDiagnosticAttributesOnLegacy>true</InjectDiagnosticAttributesOnLegacy>
