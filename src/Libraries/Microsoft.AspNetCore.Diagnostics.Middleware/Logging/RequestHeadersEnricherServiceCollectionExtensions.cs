@@ -23,7 +23,6 @@ public static class RequestHeadersEnricherServiceCollectionExtensions
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     public static IServiceCollection AddRequestHeadersLogEnricher(this IServiceCollection services)
         => Throw.IfNull(services)
-        .AddLogEnricherOptions(_ => { })
         .RegisterRequestHeadersEnricher();
 
     /// <summary>
