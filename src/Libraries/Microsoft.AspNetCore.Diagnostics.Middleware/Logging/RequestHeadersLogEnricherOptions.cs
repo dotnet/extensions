@@ -21,7 +21,6 @@ public class RequestHeadersLogEnricherOptions
     /// <remarks>
     /// Default value is an empty dictionary.
     /// </remarks>
-    [Required]
     [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
     public IDictionary<string, DataClassification> HeadersDataClasses { get; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
 }
