@@ -39,7 +39,7 @@ public static class RequestHeadersEnricherServiceCollectionExtensions
         _ = Throw.IfNull(configure);
 
         return services
-            .AddLogEnricherOptions(configure)
+            .Configure(configure)
             .RegisterRequestHeadersEnricher();
     }
 
@@ -62,7 +62,7 @@ public static class RequestHeadersEnricherServiceCollectionExtensions
         _ = Throw.IfNull(section);
 
         return services
-            .AddLogEnricherOptions(o =>
+            .Configure<RequestHeadersLogEnricherOptions>(o =>
             {
                 var requestHeaders = section.GetSection(nameof(RequestHeadersLogEnricherOptions.HeadersDataClasses));
                 foreach (var entry in requestHeaders.GetChildren())
@@ -82,9 +82,4 @@ public static class RequestHeadersEnricherServiceCollectionExtensions
         => services
         .AddHttpContextAccessor()
         .AddLogEnricher<RequestHeadersLogEnricher>();
-
-    private static IServiceCollection AddLogEnricherOptions(this IServiceCollection services, Action<RequestHeadersLogEnricherOptions> configure)
-        => services
-        .Configure(configure)
-        .Services;
 }
