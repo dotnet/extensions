@@ -346,6 +346,14 @@
         {
           "Member": "void Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.EnableReloads<TOptions>(string? name = null);",
           "Stage": "Stable"
+        },
+        {
+          "Member": "TOptions Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.GetOptions<TOptions>(string name);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.OnPipelineDisposed(System.Action callback);",
+          "Stage": "Stable"
         }
       ],
       "Properties": [
