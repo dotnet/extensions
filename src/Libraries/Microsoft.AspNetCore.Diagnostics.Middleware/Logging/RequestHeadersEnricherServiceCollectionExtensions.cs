@@ -85,7 +85,6 @@ public static class RequestHeadersEnricherServiceCollectionExtensions
 
     private static IServiceCollection AddLogEnricherOptions(this IServiceCollection services, Action<RequestHeadersLogEnricherOptions> configure)
         => services
-        .AddOptionsWithValidateOnStart<RequestHeadersLogEnricherOptions, RequestHeadersLogEnricherOptionsValidator>()
         .Configure(configure)
         .Services;
 }
