@@ -38,7 +38,7 @@ public interface IRedactionBuilder
     /// <returns>The value of this instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="classifications" /> is <see langword="null" />.</exception>
     [Experimental(diagnosticId: Experiments.Compliance)]
-    IRedactionBuilder SetRedactor<T>(params IReadOnlySet<DataClassification>[] classifications)
+    IRedactionBuilder SetRedactor<T>(params IReadOnlyList<DataClassification>[] classifications)
         where T : Redactor;
 
     /// <summary>

@@ -23,5 +23,5 @@ public sealed class NullRedactorProvider : IRedactorProvider
 
     /// <inheritdoc/>
     [Experimental(diagnosticId: Experiments.Compliance)]
-    public Redactor GetRedactor(IReadOnlySet<DataClassification> classifications) => NullRedactor.Instance;
+    public Redactor GetRedactor(IReadOnlyList<DataClassification> classifications) => NullRedactor.Instance;
 }

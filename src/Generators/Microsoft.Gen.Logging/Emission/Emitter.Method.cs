@@ -561,14 +561,12 @@ internal sealed partial class Emitter : EmitterBase
     {
         if (classificationTypes.Count == 1)
         {
-            return $"global::System.Collections.Frozen.FrozenSet.ToFrozenSet" +
-                $"(new global::System.Collections.Generic.HashSet<global::Microsoft.Extensions.Compliance.Classification.DataClassification> {{{_classificationMap[classificationTypes.First()]}}})";
+            return $"new global::System.Collections.Generic.List<global::Microsoft.Extensions.Compliance.Classification.DataClassification> {{{_classificationMap[classificationTypes.First()]}}}";
         }
 
         var sb = _sbPool.GetStringBuilder();
 
-        _ = sb.Append("global::System.Collections.Frozen.FrozenSet.ToFrozenSet(" +
-            "new global::System.Collections.Generic.HashSet<global::Microsoft.Extensions.Compliance.Classification.DataClassification> {");
+        _ = sb.Append("new global::System.Collections.Generic.List<global::Microsoft.Extensions.Compliance.Classification.DataClassification> {");
 
         int i = 0;
 
@@ -583,7 +581,7 @@ internal sealed partial class Emitter : EmitterBase
             i++;
         }
 
-        _ = sb.Append("})");
+        _ = sb.Append('}');
 
         return sb.ToString();
     }

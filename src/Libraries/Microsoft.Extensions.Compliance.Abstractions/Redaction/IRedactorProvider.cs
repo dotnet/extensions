@@ -26,5 +26,5 @@ public interface IRedactorProvider
     /// <param name="classifications">Data classifications of the data to redact.</param>
     /// <returns>A redactor suitable to redact data of the given classes.</returns>
     [Experimental(diagnosticId: Experiments.Compliance)]
-    Redactor GetRedactor(IReadOnlySet<DataClassification> classifications);
+    Redactor GetRedactor(IReadOnlyList<DataClassification> classifications);
 }

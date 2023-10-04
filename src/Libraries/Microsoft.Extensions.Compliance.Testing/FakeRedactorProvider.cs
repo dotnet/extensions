@@ -46,7 +46,7 @@ public class FakeRedactorProvider : IRedactorProvider
 
     /// <inheritdoc/>
     [Experimental(diagnosticId: Experiments.Compliance)]
-    public Redactor GetRedactor(IReadOnlySet<DataClassification> classifications)
+    public Redactor GetRedactor(IReadOnlyList<DataClassification> classifications)
     {
         var order = Interlocked.Increment(ref _redactorsRequestedSoFar);
 

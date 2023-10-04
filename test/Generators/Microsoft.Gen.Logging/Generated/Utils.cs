@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -79,7 +80,7 @@ internal static class Utils
         {
             builder.SetRedactor<PlusRedactor>(new PublicDataAttribute().Classification);
             builder.SetRedactor<MinusRedactor>(new PrivateDataAttribute().Classification);
-            builder.SetRedactor<HashRedactor>(new PrivateDataAttribute().Classification | new PublicDataAttribute().Classification);
+            builder.SetRedactor<HashRedactor>(new List<DataClassification> { new PrivateDataAttribute().Classification, new PublicDataAttribute().Classification });
             builder.SetFallbackRedactor<StarRedactor>();
         });
 

@@ -41,21 +41,21 @@ public static class LoggerMessageStateTests
         Assert.Equal(Value, lms.TagArray[0].Value);
         Assert.Equal("Property Name=Value", lms.ToString());
 
-        var set = new HashSet<DataClassification> { FakeClassifications.PrivateData };
+        var set = new List<DataClassification> { FakeClassifications.PrivateData };
 
         index = lms.ReserveClassifiedTagSpace(1);
-        lms.ClassifiedTagArray[index] = new(PropName, Value, set.ToFrozenSet());
+        lms.ClassifiedTagArray[index] = new(PropName, Value, set);
         Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
-        Assert.Equal("Property Name=Value,Property Name=System.Collections.Frozen.SmallValueTypeDefaultComparerFrozenSet`1[Microsoft.Extensions.Compliance.Classification.DataClassification]",
+        Assert.Equal("Property Name=Value,Property Name=System.Collections.Generic.List`1[Microsoft.Extensions.Compliance.Classification.DataClassification]",
             lms.ToString());
 
         Assert.Equal(1, lms.ClassifiedTagsCount);
         Assert.Equal(PropName, lms.ClassifiedTagArray[0].Name);
         Assert.Equal(Value, lms.ClassifiedTagArray[0].Value);
-        Assert.Equal(set.ToFrozenSet(), lms.ClassifiedTagArray[0].ClassificationsSet);
-        Assert.Equal("Property Name=Value,Property Name=System.Collections.Frozen.SmallValueTypeDefaultComparerFrozenSet`1[Microsoft.Extensions.Compliance.Classification.DataClassification]",
+        Assert.Equal(set, lms.ClassifiedTagArray[0].ClassificationsSet);
+        Assert.Equal("Property Name=Value,Property Name=System.Collections.Generic.List`1[Microsoft.Extensions.Compliance.Classification.DataClassification]",
             lms.ToString());
 
         index = lms.ReserveTagSpace(1);
@@ -66,7 +66,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(Value, lms.TagArray[0].Value);
         Assert.Equal(PropName + "X", lms.TagArray[1].Key);
         Assert.Equal(Value, lms.TagArray[1].Value);
-        Assert.Equal("Property Name=Value,Property NameX=Value,Property Name=System.Collections.Frozen.SmallValueTypeDefaultComparerFrozenSet`1" +
+        Assert.Equal("Property Name=Value,Property NameX=Value,Property Name=System.Collections.Generic.List`1" +
             "[Microsoft.Extensions.Compliance.Classification.DataClassification]", lms.ToString());
     }
 
@@ -103,9 +103,9 @@ public static class LoggerMessageStateTests
         Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
 
-        var set = new HashSet<DataClassification> { FakeClassifications.PrivateData };
+        var set = new List<DataClassification> { FakeClassifications.PrivateData };
 
-        collector.Add(PropName, Value, set.ToFrozenSet());
+        collector.Add(PropName, Value, set);
         Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
@@ -123,7 +123,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
 
-        collector.Add(PropName, Value, set.ToFrozenSet());
+        collector.Add(PropName, Value, set);
         Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
@@ -160,7 +160,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(Value, list[0].Value);
 
         index = lms.ReserveClassifiedTagSpace(1);
-        lms.ClassifiedTagArray[index] = new(PropName, Value, new HashSet<DataClassification> { FakeClassifications.PrivateData }.ToFrozenSet());
+        lms.ClassifiedTagArray[index] = new(PropName, Value, new List<DataClassification> { FakeClassifications.PrivateData });
         Assert.Equal(1, list.Count);
         Assert.Equal(PropName, list[0].Key);
         Assert.Equal(Value, list[0].Value);

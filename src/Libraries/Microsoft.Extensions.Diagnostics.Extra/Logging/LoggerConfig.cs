@@ -18,7 +18,7 @@ internal sealed class LoggerConfig
         bool useFileInfoForStackTraces,
         bool includeExceptionMessagesInStackTraces,
         int maxStackTraceLength,
-        Func<IReadOnlySet<DataClassification>, Redactor> getRedactor)
+        Func<IReadOnlyList<DataClassification>, Redactor> getRedactor)
     {
         StaticTags = staticTags;
         Enrichers = enrichers;
@@ -35,5 +35,5 @@ internal sealed class LoggerConfig
     public bool UseFileInfoForStackTraces { get; }
     public bool IncludeExceptionMessageInStackTraces { get; }
     public int MaxStackTraceLength { get; }
-    public Func<IReadOnlySet<DataClassification>, Redactor> GetRedactor { get; }
+    public Func<IReadOnlyList<DataClassification>, Redactor> GetRedactor { get; }
 }

@@ -37,9 +37,9 @@ internal sealed class RedactorProvider : IRedactorProvider
         return _fallbackRedactor;
     }
 
-    public Redactor GetRedactor(IReadOnlySet<DataClassification> classifications)
+    public Redactor GetRedactor(IReadOnlyList<DataClassification> classifications)
     {
-        var result = _classSetRedactors.Find(kvp => kvp.Key == classifications);
+        var result = _classSetRedactors.Find(kvp => kvp.Key.Equals(classifications.ToFrozenSet()));
         if (result.Value != null)
         {
             return result.Value;

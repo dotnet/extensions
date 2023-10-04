@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Classification;
@@ -64,9 +63,9 @@ public static class ExtendedLoggerTests
         lms.TagArray[index] = new("PK2", "PV2");
 
         index = lms.ReserveClassifiedTagSpace(2);
-        var set = new HashSet<DataClassification> { FakeClassifications.PrivateData };
-        lms.ClassifiedTagArray[index] = new("PK3", "PV3", set.ToFrozenSet());
-        lms.ClassifiedTagArray[index + 1] = new("PK4", null, set.ToFrozenSet());
+        var set = new List<DataClassification> { FakeClassifications.PrivateData };
+        lms.ClassifiedTagArray[index] = new("PK3", "PV3", set);
+        lms.ClassifiedTagArray[index + 1] = new("PK4", null, set);
 
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
 

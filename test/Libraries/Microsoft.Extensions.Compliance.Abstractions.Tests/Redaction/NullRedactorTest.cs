@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Xunit;
 
@@ -57,6 +58,24 @@ public static class NullRedactorTest
         var redactor3 = rp.GetRedactor(dc2);
         var redactor4 = rp.GetRedactor(dc3);
 
+        Assert.Equal(redactor1, redactor2);
+        Assert.Equal(redactor1, redactor3);
+        Assert.Equal(redactor1, redactor4);
+        Assert.IsAssignableFrom<NullRedactor>(redactor1);
+    }
+
+    [Fact]
+    public static void NullRedactorProvider_Returns_NullRedactor()
+    {
+        var dc1 = new DataClassification("TAX", 1);
+        var dc2 = new DataClassification("TAX", 2);
+        var dc3 = new DataClassification("TAX", 4);
+
+        var rp = NullRedactorProvider.Instance;
+        var redactor1 = NullRedactor.Instance;
+        var redactor2 = rp.GetRedactor(new List<DataClassification> { dc1, dc2, dc3 });
+        var redactor3 = rp.GetRedactor(new List<DataClassification> { dc1, dc3 });
+        var redactor4 = rp.GetRedactor(new List<DataClassification> { dc3 });
         Assert.Equal(redactor1, redactor2);
         Assert.Equal(redactor1, redactor3);
         Assert.Equal(redactor1, redactor4);

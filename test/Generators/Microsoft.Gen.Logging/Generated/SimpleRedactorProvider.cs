@@ -22,6 +22,6 @@ namespace TestClasses
         }
 
         public Redactor GetRedactor(DataClassification dataClass) => new SimpleRedactor(_replacement);
-        public Redactor GetRedactor(IReadOnlySet<DataClassification> classifications) => new SimpleRedactor(_replacement);
+        public Redactor GetRedactor(IReadOnlyList<DataClassification> classifications) => new SimpleRedactor(_replacement);
     }
 }

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections;
-using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Extensions.Compliance.Classification;
@@ -36,7 +35,7 @@ public sealed class LogMethodHelper : List<KeyValuePair<string, object?>>, ITagC
     }
 
     /// <inheritdoc/>
-    public void Add(string tagName, object? tagValue, FrozenSet<DataClassification> classificationSet) => Add(tagName, tagValue);
+    public void Add(string tagName, object? tagValue, IReadOnlyList<DataClassification> classificationSet) => Add(tagName, tagValue);
 
     /// <summary>
     /// Resets state of this container as described in <see cref="IResettable.TryReset"/>.

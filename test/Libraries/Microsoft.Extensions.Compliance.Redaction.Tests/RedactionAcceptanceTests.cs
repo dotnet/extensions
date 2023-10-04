@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -70,6 +71,21 @@ public class RedactionAcceptanceTests
         var redactor = redactorProvider.GetRedactor(dc);
 
         Assert.IsAssignableFrom<Redactor>(redactor);
+        Assert.IsAssignableFrom<IRedactorProvider>(redactorProvider);
+    }
+
+    [Fact]
+    public void Redaction_Is_Registered_In_Service_Collection()
+    {
+        var dc1 = new DataClassification("TAX", 1);
+        var dc2 = new DataClassification("TAX", 2);
+        using var services = new ServiceCollection()
+            .AddLogging()
+            .AddRedaction(x => x.SetRedactor<FakePlaintextRedactor>(new List<DataClassification> { dc1, dc2 }))
+            .BuildServiceProvider();
+
+        var redactorProvider = services.GetService<IRedactorProvider>();
+
         Assert.IsAssignableFrom<IRedactorProvider>(redactorProvider);
     }
 }

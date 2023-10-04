@@ -46,7 +46,7 @@ internal sealed class RedactionBuilder : IRedactionBuilder
         return this;
     }
 
-    public IRedactionBuilder SetRedactor<T>(params IReadOnlySet<DataClassification>[] classifications)
+    public IRedactionBuilder SetRedactor<T>(params IReadOnlyList<DataClassification>[] classifications)
         where T : Redactor
     {
         _ = Throw.IfNull(classifications);

@@ -23,7 +23,7 @@ public readonly struct RedactorRequested : IEquatable<RedactorRequested>
     /// Gets the set of data classifications for which the redactor was returned.
     /// </summary>
     [Experimental(diagnosticId: Experiments.Compliance)]
-    public IReadOnlySet<DataClassification>? DataClassifications { get; }
+    public IReadOnlyList<DataClassification>? DataClassifications { get; }
 
     /// <summary>
     /// Gets the order in which the redactor was requested.
@@ -47,7 +47,7 @@ public readonly struct RedactorRequested : IEquatable<RedactorRequested>
     /// <param name="classifications">Data classes for which redactor was used.</param>
     /// <param name="sequenceNumber">Order in which the request was used.</param>
     [Experimental(diagnosticId: Experiments.Compliance)]
-    public RedactorRequested(IReadOnlySet<DataClassification> classifications, int sequenceNumber)
+    public RedactorRequested(IReadOnlyList<DataClassification> classifications, int sequenceNumber)
     {
         DataClassifications = classifications;
         SequenceNumber = sequenceNumber;
