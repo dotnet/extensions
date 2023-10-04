@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Pools;
 
@@ -203,7 +202,7 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 var jr = JustInTimeRedactor.Get();
                 jr.Value = cp.Value;
-                jr.Redactor = config.GetRedactor((IReadOnlySet<DataClassification>)cp.ClassificationsSet);
+                jr.Redactor = config.GetRedactor(cp.ClassificationsSet);
                 jr.Next = jitRedactors;
                 jitRedactors = jr;
 
