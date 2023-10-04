@@ -21,8 +21,10 @@ internal sealed class WindowsCounters
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         var tcpTag = KeyValuePair.Create<string, object?>("network.transport", "tcp");
-        var tcpVersionFourTag = KeyValuePair.Create<string, object?>("network.transport.version", "ipv4");
-        var tcpVersionSixTag = KeyValuePair.Create<string, object?>("network.transport.version", "ipv6");
+
+        // These are covered in https://github.com/open-telemetry/semantic-conventions/blob/main/docs/rpc/rpc-metrics.md#attributes:
+        var tcpVersionFourTag = KeyValuePair.Create<string, object?>("network.type", "ipv4");
+        var tcpVersionSixTag = KeyValuePair.Create<string, object?>("network.type", "ipv6");
 
         // TODO: these are heavily rewritten to align with
         // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/system/system-metrics.md#metric-systemnetworkconnections
