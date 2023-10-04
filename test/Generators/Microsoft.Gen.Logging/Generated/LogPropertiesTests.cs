@@ -182,9 +182,9 @@ public class LogPropertiesTests
         Assert.Equal("I refuse to be formatted", ss["p_P4"]);
         Assert.Null(ss["p_P5"]);
         Assert.Null(ss["p_P6"]);
-        Assert.Equal("-", ss["p_P7"]);
+        Assert.Equal("*", ss["p_P7"]);
         Assert.Null(ss["p_P8"]);
-        Assert.Equal("------------------------", ss["p_P9"]);
+        Assert.Equal("************************", ss["p_P9"]);
         Assert.Equal("null", ss["p_P10"]);
 
         collector.Clear();
@@ -195,8 +195,8 @@ public class LogPropertiesTests
         Assert.Equal(4, ss.Count);
         Assert.Equal(props.P2.ToString(null, CultureInfo.InvariantCulture), ss["p_P2"]);
         Assert.Equal("I refuse to be formatted", ss["p_P4"]);
-        Assert.Equal("-", ss["p_P7"]);
-        Assert.Equal("------------------------", ss["p_P9"]);
+        Assert.Equal("*", ss["p_P7"]);
+        Assert.Equal("************************", ss["p_P9"]);
     }
 
     [Fact]

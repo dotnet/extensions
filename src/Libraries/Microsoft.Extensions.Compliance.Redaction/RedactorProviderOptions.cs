@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 
@@ -21,4 +22,9 @@ internal sealed class RedactorProviderOptions
     /// Gets a dictionary of classification-specific redactors.
     /// </summary>
     public Dictionary<DataClassification, Type> Redactors { get; } = new();
+
+    /// <summary>
+    /// Gets a dictionary of classification-specific redactors.
+    /// </summary>
+    public Dictionary<FrozenSet<DataClassification>, Type> SetRedactors { get; } = new();
 }

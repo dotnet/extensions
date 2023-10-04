@@ -561,20 +561,29 @@ internal sealed partial class Emitter : EmitterBase
     {
         if (classificationTypes.Count == 1)
         {
-            return _classificationMap[classificationTypes.First()];
+            return $"global::System.Collections.Frozen.FrozenSet.ToFrozenSet" +
+                $"(new global::System.Collections.Generic.HashSet<global::Microsoft.Extensions.Compliance.Classification.DataClassification> {{{_classificationMap[classificationTypes.First()]}}})";
         }
 
         var sb = _sbPool.GetStringBuilder();
 
+        _ = sb.Append("global::System.Collections.Frozen.FrozenSet.ToFrozenSet(" +
+            "new global::System.Collections.Generic.HashSet<global::Microsoft.Extensions.Compliance.Classification.DataClassification> {");
+
+        int i = 0;
+
         foreach (var ct in classificationTypes)
         {
-            if (sb.Length > 0)
+            if (i > 0)
             {
-                _ = sb.Append(" | ");
+                _ = sb.Append(" , ");
             }
 
             _ = sb.Append(_classificationMap[ct]);
+            i++;
         }
+
+        _ = sb.Append("})");
 
         return sb.ToString();
     }

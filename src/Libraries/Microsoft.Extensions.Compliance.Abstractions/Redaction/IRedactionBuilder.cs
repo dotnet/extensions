@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Compliance.Redaction;
 
@@ -25,6 +28,17 @@ public interface IRedactionBuilder
     /// <returns>The value of this instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="classifications" /> is <see langword="null" />.</exception>
     IRedactionBuilder SetRedactor<T>(params DataClassification[] classifications)
+        where T : Redactor;
+
+    /// <summary>
+    /// Sets the redactor to use for a set of data classes.
+    /// </summary>
+    /// <typeparam name="T">Redactor type.</typeparam>
+    /// <param name="classifications">The data classes for which the redactor type should be used.</param>
+    /// <returns>The value of this instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="classifications" /> is <see langword="null" />.</exception>
+    [Experimental(diagnosticId: Experiments.Compliance)]
+    IRedactionBuilder SetRedactor<T>(params IReadOnlySet<DataClassification>[] classifications)
         where T : Redactor;
 
     /// <summary>

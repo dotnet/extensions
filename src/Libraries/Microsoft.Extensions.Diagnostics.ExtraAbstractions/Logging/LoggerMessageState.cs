@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Extensions.Compliance.Classification;
@@ -92,11 +93,11 @@ public sealed partial class LoggerMessageState
     /// </summary>
     /// <param name="name">The name of the tag.</param>
     /// <param name="value">The value.</param>
-    /// <param name="classification">The data classification of the tag.</param>
-    public void AddClassifiedTag(string name, object? value, DataClassification classification)
+    /// <param name="classificationSet">The data classification set of the tag.</param>
+    public void AddClassifiedTag(string name, object? value, FrozenSet<DataClassification> classificationSet)
     {
         var index = ReserveClassifiedTagSpace(1);
-        ClassifiedTagArray[index] = new(name, value, classification);
+        ClassifiedTagArray[index] = new(name, value, classificationSet);
     }
 
     /// <summary>
@@ -152,7 +153,7 @@ public sealed partial class LoggerMessageState
             // note we don't emit the value here as that could lead to a privacy incident.
             _ = sb.Append(_classifiedTags[i].Name);
             _ = sb.Append('=');
-            _ = sb.Append(_classifiedTags[i].Classification.ToString());
+            _ = sb.Append(_classifiedTags[i].ClassificationsSet.ToString());
         }
 
         var result = sb.ToString();

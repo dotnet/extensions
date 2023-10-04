@@ -507,7 +507,7 @@ public class LogMethodTests
         var instance = new NonStaticNullableTestClass(logger);
         instance.M2("One", "Two", "Three");
         Assert.Null(collector.LatestRecord.Exception);
-        Assert.Equal("M2 --- --- -----", collector.LatestRecord.Message);
+        Assert.Equal("M2 *** *** *****", collector.LatestRecord.Message);
 
         collector.Clear();
         instance = new NonStaticNullableTestClass(null);

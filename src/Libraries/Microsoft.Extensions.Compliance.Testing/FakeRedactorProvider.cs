@@ -1,9 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Compliance.Testing;
 
@@ -37,6 +40,17 @@ public class FakeRedactorProvider : IRedactorProvider
         var order = Interlocked.Increment(ref _redactorsRequestedSoFar);
 
         Collector.Append(new RedactorRequested(classification, order));
+
+        return _redactor;
+    }
+
+    /// <inheritdoc/>
+    [Experimental(diagnosticId: Experiments.Compliance)]
+    public Redactor GetRedactor(IReadOnlySet<DataClassification> classifications)
+    {
+        var order = Interlocked.Increment(ref _redactorsRequestedSoFar);
+
+        Collector.Append(new RedactorRequested(classifications, order));
 
         return _redactor;
     }

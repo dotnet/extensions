@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Diagnostics.Enrichment;
@@ -33,7 +34,9 @@ public static class LogMethodHelperTests
         Assert.Empty(list);
         Assert.Equal(string.Empty, list.ParameterName);
 
-        list.Add(PropName, Value, DataClassification.None);
+        var set = new HashSet<DataClassification> { DataClassification.None };
+
+        list.Add(PropName, Value, set.ToFrozenSet());
         Assert.Single(list);
         Assert.Equal(PropName, list[0].Key);
         Assert.Equal(Value, list[0].Value);

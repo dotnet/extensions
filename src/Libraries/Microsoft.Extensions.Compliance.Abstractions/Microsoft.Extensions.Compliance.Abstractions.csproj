@@ -11,6 +11,7 @@
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectIReadOnlySetOnLegacy>true</InjectIReadOnlySetOnLegacy>
   </PropertyGroup>
 
   <PropertyGroup>

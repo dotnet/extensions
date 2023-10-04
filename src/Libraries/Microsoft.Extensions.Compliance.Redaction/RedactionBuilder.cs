@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Frozen;
+using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -39,6 +41,21 @@ internal sealed class RedactionBuilder : IRedactionBuilder
             var redactorType = typeof(T);
             Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(Redactor), redactorType));
             _ = Services.Configure<RedactorProviderOptions>(options => options.Redactors[c] = redactorType);
+        }
+
+        return this;
+    }
+
+    public IRedactionBuilder SetRedactor<T>(params IReadOnlySet<DataClassification>[] classifications)
+        where T : Redactor
+    {
+        _ = Throw.IfNull(classifications);
+
+        foreach (var c in classifications)
+        {
+            var redactorType = typeof(T);
+            Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(Redactor), redactorType));
+            _ = Services.Configure<RedactorProviderOptions>(options => options.SetRedactors[c.ToFrozenSet()] = redactorType);
         }
 
         return this;
