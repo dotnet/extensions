@@ -3,6 +3,7 @@
     <RootNamespace>Microsoft.Extensions.Http.AutoClient</RootNamespace>
     <Description>Makes it easy to automatically create efficient and easy to use client code to invoke REST HTTP APIs.</Description>
     <Workstream>Fundamentals</Workstream>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -18,6 +19,7 @@
 
   <ItemGroup>
     <None Include="buildTransitive\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive\" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
