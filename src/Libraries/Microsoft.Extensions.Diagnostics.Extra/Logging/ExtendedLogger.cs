@@ -12,10 +12,10 @@ namespace Microsoft.Extensions.Logging;
 #pragma warning disable CA1031
 
 // NOTE: This implementation uses thread local storage. As a result, it will fail if formatter code, enricher code, or
-//       redsctor code calls recursively back into the logger. Don't do that.
+//       redactor code calls recursively back into the logger. Don't do that.
 //
 // NOTE: Unlike the original logger in dotnet/runtime, this logger eats exceptions thrown from invoked loggers, enrichers,
-//       and redactors, rather than forwarding the exceptions to the caller. The fact an exception occured is recorded in
+//       and redactors, rather than forwarding the exceptions to the caller. The fact an exception occurred is recorded in
 //       the event log instead. The idea is that failures in the telemetry stack should not lead to failures in the
 //       application. It's better to keep running with missing telemetry rather than crashing the process completely.
 
