@@ -202,7 +202,11 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 var jr = JustInTimeRedactor.Get();
                 jr.Value = cp.Value;
+#if NET5_0_OR_GREATER
                 jr.Redactor = config.GetRedactor(cp.ClassificationsSet);
+#else
+                jr.Redactor = config.GetRedactor((IReadOnlySet<Compliance.Classification.DataClassification>)cp.ClassificationsSet);
+#endif
                 jr.Next = jitRedactors;
                 jitRedactors = jr;
 
