@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 internal static partial class Metric
 {
     // TODO: should we rename "healthy" to "is_healthy"? Or maybe remove the attribute at all?
+    // To klauco: do we really need this true/false dimension? We already have "health.status" dimension.
     [Counter("healthy", "health.status", Name = "health_check.reports")]
     public static partial HealthCheckReportCounter CreateHealthCheckReportCounter(Meter meter);
 
