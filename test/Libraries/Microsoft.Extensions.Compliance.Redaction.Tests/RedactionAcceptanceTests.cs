@@ -75,17 +75,44 @@ public class RedactionAcceptanceTests
     }
 
     [Fact]
-    public void Redaction_Is_Registered_In_Service_Collection()
+    public void RedactionForList_Is_Registered_In_Service_Collection()
     {
         var dc1 = new DataClassification("TAX", 1);
         var dc2 = new DataClassification("TAX", 2);
         using var services = new ServiceCollection()
             .AddLogging()
-            .AddRedaction(x => x.SetRedactor<FakePlaintextRedactor>(new List<DataClassification> { dc1, dc2 }))
+            .AddRedaction(x => x.SetRedactor<FakePlaintextRedactor>(new List<DataClassification> { dc1, dc2 }, new List<DataClassification> { dc1 }))
             .BuildServiceProvider();
 
         var redactorProvider = services.GetService<IRedactorProvider>();
 
         Assert.IsAssignableFrom<IRedactorProvider>(redactorProvider);
+    }
+
+    [Fact]
+    public void RedactorProvider_Allows_To_Register_And_Use_Redactors_Using_DataClassification_WithList()
+    {
+        var dc1 = new DataClassification("TAX", 1);
+        var dc2 = new DataClassification("TAX", 2);
+        var data = "Mississippi";
+        var list = new List<DataClassification> { dc1, dc2 };
+        var list2 = new List<DataClassification> { DataClassification.Unknown, dc2 };
+        using var services = new ServiceCollection()
+            .AddLogging()
+            .AddRedaction(redaction => redaction
+                .SetRedactor<FakePlaintextRedactor>(list)
+                .SetRedactor<FakePlaintextRedactor>(new List<DataClassification> { DataClassification.Unknown })
+                .SetFallbackRedactor<FakePlaintextRedactor>())
+            .BuildServiceProvider();
+
+        var redactorProvider = services.GetRequiredService<IRedactorProvider>();
+
+        var redactor = redactorProvider.GetRedactor(list);
+        var redacted = redactor.Redact(data);
+        Assert.Equal(redacted, data);
+
+        redactor = redactorProvider.GetRedactor(list2);
+        redacted = redactor.Redact(data);
+        Assert.Equal(redacted, data);
     }
 }
