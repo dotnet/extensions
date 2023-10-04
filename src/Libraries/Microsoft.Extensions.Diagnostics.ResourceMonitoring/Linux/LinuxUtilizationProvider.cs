@@ -59,8 +59,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var meter = meterFactory.Create("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationCounters.CpuConsumptionPercentage, observeValue: CpuUtilization, unit: "1");
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationCounters.MemoryConsumptionPercentage, observeValue: MemoryUtilization, unit: "1");
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationCounters.CpuUtilization, observeValue: CpuUtilization, unit: "1");
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationCounters.MemoryUtilization, observeValue: MemoryUtilization, unit: "1");
 
         Resources = new SystemResources(1, hostCpus, _totalMemoryInBytes, hostMemory);
     }
