@@ -44,6 +44,18 @@ internal sealed class Emitter : EmitterBase
     private const string Invariant = "global::System.FormattableString.Invariant";
     private const string UriKind = "global::System.UriKind";
 
+    private const string ExperimentalPragma = @$"
+#pragma warning disable EXTEXP0005 // Disabling warnings for experimental APIs since those should not show on generated code.
+";
+
+    public Emitter()
+    {
+        // This generator emits calls to APIs in AutoClient that are attributed as experimental. Generated code shouldn't
+        // get warnings for experimental APIs as it can't be changed by the user, so instead we just rely on the user suppressing
+        // the warnings that are shown on the attribute usages which trigger the generator.
+        Out(ExperimentalPragma);
+    }
+
     public string EmitRestApis(IReadOnlyList<RestApiType> restApiTypes, CancellationToken cancellationToken)
     {
         Dictionary<string, List<RestApiType>> metricClassesDict = [];
