@@ -3,353 +3,353 @@
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.AutoClientAttribute : System.Attribute",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.AutoClientAttribute.AutoClientAttribute(string httpClientName);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.AutoClientAttribute.AutoClientAttribute(string httpClientName, string customDependencyName);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "string? Microsoft.Extensions.Http.AutoClient.AutoClientAttribute.CustomDependencyName { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.AutoClientAttribute.HttpClientName { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "class Microsoft.Extensions.Http.AutoClient.AutoClientException : System.Exception",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.AutoClientException.AutoClientException(string message, string path, Microsoft.Extensions.Http.AutoClient.AutoClientHttpError? error = null);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.AutoClientException.AutoClientException(string message, System.Exception innerException, string path, Microsoft.Extensions.Http.AutoClient.AutoClientHttpError? error = null);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.AutoClientHttpError? Microsoft.Extensions.Http.AutoClient.AutoClientException.HttpError { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.AutoClientException.Path { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "int? Microsoft.Extensions.Http.AutoClient.AutoClientException.StatusCode { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "class Microsoft.Extensions.Http.AutoClient.AutoClientHttpError",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.AutoClientHttpError.AutoClientHttpError(int statusCode, System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Primitives.StringValues> responseHeaders, string rawContent, string? reasonPhrase);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "static System.Threading.Tasks.Task<Microsoft.Extensions.Http.AutoClient.AutoClientHttpError> Microsoft.Extensions.Http.AutoClient.AutoClientHttpError.CreateAsync(System.Net.Http.HttpResponseMessage response, System.Threading.CancellationToken cancellationToken);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.AutoClientHttpError.RawContent { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.Http.AutoClient.AutoClientHttpError.ReasonPhrase { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Primitives.StringValues> Microsoft.Extensions.Http.AutoClient.AutoClientHttpError.ResponseHeaders { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "int Microsoft.Extensions.Http.AutoClient.AutoClientHttpError.StatusCode { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "class Microsoft.Extensions.Http.AutoClient.AutoClientOptions",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.AutoClientOptions.AutoClientOptions();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "System.Text.Json.JsonSerializerOptions Microsoft.Extensions.Http.AutoClient.AutoClientOptions.JsonSerializerOptions { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.AutoClientOptionsValidator : Microsoft.Extensions.Options.IValidateOptions<Microsoft.Extensions.Http.AutoClient.AutoClientOptions>",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.AutoClientOptionsValidator.AutoClientOptionsValidator();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "Microsoft.Extensions.Options.ValidateOptionsResult Microsoft.Extensions.Http.AutoClient.AutoClientOptionsValidator.Validate(string? name, Microsoft.Extensions.Http.AutoClient.AutoClientOptions options);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.BodyAttribute : System.Attribute",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.BodyAttribute.BodyAttribute();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.BodyAttribute.BodyAttribute(Microsoft.Extensions.Http.AutoClient.BodyContentType contentType);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.BodyContentType Microsoft.Extensions.Http.AutoClient.BodyAttribute.ContentType { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "enum Microsoft.Extensions.Http.AutoClient.BodyContentType",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.BodyContentType.BodyContentType();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Fields": [
         {
           "Member": "const Microsoft.Extensions.Http.AutoClient.BodyContentType Microsoft.Extensions.Http.AutoClient.BodyContentType.ApplicationJson",
-          "Stage": "Stable",
+          "Stage": "Experimental",
           "Value": "0"
         },
         {
           "Member": "const Microsoft.Extensions.Http.AutoClient.BodyContentType Microsoft.Extensions.Http.AutoClient.BodyContentType.TextPlain",
-          "Stage": "Stable",
+          "Stage": "Experimental",
           "Value": "1"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.DeleteAttribute : System.Attribute",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.DeleteAttribute.DeleteAttribute(string path);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.DeleteAttribute.Path { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.Http.AutoClient.DeleteAttribute.RequestName { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.GetAttribute : System.Attribute",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.GetAttribute.GetAttribute(string path);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.GetAttribute.Path { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.Http.AutoClient.GetAttribute.RequestName { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.HeadAttribute : System.Attribute",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.HeadAttribute.HeadAttribute(string path);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.HeadAttribute.Path { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.Http.AutoClient.HeadAttribute.RequestName { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.HeaderAttribute : System.Attribute",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.HeaderAttribute.HeaderAttribute(string header);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.HeaderAttribute.Header { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.OptionsAttribute : System.Attribute",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.OptionsAttribute.OptionsAttribute(string path);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.OptionsAttribute.Path { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.Http.AutoClient.OptionsAttribute.RequestName { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.PatchAttribute : System.Attribute",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.PatchAttribute.PatchAttribute(string path);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.PatchAttribute.Path { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.Http.AutoClient.PatchAttribute.RequestName { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.PostAttribute : System.Attribute",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.PostAttribute.PostAttribute(string path);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.PostAttribute.Path { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.Http.AutoClient.PostAttribute.RequestName { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.PutAttribute : System.Attribute",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.PutAttribute.PutAttribute(string path);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.PutAttribute.Path { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string? Microsoft.Extensions.Http.AutoClient.PutAttribute.RequestName { get; set; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.QueryAttribute : System.Attribute",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.QueryAttribute.QueryAttribute();",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.QueryAttribute.QueryAttribute(string key);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "string? Microsoft.Extensions.Http.AutoClient.QueryAttribute.Key { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     },
     {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.StaticHeaderAttribute : System.Attribute",
-      "Stage": "Stable",
+      "Stage": "Experimental",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.AutoClient.StaticHeaderAttribute.StaticHeaderAttribute(string header, string value);",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.StaticHeaderAttribute.Header { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         },
         {
           "Member": "string Microsoft.Extensions.Http.AutoClient.StaticHeaderAttribute.Value { get; }",
-          "Stage": "Stable"
+          "Stage": "Experimental"
         }
       ]
     }
