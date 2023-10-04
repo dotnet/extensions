@@ -5,8 +5,6 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience.Internal;
@@ -30,10 +28,10 @@ public sealed partial class HttpClientBuilderExtensionsTests
         _builder.Services.AddFakeRedaction();
 
         var pipelineName = standardResilience ?
-            _builder.AddStandardResilienceHandler().SelectPipelineByAuthority(DataClassification.Unknown).PipelineName :
+            _builder.AddStandardResilienceHandler().SelectPipelineByAuthority().PipelineName :
             _builder
                 .AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1)))
-                .SelectPipelineByAuthority(DataClassification.Unknown).PipelineName;
+                .SelectPipelineByAuthority().PipelineName;
 
         var provider = _builder.Services.BuildServiceProvider().GetPipelineKeyProvider(pipelineName)!;
 
@@ -49,22 +47,10 @@ public sealed partial class HttpClientBuilderExtensionsTests
     public void SelectPipelineByAuthority_Ok_NullURL_Throws()
     {
         _builder.Services.AddFakeRedaction();
-        var builder = _builder.AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1))).SelectPipelineByAuthority(DataClassification.Unknown);
+        var builder = _builder.AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1))).SelectPipelineByAuthority();
         var provider = PipelineKeyProviderHelper.GetPipelineKeyProvider(builder.Services.BuildServiceProvider(), builder.PipelineName)!;
 
         using var request = new HttpRequestMessage();
-
-        Assert.Throws<InvalidOperationException>(() => provider(request));
-    }
-
-    [Fact]
-    public void SelectPipelineByAuthority_ErasingRedactor_InvalidOperationException()
-    {
-        _builder.Services.AddRedaction();
-        var builder = _builder.AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1))).SelectPipelineByAuthority(FakeClassifications.PrivateData);
-        var provider = PipelineKeyProviderHelper.GetPipelineKeyProvider(builder.Services.BuildServiceProvider(), builder.PipelineName)!;
-
-        using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
 
         Assert.Throws<InvalidOperationException>(() => provider(request));
     }
@@ -108,7 +94,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [InlineData(false, "https://dummy:21/path", "https://dummy:21")]
     [InlineData(false, "https://dummy123", "https://dummy123")]
     [Theory]
-    public async Task SelectPipelineBy_EnsureResiliencePipelineProviderCall(bool standardResilience, string url, string expectedPipelineKey)
+    public async Task SelectPipelineByAuthority_EnsureResiliencePipelineProviderCall(bool standardResilience, string url, string expectedPipelineKey)
     {
         var provider = new Mock<ResiliencePipelineProvider<HttpKey>>(MockBehavior.Strict);
 
@@ -119,13 +105,13 @@ public sealed partial class HttpClientBuilderExtensionsTests
         {
             pipelineName = _builder
                 .AddResilienceHandler("dummy", builder => builder.AddTimeout(TimeSpan.FromSeconds(1)))
-                .SelectPipelineByAuthority(DataClassification.None).PipelineName;
+                .SelectPipelineByAuthority().PipelineName;
         }
         else
         {
             pipelineName = _builder
                 .AddStandardResilienceHandler()
-                .SelectPipelineByAuthority(DataClassification.None).PipelineName;
+                .SelectPipelineByAuthority().PipelineName;
         }
 
         _builder.AddHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.OK));

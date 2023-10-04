@@ -2,48 +2,6 @@
   "Name": "Microsoft.Extensions.Http.Resilience, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.Extensions.Http.Resilience.FaultInjection.ContextExtensions",
-      "Stage": "Experimental",
-      "Methods": [
-        {
-          "Member": "static Polly.Context Microsoft.Extensions.Http.Resilience.FaultInjection.ContextExtensions.WithCallingRequestMessage(this Polly.Context context, System.Net.Http.HttpRequestMessage request);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.Http.Resilience.Endpoint",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.Endpoint.Endpoint();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "System.Uri? Microsoft.Extensions.Http.Resilience.Endpoint.Uri { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.Extensions.Http.Resilience.EndpointGroup",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.EndpointGroup.EndpointGroup();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Http.Resilience.WeightedEndpoint> Microsoft.Extensions.Http.Resilience.EndpointGroup.Endpoints { get; set; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "class Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions",
       "Stage": "Stable",
       "Methods": [
@@ -110,36 +68,6 @@
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.HttpFaultInjectionOptionsBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.AddException(string key, System.Exception exception);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.AddHttpContent(string key, System.Net.Http.HttpContent content);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.Configure();",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.Configure(Microsoft.Extensions.Configuration.IConfiguration section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder.Configure(System.Action<Microsoft.Extensions.Resilience.FaultInjection.FaultInjectionOptions> configureOptions);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "class Microsoft.Extensions.Http.Resilience.HttpHedgingStrategyOptions : Polly.Hedging.HedgingStrategyOptions<System.Net.Http.HttpResponseMessage>",
       "Stage": "Stable",
       "Methods": [
@@ -155,42 +83,6 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.Resilience.HttpRateLimiterStrategyOptions.HttpRateLimiterStrategyOptions();",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionHttpBuilderExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionHttpBuilderExtensions.AddFaultInjectionPolicyHandler(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, string chaosPolicyOptionsGroupName);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionHttpBuilderExtensions.AddWeightedFaultInjectionPolicyHandlers(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.Extensions.Resilience.FaultInjection.FaultPolicyWeightAssignmentsOptions> weightAssignmentsConfig);",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionHttpBuilderExtensions.AddWeightedFaultInjectionPolicyHandlers(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection weightAssignmentsConfigSection);",
-          "Stage": "Experimental"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionServiceCollectionExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionServiceCollectionExtensions.AddHttpClientFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionServiceCollectionExtensions.AddHttpClientFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration section);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpResilienceFaultInjectionServiceCollectionExtensions.AddHttpClientFaultInjection(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.Http.Resilience.FaultInjection.HttpFaultInjectionOptionsBuilder> configure);",
           "Stage": "Stable"
         }
       ]
@@ -258,7 +150,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpResiliencePipelineBuilderExtensions.SelectPipelineByAuthority(this Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpResiliencePipelineBuilderExtensions.SelectPipelineByAuthority(this Microsoft.Extensions.Http.Resilience.IHttpResiliencePipelineBuilder builder);",
           "Stage": "Stable"
         }
       ]
@@ -356,7 +248,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions.SelectPipelineByAuthority(this Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "static Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder Microsoft.Extensions.Http.Resilience.HttpStandardResiliencePipelineBuilderExtensions.SelectPipelineByAuthority(this Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder builder);",
           "Stage": "Stable"
         }
       ]
@@ -367,16 +259,6 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Http.Resilience.HttpTimeoutStrategyOptions.HttpTimeoutStrategyOptions();",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "interface Microsoft.Extensions.Http.Resilience.FaultInjection.IHttpClientChaosPolicyFactory",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Polly.Contrib.Simmy.Outcomes.AsyncInjectOutcomePolicy<System.Net.Http.HttpResponseMessage> Microsoft.Extensions.Http.Resilience.FaultInjection.IHttpClientChaosPolicyFactory.CreateHttpResponsePolicy();",
           "Stage": "Stable"
         }
       ]
@@ -452,7 +334,7 @@
       ],
       "Properties": [
         {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Http.Resilience.EndpointGroup> Microsoft.Extensions.Http.Resilience.OrderedGroupsRoutingOptions.Groups { get; set; }",
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Http.Resilience.UriEndpointGroup> Microsoft.Extensions.Http.Resilience.OrderedGroupsRoutingOptions.Groups { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -463,6 +345,14 @@
       "Methods": [
         {
           "Member": "void Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.EnableReloads<TOptions>(string? name = null);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "TOptions Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.GetOptions<TOptions>(string name);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "void Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.OnPipelineDisposed(System.Action callback);",
           "Stage": "Stable"
         }
       ],
@@ -532,43 +422,39 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder builder, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "static Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder Microsoft.Extensions.Http.Resilience.StandardHedgingHandlerBuilderExtensions.SelectPipelineByAuthority(this Microsoft.Extensions.Http.Resilience.IStandardHedgingHandlerBuilder builder);",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Resilience.WeightedEndpoint",
+      "Type": "class Microsoft.Extensions.Http.Resilience.UriEndpoint",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.WeightedEndpoint.WeightedEndpoint();",
+          "Member": "Microsoft.Extensions.Http.Resilience.UriEndpoint.UriEndpoint();",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "System.Uri? Microsoft.Extensions.Http.Resilience.WeightedEndpoint.Uri { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "int Microsoft.Extensions.Http.Resilience.WeightedEndpoint.Weight { get; set; }",
+          "Member": "System.Uri? Microsoft.Extensions.Http.Resilience.UriEndpoint.Uri { get; set; }",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "class Microsoft.Extensions.Http.Resilience.WeightedEndpointGroup : Microsoft.Extensions.Http.Resilience.EndpointGroup",
+      "Type": "class Microsoft.Extensions.Http.Resilience.UriEndpointGroup",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Http.Resilience.WeightedEndpointGroup.WeightedEndpointGroup();",
+          "Member": "Microsoft.Extensions.Http.Resilience.UriEndpointGroup.UriEndpointGroup();",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "int Microsoft.Extensions.Http.Resilience.WeightedEndpointGroup.Weight { get; set; }",
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Http.Resilience.WeightedUriEndpoint> Microsoft.Extensions.Http.Resilience.UriEndpointGroup.Endpoints { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -606,11 +492,47 @@
       ],
       "Properties": [
         {
-          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Http.Resilience.WeightedEndpointGroup> Microsoft.Extensions.Http.Resilience.WeightedGroupsRoutingOptions.Groups { get; set; }",
+          "Member": "System.Collections.Generic.IList<Microsoft.Extensions.Http.Resilience.WeightedUriEndpointGroup> Microsoft.Extensions.Http.Resilience.WeightedGroupsRoutingOptions.Groups { get; set; }",
           "Stage": "Stable"
         },
         {
           "Member": "Microsoft.Extensions.Http.Resilience.WeightedGroupSelectionMode Microsoft.Extensions.Http.Resilience.WeightedGroupsRoutingOptions.SelectionMode { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Http.Resilience.WeightedUriEndpoint",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Http.Resilience.WeightedUriEndpoint.WeightedUriEndpoint();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "System.Uri? Microsoft.Extensions.Http.Resilience.WeightedUriEndpoint.Uri { get; set; }",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "int Microsoft.Extensions.Http.Resilience.WeightedUriEndpoint.Weight { get; set; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "class Microsoft.Extensions.Http.Resilience.WeightedUriEndpointGroup : Microsoft.Extensions.Http.Resilience.UriEndpointGroup",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Http.Resilience.WeightedUriEndpointGroup.WeightedUriEndpointGroup();",
+          "Stage": "Stable"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "int Microsoft.Extensions.Http.Resilience.WeightedUriEndpointGroup.Weight { get; set; }",
           "Stage": "Stable"
         }
       ]

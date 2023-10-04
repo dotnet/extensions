@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
+using Microsoft.Extensions.EnumStrings;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Resilience;
@@ -13,6 +14,8 @@ using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Text;
 using Polly;
 using Polly.Registry;
+
+[assembly: EnumStrings(typeof(HttpStatusCode))]
 
 namespace Microsoft.Extensions.DependencyInjection;
 
