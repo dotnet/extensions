@@ -9,6 +9,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 
 internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 {
+    private const double One = 1.0;
     private const long Hundred = 100L;
 
     private readonly object _cpuLocker = new();
@@ -92,7 +93,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
                     if (deltaHost > 0 && deltaCgroup > 0)
                     {
-                        var percentage = Math.Min(1.0, deltaCgroup / deltaHost * _scale);
+                        var percentage = Math.Min(One, deltaCgroup / deltaHost * _scale);
 
                         _cpuPercentage = percentage;
                         _refreshAfterCpu = now.Add(_cpuRefreshInterval);
@@ -127,7 +128,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             {
                 if (now >= _refreshAfterMemory)
                 {
-                    var memoryPercentage = Math.Min(1.0, (double)memoryUsed / _totalMemoryInBytes);
+                    var memoryPercentage = Math.Min(One, (double)memoryUsed / _totalMemoryInBytes);
 
                     _memoryPercentage = memoryPercentage;
                     _refreshAfterMemory = now.Add(_memoryRefreshInterval);
