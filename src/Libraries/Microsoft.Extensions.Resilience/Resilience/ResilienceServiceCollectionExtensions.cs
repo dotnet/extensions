@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
@@ -10,7 +9,6 @@ using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience;
 using Microsoft.Extensions.Resilience.Internal;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly.Telemetry;
 
@@ -19,7 +17,6 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension class for the Service Collection DI container.
 /// </summary>
-[Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
 public static class ResilienceServiceCollectionExtensions
 {
     /// <summary>
@@ -42,7 +39,7 @@ public static class ResilienceServiceCollectionExtensions
     /// </list>
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
-    public static IServiceCollection AddResilienceEnrichment(this IServiceCollection services)
+    public static IServiceCollection AddResilienceEnricher(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
 
@@ -52,7 +49,7 @@ public static class ResilienceServiceCollectionExtensions
             return services;
         }
 
-        services.AddExceptionSummarizer().TryAddSingleton<ResilienceMetricsEnricher>();
+        services.TryAddSingleton<ResilienceMetricsEnricher>();
 
         _ = services
             .AddOptionsWithValidateOnStart<TelemetryOptions>()

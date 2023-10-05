@@ -31,29 +31,29 @@
     },
     {
       "Type": "static class Microsoft.Extensions.Resilience.ResilienceContextExtensions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.Http.Diagnostics.RequestMetadata? Microsoft.Extensions.Resilience.ResilienceContextExtensions.GetRequestMetadata(this Polly.ResilienceContext context);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static void Microsoft.Extensions.Resilience.ResilienceContextExtensions.SetRequestMetadata(this Polly.ResilienceContext context, Microsoft.Extensions.Http.Diagnostics.RequestMetadata requestMetadata);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
     {
       "Type": "static class Microsoft.Extensions.DependencyInjection.ResilienceServiceCollectionExtensions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ResilienceServiceCollectionExtensions.AddResilienceEnrichment(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Experimental"
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ResilienceServiceCollectionExtensions.AddResilienceEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ResilienceServiceCollectionExtensions.ConfigureFailureResultContext<TResult>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Func<TResult, Microsoft.Extensions.Resilience.FailureResultContext> configure);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     }

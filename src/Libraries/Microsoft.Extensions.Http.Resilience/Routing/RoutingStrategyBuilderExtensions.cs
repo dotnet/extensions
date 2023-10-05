@@ -11,7 +11,6 @@ using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal.OrderedGroups;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal.WeightedGroups;
 using Microsoft.Extensions.Options;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Resilience;
@@ -59,7 +58,6 @@ public static class RoutingStrategyBuilderExtensions
     /// <param name="builder">The routing builder.</param>
     /// <param name="configure">The callback that configures <see cref="OrderedGroupsRoutingOptions"/>.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public static IRoutingStrategyBuilder ConfigureOrderedGroups(this IRoutingStrategyBuilder builder, Action<OrderedGroupsRoutingOptions, IServiceProvider> configure)
     {
         _ = Throw.IfNull(builder);
@@ -76,7 +74,6 @@ public static class RoutingStrategyBuilderExtensions
     /// <param name="builder">The routing builder.</param>
     /// <param name="section">The section that the <see cref="WeightedGroupsRoutingOptions"/> will bind against.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(WeightedGroupsRoutingOptions))]
     public static IRoutingStrategyBuilder ConfigureWeightedGroups(this IRoutingStrategyBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
@@ -107,7 +104,6 @@ public static class RoutingStrategyBuilderExtensions
     /// <param name="builder">The routing builder.</param>
     /// <param name="configure">The callback that configures <see cref="WeightedGroupsRoutingOptions"/>.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public static IRoutingStrategyBuilder ConfigureWeightedGroups(this IRoutingStrategyBuilder builder, Action<WeightedGroupsRoutingOptions, IServiceProvider> configure)
     {
         _ = Throw.IfNull(builder);

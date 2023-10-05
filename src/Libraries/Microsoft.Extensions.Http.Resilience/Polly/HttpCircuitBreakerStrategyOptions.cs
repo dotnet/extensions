@@ -21,6 +21,6 @@ public class HttpCircuitBreakerStrategyOptions : CircuitBreakerStrategyOptions<H
     /// </remarks>
     public HttpCircuitBreakerStrategyOptions()
     {
-        ShouldHandle = args => new ValueTask<bool>(HttpClientResiliencePredicates.IsTransientHttpOutcome(args.Outcome));
+        ShouldHandle = args => new ValueTask<bool>(HttpClientResiliencePredicates.IsTransient(args.Outcome));
     }
 }

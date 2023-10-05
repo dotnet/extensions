@@ -13,7 +13,7 @@ using Polly;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static partial class HttpResilienceHttpClientBuilderExtensions
+public static partial class ResilienceHttpClientBuilderExtensions
 {
     private const string StandardIdentifier = "standard";
 
@@ -79,11 +79,11 @@ public static partial class HttpResilienceHttpClientBuilderExtensions
             var options = monitor.Get(optionsName);
 
             _ = builder
-                .AddRateLimiter(options.RateLimiterOptions)
-                .AddTimeout(options.TotalRequestTimeoutOptions)
-                .AddRetry(options.RetryOptions)
-                .AddCircuitBreaker(options.CircuitBreakerOptions)
-                .AddTimeout(options.AttemptTimeoutOptions);
+                .AddRateLimiter(options.RateLimiter)
+                .AddTimeout(options.TotalRequestTimeout)
+                .AddRetry(options.Retry)
+                .AddCircuitBreaker(options.CircuitBreaker)
+                .AddTimeout(options.AttemptTimeout);
         });
 
         return new HttpStandardResiliencePipelineBuilder(optionsName, builder.Services);

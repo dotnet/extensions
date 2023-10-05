@@ -15,9 +15,20 @@ namespace Microsoft.Extensions.Http.Resilience;
 public static class HttpClientHedgingResiliencePredicates
 {
     /// <summary>
+    /// Determines whether an outcome should be treated by hedging as a transient failure.
+    /// </summary>
+    /// <returns><see langword="true"/> if outcome is transient, <see langword="false"/> if not.</returns>
+    public static bool IsTransient(Outcome<HttpResponseMessage> outcome) => outcome switch
+    {
+        { Result: { } response } when HttpClientResiliencePredicates.IsTransientHttpFailure(response) => true,
+        { Exception: { } exception } when IsTransientHttpException(exception) => true,
+        _ => false,
+    };
+
+    /// <summary>
     /// Determines whether an exception should be treated by hedging as a transient failure.
     /// </summary>
-    public static readonly Predicate<Exception> IsTransientHttpException = exception =>
+    internal static bool IsTransientHttpException(Exception exception)
     {
         _ = Throw.IfNull(exception);
 
@@ -27,15 +38,5 @@ public static class HttpClientHedgingResiliencePredicates
             _ when HttpClientResiliencePredicates.IsTransientHttpException(exception) => true,
             _ => false,
         };
-    };
-
-    /// <summary>
-    /// Determines whether an outcome should be treated by hedging as a transient failure.
-    /// </summary>
-    public static readonly Predicate<Outcome<HttpResponseMessage>> IsTransientHttpOutcome = outcome => outcome switch
-    {
-        { Result: { } response } when HttpClientResiliencePredicates.IsTransientHttpFailure(response) => true,
-        { Exception: { } exception } when IsTransientHttpException(exception) => true,
-        _ => false,
-    };
+    }
 }
