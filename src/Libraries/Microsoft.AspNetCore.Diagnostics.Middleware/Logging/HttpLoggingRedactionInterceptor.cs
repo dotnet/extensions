@@ -65,7 +65,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
     {
         var context = logContext.HttpContext;
         var request = context.Request;
-        if (ShouldExcludePath(context.Request.Path.Value!))
+        if (_excludePathStartsWith.Length != 0 && ShouldExcludePath(context.Request.Path.Value!))
         {
             logContext.LoggingFields = HttpLoggingFields.None;
             return default;

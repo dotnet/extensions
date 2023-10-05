@@ -4,11 +4,9 @@
 #if NET8_0_OR_GREATER
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics.Logging;
 using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Diagnostics;
@@ -24,87 +22,45 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class HttpLoggingServiceCollectionExtensions
 {
     /// <summary>
-    /// Enables redaction of HTTP logging.
+    /// Enables enrichment and redaction of HTTP request logging output.
     /// </summary>
+    /// <remarks>
+    /// This will enable <see cref="HttpLoggingOptions.CombineLogs"/> and <see cref="HttpLoggingFields.Duration"/> by default.
+    /// </remarks>
     /// <param name="services">The service collection.</param>
-    /// <param name="configureRedaction">Configures the redaction options.</param>
-    /// <returns>The original service collection.</returns>
+    /// <param name="configure">Configures the redaction options.</param>
+    /// <returns>The value of <paramref name="services" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
-    public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<LoggingRedactionOptions>? configureRedaction = null)
+    public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<LoggingRedactionOptions>? configure = null)
     {
         _ = Throw.IfNull(services);
 
-        _ = services.Configure(configureRedaction ?? (static _ => { }));
+        _ = services.AddOptionsWithValidateOnStart<LoggingRedactionOptions, LoggingRedactionOptionsValidator>()
+            .Configure(configure ?? (static _ => { }));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpLoggingInterceptor, HttpLoggingRedactionInterceptor>());
 
-        _ = services.AddHttpLogging(o =>
+        return services.AddHttpLogging(o =>
         {
             o.CombineLogs = true;
             o.LoggingFields |= HttpLoggingFields.Duration;
-        });
+        })
 
         // Internal stuff for route processing:
-        _ = services.AddHttpRouteProcessor();
-        _ = services.AddHttpRouteUtilities();
-        return services;
+        .AddHttpRouteProcessor()
+        .AddHttpRouteUtilities();
     }
 
     /// <summary>
-    /// Enables enrichment redaction of HTTP logging.
+    /// Enables enrichment and redaction of HTTP request logging output.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="section">The configuration section with the redaction settings.</param>
-    /// <returns>The original service collection.</returns>
+    /// <returns>The value of <paramref name="services" />.</returns>
     public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, IConfigurationSection section)
     {
         _ = Throw.IfNull(section);
 
-        return services.AddHttpLoggingRedaction(configureRedaction: o =>
-        {
-            o.RequestPathLoggingMode = section.GetSection(nameof(LoggingRedactionOptions.RequestPathLoggingMode)).Get<IncomingPathLoggingMode>();
-            o.RequestPathParameterRedactionMode = section.GetSection(nameof(LoggingRedactionOptions.RequestPathParameterRedactionMode)).Get<HttpRouteParameterRedactionMode>();
-            var paths = section.GetSection(nameof(LoggingRedactionOptions.ExcludePathStartsWith)).Get<string[]>();
-            if (paths != null)
-            {
-                foreach (var path in paths)
-                {
-                    _ = o.ExcludePathStartsWith.Add(path);
-                }
-            }
-
-            var routeParams = section.GetSection(nameof(LoggingRedactionOptions.RouteParameterDataClasses));
-            foreach (var entry in routeParams.GetChildren())
-            {
-                var taxonomy = entry.GetValue<string>(nameof(DataClassification.TaxonomyName));
-                var value = entry.GetValue<ulong>(nameof(DataClassification.Value));
-                if (taxonomy != null)
-                {
-                    o.RouteParameterDataClasses.Add(entry.Key, new DataClassification(taxonomy, value));
-                }
-            }
-
-            var requestHeaders = section.GetSection(nameof(LoggingRedactionOptions.RequestHeadersDataClasses));
-            foreach (var entry in requestHeaders.GetChildren())
-            {
-                var taxonomy = entry.GetValue<string>(nameof(DataClassification.TaxonomyName));
-                var value = entry.GetValue<ulong>(nameof(DataClassification.Value));
-                if (taxonomy != null)
-                {
-                    o.RequestHeadersDataClasses.Add(entry.Key, new DataClassification(taxonomy, value));
-                }
-            }
-
-            var responseHeaders = section.GetSection(nameof(LoggingRedactionOptions.ResponseHeadersDataClasses));
-            foreach (var entry in responseHeaders.GetChildren())
-            {
-                var taxonomy = entry.GetValue<string>(nameof(DataClassification.TaxonomyName));
-                var value = entry.GetValue<ulong>(nameof(DataClassification.Value));
-                if (taxonomy != null)
-                {
-                    o.ResponseHeadersDataClasses.Add(entry.Key, new DataClassification(taxonomy, value));
-                }
-            }
-        });
+        return services.AddHttpLoggingRedaction(section.Bind);
     }
 
     /// <summary>
@@ -118,8 +74,8 @@ public static class HttpLoggingServiceCollectionExtensions
         where T : class, IHttpLogEnricher
     {
         _ = Throw.IfNull(services);
-        _ = services.AddHttpLoggingRedaction();
-        return services.AddActivatedSingleton<IHttpLogEnricher, T>();
+        return services.AddHttpLoggingRedaction()
+            .AddActivatedSingleton<IHttpLogEnricher, T>();
     }
 }
 #endif

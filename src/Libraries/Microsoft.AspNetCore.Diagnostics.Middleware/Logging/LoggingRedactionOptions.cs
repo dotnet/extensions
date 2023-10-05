@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Diagnostics;
@@ -24,9 +25,11 @@ public class LoggingRedactionOptions
     /// <summary>
     /// Gets or sets a strategy how request path should be logged.
     /// </summary>
+    /// <value>
+    /// The default value is <see cref="IncomingPathLoggingMode.Formatted"/>.
+    /// </value>
     /// <remarks>
     /// Make sure you add redactors to ensure that sensitive information doesn't find its way into your log records.
-    /// Default set to <see cref="IncomingPathLoggingMode.Formatted"/>.
     /// This option only applies when the <see cref="RequestPathParameterRedactionMode"/>
     /// option is not set to <see cref="HttpRouteParameterRedactionMode.None"/>.
     /// </remarks>
@@ -35,54 +38,68 @@ public class LoggingRedactionOptions
     /// <summary>
     /// Gets or sets a value indicating how request path parameter should be redacted.
     /// </summary>
-    /// <remarks>
-    /// Default set to <see cref="HttpRouteParameterRedactionMode.Strict"/>.
-    /// </remarks>
+    /// <value>
+    /// The default value is <see cref="HttpRouteParameterRedactionMode.Strict"/>.
+    /// </value>
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>
-    /// Gets a map between HTTP path parameters and their data classification.
+    /// Gets or sets a map between HTTP path parameters and their data classification.
     /// </summary>
+    /// <value>
+    /// The default value is an empty dictionary.
+    /// </value>
     /// <remarks>
-    /// Default set to an empty dictionary.
     /// If a parameter within a controller's action is not annotated with a data classification attribute and
     /// it's not found in this map, it will be redacted as if it was <see cref="DataClassification.Unknown"/>.
     /// If you don't want a parameter to be redacted, mark it as <see cref="DataClassification.None"/>.
     /// </remarks>
-    public IDictionary<string, DataClassification> RouteParameterDataClasses { get; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
+    [Required]
+#pragma warning disable CA2227 // Collection properties should be read only
+    public IDictionary<string, DataClassification> RouteParameterDataClasses { get; set; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
+#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
-    /// Gets a map between request headers to be logged and their data classification.
+    /// Gets or sets a map between request headers to be logged and their data classification.
     /// </summary>
-    /// <remarks>
-    /// Default set to an empty dictionary.
-    /// That means that no request header will be logged by default.
-    /// </remarks>
-    public IDictionary<string, DataClassification> RequestHeadersDataClasses { get; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
+    /// <value>
+    /// The default value is an empty dictionary, which means that no request header is logged by default.
+    /// </value>
+    [Required]
+#pragma warning disable CA2227 // Collection properties should be read only
+    public IDictionary<string, DataClassification> RequestHeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
+#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
-    /// Gets a map between response headers to be logged and their data classification.
+    /// Gets or sets a map between response headers to be logged and their data classification.
     /// </summary>
-    /// <remarks>
-    /// Default set to an empty dictionary.
-    /// That means that no response header will be logged by default.
-    /// </remarks>
-    public IDictionary<string, DataClassification> ResponseHeadersDataClasses { get; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
+    /// <value>
+    /// The default value is an empty dictionary, which means that no response header is logged by default.
+    /// </value>
+    [Required]
+#pragma warning disable CA2227 // Collection properties should be read only
+    public IDictionary<string, DataClassification> ResponseHeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
+#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
-    /// Gets the set of HTTP paths that should be excluded from logging.
+    /// Gets or sets the set of HTTP paths that should be excluded from logging.
     /// </summary>
+    /// <value>
+    /// The default value is an empty <see cref="HashSet{T}"/>.
+    /// </value>
     /// <remarks>
     /// Any path added to the set will not be logged.
     /// Paths are case insensitive.
-    /// Default set to an empty <see cref="HashSet{T}"/>.
     /// </remarks>
     /// <example>
     /// A typical set of HTTP paths would be:
     /// - "/probe/live".
     /// - "/probe/ready".
     /// </example>
-    public ISet<string> ExcludePathStartsWith { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    [Required]
+#pragma warning disable CA2227 // Collection properties should be read only
+    public ISet<string> ExcludePathStartsWith { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+#pragma warning restore CA2227 // Collection properties should be read only
 }
 
 #endif
