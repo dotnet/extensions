@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Shared.Diagnostics;
 using Polly.DependencyInjection;
 
 namespace Microsoft.Extensions.Http.Resilience;
@@ -48,5 +49,20 @@ public sealed class ResilienceHandlerContext
     /// </remarks>
     public void EnableReloads<TOptions>(string? name = null) => _context.EnableReloads<TOptions>(name);
 
-    internal T GetOptions<T>(string name) => _context.GetOptions<T>(name);
+    /// <summary>
+    /// Gets the options identified by <paramref name="name"/>.
+    /// </summary>
+    /// <typeparam name="TOptions">The options type.</typeparam>
+    /// <param name="name">The options name, if any.</param>
+    /// <returns>The options instance.</returns>
+    /// <remarks>
+    /// If <paramref name="name"/> is <see langword="null"/> then the global options are returned.
+    /// </remarks>
+    public TOptions GetOptions<TOptions>(string name) => _context.GetOptions<TOptions>(name);
+
+    /// <summary>
+    /// Registers a callback that is called when the pipeline instance being configured is disposed.
+    /// </summary>
+    /// <param name="callback">The callback delegate.</param>
+    public void OnPipelineDisposed(Action callback) => _context.OnPipelineDisposed(Throw.IfNull(callback));
 }
