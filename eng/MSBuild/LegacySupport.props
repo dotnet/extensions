@@ -47,10 +47,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\TaskWaitAsync\*.cs" LinkBase="LegacySupport\TaskWaitAsync" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectxxH3OnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0')">
-    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\xxH3\*.cs" LinkBase="LegacySupport\xxH3" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(InjectExperimentalAttributeOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0')">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\ExperimentalAttribute\*.cs" LinkBase="LegacySupport\ExperimentalAttribute" />
   </ItemGroup>
