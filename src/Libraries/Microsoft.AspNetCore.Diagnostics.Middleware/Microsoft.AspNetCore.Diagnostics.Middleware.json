@@ -43,10 +43,6 @@
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.RequestHeadersEnricherServiceCollectionExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Diagnostics.Logging.RequestHeadersLogEnricherOptions> configure);",
           "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.RequestHeadersEnricherServiceCollectionExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
         }
       ]
     },
