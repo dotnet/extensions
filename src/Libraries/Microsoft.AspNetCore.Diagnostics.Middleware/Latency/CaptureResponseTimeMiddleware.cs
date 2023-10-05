@@ -5,31 +5,33 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Latency;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.AspNetCore.Diagnostics.Latency;
 
 /// <summary>
 /// A middleware that captures response times.
 /// </summary>
-internal sealed class CaptureResponseTimeMiddleware : IMiddleware
+internal sealed class CaptureResponseTimeMiddleware
 {
     private readonly CheckpointToken _elapsedTillHeaders;
 
     private readonly CheckpointToken _elapsedTillFinished;
+    private readonly RequestDelegate _next;
 
-    public CaptureResponseTimeMiddleware(ILatencyContextTokenIssuer tokenIssuer)
+    public CaptureResponseTimeMiddleware(RequestDelegate next, ILatencyContextTokenIssuer tokenIssuer)
     {
         _elapsedTillHeaders = tokenIssuer.GetCheckpointToken(RequestCheckpointConstants.ElapsedTillHeaders);
         _elapsedTillFinished = tokenIssuer.GetCheckpointToken(RequestCheckpointConstants.ElapsedTillFinished);
+        _next = Throw.IfNull(next);
     }
 
     /// <summary>
     /// Request handling method.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
-    /// <param name="next">The delegate representing the remaining middleware in the request pipeline.</param>
     /// <returns>A <see cref="Task"/> that represents the execution of this middleware.</returns>
-    public Task InvokeAsync(HttpContext context, RequestDelegate next)
+    public Task InvokeAsync(HttpContext context)
     {
         var latencyContext = context.RequestServices.GetRequiredService<ILatencyContext>();
 
@@ -50,6 +52,6 @@ internal sealed class CaptureResponseTimeMiddleware : IMiddleware
         }, latencyContext);
 
         // Call the next delegate/middleware in the pipeline
-        return next(context);
+        return _next(context);
     }
 }
