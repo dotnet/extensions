@@ -6,25 +6,31 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.AspNetCore.Diagnostics.Latency;
 
 /// <summary>
 /// A middleware that populates Server-Timing header with response processing time.
 /// </summary>
-internal sealed class AddServerTimingHeaderMiddleware : IMiddleware
+internal sealed class AddServerTimingHeaderMiddleware
 {
     internal const string ServerTimingHeaderName = "Server-Timing";
+    private readonly RequestDelegate _next;
+
+    public AddServerTimingHeaderMiddleware(RequestDelegate next)
+    {
+        _next = Throw.IfNull(next);
+    }
 
     /// <summary>
     /// Request handling method.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
-    /// <param name="next">The delegate representing the remaining middleware in the request pipeline.</param>
     /// <returns>A <see cref="Task"/> that represents the execution of this middleware.</returns>
-    public Task InvokeAsync(HttpContext context, RequestDelegate next)
+    public Task InvokeAsync(HttpContext context)
     {
-        context.Response.OnStarting(ctx =>
+        context.Response.OnStarting(static ctx =>
         {
             var httpContext = (HttpContext)ctx;
             var latencyContext = httpContext.RequestServices.GetRequiredService<ILatencyContext>();
@@ -46,6 +52,6 @@ internal sealed class AddServerTimingHeaderMiddleware : IMiddleware
             return Task.CompletedTask;
         }, context);
 
-        return next(context);
+        return _next(context);
     }
 }
