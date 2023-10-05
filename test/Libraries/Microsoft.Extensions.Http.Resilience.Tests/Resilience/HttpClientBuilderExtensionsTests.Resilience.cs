@@ -57,6 +57,32 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     [Fact]
+    public async Task AddResilienceHandler_OnPipelineDisposed_EnsureCalled()
+    {
+        var onPipelineDisposedCalled = false;
+        var services = new ServiceCollection();
+        IHttpClientBuilder? builder = services
+            .AddHttpClient("client")
+            .ConfigurePrimaryHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.OK));
+
+        builder.AddResilienceHandler("test", (builder, context) =>
+        {
+            builder.AddTimeout(TimeSpan.FromSeconds(1));
+            context.OnPipelineDisposed(() => onPipelineDisposedCalled = true);
+        });
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
+
+        await client.GetStringAsync("https://dummy");
+        serviceProvider.Dispose();
+
+        onPipelineDisposedCalled.Should().BeTrue();
+    }
+
+    [Fact]
     public void AddResilienceHandler_EnsureServicesNotAddedTwice()
     {
         var services = new ServiceCollection();
@@ -74,7 +100,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     [Fact]
     public async Task AddResilienceHandler_EnsureFailureResultContext()
     {
-        using var metricCollector = new MetricCollector<int>(null, "Polly", "resilience-events");
+        using var metricCollector = new MetricCollector<int>(null, "Polly", "resilience.polly.strategy.events");
         var enricher = new TestMetricsEnricher();
         var services = new ServiceCollection()
             .AddResilienceEnrichment()

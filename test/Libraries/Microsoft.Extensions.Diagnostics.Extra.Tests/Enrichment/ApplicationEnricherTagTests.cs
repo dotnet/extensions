@@ -8,14 +8,14 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Enrichment.Test;
 
-public class ServiceEnricherDimensionsTests
+public class ApplicationEnricherTagTests
 {
     [Fact]
     public void GetDimensionNames_ReturnsAnArrayOfDimensionNames()
     {
-        var dimensions = ServiceEnricherTags.DimensionNames;
+        var dimensions = ApplicationEnricherTags.DimensionNames;
 
-        string[] expectedDimensions = GetStringConstants(typeof(ServiceEnricherTags));
+        string[] expectedDimensions = GetStringConstants(typeof(ApplicationEnricherTags));
 
         dimensions.Should().BeEquivalentTo(expectedDimensions);
     }

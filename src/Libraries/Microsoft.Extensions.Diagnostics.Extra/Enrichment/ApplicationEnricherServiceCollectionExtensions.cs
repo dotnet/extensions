@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Provides extension methods for setting up the service enrichers in an <see cref="IServiceCollection" />.
 /// </summary>
-public static class ServiceEnricherServiceCollectionExtensions
+public static class ApplicationEnricherServiceCollectionExtensions
 {
     /// <summary>
     /// Adds an instance of the service enricher to the <see cref="IServiceCollection"/>.
@@ -32,16 +32,16 @@ public static class ServiceEnricherServiceCollectionExtensions
     /// Adds an instance of the service enricher to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service enricher to.</param>
-    /// <param name="configure">The <see cref="ServiceLogEnricherOptions"/> configuration delegate.</param>
+    /// <param name="configure">The <see cref="ApplicationLogEnricherOptions"/> configuration delegate.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
-    public static IServiceCollection AddServiceLogEnricher(this IServiceCollection services, Action<ServiceLogEnricherOptions> configure)
+    public static IServiceCollection AddServiceLogEnricher(this IServiceCollection services, Action<ApplicationLogEnricherOptions> configure)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configure);
 
         return services
-            .AddStaticLogEnricher<ServiceLogEnricher>()
+            .AddStaticLogEnricher<ApplicationLogEnricher>()
             .AddLogEnricherOptions(configure);
     }
 
@@ -49,7 +49,7 @@ public static class ServiceEnricherServiceCollectionExtensions
     /// Adds an instance of the service enricher to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service enricher to.</param>
-    /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ServiceLogEnricherOptions"/> in the service enricher.</param>
+    /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ApplicationLogEnricherOptions"/> in the service enricher.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     public static IServiceCollection AddServiceLogEnricher(this IServiceCollection services, IConfigurationSection section)
@@ -58,25 +58,25 @@ public static class ServiceEnricherServiceCollectionExtensions
         _ = Throw.IfNull(section);
 
         return services
-            .AddStaticLogEnricher<ServiceLogEnricher>()
+            .AddStaticLogEnricher<ApplicationLogEnricher>()
             .AddLogEnricherOptions(_ => { }, section);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ServiceLogEnricherOptions))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ApplicationLogEnricherOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Addressed by [DynamicDependency]")]
     private static IServiceCollection AddLogEnricherOptions(
         this IServiceCollection services,
-        Action<ServiceLogEnricherOptions> configure,
+        Action<ApplicationLogEnricherOptions> configure,
         IConfigurationSection? section = null)
     {
         _ = services.Configure(configure);
 
         if (section is not null)
         {
-            _ = services.Configure<ServiceLogEnricherOptions>(section);
+            _ = services.Configure<ApplicationLogEnricherOptions>(section);
         }
 
         return services;

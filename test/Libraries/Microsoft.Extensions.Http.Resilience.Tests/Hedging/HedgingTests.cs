@@ -79,7 +79,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         {
             options.OnHedging = args =>
             {
-                args.Context.Properties.GetValue(key, "").Should().Be("my-data");
+                args.ActionContext.Properties.GetValue(key, "").Should().Be("my-data");
                 calls++;
                 return default;
             };
@@ -93,7 +93,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         await client.SendAsync(request, _cancellationTokenSource.Token);
 
-        Assert.Equal(3, calls);
+        Assert.Equal(2, calls);
     }
 
     [Fact]

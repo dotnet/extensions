@@ -52,10 +52,10 @@ public static class ResilienceServiceCollectionExtensions
             return services;
         }
 
-        services.TryAddSingleton<ResilienceMetricsEnricher>();
+        services.AddExceptionSummarizer().TryAddSingleton<ResilienceMetricsEnricher>();
 
         _ = services
-            .AddOptions<TelemetryOptions>()
+            .AddOptionsWithValidateOnStart<TelemetryOptions>()
             .Configure<ResilienceMetricsEnricher>((options, enricher) => options.MeteringEnrichers.Add(enricher));
 
         return services;
