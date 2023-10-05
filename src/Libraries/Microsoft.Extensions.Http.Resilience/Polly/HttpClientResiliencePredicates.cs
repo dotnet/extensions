@@ -16,15 +16,26 @@ namespace Microsoft.Extensions.Http.Resilience;
 public static class HttpClientResiliencePredicates
 {
     /// <summary>
+    /// Determines whether an outcome should be treated by resilience strategies as a transient failure.
+    /// </summary>
+    /// <returns><see langword="true"/> if outcome is transient, <see langword="false"/> if not.</returns>
+    public static bool IsTransient(Outcome<HttpResponseMessage> outcome) => outcome switch
+    {
+        { Result: { } response } when IsTransientHttpFailure(response) => true,
+        { Exception: { } exception } when IsTransientHttpException(exception) => true,
+        _ => false
+    };
+
+    /// <summary>
     /// Determines whether an exception should be treated by resilience strategies as a transient failure.
     /// </summary>
-    public static readonly Predicate<Exception> IsTransientHttpException = exception =>
+    internal static bool IsTransientHttpException(Exception exception)
     {
         _ = Throw.IfNull(exception);
 
         return exception is HttpRequestException ||
                exception is TimeoutRejectedException;
-    };
+    }
 
     /// <summary>
     /// Determines whether a response contains a transient failure.
@@ -32,7 +43,7 @@ public static class HttpClientResiliencePredicates
     /// <remarks> The current handling implementation uses approach proposed by Polly:
     /// <see href="https://github.com/App-vNext/Polly.Extensions.Http/blob/master/src/Polly.Extensions.Http/HttpPolicyExtensions.cs"/>.
     /// </remarks>
-    public static readonly Predicate<HttpResponseMessage> IsTransientHttpFailure = response =>
+    internal static bool IsTransientHttpFailure(HttpResponseMessage response)
     {
         _ = Throw.IfNull(response);
 
@@ -42,17 +53,7 @@ public static class HttpClientResiliencePredicates
             response.StatusCode == HttpStatusCode.RequestTimeout ||
             statusCode == TooManyRequests;
 
-    };
-
-    /// <summary>
-    /// Determines whether an outcome should be treated by resilience strategies as a transient failure.
-    /// </summary>
-    public static readonly Predicate<Outcome<HttpResponseMessage>> IsTransientHttpOutcome = outcome => outcome switch
-    {
-        { Result: { } response } when IsTransientHttpFailure(response) => true,
-        { Exception: { } exception } when IsTransientHttpException(exception) => true,
-        _ => false
-    };
+    }
 
     private const int InternalServerErrorCode = (int)HttpStatusCode.InternalServerError;
 

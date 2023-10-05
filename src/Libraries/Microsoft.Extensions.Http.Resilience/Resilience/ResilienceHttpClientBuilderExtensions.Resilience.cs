@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extensions for <see cref="IHttpClientBuilder"/>.
 /// </summary>
-public static partial class HttpResilienceHttpClientBuilderExtensions
+public static partial class ResilienceHttpClientBuilderExtensions
 {
     /// <summary>
     /// Adds a resilience pipeline handler that uses a named inline resilience pipeline.
