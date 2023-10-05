@@ -24,16 +24,16 @@ public class ResilienceServiceCollectionExtensionsTests
 
     public ResilienceServiceCollectionExtensionsTests()
     {
-        _services = new ServiceCollection().AddResilienceEnrichment();
+        _services = new ServiceCollection().AddResilienceEnricher();
         _services.TryAddSingleton(_summarizer.Object);
     }
 
     [Fact]
-    public void AddResilienceEnrichment_EnsureMetricsEnricherRegistered()
+    public void AddResilienceEnricher_EnsureMetricsEnricherRegistered()
     {
         var count = _services.Count;
 
-        _services.AddResilienceEnrichment();
+        _services.AddResilienceEnricher();
 
         var enrichers = _services.BuildServiceProvider().GetRequiredService<IOptions<TelemetryOptions>>().Value.MeteringEnrichers;
         enrichers.Should().HaveCount(1);
@@ -41,11 +41,21 @@ public class ResilienceServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void AddResilienceEnrichment_Twice_NoNewServices()
+    public void AddResilienceEnricher_NoExceptionSummarizer_Ok()
+    {
+        var services = new ServiceCollection().AddResilienceEnricher();
+
+        var enrichers = services.BuildServiceProvider().GetRequiredService<IOptions<TelemetryOptions>>().Value.MeteringEnrichers;
+        enrichers.Should().HaveCount(1);
+        enrichers.Single().Should().BeOfType<ResilienceMetricsEnricher>();
+    }
+
+    [Fact]
+    public void AddResilienceEnricher_Twice_NoNewServices()
     {
         var count = _services.Count;
 
-        _services.AddResilienceEnrichment();
+        _services.AddResilienceEnricher();
 
         _services.Count.Should().Be(count);
     }

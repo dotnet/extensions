@@ -16,12 +16,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extensions for <see cref="IHttpClientBuilder"/>.
 /// </summary>
-public static class HttpResilienceHedgingHttpClientBuilderExtensions
+public static partial class ResilienceHttpClientBuilderExtensions
 {
-    internal const string StandardInnerHandlerPostfix = "standard-hedging-endpoint";
-
-    private const string StandardHandlerPostfix = "standard-hedging";
-
     /// <summary>
     /// Adds a standard hedging handler that wraps the execution of the request with a standard hedging mechanism.
     /// </summary>
@@ -82,7 +78,7 @@ public static class HttpResilienceHedgingHttpClientBuilderExtensions
         _ = builder.Services.AddOptionsWithValidateOnStart<HttpStandardHedgingResilienceOptions, HttpStandardHedgingResilienceOptionsCustomValidator>(optionsName);
         _ = builder.Services.PostConfigure<HttpStandardHedgingResilienceOptions>(optionsName, options =>
         {
-            options.HedgingOptions.ActionGenerator = args =>
+            options.Hedging.ActionGenerator = args =>
             {
                 if (!args.PrimaryContext.Properties.TryGetValue(ResilienceKeys.RequestSnapshot, out var snapshot))
                 {
@@ -110,7 +106,7 @@ public static class HttpResilienceHedgingHttpClientBuilderExtensions
         });
 
         // configure outer handler
-        var outerHandler = builder.AddResilienceHandler(StandardHandlerPostfix, (builder, context) =>
+        var outerHandler = builder.AddResilienceHandler(HedgingConstants.HandlerPostfix, (builder, context) =>
         {
             var options = context.GetOptions<HttpStandardHedgingResilienceOptions>(optionsName);
             context.EnableReloads<HttpStandardHedgingResilienceOptions>(optionsName);
@@ -119,22 +115,22 @@ public static class HttpResilienceHedgingHttpClientBuilderExtensions
             _ = builder
                 .AddStrategy(_ => new RoutingResilienceStrategy(routingOptions.RoutingStrategyProvider), new EmptyResilienceStrategyOptions())
                 .AddStrategy(_ => new RequestMessageSnapshotStrategy(), new EmptyResilienceStrategyOptions())
-                .AddTimeout(options.TotalRequestTimeoutOptions)
-                .AddHedging(options.HedgingOptions);
+                .AddTimeout(options.TotalRequestTimeout)
+                .AddHedging(options.Hedging);
         });
 
         // configure inner handler
         var innerBuilder = builder.AddResilienceHandler(
-            StandardInnerHandlerPostfix,
+            HedgingConstants.InnerHandlerPostfix,
             (builder, context) =>
             {
                 var options = context.GetOptions<HttpStandardHedgingResilienceOptions>(optionsName);
                 context.EnableReloads<HttpStandardHedgingResilienceOptions>(optionsName);
 
                 _ = builder
-                    .AddRateLimiter(options.EndpointOptions.RateLimiterOptions)
-                    .AddCircuitBreaker(options.EndpointOptions.CircuitBreakerOptions)
-                    .AddTimeout(options.EndpointOptions.TimeoutOptions);
+                    .AddRateLimiter(options.Endpoint.RateLimiter)
+                    .AddCircuitBreaker(options.Endpoint.CircuitBreaker)
+                    .AddTimeout(options.Endpoint.Timeout);
             })
             .SelectPipelineByAuthority();
 

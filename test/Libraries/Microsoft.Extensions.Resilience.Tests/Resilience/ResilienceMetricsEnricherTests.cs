@@ -19,16 +19,16 @@ namespace Microsoft.Extensions.Resilience.Test.Resilience;
 
 public class ResilienceMetricsEnricherTests
 {
-    private readonly Mock<IExceptionSummarizer> _summarizer = new(MockBehavior.Strict);
     private readonly List<IOutgoingRequestContext> _outgoingRequestContexts = new();
     private readonly FailureEventMetricsOptions _options = new();
+    private Mock<IExceptionSummarizer>? _summarizer = new(MockBehavior.Strict);
 
     private List<KeyValuePair<string, object?>> _tags = new();
 
     private IReadOnlyDictionary<string, object?> Tags => _tags.ToDictionary(v => v.Key, v => v.Value);
 
     [Fact]
-    public void AddResilienceEnrichment_NoOutcome_EnsureDimensions()
+    public void AddResilienceEnricher_NoOutcome_EnsureDimensions()
     {
         CreateSut().Enrich(CreateEnrichmentContext<string>(null));
 
@@ -36,9 +36,9 @@ public class ResilienceMetricsEnricherTests
     }
 
     [Fact]
-    public void AddResilienceEnrichment_Exception_EnsureDimensions()
+    public void AddResilienceEnricher_Exception_EnsureDimensions()
     {
-        _summarizer.Setup(v => v.Summarize(It.IsAny<Exception>())).Returns(new ExceptionSummary("type", "desc", "details"));
+        _summarizer!.Setup(v => v.Summarize(It.IsAny<Exception>())).Returns(new ExceptionSummary("type", "desc", "details"));
 
         CreateSut().Enrich(CreateEnrichmentContext<string>(Outcome.FromException<string>(new InvalidOperationException { Source = "my-source" })));
 
@@ -48,7 +48,19 @@ public class ResilienceMetricsEnricherTests
     }
 
     [Fact]
-    public void AddResilienceEnrichment_Outcome_EnsureDimensions()
+    public void AddResilienceEnricher_ExceptionWithNoSummarizer_EnsureNoDimensions()
+    {
+        _summarizer = null;
+
+        CreateSut().Enrich(CreateEnrichmentContext<string>(Outcome.FromException<string>(new InvalidOperationException { Source = "my-source" })));
+
+        Tags.Should().NotContainKey("failure-reason");
+        Tags.Should().NotContainKey("failure-summary");
+        Tags.Should().NotContainKey("failure-source");
+    }
+
+    [Fact]
+    public void AddResilienceEnricher_Outcome_EnsureDimensions()
     {
         _options.ConfigureFailureResultContext<string>(v => FailureResultContext.Create("my-source", "my-reason", v));
 
@@ -60,7 +72,7 @@ public class ResilienceMetricsEnricherTests
     }
 
     [Fact]
-    public void AddResilienceEnrichment_RequestMetadata_EnsureDimensions()
+    public void AddResilienceEnricher_RequestMetadata_EnsureDimensions()
     {
         CreateSut().Enrich(CreateEnrichmentContext<string>(
             Outcome.FromResult("string-result"),
@@ -71,7 +83,7 @@ public class ResilienceMetricsEnricherTests
     }
 
     [Fact]
-    public void AddResilienceEnrichment_RequestMetadataFromOutgoingRequestContext_EnsureDimensions()
+    public void AddResilienceEnricher_RequestMetadataFromOutgoingRequestContext_EnsureDimensions()
     {
         var requestMetadata = new RequestMetadata { RequestName = "my-req", DependencyName = "my-dep" };
         _outgoingRequestContexts.Add(Mock.Of<IOutgoingRequestContext>(v => v.RequestMetadata == requestMetadata));
@@ -98,5 +110,5 @@ public class ResilienceMetricsEnricherTests
             _tags);
     }
 
-    private ResilienceMetricsEnricher CreateSut() => new(Options.Options.Create(_options), _outgoingRequestContexts, _summarizer.Object);
+    private ResilienceMetricsEnricher CreateSut() => new(Options.Options.Create(_options), _outgoingRequestContexts, _summarizer?.Object);
 }

@@ -45,9 +45,9 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
         ConfigurationStubFactory.Create(
             new Dictionary<string, string?>
             {
-                { "StandardResilienceOptions:CircuitBreakerOptions:FailureRatio", "0.1"},
-                { "StandardResilienceOptions:AttemptTimeoutOptions:Timeout", "00:00:05"},
-                { "StandardResilienceOptions:TotalRequestTimeoutOptions:Timeout", "00:00:20"},
+                { "StandardResilienceOptions:CircuitBreaker:FailureRatio", "0.1"},
+                { "StandardResilienceOptions:AttemptTimeout:Timeout", "00:00:05"},
+                { "StandardResilienceOptions:TotalRequestTimeout:Timeout", "00:00:20"},
             })
         .GetSection("StandardResilienceOptions");
 
@@ -166,12 +166,12 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
         {
             if (wholePipeline)
             {
-                options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(1);
-                options.AttemptTimeoutOptions.Timeout = TimeSpan.FromSeconds(2);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(1);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(2);
             }
             else
             {
-                options.RetryOptions.MaxRetryAttempts = -3;
+                options.Retry.MaxRetryAttempts = -3;
             }
         });
 
@@ -205,14 +205,14 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
         var config = ConfigurationStubFactory.Create(
             new()
             {
-                { "standard:RetryOptions:MaxRetryAttempts", "6" }
+                { "standard:Retry:MaxRetryAttempts", "6" }
             },
             out var reloadAction).GetSection("standard");
 
         _builder.AddStandardResilienceHandler().Configure(config).Configure(options =>
         {
-            options.RetryOptions.Delay = TimeSpan.Zero;
-            options.RetryOptions.BackoffType = DelayBackoffType.Constant;
+            options.Retry.Delay = TimeSpan.Zero;
+            options.Retry.BackoffType = DelayBackoffType.Constant;
         });
 
         _builder.AddHttpMessageHandler(() => new TestHandlerStub((r, _) =>
@@ -228,7 +228,7 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
         requests.Should().HaveCount(7);
 
         requests.Clear();
-        reloadAction(new() { { "standard:RetryOptions:MaxRetryAttempts", "10" } });
+        reloadAction(new() { { "standard:Retry:MaxRetryAttempts", "10" } });
 
         await client.GetAsync("https://dummy");
         requests.Should().HaveCount(11);

@@ -45,7 +45,7 @@ public class HttpStandardHedgingResilienceOptions
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
-    public HttpTimeoutStrategyOptions TotalRequestTimeoutOptions { get; set; } = new HttpTimeoutStrategyOptions
+    public HttpTimeoutStrategyOptions TotalRequestTimeout { get; set; } = new HttpTimeoutStrategyOptions
     {
         Name = StandardHedgingPipelineNames.TotalRequestTimeout
     };
@@ -58,7 +58,7 @@ public class HttpStandardHedgingResilienceOptions
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
-    public HttpHedgingStrategyOptions HedgingOptions { get; set; } = new HttpHedgingStrategyOptions
+    public HttpHedgingStrategyOptions Hedging { get; set; } = new HttpHedgingStrategyOptions
     {
         Name = StandardHedgingPipelineNames.Hedging
     };
@@ -71,5 +71,5 @@ public class HttpStandardHedgingResilienceOptions
     /// </remarks>
     [Required]
     [ValidateObjectMembers]
-    public HedgingEndpointOptions EndpointOptions { get; set; } = new HedgingEndpointOptions();
+    public HedgingEndpointOptions Endpoint { get; set; } = new HedgingEndpointOptions();
 }
