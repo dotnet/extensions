@@ -161,7 +161,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Hostin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Http.AutoClient.Tests", "test\Libraries\Microsoft.Extensions.Http.AutoClient.Tests\Microsoft.Extensions.Http.AutoClient.Tests.csproj", "{2449EC1F-E034-4DD2-887B-B4C71DAA855C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Http.Diagnostics.Tests", "test\Libraries\Microsoft.Extensions.Http.Diagnositcs.Tests\Microsoft.Extensions.Http.Diagnostics.Tests.csproj", "{90A6A3FA-842E-4B0B-84F5-AB5644469287}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Http.Diagnostics.Tests", "test\Libraries\Microsoft.Extensions.Http.Diagnostics.Tests\Microsoft.Extensions.Http.Diagnostics.Tests.csproj", "{90A6A3FA-842E-4B0B-84F5-AB5644469287}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Http.Resilience.Tests", "test\Libraries\Microsoft.Extensions.Http.Resilience.Tests\Microsoft.Extensions.Http.Resilience.Tests.csproj", "{9DD8BFAF-3602-429E-B61C-99620D817E47}"
 EndProject
