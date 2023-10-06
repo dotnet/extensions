@@ -34,7 +34,7 @@ public sealed class PatchAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="PatchAttribute"/> class.
     /// </summary>
-    /// <param name="path">The path of the request.</param>
+    /// <param name="path">The path of the request. Cannot be empty or null.</param>
     public PatchAttribute(string path)
     {
         Path = path;
