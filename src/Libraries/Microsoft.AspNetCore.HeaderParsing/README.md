@@ -22,7 +22,7 @@ Or directly in the C# project file:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Microsoft.AspNetCore.HeaderParsing" Version="*" />
+  <PackageReference Include="Microsoft.AspNetCore.HeaderParsing" Version="[CURRENTVERSION]" />
 </ItemGroup>
 ```
 ## Usage Example
