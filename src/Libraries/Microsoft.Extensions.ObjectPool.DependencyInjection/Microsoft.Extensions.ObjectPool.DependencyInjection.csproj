@@ -20,5 +20,4 @@
   <ItemGroup>
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
   </ItemGroup>
-
 </Project>
