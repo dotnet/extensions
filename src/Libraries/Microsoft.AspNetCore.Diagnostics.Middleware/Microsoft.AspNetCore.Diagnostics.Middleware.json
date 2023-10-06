@@ -2,6 +2,85 @@
   "Name": "Microsoft.AspNetCore.Diagnostics.Middleware, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
+      "Type": "static class Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames",
+      "Stage": "Stable",
+      "Fields": [
+        {
+          "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.Duration",
+          "Stage": "Stable",
+          "Value": "Duration"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.Host",
+          "Stage": "Stable",
+          "Value": "Host"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.Method",
+          "Stage": "Stable",
+          "Value": "Method"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.Path",
+          "Stage": "Stable",
+          "Value": "Path"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.RequestBody",
+          "Stage": "Stable",
+          "Value": "RequestBody"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.RequestHeaderPrefix",
+          "Stage": "Stable",
+          "Value": "RequestHeader_"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.ResponseBody",
+          "Stage": "Stable",
+          "Value": "ResponseBody"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.ResponseHeaderPrefix",
+          "Stage": "Stable",
+          "Value": "ResponseHeader_"
+        },
+        {
+          "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.StatusCode",
+          "Stage": "Stable",
+          "Value": "StatusCode"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.DimensionNames { get; }",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
+      "Type": "enum Microsoft.AspNetCore.Diagnostics.Logging.IncomingPathLoggingMode",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.AspNetCore.Diagnostics.Logging.IncomingPathLoggingMode.IncomingPathLoggingMode();",
+          "Stage": "Stable"
+        }
+      ],
+      "Fields": [
+        {
+          "Member": "const Microsoft.AspNetCore.Diagnostics.Logging.IncomingPathLoggingMode Microsoft.AspNetCore.Diagnostics.Logging.IncomingPathLoggingMode.Formatted",
+          "Stage": "Stable",
+          "Value": "0"
+        },
+        {
+          "Member": "const Microsoft.AspNetCore.Diagnostics.Logging.IncomingPathLoggingMode Microsoft.AspNetCore.Diagnostics.Logging.IncomingPathLoggingMode.Structured",
+          "Stage": "Stable",
+          "Value": "1"
+        }
+      ]
+    },
+    {
       "Type": "static class Microsoft.AspNetCore.Diagnostics.Latency.RequestCheckpointConstants",
       "Stage": "Stable",
       "Fields": [
