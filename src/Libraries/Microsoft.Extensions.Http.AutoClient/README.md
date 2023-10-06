@@ -1,6 +1,6 @@
 # Microsoft.Extensions.Http.AutoClient
 
-This package allows creating efficient HTTP auto clients with minimal code. The client code is generated at compile time, or while editing if analyzers are enabled.
+This package allows creating efficient HTTP clients for existing REST APIs with minimal code. The client code is generated at compile time, is highly efficient, and integrates with modern telemetry patterns.
 
 ## Getting started
 
@@ -26,7 +26,7 @@ public interface IMyDependencyClient
 }
 ```
 
-By default, the generated client would be of type `MyDependencyClient` (Interface name without the `I`). If you need to use a different name for the dependency name, then you can use the different AutoClient constructor:
+By default, the generated client would be of type `MyDependencyClient` (Interface name without the `I`). If you need to use a different name for the dependency name, then you can use the different AutoClient constructors:
 
 ```csharp
 using Microsoft.Extensions.Http.AutoClient;
