@@ -12,5 +12,13 @@
     <InjectCallerAttributesOnLegacy Condition="'$(InjectCallerAttributesOnLegacy)' == ''">true</InjectCallerAttributesOnLegacy>
     <InjectDiagnosticAttributesOnLegacy Condition="'$(InjectDiagnosticAttributesOnLegacy)' == ''">true</InjectDiagnosticAttributesOnLegacy>
     <InjectSharedThrow Condition="'$(InjectSharedThrow)' == ''">true</InjectSharedThrow>
+
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

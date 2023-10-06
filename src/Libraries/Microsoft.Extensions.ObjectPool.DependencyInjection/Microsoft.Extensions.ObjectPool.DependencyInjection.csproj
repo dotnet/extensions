@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.ObjectPool</RootNamespace>
     <Description>Provides object pools from service containers.</Description>
@@ -20,4 +20,5 @@
   <ItemGroup>
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
   </ItemGroup>
+
 </Project>
