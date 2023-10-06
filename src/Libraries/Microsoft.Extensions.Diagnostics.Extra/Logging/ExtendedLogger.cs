@@ -203,6 +203,13 @@ internal sealed partial class ExtendedLogger : ILogger
                 var jr = JustInTimeRedactor.Get();
                 jr.Value = cp.Value;
                 jr.Redactor = config.GetRedactor(cp.Classification);
+
+                if (config.AddRedactionSalt)
+                {
+                    jr.Salt = cp.Name;
+                    jr.AddDayOfYearToSalt = config.IncludeDayOfYearInRedactionSalt;
+                }
+
                 jr.Next = jitRedactors;
                 jitRedactors = jr;
 
