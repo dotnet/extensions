@@ -80,6 +80,37 @@ public class QueryTests : IDisposable
         Assert.Equal("Success!", response);
     }
 
+    [Theory]
+    [InlineData("?")]
+    [InlineData("=")]
+    [InlineData("&")]
+    [InlineData("%")]
+    [InlineData("+")]
+    [InlineData("#")]
+    [InlineData(" ")]
+    [InlineData("/")] // / isn't required to be escaped in query string values but there is no harm in doing so
+    public async Task SensitiveCharsAreEscaped(string value)
+    {
+        var encodedValue = Uri.EscapeDataString(value);
+
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
+                message.Method == HttpMethod.Get &&
+                message.RequestUri != null &&
+                message.RequestUri.PathAndQuery == $"/api/users?paramQuery={encodedValue}"),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
+
+        var response = await _sut.GetUsers(value);
+
+        Assert.Equal("Success!", response);
+    }
+
     [Fact]
     public async Task QueryFromParameterCustom()
     {

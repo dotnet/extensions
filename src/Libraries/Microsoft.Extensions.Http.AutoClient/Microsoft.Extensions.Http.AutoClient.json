@@ -116,6 +116,16 @@
       ]
     },
     {
+      "Type": "static class Microsoft.Extensions.Http.AutoClient.AutoClientUtilities",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static bool Microsoft.Extensions.Http.AutoClient.AutoClientUtilities.IsPathParameterValid(string value);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "sealed class Microsoft.Extensions.Http.AutoClient.BodyAttribute : System.Attribute",
       "Stage": "Stable",
       "Methods": [

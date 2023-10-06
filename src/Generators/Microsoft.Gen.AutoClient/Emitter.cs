@@ -43,6 +43,8 @@ internal sealed class Emitter : EmitterBase
     private const string AutoClientHttpError = "global::Microsoft.Extensions.Http.AutoClient.AutoClientHttpError";
     private const string Invariant = "global::System.FormattableString.Invariant";
     private const string UriKind = "global::System.UriKind";
+    private const string ArgumentException = "global::System.ArgumentException";
+    private const string AutoClientUtilities = "global::Microsoft.Extensions.Http.AutoClient.AutoClientUtilities";
 
     public string EmitRestApis(IReadOnlyList<RestApiType> restApiTypes, CancellationToken cancellationToken)
     {
@@ -66,6 +68,8 @@ internal sealed class Emitter : EmitterBase
 
         return Capture();
     }
+
+    private static string GetEscapedParamName(string name) => $"{name}Escaped";
 
     private static string GetPathTemplate(RestApiMethod restApiMethod)
     {
@@ -229,10 +233,26 @@ internal sealed class Emitter : EmitterBase
 
         var pathSb = new StringBuilder(restApiMethod.Path);
 
+        // Validate path values
         foreach (var param in restApiMethod.FormatParameters)
         {
-            var escapedParamName = $"{param}Escaped";
-            OutLn($"var {escapedParamName} = {Uri}.EscapeDataString($\"{{{param}}}\");");
+            var escapedParamName = GetEscapedParamName(param);
+
+            // Use interpolated string to handle any null values from any type like nullable value types or reference types.
+            OutLn($"var {escapedParamName} = $\"{{{param}}}\";");
+
+            // Values should not contain '/', '\', be empty, whitespace or made of dots (.) only
+            OutLn($"if (!{AutoClientUtilities}.IsPathParameterValid({escapedParamName})) throw new {ArgumentException}({staticsName}.ValidationExceptionMessage, nameof({param}));");
+            OutLn();
+
+            _ = pathSb.Replace($"{{{param}}}", $"{{{escapedParamName}}}");
+        }
+
+        // Encode path values
+        foreach (var param in restApiMethod.FormatParameters)
+        {
+            var escapedParamName = GetEscapedParamName(param);
+            OutLn($"{escapedParamName} = {Uri}.EscapeDataString({escapedParamName});");
 
             _ = pathSb.Replace($"{{{param}}}", $"{{{escapedParamName}}}");
         }
@@ -242,7 +262,7 @@ internal sealed class Emitter : EmitterBase
         var firstQuery = true;
         foreach (var param in restApiMethod.AllParameters.Where(m => m.IsQuery))
         {
-            var escapedParamName = $"{param.Name}Escaped";
+            var escapedParamName = GetEscapedParamName(param.Name);
 
             // Use interpolated string to handle any null values from any type like nullable value types or reference types.
             OutLn($"var {escapedParamName} = {Uri}.EscapeDataString($\"{{{param.Name}}}\");");
@@ -357,6 +377,7 @@ internal sealed class Emitter : EmitterBase
         OutCloseBrace();
 
         OutCloseBrace();
+
     }
 
     private void EmitSendRequestMethod(string httpClientName, string optionsName)
@@ -439,6 +460,9 @@ internal sealed class Emitter : EmitterBase
     {
         OutLn($"private static class {staticsName}");
         OutOpenBrace();
+
+        OutLn("public const string ValidationExceptionMessage = \"The value can't contain '\\\\', '/', be empty, null or contain only dots (.).\";");
+        OutLn();
 
         OutLn(@$"public static readonly {MediaTypeHeaderValue} ApplicationJsonHeader = new(""application/json"")");
         OutOpenBrace();
