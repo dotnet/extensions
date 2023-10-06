@@ -17,8 +17,8 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks.Test;
 
 public class TelemetryHealthChecksPublisherTests
 {
-    private const string HealthReportMetricName = @"HealthCheck\Report";
-    private const string UnhealthyHealthCheckMetricName = @"HealthCheck\UnhealthyHealthCheck";
+    private const string HealthReportMetricName = @"R9\HealthCheck\Report";
+    private const string UnhealthyHealthCheckMetricName = @"R9\HealthCheck\UnhealthyHealthCheck";
 
     public static TheoryData<List<HealthStatus>, bool, int, string, LogLevel, string, string> PublishAsyncArgs => new()
     {
