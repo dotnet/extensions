@@ -44,7 +44,7 @@ public static class HeaderParsingServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="configuration">A delegate to setup parsing for the header.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection AddHeaderParsing(this IServiceCollection services, Action<HeaderParsingOptions> configuration)
+    public static IServiceCollection AddHeaderParsing(this IServiceCollection services, Action<HeaderParsingOptions> configure)
     {
         _ = Throw.IfNull(services);
 
