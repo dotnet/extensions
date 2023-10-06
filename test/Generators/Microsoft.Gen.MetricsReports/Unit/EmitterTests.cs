@@ -65,13 +65,13 @@ public class EmitterTests
                     },
                     new ReportedMetricMethod
                     {
-                        MetricName = "R9\\Test\\MemoryUsage",
+                        MetricName = "Test\\MemoryUsage",
                         Summary = "MemoryUsage summary.",
                         Kind = InstrumentKind.Gauge,
                         Dimensions = new() { "Path"},
                         DimensionsDescriptions = new Dictionary<string, string>
                         {
-                            { "Path", "R9\\Test\\Description\\Path" }
+                            { "Path", "Test\\Description\\Path" }
                         },
                     }
                 }
@@ -166,11 +166,11 @@ public class EmitterTests
             newLine + "     \"InstrumentName\": \"Counter\"" +
             newLine + "    }," +
             newLine + "    {" +
-            newLine + "     \"MetricName\": \"R9\\\\Test\\\\MemoryUsage\"," +
+            newLine + "     \"MetricName\": \"Test\\\\MemoryUsage\"," +
             newLine + "     \"MetricDescription\": \"MemoryUsage summary.\"," +
             newLine + "     \"InstrumentName\": \"Gauge\"," +
             newLine + "     \"Dimensions\": {" +
-            newLine + "      \"Path\": \"R9\\\\Test\\\\Description\\\\Path\"" +
+            newLine + "      \"Path\": \"Test\\\\Description\\\\Path\"" +
             newLine + "      }" +
             newLine + "    }" +
             newLine + "  ]" +

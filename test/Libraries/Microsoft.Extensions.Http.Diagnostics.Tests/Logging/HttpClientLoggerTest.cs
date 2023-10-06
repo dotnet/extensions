@@ -454,7 +454,7 @@ public class HttpClientLoggerTest
         Assert.DoesNotContain(logRecordState, kvp => kvp.Key.StartsWith(HttpClientLoggingTagNames.ResponseHeaderPrefix));
     }
 
-    [Fact(Skip = "Flaky test, see https://github.com/dotnet/r9/issues/372")]
+    [Fact(Skip = "Flaky test, see https://github.com/dotnet/extensions/issues/4530")]
     public async Task HttpLoggingHandler_ReadResponseThrows_LogsException()
     {
         var requestContent = _fixture.Create<string>();
