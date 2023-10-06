@@ -157,8 +157,8 @@ public sealed class AcceptanceTest
 
         listener.InstrumentPublished = (i, m) =>
         {
-            if (i.Name == ResourceUtilizationCounters.CpuConsumptionPercentage
-            || i.Name == ResourceUtilizationCounters.MemoryConsumptionPercentage)
+            if (i.Name == ResourceUtilizationInstruments.CpuUtilization
+            || i.Name == ResourceUtilizationInstruments.MemoryUtilization)
             {
                 m.EnableMeasurementEvents(i);
             }
@@ -166,11 +166,11 @@ public sealed class AcceptanceTest
 
         listener.SetMeasurementEventCallback<double>((m, f, _, _) =>
         {
-            if (m.Name == ResourceUtilizationCounters.CpuConsumptionPercentage)
+            if (m.Name == ResourceUtilizationInstruments.CpuUtilization)
             {
                 cpuFromGauge = f;
             }
-            else if (m.Name == ResourceUtilizationCounters.MemoryConsumptionPercentage)
+            else if (m.Name == ResourceUtilizationInstruments.MemoryUtilization)
             {
                 memoryFromGauge = f;
             }

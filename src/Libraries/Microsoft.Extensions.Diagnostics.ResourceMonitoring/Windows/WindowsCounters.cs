@@ -20,11 +20,11 @@ internal sealed class WindowsCounters
         var meter = meterFactory.Create("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        var tcpTag = KeyValuePair.Create<string, object?>("network.transport", "tcp");
+        var tcpTag = new KeyValuePair<string, object?>("network.transport", "tcp");
 
         // These are covered in https://github.com/open-telemetry/semantic-conventions/blob/main/docs/rpc/rpc-metrics.md#attributes:
-        var tcpVersionFourTag = KeyValuePair.Create<string, object?>("network.type", "ipv4");
-        var tcpVersionSixTag = KeyValuePair.Create<string, object?>("network.type", "ipv6");
+        var tcpVersionFourTag = new KeyValuePair<string, object?>("network.type", "ipv4");
+        var tcpVersionSixTag = new KeyValuePair<string, object?>("network.type", "ipv6");
 
         // TODO: these are heavily rewritten to align with
         // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/system/system-metrics.md#metric-systemnetworkconnections

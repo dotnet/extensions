@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// These metrics are currently only published on Linux.
 /// </remarks>
 /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
-public static class ResourceUtilizationCounters
+internal static class ResourceUtilizationInstruments
 {
     /// <summary>
     /// Gets the CPU consumption of the running application in range <c>[0, 1]</c>.
@@ -18,7 +18,7 @@ public static class ResourceUtilizationCounters
     /// <remarks>
     /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableGauge{T}"/>.
     /// </remarks>
-    public static string CpuUtilization => "process.cpu.utilization";
+    public const string CpuUtilization = "process.cpu.utilization";
 
     /// <summary>
     /// Gets the memory consumption of the running application in range <c>[0, 1]</c>.
@@ -26,5 +26,5 @@ public static class ResourceUtilizationCounters
     /// <remarks>
     /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableGauge{T}"/>.
     /// </remarks>
-    public static string MemoryUtilization => "process.memory.utilization";
+    public const string MemoryUtilization = "process.memory.virtual.utilization";
 }

@@ -61,9 +61,9 @@ public sealed class LinuxCountersTests
         listener.RecordObservableInstruments();
 
         Assert.Equal(2, samples.Count);
-        Assert.Equal(ResourceUtilizationCounters.CpuConsumptionPercentage, samples[0].instrument.Name);
+        Assert.Equal(ResourceUtilizationInstruments.CpuUtilization, samples[0].instrument.Name);
         Assert.Equal(double.NaN, samples[0].value);
-        Assert.Equal(ResourceUtilizationCounters.MemoryConsumptionPercentage, samples[1].instrument.Name);
+        Assert.Equal(ResourceUtilizationInstruments.MemoryUtilization, samples[1].instrument.Name);
         Assert.Equal(50, samples[1].value);
     }
 }
