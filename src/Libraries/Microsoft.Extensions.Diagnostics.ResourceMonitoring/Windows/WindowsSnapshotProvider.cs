@@ -33,6 +33,6 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
             TimeSpan.FromTicks(TimeProvider.GetUtcNow().Ticks),
             TimeSpan.FromTicks(process.PrivilegedProcessorTime.Ticks),
             TimeSpan.FromTicks(process.UserProcessorTime.Ticks),
-            (ulong)process.WorkingSet64);
+            (ulong)process.VirtualMemorySize64);
     }
 }
