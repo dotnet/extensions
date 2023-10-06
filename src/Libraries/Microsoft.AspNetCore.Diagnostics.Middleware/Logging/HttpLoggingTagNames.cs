@@ -5,15 +5,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 /// <summary>
 /// Constants used for incoming HTTP request logging tags.
 /// </summary>
-[Experimental(diagnosticId: Experiments.HttpLogging, UrlFormat = Experiments.UrlFormat)]
 public static class HttpLoggingTagNames
 {
     /// <summary>
