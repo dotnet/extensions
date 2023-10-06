@@ -17,10 +17,10 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks.Test;
 
 public class TelemetryHealthChecksPublisherTests
 {
-    private const string HealthReportMetricName = @"R9\HealthCheck\Report";
-    private const string UnhealthyHealthCheckMetricName = @"R9\HealthCheck\UnhealthyHealthCheck";
+    private const string HealthReportMetricName = "health_check.reports";
+    private const string UnhealthyHealthCheckMetricName = "health_check.unhealthy_checks";
 
-    public static TheoryData<List<HealthStatus>, bool, int, string, LogLevel, string, string> PublishAsyncArgs => new()
+    public static TheoryData<List<HealthStatus>, bool, int, string, LogLevel, string> PublishAsyncArgs => new()
     {
         {
             new List<HealthStatus> { HealthStatus.Healthy },
@@ -28,7 +28,6 @@ public class TelemetryHealthChecksPublisherTests
             1,
             "Process reporting healthy: Healthy.",
             LogLevel.Debug,
-            bool.TrueString,
             HealthStatus.Healthy.ToString()
         },
         {
@@ -37,7 +36,6 @@ public class TelemetryHealthChecksPublisherTests
             1,
             "Process reporting unhealthy: Degraded. Health check entries are id0: {status: Degraded, description: desc0}",
             LogLevel.Warning,
-            bool.FalseString,
             HealthStatus.Degraded.ToString()
         },
         {
@@ -46,7 +44,6 @@ public class TelemetryHealthChecksPublisherTests
             1,
             "Process reporting unhealthy: Unhealthy. Health check entries are id0: {status: Unhealthy, description: desc0}",
             LogLevel.Warning,
-            bool.FalseString,
             HealthStatus.Unhealthy.ToString()
         },
         {
@@ -55,7 +52,6 @@ public class TelemetryHealthChecksPublisherTests
             0,
             "Process reporting healthy: Healthy.",
             LogLevel.Debug,
-            bool.TrueString,
             HealthStatus.Healthy.ToString()
         },
         {
@@ -64,7 +60,6 @@ public class TelemetryHealthChecksPublisherTests
             1,
             "Process reporting unhealthy: Unhealthy. Health check entries are id0: {status: Healthy, description: desc0}, id1: {status: Unhealthy, description: desc1}",
             LogLevel.Warning,
-            bool.FalseString,
             HealthStatus.Unhealthy.ToString()
         },
         {
@@ -74,7 +69,6 @@ public class TelemetryHealthChecksPublisherTests
             "Process reporting unhealthy: Unhealthy. Health check entries are " +
             "id0: {status: Healthy, description: desc0}, id1: {status: Degraded, description: desc1}, id2: {status: Unhealthy, description: desc2}",
             LogLevel.Warning,
-            bool.FalseString,
             HealthStatus.Unhealthy.ToString()
         },
     };
@@ -87,7 +81,6 @@ public class TelemetryHealthChecksPublisherTests
         int expectedLogCount,
         string expectedLogMessage,
         LogLevel expectedLogLevel,
-        string expectedMetricHealthy,
         string expectedMetricStatus)
     {
         using var meter = new Meter(nameof(PublishAsync));
@@ -116,8 +109,7 @@ public class TelemetryHealthChecksPublisherTests
         var latest = healthyMetricCollector.LastMeasurement!;
 
         latest.Value.Should().Be(1);
-        latest.Tags["healthy"].Should().Be(expectedMetricHealthy);
-        latest.Tags["status"].Should().Be(expectedMetricStatus);
+        latest.Tags["health.status"].Should().Be(expectedMetricStatus);
 
         var unhealthyCounters = unhealthyMetricCollector.GetMeasurementSnapshot();
 
@@ -145,8 +137,8 @@ public class TelemetryHealthChecksPublisherTests
     {
         foreach (var counter in counters)
         {
-            if (counter!.Tags["name"]?.ToString() == healthy &&
-                counter!.Tags["status"]?.ToString() == status)
+            if (counter!.Tags["health_check.name"]?.ToString() == healthy &&
+                counter!.Tags["health.status"]?.ToString() == status)
             {
                 return counter.Value;
             }

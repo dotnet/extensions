@@ -17,7 +17,7 @@ internal static partial class Metric
     [Counter("health_check.name", "health.status", Name = "health_check.unhealthy_checks")]
     public static partial UnhealthyHealthCheckCounter CreateUnhealthyHealthCheckCounter(Meter meter);
 
-    public static void RecordMetric(this HealthCheckReportCounter counterMetric, bool isHealthy, HealthStatus status)
+    public static void RecordMetric(this HealthCheckReportCounter counterMetric, HealthStatus status)
         => counterMetric.Add(1, status.ToInvariantString());
 
     public static void RecordMetric(this UnhealthyHealthCheckCounter counterMetric, string name, HealthStatus status)
