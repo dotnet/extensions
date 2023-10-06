@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.Metrics;
-using System.Globalization;
 using Microsoft.Extensions.Diagnostics.Metrics;
 using Microsoft.Extensions.EnumStrings;
 
@@ -12,16 +11,14 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
 internal static partial class Metric
 {
-    // TODO: should we rename "healthy" to "is_healthy"? Or maybe remove the attribute at all?
-    // To klauco: do we really need this true/false dimension? We already have "health.status" dimension.
-    [Counter("healthy", "health.status", Name = "health_check.reports")]
+    [Counter("health.status", Name = "health_check.reports")]
     public static partial HealthCheckReportCounter CreateHealthCheckReportCounter(Meter meter);
 
     [Counter("health_check.name", "health.status", Name = "health_check.unhealthy_checks")]
     public static partial UnhealthyHealthCheckCounter CreateUnhealthyHealthCheckCounter(Meter meter);
 
     public static void RecordMetric(this HealthCheckReportCounter counterMetric, bool isHealthy, HealthStatus status)
-        => counterMetric.Add(1, isHealthy.ToString(CultureInfo.InvariantCulture), status.ToInvariantString());
+        => counterMetric.Add(1, status.ToInvariantString());
 
     public static void RecordMetric(this UnhealthyHealthCheckCounter counterMetric, string name, HealthStatus status)
         => counterMetric.Add(1, name, status.ToInvariantString());
