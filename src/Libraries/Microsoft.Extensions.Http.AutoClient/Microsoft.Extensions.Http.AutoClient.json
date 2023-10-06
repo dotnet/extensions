@@ -120,7 +120,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static bool IsPathParameterValid(string value);",
+          "Member": "static bool Microsoft.Extensions.Http.AutoClient.AutoClientUtilities.IsPathParameterValid(string value);",
           "Stage": "Stable"
         }
       ]
