@@ -3,11 +3,9 @@
 
 using System;
 using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
@@ -24,13 +22,7 @@ public class RequestHeadersEnricherExtensionsTests
             ((IServiceCollection)null!).AddRequestHeadersLogEnricher(_ => { }));
 
         Assert.Throws<ArgumentNullException>(() =>
-            ((IServiceCollection)null!).AddRequestHeadersLogEnricher(Mock.Of<IConfigurationSection>()));
-
-        Assert.Throws<ArgumentNullException>(() =>
-            new ServiceCollection().AddRequestHeadersLogEnricher((IConfigurationSection)null!));
-
-        Assert.Throws<ArgumentNullException>(() =>
-            new ServiceCollection().AddRequestHeadersLogEnricher((Action<RequestHeadersLogEnricherOptions>)null!));
+            new ServiceCollection().AddRequestHeadersLogEnricher(null!));
     }
 
     [Fact]
@@ -41,16 +33,6 @@ public class RequestHeadersEnricherExtensionsTests
             .BuildServiceProvider();
 
         Assert.Throws<ArgumentNullException>(() => sp.GetRequiredService<ILogEnricher>());
-    }
-
-    [Fact]
-    public void RequestHeadersLogEnricher_GivenInvalidOptions_HeaderKeysWithDataClass_Throws()
-    {
-        using var sp = new ServiceCollection()
-            .AddRequestHeadersLogEnricher(e => e.HeadersDataClasses = null!)
-            .BuildServiceProvider();
-
-        Assert.Throws<OptionsValidationException>(() => sp.GetRequiredService<IOptions<RequestHeadersLogEnricherOptions>>().Value);
     }
 
     [Fact]
@@ -85,34 +67,4 @@ public class RequestHeadersEnricherExtensionsTests
         Assert.NotNull(options.HeadersDataClasses);
         Assert.Single(options.HeadersDataClasses);
     }
-
-#if FIXME
-    [Fact]
-    public void RequestHeadersLogEnricher_GivenConfigurationSectionAndRedaction_RegistersInDI()
-    {
-        var dc = new DataClassification("TAX", 1);
-
-        // Arrange
-        var configRoot = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { ["Section:HeadersDataClasses:TestKey"] = "SimpleClassifications.PrivateData" })
-            .Build();
-
-        // Act
-        using var serviceProvider = new ServiceCollection()
-            .AddRequestHeadersLogEnricher(configRoot.GetSection("Section"))
-            .AddFakeRedaction()
-            .BuildServiceProvider();
-
-        // Assert
-        var enricher = serviceProvider.GetRequiredService<ILogEnricher>();
-        Assert.NotNull(enricher);
-        Assert.IsType<RequestHeadersLogEnricher>(enricher);
-
-        var options = serviceProvider.GetRequiredService<IOptions<RequestHeadersLogEnricherOptions>>().Value;
-        Assert.NotNull(options);
-        Assert.NotNull(options.HeadersDataClasses);
-        Assert.Single(options.HeadersDataClasses);
-        Assert.Equal(SimpleClassifications.PrivateData, options.HeadersDataClasses["TestKey"]);
-    }
-#endif
 }

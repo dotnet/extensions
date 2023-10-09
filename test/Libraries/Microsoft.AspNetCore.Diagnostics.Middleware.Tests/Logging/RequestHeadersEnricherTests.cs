@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Diagnostics.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Compliance.Testing;
 using Moq;
@@ -54,10 +53,7 @@ public class RequestHeadersEnricherTests
     public void RequestHeadersEnricher_GivenDisabledEnricherOptions_HeaderKeysDataClasses_DoesNotEnrich()
     {
         // Arrange
-        var options = new RequestHeadersLogEnricherOptions
-        {
-            HeadersDataClasses = new Dictionary<string, DataClassification>()
-        };
+        var options = new RequestHeadersLogEnricherOptions();
 
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
         var enrichedProperties = new TestLogEnrichmentTagCollector();
@@ -76,7 +72,7 @@ public class RequestHeadersEnricherTests
         // Arrange
         var options = new RequestHeadersLogEnricherOptions
         {
-            HeadersDataClasses = new Dictionary<string, DataClassification>
+            HeadersDataClasses =
             {
                 { HeaderKey1, FakeClassifications.PrivateData },
                 { HeaderKey4, FakeClassifications.PublicData }
@@ -109,7 +105,7 @@ public class RequestHeadersEnricherTests
         // Arrange
         var options = new RequestHeadersLogEnricherOptions
         {
-            HeadersDataClasses = new Dictionary<string, DataClassification>
+            HeadersDataClasses =
             {
                 { HeaderKey1, FakeClassifications.PrivateData },
                 { HeaderKey2, FakeClassifications.PublicData }
@@ -139,7 +135,7 @@ public class RequestHeadersEnricherTests
         // Arrange
         var options = new RequestHeadersLogEnricherOptions
         {
-            HeadersDataClasses = new Dictionary<string, DataClassification>
+            HeadersDataClasses =
             {
                 { HeaderKey1, FakeClassifications.PublicData },
                 { HeaderKey3, FakeClassifications.PublicData }
@@ -166,7 +162,7 @@ public class RequestHeadersEnricherTests
         var headerKey2 = "header_does_not_exist";
         var options = new RequestHeadersLogEnricherOptions
         {
-            HeadersDataClasses = new Dictionary<string, DataClassification>
+            HeadersDataClasses =
             {
                 { HeaderKey1, FakeClassifications.PublicData },
                 { headerKey2, FakeClassifications.PublicData }
@@ -191,7 +187,7 @@ public class RequestHeadersEnricherTests
         // Arrange
         var options = new RequestHeadersLogEnricherOptions
         {
-            HeadersDataClasses = new Dictionary<string, DataClassification>
+            HeadersDataClasses =
             {
                 { HeaderKey1, FakeClassifications.PublicData }
             }
@@ -218,7 +214,7 @@ public class RequestHeadersEnricherTests
         // Arrange
         var options = new RequestHeadersLogEnricherOptions
         {
-            HeadersDataClasses = new Dictionary<string, DataClassification>
+            HeadersDataClasses =
             {
                 { HeaderKey1, FakeClassifications.PublicData }
             }
