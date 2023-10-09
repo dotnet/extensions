@@ -12,7 +12,8 @@ internal sealed class WindowsCounters
     public WindowsCounters(IMeterFactory meterFactory, TcpTableInfo tcpTableInfo)
     {
         const string NetworkStateKey = "system.network.state";
-        const string GaugeName = "process.network.connections";
+        const string InstrumentName = "process.network.connections";
+
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // We don't dispose the meter because IMeterFactory handles that
         // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
@@ -26,12 +27,12 @@ internal sealed class WindowsCounters
         var tcpVersionFourTag = new KeyValuePair<string, object?>("network.type", "ipv4");
         var tcpVersionSixTag = new KeyValuePair<string, object?>("network.type", "ipv6");
 
-        // TODO: these are heavily rewritten to align with
+        // These metrics are aligned with
         // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/system/system-metrics.md#metric-systemnetworkconnections
-        // All these should be of UpDownCounter type
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv4_connection_closed_count",
-            GaugeName,
+
+        // IPv4:
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -41,9 +42,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionFourTag, new(NetworkStateKey, "closed") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv4_connection_listen_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -53,9 +53,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionFourTag, new(NetworkStateKey, "listen") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv4_connection_syn_sent_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -65,9 +64,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionFourTag, new(NetworkStateKey, "syn_sent") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv4_connection_syn_received_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -77,9 +75,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionFourTag, new(NetworkStateKey, "syn_recv") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv4_connection_established_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -89,9 +86,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionFourTag, new(NetworkStateKey, "established") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv4_connection_fin_wait_1_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -101,9 +97,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionFourTag, new(NetworkStateKey, "fin_wait_1") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv4_connection_fin_wait_2_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -113,9 +108,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionFourTag, new(NetworkStateKey, "fin_wait_2") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv4_connection_close_wait_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -125,9 +119,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionFourTag, new(NetworkStateKey, "close_wait") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv4_connection_closing_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -137,9 +130,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionFourTag, new(NetworkStateKey, "closing") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv4_connection_last_ack_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -149,9 +141,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionFourTag, new(NetworkStateKey, "last_ack") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv4_connection_time_wait_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -161,9 +152,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionFourTag, new(NetworkStateKey, "time_wait") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv4_connection_delete_tcb_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv4CachingSnapshot();
@@ -173,9 +163,9 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionFourTag, new(NetworkStateKey, "delete") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv6_connection_closed_count",
-            GaugeName,
+        // IPv6:
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -185,9 +175,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionSixTag, new(NetworkStateKey, "close") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv6_connection_listen_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -197,9 +186,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionSixTag, new(NetworkStateKey, "listen") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv6_connection_syn_sent_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -209,9 +197,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionSixTag, new(NetworkStateKey, "syn_sent") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv6_connection_syn_received_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -221,9 +208,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionSixTag, new(NetworkStateKey, "syn_recv") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv6_connection_established_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -233,9 +219,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionSixTag, new(NetworkStateKey, "established") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv6_connection_fin_wait_1_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -245,9 +230,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionSixTag, new(NetworkStateKey, "fin_wait_1") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv6_connection_fin_wait_2_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -257,9 +241,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionSixTag, new(NetworkStateKey, "fin_wait_2") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv6_connection_close_wait_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -269,9 +252,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionSixTag, new(NetworkStateKey, "close_wait") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv6_connection_closing_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -281,9 +263,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionSixTag, new(NetworkStateKey, "closing") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv6_connection_last_ack_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -293,9 +274,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionSixTag, new(NetworkStateKey, "last_ack") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv6_connection_time_wait_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
@@ -305,9 +285,8 @@ internal sealed class WindowsCounters
             description: null,
             tags: new[] { tcpTag, tcpVersionSixTag, new(NetworkStateKey, "time_wait") });
 
-        _ = meter.CreateObservableGauge(
-            //"process.network.tcp.ipv6_connection_delete_tcb_count",
-            GaugeName,
+        _ = meter.CreateObservableUpDownCounter(
+            InstrumentName,
             () =>
             {
                 var snapshot = tcpTableInfo.GetIPv6CachingSnapshot();
