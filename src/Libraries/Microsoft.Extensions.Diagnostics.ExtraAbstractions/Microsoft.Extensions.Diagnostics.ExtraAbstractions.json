@@ -893,7 +893,7 @@
         {
           "Member": "const string Microsoft.Extensions.Http.Diagnostics.TelemetryConstants.RequestMetadataKey",
           "Stage": "Stable",
-          "Value": "R9-RequestMetadata"
+          "Value": "Extensions-RequestMetadata"
         },
         {
           "Member": "const string Microsoft.Extensions.Http.Diagnostics.TelemetryConstants.ServerApplicationNameHeader",
