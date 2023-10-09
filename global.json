@@ -1,15 +1,17 @@
 {
   "sdk": {
-    "version": "8.0.100-rc.2.23462.28"
+    "version": "9.0.100-alpha.1.23502.7"
   },
   "tools": {
-    "dotnet": "8.0.100-rc.2.23462.28",
+    "dotnet": "9.0.100-alpha.1.23502.7",
     "runtimes": {
       "dotnet/x64": [
-        "6.0.22"
+        "8.0.0-rtm.23475.7",
+        "$(MicrosoftNETCoreAppRuntimewinx64Version)"
       ],
       "aspnetcore/x64": [
-        "6.0.22"
+        "8.0.0-rtm.23475.5",
+        "$(MicrosoftAspNetCoreAppRuntimewinx64Version)"
       ]
     }
   },

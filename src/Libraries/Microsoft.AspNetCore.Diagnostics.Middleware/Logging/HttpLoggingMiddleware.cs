@@ -274,7 +274,7 @@ internal sealed class HttpLoggingMiddleware : IMiddleware
             else
             {
                 // Catching duration at the end:
-                logRecord.Duration = (long)TimeProvider.GetElapsedTime(timestamp, TimeProvider.GetTimestamp()).TotalMilliseconds;
+                logRecord.Duration = (long)TimeProvider.GetElapsedTime(timestamp).TotalMilliseconds;
             }
 
             if (exception == null)
