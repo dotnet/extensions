@@ -28,7 +28,7 @@
       Include="$(SrcLibrariesDir)\*\*.*proj;
                $(SrcLibrariesDir)\..\ToBeMoved\*\*.*proj;
                $(SrcLibrariesDir)\..\ToBeRemoved\*\*.*proj"
-      Exclude="$(SrcLibrariesDir)\Packages\Microsoft.Internal.Extensions.DotNetApiDocs.Transport\Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj"
+      Exclude="$(MSBuildProjectFullPath)"
                       />
   </ItemGroup>
 
