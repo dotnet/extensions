@@ -24,10 +24,11 @@
     <!-- Set PrivateAssets to avoid dependencies in the nupkg
          Set Private=false to avoid copying the referenced projects to output -->
     <ProjectReference PrivateAssets="all"
-                      Private="false"
-                      Include="$(SrcLibrariesDir)\*\*.*proj;
-                               $(SrcLibrariesDir)\..\ToBeMoved\*\*.*proj;
-                               $(SrcLibrariesDir)\..\ToBeRemoved\*\*.*proj"
+      Private="false"
+      Include="$(SrcLibrariesDir)\*\*.*proj;
+               $(SrcLibrariesDir)\..\ToBeMoved\*\*.*proj;
+               $(SrcLibrariesDir)\..\ToBeRemoved\*\*.*proj"
+      Exclude="$(SrcLibrariesDir)\Packages\Microsoft.Internal.Extensions.DotNetApiDocs.Transport\Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj"
                       />
   </ItemGroup>
 
