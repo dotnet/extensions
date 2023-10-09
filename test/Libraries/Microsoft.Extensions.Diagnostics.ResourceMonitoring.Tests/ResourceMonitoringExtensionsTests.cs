@@ -33,7 +33,7 @@ public sealed class ResourceMonitoringExtensionsTests
     {
         using var provider = new ServiceCollection()
             .AddLogging()
-            .AddSingleton<TimeProvider>(TimeProvider.System)
+            .AddSingleton<System.TimeProvider>(System.TimeProvider.System)
             .AddResourceMonitoring(builder =>
             {
                 builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
@@ -53,7 +53,7 @@ public sealed class ResourceMonitoringExtensionsTests
     {
         using var provider = new ServiceCollection()
             .AddLogging()
-            .AddSingleton<TimeProvider>(TimeProvider.System)
+            .AddSingleton<System.TimeProvider>(System.TimeProvider.System)
             .AddResourceMonitoring()
             .BuildServiceProvider();
 
@@ -69,7 +69,7 @@ public sealed class ResourceMonitoringExtensionsTests
     {
         using var provider = new ServiceCollection()
             .AddLogging()
-            .AddSingleton<TimeProvider>(TimeProvider.System)
+            .AddSingleton<System.TimeProvider>(System.TimeProvider.System)
             .AddResourceMonitoring(builder =>
             {
                 builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
@@ -93,7 +93,7 @@ public sealed class ResourceMonitoringExtensionsTests
             {
                 services.AddResourceMonitoring(builder =>
                 {
-                    builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
+                    builder.Services.AddSingleton<System.TimeProvider>(System.TimeProvider.System);
                     builder.Services.AddSingleton<ISnapshotProvider, FakeProvider>();
                     builder.AddPublisher<EmptyPublisher>();
                 });

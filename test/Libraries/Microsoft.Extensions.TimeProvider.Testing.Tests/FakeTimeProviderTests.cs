@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Time.Testing;
+using Microsoft.Extensions.TimeProvider.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Time.Testing.Test;

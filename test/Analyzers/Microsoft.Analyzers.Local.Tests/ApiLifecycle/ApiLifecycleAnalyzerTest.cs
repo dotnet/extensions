@@ -792,9 +792,9 @@ public class ApiLifecycleAnalyzerTest
                 using System;
                 using System.Threading;
 
-                namespace Microsoft.Extensions.Time.Testing;
+                namespace Microsoft.Extensions.TimeProvider.Testing;
 
-                public class FakeTimeProvider : TimeProvider
+                public class FakeTimeProvider : System.TimeProvider
                 {
                     public FakeTimeProvider() { }
                     public FakeTimeProvider(DateTimeOffset startDateTime) { }

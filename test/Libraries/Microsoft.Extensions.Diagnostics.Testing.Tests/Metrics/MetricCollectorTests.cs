@@ -6,7 +6,7 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Time.Testing;
+using Microsoft.Extensions.TimeProvider.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Metrics.Testing.Test;
@@ -324,7 +324,7 @@ public static class MetricCollectorTests
         Assert.Equal(1, collector.WaitersCount);
 
         // Task should be complete. Error if not complete after delay.
-        await wait.WaitAsync(TimeSpan.FromSeconds(5), TimeProvider.System);
+        await wait.WaitAsync(TimeSpan.FromSeconds(5), System.TimeProvider.System);
     }
 
     [Fact]

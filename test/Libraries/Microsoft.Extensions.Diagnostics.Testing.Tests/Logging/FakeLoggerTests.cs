@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Time.Testing;
+using Microsoft.Extensions.TimeProvider.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Logging.Testing.Test.Logging;

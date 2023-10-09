@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Time.Testing;
+using Microsoft.Extensions.TimeProvider.Testing;
 using Xunit;
+using Timer = Microsoft.Extensions.TimeProvider.Testing.Timer;
 
 namespace Microsoft.Extensions.Time.Testing.Test;
 

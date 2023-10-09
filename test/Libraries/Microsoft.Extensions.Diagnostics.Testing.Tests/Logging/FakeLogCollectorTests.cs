@@ -3,7 +3,7 @@
 
 using System;
 using System.Globalization;
-using Microsoft.Extensions.Time.Testing;
+using Microsoft.Extensions.TimeProvider.Testing;
 using Xunit;
 using Xunit.Abstractions;
 

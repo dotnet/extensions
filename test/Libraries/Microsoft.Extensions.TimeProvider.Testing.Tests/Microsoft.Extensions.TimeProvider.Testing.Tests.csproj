@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Extensions.Time.Testing.Test</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.TimeProvider.Testing.Test</RootNamespace>
     <Description>Tests for Microsoft.Extensions.TimeProvider.Testing</Description>
   </PropertyGroup>
 
