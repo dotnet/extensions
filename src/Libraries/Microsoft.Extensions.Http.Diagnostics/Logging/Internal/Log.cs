@@ -15,7 +15,8 @@ namespace Microsoft.Extensions.Http.Logging.Internal;
 internal static partial class Log
 {
     internal const string OriginalFormat = "{OriginalFormat}";
-    internal const string OriginalFormatValue = "{httpMethod} {httpHost}/{httpPath}";
+    internal const string OriginalFormatValue =
+        $"{HttpClientLoggingTagNames.Method} {HttpClientLoggingTagNames.Host}/{HttpClientLoggingTagNames.Path}";
 
     private const int MinimalPropertyCount = 4;
 
@@ -28,10 +29,10 @@ internal static partial class Log
         $"{{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}/{{{HttpClientLoggingTagNames.Path}}}";
 
     private const string LoggerContextMissingMessage =
-        $"The logger couldn't read its context for {{requestState}} request: {{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}";
+        $"The logger couldn't read its context for {{RequestState}} request: {{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}";
 
     private const string EnrichmentErrorMessage =
-        "An error occurred in enricher '{enricherType}' while enriching the logger context for request: " +
+        "An error occurred in enricher '{EnricherType}' while enriching the logger context for request: " +
         $"{{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}/{{{HttpClientLoggingTagNames.Path}}}";
 
     private static readonly Func<LoggerMessageState, Exception?, string> _originalFormatValueFMTFunc = OriginalFormatValueFMT;

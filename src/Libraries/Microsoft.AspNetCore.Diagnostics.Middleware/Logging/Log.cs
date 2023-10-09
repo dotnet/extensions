@@ -17,7 +17,8 @@ internal static partial class Log
     internal const LogLevel DefaultLogLevel = LogLevel.Information;
     internal const LogLevel ErrorLogLevel = LogLevel.Error;
     internal const string OriginalFormat = "{OriginalFormat}";
-    internal const string OriginalFormatValue = "{httpMethod} {httpHost}/{httpPath}";
+    internal const string OriginalFormatValue =
+        $"{HttpLoggingTagNames.Method} {HttpLoggingTagNames.Host}/{HttpLoggingTagNames.Path}";
     internal const string ReadingRequestBodyError = "Error on reading HTTP request body.";
     internal const string ReadingResponseBodyError = "Error on reading HTTP response body.";
 
@@ -127,8 +128,8 @@ internal static partial class Log
 
 #pragma warning disable LOGGEN000
     [LoggerMessage(5, LogLevel.Warning,
-        $"HttpLogging middleware is injected into application pipeline, but {nameof(LogLevel)} '{{logLevel}}' is disabled in logger. " +
-        "Remove {methodName}() call from pipeline configuration in that case.")]
+        $"HttpLogging middleware is injected into application pipeline, but {nameof(LogLevel)} '{{LogLevel}}' is disabled in logger. " +
+        "Remove {MethodName}() call from pipeline configuration in that case.")]
     public static partial void MiddlewareIsMisused(this ILogger logger, LogLevel logLevel, string methodName);
 #pragma warning restore LOGGEN000
 

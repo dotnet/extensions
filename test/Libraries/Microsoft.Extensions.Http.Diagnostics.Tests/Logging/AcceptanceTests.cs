@@ -321,7 +321,7 @@ public class AcceptanceTests
         var collector = sp.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);
         var state = logRecord.State as List<KeyValuePair<string, string>>;
-        state!.Single(kvp => kvp.Key == "httpPath").Value.Should().Be(redactedPath);
+        state!.Single(kvp => kvp.Key == "HttpPath").Value.Should().Be(redactedPath);
     }
 
     [Theory]
@@ -362,7 +362,7 @@ public class AcceptanceTests
         var collector = sp.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);
         var state = logRecord.State as List<KeyValuePair<string, string>>;
-        state!.Single(kvp => kvp.Key == "httpPath").Value.Should().Be(redactedPath);
+        state!.Single(kvp => kvp.Key == "HttpPath").Value.Should().Be(redactedPath);
     }
 
     [Fact]

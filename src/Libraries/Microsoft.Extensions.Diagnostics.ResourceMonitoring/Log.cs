@@ -14,6 +14,6 @@ internal static partial class Log
     [LoggerMessage(1, LogLevel.Error, "Unable to gather utilization statistics.")]
     public static partial void HandledGatherStatisticsException(ILogger logger, Exception e);
 
-    [LoggerMessage(2, LogLevel.Error, "Publisher `{publisher}` was unable to publish utilization statistics.")]
+    [LoggerMessage(2, LogLevel.Error, "Publisher `{Publisher}` was unable to publish utilization statistics.")]
     public static partial void HandlePublishUtilizationException(ILogger logger, Exception e, string publisher);
 }
