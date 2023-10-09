@@ -25,11 +25,7 @@ public static class RequestLatencyTelemetryServiceCollectionExtensions
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddRequestCheckpoint(this IServiceCollection services)
         => Throw.IfNull(services)
-        .AddSingleton<CaptureResponseTimeMiddleware>()
-        .AddSingleton<AddServerTimingHeaderMiddleware>()
-        .AddSingleton<CapturePipelineEntryMiddleware>()
         .AddPipelineEntryCheckpoint()
-        .AddSingleton<CapturePipelineExitMiddleware>()
         .RegisterCheckpointNames(RequestCheckpointConstants.RequestCheckpointNames);
 
     /// <summary>
@@ -43,7 +39,6 @@ public static class RequestLatencyTelemetryServiceCollectionExtensions
         _ = Throw.IfNull(services);
 
         services.TryAddScoped(p => p.GetRequiredService<ILatencyContextProvider>().CreateContext());
-        services.TryAddSingleton<RequestLatencyTelemetryMiddleware>();
 
         _ = services.AddOptionsWithValidateOnStart<RequestLatencyTelemetryOptions, RequestLatencyTelemetryOptionsValidator>();
 

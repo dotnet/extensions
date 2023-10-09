@@ -14,6 +14,7 @@ using Microsoft.Extensions.Diagnostics.Latency;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.AspNetCore.Diagnostics.Latency;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Latency;
 /// <summary>
 /// Middleware that manages latency context for requests.
 /// </summary>
-internal sealed class RequestLatencyTelemetryMiddleware : IMiddleware
+internal sealed class RequestLatencyTelemetryMiddleware
 {
     private static readonly ObjectPool<List<Task>> _exporterTaskPool = PoolFactory.CreateListPool<Task>();
     private static readonly ObjectPool<CancellationTokenSource> _cancellationTokenSourcePool = PoolFactory.CreateCancellationTokenSourcePool();
@@ -29,8 +30,10 @@ internal sealed class RequestLatencyTelemetryMiddleware : IMiddleware
     private readonly TimeSpan _exportTimeout;
     private readonly string _applicationName;
     private readonly ILatencyDataExporter[] _latencyDataExporters;
+    private readonly RequestDelegate _next;
 
     public RequestLatencyTelemetryMiddleware(
+        RequestDelegate next,
         IOptions<RequestLatencyTelemetryOptions> options,
         IEnumerable<ILatencyDataExporter> latencyDataExporters,
         IOptions<ApplicationMetadata>? appMetdata = null)
@@ -38,6 +41,7 @@ internal sealed class RequestLatencyTelemetryMiddleware : IMiddleware
         _exportTimeout = options.Value.LatencyDataExportTimeout;
         _latencyDataExporters = latencyDataExporters.ToArray();
         _applicationName = string.Empty;
+        _next = Throw.IfNull(next);
 
         if (appMetdata != null)
         {
@@ -49,9 +53,8 @@ internal sealed class RequestLatencyTelemetryMiddleware : IMiddleware
     /// Request handling method.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
-    /// <param name="next">The delegate representing the remaining middleware in the request pipeline.</param>
     /// <returns>A <see cref="Task"/> that represents the execution of this middleware.</returns>
-    public Task InvokeAsync(HttpContext context, RequestDelegate next)
+    public Task InvokeAsync(HttpContext context)
     {
         var latencyContext = context.RequestServices.GetRequiredService<ILatencyContext>();
 
@@ -75,7 +78,7 @@ internal sealed class RequestLatencyTelemetryMiddleware : IMiddleware
             await ExportAsync(latencyContext.LatencyData).ConfigureAwait(false);
         }, latencyContext);
 
-        return next.Invoke(context);
+        return _next.Invoke(context);
     }
 
     [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "The time limit is enforced inside of the method")]

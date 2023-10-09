@@ -7,7 +7,6 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Resilience;
@@ -61,7 +60,6 @@ public static class HttpStandardResiliencePipelineBuilderExtensions
     /// <param name="configure">The configure method.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
 #pragma warning disable S3872 // Parameter names should not duplicate the names of their methods
-    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public static IHttpStandardResiliencePipelineBuilder Configure(this IHttpStandardResiliencePipelineBuilder builder, Action<HttpStandardResilienceOptions, IServiceProvider> configure)
 #pragma warning restore S3872 // Parameter names should not duplicate the names of their methods
     {

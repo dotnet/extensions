@@ -36,15 +36,15 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
             .AddStandardHedgingHandler(routing => routing.ConfigureRoutingStrategy(_ => factory))
             .Configure(options =>
             {
-                options.HedgingOptions.MaxHedgedAttempts = DefaultHedgingAttempts;
-                options.HedgingOptions.Delay = TimeSpan.FromMilliseconds(5);
+                options.Hedging.MaxHedgedAttempts = DefaultHedgingAttempts;
+                options.Hedging.Delay = TimeSpan.FromMilliseconds(5);
             });
     }
 
     [Fact]
     public void EnsureValidated_BasicValidation()
     {
-        Builder.Configure(options => options.HedgingOptions.MaxHedgedAttempts = -1);
+        Builder.Configure(options => options.Hedging.MaxHedgedAttempts = -1);
 
         Assert.Throws<OptionsValidationException>(() => CreateClientWithHandler());
     }
@@ -52,7 +52,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     [Fact]
     public void EnsureValidated_AdvancedValidation()
     {
-        Builder.Configure(options => options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(1));
+        Builder.Configure(options => options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(1));
 
         Assert.Throws<OptionsValidationException>(() => CreateClientWithHandler());
     }
@@ -60,11 +60,11 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     [Fact]
     public void Configure_Callback_Ok()
     {
-        Builder.Configure(o => o.HedgingOptions.MaxHedgedAttempts = 8);
+        Builder.Configure(o => o.Hedging.MaxHedgedAttempts = 8);
 
         var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
 
-        Assert.Equal(8, options.HedgingOptions.MaxHedgedAttempts);
+        Assert.Equal(8, options.Hedging.MaxHedgedAttempts);
     }
 
     [Fact]
@@ -73,12 +73,12 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         Builder.Configure((o, serviceProvider) =>
         {
             serviceProvider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>().Should().NotBeNull();
-            o.HedgingOptions.MaxHedgedAttempts = 8;
+            o.Hedging.MaxHedgedAttempts = 8;
         });
 
         var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
 
-        Assert.Equal(8, options.HedgingOptions.MaxHedgedAttempts);
+        Assert.Equal(8, options.Hedging.MaxHedgedAttempts);
     }
 
     [Fact]
@@ -92,21 +92,21 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     {
         var section = ConfigurationStubFactory.Create(new Dictionary<string, string?>
         {
-            { "dummy:HedgingOptions:MaxHedgedAttempts", "8" }
+            { "dummy:Hedging:MaxHedgedAttempts", "8" }
         }).GetSection("dummy");
 
         Builder.Configure(section);
 
         var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
 
-        Assert.Equal(8, options.HedgingOptions.MaxHedgedAttempts);
+        Assert.Equal(8, options.Hedging.MaxHedgedAttempts);
     }
 
     [Fact]
     public void ActionGenerator_Ok()
     {
         var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
-        var generator = options.HedgingOptions.ActionGenerator;
+        var generator = options.Hedging.ActionGenerator;
         var primary = ResilienceContextPool.Shared.Get();
         var secondary = ResilienceContextPool.Shared.Get();
         using var response = new HttpResponseMessage(HttpStatusCode.OK);
@@ -222,11 +222,11 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         var config = ConfigurationStubFactory.Create(
             new()
             {
-                { "standard:HedgingOptions:MaxHedgedAttempts", "2" }
+                { "standard:Hedging:MaxHedgedAttempts", "2" }
             },
             out var reloadAction).GetSection("standard");
 
-        Builder.Configure(config).Configure(options => options.HedgingOptions.Delay = Timeout.InfiniteTimeSpan);
+        Builder.Configure(config).Configure(options => options.Hedging.Delay = Timeout.InfiniteTimeSpan);
         SetupRouting();
         SetupRoutes(10);
 
@@ -238,7 +238,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         await client.SendAsync(firstRequest);
         AssertNoResponse();
 
-        reloadAction(new() { { "standard:HedgingOptions:MaxHedgedAttempts", "6" } });
+        reloadAction(new() { { "standard:Hedging:MaxHedgedAttempts", "6" } });
 
         AddResponse(HttpStatusCode.InternalServerError, 7);
         using var secondRequest = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
@@ -263,5 +263,5 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         Requests.Should().AllSatisfy(r => r.Should().Be("https://some-endpoint:1234/some-path?query"));
     }
 
-    protected override void ConfigureHedgingOptions(Action<HttpHedgingStrategyOptions> configure) => Builder.Configure(options => configure(options.HedgingOptions));
+    protected override void ConfigureHedgingOptions(Action<HttpHedgingStrategyOptions> configure) => Builder.Configure(options => configure(options.Hedging));
 }
