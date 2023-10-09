@@ -86,3 +86,7 @@ var app = builder.Build();
 
 app.UseHttpLogging();
 ```
+
+## Feedback & Contributing
+
+For any feedback or contributions, please visit us in [our GitHub repo](https://github.com/dotnet/extensions).
