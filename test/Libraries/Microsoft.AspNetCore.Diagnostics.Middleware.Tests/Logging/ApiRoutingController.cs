@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Time.Testing;
+using Microsoft.Extensions.TimeProvider.Testing;
 
 namespace Microsoft.AspNetCore.Diagnostics.Logging.Test.Controllers;
 

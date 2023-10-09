@@ -8,12 +8,12 @@ using System.Globalization;
 using System.Threading;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Time.Testing;
+namespace Microsoft.Extensions.TimeProvider.Testing;
 
 /// <summary>
 /// Represents a synthetic time provider that can be used to enable deterministic behavior in tests.
 /// </summary>
-public class FakeTimeProvider : TimeProvider
+public class FakeTimeProvider : System.TimeProvider
 {
     internal readonly HashSet<Waiter> Waiters = new();
     private DateTimeOffset _now = new(2000, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
@@ -111,7 +111,7 @@ public class FakeTimeProvider : TimeProvider
     /// <param name="delta">The amount of time to advance the clock by.</param>
     /// <remarks>
     /// Advancing time affects the timers created from this provider, and all other operations that are directly or
-    /// indirectly using this provider as a time source. Whereas when using <see cref="TimeProvider.System"/>, time
+    /// indirectly using this provider as a time source. Whereas when using <see cref="System.TimeProvider.System"/>, time
     /// marches forward automatically in hardware, for the fake time provider the application is responsible for
     /// doing this explicitly by calling this method.
     /// </remarks>

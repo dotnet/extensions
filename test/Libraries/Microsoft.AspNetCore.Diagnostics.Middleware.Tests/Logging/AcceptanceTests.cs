@@ -24,7 +24,7 @@ using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Time.Testing;
+using Microsoft.Extensions.TimeProvider.Testing;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Shared.Text;
 using Xunit;
