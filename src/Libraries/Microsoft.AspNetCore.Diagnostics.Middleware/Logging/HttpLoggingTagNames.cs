@@ -34,12 +34,12 @@ public static class HttpLoggingTagNames
     /// <summary>
     /// HTTP Request Headers prefix.
     /// </summary>
-    public const string RequestHeaderPrefix = "RequestHeader_";
+    public const string RequestHeaderPrefix = "RequestHeader.";
 
     /// <summary>
     /// HTTP Response Headers prefix.
     /// </summary>
-    public const string ResponseHeaderPrefix = "ResponseHeader_";
+    public const string ResponseHeaderPrefix = "ResponseHeader.";
 
     /// <summary>
     /// HTTP Request Body.
