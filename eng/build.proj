@@ -5,7 +5,8 @@
     <!-- We recursively add all of the test projects -->
     <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\test\**\*.csproj" />
     <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\bench\**\*.csproj" />
-    
+    <!-- Additionally, include the transport project that is not defined as a csproj -->
+    <_ProjectsToBuild Include="$(MSBuildThisFileDirectory)..\src\Packages\Microsoft.Internal.Extensions.DotNetApiDocs.Transport\Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj" />
     <!-- Add all the projects we want to build as project references, so the traversal SDK can build them -->
     <ProjectReference Include="@(_ProjectsToBuild)" />
   </ItemGroup>
