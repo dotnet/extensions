@@ -1,8 +1,6 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
-    <PackageDescription>Internal transport package to provide dotnet-api-docs with the reference assemblies and compiler generated documentation files from dotnet/extensions.</PackageDescription>
-
     <TargetFramework>$(LatestTargetFramework)</TargetFramework>
     <!-- Workaround https://github.com/microsoft/MSBuildSdks/issues/469 -->
     <TargetFrameworks />
@@ -10,6 +8,7 @@
     <Stage>transport</Stage>
     <IsShipping>false</IsShipping>
 
+    <PackageDescription>Internal transport package to provide dotnet-api-docs with the reference assemblies and compiler generated documentation files from dotnet/extensions.</PackageDescription>
     <IncludeBuildOutput>true</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
     <EnablePackageValidation>false</EnablePackageValidation>
