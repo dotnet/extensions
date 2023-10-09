@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Logging;
 
 internal sealed partial class ExtendedLogger : ILogger
 {
-    private const string ExceptionStackTrace = "stackTrace";
+    private const string ExceptionStackTrace = "StackTrace";
 
     private readonly ExtendedLoggerFactory _factory;
 
