@@ -14,8 +14,8 @@ internal sealed class RequestMessageSnapshot : IResettable, IDisposable
 {
     private static readonly ObjectPool<RequestMessageSnapshot> _snapshots = PoolFactory.CreateResettingPool<RequestMessageSnapshot>();
 
-    private readonly List<KeyValuePair<string, IEnumerable<string>>> _headers = new();
-    private readonly List<KeyValuePair<string, object?>> _properties = new();
+    private readonly List<KeyValuePair<string, IEnumerable<string>>> _headers = [];
+    private readonly List<KeyValuePair<string, object?>> _properties = [];
 
     private HttpMethod? _method;
     private Uri? _requestUri;

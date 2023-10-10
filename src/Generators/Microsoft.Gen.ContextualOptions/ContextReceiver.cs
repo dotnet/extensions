@@ -21,7 +21,7 @@ internal sealed class ContextReceiver : ISyntaxReceiver
         _token = token;
     }
 
-    private readonly List<TypeDeclarationSyntax> _typeDeclarations = new();
+    private readonly List<TypeDeclarationSyntax> _typeDeclarations = [];
 
     public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
     {

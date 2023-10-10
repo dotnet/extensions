@@ -50,8 +50,8 @@ public class HttpRequestReaderTest
             Method = HttpMethod.Post,
             Path = TelemetryConstants.Redacted,
             StatusCode = 200,
-            RequestHeaders = new() { new("Header1", Redacted), new("Header3", Redacted) },
-            ResponseHeaders = new() { new("Header2", Redacted), new("Header3", Redacted) },
+            RequestHeaders = [new("Header1", Redacted), new("Header3", Redacted)],
+            ResponseHeaders = [new("Header2", Redacted), new("Header3", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
@@ -194,8 +194,8 @@ public class HttpRequestReaderTest
             Method = HttpMethod.Post,
             Path = "foo/bar/123",
             StatusCode = 200,
-            RequestHeaders = new() { new("Header1", Redacted) },
-            ResponseHeaders = new() { new("Header2", Redacted) },
+            RequestHeaders = [new("Header1", Redacted)],
+            ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
@@ -275,8 +275,8 @@ public class HttpRequestReaderTest
             Method = HttpMethod.Post,
             Path = "foo/bar/{userId}",
             StatusCode = 200,
-            RequestHeaders = new() { new("Header1", Redacted) },
-            ResponseHeaders = new() { new("Header2", Redacted) },
+            RequestHeaders = [new("Header1", Redacted)],
+            ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
@@ -357,7 +357,7 @@ public class HttpRequestReaderTest
             Host = host,
             Method = HttpMethod.Post,
             Path = "/foo/bar/123",
-            RequestHeaders = new() { new("Header1", Redacted) },
+            RequestHeaders = [new("Header1", Redacted)],
             RequestBody = requestContent,
         };
 
@@ -423,8 +423,8 @@ public class HttpRequestReaderTest
             Method = HttpMethod.Post,
             Path = "TestRequest",
             StatusCode = 200,
-            RequestHeaders = new() { new("Header1", Redacted) },
-            ResponseHeaders = new() { new("Header2", Redacted) },
+            RequestHeaders = [new("Header1", Redacted)],
+            ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
@@ -505,8 +505,8 @@ public class HttpRequestReaderTest
             Method = HttpMethod.Post,
             Path = TelemetryConstants.Redacted,
             StatusCode = 200,
-            RequestHeaders = new() { new("Header1", Redacted) },
-            ResponseHeaders = new() { new("Header2", Redacted) },
+            RequestHeaders = [new("Header1", Redacted)],
+            ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
@@ -582,8 +582,8 @@ public class HttpRequestReaderTest
             Method = HttpMethod.Post,
             Path = TelemetryConstants.Unknown,
             StatusCode = 200,
-            RequestHeaders = new() { new("Header1", Redacted) },
-            ResponseHeaders = new() { new("Header2", Redacted) },
+            RequestHeaders = [new("Header1", Redacted)],
+            ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };

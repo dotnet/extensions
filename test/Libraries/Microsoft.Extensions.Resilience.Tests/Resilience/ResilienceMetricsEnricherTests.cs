@@ -19,11 +19,11 @@ namespace Microsoft.Extensions.Resilience.Test.Resilience;
 
 public class ResilienceMetricsEnricherTests
 {
-    private readonly List<IOutgoingRequestContext> _outgoingRequestContexts = new();
+    private readonly List<IOutgoingRequestContext> _outgoingRequestContexts = [];
     private readonly FailureEventMetricsOptions _options = new();
     private Mock<IExceptionSummarizer>? _summarizer = new(MockBehavior.Strict);
 
-    private List<KeyValuePair<string, object?>> _tags = new();
+    private List<KeyValuePair<string, object?>> _tags = [];
 
     private IReadOnlyDictionary<string, object?> Tags => _tags.ToDictionary(v => v.Key, v => v.Value);
 

@@ -13,7 +13,7 @@ public class FeaturesPooledPolicyTests
     {
         var policy = new FeaturesPooledPolicy();
 
-        Assert.True(policy.Return(new List<object?>()));
+        Assert.True(policy.Return([]));
     }
 
     [Fact]

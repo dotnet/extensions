@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Bench;
 public class RedactionBenchmark
 {
     private readonly string _httpPath;
-    private readonly Dictionary<string, DataClassification> _routeParameterDataClasses = new();
+    private readonly Dictionary<string, DataClassification> _routeParameterDataClasses = [];
     private readonly ObjectPool<StringBuilder> _stringBuilderPool;
     private readonly Dictionary<string, object?> _routeValues = new()
     {

@@ -7,7 +7,7 @@ namespace Microsoft.Gen.Metrics.Model;
 
 internal sealed class MetricType
 {
-    public readonly List<MetricMethod> Methods = new();
+    public readonly List<MetricMethod> Methods = [];
     public string Namespace = string.Empty;
     public string Name = string.Empty;
     public string Constraints = string.Empty;

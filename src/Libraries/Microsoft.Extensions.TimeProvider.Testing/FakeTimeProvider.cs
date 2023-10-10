@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Time.Testing;
 /// </summary>
 public class FakeTimeProvider : TimeProvider
 {
-    internal readonly HashSet<Waiter> Waiters = new();
+    internal readonly HashSet<Waiter> Waiters = [];
     private DateTimeOffset _now = new(2000, 1, 1, 0, 0, 0, 0, TimeSpan.Zero);
     private TimeZoneInfo _localTimeZone = TimeZoneInfo.Utc;
     private volatile int _wakeWaitersGate;

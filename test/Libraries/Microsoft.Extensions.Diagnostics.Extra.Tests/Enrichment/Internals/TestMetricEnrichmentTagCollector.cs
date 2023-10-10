@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Diagnostics.Enrichment.Test.Internals;
 
 public class TestMetricEnrichmentTagCollector : IEnrichmentTagCollector
 {
-    private readonly Dictionary<string, string> _tags = new();
+    private readonly Dictionary<string, string> _tags = [];
 
     public TestMetricEnrichmentTagCollector(IEnumerable<KeyValuePair<string, object>>? input = null)
     {

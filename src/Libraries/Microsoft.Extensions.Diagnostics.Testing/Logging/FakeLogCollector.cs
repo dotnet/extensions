@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Logging.Testing;
 [DebuggerTypeProxy(typeof(FakeLogCollectorDebugView))]
 public class FakeLogCollector
 {
-    private readonly List<FakeLogRecord> _records = new();
+    private readonly List<FakeLogRecord> _records = [];
     private readonly FakeLogCollectorOptions _options;
 
     /// <summary>
