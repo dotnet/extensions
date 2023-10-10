@@ -313,9 +313,9 @@ public class TagProviderTests
 
         var expectedState = new Dictionary<string, string?>
         {
-            ["param1_MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
-            ["param1_MyStringProperty"] = classToLog.MyStringProperty,
-            ["param1_AnotherStringProperty"] = classToLog.AnotherStringProperty,
+            ["param1.MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
+            ["param1.MyStringProperty"] = classToLog.MyStringProperty,
+            ["param1.AnotherStringProperty"] = classToLog.AnotherStringProperty,
             ["param2_MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
             ["param2_Custom_property_name"] = classToLog.MyStringProperty,
             ["{OriginalFormat}"] = "No params."
