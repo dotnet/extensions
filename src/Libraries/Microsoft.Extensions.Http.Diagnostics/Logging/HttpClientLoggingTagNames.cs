@@ -19,42 +19,42 @@ public static class HttpClientLoggingTagNames
     /// <summary>
     /// HTTP Host.
     /// </summary>
-    public const string Host = "HttpHost";
+    public const string Host = "Host";
 
     /// <summary>
     /// HTTP Method.
     /// </summary>
-    public const string Method = "HttpMethod";
+    public const string Method = "Method";
 
     /// <summary>
     /// HTTP Path.
     /// </summary>
-    public const string Path = "HttpPath";
+    public const string Path = "Path";
 
     /// <summary>
     /// HTTP Request Body.
     /// </summary>
-    public const string RequestBody = "HttpRequestBody";
+    public const string RequestBody = "RequestBody";
 
     /// <summary>
     /// HTTP Response Body.
     /// </summary>
-    public const string ResponseBody = "HttpResponseBody";
+    public const string ResponseBody = "ResponseBody";
 
     /// <summary>
     /// HTTP Request Headers prefix.
     /// </summary>
-    public const string RequestHeaderPrefix = "HttpRequestHeader.";
+    public const string RequestHeaderPrefix = "RequestHeader.";
 
     /// <summary>
     /// HTTP Response Headers prefix.
     /// </summary>
-    public const string ResponseHeaderPrefix = "HttpResponseHeader.";
+    public const string ResponseHeaderPrefix = "ResponseHeader.";
 
     /// <summary>
     /// HTTP Status Code.
     /// </summary>
-    public const string StatusCode = "HttpStatusCode";
+    public const string StatusCode = "StatusCode";
 
     /// <summary>
     /// Gets a list of all tag names.

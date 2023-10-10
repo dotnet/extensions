@@ -287,7 +287,7 @@ public class AcceptanceTests
     [InlineData(HttpRouteParameterRedactionMode.Strict, "v1/unit/REDACTED/users/REDACTED:123")]
     [InlineData(HttpRouteParameterRedactionMode.Loose, "v1/unit/999/users/REDACTED:123")]
     [InlineData(HttpRouteParameterRedactionMode.None, "/v1/unit/999/users/123")]
-    public async Task AddHttpClientLogging_RedactSensitivePrams(HttpRouteParameterRedactionMode parameterRedactionMode, string redactedPath)
+    public async Task AddHttpClientLogging_RedactSensitiveParams(HttpRouteParameterRedactionMode parameterRedactionMode, string redactedPath)
     {
         const string RequestPath = "https://fake.com/v1/unit/999/users/123";
 
@@ -321,13 +321,13 @@ public class AcceptanceTests
         var collector = sp.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);
         var state = logRecord.State as List<KeyValuePair<string, string>>;
-        state!.Single(kvp => kvp.Key == "HttpPath").Value.Should().Be(redactedPath);
+        state!.Single(kvp => kvp.Key == HttpClientLoggingTagNames.Path).Value.Should().Be(redactedPath);
     }
 
     [Theory]
     [InlineData(HttpRouteParameterRedactionMode.Strict, "v1/unit/REDACTED/users/REDACTED:123")]
     [InlineData(HttpRouteParameterRedactionMode.Loose, "v1/unit/999/users/REDACTED:123")]
-    public async Task AddHttpClientLogging_NamedHttpClient_RedactSensitivePrams(HttpRouteParameterRedactionMode parameterRedactionMode, string redactedPath)
+    public async Task AddHttpClientLogging_NamedHttpClient_RedactSensitiveParams(HttpRouteParameterRedactionMode parameterRedactionMode, string redactedPath)
     {
         const string RequestPath = "https://fake.com/v1/unit/999/users/123";
 
@@ -362,7 +362,7 @@ public class AcceptanceTests
         var collector = sp.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);
         var state = logRecord.State as List<KeyValuePair<string, string>>;
-        state!.Single(kvp => kvp.Key == "HttpPath").Value.Should().Be(redactedPath);
+        state!.Single(kvp => kvp.Key == HttpClientLoggingTagNames.Path).Value.Should().Be(redactedPath);
     }
 
     [Fact]
