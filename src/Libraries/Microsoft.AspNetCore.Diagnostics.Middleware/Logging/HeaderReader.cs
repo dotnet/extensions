@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET8_0_OR_GREATER
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,17 +21,10 @@ internal sealed class HeaderReader
     {
         _redactorProvider = redactorProvider;
 
-        _headers = headersToLog.Count == 0
-            ? Array.Empty<KeyValuePair<string, DataClassification>>()
-            : headersToLog.ToArray();
+        _headers = headersToLog.Count == 0 ? [] : headersToLog.ToArray();
     }
 
-    /// <summary>
-    /// Reads headers and applies filtering (if required).
-    /// </summary>
-    /// <param name="headers">A collection of headers to be read from.</param>
-    /// <param name="listToFill">A list to be filled with headers.</param>
-    public void Read(IHeaderDictionary headers, List<KeyValuePair<string, string>> listToFill)
+    public void Read(IHeaderDictionary headers, IList<KeyValuePair<string, object?>> logContext, string prefix)
     {
         if (headers.Count == 0)
         {
@@ -42,8 +37,9 @@ internal sealed class HeaderReader
             {
                 var provider = _redactorProvider.GetRedactor(header.Value);
                 var redacted = provider.Redact(headerValue.ToString());
-                listToFill.Add(new(header.Key, redacted));
+                logContext.Add(new(prefix + header.Key, redacted));
             }
         }
     }
 }
+#endif

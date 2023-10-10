@@ -16,12 +16,12 @@ internal sealed class ResilienceMetricsEnricher : MeteringEnricher
 {
     private readonly FrozenDictionary<Type, Func<object, FailureResultContext>> _faultFactories;
     private readonly IOutgoingRequestContext? _outgoingRequestContext;
-    private readonly IExceptionSummarizer _exceptionSummarizer;
+    private readonly IExceptionSummarizer? _exceptionSummarizer;
 
     public ResilienceMetricsEnricher(
         IOptions<FailureEventMetricsOptions> metricsOptions,
         IEnumerable<IOutgoingRequestContext> outgoingRequestContext,
-        IExceptionSummarizer exceptionSummarizer)
+        IExceptionSummarizer? exceptionSummarizer = null)
     {
         _faultFactories = metricsOptions.Value.Factories.ToFrozenDictionary();
         _outgoingRequestContext = outgoingRequestContext.FirstOrDefault();
@@ -32,7 +32,7 @@ internal sealed class ResilienceMetricsEnricher : MeteringEnricher
     {
         var outcome = context.TelemetryEvent.Outcome;
 
-        if (outcome?.Exception is Exception e)
+        if (_exceptionSummarizer is not null && outcome?.Exception is Exception e)
         {
             context.Tags.Add(new(ResilienceTagNames.FailureSource, e.Source));
             context.Tags.Add(new(ResilienceTagNames.FailureReason, e.GetType().Name));

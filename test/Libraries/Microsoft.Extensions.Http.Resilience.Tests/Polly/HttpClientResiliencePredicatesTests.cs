@@ -36,7 +36,7 @@ public class HttpClientResiliencePredicatesTests
         var isTransientHttpException = HttpClientResiliencePredicates.IsTransientHttpException(ex);
         Assert.Equal(expectedCondition, isTransientHttpException);
 
-        isTransientHttpException = HttpClientResiliencePredicates.IsTransientHttpOutcome(Outcome.FromException<HttpResponseMessage>(ex));
+        isTransientHttpException = HttpClientResiliencePredicates.IsTransient(Outcome.FromException<HttpResponseMessage>(ex));
         Assert.Equal(expectedCondition, isTransientHttpException);
     }
 
@@ -56,7 +56,7 @@ public class HttpClientResiliencePredicatesTests
             var isTransientFailure = HttpClientResiliencePredicates.IsTransientHttpFailure(response);
             Assert.Equal(expectedCondition, isTransientFailure);
 
-            isTransientFailure = HttpClientResiliencePredicates.IsTransientHttpOutcome(Outcome.FromResult(response));
+            isTransientFailure = HttpClientResiliencePredicates.IsTransient(Outcome.FromResult(response));
             Assert.Equal(expectedCondition, isTransientFailure);
 
             response.Dispose();

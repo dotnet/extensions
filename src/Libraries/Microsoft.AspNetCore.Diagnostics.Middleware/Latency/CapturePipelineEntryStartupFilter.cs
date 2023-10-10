@@ -22,7 +22,7 @@ internal sealed class CapturePipelineEntryStartupFilter : IStartupFilter
     {
         return builder =>
         {
-            _ = builder.UseMiddleware<CapturePipelineEntryMiddleware>(Array.Empty<object>());
+            _ = builder.UseMiddleware<CapturePipelineEntryMiddleware>();
             next(builder);
         };
     }

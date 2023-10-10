@@ -127,7 +127,7 @@ internal sealed class Parser
                         ci.Name = ps.Name;
                         ci.TypeName = FormatType(ps.Type);
 
-                        classifiedMembers ??= new();
+                        classifiedMembers ??= [];
                         classifiedMembers[ci.Name] = ci;
                     }
                 }
@@ -188,7 +188,7 @@ internal sealed class Parser
                 ci.Name = member.Name;
                 ci.TypeName = FormatType(memberType);
 
-                classifiedMembers ??= new();
+                classifiedMembers ??= [];
                 classifiedMembers[ci.Name] = ci;
             }
 
@@ -237,10 +237,10 @@ internal sealed class Parser
                                 ci = AppendAttributeClassifications(ci, attribute);
                             }
 
-                            clm.Parameters.Add(ci);
+                            clm.Parameters.Add(ci!);
                         }
 
-                        classifiedLogMethods ??= new();
+                        classifiedLogMethods ??= [];
                         classifiedLogMethods.Add(clm);
                     }
                 }

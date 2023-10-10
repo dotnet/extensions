@@ -25,7 +25,7 @@ public class ResilienceEnrichmentBenchmark
         _pipeline = CreateResiliencePipeline(_ => { });
         _pipelineEnriched = CreateResiliencePipeline(services =>
         {
-            services.AddResilienceEnrichment();
+            services.AddResilienceEnricher();
             services.ConfigureFailureResultContext<string>(res => FailureResultContext.Create("dummy", "dummy", "dummy"));
         });
     }

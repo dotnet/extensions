@@ -16,8 +16,8 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
     public void Validate_InvalidOptions_EnsureValidationErrors()
     {
         HttpStandardHedgingResilienceOptions options = new();
-        options.EndpointOptions.CircuitBreakerOptions.SamplingDuration = TimeSpan.FromSeconds(1);
-        options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(1);
+        options.Endpoint.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(1);
+        options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(1);
 
         var validationResult = CreateValidator().Validate("dummy", options);
 
@@ -43,24 +43,24 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
         get
         {
             var options = new HttpStandardHedgingResilienceOptions();
-            options.EndpointOptions.TimeoutOptions.Timeout = options.TotalRequestTimeoutOptions.Timeout;
-            options.EndpointOptions.CircuitBreakerOptions.SamplingDuration = TimeSpan.FromMilliseconds(options.EndpointOptions.TimeoutOptions.Timeout.TotalMilliseconds * 2);
+            options.Endpoint.Timeout.Timeout = options.TotalRequestTimeout.Timeout;
+            options.Endpoint.CircuitBreaker.SamplingDuration = TimeSpan.FromMilliseconds(options.Endpoint.Timeout.Timeout.TotalMilliseconds * 2);
             yield return new object[] { options };
 
             options = new HttpStandardHedgingResilienceOptions();
-            options.EndpointOptions.TimeoutOptions.Timeout = options.TotalRequestTimeoutOptions.Timeout;
-            options.EndpointOptions.CircuitBreakerOptions.SamplingDuration =
-                TimeSpan.FromMilliseconds(options.EndpointOptions.TimeoutOptions.Timeout.TotalMilliseconds * 2) + TimeSpan.FromMilliseconds(10);
+            options.Endpoint.Timeout.Timeout = options.TotalRequestTimeout.Timeout;
+            options.Endpoint.CircuitBreaker.SamplingDuration =
+                TimeSpan.FromMilliseconds(options.Endpoint.Timeout.Timeout.TotalMilliseconds * 2) + TimeSpan.FromMilliseconds(10);
             yield return new object[] { options };
 
             options = new HttpStandardHedgingResilienceOptions();
-            options.HedgingOptions.MaxHedgedAttempts = 1;
-            options.HedgingOptions.Delay = options.TotalRequestTimeoutOptions.Timeout;
+            options.Hedging.MaxHedgedAttempts = 1;
+            options.Hedging.Delay = options.TotalRequestTimeout.Timeout;
             yield return new object[] { options };
 
             options = new HttpStandardHedgingResilienceOptions();
-            options.HedgingOptions.Delay = TimeSpan.FromDays(1);
-            options.HedgingOptions.DelayGenerator = _ => new ValueTask<TimeSpan>(TimeSpan.FromDays(1));
+            options.Hedging.Delay = TimeSpan.FromDays(1);
+            options.Hedging.DelayGenerator = _ => new ValueTask<TimeSpan>(TimeSpan.FromDays(1));
             yield return new object[] { options };
         }
     }
@@ -79,17 +79,17 @@ public class HttpStandardHedgingResilienceOptionsCustomValidatorTests
         get
         {
             var options = new HttpStandardHedgingResilienceOptions();
-            options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(2);
-            options.EndpointOptions.TimeoutOptions.Timeout = TimeSpan.FromSeconds(3);
+            options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(2);
+            options.Endpoint.Timeout.Timeout = TimeSpan.FromSeconds(3);
             yield return new object[] { options };
 
             options = new HttpStandardHedgingResilienceOptions();
-            options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(2);
+            options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(2);
             yield return new object[] { options };
 
             options = new HttpStandardHedgingResilienceOptions();
-            options.EndpointOptions.TimeoutOptions.Timeout = options.TotalRequestTimeoutOptions.Timeout;
-            options.EndpointOptions.CircuitBreakerOptions.SamplingDuration = TimeSpan.FromMilliseconds(options.EndpointOptions.TimeoutOptions.Timeout.TotalMilliseconds / 2);
+            options.Endpoint.Timeout.Timeout = options.TotalRequestTimeout.Timeout;
+            options.Endpoint.CircuitBreaker.SamplingDuration = TimeSpan.FromMilliseconds(options.Endpoint.Timeout.Timeout.TotalMilliseconds / 2);
             yield return new object[] { options };
         }
     }

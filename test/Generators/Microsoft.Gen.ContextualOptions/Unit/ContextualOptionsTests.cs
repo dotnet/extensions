@@ -14,7 +14,7 @@ public class ContextualOptionsTests
 {
     private class Receiver : IOptionsContextReceiver
     {
-        public List<(string key, object? value)> Received { get; } = new();
+        public List<(string key, object? value)> Received { get; } = [];
 
         public void Receive<T>(string key, T value) => Received.Add((key, value));
     }

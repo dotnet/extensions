@@ -27,3 +27,4 @@ if desired.
 | `EXTEXP0010` | Object pool experiments |
 | `EXTEXP0011` | Document database experiments |
 | `EXTEXP0012` | Auto-activation experiments |
+| `EXTEXP0013` | HttpLogging middleware experiments |

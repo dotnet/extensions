@@ -16,7 +16,7 @@ public class FakeCertificateFactoryTests
     {
         using var certificate = FakeSslCertificateFactory.CreateSslCertificate();
 
-        Assert.Equal("CN=r9-self-signed-unit-test-certificate", certificate.SubjectName.Name);
+        Assert.Equal("CN=dotnet-extensions-self-signed-unit-test-certificate", certificate.SubjectName.Name);
         Assert.Equal("localhost", certificate.GetNameInfo(X509NameType.DnsFromAlternativeName, false));
         Assert.True(DateTime.Now > certificate.NotBefore + TimeSpan.FromHours(1));
         Assert.True(DateTime.Now < certificate.NotAfter - TimeSpan.FromHours(1));

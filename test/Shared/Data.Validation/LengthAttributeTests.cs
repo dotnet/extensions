@@ -379,7 +379,7 @@ public class LengthAttributeTests
     public class TestOptionsCustomMessage
     {
         [Length(5, ErrorMessage = "My custom message for '{0}'.")]
-        public List<string> CustomMessage { get; set; } = new List<string>();
+        public List<string> CustomMessage { get; set; } = [];
     }
 
     [Fact]
@@ -399,7 +399,7 @@ public class LengthAttributeTests
     public class TestOptionsDefaultMessage
     {
         [Length(5)]
-        public List<string> DefaultMessage { get; set; } = new List<string>();
+        public List<string> DefaultMessage { get; set; } = [];
     }
 
     [Fact]

@@ -257,7 +257,7 @@ internal sealed class JsonReader
 #pragma warning restore S109 // Magic numbers should not be used
     private JsonObject ReadObject()
     {
-        return ReadObject(new JsonObject());
+        return ReadObject([]);
     }
 
     private JsonObject ReadObject(JsonObject jsonObject)
@@ -328,7 +328,7 @@ internal sealed class JsonReader
 
     private JsonArray ReadArray()
     {
-        return ReadArray(new JsonArray());
+        return ReadArray([]);
     }
 
     private JsonArray ReadArray(JsonArray jsonArray)

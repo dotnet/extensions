@@ -12,8 +12,8 @@ namespace Microsoft.Gen.Logging.Model;
 [DebuggerDisplay("{Name}")]
 internal sealed class LoggingType
 {
-    public readonly List<LoggingMethod> Methods = new();
-    public readonly List<string> AllMembers = new();
+    public readonly List<LoggingMethod> Methods = [];
+    public readonly List<string> AllMembers = [];
     public string Keyword = string.Empty;
     public string Namespace = string.Empty;
     public string Name = string.Empty;

@@ -6,8 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience.Hedging.Internals;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Http.Resilience;
@@ -57,7 +57,6 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// <param name="builder">The pipeline builder.</param>
     /// <param name="configure">The configure method.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    [Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, Action<HttpStandardHedgingResilienceOptions, IServiceProvider> configure)
     {
         _ = Throw.IfNull(builder);
@@ -77,7 +76,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        var pipelineName = PipelineNameHelper.GetName(builder.Name, HttpResilienceHedgingHttpClientBuilderExtensions.StandardInnerHandlerPostfix);
+        var pipelineName = PipelineNameHelper.GetName(builder.Name, HedgingConstants.InnerHandlerPostfix);
 
         PipelineKeyProviderHelper.SelectPipelineByAuthority(builder.Services, pipelineName);
 
@@ -96,7 +95,7 @@ public static class StandardHedgingHandlerBuilderExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(selectorFactory);
 
-        var pipelineName = PipelineNameHelper.GetName(builder.Name, HttpResilienceHedgingHttpClientBuilderExtensions.StandardInnerHandlerPostfix);
+        var pipelineName = PipelineNameHelper.GetName(builder.Name, HedgingConstants.InnerHandlerPostfix);
 
         PipelineKeyProviderHelper.SelectPipelineBy(builder.Services, pipelineName, selectorFactory);
 

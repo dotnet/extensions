@@ -21,8 +21,8 @@ namespace Microsoft.Extensions.Diagnostics.Metrics.Testing;
 public sealed class MetricCollector<T> : IDisposable
     where T : struct
 {
-    private static readonly HashSet<Type> _supportedTs = new()
-    {
+    private static readonly HashSet<Type> _supportedTs =
+    [
         typeof(int),
         typeof(byte),
         typeof(short),
@@ -30,12 +30,12 @@ public sealed class MetricCollector<T> : IDisposable
         typeof(float),
         typeof(double),
         typeof(decimal),
-    };
+    ];
 
     internal int WaitersCount => _waiters.Count; // Internal for testing
     private readonly MeterListener _meterListener = new();
-    private readonly List<CollectedMeasurement<T>> _measurements = new();
-    private readonly List<Waiter> _waiters = new();
+    private readonly List<CollectedMeasurement<T>> _measurements = [];
+    private readonly List<Waiter> _waiters = [];
     private readonly TimeProvider _timeProvider;
     private bool _disposed;
     private Instrument? _instrument;
@@ -308,7 +308,7 @@ public sealed class MetricCollector<T> : IDisposable
                 {
                     if (_measurements.Count >= _waiters[i].MinCount)
                     {
-                        toBeWoken ??= new();
+                        toBeWoken ??= [];
                         toBeWoken.Add(_waiters[i]);
                         _waiters.RemoveAt(i);
                     }

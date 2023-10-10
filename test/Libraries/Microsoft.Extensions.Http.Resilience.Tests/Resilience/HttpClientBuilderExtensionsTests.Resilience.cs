@@ -103,7 +103,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         using var metricCollector = new MetricCollector<int>(null, "Polly", "resilience.polly.strategy.events");
         var enricher = new TestMetricsEnricher();
         var services = new ServiceCollection()
-            .AddResilienceEnrichment()
+            .AddResilienceEnricher()
             .Configure<TelemetryOptions>(options => options.MeteringEnrichers.Add(enricher));
 
         var clientBuilder = services
@@ -112,9 +112,9 @@ public sealed partial class HttpClientBuilderExtensionsTests
             .AddStandardResilienceHandler()
             .Configure(options =>
             {
-                options.RetryOptions.ShouldHandle = _ => PredicateResult.True();
-                options.RetryOptions.MaxRetryAttempts = 1;
-                options.RetryOptions.Delay = TimeSpan.Zero;
+                options.Retry.ShouldHandle = _ => PredicateResult.True();
+                options.Retry.MaxRetryAttempts = 1;
+                options.Retry.Delay = TimeSpan.Zero;
             });
 
         var client = services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("client");
@@ -266,7 +266,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
     private class TestMetricsEnricher : MeteringEnricher
     {
-        public List<KeyValuePair<string, object?>> Tags { get; } = new();
+        public List<KeyValuePair<string, object?>> Tags { get; } = [];
 
         public override void Enrich<TResult, TArgs>(in EnrichmentContext<TResult, TArgs> context)
         {

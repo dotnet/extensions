@@ -32,8 +32,7 @@ internal sealed class Parser
             SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
 
     private static readonly HashSet<SpecialType> _allowedGenericAttributeTypeArgs =
-        new()
-        {
+        [
             SpecialType.System_Byte,
             SpecialType.System_Int16,
             SpecialType.System_Int32,
@@ -41,7 +40,7 @@ internal sealed class Parser
             SpecialType.System_Decimal,
             SpecialType.System_Single,
             SpecialType.System_Double
-        };
+        ];
 
     private readonly CancellationToken _cancellationToken;
     private readonly Compilation _compilation;

@@ -19,13 +19,13 @@ public class HttpStandardHedgingResilienceOptionsTests
     [Fact]
     public void Ctor_EnsureDefaults()
     {
-        _options.TotalRequestTimeoutOptions.Timeout.Should().Be(TimeSpan.FromSeconds(30));
-        _options.EndpointOptions.TimeoutOptions.Timeout.Should().Be(TimeSpan.FromSeconds(10));
+        _options.TotalRequestTimeout.Timeout.Should().Be(TimeSpan.FromSeconds(30));
+        _options.Endpoint.Timeout.Timeout.Should().Be(TimeSpan.FromSeconds(10));
 
-        _options.TotalRequestTimeoutOptions.Name.Should().Be("StandardHedging-TotalRequestTimeout");
-        _options.HedgingOptions.Name.Should().Be("StandardHedging-Hedging");
-        _options.EndpointOptions.CircuitBreakerOptions.Name.Should().Be("StandardHedging-CircuitBreaker");
-        _options.EndpointOptions.TimeoutOptions.Name.Should().Be("StandardHedging-AttemptTimeout");
-        _options.EndpointOptions.RateLimiterOptions.Name.Should().Be("StandardHedging-RateLimiter");
+        _options.TotalRequestTimeout.Name.Should().Be("StandardHedging-TotalRequestTimeout");
+        _options.Hedging.Name.Should().Be("StandardHedging-Hedging");
+        _options.Endpoint.CircuitBreaker.Name.Should().Be("StandardHedging-CircuitBreaker");
+        _options.Endpoint.Timeout.Name.Should().Be("StandardHedging-AttemptTimeout");
+        _options.Endpoint.RateLimiter.Name.Should().Be("StandardHedging-RateLimiter");
     }
 }
