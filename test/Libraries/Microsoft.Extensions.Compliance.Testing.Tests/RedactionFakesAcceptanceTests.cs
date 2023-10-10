@@ -220,7 +220,9 @@ public class RedactionFakesAcceptanceTests
 
         Assert.Equal(1, collector.LastRedactorRequested.SequenceNumber);
         Assert.Equal(dc, collector.LastRedactorRequested.DataClassification);
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal(1, collector.AllRedactorRequests.Count);
+#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
     }
 
     [Fact]

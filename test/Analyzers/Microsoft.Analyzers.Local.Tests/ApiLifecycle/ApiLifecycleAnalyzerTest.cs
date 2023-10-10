@@ -39,7 +39,7 @@ public class ApiLifecycleAnalyzerTest
                 },
                 options: options,
                 testAssemblyName: testAssemblyName)
-            .ConfigureAwait(false);
+;
 
         Assert.Equal(expectedDiagnostics, diagnostics.Count);
 
@@ -65,7 +65,7 @@ public class ApiLifecycleAnalyzerTest
                 },
                 options: options,
                 testAssemblyName: testAssemblyName)
-            .ConfigureAwait(false);
+;
 
         Assert.Equal(expectedDiagnostics, diagnostics.Count);
 
