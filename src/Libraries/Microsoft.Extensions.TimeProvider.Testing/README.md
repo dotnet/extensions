@@ -22,12 +22,12 @@ Or directly in the C# project file:
 
 `FakeTimeProvider` can be used to manually adjust time to test time dependent components in a deterministic way.
 
-`FakeTimeProvider` derives from TimeProvider and adds the following APIs:
+`FakeTimeProvider` derives from [TimeProvider](https://learn.microsoft.com/dotnet/api/system.timeprovider) and adds the following APIs:
 
 ```csharp
 public FakeTimeProvider(DateTimeOffset startDateTime)
 public DateTimeOffset Start { get; }
-public TimeSpan AutoAdvanceAmount
+public TimeSpan AutoAdvanceAmount { get; set; }
 public void SetUtcNow(DateTimeOffset value)
 public void Advance(TimeSpan delta)
 public void SetLocalTimeZone(TimeZoneInfo localTimeZone)
