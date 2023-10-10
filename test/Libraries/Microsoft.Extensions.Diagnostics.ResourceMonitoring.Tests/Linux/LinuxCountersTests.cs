@@ -44,7 +44,10 @@ public sealed class LinuxCountersTests
         {
             InstrumentPublished = (instrument, listener) =>
             {
-                listener.EnableMeasurementEvents(instrument);
+                if (ReferenceEquals(meter, instrument.Meter))
+                {
+                    listener.EnableMeasurementEvents(instrument);
+                }
             }
         };
 
@@ -64,6 +67,6 @@ public sealed class LinuxCountersTests
         Assert.Equal(ResourceUtilizationInstruments.CpuUtilization, samples[0].instrument.Name);
         Assert.Equal(double.NaN, samples[0].value);
         Assert.Equal(ResourceUtilizationInstruments.MemoryUtilization, samples[1].instrument.Name);
-        Assert.Equal(50, samples[1].value);
+        Assert.Equal(0.5, samples[1].value);
     }
 }

@@ -71,13 +71,13 @@ public sealed partial class HttpClientBuilderExtensionsTests
             context.OnPipelineDisposed(() => onPipelineDisposedCalled = true);
         });
 
-        var serviceProvider = services.BuildServiceProvider();
+        using (var serviceProvider = services.BuildServiceProvider())
+        {
+            var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
+            using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
 
-        var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
-        using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
-
-        await client.GetStringAsync("https://dummy");
-        serviceProvider.Dispose();
+            await client.GetStringAsync("https://dummy");
+        }
 
         onPipelineDisposedCalled.Should().BeTrue();
     }
@@ -123,9 +123,9 @@ public sealed partial class HttpClientBuilderExtensionsTests
         using var response = await client.SendAsync(request);
 
         var lookup = enricher.Tags.ToLookup(t => t.Key, t => t.Value);
-        lookup["failure-reason"].Should().Contain("500");
-        lookup["failure-summary"].Should().Contain("InternalServerError");
-        lookup["failure-source"].Should().Contain(TelemetryConstants.Unknown);
+        lookup["resilience.failure.reason"].Should().Contain("500");
+        lookup["resilience.failure.summary"].Should().Contain("InternalServerError");
+        lookup["resilience.failure.source"].Should().Contain(TelemetryConstants.Unknown);
     }
 
     [Fact]
