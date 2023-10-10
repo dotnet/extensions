@@ -18,7 +18,7 @@ namespace Microsoft.Gen.Logging.Parsing;
 
 internal partial class Parser
 {
-    private static readonly HashSet<TypeKind> _allowedTypeKinds = new() { TypeKind.Class, TypeKind.Struct, TypeKind.Interface };
+    private static readonly HashSet<TypeKind> _allowedTypeKinds = [TypeKind.Class, TypeKind.Struct, TypeKind.Interface];
 
     private bool ProcessLogPropertiesForParameter(
         AttributeData logPropertiesAttribute,

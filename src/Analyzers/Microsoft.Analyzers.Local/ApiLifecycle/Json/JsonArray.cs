@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.LocalAnalyzers.Json;
 [DebuggerTypeProxy(typeof(JsonArrayDebugView))]
 internal sealed class JsonArray : IEnumerable<JsonValue>
 {
-    private readonly List<JsonValue> _items = new();
+    private readonly List<JsonValue> _items = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonArray"/> class, adding the given values to the collection.

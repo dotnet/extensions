@@ -71,13 +71,4 @@ public static class LoggerMessageHelperTests
         var lmp2 = LoggerMessageHelper.ThreadLocalState;
         Assert.Same(lmp1, lmp2);
     }
-
-#if NET6_0_OR_GREATER
-    [Fact]
-    public static void Options()
-    {
-        var opt = LogMethodHelper.SkipEnabledCheckOptions;
-        Assert.True(opt.SkipEnabledCheck);
-    }
-#endif
 }

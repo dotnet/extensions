@@ -53,10 +53,6 @@ public static class ExtendedLoggerTests
         var logger = lf.CreateLogger(Category);
         logger.LogWarning("MSG0");
 
-        var lmh = LogMethodHelper.GetHelper();
-        lmh.Add("PK1", "PV1");
-        logger.Log(LogLevel.Error, new EventId(1, "ID1"), lmh, null, (_, _) => "MSG1");
-
         var lms = LoggerMessageHelper.ThreadLocalState;
         var index = lms.ReserveTagSpace(1);
         lms.TagArray[index] = new("PK2", "PV2");
@@ -70,7 +66,7 @@ public static class ExtendedLoggerTests
         var sink = provider.Logger!;
         var collector = sink.Collector;
         Assert.Equal(Category, sink.Category);
-        Assert.Equal(3, collector.Count);
+        Assert.Equal(2, collector.Count);
 
         var snap = collector.GetSnapshot();
 
@@ -83,21 +79,13 @@ public static class ExtendedLoggerTests
 
         Assert.Equal(Category, snap[1].Category);
         Assert.Null(snap[1].Exception);
-        Assert.Equal(new EventId(1, "ID1"), snap[1].Id);
-        Assert.Equal("MSG1", snap[1].Message);
-        Assert.Equal("PV1", snap[1].StructuredState!.GetValue("PK1"));
+        Assert.Equal(new EventId(2, "ID2"), snap[1].Id);
+        Assert.Equal("MSG2", snap[1].Message);
+        Assert.Equal("PV2", snap[1].StructuredState!.GetValue("PK2"));
+        Assert.Equal("REDACTED<PV3>", snap[1].StructuredState!.GetValue("PK3"));
+        Assert.Null(snap[1].StructuredState!.GetValue("PK4"));
         Assert.Equal("EV1", snap[1].StructuredState!.GetValue("EK1"));
         Assert.Equal("SEV1", snap[1].StructuredState!.GetValue("SEK1"));
-
-        Assert.Equal(Category, snap[2].Category);
-        Assert.Null(snap[2].Exception);
-        Assert.Equal(new EventId(2, "ID2"), snap[2].Id);
-        Assert.Equal("MSG2", snap[2].Message);
-        Assert.Equal("PV2", snap[2].StructuredState!.GetValue("PK2"));
-        Assert.Equal("REDACTED<PV3>", snap[2].StructuredState!.GetValue("PK3"));
-        Assert.Null(snap[2].StructuredState!.GetValue("PK4"));
-        Assert.Equal("EV1", snap[2].StructuredState!.GetValue("EK1"));
-        Assert.Equal("SEV1", snap[2].StructuredState!.GetValue("SEK1"));
     }
 
     [Theory]
@@ -128,10 +116,6 @@ public static class ExtendedLoggerTests
         var logger = lf.CreateLogger(Category);
         logger.LogWarning("MSG0");
 
-        var lmh = LogMethodHelper.GetHelper();
-        lmh.Add("PK1", "PV1");
-        logger.Log(LogLevel.Error, new EventId(1, "ID1"), lmh, null, (_, _) => "MSG1");
-
         var lms = LoggerMessageHelper.ThreadLocalState;
         var index = lms.ReserveTagSpace(1);
         lms.TagArray[index] = new("PK2", "PV2");
@@ -140,7 +124,7 @@ public static class ExtendedLoggerTests
         var sink = provider.Logger!;
         var collector = sink.Collector;
         Assert.Equal(Category, sink.Category);
-        Assert.Equal(3, collector.Count);
+        Assert.Equal(2, collector.Count);
 
         var snap = collector.GetSnapshot();
 
@@ -153,19 +137,11 @@ public static class ExtendedLoggerTests
 
         Assert.Equal(Category, snap[1].Category);
         Assert.Null(snap[1].Exception);
-        Assert.Equal(new EventId(1, "ID1"), snap[1].Id);
-        Assert.Equal("MSG1", snap[1].Message);
-        Assert.Equal("PV1", snap[1].StructuredState!.GetValue("PK1"));
+        Assert.Equal(new EventId(2, "ID2"), snap[1].Id);
+        Assert.Equal("MSG2", snap[1].Message);
+        Assert.Equal("PV2", snap[1].StructuredState!.GetValue("PK2"));
         Assert.Equal("EV1", snap[1].StructuredState!.GetValue("EK1"));
-        Assert.Equal("EV2", snap[0].StructuredState!.GetValue("EK2"));
-
-        Assert.Equal(Category, snap[2].Category);
-        Assert.Null(snap[2].Exception);
-        Assert.Equal(new EventId(2, "ID2"), snap[2].Id);
-        Assert.Equal("MSG2", snap[2].Message);
-        Assert.Equal("PV2", snap[2].StructuredState!.GetValue("PK2"));
-        Assert.Equal("EV1", snap[2].StructuredState!.GetValue("EK1"));
-        Assert.Equal("EV2", snap[0].StructuredState!.GetValue("EK2"));
+        Assert.Equal("EV2", snap[1].StructuredState!.GetValue("EK2"));
     }
 
     [Fact]
@@ -206,10 +182,6 @@ public static class ExtendedLoggerTests
         logger.Log<object?>(LogLevel.Error, new EventId(0, "ID0"), null, null, (_, _) => "MSG0");
         logger.Log<object?>(LogLevel.Error, new EventId(0, "ID0b"), null, null, (_, _) => "MSG0b");
 
-        var lmh = LogMethodHelper.GetHelper();
-        logger.Log(LogLevel.Error, new EventId(1, "ID1"), (LogMethodHelper?)null, null, (_, _) => "MSG1");
-        logger.Log(LogLevel.Error, new EventId(1, "ID1b"), (LogMethodHelper?)null, null, (_, _) => "MSG1b");
-
         var lms = LoggerMessageHelper.ThreadLocalState;
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), (LoggerMessageState?)null, null, (_, _) => "MSG2");
         logger.Log(LogLevel.Warning, new EventId(2, "ID2b"), (LoggerMessageState?)null, null, (_, _) => "MSG2b");
@@ -217,7 +189,7 @@ public static class ExtendedLoggerTests
         var sink = provider.Logger!;
         var collector = sink.Collector;
         Assert.Equal(Category, sink.Category);
-        Assert.Equal(6, collector.Count);
+        Assert.Equal(4, collector.Count);
 
         var snap = collector.GetSnapshot();
 
@@ -237,31 +209,17 @@ public static class ExtendedLoggerTests
 
         Assert.Equal(Category, snap[2].Category);
         Assert.Null(snap[2].Exception);
-        Assert.Equal(new EventId(1, "ID1"), snap[2].Id);
-        Assert.Equal("MSG1", snap[2].Message);
+        Assert.Equal(new EventId(2, "ID2"), snap[2].Id);
+        Assert.Equal("MSG2", snap[2].Message);
         Assert.Equal("EV1", snap[2].StructuredState!.GetValue("EK1"));
         Assert.Equal("SEV1", snap[2].StructuredState!.GetValue("SEK1"));
 
         Assert.Equal(Category, snap[3].Category);
         Assert.Null(snap[3].Exception);
-        Assert.Equal(new EventId(1, "ID1b"), snap[3].Id);
-        Assert.Equal("MSG1b", snap[3].Message);
+        Assert.Equal(new EventId(2, "ID2b"), snap[3].Id);
+        Assert.Equal("MSG2b", snap[3].Message);
         Assert.Equal("EV1", snap[3].StructuredState!.GetValue("EK1"));
         Assert.Equal("SEV1", snap[3].StructuredState!.GetValue("SEK1"));
-
-        Assert.Equal(Category, snap[4].Category);
-        Assert.Null(snap[4].Exception);
-        Assert.Equal(new EventId(2, "ID2"), snap[4].Id);
-        Assert.Equal("MSG2", snap[4].Message);
-        Assert.Equal("EV1", snap[4].StructuredState!.GetValue("EK1"));
-        Assert.Equal("SEV1", snap[4].StructuredState!.GetValue("SEK1"));
-
-        Assert.Equal(Category, snap[5].Category);
-        Assert.Null(snap[5].Exception);
-        Assert.Equal(new EventId(2, "ID2b"), snap[5].Id);
-        Assert.Equal("MSG2b", snap[5].Message);
-        Assert.Equal("EV1", snap[5].StructuredState!.GetValue("EK1"));
-        Assert.Equal("SEV1", snap[5].StructuredState!.GetValue("SEK1"));
     }
 
     [Fact]
@@ -440,10 +398,6 @@ public static class ExtendedLoggerTests
         logger.Log<object?>(LogLevel.Error, new EventId(0, "ID0"), null, null, (_, _) => "MSG0");
         logger.Log<object?>(LogLevel.Error, new EventId(0, "ID0b"), null, ex, (_, _) => "MSG0b");
 
-        var lmh = LogMethodHelper.GetHelper();
-        logger.Log(LogLevel.Error, new EventId(1, "ID1"), lmh, null, (_, _) => "MSG1");
-        logger.Log(LogLevel.Error, new EventId(1, "ID1b"), lmh, ex, (_, _) => "MSG1b");
-
         var lms = LoggerMessageHelper.ThreadLocalState;
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
         logger.Log(LogLevel.Warning, new EventId(2, "ID2b"), lms, ex, (_, _) => "MSG2b");
@@ -451,7 +405,7 @@ public static class ExtendedLoggerTests
         var sink = provider.Logger!;
         var collector = sink.Collector;
         Assert.Equal(Category, sink.Category);
-        Assert.Equal(6, collector.Count);
+        Assert.Equal(4, collector.Count);
 
         var snap = collector.GetSnapshot();
 
@@ -467,25 +421,15 @@ public static class ExtendedLoggerTests
 
         Assert.Equal(Category, snap[2].Category);
         Assert.Null(snap[2].Exception);
-        Assert.Equal(new EventId(1, "ID1"), snap[2].Id);
-        Assert.Equal("MSG1", snap[2].Message);
+        Assert.Equal(new EventId(2, "ID2"), snap[2].Id);
+        Assert.Equal("MSG2", snap[2].Message);
 
         Assert.Equal(Category, snap[3].Category);
         Assert.NotNull(snap[3].Exception);
-        Assert.Equal(new EventId(1, "ID1b"), snap[3].Id);
-        Assert.Equal("MSG1b", snap[3].Message);
+        Assert.Equal(new EventId(2, "ID2b"), snap[3].Id);
+        Assert.Equal("MSG2b", snap[3].Message);
 
-        Assert.Equal(Category, snap[4].Category);
-        Assert.Null(snap[4].Exception);
-        Assert.Equal(new EventId(2, "ID2"), snap[4].Id);
-        Assert.Equal("MSG2", snap[4].Message);
-
-        Assert.Equal(Category, snap[5].Category);
-        Assert.NotNull(snap[5].Exception);
-        Assert.Equal(new EventId(2, "ID2b"), snap[5].Id);
-        Assert.Equal("MSG2b", snap[5].Message);
-
-        var stackTrace = snap[5].StructuredState!.GetValue("StackTrace")!;
+        var stackTrace = snap[3].StructuredState!.GetValue("StackTrace")!;
         Assert.Contains("AggregateException", stackTrace);
         Assert.Contains("ArgumentNullException", stackTrace);
         Assert.Contains("ArgumentOutOfRangeException", stackTrace);

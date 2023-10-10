@@ -29,7 +29,7 @@ internal sealed class TestResources : IDisposable
         "/proc"
     };
 
-    private readonly HashSet<string> _set = new();
+    private readonly HashSet<string> _set = [];
     public readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
     public void Dispose()

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET8_0_OR_GREATER
+
 using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -26,10 +28,10 @@ public class ApiRoutingController : ControllerBase
         Debug.Assert(noRedaction != null, "Test");
 
         // Request processing imitation:
-        var middleware = HttpContext.RequestServices.GetRequiredService<HttpLoggingMiddleware>();
-        var fakeTimeProvider = (FakeTimeProvider)middleware.TimeProvider;
+        var fakeTimeProvider = HttpContext.RequestServices.GetRequiredService<FakeTimeProvider>();
         fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(AcceptanceTests.ControllerProcessingTimeMs));
 
         return "User info...";
     }
 }
+#endif

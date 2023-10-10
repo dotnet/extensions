@@ -15,5 +15,5 @@ internal sealed class ClassifiedItem
 
     public string Name = string.Empty;
     public string TypeName = string.Empty;
-    public List<Classification> Classifications = new();
+    public List<Classification> Classifications = [];
 }

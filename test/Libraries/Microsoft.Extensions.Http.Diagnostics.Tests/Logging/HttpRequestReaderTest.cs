@@ -16,7 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Http.Logging.Test.Internal;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Internal;
 using Moq;
 using Xunit;
@@ -50,8 +49,8 @@ public class HttpRequestReaderTest
             Method = HttpMethod.Post,
             Path = TelemetryConstants.Redacted,
             StatusCode = 200,
-            RequestHeaders = new() { new("Header1", Redacted), new("Header3", Redacted) },
-            ResponseHeaders = new() { new("Header2", Redacted), new("Header3", Redacted) },
+            RequestHeaders = [new("Header1", Redacted), new("Header3", Redacted)],
+            ResponseHeaders = [new("Header2", Redacted), new("Header3", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
@@ -163,7 +162,6 @@ public class HttpRequestReaderTest
         var actualRecord = new LogRecord();
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
 
@@ -194,8 +192,8 @@ public class HttpRequestReaderTest
             Method = HttpMethod.Post,
             Path = "foo/bar/123",
             StatusCode = 200,
-            RequestHeaders = new() { new("Header1", Redacted) },
-            ResponseHeaders = new() { new("Header2", Redacted) },
+            RequestHeaders = [new("Header1", Redacted)],
+            ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
@@ -244,7 +242,6 @@ public class HttpRequestReaderTest
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
@@ -275,8 +272,8 @@ public class HttpRequestReaderTest
             Method = HttpMethod.Post,
             Path = "foo/bar/{userId}",
             StatusCode = 200,
-            RequestHeaders = new() { new("Header1", Redacted) },
-            ResponseHeaders = new() { new("Header2", Redacted) },
+            RequestHeaders = [new("Header1", Redacted)],
+            ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
@@ -328,7 +325,6 @@ public class HttpRequestReaderTest
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
@@ -357,7 +353,7 @@ public class HttpRequestReaderTest
             Host = host,
             Method = HttpMethod.Post,
             Path = "/foo/bar/123",
-            RequestHeaders = new() { new("Header1", Redacted) },
+            RequestHeaders = [new("Header1", Redacted)],
             RequestBody = requestContent,
         };
 
@@ -395,7 +391,6 @@ public class HttpRequestReaderTest
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
 
@@ -423,8 +418,8 @@ public class HttpRequestReaderTest
             Method = HttpMethod.Post,
             Path = "TestRequest",
             StatusCode = 200,
-            RequestHeaders = new() { new("Header1", Redacted) },
-            ResponseHeaders = new() { new("Header2", Redacted) },
+            RequestHeaders = [new("Header1", Redacted)],
+            ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
@@ -473,7 +468,6 @@ public class HttpRequestReaderTest
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
@@ -505,8 +499,8 @@ public class HttpRequestReaderTest
             Method = HttpMethod.Post,
             Path = TelemetryConstants.Redacted,
             StatusCode = 200,
-            RequestHeaders = new() { new("Header1", Redacted) },
-            ResponseHeaders = new() { new("Header2", Redacted) },
+            RequestHeaders = [new("Header1", Redacted)],
+            ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
@@ -551,7 +545,6 @@ public class HttpRequestReaderTest
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
@@ -582,8 +575,8 @@ public class HttpRequestReaderTest
             Method = HttpMethod.Post,
             Path = TelemetryConstants.Unknown,
             StatusCode = 200,
-            RequestHeaders = new() { new("Header1", Redacted) },
-            ResponseHeaders = new() { new("Header2", Redacted) },
+            RequestHeaders = [new("Header1", Redacted)],
+            ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
         };
@@ -629,7 +622,6 @@ public class HttpRequestReaderTest
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);

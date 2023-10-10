@@ -7,13 +7,13 @@ namespace Microsoft.Gen.AutoClient.Model;
 
 internal sealed class RestApiType
 {
-    public readonly List<RestApiMethod> Methods = new();
+    public readonly List<RestApiMethod> Methods = [];
     public string Namespace = string.Empty;
     public string Name = string.Empty;
     public string Constraints = string.Empty;
     public string Modifiers = string.Empty;
     public string Keyword = string.Empty;
     public string HttpClientName = string.Empty;
-    public Dictionary<string, string> StaticHeaders = new();
+    public Dictionary<string, string> StaticHeaders = [];
     public string DependencyName = string.Empty;
 }

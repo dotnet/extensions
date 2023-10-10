@@ -11,7 +11,7 @@ internal sealed class FeaturesPooledPolicy : IPooledObjectPolicy<List<object?>>
     /// <inheritdoc/>
     public List<object?> Create()
     {
-        return new List<object?>();
+        return [];
     }
 
     /// <inheritdoc/>

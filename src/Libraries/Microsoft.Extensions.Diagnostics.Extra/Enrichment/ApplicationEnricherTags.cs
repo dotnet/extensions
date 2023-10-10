@@ -14,22 +14,22 @@ public static class ApplicationEnricherTags
     /// <summary>
     /// Application name.
     /// </summary>
-    public const string ApplicationName = "App.Name";
+    public const string ApplicationName = "AppName";
 
     /// <summary>
     /// Environment name.
     /// </summary>
-    public const string EnvironmentName = "Cloud.Env";
+    public const string EnvironmentName = "CloudEnv";
 
     /// <summary>
     /// Deployment ring.
     /// </summary>
-    public const string DeploymentRing = "Cloud.DeploymentRing";
+    public const string DeploymentRing = "CloudDeploymentRing";
 
     /// <summary>
     /// Build version.
     /// </summary>
-    public const string BuildVersion = "Cloud.RoleVer";
+    public const string BuildVersion = "CloudRoleVer";
 
     /// <summary>
     /// Gets a list of all dimension names.

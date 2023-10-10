@@ -237,7 +237,7 @@ public class LogPropertiesTests
             ["classToLog.GetOnlyProperty"] = classToLog.GetOnlyProperty.ToString(CultureInfo.InvariantCulture),
             ["classToLog.VirtualPropertyBase"] = classToLog.VirtualPropertyBase,
             ["classToLog.NonVirtualPropertyBase"] = classToLog.NonVirtualPropertyBase,
-            ["classToLog.TransitivePropertyArray"] = LogMethodHelper.Stringify(classToLog.TransitivePropertyArray),
+            ["classToLog.TransitivePropertyArray"] = LoggerMessageHelper.Stringify(classToLog.TransitivePropertyArray),
             ["classToLog.TransitiveProperty.TransitiveNumberProp"]
                 = classToLog.TransitiveProperty.TransitiveNumberProp.ToString(CultureInfo.InvariantCulture),
 

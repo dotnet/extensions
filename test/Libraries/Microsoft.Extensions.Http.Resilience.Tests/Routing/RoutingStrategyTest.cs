@@ -125,7 +125,7 @@ public abstract class RoutingStrategyTest
         CollectUrls(CreateStrategy()).Should().Equal(urls1);
 
         // empty data -> failure
-        Assert.Throws<AggregateException>(() => provider.Reload(new Dictionary<string, string?>()));
+        Assert.Throws<AggregateException>(() => provider.Reload([]));
 
         provider.Reload(config2);
         CollectUrls(CreateStrategy()).Should().Equal(urls2);

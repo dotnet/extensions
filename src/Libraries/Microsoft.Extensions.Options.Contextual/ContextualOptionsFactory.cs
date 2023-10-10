@@ -72,7 +72,7 @@ internal sealed class ContextualOptionsFactory<TOptions> : IContextualOptionsFac
                 }
                 catch (Exception e)
                 {
-                    loadExceptions ??= new();
+                    loadExceptions ??= [];
                     loadExceptions.Add(e);
                     break;
                 }
@@ -90,7 +90,7 @@ internal sealed class ContextualOptionsFactory<TOptions> : IContextualOptionsFac
                 }
                 catch (Exception e)
                 {
-                    loadExceptions ??= new();
+                    loadExceptions ??= [];
                     loadExceptions.Add(e);
                 }
                 finally
@@ -119,7 +119,7 @@ internal sealed class ContextualOptionsFactory<TOptions> : IContextualOptionsFac
                 var result = validate.Validate(name, options);
                 if (result.Failed)
                 {
-                    failures ??= new();
+                    failures ??= [];
                     failures.AddRange(result.Failures);
                 }
             }

@@ -18,7 +18,7 @@ public partial class CallAnalyzer
         public readonly Dictionary<IPropertySymbol, List<Action<OperationAnalysisContext, IPropertyReferenceOperation>>> Props = new(SymbolEqualityComparer.Default);
         public readonly Dictionary<ITypeSymbol, List<Action<OperationAnalysisContext, IThrowOperation>>> ExceptionTypes = new(SymbolEqualityComparer.Default);
         public readonly Dictionary<ITypeSymbol, List<MethodHandlers>> Interfaces = new(SymbolEqualityComparer.Default);
-        public readonly HashSet<string> InterfaceMethodNames = new();
+        public readonly HashSet<string> InterfaceMethodNames = [];
     }
 
     internal sealed class MethodHandlers
@@ -29,6 +29,6 @@ public partial class CallAnalyzer
         }
 
         public IMethodSymbol Method { get; }
-        public List<Action<OperationAnalysisContext, IInvocationOperation>> Actions { get; } = new();
+        public List<Action<OperationAnalysisContext, IInvocationOperation>> Actions { get; } = [];
     }
 }

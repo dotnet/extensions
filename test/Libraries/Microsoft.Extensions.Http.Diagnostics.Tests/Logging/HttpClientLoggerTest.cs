@@ -173,8 +173,8 @@ public class HttpClientLoggerTest
             Method = HttpMethod.Post,
             Path = "foo/bar",
             StatusCode = 200,
-            ResponseHeaders = new() { new(TestExpectedResponseHeaderKey, Redacted), new(testSharedResponseHeaderKey, Redacted) },
-            RequestHeaders = new() { new(TestExpectedRequestHeaderKey, Redacted), new(testSharedRequestHeaderKey, Redacted) },
+            ResponseHeaders = [new(TestExpectedResponseHeaderKey, Redacted), new(testSharedResponseHeaderKey, Redacted)],
+            RequestHeaders = [new(TestExpectedRequestHeaderKey, Redacted), new(testSharedRequestHeaderKey, Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
             EnrichmentTags = testEnricher.EnrichmentBag
@@ -268,8 +268,8 @@ public class HttpClientLoggerTest
             Method = HttpMethod.Post,
             Path = "foo/bar",
             StatusCode = 200,
-            ResponseHeaders = new() { new(TestResponseHeader, Redacted) },
-            RequestHeaders = new() { new(TestRequestHeader, Redacted) },
+            ResponseHeaders = [new(TestResponseHeader, Redacted)],
+            RequestHeaders = [new(TestRequestHeader, Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
             EnrichmentTags = testEnricher.EnrichmentBag
@@ -373,8 +373,8 @@ public class HttpClientLoggerTest
             Method = HttpMethod.Post,
             Path = "foo/bar",
             StatusCode = 200,
-            ResponseHeaders = new() { new(TestResponseHeader, Redacted) },
-            RequestHeaders = new() { new(TestRequestHeader, Redacted) },
+            ResponseHeaders = [new(TestResponseHeader, Redacted)],
+            RequestHeaders = [new(TestRequestHeader, Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
             EnrichmentTags = testEnricher.EnrichmentBag
@@ -454,7 +454,7 @@ public class HttpClientLoggerTest
         Assert.DoesNotContain(logRecordState, kvp => kvp.Key.StartsWith(HttpClientLoggingTagNames.ResponseHeaderPrefix));
     }
 
-    [Fact(Skip = "Flaky test, see https://github.com/dotnet/r9/issues/372")]
+    [Fact(Skip = "Flaky test, see https://github.com/dotnet/extensions/issues/4530")]
     public async Task HttpLoggingHandler_ReadResponseThrows_LogsException()
     {
         var requestContent = _fixture.Create<string>();
@@ -469,8 +469,8 @@ public class HttpClientLoggerTest
             Method = HttpMethod.Post,
             Path = "foo/bar",
             StatusCode = 200,
-            ResponseHeaders = new() { new(TestResponseHeader, Redacted) },
-            RequestHeaders = new() { new(TestRequestHeader, Redacted) },
+            ResponseHeaders = [new(TestResponseHeader, Redacted)],
+            RequestHeaders = [new(TestRequestHeader, Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
             EnrichmentTags = testEnricher.EnrichmentBag
@@ -585,8 +585,8 @@ public class HttpClientLoggerTest
             Method = HttpMethod.Post,
             Path = "foo/bar",
             StatusCode = 200,
-            ResponseHeaders = new() { new(TestResponseHeader, Redacted) },
-            RequestHeaders = new() { new(TestRequestHeader, Redacted) },
+            ResponseHeaders = [new(TestResponseHeader, Redacted)],
+            RequestHeaders = [new(TestRequestHeader, Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
             EnrichmentTags = testEnricher.EnrichmentBag,
@@ -847,8 +847,8 @@ public class HttpClientLoggerTest
             Path = "foo/bar",
             Duration = 1000,
             StatusCode = 200,
-            ResponseHeaders = new() { new(TestExpectedResponseHeaderKey, Redacted) },
-            RequestHeaders = new() { new(TestExpectedRequestHeaderKey, Redacted) },
+            ResponseHeaders = [new(TestExpectedResponseHeaderKey, Redacted)],
+            RequestHeaders = [new(TestExpectedRequestHeaderKey, Redacted)],
             RequestBody = requestInput,
             ResponseBody = responseInput,
             EnrichmentTags = testEnricher.EnrichmentBag

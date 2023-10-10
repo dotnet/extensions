@@ -75,7 +75,7 @@ internal sealed partial class ExtendedLogger : ILogger
             catch (Exception ex)
             {
 #pragma warning disable CA1508 // Avoid dead conditional code
-                exceptions ??= new();
+                exceptions ??= [];
 #pragma warning restore CA1508 // Avoid dead conditional code
                 exceptions.Add(ex);
             }
@@ -107,7 +107,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 catch (Exception ex)
                 {
 #pragma warning disable CA1508 // Avoid dead conditional code
-                    exceptions ??= new();
+                    exceptions ??= [];
 #pragma warning restore CA1508 // Avoid dead conditional code
                     exceptions.Add(ex);
                 }
@@ -231,7 +231,7 @@ internal sealed partial class ExtendedLogger : ILogger
             }
             catch (Exception ex)
             {
-                exceptions ??= new();
+                exceptions ??= [];
                 exceptions.Add(ex);
             }
         }
@@ -257,7 +257,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 }
                 catch (Exception ex)
                 {
-                    exceptions ??= new();
+                    exceptions ??= [];
                     exceptions.Add(ex);
                 }
             }
@@ -315,7 +315,7 @@ internal sealed partial class ExtendedLogger : ILogger
             }
             catch (Exception ex)
             {
-                exceptions ??= new();
+                exceptions ??= [];
                 exceptions.Add(ex);
             }
         }
@@ -341,7 +341,7 @@ internal sealed partial class ExtendedLogger : ILogger
                 }
                 catch (Exception ex)
                 {
-                    exceptions ??= new();
+                    exceptions ??= [];
                     exceptions.Add(ex);
                 }
             }

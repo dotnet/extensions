@@ -11,7 +11,7 @@ internal sealed class LoggingProperty
 {
     public string Name = string.Empty;
     public string Type = string.Empty;
-    public HashSet<string> ClassificationAttributeTypes = new();
+    public HashSet<string> ClassificationAttributeTypes = [];
     public bool NeedsAtSign;
     public bool IsNullable;
     public bool IsReference;
@@ -19,7 +19,7 @@ internal sealed class LoggingProperty
     public bool ImplementsIConvertible;
     public bool ImplementsIFormattable;
     public bool ImplementsISpanFormattable;
-    public List<LoggingProperty> Properties = new();
+    public List<LoggingProperty> Properties = [];
     public bool OmitReferenceName;
     public TagProvider? TagProvider;
 
