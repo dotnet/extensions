@@ -8,9 +8,7 @@ In particular:
 - Your application may parse the same header value multiple times per request. This package automatically caches the parsed values of these headers to make your application faster.
 - This package also provides logging and metering of bad header values.
 
-## Getting started
-
-### Install the package
+## Install the package
 
 From the command-line:
 
