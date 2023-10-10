@@ -12,8 +12,8 @@ namespace Microsoft.Extensions.Compliance.Testing;
 /// </summary>
 public class FakeRedactionCollector
 {
-    private readonly List<RedactorRequested> _redactorRequestedLog = new();
-    private readonly List<RedactedData> _dataRedactedLog = new();
+    private readonly List<RedactorRequested> _redactorRequestedLog = [];
+    private readonly List<RedactedData> _dataRedactedLog = [];
 
     /// <summary>
     /// Gets the last redactor request "event".

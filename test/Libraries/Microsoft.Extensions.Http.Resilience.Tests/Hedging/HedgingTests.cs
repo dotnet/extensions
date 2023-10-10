@@ -54,7 +54,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
     public TBuilder Builder { get; private set; }
 
-    public List<string> Requests { get; } = new();
+    public List<string> Requests { get; } = [];
 
     public void Dispose()
     {
