@@ -16,7 +16,7 @@ internal sealed partial class Emitter : EmitterBase
     private const string LoggerMessageHelperType = "global::Microsoft.Extensions.Logging.LoggerMessageHelper";
 
     private readonly StringBuilderPool _sbPool = new();
-    private readonly Dictionary<string, string> _classificationMap = new();
+    private readonly Dictionary<string, string> _classificationMap = [];
 
     public string Emit(IEnumerable<LoggingType> logTypes, CancellationToken cancellationToken)
     {

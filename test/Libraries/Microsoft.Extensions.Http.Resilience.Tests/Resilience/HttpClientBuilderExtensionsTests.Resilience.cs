@@ -266,7 +266,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
     private class TestMetricsEnricher : MeteringEnricher
     {
-        public List<KeyValuePair<string, object?>> Tags { get; } = new();
+        public List<KeyValuePair<string, object?>> Tags { get; } = [];
 
         public override void Enrich<TResult, TArgs>(in EnrichmentContext<TResult, TArgs> context)
         {

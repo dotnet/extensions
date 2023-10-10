@@ -59,7 +59,7 @@ namespace TestClasses
 
     public readonly struct StructEnumerable : IEnumerable<int>
     {
-        private static readonly List<int> _numbers = new() { 1, 2, 3 };
+        private static readonly List<int> _numbers = [1, 2, 3];
         public IEnumerator<int> GetEnumerator() => _numbers.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _numbers.GetEnumerator();
     }

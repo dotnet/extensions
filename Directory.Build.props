@@ -36,7 +36,7 @@
 
   <PropertyGroup>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>

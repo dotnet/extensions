@@ -13,13 +13,13 @@ namespace Microsoft.Extensions.LocalAnalyzers.ApiLifecycle;
 internal sealed class AssemblyAnalysis
 {
     public Assembly Assembly { get; }
-    public HashSet<TypeDef> MissingTypes { get; } = new();
+    public HashSet<TypeDef> MissingTypes { get; } = [];
     public Dictionary<ISymbol, List<string>> MissingConstraints { get; } = new(SymbolEqualityComparer.Default);
     public Dictionary<ISymbol, List<string>> MissingBaseTypes { get; } = new(SymbolEqualityComparer.Default);
-    public HashSet<Method> MissingMethods { get; } = new();
-    public HashSet<Prop> MissingProperties { get; } = new();
-    public HashSet<Field> MissingFields { get; } = new();
-    public HashSet<(ISymbol symbol, Stage stage)> FoundInBaseline { get; } = new();
+    public HashSet<Method> MissingMethods { get; } = [];
+    public HashSet<Prop> MissingProperties { get; } = [];
+    public HashSet<Field> MissingFields { get; } = [];
+    public HashSet<(ISymbol symbol, Stage stage)> FoundInBaseline { get; } = [];
     public HashSet<ISymbol> NotFoundInBaseline { get; } = new(SymbolEqualityComparer.Default);
 
 #pragma warning disable SA1118 // Parameter should not span multiple lines
@@ -168,7 +168,7 @@ internal sealed class AssemblyAnalysis
                 }
                 else
                 {
-                    MissingBaseTypes.Add(type, new List<string> { @base });
+                    MissingBaseTypes.Add(type, [@base]);
                 }
             }
         }
@@ -184,7 +184,7 @@ internal sealed class AssemblyAnalysis
                 }
                 else
                 {
-                    MissingConstraints.Add(type, new List<string> { constraint });
+                    MissingConstraints.Add(type, [constraint]);
                 }
             }
         }
