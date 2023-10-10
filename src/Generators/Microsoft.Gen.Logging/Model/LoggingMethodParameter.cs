@@ -29,8 +29,8 @@ internal sealed class LoggingMethodParameter
     public bool SkipNullProperties;
     public bool OmitReferenceName;
     public bool UsedAsTemplate;
-    public HashSet<string> ClassificationAttributeTypes = new();
-    public List<LoggingProperty> Properties = new();
+    public HashSet<string> ClassificationAttributeTypes = [];
+    public List<LoggingProperty> Properties = [];
     public TagProvider? TagProvider;
 
     public string NameWithAt => NeedsAtSign ? "@" + Name : Name;

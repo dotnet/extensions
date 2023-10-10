@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Logging.Test;
 
 public class TestLogEnrichmentTagCollector : IEnrichmentTagCollector
 {
-    private readonly Dictionary<string, object> _tags = new();
+    private readonly Dictionary<string, object> _tags = [];
 
     public TestLogEnrichmentTagCollector(IEnumerable<KeyValuePair<string, object>>? input = null)
     {

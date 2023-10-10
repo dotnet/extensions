@@ -14,14 +14,14 @@ namespace Microsoft.Gen.Metrics;
 [Generator]
 public class MetricsGenerator : IIncrementalGenerator
 {
-    private static readonly HashSet<string> _attributeNames = new()
-    {
+    private static readonly HashSet<string> _attributeNames =
+    [
         SymbolLoader.CounterAttribute,
         SymbolLoader.CounterTAttribute.Replace("`1", "<T>"),
         SymbolLoader.HistogramAttribute,
         SymbolLoader.HistogramTAttribute.Replace("`1", "<T>"),
         SymbolLoader.GaugeAttribute
-    };
+    ];
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {

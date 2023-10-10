@@ -33,11 +33,10 @@ internal static class FakeSslCertificateFactory
         request.CertificateExtensions.Add(sanBuilder.Build());
 
         request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(
-            new OidCollection
-            {
+            [
                 new("1.3.6.1.5.5.7.3.1"), // serverAuth Object ID - indicates that the certificate is an SSL server certificate
                 new("1.3.6.1.5.5.7.3.2") // clientAuth Object ID - indicates that the certificate is an SSL client certificate
-            },
+            ],
             false));
 
         return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(1));

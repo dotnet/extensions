@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Logging;
 internal sealed class ExtendedLoggerFactory : ILoggerFactory
 {
     private readonly Dictionary<string, ExtendedLogger> _loggers = new(StringComparer.Ordinal);
-    private readonly List<ProviderRegistration> _providerRegistrations = new();
+    private readonly List<ProviderRegistration> _providerRegistrations = [];
     private readonly object _sync = new();
     private readonly IDisposable? _filterOptionsChangeTokenRegistration;
     private readonly LoggerFactoryOptions _factoryOptions;
@@ -205,7 +205,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private (MessageLogger[] messageLoggers, ScopeLogger[] scopeLoggers) ApplyFilters(LoggerInformation[] loggers)
     {
         var messageLoggers = new List<MessageLogger>();
-        List<ScopeLogger>? scopeLoggers = _filterOptions.CaptureScopes ? new List<ScopeLogger>() : null;
+        List<ScopeLogger>? scopeLoggers = _filterOptions.CaptureScopes ? [] : null;
 
         foreach (LoggerInformation loggerInformation in loggers)
         {

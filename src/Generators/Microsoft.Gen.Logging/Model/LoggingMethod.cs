@@ -13,7 +13,7 @@ namespace Microsoft.Gen.Logging.Model;
 [DebuggerDisplay("{Name}")]
 internal sealed class LoggingMethod
 {
-    public readonly List<LoggingMethodParameter> Parameters = new();
+    public readonly List<LoggingMethodParameter> Parameters = [];
     public readonly Dictionary<string, string> TemplateToParameterName = new(StringComparer.OrdinalIgnoreCase);
     public string Name = string.Empty;
     public string Message = string.Empty;

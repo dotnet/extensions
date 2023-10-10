@@ -10,7 +10,7 @@ namespace Microsoft.Gen.ContextualOptions.Model;
 
 internal sealed class OptionsContextType
 {
-    public readonly List<Diagnostic> Diagnostics = new();
+    public readonly List<Diagnostic> Diagnostics = [];
     public readonly INamedTypeSymbol Symbol;
     public readonly ImmutableArray<TypeDeclarationSyntax> Definitions;
     public readonly ImmutableArray<string> OptionsContextProperties;

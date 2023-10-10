@@ -8,6 +8,6 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 internal sealed class AutoActivatorOptions
 {
-    public HashSet<Type> AutoActivators { get; } = new();
-    public HashSet<(Type serviceType, object? serviceKey)> KeyedAutoActivators { get; } = new();
+    public HashSet<Type> AutoActivators { get; } = [];
+    public HashSet<(Type serviceType, object? serviceKey)> KeyedAutoActivators { get; } = [];
 }
