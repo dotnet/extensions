@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Hosting.Testing;
@@ -12,6 +14,7 @@ namespace Microsoft.Extensions.Hosting.Testing;
 /// <summary>
 /// Unit testing friendly configured host.
 /// </summary>
+[Experimental(diagnosticId: Experiments.Hosting, UrlFormat = Experiments.UrlFormat)]
 public sealed class FakeHost : IHost
 {
     /// <summary>

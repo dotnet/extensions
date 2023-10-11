@@ -2,13 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Hosting.Testing;
 
 /// <summary>
 /// Options to configure <see cref="FakeHost"/>.
 /// </summary>
+[Experimental(diagnosticId: Experiments.Hosting, UrlFormat = Experiments.UrlFormat)]
 public class FakeHostOptions
 {
     /// <summary>
