@@ -5,7 +5,7 @@ This package provides services to for strongly typed header parsing and value ca
 In particular:
 
 - There are many different headers with subtle format differences that are hard to parse correctly in all cases. This package provides predefined parsers for commonly used headers.
-- Your application may parse the same header value multiple times per request. This package automatically caches the parsed values of these headers to make your application faster.
+- Your application may parse the same header value multiple times per request. These APIs automatically cache the parsed values of these headers to make your application faster.
 - This package also provides logging and metering of bad header values.
 
 ## Install the package
