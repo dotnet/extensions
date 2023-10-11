@@ -103,7 +103,7 @@ The `CommonHeaders` class contains the following reusable header parsers:
 
 The `HeaderParsingOptions` class is used to configure common behaviors for this feature.
 
-- In case you configured parsing of a specific header, but the header is not present in the current HTTP request, you can pre-configure default values to be returned in such cases. See the `DefaultValues` option.
+- You can pre-configure default values to be returned when the current HTTP request contains headers for which you have not configured parsing. See the `DefaultValues` option.
 - You can change the number of cached values using the `MaxCachedValuesPerHeader` option. If not configured the `DefaultMaxCachedValuesPerHeader` value will be used.
 
 ## Metrics
