@@ -30,7 +30,7 @@ public class EmitterTests
             {
                 Assembly.GetAssembly(typeof(EnumStringsAttribute))!,
             },
-            sources).ConfigureAwait(false);
+            sources);
 
         Assert.Empty(d);
         _ = Assert.Single(r);
@@ -43,7 +43,7 @@ public class EmitterTests
                 Assembly.GetAssembly(typeof(EnumStringsAttribute))!,
                 Assembly.GetAssembly(typeof(FrozenDictionary))!,
             },
-            sources).ConfigureAwait(false);
+            sources);
 
         Assert.Empty(d);
         _ = Assert.Single(r);

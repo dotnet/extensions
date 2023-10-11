@@ -45,9 +45,11 @@ public static class ParserTests
             var (d, _) = await RoslynTestUtils.RunGenerator(
                 new EnumStringsGenerator(),
                 new[] { Assembly.GetAssembly(typeof(EnumStringsAttribute))! },
-                new[] { source }).ConfigureAwait(false);
+                new[] { source });
 
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
             Assert.Equal(1, d.Count);
+#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
             source.AssertDiagnostic(0, diag, d[0]);
 
             (d, _) = await RoslynTestUtils.RunGenerator(
@@ -57,9 +59,11 @@ public static class ParserTests
                     Assembly.GetAssembly(typeof(EnumStringsAttribute))!,
                     Assembly.GetAssembly(typeof(System.Collections.Frozen.FrozenDictionary))!,
                 },
-                new[] { source }).ConfigureAwait(false);
+                new[] { source });
 
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
             Assert.Equal(1, d.Count);
+#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
             source.AssertDiagnostic(0, diag, d[0]);
         }
     }
@@ -102,9 +106,11 @@ public static class ParserTests
             var (d, _) = await RoslynTestUtils.RunGenerator(
                 new EnumStringsGenerator(),
                 new[] { Assembly.GetAssembly(typeof(EnumStringsAttribute))! },
-                new[] { source }).ConfigureAwait(false);
+                new[] { source });
 
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
             Assert.Equal(1, d.Count);
+#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
             source.AssertDiagnostic(0, diag, d[0]);
         }
     }

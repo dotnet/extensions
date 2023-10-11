@@ -31,7 +31,7 @@ public class EmitterTests
                 Assembly.GetAssembly(typeof(GetAttribute))!
             },
             sources)
-            .ConfigureAwait(false);
+;
 
         Assert.Empty(d);
         Assert.Single(r);

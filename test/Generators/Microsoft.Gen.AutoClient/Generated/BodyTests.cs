@@ -42,6 +42,7 @@ public class BodyTests : IDisposable
     [Fact]
     public async Task JsonBody()
     {
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         _handlerMock
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
@@ -56,6 +57,7 @@ public class BodyTests : IDisposable
                 StatusCode = HttpStatusCode.OK,
                 Content = new StringContent("Success!")
             });
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         var response = await _sut.PostUsers(new IBodyTestClient.BodyObject());
 
@@ -65,6 +67,7 @@ public class BodyTests : IDisposable
     [Fact]
     public async Task TextBody()
     {
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         _handlerMock
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
@@ -79,6 +82,7 @@ public class BodyTests : IDisposable
                 StatusCode = HttpStatusCode.OK,
                 Content = new StringContent("Success!")
             });
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         var response = await _sut.PutUsers(new IBodyTestClient.BodyObject());
 
