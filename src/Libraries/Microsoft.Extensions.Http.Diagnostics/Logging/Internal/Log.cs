@@ -15,8 +15,6 @@ namespace Microsoft.Extensions.Http.Logging.Internal;
 internal static partial class Log
 {
     internal const string OriginalFormat = "{OriginalFormat}";
-    internal const string OriginalFormatValue =
-        $"{HttpClientLoggingTagNames.Method} {HttpClientLoggingTagNames.Host}/{HttpClientLoggingTagNames.Path}";
 
     private const int MinimalPropertyCount = 4;
 
