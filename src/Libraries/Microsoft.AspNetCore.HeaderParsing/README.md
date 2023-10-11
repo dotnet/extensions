@@ -125,4 +125,4 @@ instance of this class in the `IHeaderRegistry` interface.
 
 ## Feedback & Contributing
 
-For any feedback or contributions, please visit us in [our GitHub repo](https://github.com/dotnet/extensions).
+We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
