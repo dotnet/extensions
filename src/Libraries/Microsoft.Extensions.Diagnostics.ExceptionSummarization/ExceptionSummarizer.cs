@@ -31,7 +31,7 @@ internal sealed class ExceptionSummarizer : IExceptionSummarizer
     public ExceptionSummary Summarize(Exception exception)
     {
         _ = Throw.IfNull(exception);
-        
+
         var exceptionType = exception.GetType();
         var exceptionTypeName = exceptionType.Name;
 
