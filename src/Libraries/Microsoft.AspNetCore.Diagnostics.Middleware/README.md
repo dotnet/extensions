@@ -18,7 +18,9 @@ Or directly in the C# project file:
 </ItemGroup>
 ```
 
-## Tracking HTTP Request Latency
+## Usage Example
+
+### Tracking HTTP Request Latency
 
 These components enable tracking and reporting the latency of HTTP request processing.
 
@@ -52,7 +54,7 @@ app.UseRequestCheckpoint();
 app.UseRequestLatencyTelemetry();
 ```
 
-## HTTP Request Logs Enrichment and Redaction
+### HTTP Request Logs Enrichment and Redaction
 
 These components enable enriching and redacting ASP.NET Core's [HTTP request logs](https://learn.microsoft.com/aspnet/core/fundamentals/http-logging/).
 
@@ -89,4 +91,4 @@ app.UseHttpLogging();
 
 ## Feedback & Contributing
 
-For any feedback or contributions, please visit us in [our GitHub repo](https://github.com/dotnet/extensions).
+We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
