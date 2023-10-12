@@ -93,16 +93,16 @@ public static class LoggerMessageStateTests
 
         collector.Add(PropName, Value);
         Assert.Equal(1, lms.TagsCount);
-        Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.TagArray[0].Key);
+        Assert.Equal(PropertyNamPrefix + "." + PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
 
         collector.Add(PropName, Value, FakeClassifications.PrivateData);
         Assert.Equal(1, lms.TagsCount);
-        Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.TagArray[0].Key);
+        Assert.Equal(PropertyNamPrefix + "." + PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
 
         Assert.Equal(1, lms.ClassifiedTagsCount);
-        Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.ClassifiedTagArray[0].Name);
+        Assert.Equal(PropertyNamPrefix + "." + PropName, lms.ClassifiedTagArray[0].Name);
         Assert.Equal(Value, lms.ClassifiedTagArray[0].Value);
         Assert.Equal(FakeClassifications.PrivateData, lms.ClassifiedTagArray[0].Classification);
 

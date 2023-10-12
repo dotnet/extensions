@@ -37,7 +37,7 @@ public class TagProviderTests
         var expectedState = new Dictionary<string, string?>
         {
             ["Param"] = obj.ToString(),
-            ["param_ToString"] = obj + " ProvidePropertiesCall",
+            ["param.ToString"] = obj + " ProvidePropertiesCall",
             ["{OriginalFormat}"] = "Custom provided properties for {Param}."
         };
 
@@ -61,8 +61,8 @@ public class TagProviderTests
         {
             ["P0"] = StringParamValue,
             ["P1"] = classToLog.ToString(),
-            ["p1_MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
-            ["p1_Custom_property_name"] = classToLog.MyStringProperty,
+            ["p1.MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
+            ["p1.Custom_property_name"] = classToLog.MyStringProperty,
             ["{OriginalFormat}"] = "LogProperties with provider: {P0}, {P1}"
         };
 
@@ -87,8 +87,8 @@ public class TagProviderTests
         var expectedState = new Dictionary<string, string?>
         {
             ["p0"] = StringParamValue,
-            ["p1_MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
-            ["p1_Custom_property_name"] = classToLog.MyStringProperty
+            ["p1.MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
+            ["p1.Custom_property_name"] = classToLog.MyStringProperty
         };
 
         latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
@@ -109,8 +109,8 @@ public class TagProviderTests
 
         var expectedState = new Dictionary<string, string?>
         {
-            ["param_MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
-            ["param_Custom_property_name"] = classToLog.MyStringProperty
+            ["param.MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
+            ["param.Custom_property_name"] = classToLog.MyStringProperty
         };
 
         latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
@@ -141,7 +141,7 @@ public class TagProviderTests
 
         var expectedState = new Dictionary<string, string?>
         {
-            ["param_P1"] = "42",
+            ["param.P1"] = "42",
         };
 
         latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
@@ -250,8 +250,8 @@ public class TagProviderTests
         var expectedState = new Dictionary<string, string?>
         {
             ["Param"] = classToLog.ToString(),
-            ["param_MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
-            ["param_Custom_property_name"] = classToLog.MyStringProperty,
+            ["param.MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
+            ["param.Custom_property_name"] = classToLog.MyStringProperty,
             ["{OriginalFormat}"] = "Custom provided properties for {Param}."
         };
 
@@ -271,8 +271,8 @@ public class TagProviderTests
 
         var expectedState = new Dictionary<string, string?>
         {
-            ["param_MyIntProperty"] = structToLog.MyIntProperty.ToInvariantString(),
-            ["param_Custom_property_name"] = structToLog.MyStringProperty,
+            ["param.MyIntProperty"] = structToLog.MyIntProperty.ToInvariantString(),
+            ["param.Custom_property_name"] = structToLog.MyStringProperty,
             ["{OriginalFormat}"] = "Custom provided properties for struct."
         };
 
@@ -292,8 +292,8 @@ public class TagProviderTests
 
         var expectedState = new Dictionary<string, string?>
         {
-            ["param_MyIntProperty"] = interfaceToLog.MyIntProperty.ToInvariantString(),
-            ["param_Custom_property_name"] = interfaceToLog.MyStringProperty,
+            ["param.MyIntProperty"] = interfaceToLog.MyIntProperty.ToInvariantString(),
+            ["param.Custom_property_name"] = interfaceToLog.MyStringProperty,
             ["{OriginalFormat}"] = "Custom provided properties for interface."
         };
 
@@ -316,8 +316,8 @@ public class TagProviderTests
             ["param1.MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
             ["param1.MyStringProperty"] = classToLog.MyStringProperty,
             ["param1.AnotherStringProperty"] = classToLog.AnotherStringProperty,
-            ["param2_MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
-            ["param2_Custom_property_name"] = classToLog.MyStringProperty,
+            ["param2.MyIntProperty"] = classToLog.MyIntProperty.ToInvariantString(),
+            ["param2.Custom_property_name"] = classToLog.MyStringProperty,
             ["{OriginalFormat}"] = "No params."
         };
 
@@ -341,10 +341,10 @@ public class TagProviderTests
         var expectedState = new Dictionary<string, string?>
         {
             ["StringParam"] = StringParamValue,
-            ["param_MyIntProperty"] = classToLog1.MyIntProperty.ToInvariantString(),
-            ["param_Custom_property_name"] = classToLog1.MyStringProperty,
-            ["param2_Another_property_name"] = classToLog2.MyStringProperty.ToUpperInvariant(),
-            ["param2_MyIntProperty_test"] = classToLog2.MyIntProperty.ToInvariantString(),
+            ["param.MyIntProperty"] = classToLog1.MyIntProperty.ToInvariantString(),
+            ["param.Custom_property_name"] = classToLog1.MyStringProperty,
+            ["param2.Another_property_name"] = classToLog2.MyStringProperty.ToUpperInvariant(),
+            ["param2.MyIntProperty_test"] = classToLog2.MyIntProperty.ToInvariantString(),
             ["{OriginalFormat}"] = "Custom provided properties for both complex params and {StringParam}."
         };
 
@@ -356,8 +356,8 @@ public class TagProviderTests
         TagProviderExtensions.LogMethodCustomPropsProviderTwoParams(_logger, StringParamValue, classToLog1, classToLog2);
 
         Assert.Equal(2, _logger.Collector.Count);
-        expectedState["param_MyIntProperty"] = classToLog1.MyIntProperty.ToInvariantString();
-        expectedState["param2_MyIntProperty_test"] = classToLog2.MyIntProperty.ToInvariantString();
+        expectedState["param.MyIntProperty"] = classToLog1.MyIntProperty.ToInvariantString();
+        expectedState["param2.MyIntProperty_test"] = classToLog2.MyIntProperty.ToInvariantString();
         _logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
     }
 
@@ -379,9 +379,9 @@ public class TagProviderTests
         var expectedState = new Dictionary<string, string?>
         {
             ["StringParam"] = StringParamValue,
-            ["param_ToString"] = obj1 + " ProvidePropertiesCall",
-            ["param2_Type"] = obj2.GetType().ToString(),
-            ["param2_ToString"] = obj2 + " ProvideOtherPropertiesCall",
+            ["param.ToString"] = obj1 + " ProvidePropertiesCall",
+            ["param2.Type"] = obj2.GetType().ToString(),
+            ["param2.ToString"] = obj2 + " ProvideOtherPropertiesCall",
             ["{OriginalFormat}"] = "Custom provided properties for both complex params and {StringParam}."
         };
 
@@ -404,8 +404,8 @@ public class TagProviderTests
         var expectedState = new Dictionary<string, string?>
         {
             ["StringParam"] = StringParamValue,
-            ["param2_Type"] = null,
-            ["param2_ToString"] = " ProvideOtherPropertiesCall",
+            ["param2.Type"] = null,
+            ["param2.ToString"] = " ProvideOtherPropertiesCall",
             ["{OriginalFormat}"] = "Custom provided properties for both complex params and {StringParam}."
         };
 

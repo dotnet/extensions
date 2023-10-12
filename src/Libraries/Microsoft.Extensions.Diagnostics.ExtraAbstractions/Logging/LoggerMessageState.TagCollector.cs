@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Logging;
 
 public partial class LoggerMessageState : ITagCollector
 {
-    private const char Separator = '_';
+    private const char Separator = '.';
 
     /// <inheritdoc />
     void ITagCollector.Add(string tagName, object? tagValue)

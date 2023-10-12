@@ -429,7 +429,7 @@ public static class ExtendedLoggerTests
         Assert.Equal(new EventId(2, "ID2b"), snap[3].Id);
         Assert.Equal("MSG2b", snap[3].Message);
 
-        var stackTrace = snap[3].StructuredState!.GetValue("StackTrace")!;
+        var stackTrace = snap[3].StructuredState!.GetValue("stackTrace")!;
         Assert.Contains("AggregateException", stackTrace);
         Assert.Contains("ArgumentNullException", stackTrace);
         Assert.Contains("ArgumentOutOfRangeException", stackTrace);
