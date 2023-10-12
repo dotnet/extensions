@@ -14,12 +14,12 @@ public static class ProcessEnricherTagNames
     /// <summary>
     /// Process ID.
     /// </summary>
-    public const string ProcessId = "Pid";
+    public const string ProcessId = "process.pid";
 
     /// <summary>
     /// Thread ID.
     /// </summary>
-    public const string ThreadId = "Tid";
+    public const string ThreadId = "thread.id";
 
     /// <summary>
     /// Gets a list of all dimension names.
