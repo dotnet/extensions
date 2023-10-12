@@ -3,7 +3,7 @@
 
 using System.Threading;
 
-namespace Microsoft.Extensions.TimeProvider.Testing;
+namespace Microsoft.Extensions.Time.Testing;
 
 // We keep all timer state here in order to prevent Timer instances from being self-referential,
 // which would block them being collected when someone forgets to call Dispose on the timer. With

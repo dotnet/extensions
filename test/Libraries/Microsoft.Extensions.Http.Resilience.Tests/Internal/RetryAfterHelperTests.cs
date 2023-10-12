@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using FluentAssertions;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Microsoft.Extensions.TimeProvider.Testing;
+using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Resilience.Test.Internal;
@@ -19,7 +19,7 @@ public class RetryAfterHelperTests
         using var response = new HttpResponseMessage();
         response.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(10));
 
-        var parsed = RetryAfterHelper.TryParse(response, System.TimeProvider.System, out var retryAfter);
+        var parsed = RetryAfterHelper.TryParse(response, TimeProvider.System, out var retryAfter);
 
         parsed.Should().BeTrue();
         retryAfter.Should().Be(TimeSpan.FromSeconds(10));
@@ -30,7 +30,7 @@ public class RetryAfterHelperTests
     {
         using var response = new HttpResponseMessage();
 
-        var parsed = RetryAfterHelper.TryParse(response, System.TimeProvider.System, out var retryAfter);
+        var parsed = RetryAfterHelper.TryParse(response, TimeProvider.System, out var retryAfter);
 
         parsed.Should().BeFalse();
         retryAfter.Should().Be(default);

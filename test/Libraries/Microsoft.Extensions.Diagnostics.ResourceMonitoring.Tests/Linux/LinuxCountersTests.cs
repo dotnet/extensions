@@ -38,7 +38,7 @@ public sealed class LinuxCountersTests
         });
 
         var parser = new LinuxUtilizationParser(fileSystem: fileSystem, new FakeUserHz(100));
-        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, System.TimeProvider.System);
+        var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, TimeProvider.System);
 
         using var listener = new MeterListener
         {

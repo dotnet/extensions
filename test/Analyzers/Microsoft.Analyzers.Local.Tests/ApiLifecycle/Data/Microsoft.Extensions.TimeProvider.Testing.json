@@ -2,61 +2,61 @@
   "Name": "Microsoft.Extensions.TimeProvider.Testing, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "class Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider : System.TimeProvider",
+      "Type": "class Microsoft.Extensions.Time.Testing.FakeTimeProvider : System.TimeProvider",
       "Stage": "Experimental",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.FakeTimeProvider();",
+          "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider();",
           "Stage": "Experimental"
         },
         {
-          "Member": "Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset startDateTime);",
+          "Member": "Microsoft.Extensions.Time.Testing.FakeTimeProvider.FakeTimeProvider(System.DateTimeOffset startDateTime);",
           "Stage": "Experimental"
         },
         {
-          "Member": "void Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.Advance(System.TimeSpan delta);",
+          "Member": "void Microsoft.Extensions.Time.Testing.FakeTimeProvider.Advance(System.TimeSpan delta);",
           "Stage": "Experimental"
         },
         {
-          "Member": "override System.Threading.ITimer Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.CreateTimer(System.Threading.TimerCallback callback, object? state, System.TimeSpan dueTime, System.TimeSpan period);",
+          "Member": "override System.Threading.ITimer Microsoft.Extensions.Time.Testing.FakeTimeProvider.CreateTimer(System.Threading.TimerCallback callback, object? state, System.TimeSpan dueTime, System.TimeSpan period);",
           "Stage": "Experimental"
         },
         {
-          "Member": "override long Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.GetTimestamp();",
+          "Member": "override long Microsoft.Extensions.Time.Testing.FakeTimeProvider.GetTimestamp();",
           "Stage": "Experimental"
         },
         {
-          "Member": "override System.DateTimeOffset Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.GetUtcNow();",
+          "Member": "override System.DateTimeOffset Microsoft.Extensions.Time.Testing.FakeTimeProvider.GetUtcNow();",
           "Stage": "Experimental"
         },
         {
-          "Member": "void Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.SetLocalTimeZone(System.TimeZoneInfo localTimeZone);",
+          "Member": "void Microsoft.Extensions.Time.Testing.FakeTimeProvider.SetLocalTimeZone(System.TimeZoneInfo localTimeZone);",
           "Stage": "Experimental"
         },
         {
-          "Member": "void Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.SetUtcNow(System.DateTimeOffset value);",
+          "Member": "void Microsoft.Extensions.Time.Testing.FakeTimeProvider.SetUtcNow(System.DateTimeOffset value);",
           "Stage": "Experimental"
         },
         {
-          "Member": "override string Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.ToString();",
+          "Member": "override string Microsoft.Extensions.Time.Testing.FakeTimeProvider.ToString();",
           "Stage": "Experimental"
         }
       ],
       "Properties": [
         {
-          "Member": "System.TimeSpan Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.AutoAdvanceAmount { get; set; }",
+          "Member": "System.TimeSpan Microsoft.Extensions.Time.Testing.FakeTimeProvider.AutoAdvanceAmount { get; set; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "override System.TimeZoneInfo Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.LocalTimeZone { get; }",
+          "Member": "override System.TimeZoneInfo Microsoft.Extensions.Time.Testing.FakeTimeProvider.LocalTimeZone { get; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "System.DateTimeOffset Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.Start { get; }",
+          "Member": "System.DateTimeOffset Microsoft.Extensions.Time.Testing.FakeTimeProvider.Start { get; }",
           "Stage": "Experimental"
         },
         {
-          "Member": "override long Microsoft.Extensions.TimeProvider.Testing.FakeTimeProvider.TimestampFrequency { get; }",
+          "Member": "override long Microsoft.Extensions.Time.Testing.FakeTimeProvider.TimestampFrequency { get; }",
           "Stage": "Experimental"
         }
       ]

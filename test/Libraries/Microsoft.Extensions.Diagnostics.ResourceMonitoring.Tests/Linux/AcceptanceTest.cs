@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.TimeProvider.Testing;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.TestUtilities;
 using Xunit;
 
@@ -180,7 +180,7 @@ public sealed class AcceptanceTest
 
         using var host = FakeHost.CreateBuilder().ConfigureServices(x =>
             x.AddLogging()
-            .AddSingleton<System.TimeProvider>(clock)
+            .AddSingleton<TimeProvider>(clock)
             .AddSingleton<IUserHz>(new FakeUserHz(100))
             .AddSingleton<IFileSystem>(fileSystem)
             .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))

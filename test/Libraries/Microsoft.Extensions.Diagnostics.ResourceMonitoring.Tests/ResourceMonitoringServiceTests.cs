@@ -11,7 +11,7 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.TimeProvider.Testing;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 using static Microsoft.Extensions.Options.Options;
@@ -83,7 +83,7 @@ public sealed class ResourceMonitoringServiceTests
         var mockLogger = new Mock<ILogger<ResourceMonitorService>>(MockBehavior.Loose);
 
         Assert.Throws<ArgumentNullException>(() =>
-            new ResourceMonitorService(mockProvider.Object, mockLogger.Object, Create(new ResourceMonitoringOptions()), null!, System.TimeProvider.System));
+            new ResourceMonitorService(mockProvider.Object, mockLogger.Object, Create(new ResourceMonitoringOptions()), null!, TimeProvider.System));
     }
 
     /// <summary>
@@ -693,7 +693,7 @@ public sealed class ResourceMonitoringServiceTests
     public async Task Disposing_Service_Twice_Does_Not_Throw()
     {
         using var s = new ResourceMonitorService(new FakeProvider(), NullLogger<ResourceMonitorService>.Instance,
-            Microsoft.Extensions.Options.Options.Create(new ResourceMonitoringOptions()), Array.Empty<IResourceUtilizationPublisher>(), System.TimeProvider.System);
+            Microsoft.Extensions.Options.Options.Create(new ResourceMonitoringOptions()), Array.Empty<IResourceUtilizationPublisher>(), TimeProvider.System);
 
         var r = await Record.ExceptionAsync(async () =>
         {

@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.TimeProvider.Testing;
+namespace Microsoft.Extensions.Time.Testing;
 
 // This implements the timer abstractions and is a thin wrapper around a waiter object.
 // The main role of this type is to create the waiter, add it to the waiter list, and ensure it gets
