@@ -48,6 +48,7 @@ public class AutoClientOptionsTests
             .BuildServiceProvider();
         var sut = provider.GetRequiredService<IRestApiClientOptionsApi>();
 
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         _handlerMock
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
@@ -62,6 +63,7 @@ public class AutoClientOptionsTests
                 StatusCode = HttpStatusCode.OK,
                 Content = new StringContent("Success!")
             });
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         var response = await sut.PostDictionary(new Dictionary<string, string>
         {

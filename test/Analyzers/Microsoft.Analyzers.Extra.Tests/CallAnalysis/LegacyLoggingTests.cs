@@ -73,7 +73,7 @@ public static partial class LegacyLoggingTests
             new LegacyLoggingFixer(),
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
-            defaultNamespace: "Example").ConfigureAwait(false);
+            defaultNamespace: "Example");
 
         var actualSource = l[0];
         var actualTarget = l[1];
@@ -166,7 +166,7 @@ public static partial class LegacyLoggingTests
             new LegacyLoggingFixer(),
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
-            defaultNamespace: "Example").ConfigureAwait(false);
+            defaultNamespace: "Example");
 
         var actualSource = l[0];
         var actualTarget = l[1];
@@ -230,7 +230,7 @@ namespace Example
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource },
             extraFile: "Log.cs",
-            defaultNamespace: "Example").ConfigureAwait(false);
+            defaultNamespace: "Example");
 
         var actualSource = l[0];
         var actualTarget = l[1];
@@ -290,7 +290,7 @@ namespace Example
             new LegacyLoggingFixer(),
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
-            defaultNamespace: "Example").ConfigureAwait(false);
+            defaultNamespace: "Example");
 
         var actualSource = l[0];
         var actualTarget = l[1];
@@ -364,7 +364,7 @@ namespace Example
             new LegacyLoggingFixer(),
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
-            defaultNamespace: "Example.Example2").ConfigureAwait(false);
+            defaultNamespace: "Example.Example2");
 
         var actualSource = l[0];
         var actualTarget = l[1];
@@ -441,7 +441,7 @@ namespace Example.Example2
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
             extraFile: "Log.cs",
-            defaultNamespace: "Example.Example2").ConfigureAwait(false);
+            defaultNamespace: "Example.Example2");
 
         var actualSource = l[0];
         var actualTarget = l[2];
@@ -513,7 +513,7 @@ namespace Example
             new[] { OriginalSource, OriginalTarget },
             sourceNames: new[] { "primary.cs", "Log.cs" },
             extraFile: "Log2.cs",
-            defaultNamespace: "Example").ConfigureAwait(false);
+            defaultNamespace: "Example");
 
         var actualSource = l[0];
         var actualTarget = l[2];
@@ -584,7 +584,7 @@ namespace Example
             },
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource, OriginalTarget },
-            defaultNamespace: "Example").ConfigureAwait(false);
+            defaultNamespace: "Example");
 
         var actualSource = l[0];
         var actualTarget = l[1];
@@ -649,7 +649,7 @@ namespace Example
 
         proj.CommitChanges();
         var targetDoc = proj.FindDocument("target.cs");
-        var targetRoot = await targetDoc.GetSyntaxRootAsync(CancellationToken.None).ConfigureAwait(false);
+        var targetRoot = await targetDoc.GetSyntaxRootAsync(CancellationToken.None);
         var targetClass = targetRoot!.FindNode(RoslynTestUtils.MakeTextSpan(TargetSourceCode, 0)) as ClassDeclarationSyntax;
         var invocationDoc = proj.FindDocument("invocation.cs");
 
@@ -658,7 +658,7 @@ namespace Example
         var (invocationExpression, details) = await f.CheckIfCanFixAsync(
             invocationDoc,
             InvocationSourceCode.MakeTextSpan(0),
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
 
         Assert.NotNull(invocationExpression);
         Assert.NotNull(details);
@@ -669,7 +669,7 @@ namespace Example
             invocationDoc,
             invocationExpression!,
             details!,
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
 
         Assert.Equal("TestA", methodName);
         Assert.False(existing);
@@ -682,7 +682,7 @@ namespace Example
         (invocationExpression, details) = await f.CheckIfCanFixAsync(
             invocationDoc,
             RoslynTestUtils.MakeTextSpan(InvocationSourceCode, 0),
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
 
         Assert.Null(invocationExpression);
         Assert.Null(details);
@@ -695,7 +695,7 @@ namespace Example
         (invocationExpression, details) = await f.CheckIfCanFixAsync(
             invocationDoc,
             RoslynTestUtils.MakeTextSpan(InvocationSourceCode, 0),
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
 
         Assert.Null(invocationExpression);
         Assert.Null(details);
@@ -708,7 +708,7 @@ namespace Example
         (invocationExpression, details) = await f.CheckIfCanFixAsync(
             invocationDoc,
             RoslynTestUtils.MakeTextSpan(InvocationSourceCode, 0),
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
 
         Assert.Null(invocationExpression);
         Assert.Null(details);
@@ -721,7 +721,7 @@ namespace Example
         (invocationExpression, details) = await f.CheckIfCanFixAsync(
             invocationDoc,
             RoslynTestUtils.MakeTextSpan(InvocationSourceCode, 0),
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
 
         Assert.NotNull(invocationExpression);
         Assert.NotNull(details);
@@ -732,7 +732,7 @@ namespace Example
             invocationDoc,
             invocationExpression!,
             details!,
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
 
         Assert.Equal("TestA", methodName);
         Assert.False(existing);
@@ -745,7 +745,7 @@ namespace Example
         (invocationExpression, details) = await f.CheckIfCanFixAsync(
             invocationDoc,
             RoslynTestUtils.MakeTextSpan(InvocationSourceCode, 0),
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
 
         Assert.Null(invocationExpression);
         Assert.Null(details);
@@ -758,7 +758,7 @@ namespace Example
         (invocationExpression, details) = await f.CheckIfCanFixAsync(
             invocationDoc,
             RoslynTestUtils.MakeTextSpan(InvocationSourceCode, 0),
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
 
         Assert.NotNull(invocationExpression);
         Assert.NotNull(details);
@@ -769,7 +769,7 @@ namespace Example
             invocationDoc,
             invocationExpression!,
             details!,
-            CancellationToken.None).ConfigureAwait(false);
+            CancellationToken.None);
 
         Assert.Equal("TestA", methodName);
         Assert.False(existing);

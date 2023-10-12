@@ -102,7 +102,7 @@ public class GeneratorTests
                         code,
                         TestTaxonomy,
                     },
-                    new OptionsProvider()).ConfigureAwait(false);
+                    new OptionsProvider());
 
             return d;
         }
@@ -120,9 +120,11 @@ public class GeneratorTests
                 {
                     Source,
                 },
-                new OptionsProvider()).ConfigureAwait(false);
+                new OptionsProvider());
 
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal(0, d.Count);
+#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
     }
 
     private sealed class Options : AnalyzerConfigOptions
