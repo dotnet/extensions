@@ -18,7 +18,7 @@ Or directly in the C# project file:
 </ItemGroup>
 ```
 
-## FakeTimeProvider
+## Usage Example
 
 `FakeTimeProvider` can be used to manually adjust time to test time dependent components in a deterministic way.
 
@@ -33,7 +33,7 @@ public void Advance(TimeSpan delta)
 public void SetLocalTimeZone(TimeZoneInfo localTimeZone)
 ```
 
-For example:
+These can be used as follows:
 
 ```csharp
 var timeProvider = new FakeTimeProvider();
@@ -44,4 +44,4 @@ myComponent.CheckState();
 
 ## Feedback & Contributing
 
-For any feedback or contributions, please visit us in [our GitHub repo](https://github.com/dotnet/extensions).
+We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
