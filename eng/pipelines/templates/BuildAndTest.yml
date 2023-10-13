@@ -47,7 +47,7 @@ steps:
 
   - pwsh: |
         $(Build.SourcesDirectory)/scripts/Slngen.ps1 -All -NoLaunch
-        $(Build.SourcesDirectory)/.dotnet/dotnet sln add --project $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj" />
+        $(Build.SourcesDirectory)/.dotnet/dotnet sln add --project $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj
     displayName: Create solution
 
   - script: ${{ parameters.buildScript }}
