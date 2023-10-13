@@ -175,20 +175,20 @@ try {
 
     if (!$All) {
         foreach ($Keyword in $Keywords) {
-            $Globs += "src/**/*$($Keyword)*/**/*.*proj"
+            $Globs += "src/**/*$($Keyword)*/**/*.*sproj"
             if (!$OnlySources) {
                 foreach ($NonSourcePath in $NonSourcePaths) {
-                    $Globs += $NonSourcePath + "/**/*$($Keyword)*/**/*.*proj"
+                    $Globs += $NonSourcePath + "/**/*$($Keyword)*/**/*.*sproj"
                 }
             }
         }
     }
     else {
-        $Globs += "src/**/*.*proj"
+        $Globs += "src/**/*.*sproj"
 
         if (!$OnlySources) {
             foreach ($NonSourcePath in $NonSourcePaths) {
-                $Globs += $NonSourcePath + "/**/*.*proj"
+                $Globs += $NonSourcePath + "/**/*.*sproj"
             }
         }
     }
