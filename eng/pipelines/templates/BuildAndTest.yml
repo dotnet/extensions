@@ -47,7 +47,6 @@ steps:
 
   - pwsh: |
         $(Build.SourcesDirectory)/scripts/Slngen.ps1 -All -NoLaunch
-        $(Build.SourcesDirectory)/.dotnet/dotnet sln add $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj
     displayName: Create solution
 
   - script: ${{ parameters.buildScript }}
@@ -62,6 +61,10 @@ steps:
             /bl:${{ parameters.repoLogPath }}/build.binlog
             $(_OfficialBuildIdArgs)
     displayName: Build
+
+  - pwsh: |
+        $(Build.SourcesDirectory)/.dotnet/dotnet sln add $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj
+    displayName: Build docs transport package
 
   - ${{ if ne(parameters.skipTests, 'true') }}:
     - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
