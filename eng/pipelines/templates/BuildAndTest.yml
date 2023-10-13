@@ -63,7 +63,7 @@ steps:
     displayName: Build
 
   - pwsh: |
-        $(Build.SourcesDirectory)/.dotnet/dotnet sln add $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj
+        $(Build.SourcesDirectory)/.dotnet/dotnet build $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj
     displayName: Build docs transport package
 
   - ${{ if ne(parameters.skipTests, 'true') }}:
