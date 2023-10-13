@@ -19,7 +19,7 @@ public static class HttpLoggingTagNames
     /// <summary>
     /// HTTP Host.
     /// </summary>
-    public const string Host = "Host";
+    public const string Host = "server.address";
 
     /// <summary>
     /// HTTP Method.
@@ -34,12 +34,12 @@ public static class HttpLoggingTagNames
     /// <summary>
     /// HTTP Request Headers prefix.
     /// </summary>
-    public const string RequestHeaderPrefix = "RequestHeader.";
+    public const string RequestHeaderPrefix = "http.request.header.";
 
     /// <summary>
     /// HTTP Response Headers prefix.
     /// </summary>
-    public const string ResponseHeaderPrefix = "ResponseHeader.";
+    public const string ResponseHeaderPrefix = "http.response.header.";
 
     /// <summary>
     /// HTTP Request Body.
