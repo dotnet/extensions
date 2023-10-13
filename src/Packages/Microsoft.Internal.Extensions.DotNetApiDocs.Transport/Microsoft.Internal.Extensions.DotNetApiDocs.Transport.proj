@@ -25,11 +25,8 @@
          Set Private=false to avoid copying the referenced projects to output -->
     <ProjectReference PrivateAssets="all"
       Private="false"
-      Include="$(SrcLibrariesDir)\*\*.*proj;
-               $(SrcLibrariesDir)\..\ToBeMoved\*\*.*proj;
-               $(SrcLibrariesDir)\..\ToBeRemoved\*\*.*proj"
-      Exclude="$(MSBuildProjectFullPath)"
-                      />
+      Include="$(SrcLibrariesDir)\*\*.*proj"
+      Exclude="$(MSBuildProjectFullPath)" />
   </ItemGroup>
 
   <!-- Include the reference assembly and put the documentation file next to it. -->
