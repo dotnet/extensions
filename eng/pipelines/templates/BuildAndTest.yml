@@ -32,7 +32,7 @@ steps:
   #       Write-Host 'isWindows: ${{ parameters.isWindows }}'
   #       Write-Host 'skipTests: ${{ parameters.skipTests }}'
   #       Write-Host 'skipQualityGates: ${{ parameters.skipQualityGates }}'
-  #       Get-ChildItem env:* | Sort-Object Name  
+  #       Get-ChildItem env:* | Sort-Object Name
   #   displayName: Debug
 
   - pwsh: |
@@ -47,6 +47,7 @@ steps:
 
   - pwsh: |
         $(Build.SourcesDirectory)/scripts/Slngen.ps1 -All -NoLaunch
+        $(Build.SourcesDirectory)/.dotnet/dotnet sln add --project $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj" />
     displayName: Create solution
 
   - script: ${{ parameters.buildScript }}
