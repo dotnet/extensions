@@ -32,7 +32,7 @@ steps:
   #       Write-Host 'isWindows: ${{ parameters.isWindows }}'
   #       Write-Host 'skipTests: ${{ parameters.skipTests }}'
   #       Write-Host 'skipQualityGates: ${{ parameters.skipQualityGates }}'
-  #       Get-ChildItem env:* | Sort-Object Name  
+  #       Get-ChildItem env:* | Sort-Object Name
   #   displayName: Debug
 
   - pwsh: |
@@ -95,6 +95,16 @@ steps:
 
   - ${{ if eq(parameters.isWindows, 'true') }}:
     - script: ${{ parameters.buildScript }}
+              -projects $(Build.SourcesDirectory)/src/Packages/Microsoft.Internal.Extensions.DotNetApiDocs.Transport/Microsoft.Internal.Extensions.DotNetApiDocs.Transport.proj
+              -restore -build
+              -pack
+              -publish $(_PublishArgs)
+              -configuration ${{ parameters.buildConfig }}
+              /bl:${{ parameters.repoLogPath }}/transport.binlog
+              $(_OfficialBuildIdArgs)
+      displayName: Build and publish docs transport package
+
+    - script: ${{ parameters.buildScript }}
               -pack
               -sign $(_SignArgs)
               -publish $(_PublishArgs)
@@ -103,4 +113,4 @@ steps:
               /bl:${{ parameters.repoLogPath }}/pack.binlog
               /p:Restore=false /p:Build=false
               $(_OfficialBuildIdArgs)
-      displayName: Pack, Sign, and Publish
+      displayName: Pack, sign, and publish
