@@ -2,12 +2,18 @@
 
 This package allows creating efficient HTTP clients for existing REST APIs with minimal code. The client code is generated at compile time, is highly efficient, and integrates with modern telemetry patterns.
 
-## Getting started
-
-### Install the package
+## Install the package
 
 ```dotnetcli
 dotnet add package Microsoft.Extensions.Http.AutoClient
+```
+
+Or directly in the C# project file:
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Microsoft.Extensions.Http.AutoClient" Version="[CURRENTVERSION]" />
+</ItemGroup>
 ```
 
 ## Usage Example
@@ -212,6 +218,12 @@ app.MapGet("/ProcessUsers", async ([FromServices] IMyDependencyClient client) =>
 
 [^1]: The attribute must be used in interfaces, not classes.
 
+## Options
+
+The `AutoClientOptions` class is used to configure behaviors for this feature.
+
+It mainly provides a way to configure the `JsonSerializerOptions` used to serialize and deserialize the request and response bodies.
+
 ## Feedback & Contributing
 
-For any feedback or contributions, please visit us in [our GitHub repo](https://github.com/dotnet/extensions).
+We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
