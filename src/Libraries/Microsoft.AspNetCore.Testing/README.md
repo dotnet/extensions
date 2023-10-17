@@ -1,6 +1,6 @@
 # Microsoft.AspNetCore.Testing
 
-This package provides test fakes for integration testing AspNetCore applications.
+This package provides test fakes for integration testing of ASP.NET Core applications.
 
 In particular:
 
