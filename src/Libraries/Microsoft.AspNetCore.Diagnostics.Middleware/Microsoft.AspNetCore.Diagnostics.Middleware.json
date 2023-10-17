@@ -2,100 +2,58 @@
   "Name": "Microsoft.AspNetCore.Diagnostics.Middleware, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.AspNetCore.Builder.HttpLoggingApplicationBuilderExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.AspNetCore.Builder.IApplicationBuilder Microsoft.AspNetCore.Builder.HttpLoggingApplicationBuilderExtensions.UseHttpLoggingMiddleware(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddHttpLogEnricher<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HttpLoggingServiceCollectionExtensions.AddHttpLogging(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames",
       "Stage": "Stable",
       "Fields": [
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.Duration",
           "Stage": "Stable",
-          "Value": "duration"
+          "Value": "Duration"
         },
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.Host",
           "Stage": "Stable",
-          "Value": "httpHost"
+          "Value": "Host"
         },
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.Method",
           "Stage": "Stable",
-          "Value": "httpMethod"
+          "Value": "Method"
         },
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.Path",
           "Stage": "Stable",
-          "Value": "httpPath"
+          "Value": "Path"
         },
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.RequestBody",
           "Stage": "Stable",
-          "Value": "httpRequestBody"
+          "Value": "RequestBody"
         },
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.RequestHeaderPrefix",
           "Stage": "Stable",
-          "Value": "httpRequestHeader_"
+          "Value": "RequestHeader_"
         },
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.ResponseBody",
           "Stage": "Stable",
-          "Value": "httpResponseBody"
+          "Value": "ResponseBody"
         },
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.ResponseHeaderPrefix",
           "Stage": "Stable",
-          "Value": "httpResponseHeader_"
+          "Value": "ResponseHeader_"
         },
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.StatusCode",
           "Stage": "Stable",
-          "Value": "httpStatusCode"
+          "Value": "StatusCode"
         }
       ],
       "Properties": [
         {
           "Member": "static System.Collections.Generic.IReadOnlyList<string> Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.DimensionNames { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "interface Microsoft.AspNetCore.Diagnostics.Logging.IHttpLogEnricher",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "void Microsoft.AspNetCore.Diagnostics.Logging.IHttpLogEnricher.Enrich(Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentTagCollector collector, Microsoft.AspNetCore.Http.HttpRequest request, Microsoft.AspNetCore.Http.HttpResponse response);",
           "Stage": "Stable"
         }
       ]
@@ -119,66 +77,6 @@
           "Member": "const Microsoft.AspNetCore.Diagnostics.Logging.IncomingPathLoggingMode Microsoft.AspNetCore.Diagnostics.Logging.IncomingPathLoggingMode.Structured",
           "Stage": "Stable",
           "Value": "1"
-        }
-      ]
-    },
-    {
-      "Type": "class Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.LoggingOptions();",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "int Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.BodySizeLimit { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "System.Collections.Generic.ISet<string> Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.ExcludePathStartsWith { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "bool Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.LogBody { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "bool Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.LogRequestStart { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "System.Collections.Generic.ISet<string> Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.RequestBodyContentTypes { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "System.TimeSpan Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.RequestBodyReadTimeout { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.RequestHeadersDataClasses { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.AspNetCore.Diagnostics.Logging.IncomingPathLoggingMode Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.RequestPathLoggingMode { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "Microsoft.Extensions.Http.Diagnostics.HttpRouteParameterRedactionMode Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.RequestPathParameterRedactionMode { get; set; }",
-          "Stage": "Experimental"
-        },
-        {
-          "Member": "System.Collections.Generic.ISet<string> Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.ResponseBodyContentTypes { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.ResponseHeadersDataClasses { get; set; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Diagnostics.Logging.LoggingOptions.RouteParameterDataClasses { get; set; }",
-          "Stage": "Stable"
         }
       ]
     },
@@ -222,27 +120,23 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.RequestHeadersEnricherServiceCollectionExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Diagnostics.RequestHeadersLogEnricherOptions> configure);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.RequestHeadersEnricherServiceCollectionExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.RequestHeadersEnricherServiceCollectionExtensions.AddRequestHeadersLogEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Diagnostics.Logging.RequestHeadersLogEnricherOptions> configure);",
           "Stage": "Stable"
         }
       ]
     },
     {
-      "Type": "class Microsoft.AspNetCore.Diagnostics.RequestHeadersLogEnricherOptions",
+      "Type": "class Microsoft.AspNetCore.Diagnostics.Logging.RequestHeadersLogEnricherOptions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.AspNetCore.Diagnostics.RequestHeadersLogEnricherOptions.RequestHeadersLogEnricherOptions();",
+          "Member": "Microsoft.AspNetCore.Diagnostics.Logging.RequestHeadersLogEnricherOptions.RequestHeadersLogEnricherOptions();",
           "Stage": "Stable"
         }
       ],
       "Properties": [
         {
-          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Diagnostics.RequestHeadersLogEnricherOptions.HeadersDataClasses { get; set; }",
+          "Member": "System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Compliance.Classification.DataClassification> Microsoft.AspNetCore.Diagnostics.RequestHeadersLogEnricherOptions.Logging.HeadersDataClasses { get; set; }",
           "Stage": "Experimental"
         }
       ]

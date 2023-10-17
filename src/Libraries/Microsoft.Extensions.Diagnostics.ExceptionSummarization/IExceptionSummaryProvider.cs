@@ -20,7 +20,7 @@ public interface IExceptionSummaryProvider
     /// Provides the index of the description for the exception along with optional additional data.
     /// </summary>
     /// <param name="exception">The exception.</param>
-    /// <param name="additionalDetails">The additional details of the given exception, if any.</param>
+    /// <param name="additionalDetails">The additional details of the given exception, if any. Ideally, this string should not contain any privacy-sensitive information.</param>
     /// <returns>The index of the description.</returns>
     /// <remarks>
     /// This method should only get invoked with an exception which is type compatible with a type

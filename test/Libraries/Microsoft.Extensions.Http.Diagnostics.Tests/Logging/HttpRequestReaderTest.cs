@@ -16,7 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Logging.Internal;
 using Microsoft.Extensions.Http.Logging.Test.Internal;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Telemetry.Internal;
 using Moq;
 using Xunit;
@@ -163,9 +162,8 @@ public class HttpRequestReaderTest
         var actualRecord = new LogRecord();
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
-        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
-        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
+        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
+        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
 
         actualRecord.Should().BeEquivalentTo(
             expectedRecord,
@@ -244,7 +242,6 @@ public class HttpRequestReaderTest
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
@@ -328,7 +325,6 @@ public class HttpRequestReaderTest
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
@@ -395,7 +391,6 @@ public class HttpRequestReaderTest
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
 
@@ -473,7 +468,6 @@ public class HttpRequestReaderTest
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
@@ -551,7 +545,6 @@ public class HttpRequestReaderTest
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
@@ -629,7 +622,6 @@ public class HttpRequestReaderTest
 
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        var propertyBag = new LogMethodHelper();
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);

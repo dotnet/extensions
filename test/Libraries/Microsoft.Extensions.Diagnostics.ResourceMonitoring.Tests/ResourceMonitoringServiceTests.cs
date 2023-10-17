@@ -344,7 +344,7 @@ public sealed class ResourceMonitoringServiceTests
         Assert.True(publisherCalled);
     }
 
-    [Fact(Skip = "Broken test, see https://github.com/dotnet/r9/issues/404")]
+    [Fact(Skip = "Broken test, see https://github.com/dotnet/extensions/issues/4529")]
     public async Task ResourceUtilizationTracker_WhenInitializedWithZeroSnapshots_ReportsHighCpuSpikesThenConvergeInFewCycles()
     {
         // This test shows that initializing the internal buffer of the tracker with snapshots

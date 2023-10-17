@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Diagnostics.Logging;
 using Microsoft.AspNetCore.Http;
@@ -54,10 +55,7 @@ public class RequestHeadersEnricherTests
     public void RequestHeadersEnricher_GivenDisabledEnricherOptions_HeaderKeysDataClasses_DoesNotEnrich()
     {
         // Arrange
-        var options = new RequestHeadersLogEnricherOptions
-        {
-            HeadersDataClasses = new Dictionary<string, DataClassification>()
-        };
+        var options = new RequestHeadersLogEnricherOptions();
 
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
         var enrichedProperties = new TestLogEnrichmentTagCollector();
@@ -76,7 +74,7 @@ public class RequestHeadersEnricherTests
         // Arrange
         var options = new RequestHeadersLogEnricherOptions
         {
-            HeadersDataClasses = new Dictionary<string, DataClassification>
+            HeadersDataClasses =
             {
                 { HeaderKey1, FakeClassifications.PrivateData },
                 { HeaderKey4, FakeClassifications.PublicData }
@@ -109,7 +107,7 @@ public class RequestHeadersEnricherTests
         // Arrange
         var options = new RequestHeadersLogEnricherOptions
         {
-            HeadersDataClasses = new Dictionary<string, DataClassification>
+            HeadersDataClasses =
             {
                 { HeaderKey1, FakeClassifications.PrivateData },
                 { HeaderKey2, FakeClassifications.PublicData }
@@ -139,7 +137,7 @@ public class RequestHeadersEnricherTests
         // Arrange
         var options = new RequestHeadersLogEnricherOptions
         {
-            HeadersDataClasses = new Dictionary<string, DataClassification>
+            HeadersDataClasses =
             {
                 { HeaderKey1, FakeClassifications.PublicData },
                 { HeaderKey3, FakeClassifications.PublicData }
@@ -166,7 +164,7 @@ public class RequestHeadersEnricherTests
         var headerKey2 = "header_does_not_exist";
         var options = new RequestHeadersLogEnricherOptions
         {
-            HeadersDataClasses = new Dictionary<string, DataClassification>
+            HeadersDataClasses =
             {
                 { HeaderKey1, FakeClassifications.PublicData },
                 { headerKey2, FakeClassifications.PublicData }
@@ -191,7 +189,7 @@ public class RequestHeadersEnricherTests
         // Arrange
         var options = new RequestHeadersLogEnricherOptions
         {
-            HeadersDataClasses = new Dictionary<string, DataClassification>
+            HeadersDataClasses =
             {
                 { HeaderKey1, FakeClassifications.PublicData }
             }
@@ -218,7 +216,7 @@ public class RequestHeadersEnricherTests
         // Arrange
         var options = new RequestHeadersLogEnricherOptions
         {
-            HeadersDataClasses = new Dictionary<string, DataClassification>
+            HeadersDataClasses =
             {
                 { HeaderKey1, FakeClassifications.PublicData }
             }
@@ -243,5 +241,43 @@ public class RequestHeadersEnricherTests
 
         // Assert
         Assert.Empty(enrichedState);
+    }
+
+    [Fact]
+    public void RequestHeadersEnricher_ObjectDisposedExceptionIsHandled_DoesNotEnrich()
+    {
+        // Arrange
+        var httpContextMock = new Mock<HttpContext>(MockBehavior.Strict);
+        httpContextMock.SetupGet(c => c.Request.Headers).Throws(new ObjectDisposedException(""));
+        httpContextMock.SetupGet(c => c.Request.HttpContext).Returns(httpContextMock.Object);
+        httpContextMock.SetupGet(c => c.Features).Throws(new ObjectDisposedException(""));
+
+        var accessorMock = new Mock<IHttpContextAccessor>(MockBehavior.Strict);
+        accessorMock.SetupGet(r => r.HttpContext).Returns(httpContextMock.Object);
+
+        var options = new RequestHeadersLogEnricherOptions
+        {
+            HeadersDataClasses = new Dictionary<string, DataClassification>
+            {
+                { HeaderKey1, FakeClassifications.PublicData }
+            }
+        };
+
+        Mock<IRedactorProvider> redactorProviderMock = new Mock<IRedactorProvider>();
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PublicData))
+            .Returns(new FakeRedactor());
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PrivateData))
+            .Returns(FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "redacted:{0}" }));
+
+        var enricher = new RequestHeadersLogEnricher(accessorMock.Object, options.ToOptions(), redactorProviderMock.Object);
+
+        var enrichedProperties = new TestLogEnrichmentTagCollector();
+
+        // Act
+        enricher.Enrich(enrichedProperties);
+        var enrichedState = enrichedProperties.Properties;
+
+        // Assert
+        Assert.True(enrichedState.Count == 0);
     }
 }
