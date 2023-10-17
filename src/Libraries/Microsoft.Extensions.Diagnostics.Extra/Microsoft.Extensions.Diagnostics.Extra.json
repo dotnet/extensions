@@ -26,22 +26,22 @@
         {
           "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.ApplicationName",
           "Stage": "Stable",
-          "Value": "env_app_name"
+          "Value": "AppName"
         },
         {
           "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.BuildVersion",
           "Stage": "Stable",
-          "Value": "env_cloud_roleVer"
+          "Value": "CloudRoleVer"
         },
         {
           "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.DeploymentRing",
           "Stage": "Stable",
-          "Value": "env_cloud_deploymentRing"
+          "Value": "CloudDeploymentRing"
         },
         {
           "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.EnvironmentName",
           "Stage": "Stable",
-          "Value": "env_cloud_env"
+          "Value": "CloudEnv"
         }
       ],
       "Properties": [
