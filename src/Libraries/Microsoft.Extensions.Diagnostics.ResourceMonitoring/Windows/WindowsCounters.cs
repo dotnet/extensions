@@ -33,7 +33,7 @@ internal sealed class WindowsCounters
         // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/system/system-metrics.md#metric-systemnetworkconnections
 
         _ = meter.CreateObservableUpDownCounter(
-            "process.network.connections",
+            "system.network.connections",
             GetMeasurements,
             unit: "{connection}",
             description: null,
