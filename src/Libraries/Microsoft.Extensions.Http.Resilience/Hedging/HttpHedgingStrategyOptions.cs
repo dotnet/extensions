@@ -21,6 +21,6 @@ public class HttpHedgingStrategyOptions : HedgingStrategyOptions<HttpResponseMes
     /// </remarks>
     public HttpHedgingStrategyOptions()
     {
-        ShouldHandle = args => new ValueTask<bool>(HttpClientHedgingResiliencePredicates.IsTransientHttpOutcome(args.Outcome));
+        ShouldHandle = args => new ValueTask<bool>(HttpClientHedgingResiliencePredicates.IsTransient(args.Outcome));
     }
 }

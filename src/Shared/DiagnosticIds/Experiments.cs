@@ -30,4 +30,5 @@ internal static class Experiments
     internal const string ObjectPool = "EXTEXP0010";
     internal const string DocumentDb = "EXTEXP0011";
     internal const string AutoActivation = "EXTEXP0012";
+    internal const string HttpLogging = "EXTEXP0013";
 }

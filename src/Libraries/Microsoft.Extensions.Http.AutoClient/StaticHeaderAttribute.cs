@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.Http.AutoClient;
 /// Injects a static header to be sent with every request. When this attribute is applied
 /// to an interface, then it impacts every method described by the interface. Otherwise, it only
 /// affects the method where it is applied.
+/// The header name must not be null or empty. The value, on the other hand, can be empty, but not null.
 /// </remarks>
 /// <example>
 /// <code>
@@ -33,8 +34,8 @@ public sealed class StaticHeaderAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="StaticHeaderAttribute"/> class.
     /// </summary>
-    /// <param name="header">The name of the header.</param>
-    /// <param name="value">The value of the header.</param>
+    /// <param name="header">The name of the header. Cannot be empty or null.</param>
+    /// <param name="value">The value of the header. Cannot be null.</param>
     public StaticHeaderAttribute(string header, string value)
     {
         Header = header;

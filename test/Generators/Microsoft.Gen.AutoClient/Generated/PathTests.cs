@@ -83,12 +83,14 @@ public class PathTests : IDisposable
     [Fact]
     public async Task EncodedPathParameters()
     {
+        // "+=&" aren't required to be escaped in path segments but there is no harm in doing so
+
         _handlerMock
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(message =>
                 message.Method == HttpMethod.Get &&
                 message.RequestUri != null &&
-                message.RequestUri.PathAndQuery == "/api/users/some%2Fvalue/3"),
+                message.RequestUri.PathAndQuery == "/api/users/some%2B%3D%26value/3"),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
             {
@@ -96,8 +98,76 @@ public class PathTests : IDisposable
                 Content = new StringContent("Success!")
             });
 
-        var response = await _sut.GetUserFromTenant("some/value", 3);
+        var response = await _sut.GetUserFromTenant("some+=&value", 3);
 
+        Assert.Equal("Success!", response);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("  ")]
+    [InlineData("a/b")]
+    [InlineData("/b")]
+    [InlineData("/b/")]
+    [InlineData("b/")]
+    [InlineData("//")]
+    [InlineData(".")]
+    [InlineData("..")]
+    [InlineData(" .")]
+    [InlineData(" ..")]
+    [InlineData(". ")]
+    [InlineData(".. ")]
+    [InlineData(" . ")]
+    [InlineData(" .. ")]
+    [InlineData("../")]
+    [InlineData("/..")]
+    [InlineData("./..")]
+    [InlineData("\\")]
+    [InlineData("a\\b")]
+    [InlineData("a\\")]
+    [InlineData("\\b")]
+    [InlineData("\\\\")]
+    public async Task EncodedPathInvalidParameters(string value)
+    {
+        var encodedValue = Uri.EscapeDataString($"{value}");
+
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>());
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>("tenantId", () => _sut.GetUserFromTenant(value, 3));
+        Assert.Contains("The value can't contain '\\', '/', be empty, null or contain only dots (.).", ex.Message);
+    }
+
+    [Theory]
+    [InlineData("abc")]
+    [InlineData("a..b")]
+    [InlineData("..b")]
+    [InlineData("a..")]
+    [InlineData(" ..b")]
+    [InlineData(" a..")]
+    [InlineData("..b ")]
+    [InlineData("a.. ")]
+    [InlineData(" ..b ")]
+    [InlineData(" a.. ")]
+    public async Task EncodedPathValidParameters(string value)
+    {
+        var encodedValue = Uri.EscapeDataString($"{value}");
+
+        _handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("Success!")
+            });
+
+        var response = await _sut.GetUserFromTenant(value, 3);
         Assert.Equal("Success!", response);
     }
 

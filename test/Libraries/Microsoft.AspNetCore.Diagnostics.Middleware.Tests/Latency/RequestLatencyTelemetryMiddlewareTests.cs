@@ -24,20 +24,21 @@ public class RequestLatencyTelemetryMiddlewareTests
         var ex1 = new TestExporter();
         var ex2 = new TestExporter();
         string serverName = "AppServer";
-        var m = new RequestLatencyTelemetryMiddleware(Options.Create(new RequestLatencyTelemetryOptions()), new List<ILatencyDataExporter> { ex1, ex2 },
-            Options.Create(new ApplicationMetadata { ApplicationName = serverName }));
+        var nextInvoked = false;
+        var m = new RequestLatencyTelemetryMiddleware((_) =>
+        {
+            nextInvoked = true;
+            return Task.CompletedTask;
+        },
+        Options.Create(new RequestLatencyTelemetryOptions()), new List<ILatencyDataExporter> { ex1, ex2 },
+        Options.Create(new ApplicationMetadata { ApplicationName = serverName }));
 
         var lc = GetMockLatencyContext();
         var httpContextMock = GetHttpContext(lc.Object);
         var fakeHttpResponseFeature = new FakeHttpResponseFeature();
         httpContextMock.Features.Set<IHttpResponseFeature>(fakeHttpResponseFeature);
 
-        var nextInvoked = false;
-        await m.InvokeAsync(httpContextMock, (_) =>
-        {
-            nextInvoked = true;
-            return Task.CompletedTask;
-        });
+        await m.InvokeAsync(httpContextMock);
         await fakeHttpResponseFeature.StartAsync();
         lc.Verify(c => c.Freeze());
         var header = httpContextMock.Response.Headers[TelemetryConstants.ServerApplicationNameHeader];
@@ -53,19 +54,21 @@ public class RequestLatencyTelemetryMiddlewareTests
     {
         var ex1 = new TestExporter();
         var ex2 = new TestExporter();
-        var m = new RequestLatencyTelemetryMiddleware(Options.Create(new RequestLatencyTelemetryOptions()), new List<ILatencyDataExporter> { ex1, ex2 });
+        var nextInvoked = false;
+        var m = new RequestLatencyTelemetryMiddleware((_) =>
+        {
+            nextInvoked = true;
+            return Task.CompletedTask;
+        },
+        Options.Create(new RequestLatencyTelemetryOptions()),
+        new List<ILatencyDataExporter> { ex1, ex2 });
 
         var lc = GetMockLatencyContext();
         var httpContextMock = GetHttpContext(lc.Object);
         var fakeHttpResponseFeature = new FakeHttpResponseFeature();
         httpContextMock.Features.Set<IHttpResponseFeature>(fakeHttpResponseFeature);
 
-        var nextInvoked = false;
-        await m.InvokeAsync(httpContextMock, (_) =>
-        {
-            nextInvoked = true;
-            return Task.CompletedTask;
-        });
+        await m.InvokeAsync(httpContextMock);
         await fakeHttpResponseFeature.StartAsync();
         lc.Verify(c => c.Freeze());
         Assert.False(httpContextMock.Response.Headers.TryGetValue(TelemetryConstants.ServerApplicationNameHeader, out var val));
@@ -80,20 +83,20 @@ public class RequestLatencyTelemetryMiddlewareTests
         var ex1 = new TestExporter();
         var ex2 = new TestExporter();
         string serverName = "AppServer";
-        var m = new RequestLatencyTelemetryMiddleware(
-            Options.Create(new RequestLatencyTelemetryOptions()), new List<ILatencyDataExporter> { ex1, ex2 },
-            Options.Create(new ApplicationMetadata { ApplicationName = serverName }));
+        var nextInvoked = false;
+        var m = new RequestLatencyTelemetryMiddleware((_) =>
+        {
+            nextInvoked = true;
+            return Task.CompletedTask;
+        },
+        Options.Create(new RequestLatencyTelemetryOptions()), new List<ILatencyDataExporter> { ex1, ex2 },
+        Options.Create(new ApplicationMetadata { ApplicationName = serverName }));
         var lc = GetMockLatencyContext();
         var httpContextMock = GetHttpContext(lc.Object);
         var fakeHttpResponseFeature = new FakeHttpResponseFeature();
         httpContextMock.Features.Set<IHttpResponseFeature>(fakeHttpResponseFeature);
         httpContextMock.Response.Headers.Append(TelemetryConstants.ServerApplicationNameHeader, "testValue");
-        var nextInvoked = false;
-        await m.InvokeAsync(httpContextMock, (_) =>
-        {
-            nextInvoked = true;
-            return Task.CompletedTask;
-        });
+        await m.InvokeAsync(httpContextMock);
         await fakeHttpResponseFeature.StartAsync();
         lc.Verify(c => c.Freeze());
         var header = httpContextMock.Response.Headers[TelemetryConstants.ServerApplicationNameHeader];
@@ -109,19 +112,22 @@ public class RequestLatencyTelemetryMiddlewareTests
     {
         var ex1 = new TestExporter();
         var ex2 = new TestExporter();
-        var m = new RequestLatencyTelemetryMiddleware(Options.Create(new RequestLatencyTelemetryOptions()), new List<ILatencyDataExporter> { ex1, ex2 }, Options.Create(new ApplicationMetadata()));
+        var nextInvoked = false;
+        var m = new RequestLatencyTelemetryMiddleware((_) =>
+        {
+            nextInvoked = true;
+            return Task.CompletedTask;
+        },
+        Options.Create(new RequestLatencyTelemetryOptions()),
+        new List<ILatencyDataExporter> { ex1, ex2 },
+        Options.Create(new ApplicationMetadata()));
 
         var lc = GetMockLatencyContext();
         var httpContextMock = GetHttpContext(lc.Object);
         var fakeHttpResponseFeature = new FakeHttpResponseFeature();
         httpContextMock.Features.Set<IHttpResponseFeature>(fakeHttpResponseFeature);
 
-        var nextInvoked = false;
-        await m.InvokeAsync(httpContextMock, (_) =>
-        {
-            nextInvoked = true;
-            return Task.CompletedTask;
-        });
+        await m.InvokeAsync(httpContextMock);
         await fakeHttpResponseFeature.StartAsync();
         lc.Verify(c => c.Freeze());
         Assert.False(httpContextMock.Response.Headers.TryGetValue(TelemetryConstants.ServerApplicationNameHeader, out var val));
@@ -135,14 +141,17 @@ public class RequestLatencyTelemetryMiddlewareTests
     {
         var lc = GetMockLatencyContext();
         var httpContextMock = GetHttpContext(lc.Object);
-        var m = new RequestLatencyTelemetryMiddleware(Options.Create(new RequestLatencyTelemetryOptions()), Array.Empty<ILatencyDataExporter>(), Options.Create(new ApplicationMetadata()));
-
         var nextInvoked = false;
-        await m.InvokeAsync(httpContextMock, (_) =>
+        var m = new RequestLatencyTelemetryMiddleware((_) =>
         {
             nextInvoked = true;
             return Task.CompletedTask;
-        });
+        },
+        Options.Create(new RequestLatencyTelemetryOptions()),
+        Array.Empty<ILatencyDataExporter>(),
+        Options.Create(new ApplicationMetadata()));
+
+        await m.InvokeAsync(httpContextMock);
 
         lc.Verify(c => c.Freeze());
         Assert.True(nextInvoked);
@@ -154,7 +163,12 @@ public class RequestLatencyTelemetryMiddlewareTests
         var exportTimeout = TimeSpan.FromSeconds(1);
         var ex1 = new TimeConsumingExporter(TimeSpan.FromSeconds(5));
 
-        var m = new RequestLatencyTelemetryMiddleware(
+        var nextInvoked = false;
+        var m = new RequestLatencyTelemetryMiddleware((_) =>
+            {
+                nextInvoked = true;
+                return Task.CompletedTask;
+            },
             Options.Create(new RequestLatencyTelemetryOptions { LatencyDataExportTimeout = exportTimeout }),
             new List<ILatencyDataExporter> { ex1 },
             Options.Create(new ApplicationMetadata()));
@@ -162,12 +176,7 @@ public class RequestLatencyTelemetryMiddlewareTests
         var lc = GetMockLatencyContext();
         var httpContextMock = GetHttpContext(lc.Object);
 
-        var nextInvoked = false;
-        await m.InvokeAsync(httpContextMock, (_) =>
-            {
-                nextInvoked = true;
-                return Task.CompletedTask;
-            });
+        await m.InvokeAsync(httpContextMock);
         await httpContextMock.Response.CompleteAsync();
 
         lc.Verify(c => c.Freeze());

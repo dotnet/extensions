@@ -11,7 +11,7 @@ public static class TelemetryConstants
     /// <summary>
     /// Request metadata key that is used when storing request metadata object.
     /// </summary>
-    public const string RequestMetadataKey = "R9-RequestMetadata";
+    public const string RequestMetadataKey = "Extensions-RequestMetadata";
 
     /// <summary>
     /// Represents the placeholder text for an unknown request name or dependency name in telemetry.

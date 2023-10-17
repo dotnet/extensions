@@ -14,32 +14,32 @@ internal sealed class HttpStandardHedgingResilienceOptionsCustomValidator : IVal
     {
         var builder = new ValidateOptionsResultBuilder();
 
-        if (options.EndpointOptions.TimeoutOptions.Timeout > options.TotalRequestTimeoutOptions.Timeout)
+        if (options.Endpoint.Timeout.Timeout > options.TotalRequestTimeout.Timeout)
         {
             builder.AddError($"Total request timeout strategy must have a greater timeout than the attempt timeout strategy. " +
-                $"Total Request Timeout: {options.TotalRequestTimeoutOptions.Timeout.TotalSeconds}s, " +
-                $"Attempt Timeout: {options.EndpointOptions.TimeoutOptions.Timeout.TotalSeconds}s");
+                $"Total Request Timeout: {options.TotalRequestTimeout.Timeout.TotalSeconds}s, " +
+                $"Attempt Timeout: {options.Endpoint.Timeout.Timeout.TotalSeconds}s");
         }
 
-        var timeout = TimeSpan.FromMilliseconds(options.EndpointOptions.TimeoutOptions.Timeout.TotalMilliseconds * CircuitBreakerTimeoutMultiplier);
-        if (options.EndpointOptions.CircuitBreakerOptions.SamplingDuration < timeout)
+        var timeout = TimeSpan.FromMilliseconds(options.Endpoint.Timeout.Timeout.TotalMilliseconds * CircuitBreakerTimeoutMultiplier);
+        if (options.Endpoint.CircuitBreaker.SamplingDuration < timeout)
         {
             builder.AddError("The sampling duration of circuit breaker strategy needs to be at least double of " +
                 $"an attempt timeout strategy’s timeout interval, in order to be effective. " +
-                $"Sampling Duration: {options.EndpointOptions.CircuitBreakerOptions.SamplingDuration.TotalSeconds}s," +
-                $"Attempt Timeout: {options.EndpointOptions.TimeoutOptions.Timeout.TotalSeconds}s");
+                $"Sampling Duration: {options.Endpoint.CircuitBreaker.SamplingDuration.TotalSeconds}s," +
+                $"Attempt Timeout: {options.Endpoint.Timeout.Timeout.TotalSeconds}s");
         }
 
         // if generator is specified we cannot calculate the max hedging delay
-        if (options.HedgingOptions.DelayGenerator == null)
+        if (options.Hedging.DelayGenerator == null)
         {
-            var maxHedgingDelay = TimeSpan.FromMilliseconds(options.HedgingOptions.MaxHedgedAttempts * options.HedgingOptions.Delay.TotalMilliseconds);
+            var maxHedgingDelay = TimeSpan.FromMilliseconds(options.Hedging.MaxHedgedAttempts * options.Hedging.Delay.TotalMilliseconds);
 
             // Stryker disable once Equality
-            if (maxHedgingDelay > options.TotalRequestTimeoutOptions.Timeout)
+            if (maxHedgingDelay > options.TotalRequestTimeout.Timeout)
             {
                 builder.AddError($"The cumulative delay of the hedging strategy is larger than total request timeout interval. " +
-                    $"Total Request Timeout: {options.TotalRequestTimeoutOptions.Timeout.TotalSeconds}s, " +
+                    $"Total Request Timeout: {options.TotalRequestTimeout.Timeout.TotalSeconds}s, " +
                     $"Cumulative Hedging Delay: {maxHedgingDelay.TotalSeconds}s");
             }
         }

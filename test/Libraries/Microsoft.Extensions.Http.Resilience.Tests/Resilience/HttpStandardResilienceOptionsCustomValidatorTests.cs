@@ -22,8 +22,8 @@ public class HttpStandardResilienceOptionsCustomValidatorTests
     public void Validate_InvalidOptions_EnsureValidationErrors()
     {
         HttpStandardResilienceOptions options = new();
-        options.CircuitBreakerOptions.SamplingDuration = TimeSpan.FromSeconds(1);
-        options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(1);
+        options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(1);
+        options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(1);
 
         var validationResult = new HttpStandardResilienceOptionsCustomValidator().Validate(string.Empty, options);
 
@@ -49,19 +49,19 @@ public class HttpStandardResilienceOptionsCustomValidatorTests
         get
         {
             var options = new HttpStandardResilienceOptions();
-            options.AttemptTimeoutOptions.Timeout = options.TotalRequestTimeoutOptions.Timeout;
-            options.CircuitBreakerOptions.SamplingDuration = TimeSpan.FromMilliseconds(options.AttemptTimeoutOptions.Timeout.TotalMilliseconds * 2);
+            options.AttemptTimeout.Timeout = options.TotalRequestTimeout.Timeout;
+            options.CircuitBreaker.SamplingDuration = TimeSpan.FromMilliseconds(options.AttemptTimeout.Timeout.TotalMilliseconds * 2);
             yield return new object[] { options };
 
             options = new HttpStandardResilienceOptions();
-            options.AttemptTimeoutOptions.Timeout = options.TotalRequestTimeoutOptions.Timeout;
-            options.CircuitBreakerOptions.SamplingDuration = TimeSpan.FromMilliseconds(options.AttemptTimeoutOptions.Timeout.TotalMilliseconds * 2) + TimeSpan.FromMilliseconds(10);
+            options.AttemptTimeout.Timeout = options.TotalRequestTimeout.Timeout;
+            options.CircuitBreaker.SamplingDuration = TimeSpan.FromMilliseconds(options.AttemptTimeout.Timeout.TotalMilliseconds * 2) + TimeSpan.FromMilliseconds(10);
             yield return new object[] { options };
 
             options = new HttpStandardResilienceOptions();
-            options.RetryOptions.MaxRetryAttempts = 1;
-            options.RetryOptions.BackoffType = DelayBackoffType.Linear;
-            options.RetryOptions.Delay = options.TotalRequestTimeoutOptions.Timeout;
+            options.Retry.MaxRetryAttempts = 1;
+            options.Retry.BackoffType = DelayBackoffType.Linear;
+            options.Retry.Delay = options.TotalRequestTimeout.Timeout;
             yield return new object[] { options };
         }
     }
@@ -80,17 +80,17 @@ public class HttpStandardResilienceOptionsCustomValidatorTests
         get
         {
             var options = new HttpStandardResilienceOptions();
-            options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(2);
-            options.AttemptTimeoutOptions.Timeout = TimeSpan.FromSeconds(3);
+            options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(2);
+            options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(3);
             yield return new object[] { options };
 
             options = new HttpStandardResilienceOptions();
-            options.TotalRequestTimeoutOptions.Timeout = TimeSpan.FromSeconds(2);
+            options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(2);
             yield return new object[] { options };
 
             options = new HttpStandardResilienceOptions();
-            options.AttemptTimeoutOptions.Timeout = options.TotalRequestTimeoutOptions.Timeout;
-            options.CircuitBreakerOptions.SamplingDuration = TimeSpan.FromMilliseconds(options.AttemptTimeoutOptions.Timeout.TotalMilliseconds / 2);
+            options.AttemptTimeout.Timeout = options.TotalRequestTimeout.Timeout;
+            options.CircuitBreaker.SamplingDuration = TimeSpan.FromMilliseconds(options.AttemptTimeout.Timeout.TotalMilliseconds / 2);
             yield return new object[] { options };
         }
     }

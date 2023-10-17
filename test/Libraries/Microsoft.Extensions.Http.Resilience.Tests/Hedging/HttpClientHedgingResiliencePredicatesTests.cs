@@ -26,11 +26,11 @@ public class HttpClientHedgingResiliencePredicatesTests
     [Fact]
     public void IsTransientOutcome_Ok()
     {
-        Assert.True(HttpClientHedgingResiliencePredicates.IsTransientHttpOutcome(Outcome.FromException<HttpResponseMessage>(new TimeoutRejectedException())));
-        Assert.True(HttpClientHedgingResiliencePredicates.IsTransientHttpOutcome(Outcome.FromException<HttpResponseMessage>(new BrokenCircuitException())));
-        Assert.True(HttpClientHedgingResiliencePredicates.IsTransientHttpOutcome(Outcome.FromException<HttpResponseMessage>(new HttpRequestException())));
-        Assert.False(HttpClientHedgingResiliencePredicates.IsTransientHttpOutcome(Outcome.FromException<HttpResponseMessage>(new InvalidOperationException())));
-        Assert.False(HttpClientHedgingResiliencePredicates.IsTransientHttpOutcome(Outcome.FromResult<HttpResponseMessage>(null)));
+        Assert.True(HttpClientHedgingResiliencePredicates.IsTransient(Outcome.FromException<HttpResponseMessage>(new TimeoutRejectedException())));
+        Assert.True(HttpClientHedgingResiliencePredicates.IsTransient(Outcome.FromException<HttpResponseMessage>(new BrokenCircuitException())));
+        Assert.True(HttpClientHedgingResiliencePredicates.IsTransient(Outcome.FromException<HttpResponseMessage>(new HttpRequestException())));
+        Assert.False(HttpClientHedgingResiliencePredicates.IsTransient(Outcome.FromException<HttpResponseMessage>(new InvalidOperationException())));
+        Assert.False(HttpClientHedgingResiliencePredicates.IsTransient(Outcome.FromResult<HttpResponseMessage>(null)));
     }
 
     [InlineData(HttpStatusCode.InternalServerError, true)]
@@ -40,6 +40,6 @@ public class HttpClientHedgingResiliencePredicatesTests
     public void IsTransientOutcome_Response_Ok(HttpStatusCode code, bool expected)
     {
         using var response = new HttpResponseMessage(code);
-        HttpClientHedgingResiliencePredicates.IsTransientHttpOutcome(Outcome.FromResult(response)).Should().Be(expected);
+        HttpClientHedgingResiliencePredicates.IsTransient(Outcome.FromResult(response)).Should().Be(expected);
     }
 }

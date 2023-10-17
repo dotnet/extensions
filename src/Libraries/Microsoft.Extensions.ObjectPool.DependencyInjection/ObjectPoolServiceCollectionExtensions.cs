@@ -10,7 +10,7 @@ using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.ObjectPool;
+namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extension methods for adding <see cref="ObjectPool{T}"/> to DI container.

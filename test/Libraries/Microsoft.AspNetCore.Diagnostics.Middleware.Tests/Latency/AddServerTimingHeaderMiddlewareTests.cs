@@ -38,8 +38,8 @@ public class AddServerTimingHeaderMiddlewareTests
         var fakeHttpResponseFeature = new FakeHttpResponseFeature();
         context.Features.Set<IHttpResponseFeature>(fakeHttpResponseFeature);
 
-        var middleware = new AddServerTimingHeaderMiddleware();
-        await middleware.InvokeAsync(context, _stubRequestDelegate);
+        var middleware = new AddServerTimingHeaderMiddleware(_stubRequestDelegate);
+        await middleware.InvokeAsync(context);
         await fakeHttpResponseFeature.StartAsync();
 
         var header = context.Response.Headers[AddServerTimingHeaderMiddleware.ServerTimingHeaderName];

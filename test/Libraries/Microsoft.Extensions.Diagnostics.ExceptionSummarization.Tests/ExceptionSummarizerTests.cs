@@ -20,13 +20,13 @@ public class ExceptionSummarizerTests
     private static readonly List<string> _httpDescriptions = new List<string> { "TaskTimeout", "TaskCanceled" }
         .Concat(Enum.GetNames(typeof(WebExceptionStatus)).ToList())
         .Concat(Enum.GetNames(typeof(SocketError)).ToList()).ToList();
-    private static readonly List<Type> _httpSupportedExceptionTypes = new()
-    {
+    private static readonly List<Type> _httpSupportedExceptionTypes =
+    [
         typeof(TaskCanceledException),
         typeof(OperationCanceledException),
         typeof(WebException),
         typeof(SocketException),
-    };
+    ];
 
     private readonly Mock<IExceptionSummaryProvider> _httpExceptionProviderMock;
     private readonly IExceptionSummarizer _exceptionSummarizer;

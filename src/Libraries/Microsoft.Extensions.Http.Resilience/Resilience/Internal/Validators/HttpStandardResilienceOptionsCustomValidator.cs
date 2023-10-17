@@ -14,19 +14,19 @@ internal sealed class HttpStandardResilienceOptionsCustomValidator : IValidateOp
     {
         var builder = new ValidateOptionsResultBuilder();
 
-        if (options.AttemptTimeoutOptions.Timeout > options.TotalRequestTimeoutOptions.Timeout)
+        if (options.AttemptTimeout.Timeout > options.TotalRequestTimeout.Timeout)
         {
             builder.AddError($"Total request timeout resilience strategy must have a greater timeout than the attempt resilience strategy. " +
-                $"Total Request Timeout: {options.TotalRequestTimeoutOptions.Timeout.TotalSeconds}s, " +
-                $"Attempt Timeout: {options.AttemptTimeoutOptions.Timeout.TotalSeconds}s");
+                $"Total Request Timeout: {options.TotalRequestTimeout.Timeout.TotalSeconds}s, " +
+                $"Attempt Timeout: {options.AttemptTimeout.Timeout.TotalSeconds}s");
         }
 
-        if (options.CircuitBreakerOptions.SamplingDuration < TimeSpan.FromMilliseconds(options.AttemptTimeoutOptions.Timeout.TotalMilliseconds * CircuitBreakerTimeoutMultiplier))
+        if (options.CircuitBreaker.SamplingDuration < TimeSpan.FromMilliseconds(options.AttemptTimeout.Timeout.TotalMilliseconds * CircuitBreakerTimeoutMultiplier))
         {
             builder.AddError("The sampling duration of circuit breaker strategy needs to be at least double of " +
                 $"an attempt timeout strategy’s timeout interval, in order to be effective. " +
-                $"Sampling Duration: {options.CircuitBreakerOptions.SamplingDuration.TotalSeconds}s," +
-                $"Attempt Timeout: {options.AttemptTimeoutOptions.Timeout.TotalSeconds}s");
+                $"Sampling Duration: {options.CircuitBreaker.SamplingDuration.TotalSeconds}s," +
+                $"Attempt Timeout: {options.AttemptTimeout.Timeout.TotalSeconds}s");
         }
 
         return builder.Build();

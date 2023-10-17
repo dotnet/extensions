@@ -19,13 +19,13 @@ public class HttpStandardResilienceOptionsTests
     [Fact]
     public void Ctor_EnsureDefaults()
     {
-        _options.AttemptTimeoutOptions.Timeout.Should().Be(TimeSpan.FromSeconds(10));
-        _options.TotalRequestTimeoutOptions.Timeout.Should().Be(TimeSpan.FromSeconds(30));
+        _options.AttemptTimeout.Timeout.Should().Be(TimeSpan.FromSeconds(10));
+        _options.TotalRequestTimeout.Timeout.Should().Be(TimeSpan.FromSeconds(30));
 
-        _options.TotalRequestTimeoutOptions.Name.Should().Be("Standard-TotalRequestTimeout");
-        _options.RateLimiterOptions.Name.Should().Be("Standard-RateLimiter");
-        _options.RetryOptions.Name.Should().Be("Standard-Retry");
-        _options.CircuitBreakerOptions.Name.Should().Be("Standard-CircuitBreaker");
-        _options.AttemptTimeoutOptions.Name.Should().Be("Standard-AttemptTimeout");
+        _options.TotalRequestTimeout.Name.Should().Be("Standard-TotalRequestTimeout");
+        _options.RateLimiter.Name.Should().Be("Standard-RateLimiter");
+        _options.Retry.Name.Should().Be("Standard-Retry");
+        _options.CircuitBreaker.Name.Should().Be("Standard-CircuitBreaker");
+        _options.AttemptTimeout.Name.Should().Be("Standard-AttemptTimeout");
     }
 }

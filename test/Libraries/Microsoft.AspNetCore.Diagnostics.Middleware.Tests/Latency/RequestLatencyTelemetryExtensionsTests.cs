@@ -28,17 +28,6 @@ public class RequestLatencyTelemetryExtensionsTests
     }
 
     [Fact]
-    public void RequestLatencyExtensions_AddRequestLatency_AddsMiddleware()
-    {
-        using var serviceProvider = new ServiceCollection()
-            .AddLatencyContext()
-            .AddRequestLatencyTelemetry()
-            .BuildServiceProvider();
-
-        Assert.NotNull(serviceProvider.GetService<RequestLatencyTelemetryMiddleware>());
-    }
-
-    [Fact]
     public void RequestLatencyExtensions_AddRequestLatency_AddsLatencyContext()
     {
         using var serviceProvider = new ServiceCollection()
@@ -55,19 +44,6 @@ public class RequestLatencyTelemetryExtensionsTests
             scope1.ServiceProvider.GetService<ILatencyContext>());
         Assert.NotEqual(scope1.ServiceProvider.GetService<ILatencyContext>(),
             scope2.ServiceProvider.GetService<ILatencyContext>());
-    }
-
-    [Fact]
-    public void RequestLatencyExtensions_AddRequestLatency_InvokesConfig()
-    {
-        bool invoked = false;
-        using var serviceProvider = new ServiceCollection()
-            .AddLatencyContext()
-            .AddRequestLatencyTelemetry(a => { invoked = true; })
-            .BuildServiceProvider();
-
-        Assert.NotNull(serviceProvider.GetService<RequestLatencyTelemetryMiddleware>());
-        Assert.True(invoked);
     }
 
     [Fact]

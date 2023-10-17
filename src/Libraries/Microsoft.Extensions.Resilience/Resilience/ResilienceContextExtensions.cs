@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Http.Diagnostics;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
@@ -13,7 +11,6 @@ namespace Microsoft.Extensions.Resilience;
 /// <summary>
 /// Extensions for <see cref="ResilienceContext"/>.
 /// </summary>
-[Experimental(diagnosticId: Experiments.Resilience, UrlFormat = Experiments.UrlFormat)]
 public static class ResilienceContextExtensions
 {
     private static readonly ResiliencePropertyKey<RequestMetadata?> _requestMetadataKey = new(TelemetryConstants.RequestMetadataKey);

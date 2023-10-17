@@ -15,8 +15,8 @@ namespace Microsoft.Gen.AutoClient;
 [Generator]
 public class AutoClientGenerator : IIncrementalGenerator
 {
-    private static readonly HashSet<string> _attributeNames = new()
-    {
+    private static readonly HashSet<string> _attributeNames =
+    [
         SymbolLoader.RestApiAttribute,
 
         SymbolLoader.RestGetAttribute,
@@ -31,7 +31,7 @@ public class AutoClientGenerator : IIncrementalGenerator
         SymbolLoader.RestHeaderAttribute,
         SymbolLoader.RestQueryAttribute,
         SymbolLoader.RestBodyAttribute
-    };
+    ];
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {

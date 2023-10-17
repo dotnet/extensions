@@ -539,7 +539,7 @@ public static class ExtendedLoggerFactoryTests
     private class InternalScopeLoggerProvider : ILoggerProvider, ILogger
     {
         private IExternalScopeProvider _scopeProvider = new LoggerExternalScopeProvider();
-        public List<string> LogText { get; set; } = new List<string>();
+        public List<string> LogText { get; set; } = [];
 
         public void Dispose()
         {
@@ -578,7 +578,7 @@ public static class ExtendedLoggerFactoryTests
 
         public IExternalScopeProvider? ScopeProvider { get; set; }
         public int BeginScopeCalledTimes { get; set; }
-        public List<string> LogText { get; set; } = new List<string>();
+        public List<string> LogText { get; set; } = [];
         public void Dispose()
         {
             // nop

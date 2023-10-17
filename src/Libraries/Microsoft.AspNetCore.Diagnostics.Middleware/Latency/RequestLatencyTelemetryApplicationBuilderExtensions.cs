@@ -20,9 +20,9 @@ public static class RequestLatencyTelemetryApplicationBuilderExtensions
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
     public static IApplicationBuilder UseRequestCheckpoint(this IApplicationBuilder builder)
         => Throw.IfNull(builder)
-            .UseMiddleware<AddServerTimingHeaderMiddleware>([])
-            .UseMiddleware<CaptureResponseTimeMiddleware>([])
-            .UseMiddleware<CapturePipelineExitMiddleware>([]);
+            .UseMiddleware<AddServerTimingHeaderMiddleware>()
+            .UseMiddleware<CaptureResponseTimeMiddleware>()
+            .UseMiddleware<CapturePipelineExitMiddleware>();
 
     /// <summary>
     /// Adds the request latency telemetry middleware to <see cref="IApplicationBuilder"/> request execution pipeline.
@@ -32,5 +32,5 @@ public static class RequestLatencyTelemetryApplicationBuilderExtensions
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null" />.</exception>
     public static IApplicationBuilder UseRequestLatencyTelemetry(this IApplicationBuilder builder)
         => Throw.IfNull(builder)
-        .UseMiddleware<RequestLatencyTelemetryMiddleware>([]);
+        .UseMiddleware<RequestLatencyTelemetryMiddleware>();
 }

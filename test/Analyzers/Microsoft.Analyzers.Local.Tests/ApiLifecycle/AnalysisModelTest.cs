@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Extensions.LocalAnalyzers.ApiLifecycle.Model;
-using Microsoft.Extensions.LocalAnalyzers.Json;
 using Xunit;
 
 namespace Microsoft.Extensions.LocalAnalyzers.ApiLifecycle.Test;
@@ -13,7 +12,7 @@ public class AnalysisModelTest
     [Fact]
     public void Field_Fallbacks_To_NotNull_Defaults_When_Value_Not_Found_In_Json()
     {
-        var field = new Field(new JsonObject());
+        var field = new Field([]);
 
         Assert.Equal(string.Empty, field.Member);
         Assert.Equal(Stage.Experimental, field.Stage);
@@ -22,7 +21,7 @@ public class AnalysisModelTest
     [Fact]
     public void PublicMember_Fallbacks_To_NotNull_Defaults_When_Value_Not_Found_In_Json()
     {
-        var member = new TypeDef(new JsonObject());
+        var member = new TypeDef([]);
 
         Assert.Equal(string.Empty, member.ModifiersAndName);
         Assert.Equal(Stage.Experimental, member.Stage);
@@ -36,7 +35,7 @@ public class AnalysisModelTest
     [Fact]
     public void Prop_Fallbacks_To_NotNull_Defaults_When_Value_Not_Found_In_Json()
     {
-        var prop = new Prop(new JsonObject());
+        var prop = new Prop([]);
 
         Assert.Equal(string.Empty, prop.Member);
         Assert.Equal(Stage.Experimental, prop.Stage);
@@ -62,7 +61,7 @@ public class AnalysisModelTest
     [Fact]
     public void Package_Fallbacks_To_NotNull_Defaults_When_Value_Not_Found_In_Json()
     {
-        var package = new Assembly(new JsonObject());
+        var package = new Assembly([]);
 
         Assert.Equal(Array.Empty<TypeDef>(), package.Types);
         Assert.Equal(string.Empty, package.Name);
@@ -71,7 +70,7 @@ public class AnalysisModelTest
     [Fact]
     public void Method_FallbacksTo_NotNull_Defaults_When_Value_Not_Found_In_Json()
     {
-        var method = new Method(new JsonObject());
+        var method = new Method([]);
 
         Assert.Equal(string.Empty, method.Member);
         Assert.Equal(Stage.Experimental, method.Stage);

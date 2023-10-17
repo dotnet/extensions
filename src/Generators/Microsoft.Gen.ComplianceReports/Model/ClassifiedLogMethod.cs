@@ -12,5 +12,5 @@ internal sealed class ClassifiedLogMethod
 {
     public string MethodName = string.Empty;
     public string LogMethodMessage = string.Empty;
-    public List<ClassifiedItem> Parameters = new();
+    public List<ClassifiedItem> Parameters = [];
 }

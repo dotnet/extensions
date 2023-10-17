@@ -1,13 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Shared.DiagnosticIds;
 
-namespace Microsoft.AspNetCore.Diagnostics;
+namespace Microsoft.AspNetCore.Diagnostics.Logging;
 
 /// <summary>
 /// Options for the Request Headers enricher.
@@ -23,6 +24,6 @@ public class RequestHeadersLogEnricherOptions
     [Required]
     [Experimental(diagnosticId: Experiments.Telemetry, UrlFormat = Experiments.UrlFormat)]
 #pragma warning disable CA2227 // Collection properties should be read only
-    public IDictionary<string, DataClassification> HeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
+    public IDictionary<string, DataClassification> HeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>(StringComparer.OrdinalIgnoreCase);
 #pragma warning restore CA2227 // Collection properties should be read only
 }
