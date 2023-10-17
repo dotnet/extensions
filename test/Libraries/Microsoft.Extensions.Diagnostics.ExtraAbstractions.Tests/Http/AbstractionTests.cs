@@ -35,7 +35,7 @@ public class AbstractionTests
     [Fact]
     public void Ensure_TelemetryConstantValuesAreNotChanged()
     {
-        Assert.Equal("R9-RequestMetadata", TelemetryConstants.RequestMetadataKey);
+        Assert.Equal("Extensions-RequestMetadata", TelemetryConstants.RequestMetadataKey);
         Assert.Equal("unknown", TelemetryConstants.Unknown);
         Assert.Equal("REDACTED", TelemetryConstants.Redacted);
     }

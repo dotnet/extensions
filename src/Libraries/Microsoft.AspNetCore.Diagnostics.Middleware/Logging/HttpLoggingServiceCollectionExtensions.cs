@@ -1,14 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET8_0_OR_GREATER
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Diagnostics.Logging;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Diagnostics;
-using Microsoft.Extensions.Options;
-using Microsoft.IO;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -16,57 +18,49 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods to register the HTTP logging feature within the service.
 /// </summary>
+[Experimental(diagnosticId: Experiments.HttpLogging, UrlFormat = Experiments.UrlFormat)]
 public static class HttpLoggingServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds components for incoming HTTP requests logging into <see cref="IServiceCollection"/>.
+    /// Enables enrichment and redaction of HTTP request logging output.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
+    /// <remarks>
+    /// This will enable <see cref="HttpLoggingOptions.CombineLogs"/> and <see cref="HttpLoggingFields.Duration"/> by default.
+    /// </remarks>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configure">Configures the redaction options.</param>
+    /// <returns>The value of <paramref name="services" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
-    public static IServiceCollection AddHttpLogging(this IServiceCollection services)
-        => Throw.IfNull(services)
-        .AddHttpLoggingInternal();
-
-    /// <summary>
-    /// Adds components for incoming HTTP requests logging into <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-    /// <param name="configure">
-    /// An <see cref="Action{LoggingOptions}"/> to configure the <see cref="LoggingOptions"/>.
-    /// </param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// Either <paramref name="services"/> or <paramref name="configure"/> is <see langword="null" />.
-    /// </exception>
-    public static IServiceCollection AddHttpLogging(this IServiceCollection services, Action<LoggingOptions> configure)
+    public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<LoggingRedactionOptions>? configure = null)
     {
         _ = Throw.IfNull(services);
-        _ = Throw.IfNull(configure);
 
-        return AddHttpLoggingInternal(services, builder => builder.Configure(configure));
+        _ = services.AddOptionsWithValidateOnStart<LoggingRedactionOptions, LoggingRedactionOptionsValidator>()
+            .Configure(configure ?? (static _ => { }));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpLoggingInterceptor, HttpLoggingRedactionInterceptor>());
+
+        return services.AddHttpLogging(o =>
+        {
+            o.CombineLogs = true;
+            o.LoggingFields |= HttpLoggingFields.Duration;
+        })
+
+        // Internal stuff for route processing:
+        .AddHttpRouteProcessor()
+        .AddHttpRouteUtilities();
     }
 
     /// <summary>
-    /// Adds components for incoming HTTP requests logging into <see cref="IServiceCollection"/>.
+    /// Enables enrichment and redaction of HTTP request logging output.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
-    /// <param name="section">The configuration section to bind <see cref="LoggingOptions"/> to.</param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// Either <paramref name="services"/> or <paramref name="section"/> is <see langword="null" />.
-    /// </exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed with [DynamicDependency]")]
-    public static IServiceCollection AddHttpLogging(this IServiceCollection services, IConfigurationSection section)
+    /// <param name="services">The service collection.</param>
+    /// <param name="section">The configuration section with the redaction settings.</param>
+    /// <returns>The value of <paramref name="services" />.</returns>
+    public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, IConfigurationSection section)
     {
-        _ = Throw.IfNull(services);
         _ = Throw.IfNull(section);
 
-        return AddHttpLoggingInternal(services, builder => builder.Bind(section));
+        return services.AddHttpLoggingRedaction(section.Bind);
     }
 
     /// <summary>
@@ -78,23 +72,10 @@ public static class HttpLoggingServiceCollectionExtensions
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
     public static IServiceCollection AddHttpLogEnricher<T>(this IServiceCollection services)
         where T : class, IHttpLogEnricher
-        => Throw.IfNull(services)
-        .AddActivatedSingleton<IHttpLogEnricher, T>();
-
-    private static IServiceCollection AddHttpLoggingInternal(
-        this IServiceCollection services,
-        Action<OptionsBuilder<LoggingOptions>>? configureOptionsBuilder = null)
     {
-        var builder = services
-            .AddOptionsWithValidateOnStart<LoggingOptions, LoggingOptionsValidator>();
-
-        configureOptionsBuilder?.Invoke(builder);
-
-        services.TryAddSingleton<RecyclableMemoryStreamManager>();
-        services.TryAddActivatedSingleton<HttpLoggingMiddleware>();
-
-        return services
-            .AddHttpRouteProcessor()
-            .AddHttpRouteUtilities();
+        _ = Throw.IfNull(services);
+        return services.AddHttpLoggingRedaction()
+            .AddActivatedSingleton<IHttpLogEnricher, T>();
     }
 }
+#endif

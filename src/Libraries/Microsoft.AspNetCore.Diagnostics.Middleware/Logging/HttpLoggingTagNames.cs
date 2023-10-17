@@ -14,47 +14,47 @@ public static class HttpLoggingTagNames
     /// <summary>
     /// HTTP Request duration in milliseconds.
     /// </summary>
-    public const string Duration = "duration";
+    public const string Duration = "Duration";
 
     /// <summary>
     /// HTTP Host.
     /// </summary>
-    public const string Host = "httpHost";
+    public const string Host = "Host";
 
     /// <summary>
     /// HTTP Method.
     /// </summary>
-    public const string Method = "httpMethod";
+    public const string Method = "Method";
 
     /// <summary>
     /// HTTP Path.
     /// </summary>
-    public const string Path = "httpPath";
+    public const string Path = "Path";
 
     /// <summary>
     /// HTTP Request Headers prefix.
     /// </summary>
-    public const string RequestHeaderPrefix = "httpRequestHeader_";
+    public const string RequestHeaderPrefix = "RequestHeader.";
 
     /// <summary>
     /// HTTP Response Headers prefix.
     /// </summary>
-    public const string ResponseHeaderPrefix = "httpResponseHeader_";
+    public const string ResponseHeaderPrefix = "ResponseHeader.";
 
     /// <summary>
     /// HTTP Request Body.
     /// </summary>
-    public const string RequestBody = "httpRequestBody";
+    public const string RequestBody = "RequestBody";
 
     /// <summary>
     /// HTTP Response Body.
     /// </summary>
-    public const string ResponseBody = "httpResponseBody";
+    public const string ResponseBody = "ResponseBody";
 
     /// <summary>
     /// HTTP Status Code.
     /// </summary>
-    public const string StatusCode = "httpStatusCode";
+    public const string StatusCode = "StatusCode";
 
     /// <summary>
     /// Gets a list of all dimension names.

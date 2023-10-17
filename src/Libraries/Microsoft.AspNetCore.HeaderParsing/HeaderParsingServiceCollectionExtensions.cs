@@ -42,9 +42,9 @@ public static class HeaderParsingServiceCollectionExtensions
     /// Adds the header parsing feature.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="configuration">A delegate to setup parsing for the header.</param>
+    /// <param name="configure">A delegate to setup parsing for the header.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection AddHeaderParsing(this IServiceCollection services, Action<HeaderParsingOptions> configuration)
+    public static IServiceCollection AddHeaderParsing(this IServiceCollection services, Action<HeaderParsingOptions> configure)
     {
         _ = Throw.IfNull(services);
 
@@ -53,7 +53,7 @@ public static class HeaderParsingServiceCollectionExtensions
 
         return services
             .AddHeaderParsing()
-            .Configure(configuration);
+            .Configure(configure);
     }
 
     /// <summary>

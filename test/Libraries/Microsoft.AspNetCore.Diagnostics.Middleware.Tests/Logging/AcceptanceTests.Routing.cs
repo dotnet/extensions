@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET8_0_OR_GREATER
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -32,7 +34,7 @@ public partial class AcceptanceTests
         public static void Configure(IApplicationBuilder app)
             => app
                 .UseRouting()
-                .UseHttpLoggingMiddleware()
+                .UseHttpLogging()
                 .UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
@@ -129,7 +131,7 @@ public partial class AcceptanceTests
             httpPath,
             configureHttpLogging: services =>
             {
-                services.AddHttpLogging(o => o.RequestPathParameterRedactionMode = mode);
+                services.AddHttpLoggingRedaction(o => o.RequestPathParameterRedactionMode = mode);
             },
             validateRequestState: state =>
             {
@@ -165,7 +167,7 @@ public partial class AcceptanceTests
     {
         await RunRoutingTestAsync<TestStartupWithRouting>(
             httpPath,
-            configureHttpLogging: services => services.AddHttpLogging(options =>
+            configureHttpLogging: services => services.AddHttpLoggingRedaction(options =>
             {
                 options.RequestPathLoggingMode = IncomingPathLoggingMode.Structured;
             }),
@@ -194,3 +196,4 @@ public partial class AcceptanceTests
             });
     }
 }
+#endif
