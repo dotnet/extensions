@@ -14,9 +14,6 @@ namespace Microsoft.Gen.Logging.Emission;
 
 internal sealed partial class Emitter : EmitterBase
 {
-    private const string PropertySeparator = ".";
-    private const string NullablePropertySeparator = "?.";
-
 #pragma warning disable CA1505 // Avoid unmaintainable code
     private void GenLogMethod(LoggingMethod lm)
 #pragma warning restore CA1505
@@ -319,8 +316,8 @@ internal sealed partial class Emitter : EmitterBase
                         {
                             if (!member.HasDataClassification)
                             {
-                                var propName = PropertyChainToString(propertyChain, member, PropertySeparator, omitReferenceName: p.OmitReferenceName);
-                                var accessExpression = PropertyChainToString(propertyChain, member, NullablePropertySeparator, nonNullSeparator: PropertySeparator);
+                                var propName = PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
+                                var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
                                 var ts = ShouldStringifyProperty(member)
                                     ? ConvertPropertyToString(member, accessExpression)
@@ -370,8 +367,8 @@ internal sealed partial class Emitter : EmitterBase
                         {
                             if (member.HasDataClassification)
                             {
-                                var propName = PropertyChainToString(propertyChain, member, PropertySeparator, omitReferenceName: p.OmitReferenceName);
-                                var accessExpression = PropertyChainToString(propertyChain, member, NullablePropertySeparator, nonNullSeparator: PropertySeparator);
+                                var propName = PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
+                                var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
                                 var value = ShouldStringifyProperty(member)
                                     ? ConvertPropertyToString(member, accessExpression)
@@ -394,8 +391,8 @@ internal sealed partial class Emitter : EmitterBase
                     {
                         if (member.HasDataClassification)
                         {
-                            var propName = PropertyChainToString(propertyChain, member, PropertySeparator, omitReferenceName: p.OmitReferenceName);
-                            var accessExpression = PropertyChainToString(propertyChain, member, NullablePropertySeparator, nonNullSeparator: PropertySeparator);
+                            var propName = PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
+                            var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
                             var value = ShouldStringifyProperty(member)
                                 ? ConvertPropertyToString(member, accessExpression)
@@ -421,8 +418,8 @@ internal sealed partial class Emitter : EmitterBase
                         }
                         else
                         {
-                            var propName = PropertyChainToString(propertyChain, member, PropertySeparator, omitReferenceName: p.OmitReferenceName);
-                            var accessExpression = PropertyChainToString(propertyChain, member, NullablePropertySeparator, nonNullSeparator: PropertySeparator);
+                            var propName = PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
+                            var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
                             var ts = ShouldStringifyProperty(member)
                                 ? ConvertPropertyToString(member, accessExpression)
@@ -633,7 +630,7 @@ internal sealed partial class Emitter : EmitterBase
         string? nonNullSeparator = null,
         bool omitReferenceName = false)
     {
-        bool needAts = nonNullSeparator == PropertySeparator;
+        bool needAts = nonNullSeparator == ".";
         var adjustedNonNullSeparator = nonNullSeparator ?? separator;
         var localStringBuilder = _sbPool.GetStringBuilder();
         try
