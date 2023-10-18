@@ -387,7 +387,7 @@ public partial class ParserTests
 
         int i = 0;
 
-        for (; i < 21; i++)
+        for (; i < 30; i++)
         {
             sb.AppendLine($"public class C{i} : C{i + 1} {{ public string dim{i} {{get;set;}}}}");
         }
