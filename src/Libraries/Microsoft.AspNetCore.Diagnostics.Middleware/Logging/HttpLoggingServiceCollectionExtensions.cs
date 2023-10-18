@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods to register the HTTP logging feature within the service.
 /// </summary>
-[Experimental(diagnosticId: Experiments.HttpLogging, UrlFormat = Experiments.UrlFormat)]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.HttpLogging, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class HttpLoggingServiceCollectionExtensions
 {
     /// <summary>
