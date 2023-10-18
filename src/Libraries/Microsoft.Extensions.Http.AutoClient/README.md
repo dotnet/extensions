@@ -20,7 +20,7 @@ Or directly in the C# project file:
 
 ### Defining a client
 
-The first step for generating an auto client, is to define an interface[^1] that describes the client. The interface must be marked with the `[AutoClient]` attribute.
+The first step to generate a client is to define an interface that describes the client. The interface must be marked with the `[AutoClient]` attribute[^1].
 
 ```csharp
 using Microsoft.Extensions.Http.AutoClient;
@@ -216,7 +216,7 @@ app.MapGet("/ProcessUsers", async ([FromServices] IMyDependencyClient client) =>
 });
 ```
 
-[^1]: The attribute must be used in interfaces, not classes.
+[^1]: The attribute is only supported on interfaces.
 
 ## Options
 
