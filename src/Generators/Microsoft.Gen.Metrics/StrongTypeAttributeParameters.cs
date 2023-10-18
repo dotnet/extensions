@@ -11,7 +11,7 @@ internal sealed class StrongTypeAttributeParameters
     public string MetricNameFromAttribute = string.Empty;
     public HashSet<string> TagHashSet = [];
     public Dictionary<string, string> TagDescriptionDictionary = [];
-    public List<StrongTypeConfig> DimensionHashSet = [];
+    public List<StrongTypeConfig> StrongTypeConfigs = [];
     public string StrongTypeObjectName = string.Empty;
     public bool IsClass;
 }

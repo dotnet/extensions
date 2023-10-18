@@ -450,7 +450,7 @@ internal sealed class Parser
             IsExtensionMethod = methodSymbol.IsExtensionMethod,
             Modifiers = methodSyntax.Modifiers.ToString(),
             MetricTypeName = methodSymbol.ReturnType.ToDisplayString(), // Roslyn doesn't know this type yet, no need to use a format here
-            StrongTypeConfigs = strongTypeAttrParams.DimensionHashSet,
+            StrongTypeConfigs = strongTypeAttrParams.StrongTypeConfigs,
             StrongTypeObjectName = strongTypeAttrParams.StrongTypeObjectName,
             IsTagTypeClass = strongTypeAttrParams.IsClass,
             MetricTypeModifiers = typeDeclaration.Modifiers.ToString(),
@@ -640,11 +640,11 @@ internal sealed class Parser
                 var tagConfigs = BuildTagConfigs(member, typesChain, strongTypeAttributeParameters.TagHashSet,
                     strongTypeAttributeParameters.TagDescriptionDictionary, symbols, _builders.GetStringBuilder());
 
-                strongTypeAttributeParameters.DimensionHashSet.AddRange(tagConfigs);
+                strongTypeAttributeParameters.StrongTypeConfigs.AddRange(tagConfigs);
             }
 
             // Now that all of the current level and below dimensions are extracted, let's get any parent ones
-            strongTypeAttributeParameters.DimensionHashSet.AddRange(GetParentTagConfigs(strongTypeSymbol,
+            strongTypeAttributeParameters.StrongTypeConfigs.AddRange(GetParentTagConfigs(strongTypeSymbol,
                 strongTypeAttributeParameters.TagHashSet, strongTypeAttributeParameters.TagDescriptionDictionary, symbols));
         }
         catch (TransitiveTypeCycleException ex)
@@ -656,7 +656,7 @@ internal sealed class Parser
                 ex.NamedType.ToDisplayString());
         }
 
-        if (strongTypeAttributeParameters.DimensionHashSet.Count > MaxTagNames)
+        if (strongTypeAttributeParameters.StrongTypeConfigs.Count > MaxTagNames)
         {
             Diag(DiagDescriptors.ErrorTooManyTagNames, strongTypeSymbol.Locations[0]);
         }
