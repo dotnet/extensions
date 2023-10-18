@@ -656,7 +656,7 @@ internal sealed class Parser
                 ex.NamedType.ToDisplayString());
         }
 
-        if (strongTypeAttributeParameters.StrongTypeConfigs.Count > MaxTagNames)
+        if (strongTypeAttributeParameters.TagHashSet.Count > MaxTagNames)
         {
             Diag(DiagDescriptors.ErrorTooManyTagNames, strongTypeSymbol.Locations[0]);
         }
