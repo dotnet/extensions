@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.Test.Log;
+namespace Microsoft.Extensions.Logging.Test;
 
 public static class ExtendedLoggerTests
 {
@@ -43,7 +43,7 @@ public static class ExtendedLoggerTests
             providers: new[] { provider },
             filterOptions: new StaticOptionsMonitor<LoggerFilterOptions>(new()),
             enrichmentOptions: new StaticOptionsMonitor<LoggerEnrichmentOptions>(new()),
-            redactionOptions: new StaticOptionsMonitor<LoggerRedactionOptions>(new()),
+            redactionOptions: new StaticOptionsMonitor<LoggerRedactionOptions>(new() { ApplyDiscriminator = false }),
             enrichers: new[] { enricher },
             staticEnrichers: new[] { staticEnricher },
             redactorProvider: redactorProvider,

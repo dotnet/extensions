@@ -245,17 +245,20 @@ public abstract class Redactor
         }
 #endif
 
-        string? str = null;
         ReadOnlySpan<char> ros = default;
         if (value is IFormattable)
         {
             var fmt = format.Length > 0 ? format.ToString() : string.Empty;
-            str = ((IFormattable)value).ToString(fmt, provider);
+            var str = ((IFormattable)value).ToString(fmt, provider);
+            if (str != null)
+            {
+                ros = str.AsSpan();
+            }
         }
         else if (value is char[])
         {
-            // An attempt to call value.ToString() on a char[] will produce a string "System.Char[]" and all redaction will be attempted on it,
-            // instead of the provided array. This will lead to incorrectly allocated buffers.
+            // An attempt to call value.ToString() on a char[] will produce the string "System.Char[]" and redaction will be attempted on it,
+            // instead of the provided array.
             //
             // Not using pattern matching as it is recognized by the JIT and since this is a generic type, the JIT ends up generating code
             // without any of those conditional statements being present. But this only happens when not using pattern matching.
@@ -263,12 +266,11 @@ public abstract class Redactor
         }
         else
         {
-            str = value?.ToString();
-        }
-
-        if (str is not null)
-        {
-            ros = str.AsSpan();
+            var str = value?.ToString();
+            if (str != null)
+            {
+                ros = str.AsSpan();
+            }
         }
 
         int len = GetRedactedLength(ros);
