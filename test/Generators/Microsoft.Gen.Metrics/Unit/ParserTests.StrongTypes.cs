@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -588,6 +589,74 @@ public partial class ParserTests
                 public static partial TotalHistogram CreateTotalHistogram(Meter meter);
             }");
 
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task MaxDimensions()
+    {
+        StringBuilder sb = new StringBuilder();
+        int i = 1;
+        for (; i < 30; i++)
+        {
+            sb.AppendLine($"public class C{i} : C{i + 1} {{ public string dim{i} {{get;set;}}}}");
+        }
+        sb.AppendLine($"public class C{i} {{ public string dim{i} {{get;set;}}}}");
+        sb.AppendLine(@"        public static partial class MetricClass
+        {
+            [Histogram(typeof(C1), Name=""TotalCountTest"")]
+            public static partial TotalCount CreateTotalCountCounter(Meter meter);
+        }");
+        var d = await RunGenerator(sb.ToString());
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public async Task TransitiveDimensions()
+    {
+        var d = await RunGenerator(@"
+            class MyClassA
+            {
+                public string Dim1 { get; set; }
+                public string Dim2 { get; set; }
+                public string Dim3 { get; set; }
+                public string Dim4 { get; set; }
+                public string Dim5 { get; set; }
+                public string Dim6 { get; set; }
+                public string Dim7 { get; set; }
+                public string Dim8 { get; set; }
+                public string Dim9 { get; set; }
+                public string Dim10 { get; set; }
+                public string Dim11 { get; set; }
+                public string Dim12 { get; set; }
+                public string Dim13 { get; set; }
+                public string Dim14 { get; set; }
+                public string Dim15 { get; set; }
+                public string Dim16 { get; set; }
+                public string Dim17 { get; set; }
+                public string Dim18 { get; set; }
+                public string Dim19 { get; set; }
+                public string Dim20 { get; set; }
+                public MyClassB MyTransitiveProperty { get; set; }
+            }
+            class MyClassB
+            {
+                public string Dim21 { get; set; }
+                public string Dim22 { get; set; }
+                public string Dim23 { get; set; }
+                public string Dim24 { get; set; }
+                public string Dim25 { get; set; }
+                public string Dim26 { get; set; }
+                public string Dim27 { get; set; }
+                public string Dim28 { get; set; }
+                public string Dim29 { get; set; }
+                public string Dim30 { get; set; }
+            }
+            static partial class MetricClass
+            {
+                [Histogram(typeof(MyClassA))]
+                static partial TotalCount CreateTotalCountCounter(Meter meter);
+            }");
         Assert.Empty(d);
     }
 }

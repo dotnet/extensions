@@ -19,7 +19,7 @@ namespace Microsoft.Gen.Metrics;
 
 internal sealed class Parser
 {
-    private const int MaxTagNames = 20;
+    private const int MaxTagNames = 30;
 
     private static readonly Regex _regex = new("^[A-Z]+[A-za-z0-9]*$", RegexOptions.Compiled);
     private static readonly Regex _regexTagNames = new("^[A-Za-z]+[A-Za-z0-9_.:-]*$", RegexOptions.Compiled);
@@ -450,7 +450,7 @@ internal sealed class Parser
             IsExtensionMethod = methodSymbol.IsExtensionMethod,
             Modifiers = methodSyntax.Modifiers.ToString(),
             MetricTypeName = methodSymbol.ReturnType.ToDisplayString(), // Roslyn doesn't know this type yet, no need to use a format here
-            StrongTypeConfigs = strongTypeAttrParams.StrongTypeConfigs,
+            StrongTypeConfigs = strongTypeAttrParams.DimensionHashSet,
             StrongTypeObjectName = strongTypeAttrParams.StrongTypeObjectName,
             IsTagTypeClass = strongTypeAttrParams.IsClass,
             MetricTypeModifiers = typeDeclaration.Modifiers.ToString(),
@@ -640,11 +640,11 @@ internal sealed class Parser
                 var tagConfigs = BuildTagConfigs(member, typesChain, strongTypeAttributeParameters.TagHashSet,
                     strongTypeAttributeParameters.TagDescriptionDictionary, symbols, _builders.GetStringBuilder());
 
-                strongTypeAttributeParameters.StrongTypeConfigs.AddRange(tagConfigs);
+                strongTypeAttributeParameters.DimensionHashSet.AddRange(tagConfigs);
             }
 
             // Now that all of the current level and below dimensions are extracted, let's get any parent ones
-            strongTypeAttributeParameters.StrongTypeConfigs.AddRange(GetParentTagConfigs(strongTypeSymbol,
+            strongTypeAttributeParameters.DimensionHashSet.AddRange(GetParentTagConfigs(strongTypeSymbol,
                 strongTypeAttributeParameters.TagHashSet, strongTypeAttributeParameters.TagDescriptionDictionary, symbols));
         }
         catch (TransitiveTypeCycleException ex)
@@ -656,7 +656,7 @@ internal sealed class Parser
                 ex.NamedType.ToDisplayString());
         }
 
-        if (strongTypeAttributeParameters.StrongTypeConfigs.Count > MaxTagNames)
+        if (strongTypeAttributeParameters.DimensionHashSet.Count > MaxTagNames)
         {
             Diag(DiagDescriptors.ErrorTooManyTagNames, strongTypeSymbol.Locations[0]);
         }
