@@ -601,6 +601,7 @@ public partial class ParserTests
         {
             sb.AppendLine($"public class C{i} : C{i + 1} {{ public string dim{i} {{get;set;}}}}");
         }
+
         sb.AppendLine($"public class C{i} {{ public string dim{i} {{get;set;}}}}");
         sb.AppendLine(@"        public static partial class MetricClass
         {
