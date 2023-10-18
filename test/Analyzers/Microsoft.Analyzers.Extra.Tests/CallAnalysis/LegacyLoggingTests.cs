@@ -450,7 +450,6 @@ namespace Example.Example2
         Assert.Equal(ExpectedTarget.Replace("\r\n", "\n", StringComparison.Ordinal), actualTarget);
     }
 
-
     [Fact]
     public static async Task TargetClassHasMethodsWithoutEventId()
     {
