@@ -45,9 +45,6 @@ public sealed partial class LegacyLoggingFixer : CodeFixProvider
     internal Func<SemanticModel, BaseMethodDeclarationSyntax, CancellationToken, IMethodSymbol?> GetDeclaredSymbol = (sm, m, t) => sm.GetDeclaredSymbol(m, t);
 
     private const string LoggerMessageAttribute = "Microsoft.Extensions.Logging.LoggerMessageAttribute";
-    private const int LogMethodAttrEventIdArg = 0;
-    private const int LogMethodAttrLevelArg = 1;
-    private const int LogMethodAttrMessageArg = 2;
 
     /// <inheritdoc/>
     public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DiagDescriptors.LegacyLogging.Id);
@@ -198,33 +195,37 @@ public sealed partial class LegacyLoggingFixer : CodeFixProvider
                     conflict = true;
                 }
 
-                foreach (var mal in method.AttributeLists)
+                foreach (var methodAttr in methodSymbol.GetAttributes())
                 {
-                    foreach (var ma in mal.Attributes)
+                    if (SymbolEqualityComparer.Default.Equals(methodAttr.AttributeClass, logMethodAttribute) &&
+                        methodAttr.AttributeConstructor is not null)
                     {
-                        var mattrSymbolInfo = sm.GetSymbolInfo(ma, cancellationToken);
-                        if (mattrSymbolInfo.Symbol is IMethodSymbol ms)
+                        var argLevel = GetLogMethodAttributeParameter(methodAttr.AttributeConstructor.Parameters, methodAttr.ConstructorArguments, "level");
+                        if (!argLevel.HasValue)
                         {
-                            if (logMethodAttribute.Equals(ms.ContainingType, SymbolEqualityComparer.Default))
-                            {
-                                var arg = ma.ArgumentList!.Arguments[LogMethodAttrLevelArg];
-                                var level = (LogLevel)sm.GetConstantValue(arg.Expression, cancellationToken).Value!;
-
-                                arg = ma.ArgumentList.Arguments[LogMethodAttrMessageArg];
-                                var message = sm.GetConstantValue(arg.Expression, cancellationToken).ToString();
-
-                                var matchMessage = message == details.Message;
-                                var matchLevel = FixDetails.GetLogLevelName(level) == details.Level;
-
-                                if (matchLevel && matchMessage && matchParams)
-                                {
-                                    // found a match, use this one
-                                    return (method.Identifier.ToString(), true);
-                                }
-
-                                break;
-                            }
+                            break;
                         }
+
+                        var level = (LogLevel)argLevel.Value.Value!;
+
+                        var argMessage = GetLogMethodAttributeParameter(methodAttr.AttributeConstructor.Parameters, methodAttr.ConstructorArguments, "message");
+                        if (!argMessage.HasValue)
+                        {
+                            break;
+                        }
+
+                        var message = argMessage.Value.Value!.ToString();
+
+                        var matchMessage = message == details.Message;
+                        var matchLevel = FixDetails.GetLogLevelName(level) == details.Level;
+
+                        if (matchLevel && matchMessage && matchParams)
+                        {
+                            // found a match, use this one
+                            return (method.Identifier.ToString(), true);
+                        }
+
+                        break;
                     }
                 }
             }
@@ -232,6 +233,28 @@ public sealed partial class LegacyLoggingFixer : CodeFixProvider
         while (conflict);
 
         return (methodName, false);
+    }
+
+    private static TypedConstant? GetLogMethodAttributeParameter(
+        ImmutableArray<IParameterSymbol> attributeCtorParams,
+        ImmutableArray<TypedConstant> constructorArguments,
+        string paramName)
+    {
+        foreach (var param in attributeCtorParams)
+        {
+            if (param.Name == paramName)
+            {
+                foreach (var ctorArg in constructorArguments)
+                {
+                    if (SymbolEqualityComparer.Default.Equals(ctorArg.Type, param.Type))
+                    {
+                        return ctorArg;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -602,25 +625,30 @@ namespace {details.TargetNamespace}
         }
 
         var max = 0;
-        foreach (var method in targetClass.Members.Where(m => m.IsKind(SyntaxKind.MethodDeclaration)).OfType<MethodDeclarationSyntax>())
+        var semanticModel = comp.GetSemanticModel(targetClass.SyntaxTree);
+        var targetClassSymbol = semanticModel.GetDeclaredSymbol(targetClass, cancellationToken);
+        if (targetClassSymbol is null || targetClassSymbol is IErrorTypeSymbol)
         {
-            foreach (var mal in method.AttributeLists)
+            return max;
+        }
+
+        foreach (var methodSymbol in targetClassSymbol.GetMembers().Where(m => m.Kind == SymbolKind.Method).OfType<IMethodSymbol>())
+        {
+            foreach (var methodAttr in methodSymbol.GetAttributes())
             {
-                foreach (var ma in mal.Attributes)
+                if (SymbolEqualityComparer.Default.Equals(methodAttr.AttributeClass, logMethodAttribute) &&
+                    methodAttr.AttributeConstructor is not null)
                 {
-                    var sm = comp.GetSemanticModel(ma.SyntaxTree);
-                    var mattrSymbol = sm.GetSymbolInfo(ma, cancellationToken);
-                    if (mattrSymbol.Symbol is IMethodSymbol ms)
+                    var arg = GetLogMethodAttributeParameter(methodAttr.AttributeConstructor.Parameters, methodAttr.ConstructorArguments, "eventId");
+                    if (!arg.HasValue)
                     {
-                        if (logMethodAttribute.Equals(ms.ContainingType, SymbolEqualityComparer.Default))
-                        {
-                            var arg = ma.ArgumentList!.Arguments[LogMethodAttrEventIdArg];
-                            var eventId = (int)(sm.GetConstantValue(arg.Expression, cancellationToken).Value!);
-                            if (eventId >= max)
-                            {
-                                max = eventId + 1;
-                            }
-                        }
+                        continue;
+                    }
+
+                    var eventId = (int)arg.Value.Value!;
+                    if (eventId >= max)
+                    {
+                        max = eventId + 1;
                     }
                 }
             }
