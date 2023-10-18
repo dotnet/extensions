@@ -150,7 +150,7 @@ public sealed class HeaderParsingFeatureTests
         var latest = metricCollector.LastMeasurement;
         Assert.NotNull(latest);
         latest.Value.Should().Be(1);
-        latest.Tags["header.name"].Should().Be("Date");
+        latest.Tags["aspnetcore.header_parsing.header.name"].Should().Be("Date");
         latest.Tags["error.type"].Should().Be("Unable to parse date time offset value.");
     }
 
@@ -208,8 +208,8 @@ public sealed class HeaderParsingFeatureTests
         var latest = metricCollector.LastMeasurement;
         Assert.NotNull(latest);
         latest.Value.Should().Be(1);
-        latest.Tags["header.name"].Should().Be(HeaderNames.CacheControl);
-        latest.Tags["access.type"].Should().Be("Hit");
+        latest.Tags["aspnetcore.header_parsing.header.name"].Should().Be(HeaderNames.CacheControl);
+        latest.Tags["aspnetcore.header_parsing.cache_access.type"].Should().Be("Hit");
     }
 
     private static HeaderParsingMetrics GetMockedMetrics(Meter meter)

@@ -17,8 +17,8 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks.Test;
 
 public class TelemetryHealthChecksPublisherTests
 {
-    private const string HealthReportMetricName = "health_check.reports";
-    private const string UnhealthyHealthCheckMetricName = "health_check.unhealthy_checks";
+    private const string HealthReportMetricName = "dotnet.health_check.reports";
+    private const string UnhealthyHealthCheckMetricName = "dotnet.health_check.unhealthy_checks";
 
     public static TheoryData<List<HealthStatus>, bool, int, string, LogLevel, string> PublishAsyncArgs => new()
     {
@@ -106,10 +106,12 @@ public class TelemetryHealthChecksPublisherTests
             Assert.Equal(expectedLogLevel, collector.LatestRecord.Level);
         }
 
-        var latest = healthyMetricCollector.LastMeasurement!;
+        var latest = healthyMetricCollector.LastMeasurement;
+
+        Assert.NotNull(latest);
 
         latest.Value.Should().Be(1);
-        latest.Tags["health.status"].Should().Be(expectedMetricStatus);
+        latest.Tags.Should().ContainKey("dotnet.health_check.status").WhoseValue.Should().Be(expectedMetricStatus);
 
         var unhealthyCounters = unhealthyMetricCollector.GetMeasurementSnapshot();
 
@@ -137,8 +139,8 @@ public class TelemetryHealthChecksPublisherTests
     {
         foreach (var counter in counters)
         {
-            if (counter!.Tags["health_check.name"]?.ToString() == healthy &&
-                counter!.Tags["health.status"]?.ToString() == status)
+            if (counter!.Tags["dotnet.health_check.name"]?.ToString() == healthy &&
+                counter!.Tags["dotnet.health_check.status"]?.ToString() == status)
             {
                 return counter.Value;
             }

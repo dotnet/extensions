@@ -26,5 +26,5 @@ internal static class ResourceUtilizationInstruments
     /// <remarks>
     /// The type of an instrument is <see cref="System.Diagnostics.Metrics.ObservableGauge{T}"/>.
     /// </remarks>
-    public const string MemoryUtilization = "process.memory.virtual.utilization";
+    public const string MemoryUtilization = "dotnet.process.memory.virtual.utilization";
 }

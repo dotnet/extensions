@@ -11,10 +11,10 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
 internal static partial class Metric
 {
-    [Counter("health.status", Name = "health_check.reports")]
+    [Counter("dotnet.health_check.status", Name = "dotnet.health_check.reports")]
     public static partial HealthCheckReportCounter CreateHealthCheckReportCounter(Meter meter);
 
-    [Counter("health_check.name", "health.status", Name = "health_check.unhealthy_checks")]
+    [Counter("dotnet.health_check.name", "dotnet.health_check.status", Name = "dotnet.health_check.unhealthy_checks")]
     public static partial UnhealthyHealthCheckCounter CreateUnhealthyHealthCheckCounter(Meter meter);
 
     public static void RecordMetric(this HealthCheckReportCounter counterMetric, HealthStatus status)
