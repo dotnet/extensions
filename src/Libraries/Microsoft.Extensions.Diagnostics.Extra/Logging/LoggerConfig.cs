@@ -16,7 +16,7 @@ internal sealed class LoggerConfig
         Action<IEnrichmentTagCollector>[] enrichers,
         bool captureStackTraces,
         bool useFileInfoForStackTraces,
-        bool includeExceptionMessagesInStackTraces,
+        bool includeExceptionMessage,
         int maxStackTraceLength,
         Func<DataClassification, Redactor> getRedactor)
     {
@@ -25,7 +25,7 @@ internal sealed class LoggerConfig
         CaptureStackTraces = captureStackTraces;
         UseFileInfoForStackTraces = useFileInfoForStackTraces;
         MaxStackTraceLength = maxStackTraceLength;
-        IncludeExceptionMessageInStackTraces = includeExceptionMessagesInStackTraces;
+        IncludeExceptionMessage = includeExceptionMessage;
         GetRedactor = getRedactor;
     }
 
@@ -33,7 +33,7 @@ internal sealed class LoggerConfig
     public Action<IEnrichmentTagCollector>[] Enrichers { get; }
     public bool CaptureStackTraces { get; }
     public bool UseFileInfoForStackTraces { get; }
-    public bool IncludeExceptionMessageInStackTraces { get; }
+    public bool IncludeExceptionMessage { get; }
     public int MaxStackTraceLength { get; }
     public Func<DataClassification, Redactor> GetRedactor { get; }
 }

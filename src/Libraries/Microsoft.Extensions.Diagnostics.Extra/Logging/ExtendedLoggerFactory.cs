@@ -256,7 +256,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
                 _enrichers,
                 enrichmentOptions.CaptureStackTraces,
                 enrichmentOptions.UseFileInfoForStackTraces,
-                enrichmentOptions.IncludeExceptionMessageInStackTraces,
+                enrichmentOptions.IncludeExceptionMessage,
                 enrichmentOptions.MaxStackTraceLength,
                 _redactorProvider);
     }

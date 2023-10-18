@@ -170,7 +170,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "bool Microsoft.Extensions.Logging.LoggerEnrichmentOptions.IncludeExceptionMessageInStackTraces { get; set; }",
+          "Member": "bool Microsoft.Extensions.Logging.LoggerEnrichmentOptions.IncludeExceptionMessage { get; set; }",
           "Stage": "Stable"
         },
         {
