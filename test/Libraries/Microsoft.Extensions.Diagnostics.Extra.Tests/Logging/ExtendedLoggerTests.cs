@@ -342,7 +342,7 @@ public static class ExtendedLoggerTests
             CaptureStackTraces = true,
             UseFileInfoForStackTraces = true,
             MaxStackTraceLength = 4096,
-            IncludeExceptionMessageInStackTraces = includeExceptionMessage,
+            IncludeExceptionMessage = includeExceptionMessage,
         };
 
         using var lf = new ExtendedLoggerFactory(
@@ -429,7 +429,12 @@ public static class ExtendedLoggerTests
         Assert.Equal(new EventId(2, "ID2b"), snap[3].Id);
         Assert.Equal("MSG2b", snap[3].Message);
 
-        var stackTrace = snap[3].StructuredState!.GetValue("stackTrace")!;
+        var state = snap[3].StructuredState;
+
+        var exceptionType = state!.GetValue("exception.type")!;
+        Assert.Equal("System.AggregateException", exceptionType);
+
+        var stackTrace = state!.GetValue("exception.stacktrace")!;
         Assert.Contains("AggregateException", stackTrace);
         Assert.Contains("ArgumentNullException", stackTrace);
         Assert.Contains("ArgumentOutOfRangeException", stackTrace);
@@ -437,6 +442,9 @@ public static class ExtendedLoggerTests
 
         if (includeExceptionMessage)
         {
+            var exceptionMessage = state!.GetValue("exception.message");
+            Assert.Equal("EM4 (EM1) (EM2) (EM3)", exceptionMessage);
+
             Assert.Contains("EM1", stackTrace);
             Assert.Contains("EM2", stackTrace);
             Assert.Contains("EM3", stackTrace);
@@ -444,6 +452,8 @@ public static class ExtendedLoggerTests
         }
         else
         {
+            Assert.DoesNotContain(state!, x => x.Key == "exception.message");
+
             Assert.DoesNotContain("EM1", stackTrace);
             Assert.DoesNotContain("EM2", stackTrace);
             Assert.DoesNotContain("EM3", stackTrace);

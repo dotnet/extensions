@@ -259,7 +259,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
             {
                 CaptureStackTraces = Config.CaptureStackTraces,
                 UseFileInfoForStackTraces = Config.UseFileInfoForStackTraces,
-                IncludeExceptionMessageInStackTraces = Config.IncludeExceptionMessageInStackTraces,
+                IncludeExceptionMessage = Config.IncludeExceptionMessage,
                 MaxStackTraceLength = Config.MaxStackTraceLength,
             };
         }
@@ -276,7 +276,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
                 _enrichers,
                 enrichmentOptions.CaptureStackTraces,
                 enrichmentOptions.UseFileInfoForStackTraces,
-                enrichmentOptions.IncludeExceptionMessageInStackTraces,
+                enrichmentOptions.IncludeExceptionMessage,
                 enrichmentOptions.MaxStackTraceLength,
                 _redactorProvider,
                 redactionOptions.ApplyDiscriminator);

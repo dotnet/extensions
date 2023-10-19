@@ -21,7 +21,9 @@ namespace Microsoft.Extensions.Logging;
 
 internal sealed partial class ExtendedLogger : ILogger
 {
-    private const string ExceptionStackTrace = "stackTrace";
+    private const string ExceptionType = "exception.type";
+    private const string ExceptionMessage = "exception.message";
+    private const string ExceptionStackTrace = "exception.stacktrace";
 
     private readonly ExtendedLoggerFactory _factory;
 
@@ -127,6 +129,21 @@ internal sealed partial class ExtendedLogger : ILogger
         }
     }
 
+    private static void RecordException(Exception exception, EnrichmentTagCollector tags, LoggerConfig config)
+    {
+        tags.Add(ExceptionType, exception.GetType().ToString());
+
+        if (config.IncludeExceptionMessage)
+        {
+            tags.Add(ExceptionMessage, exception.Message);
+        }
+
+        if (config.CaptureStackTraces)
+        {
+            tags.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+        }
+    }
+
     private static string GetExceptionStackTrace(Exception exception, LoggerConfig config)
     {
         const int IndentAmount = 3;
@@ -166,7 +183,7 @@ internal sealed partial class ExtendedLogger : ILogger
             _ = sb.Append(exception.GetType());
             _ = sb.Append(": ");
 
-            if (config.IncludeExceptionMessageInStackTraces)
+            if (config.IncludeExceptionMessage)
             {
                 _ = sb.AppendLine(exception.Message);
                 _ = sb.Append(indentStr);
@@ -239,9 +256,9 @@ internal sealed partial class ExtendedLogger : ILogger
         }
 
         // one last dedicated bit of enrichment
-        if (exception != null && config.CaptureStackTraces)
+        if (exception != null)
         {
-            joiner.EnrichmentTagCollector.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+            RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
 
         for (int i = 0; i < loggers.Length; i++)
@@ -323,9 +340,9 @@ internal sealed partial class ExtendedLogger : ILogger
         }
 
         // one last dedicated bit of enrichment
-        if (exception != null && config.CaptureStackTraces)
+        if (exception != null)
         {
-            joiner.EnrichmentTagCollector.Add(ExceptionStackTrace, GetExceptionStackTrace(exception, config));
+            RecordException(exception, joiner.EnrichmentTagCollector, config);
         }
 
         for (int i = 0; i < loggers.Length; i++)
