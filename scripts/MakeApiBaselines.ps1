@@ -25,5 +25,5 @@ Get-ChildItem -Path "$PSScriptRoot/../src/Libraries" -Depth 1 -Include *.csproj 
     $name = Split-Path $_.FullName -LeafBase
     $path = "$PSScriptRoot\..\artifacts\bin\$name\Debug\net8.0\$name.dll"
     Write-Host "  Processing" $name
-    & $DotnetCommand $Command $path emit baseline -o "src/Libraries/$name/$name.json"
+    & $DotnetCommand $Command $path emit baseline -o "$PSScriptRoot/../src/Libraries/$name/$name.json"
 }
