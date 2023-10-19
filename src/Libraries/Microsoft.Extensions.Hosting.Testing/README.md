@@ -1,6 +1,6 @@
 # Microsoft.Extensions.Hosting.Testing
 
-Tools for integration test hosting and related test oriented helpers.
+Tools for integration testing of apps built with Microsoft.Extensions.Hosting.
 
 ## Install the package
 
