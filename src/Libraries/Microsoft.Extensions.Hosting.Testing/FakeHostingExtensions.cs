@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Hosting;
 /// <summary>
 /// Extension methods supporting host unit testing scenarios.
 /// </summary>
-[Experimental(diagnosticId: Experiments.Hosting, UrlFormat = Experiments.UrlFormat)]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Hosting, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class FakeHostingExtensions
 {
     /// <summary>

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.Extensions.Logging.Test.Log;
+namespace Microsoft.Extensions.Logging.Test;
 
 [CollectionDefinition("Serial Tests", DisableParallelization = true)]
 public static class SerialExtendedLoggerTests

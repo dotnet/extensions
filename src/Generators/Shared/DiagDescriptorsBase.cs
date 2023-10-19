@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 #pragma warning disable CA1716
 namespace Microsoft.Gen.Shared;
@@ -13,10 +14,6 @@ namespace Microsoft.Gen.Shared;
 #endif
 internal class DiagDescriptorsBase
 {
-#pragma warning disable S1075 // URIs should not be hardcoded
-    public const string HelpLinkBase = "https://TODO/";
-#pragma warning restore S1075 // URIs should not be hardcoded
-
     protected static DiagnosticDescriptor Make(
             string id,
             string title,
@@ -25,6 +22,9 @@ internal class DiagDescriptorsBase
             DiagnosticSeverity defaultSeverity = DiagnosticSeverity.Error,
             bool isEnabledByDefault = true)
     {
+#pragma warning disable CA1305 // Specify IFormatProvider
+#pragma warning disable CA1863 // Use 'CompositeFormat'
+#pragma warning disable CS0436 // Type conflicts with imported type
         return new(
             id,
             title,
@@ -33,9 +33,10 @@ internal class DiagDescriptorsBase
             defaultSeverity,
             isEnabledByDefault,
             null,
-#pragma warning disable CA1308 // Normalize strings to uppercase
-            HelpLinkBase + id.ToLowerInvariant(),
-#pragma warning restore CA1308 // Normalize strings to uppercase
+            string.Format(DiagnosticIds.UrlFormat, id),
             Array.Empty<string>());
+#pragma warning restore CS0436 // Type conflicts with imported type
+#pragma warning restore CA1863 // Use 'CompositeFormat'
+#pragma warning restore CA1305 // Specify IFormatProvider
     }
 }

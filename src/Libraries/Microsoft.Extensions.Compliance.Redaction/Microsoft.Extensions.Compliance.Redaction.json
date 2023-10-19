@@ -26,6 +26,40 @@
       ]
     },
     {
+      "Type": "class Microsoft.Extensions.Compliance.Redaction.HmacRedactorOptions",
+      "Stage": "Experimental",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Redaction.HmacRedactorOptions.HmacRedactorOptions();",
+          "Stage": "Experimental"
+        }
+      ],
+      "Properties": [
+        {
+          "Member": "string Microsoft.Extensions.Compliance.Redaction.HmacRedactorOptions.Key { get; set; }",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "int? Microsoft.Extensions.Compliance.Redaction.HmacRedactorOptions.KeyId { get; set; }",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
+      "Type": "static class Microsoft.Extensions.Compliance.Redaction.RedactionExtensions",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.SetHmacRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, System.Action<Microsoft.Extensions.Compliance.Redaction.HmacRedactorOptions> configure, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Stage": "Experimental"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.SetHmacRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Stage": "Experimental"
+        }
+      ]
+    },
+    {
       "Type": "static class Microsoft.Extensions.DependencyInjection.RedactionServiceCollectionExtensions",
       "Stage": "Stable",
       "Methods": [

@@ -9,9 +9,9 @@ namespace ApiChief.Format;
 
 internal static class FormattingExtensions
 {
-    private static readonly HashSet<char> _numberLiterals = new() { 'l', 'L', 'u', 'U', 'f', 'F', 'd', 'D', 'm', 'M' };
-    private static readonly HashSet<char> _secondCharInLiterals = new() { 'l', 'L', 'u', 'U' };
-    private static readonly HashSet<char> _possibleSpecialCharactersInANumber = new() { '.', 'x', 'X', 'b', 'B' };
+    private static readonly HashSet<char> _numberLiterals = ['l', 'L', 'u', 'U', 'f', 'F', 'd', 'D', 'm', 'M'];
+    private static readonly HashSet<char> _secondCharInLiterals = ['l', 'L', 'u', 'U'];
+    private static readonly HashSet<char> _possibleSpecialCharactersInANumber = ['.', 'x', 'X', 'b', 'B'];
 
     /// <summary>
     /// Ensures a single space between parameters.

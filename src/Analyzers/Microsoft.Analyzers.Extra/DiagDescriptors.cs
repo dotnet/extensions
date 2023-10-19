@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 [assembly: System.Resources.NeutralResourcesLanguage("en-us")]
 
@@ -135,14 +136,9 @@ internal static class DiagDescriptors
         description: Resources.AsyncMethodWithoutCancellationDescription,
         defaultSeverity: DiagnosticSeverity.Warning);
 
-#if false
-#pragma warning disable S1075 // URIs should not be hardcoded
-    private const string HelpLinkBase = "https://TODO/";
-#pragma warning restore S1075 // URIs should not be hardcoded
-#endif
-
     private static DiagnosticDescriptor Make(string id, string title, string description, string messageFormat, string category, DiagnosticSeverity defaultSeverity)
     {
+#pragma warning disable CA1305 // Specify IFormatProvider
         return new(
             id,
             title,
@@ -150,14 +146,9 @@ internal static class DiagDescriptors
             category,
             defaultSeverity,
             true,
-#if false
             description,
-#pragma warning disable CA1308 // Normalize strings to uppercase
-            HelpLinkBase + id.ToLowerInvariant(),
-#pragma warning restore CA1308 // Normalize strings to uppercase
+            string.Format(DiagnosticIds.UrlFormat, id),
             Array.Empty<string>());
-#else
-            description);
-#endif
+#pragma warning restore CA1305 // Specify IFormatProvider
     }
 }

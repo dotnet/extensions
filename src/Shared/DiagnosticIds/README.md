@@ -1,6 +1,6 @@
-# Buffer Writer Pool
+# Diagnostic IDs
 
-Gives access to diagnostics ids for the [Experimental] attribute.
+Defines various diagnostic IDs reported by this repo.
 
 To use this in your project, add the following to your `.csproj` file:
 
