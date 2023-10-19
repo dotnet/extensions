@@ -209,7 +209,7 @@ public class LogMethodTests
 
         collector.Clear();
         CollectionTestExtensions.M9(logger, LogLevel.Critical, 0, new ArgumentException("Foo"), 1);
-        TestCollection(3, collector);
+        AssertLastState(collector, new("p0", "0"), new("p1", "1"));
     }
 
     [Fact]
@@ -903,11 +903,10 @@ public class LogMethodTests
     private static void AssertLastState(FakeLogCollector collector, params KeyValuePair<string, string?>[] expected)
     {
         var rol = (IReadOnlyList<KeyValuePair<string, string>>)collector.LatestRecord.State!;
-        int count = 0;
+
         foreach (var kvp in expected)
         {
             Assert.Equal(kvp.Value, rol.GetValue(kvp.Key));
-            count++;
         }
     }
 
