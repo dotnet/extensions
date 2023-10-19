@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Compliance.Classification;
@@ -16,12 +17,14 @@ internal sealed class HeaderReader
 {
     private readonly IRedactorProvider _redactorProvider;
     private readonly KeyValuePair<string, DataClassification>[] _headers;
+    private readonly string[] _normalizedHeaders;
 
     public HeaderReader(IDictionary<string, DataClassification> headersToLog, IRedactorProvider redactorProvider)
     {
         _redactorProvider = redactorProvider;
 
         _headers = headersToLog.Count == 0 ? [] : headersToLog.ToArray();
+        _normalizedHeaders = NormalizeHeaders(_headers);
     }
 
     public void Read(IHeaderDictionary headers, IList<KeyValuePair<string, object?>> logContext, string prefix)
@@ -31,15 +34,32 @@ internal sealed class HeaderReader
             return;
         }
 
-        foreach (var header in _headers)
+        for (int i = 0; i < _headers.Length; i++)
         {
+            var header = _headers[i];
+
             if (headers.TryGetValue(header.Key, out var headerValue))
             {
                 var provider = _redactorProvider.GetRedactor(header.Value);
                 var redacted = provider.Redact(headerValue.ToString());
-                logContext.Add(new(prefix + header.Key, redacted));
+                var normalizedHeader = _normalizedHeaders[i];
+                logContext.Add(new(prefix + normalizedHeader, redacted));
             }
         }
+    }
+
+    [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase",
+        Justification = "Normalization to lower case is required by OTel's semantic conventions")]
+    private static string[] NormalizeHeaders(KeyValuePair<string, DataClassification>[] headers)
+    {
+        var normalizedHeaders = new string[headers.Length];
+
+        for (int i = 0; i < headers.Length; i++)
+        {
+            normalizedHeaders[i] = headers[i].Key.ToLowerInvariant().Replace('-', '_');
+        }
+
+        return normalizedHeaders;
     }
 }
 #endif
