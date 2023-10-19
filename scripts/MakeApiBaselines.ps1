@@ -12,17 +12,18 @@ if ($PSVersionTable.PSVersion.Major -lt 6) {
 
 $Project = $PSScriptRoot + "/../eng/Tools/ApiChief/ApiChief.csproj"
 $Command = $PSScriptRoot + "/../artifacts/bin/ApiChief/Debug/net8.0/ApiChief.dll"
+$DotnetCommand = $PSScriptRoot + "/../.dotnet/dotnet"
 
 Write-Output "Building ApiChief tool"
 
-& .dotnet\dotnet build $Project --nologo --verbosity q
+& $DotnetCommand build $Project --nologo --verbosity q
 
 Write-Output "Creating API baseline files in the src/Libraries folder"
 
-Get-ChildItem -Path src/Libraries -Depth 1 -Include *.csproj | ForEach-Object `
+Get-ChildItem -Path "$PSScriptRoot/../src/Libraries" -Depth 1 -Include *.csproj | ForEach-Object `
 {
     $name = Split-Path $_.FullName -LeafBase
     $path = "$PSScriptRoot\..\artifacts\bin\$name\Debug\net8.0\$name.dll"
     Write-Host "  Processing" $name
-    & .dotnet\dotnet $Command $path emit baseline -o "src/Libraries/$name/$name.json"
+    & $DotnetCommand $Command $path emit baseline -o "src/Libraries/$name/$name.json"
 }
