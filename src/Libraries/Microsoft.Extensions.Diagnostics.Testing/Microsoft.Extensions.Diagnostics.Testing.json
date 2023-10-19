@@ -104,7 +104,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "System.TimeProvider Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions.TimeProvider { get; set; }",
+          "Member": "TimeProvider Microsoft.Extensions.Logging.Testing.FakeLogCollectorOptions.TimeProvider { get; set; }",
           "Stage": "Stable"
         }
       ]
@@ -336,19 +336,19 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.Instrument<T> instrument, System.TimeProvider? timeProvider = null);",
+          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.Instrument<T> instrument, TimeProvider? timeProvider = null);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.ObservableInstrument<T> instrument, System.TimeProvider? timeProvider = null);",
+          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.ObservableInstrument<T> instrument, TimeProvider? timeProvider = null);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.MetricCollector(object? meterScope, string meterName, string instrumentName, System.TimeProvider? timeProvider = null);",
+          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.MetricCollector(object? meterScope, string meterName, string instrumentName, TimeProvider? timeProvider = null);",
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.Meter meter, string instrumentName, System.TimeProvider? timeProvider = null);",
+          "Member": "Microsoft.Extensions.Diagnostics.Metrics.Testing.MetricCollector<T>.MetricCollector(System.Diagnostics.Metrics.Meter meter, string instrumentName, TimeProvider? timeProvider = null);",
           "Stage": "Stable"
         },
         {

@@ -2,7 +2,7 @@
   "Name": "Microsoft.Extensions.TimeProvider.Testing, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "class Microsoft.Extensions.Time.Testing.FakeTimeProvider : System.TimeProvider",
+      "Type": "class Microsoft.Extensions.Time.Testing.FakeTimeProvider : TimeProvider",
       "Stage": "Stable",
       "Methods": [
         {
@@ -18,7 +18,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "override System.Threading.ITimer Microsoft.Extensions.Time.Testing.FakeTimeProvider.CreateTimer(System.Threading.TimerCallback callback, object? state, System.TimeSpan dueTime, System.TimeSpan period);",
+          "Member": "override ITimer Microsoft.Extensions.Time.Testing.FakeTimeProvider.CreateTimer(System.Threading.TimerCallback callback, object? state, System.TimeSpan dueTime, System.TimeSpan period);",
           "Stage": "Stable"
         },
         {
