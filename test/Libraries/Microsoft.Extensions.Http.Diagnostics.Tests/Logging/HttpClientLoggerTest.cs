@@ -32,10 +32,10 @@ namespace Microsoft.Extensions.Http.Logging.Test;
 
 public class HttpClientLoggerTest
 {
-    private const string TestRequestHeader = "RequestHeader";
-    private const string TestResponseHeader = "ResponseHeader";
-    private const string TestExpectedRequestHeaderKey = $"{HttpClientLoggingTagNames.RequestHeaderPrefix}{TestRequestHeader}";
-    private const string TestExpectedResponseHeaderKey = $"{HttpClientLoggingTagNames.ResponseHeaderPrefix}{TestResponseHeader}";
+    private const string TestRequestHeader = "Request-Header";
+    private const string TestResponseHeader = "Response-Header";
+    private const string TestExpectedRequestHeaderKey = $"{HttpClientLoggingTagNames.RequestHeaderPrefix}request_header";
+    private const string TestExpectedResponseHeaderKey = $"{HttpClientLoggingTagNames.ResponseHeaderPrefix}response_header";
 
     private const string TextPlain = "text/plain";
 
@@ -164,8 +164,8 @@ public class HttpClientLoggerTest
 
         var testEnricher = new TestEnricher();
 
-        var testSharedRequestHeaderKey = $"{HttpClientLoggingTagNames.RequestHeaderPrefix}Header3";
-        var testSharedResponseHeaderKey = $"{HttpClientLoggingTagNames.ResponseHeaderPrefix}Header3";
+        var testSharedRequestHeaderKey = $"{HttpClientLoggingTagNames.RequestHeaderPrefix}header3";
+        var testSharedResponseHeaderKey = $"{HttpClientLoggingTagNames.ResponseHeaderPrefix}header3";
 
         var expectedLogRecord = new LogRecord
         {
