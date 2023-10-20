@@ -18,15 +18,15 @@ internal sealed class HeaderReader
     private readonly KeyValuePair<string, DataClassification>[] _headers;
     private readonly string[] _normalizedHeaders;
 
-    public HeaderReader(IDictionary<string, DataClassification> headersToLog, IRedactorProvider redactorProvider)
+    public HeaderReader(IDictionary<string, DataClassification> headersToLog, IRedactorProvider redactorProvider, string prefix)
     {
         _redactorProvider = redactorProvider;
 
         _headers = headersToLog.Count == 0 ? [] : headersToLog.ToArray();
-        _normalizedHeaders = NormalizeHeaders(_headers);
+        _normalizedHeaders = HeaderNormalizer.PrepareNormalizedHeaderNames(_headers, prefix);
     }
 
-    public void Read(IHeaderDictionary headers, IList<KeyValuePair<string, object?>> logContext, string prefix)
+    public void Read(IHeaderDictionary headers, IList<KeyValuePair<string, object?>> logContext)
     {
         if (headers.Count == 0)
         {
@@ -41,22 +41,9 @@ internal sealed class HeaderReader
             {
                 var provider = _redactorProvider.GetRedactor(header.Value);
                 var redacted = provider.Redact(headerValue.ToString());
-                var normalizedHeader = _normalizedHeaders[i];
-                logContext.Add(new(prefix + normalizedHeader, redacted));
+                logContext.Add(new(_normalizedHeaders[i], redacted));
             }
         }
-    }
-
-    private static string[] NormalizeHeaders(KeyValuePair<string, DataClassification>[] headers)
-    {
-        var normalizedHeaders = new string[headers.Length];
-
-        for (int i = 0; i < headers.Length; i++)
-        {
-            normalizedHeaders[i] = HeaderNormalizer.Normalize(headers[i].Key);
-        }
-
-        return normalizedHeaders;
     }
 }
 #endif

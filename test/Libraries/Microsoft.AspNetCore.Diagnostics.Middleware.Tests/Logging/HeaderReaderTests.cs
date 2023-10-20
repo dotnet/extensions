@@ -17,26 +17,27 @@ public class HeaderReaderTests
     [Fact]
     public void ShouldNotAddHeaders_WhenFilteringSetEmpty()
     {
-        var reader = new HeaderReader(new Dictionary<string, DataClassification>(), null!);
+        var reader = new HeaderReader(new Dictionary<string, DataClassification>(), null!, string.Empty);
         var listToFill = new List<KeyValuePair<string, object?>>();
         var headers = new HeaderDictionary(new Dictionary<string, StringValues> { [HeaderNames.Accept] = MediaTypeNames.Text.Plain });
-        reader.Read(headers, listToFill, string.Empty);
+        reader.Read(headers, listToFill);
         Assert.Empty(listToFill);
     }
 
     [Fact]
     public void ShouldNotAddHeaders_WhenHeadersCollectionEmpty()
     {
-        var reader = new HeaderReader(new Dictionary<string, DataClassification> { [HeaderNames.Accept] = DataClassification.Unknown }, null!);
+        var reader = new HeaderReader(new Dictionary<string, DataClassification> { [HeaderNames.Accept] = DataClassification.Unknown }, null!, string.Empty);
         var listToFill = new List<KeyValuePair<string, object?>>();
-        reader.Read(new HeaderDictionary(), listToFill, string.Empty);
+        reader.Read(new HeaderDictionary(), listToFill);
         Assert.Empty(listToFill);
     }
 
     [Fact]
     public void ShouldAddHeaders_WhenHeadersCollectionNotEmpty()
     {
-        const string NormalizedHeader = "accept_charset";
+        const string Prefix = "prefix.";
+        const string NormalizedHeader = Prefix + "accept_charset";
 
         var headersToLog = new Dictionary<string, DataClassification>
         {
@@ -44,10 +45,7 @@ public class HeaderReaderTests
         };
 
         var reader = new HeaderReader(headersToLog, new FakeRedactorProvider(
-            new FakeRedactorOptions
-            {
-                RedactionFormat = "<redacted:{0}>"
-            }));
+            new FakeRedactorOptions { RedactionFormat = "<redacted:{0}>" }), Prefix);
 
         var headers = new Dictionary<string, StringValues>
         {
@@ -56,7 +54,7 @@ public class HeaderReaderTests
         };
 
         var listToFill = new List<KeyValuePair<string, object?>>();
-        reader.Read(new HeaderDictionary(headers), listToFill, string.Empty);
+        reader.Read(new HeaderDictionary(headers), listToFill);
 
         Assert.Single(listToFill);
 
