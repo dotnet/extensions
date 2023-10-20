@@ -75,5 +75,10 @@ namespace TestClasses
             this ILogger logger,
             [PrivateData] string userId,
             [LogProperties] ClassWithPrivateData param);
+
+        internal record class InlineRecord([PrivateData] string InlineProp);
+
+        [LoggerMessage(LogLevel.Error, "Record is: {rec}")]
+        public static partial void LogSensitiveRecord(ILogger logger, InlineRecord rec);
     }
 }

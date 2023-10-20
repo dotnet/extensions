@@ -174,4 +174,19 @@ public class LogPropertiesRedactionTests
 
         collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
     }
+
+    [Fact]
+    public void RedactsWhenSensitiveRecordIsInMessageTemplate()
+    {
+        using var logger = Utils.GetLogger();
+        var collector = logger.FakeLogCollector;
+
+        InlineRecord record = new("Secret data...");
+        LogSensitiveRecord(logger, record);
+
+        var logRecord = Assert.Single(collector.GetSnapshot());
+        Assert.Null(logRecord.Exception);
+        Assert.Equal(LogLevel.Error, logRecord.Level);
+        Assert.DoesNotContain("secret", logRecord.Message, System.StringComparison.OrdinalIgnoreCase);
+    }
 }
