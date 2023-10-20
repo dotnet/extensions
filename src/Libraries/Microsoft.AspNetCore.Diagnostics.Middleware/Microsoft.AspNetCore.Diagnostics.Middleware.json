@@ -31,7 +31,7 @@
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.Host",
           "Stage": "Stable",
-          "Value": "Host"
+          "Value": "server.address"
         },
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.Method",
@@ -51,7 +51,7 @@
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.RequestHeaderPrefix",
           "Stage": "Stable",
-          "Value": "RequestHeader."
+          "Value": "http.request.header."
         },
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.ResponseBody",
@@ -61,7 +61,7 @@
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.ResponseHeaderPrefix",
           "Stage": "Stable",
-          "Value": "ResponseHeader."
+          "Value": "http.response.header."
         },
         {
           "Member": "const string Microsoft.AspNetCore.Diagnostics.Logging.HttpLoggingTagNames.StatusCode",
