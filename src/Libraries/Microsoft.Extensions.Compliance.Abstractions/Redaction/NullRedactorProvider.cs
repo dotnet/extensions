@@ -16,5 +16,5 @@ public sealed class NullRedactorProvider : IRedactorProvider
     public static NullRedactorProvider Instance { get; } = new();
 
     /// <inheritdoc/>
-    public Redactor GetRedactor(DataClassification classification) => NullRedactor.Instance;
+    public Redactor GetRedactor(DataClassificationSet classifications) => NullRedactor.Instance;
 }

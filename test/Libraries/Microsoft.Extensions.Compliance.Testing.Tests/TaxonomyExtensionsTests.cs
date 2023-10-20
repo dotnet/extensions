@@ -16,6 +16,5 @@ public static class TaxonomyExtensionsTests
         Assert.Throws<ArgumentException>(() => dc.AsFakeTaxonomy());
 
         Assert.Equal(FakeTaxonomy.None, DataClassification.None.AsFakeTaxonomy());
-        Assert.Equal(FakeTaxonomy.Unknown, DataClassification.Unknown.AsFakeTaxonomy());
     }
 }

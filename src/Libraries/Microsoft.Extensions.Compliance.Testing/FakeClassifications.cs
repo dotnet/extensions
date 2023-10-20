@@ -18,10 +18,10 @@ public static class FakeClassifications
     /// <summary>
     /// Gets the private data classification.
     /// </summary>
-    public static DataClassification PrivateData => new(TaxonomyName, (ulong)FakeTaxonomy.PrivateData);
+    public static DataClassification PrivateData => new(TaxonomyName, (long)FakeTaxonomy.PrivateData);
 
     /// <summary>
     /// Gets the public data classification.
     /// </summary>
-    public static DataClassification PublicData => new(TaxonomyName, (ulong)FakeTaxonomy.PublicData);
+    public static DataClassification PublicData => new(TaxonomyName, (long)FakeTaxonomy.PublicData);
 }

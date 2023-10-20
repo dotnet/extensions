@@ -26,7 +26,7 @@ public static class FakeRedactionBuilderExtensions
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static IRedactionBuilder SetFakeRedactor(this IRedactionBuilder builder, params DataClassification[] classifications)
+    public static IRedactionBuilder SetFakeRedactor(this IRedactionBuilder builder, params DataClassificationSet[] classifications)
     {
         _ = Throw.IfNull(builder);
 
@@ -43,7 +43,7 @@ public static class FakeRedactionBuilderExtensions
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="configure"/> is <see langword="null"/>.</exception>
-    public static IRedactionBuilder SetFakeRedactor(this IRedactionBuilder builder, Action<FakeRedactorOptions> configure, params DataClassification[] classifications)
+    public static IRedactionBuilder SetFakeRedactor(this IRedactionBuilder builder, Action<FakeRedactorOptions> configure, params DataClassificationSet[] classifications)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
@@ -68,7 +68,7 @@ public static class FakeRedactionBuilderExtensions
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "The type is FakeRedactorOptions and we know it.")]
-    public static IRedactionBuilder SetFakeRedactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications)
+    public static IRedactionBuilder SetFakeRedactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassificationSet[] classifications)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);

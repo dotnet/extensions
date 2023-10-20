@@ -24,15 +24,15 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, params Microsoft.Extensions.Compliance.Classification.DataClassificationSet[] classifications);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, System.Action<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions> configure, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, System.Action<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions> configure, params Microsoft.Extensions.Compliance.Classification.DataClassificationSet[] classifications);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params Microsoft.Extensions.Compliance.Classification.DataClassificationSet[] classifications);",
           "Stage": "Stable"
         }
       ]
@@ -142,7 +142,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Compliance.Redaction.Redactor Microsoft.Extensions.Compliance.Testing.FakeRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "Microsoft.Extensions.Compliance.Redaction.Redactor Microsoft.Extensions.Compliance.Testing.FakeRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassificationSet classifications);",
           "Stage": "Stable"
         }
       ],
@@ -177,11 +177,6 @@
           "Member": "const Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.PublicData",
           "Stage": "Stable",
           "Value": "1"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.Unknown",
-          "Stage": "Stable",
-          "Value": "9223372036854775808"
         }
       ]
     },
@@ -268,7 +263,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Compliance.Testing.RedactorRequested.RedactorRequested(Microsoft.Extensions.Compliance.Classification.DataClassification classification, int sequenceNumber);",
+          "Member": "Microsoft.Extensions.Compliance.Testing.RedactorRequested.RedactorRequested(Microsoft.Extensions.Compliance.Classification.DataClassificationSet classifications, int sequenceNumber);",
           "Stage": "Stable"
         },
         {
@@ -298,7 +293,7 @@
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.RedactorRequested.DataClassification { get; }",
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassificationSet Microsoft.Extensions.Compliance.Testing.RedactorRequested.DataClassifications { get; }",
           "Stage": "Stable"
         },
         {

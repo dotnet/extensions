@@ -17,15 +17,15 @@ public partial class LoggerMessageState : ITagCollector
     }
 
     /// <inheritdoc />
-    void ITagCollector.Add(string tagName, object? tagValue, DataClassification classification)
+    void ITagCollector.Add(string tagName, object? tagValue, DataClassificationSet classifications)
     {
         string fullName = TagNamePrefix.Length > 0 ? TagNamePrefix + Separator + tagName : tagName;
-        AddClassifiedTag(fullName, tagValue, classification);
+        AddClassifiedTag(fullName, tagValue, classifications);
     }
 
     /// <summary>
     /// Gets or sets the parameter name that is prepended to all tag names added to this instance using the
-    /// <see cref="ITagCollector.Add(string, object?)"/> or <see cref="ITagCollector.Add(string, object?, DataClassification)"/>
+    /// <see cref="ITagCollector.Add(string, object?)"/> or <see cref="ITagCollector.Add(string, object?, DataClassificationSet)"/>
     /// methods.
     /// </summary>
     public string TagNamePrefix { get; set; } = string.Empty;

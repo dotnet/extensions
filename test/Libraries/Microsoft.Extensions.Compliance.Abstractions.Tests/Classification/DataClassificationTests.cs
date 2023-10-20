@@ -12,27 +12,27 @@ public static class DataClassificationTests
     public static void Basic()
     {
         const string TaxonomyName = "MyTaxonomy";
-        const ulong Mask = 123;
+        const long Value = 123;
 
-        var dc = new DataClassification(TaxonomyName, Mask);
+        var dc = new DataClassification(TaxonomyName, Value);
         Assert.Equal(TaxonomyName, dc.TaxonomyName);
-        Assert.Equal(Mask, dc.Value);
+        Assert.Equal(Value, dc.Value);
 
-        Assert.True(dc == new DataClassification(TaxonomyName, Mask));
-        Assert.False(dc != new DataClassification(TaxonomyName, Mask));
+        Assert.True(dc == new DataClassification(TaxonomyName, Value));
+        Assert.False(dc != new DataClassification(TaxonomyName, Value));
 
-        Assert.True(dc != new DataClassification(TaxonomyName + "x", Mask));
-        Assert.False(dc == new DataClassification(TaxonomyName + "x", Mask));
+        Assert.True(dc != new DataClassification(TaxonomyName + "x", Value));
+        Assert.False(dc == new DataClassification(TaxonomyName + "x", Value));
 
-        Assert.True(dc != new DataClassification(TaxonomyName, Mask + 1));
-        Assert.False(dc == new DataClassification(TaxonomyName, Mask + 1));
+        Assert.True(dc != new DataClassification(TaxonomyName, Value + 1));
+        Assert.False(dc == new DataClassification(TaxonomyName, Value + 1));
 
         Assert.True(dc.Equals((object)dc));
         Assert.False(dc.Equals(new object()));
 
         Assert.Equal(dc.GetHashCode(), dc.GetHashCode());
-        Assert.NotEqual(dc.GetHashCode(), new DataClassification(TaxonomyName + "X", Mask).GetHashCode());
-        Assert.NotEqual(dc.GetHashCode(), new DataClassification(TaxonomyName, Mask + 1).GetHashCode());
+        Assert.NotEqual(dc.GetHashCode(), new DataClassification(TaxonomyName + "X", Value).GetHashCode());
+        Assert.NotEqual(dc.GetHashCode(), new DataClassification(TaxonomyName, Value + 1).GetHashCode());
     }
 
     [Fact]
@@ -43,40 +43,13 @@ public static class DataClassificationTests
     }
 
     [Fact]
-    public static void Combine()
-    {
-        const string TaxonomyName = "MyTaxonomy";
-        const ulong Mask1 = 0x0123;
-        const ulong Mask2 = 0x8000;
-
-        var dc1 = new DataClassification(TaxonomyName, Mask1);
-        var dc2 = new DataClassification(TaxonomyName, Mask2);
-
-        Assert.Equal(Mask1 | Mask2, (dc1 | dc2).Value);
-        Assert.Equal(Mask1 | Mask2, (dc2 | dc1).Value);
-        Assert.Throws<ArgumentException>(() => dc1 | new DataClassification(TaxonomyName + "X", Mask2));
-
-        Assert.Equal(DataClassification.UnknownTaxonomyValue, (dc1 | DataClassification.Unknown).Value);
-        Assert.Equal(string.Empty, (dc1 | DataClassification.Unknown).TaxonomyName);
-
-        Assert.Equal(dc1.Value, (dc1 | DataClassification.None).Value);
-        Assert.Equal(dc1.TaxonomyName, (dc1 | DataClassification.None).TaxonomyName);
-
-        Assert.Equal(DataClassification.UnknownTaxonomyValue, (DataClassification.Unknown | dc1).Value);
-        Assert.Equal(string.Empty, (dc1 | DataClassification.Unknown).TaxonomyName);
-
-        Assert.Equal(dc1.Value, (DataClassification.None | dc1).Value);
-        Assert.Equal(dc1.TaxonomyName, (DataClassification.None | dc1).TaxonomyName);
-    }
-
-    [Fact]
     public static void ToStringOutput()
     {
         const string TaxonomyName = "MyTaxonomy";
-        const ulong Mask = 0x0123;
+        const long Value = 0x0123;
 
-        var dc = new DataClassification(TaxonomyName, Mask);
+        var dc = new DataClassification(TaxonomyName, Value);
 
-        Assert.Equal($"{TaxonomyName}:{Mask:x}", dc.ToString());
+        Assert.Equal($"{TaxonomyName}:{Value:x}", dc.ToString());
     }
 }

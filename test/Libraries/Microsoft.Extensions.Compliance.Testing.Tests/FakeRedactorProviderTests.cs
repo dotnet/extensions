@@ -24,6 +24,6 @@ public class FakeRedactorProviderTests
         var rp = new FakeRedactorProvider();
         var dc = new DataClassification("TAX", 1);
         rp.GetRedactor(dc);
-        Assert.Equal(dc, rp.Collector.LastRedactorRequested.DataClassification);
+        Assert.Equal(dc, rp.Collector.LastRedactorRequested.DataClassifications);
     }
 }
