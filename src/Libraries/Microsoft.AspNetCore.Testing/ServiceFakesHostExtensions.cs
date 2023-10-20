@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Hosting;
@@ -20,7 +19,6 @@ namespace Microsoft.Extensions.Hosting;
 /// <summary>
 /// Extension methods supporting Kestrel server unit testing scenarios.
 /// </summary>
-[Experimental(diagnosticId: Experiments.AspNetTesting, UrlFormat = Experiments.UrlFormat)]
 public static class ServiceFakesHostExtensions
 {
     private static readonly Func<Uri, bool> _defaultAddressFilter = static _ => true;

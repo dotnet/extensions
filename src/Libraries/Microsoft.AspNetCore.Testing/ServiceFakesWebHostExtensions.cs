@@ -6,7 +6,6 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.AspNetCore.Hosting;
@@ -14,7 +13,6 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// Extension methods supporting Kestrel server unit testing scenarios.
 /// </summary>
-[Experimental(diagnosticId: Experiments.AspNetTesting, UrlFormat = Experiments.UrlFormat)]
 public static class ServiceFakesWebHostExtensions
 {
     /// <summary>

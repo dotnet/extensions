@@ -31,5 +31,4 @@ internal static class Experiments
     internal const string DocumentDb = "EXTEXP0011";
     internal const string AutoActivation = "EXTEXP0012";
     internal const string HttpLogging = "EXTEXP0013";
-    internal const string AspNetTesting = "EXTEXP0014";
 }
