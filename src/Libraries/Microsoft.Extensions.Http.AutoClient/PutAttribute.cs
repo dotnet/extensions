@@ -34,7 +34,7 @@ public sealed class PutAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="PutAttribute"/> class.
     /// </summary>
-    /// <param name="path">The path of the request.</param>
+    /// <param name="path">The path of the request. Cannot be empty or null.</param>
     public PutAttribute(string path)
     {
         Path = path;

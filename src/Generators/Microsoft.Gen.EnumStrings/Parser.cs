@@ -211,12 +211,17 @@ internal sealed class Parser
                         members = members.Distinct(new EntryComparer());
                     }
 
+                    var resultingNamespace = nspace ??
+                        (enumType.ContainingNamespace.IsGlobalNamespace
+                            ? string.Empty
+                            : enumType.ContainingNamespace.ToString());
+
                     results.Add(new ToStringMethod(
                         enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                         members.Select(kvp => kvp.Key).ToList(),
                         members.Select(kvp => kvp.Value).ToList(),
                         flags,
-                        nspace ?? enumType.ContainingNamespace.ToString(),
+                        resultingNamespace,
                         className ?? enumType.Name + "Extensions",
                         methodName ?? "ToInvariantString",
                         classModifiers ?? "internal static",

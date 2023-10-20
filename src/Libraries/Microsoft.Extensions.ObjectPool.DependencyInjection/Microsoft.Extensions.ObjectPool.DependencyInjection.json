@@ -18,23 +18,23 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions",
+      "Type": "static class Microsoft.Extensions.DependencyInjection.ObjectPoolServiceCollectionExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions.AddPooled<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions>? configure = null);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ObjectPoolServiceCollectionExtensions.AddPooled<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions>? configure = null);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions.AddPooled<TService, TImplementation>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions>? configure = null);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ObjectPoolServiceCollectionExtensions.AddPooled<TService, TImplementation>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions>? configure = null);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions.ConfigurePool<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions> configure);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ObjectPoolServiceCollectionExtensions.ConfigurePool<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.Extensions.ObjectPool.DependencyInjectionPoolOptions> configure);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.ObjectPool.ObjectPoolServiceCollectionExtensions.ConfigurePools(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ObjectPoolServiceCollectionExtensions.ConfigurePools(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, Microsoft.Extensions.Configuration.IConfigurationSection section);",
           "Stage": "Stable"
         }
       ]

@@ -4,27 +4,28 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
-using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Compliance.Redaction;
 
 /// <summary>
-/// Extensions to add redactors to a redaction builder.
+/// Extensions to configure specific redactors.
 /// </summary>
-public static class RedactionBuilderExtensions
+public static class RedactionExtensions
 {
     /// <summary>
-    /// Sets the xxHash3 redactor to use for a set of data classes.
+    /// Sets the HMAC redactor to use for a set of data classes.
     /// </summary>
     /// <param name="builder">The builder to attach the redactor to.</param>
     /// <param name="configure">Configuration function.</param>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="configure" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
-    public static IRedactionBuilder SetXxHash3Redactor(this IRedactionBuilder builder, Action<XxHash3RedactorOptions> configure, params DataClassification[] classifications)
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Compliance, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static IRedactionBuilder SetHmacRedactor(this IRedactionBuilder builder, Action<HmacRedactorOptions> configure, params DataClassification[] classifications)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
@@ -32,35 +33,36 @@ public static class RedactionBuilderExtensions
 
         _ = builder
                 .Services
-                .AddOptions<XxHash3RedactorOptions>()
+                .AddOptionsWithValidateOnStart<HmacRedactorOptions, HmacRedactorOptionsValidator>()
                 .Configure(configure);
 
-        return builder.SetRedactor<XxHash3Redactor>(classifications);
+        return builder.SetRedactor<HmacRedactor>(classifications);
     }
 
     /// <summary>
-    /// Sets the xxHash3 redactor to use for a set of data classes.
+    /// Sets the HMAC redactor to use for a set of data classes.
     /// </summary>
     /// <param name="builder">The builder to attach the redactor to.</param>
     /// <param name="section">Configuration section.</param>
     /// <param name="classifications">The data classes for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="section" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(XxHash3RedactorOptions))]
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Compliance, UrlFormat = DiagnosticIds.UrlFormat)]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HmacRedactorOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Addressed with [DynamicDependency]")]
-    public static IRedactionBuilder SetXxHash3Redactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications)
+    public static IRedactionBuilder SetHmacRedactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
         _ = Throw.IfNull(classifications);
 
         _ = builder
-                .Services.AddOptions<XxHash3RedactorOptions>()
-                .Services.Configure<XxHash3RedactorOptions>(section);
+                .Services.AddOptionsWithValidateOnStart<HmacRedactorOptions, HmacRedactorOptionsValidator>()
+                .Services.Configure<HmacRedactorOptions>(section);
 
-        return builder.SetRedactor<XxHash3Redactor>(classifications);
+        return builder.SetRedactor<HmacRedactor>(classifications);
     }
 }

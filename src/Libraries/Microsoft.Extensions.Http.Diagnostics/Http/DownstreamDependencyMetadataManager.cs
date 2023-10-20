@@ -100,24 +100,27 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
         var trieCurrent = routeMetadataTrieRoot;
         trieCurrent.Parent = trieCurrent;
 
-        ReadOnlySpan<char> requestRouteAsSpan;
+        ReadOnlySpan<char> requestRouteAsSpan = routeMetadata.RequestRoute.AsSpan();
 
-        if (routeMetadata.RequestRoute[0] != '/')
+        if (requestRouteAsSpan.Length > 0)
         {
-            requestRouteAsSpan = $"/{routeMetadata.RequestRoute}".AsSpan();
-        }
-        else if (routeMetadata.RequestRoute.StartsWith("//", StringComparison.OrdinalIgnoreCase))
-        {
-            requestRouteAsSpan = routeMetadata.RequestRoute.AsSpan(1);
+            if (requestRouteAsSpan[0] != '/')
+            {
+                requestRouteAsSpan = $"/{routeMetadata.RequestRoute}".AsSpan();
+            }
+            else if (requestRouteAsSpan.StartsWith("//".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                requestRouteAsSpan = requestRouteAsSpan.Slice(1);
+            }
+
+            if (requestRouteAsSpan.Length > 1 && requestRouteAsSpan[requestRouteAsSpan.Length - 1] == '/')
+            {
+                requestRouteAsSpan = requestRouteAsSpan.Slice(0, requestRouteAsSpan.Length - 1);
+            }
         }
         else
         {
-            requestRouteAsSpan = routeMetadata.RequestRoute.AsSpan();
-        }
-
-        if (requestRouteAsSpan[requestRouteAsSpan.Length - 1] == '/')
-        {
-            requestRouteAsSpan = requestRouteAsSpan.Slice(0, requestRouteAsSpan.Length - 1);
+            requestRouteAsSpan = "/".AsSpan();
         }
 
         var route = _routeRegex.Replace(requestRouteAsSpan.ToString(), "*");
@@ -349,19 +352,19 @@ internal sealed class DownstreamDependencyMetadataManager : IDownstreamDependenc
             return hostMetadata.RequestMetadata;
         }
 
-        ReadOnlySpan<char> requestRouteAsSpan;
-        if (requestPath[requestPath.Length - 1] == '/')
-        {
-            requestRouteAsSpan = requestPath.AsSpan(0, requestPath.Length - 1);
-        }
-        else
-        {
-            requestRouteAsSpan = requestPath.AsSpan();
-        }
+        ReadOnlySpan<char> requestRouteAsSpan = requestPath.AsSpan();
 
-        if (requestPath.StartsWith("//", StringComparison.OrdinalIgnoreCase))
+        if (requestRouteAsSpan.Length > 1)
         {
-            requestRouteAsSpan = requestRouteAsSpan.Slice(1);
+            if (requestRouteAsSpan[requestRouteAsSpan.Length - 1] == '/')
+            {
+                requestRouteAsSpan = requestRouteAsSpan.Slice(0, requestRouteAsSpan.Length - 1);
+            }
+
+            if (requestRouteAsSpan.StartsWith("//".AsSpan(), StringComparison.OrdinalIgnoreCase))
+            {
+                requestRouteAsSpan = requestRouteAsSpan.Slice(1);
+            }
         }
 
         var trieCurrent = routeMetadataTrieRoot.Nodes[0];

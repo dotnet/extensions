@@ -8,7 +8,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Telemetry.Internal;
 
-internal static class TelemetryCommonExtensions2
+internal static class TelemetryCommonHttpExtensions
 {
     public static IServiceCollection AddHttpHeadersRedactor(this IServiceCollection services)
     {

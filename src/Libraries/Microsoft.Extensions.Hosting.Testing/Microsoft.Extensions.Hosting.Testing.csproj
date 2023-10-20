@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Hosting</RootNamespace>
-    <Description>Testing for integration test hosting and related test oriented helpers</Description>
+    <Description>Tools for integration testing of apps built with Microsoft.Extensions.Hosting</Description>
     <Workstream>Fundamentals</Workstream>
     <PackageTags>$(PackageTags);Testing</PackageTags>
   </PropertyGroup>

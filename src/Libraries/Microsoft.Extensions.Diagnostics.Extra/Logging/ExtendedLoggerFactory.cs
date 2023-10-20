@@ -21,6 +21,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private readonly IDisposable? _filterOptionsChangeTokenRegistration;
     private readonly LoggerFactoryOptions _factoryOptions;
     private readonly IDisposable? _enrichmentOptionsChangeTokenRegistration;
+    private readonly IDisposable? _redactionOptionsChangeTokenRegistration;
     private readonly Action<IEnrichmentTagCollector>[] _enrichers;
     private readonly KeyValuePair<string, object?>[] _staticTags;
     private readonly Func<DataClassification, Redactor> _redactorProvider;
@@ -63,7 +64,8 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         RefreshFilters(filterOptions.CurrentValue);
 
         _enrichers = enrichers.Select<ILogEnricher, Action<IEnrichmentTagCollector>>(e => e.Enrich).ToArray();
-        _enrichmentOptionsChangeTokenRegistration = enrichmentOptions?.OnChange(UpdateStackTraceOptions);
+        _enrichmentOptionsChangeTokenRegistration = enrichmentOptions?.OnChange(UpdateEnrichmentOptions);
+        _redactionOptionsChangeTokenRegistration = redactionOptions?.OnChange(UpdateRedactionOptions);
 
         var provider = redactionOptions != null && redactorProvider != null
             ? redactorProvider
@@ -77,8 +79,8 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
             enricher.Enrich(collector);
         }
 
-        _staticTags = tags.ToArray();
-        Config = ComputeConfig(enrichmentOptions?.CurrentValue);
+        _staticTags = [.. tags];
+        Config = ComputeConfig(enrichmentOptions?.CurrentValue, redactionOptions?.CurrentValue);
     }
 
     public void Dispose()
@@ -89,6 +91,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
 
             _filterOptionsChangeTokenRegistration?.Dispose();
             _enrichmentOptionsChangeTokenRegistration?.Dispose();
+            _redactionOptionsChangeTokenRegistration?.Dispose();
 
             foreach (ProviderRegistration registration in _providerRegistrations)
             {
@@ -248,20 +251,39 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     /// </remarks>
     internal LoggerConfig Config { get; private set; }
 
-    private LoggerConfig ComputeConfig(LoggerEnrichmentOptions? enrichmentOptions)
+    private LoggerConfig ComputeConfig(LoggerEnrichmentOptions? enrichmentOptions, LoggerRedactionOptions? redactionOptions)
     {
-        return enrichmentOptions == null
-            ? new(Array.Empty<KeyValuePair<string, object?>>(), Array.Empty<Action<IEnrichmentTagCollector>>(), false, false, false, 0, _redactorProvider)
-            : new(_staticTags,
+        if (enrichmentOptions == null)
+        {
+            enrichmentOptions = new LoggerEnrichmentOptions
+            {
+                CaptureStackTraces = Config.CaptureStackTraces,
+                UseFileInfoForStackTraces = Config.UseFileInfoForStackTraces,
+                IncludeExceptionMessage = Config.IncludeExceptionMessage,
+                MaxStackTraceLength = Config.MaxStackTraceLength,
+            };
+        }
+
+        if (redactionOptions == null)
+        {
+            redactionOptions = new LoggerRedactionOptions
+            {
+                ApplyDiscriminator = Config.AddRedactionDiscriminator,
+            };
+        }
+
+        return new(_staticTags,
                 _enrichers,
                 enrichmentOptions.CaptureStackTraces,
                 enrichmentOptions.UseFileInfoForStackTraces,
-                enrichmentOptions.IncludeExceptionMessageInStackTraces,
+                enrichmentOptions.IncludeExceptionMessage,
                 enrichmentOptions.MaxStackTraceLength,
-                _redactorProvider);
+                _redactorProvider,
+                redactionOptions.ApplyDiscriminator);
     }
 
-    private void UpdateStackTraceOptions(LoggerEnrichmentOptions enrichmentOptions) => Config = ComputeConfig(enrichmentOptions);
+    private void UpdateEnrichmentOptions(LoggerEnrichmentOptions enrichmentOptions) => Config = ComputeConfig(enrichmentOptions, null);
+    private void UpdateRedactionOptions(LoggerRedactionOptions redactionOptions) => Config = ComputeConfig(null, redactionOptions);
 
     private struct ProviderRegistration
     {

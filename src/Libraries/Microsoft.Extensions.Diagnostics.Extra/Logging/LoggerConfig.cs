@@ -11,29 +11,34 @@ namespace Microsoft.Extensions.Logging;
 
 internal sealed class LoggerConfig
 {
+#pragma warning disable S107 // Methods should not have too many parameters
     public LoggerConfig(
         KeyValuePair<string, object?>[] staticTags,
         Action<IEnrichmentTagCollector>[] enrichers,
         bool captureStackTraces,
         bool useFileInfoForStackTraces,
-        bool includeExceptionMessagesInStackTraces,
+        bool includeExceptionMessage,
         int maxStackTraceLength,
-        Func<DataClassification, Redactor> getRedactor)
+        Func<DataClassification, Redactor> getRedactor,
+        bool addRedactionDiscriminator)
     {
+#pragma warning restore S107 // Methods should not have too many parameters
         StaticTags = staticTags;
         Enrichers = enrichers;
         CaptureStackTraces = captureStackTraces;
         UseFileInfoForStackTraces = useFileInfoForStackTraces;
         MaxStackTraceLength = maxStackTraceLength;
-        IncludeExceptionMessageInStackTraces = includeExceptionMessagesInStackTraces;
+        IncludeExceptionMessage = includeExceptionMessage;
         GetRedactor = getRedactor;
+        AddRedactionDiscriminator = addRedactionDiscriminator;
     }
 
     public KeyValuePair<string, object?>[] StaticTags { get; }
     public Action<IEnrichmentTagCollector>[] Enrichers { get; }
     public bool CaptureStackTraces { get; }
     public bool UseFileInfoForStackTraces { get; }
-    public bool IncludeExceptionMessageInStackTraces { get; }
+    public bool IncludeExceptionMessage { get; }
     public int MaxStackTraceLength { get; }
     public Func<DataClassification, Redactor> GetRedactor { get; }
+    public bool AddRedactionDiscriminator { get; }
 }

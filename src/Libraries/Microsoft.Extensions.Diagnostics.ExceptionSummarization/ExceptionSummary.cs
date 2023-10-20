@@ -13,7 +13,10 @@ namespace Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 /// Metric tags typically support a limited number of distinct values, and as such they are not suitable
 /// to represent values which are highly variable, such as the result of <see cref="Exception.ToString"/>.
 /// An exception summary represents a low-cardinality version of an exception's information, suitable for such
-/// cases. The summary never includes sensitive information.
+/// cases.
+/// 
+/// The <see cref="ExceptionSummary.Description"/> property never include sensitive information.
+/// But the <see cref="ExceptionSummary.AdditionalDetails"/> property might contain sensitive information and should thus not be used in telemetry.
 /// </remarks>
 public readonly struct ExceptionSummary : IEquatable<ExceptionSummary>
 {
@@ -42,14 +45,18 @@ public readonly struct ExceptionSummary : IEquatable<ExceptionSummary>
     /// <summary>
     /// Gets the summary description of the exception.
     /// </summary>
+    /// <remarks>
+    /// This is a low cardinality string suitable for use as a metric dimension, and it is guaranteed not to
+    /// contain privacy-sensitive information.
+    /// </remarks>
     public string Description { get; }
 
     /// <summary>
     /// Gets the additional details of the exception.
     /// </summary>
     /// <remarks>
-    /// This string can have a relatively high cardinality and is therefore not suitable as a metric dimension. It
-    /// is primarily intended for use in low-level diagnostics.
+    /// This string can have a relatively high cardinality and may contain privacy-sensitive information and is therefore not suitable
+    /// as a metric dimension. It is primarily intended for use in low-level diagnostics.
     /// </remarks>
     public string AdditionalDetails { get; }
 
@@ -66,6 +73,9 @@ public readonly struct ExceptionSummary : IEquatable<ExceptionSummary>
     /// Gets a string representation of this object.
     /// </summary>
     /// <returns>A string representing this object.</returns>
+    /// <remarks>
+    /// The string returned by this call is not suitable to be used in telemetry as it may contain privacy-sensitive information.
+    /// </remarks>
     public override string ToString()
     {
         return AdditionalDetails.Length == 0

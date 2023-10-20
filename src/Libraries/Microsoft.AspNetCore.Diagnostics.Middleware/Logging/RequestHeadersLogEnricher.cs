@@ -46,31 +46,38 @@ internal sealed class RequestHeadersLogEnricher : ILogEnricher
 
     public void Enrich(IEnrichmentTagCollector collector)
     {
-        if (_httpContextAccessor.HttpContext?.Request == null)
+        try
         {
-            return;
-        }
-
-        var request = _httpContextAccessor.HttpContext.Request;
-
-        if (_headersDataClasses.Length == 0)
-        {
-            return;
-        }
-
-        if (_headersDataClasses.Length != 0)
-        {
-            for (int i = 0; i < _headersDataClasses.Length; i++)
+            if (_httpContextAccessor.HttpContext?.Request == null)
             {
-                var header = _headersDataClasses[i];
+                return;
+            }
 
-                if (request.Headers.TryGetValue(header.Key, out var headerValue) && !string.IsNullOrEmpty(headerValue))
+            var request = _httpContextAccessor.HttpContext.Request;
+
+            if (_headersDataClasses.Length == 0)
+            {
+                return;
+            }
+
+            if (_headersDataClasses.Length != 0)
+            {
+                for (int i = 0; i < _headersDataClasses.Length; i++)
                 {
-                    var redactor = _redactorProvider!.GetRedactor(header.Value);
-                    var redacted = redactor.Redact(headerValue);
-                    collector.Add(_normalizedHeaders[i], redacted);
+                    var header = _headersDataClasses[i];
+
+                    if (request.Headers.TryGetValue(header.Key, out var headerValue) && !string.IsNullOrEmpty(headerValue))
+                    {
+                        var redactor = _redactorProvider!.GetRedactor(header.Value);
+                        var redacted = redactor.Redact(headerValue);
+                        collector.Add(_normalizedHeaders[i], redacted);
+                    }
                 }
             }
+        }
+        catch (ObjectDisposedException)
+        {
+            // Noop.
         }
     }
 }

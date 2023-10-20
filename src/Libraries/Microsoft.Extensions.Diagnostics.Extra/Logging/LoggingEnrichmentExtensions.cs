@@ -32,6 +32,7 @@ public static class LoggingEnrichmentExtensions
     public static ILoggingBuilder EnableEnrichment(this ILoggingBuilder builder, Action<LoggerEnrichmentOptions> configure)
     {
         _ = Throw.IfNull(builder);
+        _ = Throw.IfNull(configure);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
         _ = builder.Services.Configure(configure);
@@ -49,6 +50,7 @@ public static class LoggingEnrichmentExtensions
     public static ILoggingBuilder EnableEnrichment(this ILoggingBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
+        _ = Throw.IfNull(section);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerFactory, ExtendedLoggerFactory>());
         _ = builder.Services.AddOptionsWithValidateOnStart<LoggerEnrichmentOptions, LoggerEnrichmentOptionsValidator>().Bind(section);

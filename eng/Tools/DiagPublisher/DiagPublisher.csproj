@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>$(LatestTargetFramework)</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\src\Generators\Shared\DiagDescriptorsBase.cs" Link="Shared\DiagDescriptorsBase.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Analyzers\Microsoft.Analyzers.Extra\Microsoft.Analyzers.Extra.csproj" />
+    <ProjectReference Include="..\..\..\src\Generators\Microsoft.Gen.AutoClient\Microsoft.Gen.AutoClient.csproj" />
+    <ProjectReference Include="..\..\..\src\Generators\Microsoft.Gen.ContextualOptions\Microsoft.Gen.ContextualOptions.csproj" />
+    <ProjectReference Include="..\..\..\src\Generators\Microsoft.Gen.EnumStrings\Microsoft.Gen.EnumStrings.csproj" />
+    <ProjectReference Include="..\..\..\src\Generators\Microsoft.Gen.Logging\Microsoft.Gen.Logging.csproj" />
+    <ProjectReference Include="..\..\..\src\Generators\Microsoft.Gen.Metrics\Microsoft.Gen.Metrics.csproj" />
+  </ItemGroup>
+
+</Project>
