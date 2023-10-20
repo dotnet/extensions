@@ -285,6 +285,9 @@ public partial class AcceptanceTests
             {
                 const string Content = "Client: hello!";
 
+                const string NormalizedRequestHeader = "accept";
+                const string NormalizedResponseHeader = "transfer_encoding";
+
                 using var request = new HttpRequestMessage(HttpMethod.Post, "/")
                 {
                     Content = new StringContent(Content)
@@ -313,7 +316,7 @@ public partial class AcceptanceTests
                 Assert.DoesNotContain(requestState, x => x.Key.StartsWith(HttpLoggingTagNames.ResponseHeaderPrefix));
                 Assert.DoesNotContain(requestState, x => x.Key == HttpLoggingTagNames.StatusCode);
                 Assert.DoesNotContain(requestState, x => x.Key == HttpLoggingTagNames.Duration);
-                Assert.Single(requestState, x => x.Key == HttpLoggingTagNames.RequestHeaderPrefix + HeaderNames.Accept);
+                Assert.Single(requestState, x => x.Key == HttpLoggingTagNames.RequestHeaderPrefix + NormalizedRequestHeader);
                 Assert.Single(requestState, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
                 Assert.Single(requestState, x => x.Key == HttpLoggingTagNames.Path && x.Value == TelemetryConstants.Unknown);
                 Assert.Single(requestState, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Post.ToString());
@@ -323,7 +326,7 @@ public partial class AcceptanceTests
                 Assert.Single(requestBodyState, x => x.Key == "Body" && x.Value == Content);
 
                 Assert.Equal(2, responseState!.Count);
-                Assert.Single(responseState, x => x.Key == HttpLoggingTagNames.ResponseHeaderPrefix + HeaderNames.TransferEncoding);
+                Assert.Single(responseState, x => x.Key == HttpLoggingTagNames.ResponseHeaderPrefix + NormalizedResponseHeader);
                 Assert.Single(responseState, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
 
                 Assert.Equal(2, responseBodyState!.Count);
@@ -346,6 +349,9 @@ public partial class AcceptanceTests
             }),
             async static (logCollector, client) =>
             {
+                const string NormalizedRequestHeader = "accept";
+                const string NormalizedResponseHeader = "transfer_encoding";
+
                 using var httpMessage = new HttpRequestMessage(HttpMethod.Get, "/");
                 httpMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
 
@@ -365,8 +371,8 @@ public partial class AcceptanceTests
                 var state = lastRecord.StructuredState;
 
                 Assert.Equal(9, state!.Count);
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.RequestHeaderPrefix + HeaderNames.Accept);
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.ResponseHeaderPrefix + HeaderNames.TransferEncoding);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.RequestHeaderPrefix + NormalizedRequestHeader);
+                Assert.Single(state, x => x.Key == HttpLoggingTagNames.ResponseHeaderPrefix + NormalizedResponseHeader);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Host && !string.IsNullOrEmpty(x.Value));
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.Path && x.Value == TelemetryConstants.Unknown);
                 Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
@@ -378,10 +384,10 @@ public partial class AcceptanceTests
                 Assert.DoesNotContain(state, x => x.Key == HttpLoggingTagNames.RequestBody);
                 Assert.DoesNotContain(state, x => x.Key == HttpLoggingTagNames.ResponseBody);
                 Assert.DoesNotContain(state, x =>
-                    x.Key.StartsWith(HttpLoggingTagNames.RequestHeaderPrefix) && !x.Key.EndsWith(HeaderNames.Accept));
+                    x.Key.StartsWith(HttpLoggingTagNames.RequestHeaderPrefix) && !x.Key.EndsWith(NormalizedRequestHeader));
 
                 Assert.DoesNotContain(state, x =>
-                    x.Key.StartsWith(HttpLoggingTagNames.ResponseHeaderPrefix) && !x.Key.EndsWith(HeaderNames.TransferEncoding));
+                    x.Key.StartsWith(HttpLoggingTagNames.ResponseHeaderPrefix) && !x.Key.EndsWith(NormalizedResponseHeader));
             });
     }
 

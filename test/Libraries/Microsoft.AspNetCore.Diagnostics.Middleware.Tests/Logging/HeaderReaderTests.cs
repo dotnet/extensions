@@ -36,11 +36,22 @@ public class HeaderReaderTests
     [Fact]
     public void ShouldAddHeaders_WhenHeadersCollectionNotEmpty()
     {
-        var headersToLog = new Dictionary<string, DataClassification> { [HeaderNames.Accept] = DataClassification.Unknown };
-        var reader = new HeaderReader(headersToLog, new FakeRedactorProvider(new FakeRedactorOptions { RedactionFormat = "<redacted:{0}>" }));
+        const string NormalizedHeader = "accept_charset";
+
+        var headersToLog = new Dictionary<string, DataClassification>
+        {
+            [HeaderNames.AcceptCharset] = DataClassification.Unknown
+        };
+
+        var reader = new HeaderReader(headersToLog, new FakeRedactorProvider(
+            new FakeRedactorOptions
+            {
+                RedactionFormat = "<redacted:{0}>"
+            }));
+
         var headers = new Dictionary<string, StringValues>
         {
-            [HeaderNames.Accept] = MediaTypeNames.Text.Xml,
+            [HeaderNames.AcceptCharset] = MediaTypeNames.Text.Xml,
             [HeaderNames.ContentType] = MediaTypeNames.Application.Pdf
         };
 
@@ -50,7 +61,7 @@ public class HeaderReaderTests
         Assert.Single(listToFill);
 
         var redacted = listToFill[0];
-        Assert.Equal(HeaderNames.Accept, redacted.Key);
+        Assert.Equal(NormalizedHeader, redacted.Key);
         Assert.Equal($"<redacted:{MediaTypeNames.Text.Xml}>", redacted.Value);
     }
 }

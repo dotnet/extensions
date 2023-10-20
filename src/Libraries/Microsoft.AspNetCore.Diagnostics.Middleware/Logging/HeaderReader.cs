@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Compliance.Classification;
@@ -48,15 +47,13 @@ internal sealed class HeaderReader
         }
     }
 
-    [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase",
-        Justification = "Normalization to lower case is required by OTel's semantic conventions")]
     private static string[] NormalizeHeaders(KeyValuePair<string, DataClassification>[] headers)
     {
         var normalizedHeaders = new string[headers.Length];
 
         for (int i = 0; i < headers.Length; i++)
         {
-            normalizedHeaders[i] = headers[i].Key.ToLowerInvariant().Replace('-', '_');
+            normalizedHeaders[i] = HeaderNormalizer.Normalize(headers[i].Key);
         }
 
         return normalizedHeaders;
