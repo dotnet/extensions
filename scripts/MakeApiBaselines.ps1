@@ -10,14 +10,18 @@ if ($PSVersionTable.PSVersion.Major -lt 6) {
     exit
 }
 
+Write-Output "Installing required toolset"
+
+. $PSScriptRoot/../eng/common/tools.ps1
+InitializeDotNetCli -install $true | Out-Null
+
 $Project = $PSScriptRoot + "/../eng/Tools/ApiChief/ApiChief.csproj"
 $Command = $PSScriptRoot + "/../artifacts/bin/ApiChief/Debug/net8.0/ApiChief.dll"
-$DotnetCommand = $PSScriptRoot + "/../.dotnet/dotnet"
 $LibrariesFolder = $PSScriptRoot + "/../src/Libraries"
 
 Write-Output "Building ApiChief tool"
 
-& $DotnetCommand build $Project --nologo --verbosity q
+dotnet build $Project --nologo --verbosity q
 
 Write-Output "Creating API baseline files in the src/Libraries folder"
 
@@ -26,5 +30,5 @@ Get-ChildItem -Path $LibrariesFolder -Depth 1 -Include *.csproj | ForEach-Object
     $name = Split-Path $_.FullName -LeafBase
     $path = "$PSScriptRoot\..\artifacts\bin\$name\Debug\net8.0\$name.dll"
     Write-Host "  Processing" $name
-    & $DotnetCommand $Command $path emit baseline -o "$LibrariesFolder/$name/$name.json"
+    dotnet $Command $path emit baseline -o "$LibrariesFolder/$name/$name.json"
 }
