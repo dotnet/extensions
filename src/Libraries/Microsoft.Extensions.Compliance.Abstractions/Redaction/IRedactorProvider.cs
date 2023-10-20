@@ -13,7 +13,7 @@ public interface IRedactorProvider
     /// <summary>
     /// Gets the redactor configured to handle the specified data class.
     /// </summary>
-    /// <param name="classification">Data classification of the data to redact.</param>
+    /// <param name="classifications">Data classifications of the data to redact.</param>
     /// <returns>A redactor suitable to redact data of the given class.</returns>
-    Redactor GetRedactor(DataClassification classification);
+    Redactor GetRedactor(DataClassificationSet classifications);
 }

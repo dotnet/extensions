@@ -30,16 +30,16 @@ public partial class LoggerMessageState
         /// <summary>
         /// Gets the tag's data classification.
         /// </summary>
-        public readonly DataClassification Classification { get; }
+        public readonly DataClassificationSet Classifications { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ClassifiedTag"/> struct.
         /// </summary>
-        public ClassifiedTag(string name, object? value, DataClassification classification)
+        public ClassifiedTag(string name, object? value, DataClassificationSet classifications)
         {
             Name = name;
             Value = value;
-            Classification = classification;
+            Classifications = classifications;
         }
     }
 }

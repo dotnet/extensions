@@ -219,7 +219,7 @@ public class RedactionFakesAcceptanceTests
         Assert.Equal(redacted, collector.AllRedactedData[0].Redacted);
 
         Assert.Equal(1, collector.LastRedactorRequested.SequenceNumber);
-        Assert.Equal(dc, collector.LastRedactorRequested.DataClassification);
+        Assert.Equal(dc, collector.LastRedactorRequested.DataClassifications);
         Assert.Equal(1, collector.AllRedactorRequests.Count);
     }
 
@@ -251,7 +251,7 @@ public class RedactionFakesAcceptanceTests
 
         var redacted = r.Redact("dddd");
 
-        Assert.Equal(dc, collector.LastRedactorRequested.DataClassification);
+        Assert.Equal(dc, collector.LastRedactorRequested.DataClassifications);
         Assert.Equal(redacted, collector.LastRedactedData.Redacted);
     }
 }

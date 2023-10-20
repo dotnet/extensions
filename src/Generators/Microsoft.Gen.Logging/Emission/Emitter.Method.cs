@@ -559,22 +559,24 @@ internal sealed partial class Emitter : EmitterBase
 
     private string MakeClassificationValue(HashSet<string> classificationTypes)
     {
-        if (classificationTypes.Count == 1)
-        {
-            return _classificationMap[classificationTypes.First()];
-        }
-
         var sb = _sbPool.GetStringBuilder();
+
+        _ = sb.Append("new global::Microsoft.Extensions.Compliance.Classification.DataClassificationSet(");
+
+        int i = 0;
 
         foreach (var ct in classificationTypes)
         {
-            if (sb.Length > 0)
+            if (i > 0)
             {
-                _ = sb.Append(" | ");
+                _ = sb.Append(" , ");
             }
 
             _ = sb.Append(_classificationMap[ct]);
+            i++;
         }
+
+        _ = sb.Append(')');
 
         return sb.ToString();
     }
