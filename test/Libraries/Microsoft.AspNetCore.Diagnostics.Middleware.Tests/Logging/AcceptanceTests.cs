@@ -41,7 +41,7 @@ public partial class AcceptanceTests
         {
             services.AddRouting();
             services.AddFakeRedaction();
-            services.AddHttpLogging();
+            HttpLoggingServiceCollectionExtensions.AddHttpLogging(services);
             services.AddSingleton<TestBodyPipeFeatureMiddleware>();
         }
 
@@ -418,7 +418,7 @@ public partial class AcceptanceTests
             static x =>
             {
                 x.AddHttpLogEnricher<TestHttpLogEnricher>();
-                x.AddHttpLogging();
+                HttpLoggingServiceCollectionExtensions.AddHttpLogging(x);
             },
             async static (logCollector, client) =>
             {
@@ -455,7 +455,7 @@ public partial class AcceptanceTests
             {
                 x.AddHttpLogEnricher<TestHttpLogEnricher>();
                 x.AddHttpLogEnricher<CustomHttpLogEnricher>();
-                x.AddHttpLogging();
+                HttpLoggingServiceCollectionExtensions.AddHttpLogging(x);
             },
             async (logCollector, client) =>
             {
@@ -610,7 +610,7 @@ public partial class AcceptanceTests
     {
         await RunAsync(
             LogLevel.Information,
-            static services => services.AddHttpLogging(),
+            static services => HttpLoggingServiceCollectionExtensions.AddHttpLogging(services),
             async (logCollector, client) =>
             {
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync(requestPath));
