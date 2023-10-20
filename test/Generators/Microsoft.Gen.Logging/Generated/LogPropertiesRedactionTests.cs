@@ -187,6 +187,14 @@ public class LogPropertiesRedactionTests
         var logRecord = Assert.Single(collector.GetSnapshot());
         Assert.Null(logRecord.Exception);
         Assert.Equal(LogLevel.Error, logRecord.Level);
+
+        // FIXME: fails here
         Assert.DoesNotContain("secret", logRecord.Message, System.StringComparison.OrdinalIgnoreCase);
+
+        Assert.NotNull(logRecord.StructuredState);
+        var prop = Assert.Single(logRecord.StructuredState, x => x.Key == "rec_InlineProp");
+
+        // FIXME: fails here too
+        Assert.DoesNotContain("secret", prop.Value, System.StringComparison.OrdinalIgnoreCase);
     }
 }
