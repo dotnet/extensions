@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Shared.Diagnostics;
+using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Compliance.Classification;
 
@@ -85,16 +87,7 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
     /// </summary>
     /// <param name="obj">The other data classification to compare to.</param>
     /// <returns><see langword="true"/> if the two sets contain the same classifications.</returns>
-    public override bool Equals(object? obj)
-    {
-        var dc = obj as DataClassificationSet;
-        if (dc == null)
-        {
-            return false;
-        }
-
-        return Equals(dc);
-    }
+    public override bool Equals(object? obj) => Equals(obj as DataClassificationSet);
 
     /// <summary>
     /// Compares an object with the current instance to see if they contain the same data classes.
@@ -109,5 +102,43 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
         }
 
         return _classifications.SetEquals(other._classifications);
+    }
+
+    /// <summary>
+    /// Returns a string representation of this object.
+    /// </summary>
+    /// <returns>The string representation of this object.</returns>
+    public override string ToString()
+    {
+        var sb = PoolFactory.SharedStringBuilderPool.Get();
+
+        var a = _classifications.ToArray();
+        Array.Sort(a, (x, y) =>
+        {
+            var result = string.Compare(x.TaxonomyName, y.TaxonomyName, StringComparison.Ordinal);
+            if (result == 0)
+            {
+                result = string.Compare(x.Value, y.Value, StringComparison.Ordinal);
+            }
+
+            return result;
+        });
+
+        _ = sb.Append('[');
+        foreach (var c in a)
+        {
+            if (sb.Length > 1)
+            {
+                _ = sb.Append(',');
+            }
+
+            _ = sb.Append(c);
+        }
+
+        _ = sb.Append(']');
+        var result = sb.ToString();
+        PoolFactory.SharedStringBuilderPool.Return(sb);
+
+        return result;
     }
 }

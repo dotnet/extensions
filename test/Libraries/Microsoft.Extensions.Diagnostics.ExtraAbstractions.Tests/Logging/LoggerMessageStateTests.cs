@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +15,7 @@ public static class LoggerMessageStateTests
     [Fact]
     public static void Basic()
     {
-        const string PropName = "Property Name";
+        const string PropName = "Name";
         const string Value = "Value";
 
         var lms = new LoggerMessageState();
@@ -26,7 +25,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
-        Assert.Equal("Property Name=Value", lms.ToString());
+        Assert.Equal("Name=Value", lms.ToString());
 
         lms.Clear();
         Assert.Equal(0, lms.TagsCount);
@@ -35,22 +34,23 @@ public static class LoggerMessageStateTests
         index = lms.ReserveTagSpace(1);
         lms.TagArray[index] = new(PropName, Value);
         Assert.Equal(1, lms.TagsCount);
+        Assert.Equal(0, lms.ClassifiedTagsCount);
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
-        Assert.Equal("Property Name=Value", lms.ToString());
+        Assert.Equal("Name=Value", lms.ToString());
 
         index = lms.ReserveClassifiedTagSpace(1);
-        lms.ClassifiedTagArray[index] = new(PropName, Value, FakeClassifications.PrivateData);
+        lms.ClassifiedTagArray[index] = new(PropName, Value, new(FakeTaxonomy.PrivateData, FakeTaxonomy.PublicData));
         Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
-        Assert.Equal("Property Name=Value,Property Name=Microsoft.Extensions.Compliance.Testing.FakeTaxonomy:2", lms.ToString());
 
         Assert.Equal(1, lms.ClassifiedTagsCount);
         Assert.Equal(PropName, lms.ClassifiedTagArray[0].Name);
         Assert.Equal(Value, lms.ClassifiedTagArray[0].Value);
-        Assert.Equal(FakeClassifications.PrivateData, lms.ClassifiedTagArray[0].Classifications);
-        Assert.Equal("Property Name=Value,Property Name=Microsoft.Extensions.Compliance.Testing.FakeTaxonomy:2", lms.ToString());
+        Assert.Equal(new(FakeTaxonomy.PrivateData, FakeTaxonomy.PublicData), lms.ClassifiedTagArray[0].Classifications);
+        Assert.Equal("Name=Value,Name=<omitted> ([Microsoft.Extensions.Compliance.Testing.FakeTaxonomy:PrivateData,Microsoft.Extensions.Compliance.Testing.FakeTaxonomy:PublicData])",
+            lms.ToString());
 
         index = lms.ReserveTagSpace(1);
         lms.TagArray[index] = new(PropName + "X", Value);
@@ -60,7 +60,8 @@ public static class LoggerMessageStateTests
         Assert.Equal(Value, lms.TagArray[0].Value);
         Assert.Equal(PropName + "X", lms.TagArray[1].Key);
         Assert.Equal(Value, lms.TagArray[1].Value);
-        Assert.Equal("Property Name=Value,Property NameX=Value,Property Name=Microsoft.Extensions.Compliance.Testing.FakeTaxonomy:2", lms.ToString());
+        Assert.Equal("Name=Value,NameX=Value,Name=<omitted> ([Microsoft.Extensions.Compliance.Testing.FakeTaxonomy:PrivateData,Microsoft.Extensions.Compliance.Testing.FakeTaxonomy:PublicData])",
+            lms.ToString());
     }
 
     [Fact]
@@ -96,7 +97,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
 
-        collector.Add(PropName, Value, FakeClassifications.PrivateData);
+        collector.Add(PropName, Value, FakeTaxonomy.PrivateData);
         Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
@@ -104,7 +105,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(1, lms.ClassifiedTagsCount);
         Assert.Equal(PropertyNamPrefix + "_" + PropName, lms.ClassifiedTagArray[0].Name);
         Assert.Equal(Value, lms.ClassifiedTagArray[0].Value);
-        Assert.Equal(FakeClassifications.PrivateData, lms.ClassifiedTagArray[0].Classifications);
+        Assert.Equal(FakeTaxonomy.PrivateData, lms.ClassifiedTagArray[0].Classifications);
 
         lms.Clear();
         Assert.Equal(0, lms.TagsCount);
@@ -114,7 +115,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
 
-        collector.Add(PropName, Value, FakeClassifications.PrivateData);
+        collector.Add(PropName, Value, FakeTaxonomy.PrivateData);
         Assert.Equal(1, lms.TagsCount);
         Assert.Equal(PropName, lms.TagArray[0].Key);
         Assert.Equal(Value, lms.TagArray[0].Value);
@@ -122,7 +123,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(1, lms.ClassifiedTagsCount);
         Assert.Equal(PropName, lms.ClassifiedTagArray[0].Name);
         Assert.Equal(Value, lms.ClassifiedTagArray[0].Value);
-        Assert.Equal(FakeClassifications.PrivateData, lms.ClassifiedTagArray[0].Classifications);
+        Assert.Equal(FakeTaxonomy.PrivateData, lms.ClassifiedTagArray[0].Classifications);
     }
 
     [Fact]
@@ -151,7 +152,7 @@ public static class LoggerMessageStateTests
         Assert.Equal(Value, list[0].Value);
 
         index = lms.ReserveClassifiedTagSpace(1);
-        lms.ClassifiedTagArray[index] = new(PropName, Value, FakeClassifications.PrivateData);
+        lms.ClassifiedTagArray[index] = new(PropName, Value, FakeTaxonomy.PrivateData);
         Assert.Equal(1, list.Count);
         Assert.Equal(PropName, list[0].Key);
         Assert.Equal(Value, list[0].Value);

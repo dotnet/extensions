@@ -12,18 +12,22 @@ public static class DataClassificationSetTests
     [Fact]
     public static void Basic()
     {
-        var dc1 = new DataClassificationSet(FakeClassifications.PublicData);
-        var dc2 = new DataClassificationSet(new[] { FakeClassifications.PublicData });
-        var dc3 = new DataClassificationSet(new List<DataClassification> { FakeClassifications.PublicData });
-        var dc4 = (DataClassificationSet)FakeClassifications.PublicData;
-        var dc5 = DataClassificationSet.FromDataClassification(FakeClassifications.PublicData);
+        var dc1 = new DataClassificationSet(FakeTaxonomy.PublicData);
+        var dc2 = new DataClassificationSet(new[] { FakeTaxonomy.PublicData });
+        var dc3 = new DataClassificationSet(new List<DataClassification> { FakeTaxonomy.PublicData });
+        var dc4 = (DataClassificationSet)FakeTaxonomy.PublicData;
+        var dc5 = DataClassificationSet.FromDataClassification(FakeTaxonomy.PublicData);
 
         Assert.Equal(dc1, dc2);
         Assert.Equal(dc1, dc3);
         Assert.Equal(dc1, dc4);
         Assert.Equal(dc1, dc5);
 
-        var dc6 = dc1.Union(FakeClassifications.PrivateData);
+        var dc6 = dc1.Union(FakeTaxonomy.PrivateData);
         Assert.NotEqual(dc1, dc6);
+
+#pragma warning disable CA1508 // Avoid dead conditional code
+        Assert.False(dc1.Equals(null));
+#pragma warning restore CA1508 // Avoid dead conditional code
     }
 }

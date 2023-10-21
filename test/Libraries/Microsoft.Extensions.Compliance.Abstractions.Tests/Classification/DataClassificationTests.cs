@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Xunit;
 
 namespace Microsoft.Extensions.Compliance.Classification.Tests;
@@ -12,7 +11,7 @@ public static class DataClassificationTests
     public static void Basic()
     {
         const string TaxonomyName = "MyTaxonomy";
-        const long Value = 123;
+        const string Value = "123";
 
         var dc = new DataClassification(TaxonomyName, Value);
         Assert.Equal(TaxonomyName, dc.TaxonomyName);
@@ -33,23 +32,18 @@ public static class DataClassificationTests
         Assert.Equal(dc.GetHashCode(), dc.GetHashCode());
         Assert.NotEqual(dc.GetHashCode(), new DataClassification(TaxonomyName + "X", Value).GetHashCode());
         Assert.NotEqual(dc.GetHashCode(), new DataClassification(TaxonomyName, Value + 1).GetHashCode());
-    }
 
-    [Fact]
-    public static void CantCreateUnknownClassifications()
-    {
-        Assert.Throws<ArgumentException>(() => new DataClassification("Foo", DataClassification.None.Value));
-        Assert.Throws<ArgumentException>(() => new DataClassification("Foo", DataClassification.Unknown.Value));
+        Assert.False(dc.Equals(null));
     }
 
     [Fact]
     public static void ToStringOutput()
     {
         const string TaxonomyName = "MyTaxonomy";
-        const long Value = 0x0123;
+        const string Value = "0x0123";
 
         var dc = new DataClassification(TaxonomyName, Value);
 
-        Assert.Equal($"{TaxonomyName}:{Value:x}", dc.ToString());
+        Assert.Equal($"{TaxonomyName}:{Value}", dc.ToString());
     }
 }

@@ -58,8 +58,8 @@ public static class ExtendedLoggerTests
         lms.TagArray[index] = new("PK2", "PV2");
 
         index = lms.ReserveClassifiedTagSpace(2);
-        lms.ClassifiedTagArray[index] = new("PK3", "PV3", FakeClassifications.PrivateData);
-        lms.ClassifiedTagArray[index + 1] = new("PK4", null, FakeClassifications.PrivateData);
+        lms.ClassifiedTagArray[index] = new("PK3", "PV3", FakeTaxonomy.PrivateData);
+        lms.ClassifiedTagArray[index + 1] = new("PK4", null, FakeTaxonomy.PrivateData);
 
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), lms, null, (_, _) => "MSG2");
 

@@ -13,7 +13,7 @@ public class FakeRedactorProviderTests
     {
         var provider = new FakeRedactorProvider();
 
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         var redactor = provider.GetRedactor(dc);
         Assert.Equal("Hello", redactor.Redact("Hello"));
     }
@@ -22,7 +22,7 @@ public class FakeRedactorProviderTests
     public void Can_Access_Event_Collector_From_Within_Redactor_Provider()
     {
         var rp = new FakeRedactorProvider();
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         rp.GetRedactor(dc);
         Assert.Equal(dc, rp.Collector.LastRedactorRequested.DataClassifications);
     }

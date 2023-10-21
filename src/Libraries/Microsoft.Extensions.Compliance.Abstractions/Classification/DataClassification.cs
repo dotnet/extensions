@@ -12,24 +12,14 @@ namespace Microsoft.Extensions.Compliance.Classification;
 public readonly struct DataClassification : IEquatable<DataClassification>
 {
     /// <summary>
-    /// Represents unclassified data.
-    /// </summary>
-    public const long NoneTaxonomyValue = 0;
-
-    /// <summary>
-    /// Represents the unknown classification.
-    /// </summary>
-    public const long UnknownTaxonomyValue = -1;
-
-    /// <summary>
     /// Gets the value to represent data with no defined classification.
     /// </summary>
-    public static DataClassification None => new(NoneTaxonomyValue);
+    public static DataClassification None => new("None");
 
     /// <summary>
     /// Gets the value to represent data with an unknown classification.
     /// </summary>
-    public static DataClassification Unknown => new(UnknownTaxonomyValue);
+    public static DataClassification Unknown => new("Unknown");
 
     /// <summary>
     /// Gets the name of the taxonomy that recognizes this classification.
@@ -39,28 +29,23 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     /// <summary>
     /// Gets the value representing the data class within the taxonomy.
     /// </summary>
-    public long Value { get; }
+    public string Value { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataClassification"/> struct.
     /// </summary>
     /// <param name="taxonomyName">The name of the taxonomy this classification belongs to.</param>
     /// <param name="value">The taxonomy-specific value representing the data class.</param>
-    public DataClassification(string taxonomyName, long value)
+    public DataClassification(string taxonomyName, string value)
     {
         TaxonomyName = Throw.IfNullOrEmpty(taxonomyName);
-        Value = value;
-
-        if ((value == UnknownTaxonomyValue) || (value == NoneTaxonomyValue))
-        {
-            Throw.ArgumentException(nameof(value), $"Cannot create a classification with a value of 0x{value:x}.");
-        }
+        Value = Throw.IfNullOrEmpty(value);
     }
 
-    private DataClassification(long taxonomyValue)
+    private DataClassification(string value)
     {
         TaxonomyName = string.Empty;
-        Value = taxonomyValue;
+        Value = value;
     }
 
     /// <summary>
@@ -112,5 +97,5 @@ public readonly struct DataClassification : IEquatable<DataClassification>
     /// Gets a string representation of this object.
     /// </summary>
     /// <returns>A string representing the object.</returns>
-    public override string ToString() => $"{TaxonomyName}:{Value:x}";
+    public override string ToString() => $"{TaxonomyName}:{Value}";
 }

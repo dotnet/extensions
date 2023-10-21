@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Compliance.Classification.Tests;
 public static class DataClassificationAttributeTests
 {
     private const string TaxonomyName = "Tax";
-    private const long Value = 123;
+    private const string Value = "123";
 
     private sealed class TestAttribute : DataClassificationAttribute
     {

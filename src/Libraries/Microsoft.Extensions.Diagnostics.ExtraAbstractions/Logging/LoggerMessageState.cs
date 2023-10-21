@@ -151,8 +151,9 @@ public sealed partial class LoggerMessageState
 
             // note we don't emit the value here as that could lead to a privacy incident.
             _ = sb.Append(_classifiedTags[i].Name);
-            _ = sb.Append('=');
+            _ = sb.Append("=<omitted> (");
             _ = sb.Append(_classifiedTags[i].Classifications.ToString());
+            _ = sb.Append(')');
         }
 
         var result = sb.ToString();

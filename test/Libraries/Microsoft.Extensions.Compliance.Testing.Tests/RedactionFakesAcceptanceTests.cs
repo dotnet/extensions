@@ -14,7 +14,7 @@ public class RedactionFakesAcceptanceTests
     [Fact]
     public void Can_Register_And_Use_Fake_Redactor_With_Default_Options_With_DataClassification()
     {
-        var dc = new DataClassification("Foo", 0x1);
+        var dc = new DataClassification("Foo", "0x1");
 
         var data = "Lalaalal";
         using var services = new ServiceCollection()
@@ -34,7 +34,7 @@ public class RedactionFakesAcceptanceTests
     [Fact]
     public void Can_Register_And_Use_Fake_Redactor_With_Default_Options()
     {
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         var data = "Lalaalal";
         using var services = new ServiceCollection()
             .AddLogging()
@@ -53,7 +53,7 @@ public class RedactionFakesAcceptanceTests
     [Fact]
     public void Can_Register_And_Use_Fake_Redactor_With_Configuration_Section_Options_With_Data_Classification()
     {
-        var dc = new DataClassification("Foo", 0x1);
+        var dc = new DataClassification("Foo", "0x1");
 
         var data = "Lalaalal";
         using var services = new ServiceCollection()
@@ -73,7 +73,7 @@ public class RedactionFakesAcceptanceTests
     [Fact]
     public void Can_Register_And_Use_Fake_Redactor_With_Configuration_Section_Options()
     {
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         var data = "Lalaalal";
         using var services = new ServiceCollection()
             .AddLogging()
@@ -92,7 +92,7 @@ public class RedactionFakesAcceptanceTests
     [Fact]
     public void Can_Register_And_Use_Fake_Redactor_With_Action_Options_With_DataClassification()
     {
-        var dc = new DataClassification("Foo", 0x1);
+        var dc = new DataClassification("Foo", "0x1");
 
         var data = "Lalaalal";
         using var services = new ServiceCollection()
@@ -112,7 +112,7 @@ public class RedactionFakesAcceptanceTests
     [Fact]
     public void AddRedactionAndSetFakeRedactor_Pick_Up_Options_Correctly()
     {
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         var data = "Lalaalal";
         using var services = new ServiceCollection()
             .AddLogging()
@@ -132,7 +132,7 @@ public class RedactionFakesAcceptanceTests
     [Fact]
     public void AddRedactionWithActionAndSetFakeRedactor_Pick_Up_Options_Correctly()
     {
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         var data = "Lalaalal";
         using var services = new ServiceCollection()
             .AddLogging()
@@ -152,7 +152,7 @@ public class RedactionFakesAcceptanceTests
     [Fact]
     public void SetFakeRedactorAndAddRedaction_Pick_Up_Options_Correctly()
     {
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         var data = "Lalaalal";
         using var services = new ServiceCollection()
             .AddLogging()
@@ -172,7 +172,7 @@ public class RedactionFakesAcceptanceTests
     [Fact]
     public void SetFakeRedactorAndAddRedactionWithAction_Pick_Up_Options_Correctly()
     {
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         var data = "Lalaalal";
         using var services = new ServiceCollection()
             .AddLogging()
@@ -204,7 +204,7 @@ public class RedactionFakesAcceptanceTests
         var provider = services.GetRequiredService<IRedactorProvider>();
         var collector = services.GetFakeRedactionCollector();
 
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         var r = provider.GetRedactor(dc);
         var redacted = r.Redact(data);
         var redacted2 = r.Redact(data2);
@@ -226,7 +226,7 @@ public class RedactionFakesAcceptanceTests
     [Fact]
     public void Fake_Redaction_Extensions_Does_Not_Allow_Null_Arguments()
     {
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
 
         Assert.Throws<ArgumentNullException>(() => ((IRedactionBuilder)null!).SetFakeRedactor(dc));
         Assert.Throws<ArgumentNullException>(() => ((IRedactionBuilder)null!).SetFakeRedactor(Setup.GetFakesConfiguration(), dc));
@@ -245,7 +245,7 @@ public class RedactionFakesAcceptanceTests
         using var sp = new ServiceCollection().AddFakeRedaction().BuildServiceProvider();
 
         var rp = sp.GetRequiredService<IRedactorProvider>();
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         var r = rp.GetRedactor(dc);
         var collector = sp.GetFakeRedactionCollector();
 

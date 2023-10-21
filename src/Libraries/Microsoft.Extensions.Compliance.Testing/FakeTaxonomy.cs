@@ -1,25 +1,27 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Compliance.Classification;
+
 namespace Microsoft.Extensions.Compliance.Testing;
 
 /// <summary>
-/// Classes of data used for simple scenarios.
+/// Simple data classifications for testing.
 /// </summary>
-public enum FakeTaxonomy : ulong
+public static class FakeTaxonomy
 {
     /// <summary>
-    /// No data classification.
+    /// Gets the name of this classification taxonomy.
     /// </summary>
-    None,
+    public static string TaxonomyName => typeof(FakeTaxonomy).FullName!;
 
     /// <summary>
-    /// This is public data.
+    /// Gets the private data classification.
     /// </summary>
-    PublicData,
+    public static DataClassification PrivateData => new(TaxonomyName, nameof(PrivateData));
 
     /// <summary>
-    /// This is private data.
+    /// Gets the public data classification.
     /// </summary>
-    PrivateData,
+    public static DataClassification PublicData => new(TaxonomyName, nameof(PublicData));
 }

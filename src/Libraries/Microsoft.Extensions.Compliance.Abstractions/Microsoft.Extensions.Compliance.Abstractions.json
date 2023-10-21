@@ -6,7 +6,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification.DataClassification(string taxonomyName, long value);",
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification.DataClassification(string taxonomyName, string value);",
           "Stage": "Stable"
         },
         {
@@ -38,18 +38,6 @@
           "Stage": "Stable"
         }
       ],
-      "Fields": [
-        {
-          "Member": "const long Microsoft.Extensions.Compliance.Classification.DataClassification.NoneTaxonomyValue",
-          "Stage": "Stable",
-          "Value": "0"
-        },
-        {
-          "Member": "const long Microsoft.Extensions.Compliance.Classification.DataClassification.UnknownTaxonomyValue",
-          "Stage": "Stable",
-          "Value": "-1"
-        }
-      ],
       "Properties": [
         {
           "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Classification.DataClassification.None { get; }",
@@ -64,7 +52,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "long Microsoft.Extensions.Compliance.Classification.DataClassification.Value { get; }",
+          "Member": "string Microsoft.Extensions.Compliance.Classification.DataClassification.Value { get; }",
           "Stage": "Stable"
         }
       ]
@@ -123,6 +111,10 @@
         },
         {
           "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassificationSet.implicit operator Microsoft.Extensions.Compliance.Classification.DataClassificationSet(Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.Compliance.Classification.DataClassificationSet.ToString();",
           "Stage": "Stable"
         },
         {

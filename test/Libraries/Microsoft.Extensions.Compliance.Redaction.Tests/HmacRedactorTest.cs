@@ -99,12 +99,12 @@ public class HmacRedactorTest
                     {
                         options.Key = example.Key;
                         options.KeyId = example.KeyId;
-                    }, FakeClassifications.PrivateData);
+                    }, FakeTaxonomy.PrivateData);
                 })
                 .BuildServiceProvider()
                 .GetRequiredService<IRedactorProvider>();
 
-            var redactor = redactorProvider.GetRedactor(FakeClassifications.PrivateData);
+            var redactor = redactorProvider.GetRedactor(FakeTaxonomy.PrivateData);
 
             var length = redactor.GetRedactedLength(example.Plaintext);
             var result = redactor.Redact(example.Plaintext);
@@ -124,12 +124,12 @@ public class HmacRedactorTest
                 .AddRedaction(redaction =>
                 {
                     var section = GetRedactorConfiguration(new ConfigurationBuilder(), example.KeyId, example.Key);
-                    redaction.SetHmacRedactor(section, FakeClassifications.PrivateData);
+                    redaction.SetHmacRedactor(section, FakeTaxonomy.PrivateData);
                 })
                 .BuildServiceProvider()
                 .GetRequiredService<IRedactorProvider>();
 
-            var redactor = redactorProvider.GetRedactor(FakeClassifications.PrivateData);
+            var redactor = redactorProvider.GetRedactor(FakeTaxonomy.PrivateData);
 
             var length = redactor.GetRedactedLength(example.Plaintext);
             var result = redactor.Redact(example.Plaintext);
