@@ -10,7 +10,7 @@ using Microsoft.Shared.Pools;
 namespace Microsoft.Extensions.Compliance.Classification;
 
 /// <summary>
-/// Represents a set of data classes.
+/// Represents a set of data classifications.
 /// </summary>
 public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
 {
@@ -46,7 +46,7 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
     }
 
     /// <summary>
-    /// Converts a data classification to a data classification set.
+    /// Converts a single classification to a data classification set.
     /// </summary>
     /// <param name="classification">The classification to include in the set.</param>
     public static implicit operator DataClassificationSet(DataClassification classification)
@@ -55,16 +55,19 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
     }
 
     /// <summary>
-    /// Converts a data classification to a data classification set.
+    /// Converts a single classification to a data classification set.
     /// </summary>
     /// <param name="classification">The classification to include in the set.</param>
     /// <returns>The resulting data classification set.</returns>
     public static DataClassificationSet FromDataClassification(DataClassification classification) => new(classification);
 
     /// <summary>
-    /// Creates a new data classification that combines the current classifications with another set.
+    /// Creates a new data classification set that combines the current classifications with another set.
     /// </summary>
     /// <param name="other">The other set.</param>
+    /// <remarks>
+    /// This method doesn't modify the two input sets, it creates a new set.
+    /// </remarks>
     /// <returns>The resulting set which combines the current instance's classifications and the other ones.</returns>
     public DataClassificationSet Union(DataClassificationSet other)
     {
@@ -83,26 +86,18 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
     public override int GetHashCode() => _classifications.GetHashCode();
 
     /// <summary>
-    /// Compares an object with the current instance to see if they contain the same data classes.
+    /// Compares an object with the current instance to see if they contain the same classifications.
     /// </summary>
     /// <param name="obj">The other data classification to compare to.</param>
     /// <returns><see langword="true"/> if the two sets contain the same classifications.</returns>
     public override bool Equals(object? obj) => Equals(obj as DataClassificationSet);
 
     /// <summary>
-    /// Compares an object with the current instance to see if they contain the same data classes.
+    /// Compares an object with the current instance to see if they contain the same classifications.
     /// </summary>
     /// <param name="other">The other data classification to compare to.</param>
     /// <returns><see langword="true"/> if the two sets contain the same classifications.</returns>
-    public bool Equals(DataClassificationSet? other)
-    {
-        if (other == null)
-        {
-            return false;
-        }
-
-        return _classifications.SetEquals(other._classifications);
-    }
+    public bool Equals(DataClassificationSet? other) => other != null && _classifications.SetEquals(other._classifications);
 
     /// <summary>
     /// Returns a string representation of this object.
@@ -116,12 +111,7 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
         Array.Sort(a, (x, y) =>
         {
             var result = string.Compare(x.TaxonomyName, y.TaxonomyName, StringComparison.Ordinal);
-            if (result == 0)
-            {
-                result = string.Compare(x.Value, y.Value, StringComparison.Ordinal);
-            }
-
-            return result;
+            return result != 0 ? result : string.Compare(x.Value, y.Value, StringComparison.Ordinal);
         });
 
         _ = sb.Append('[');

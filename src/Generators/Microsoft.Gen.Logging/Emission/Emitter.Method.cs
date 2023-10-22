@@ -569,7 +569,7 @@ internal sealed partial class Emitter : EmitterBase
         {
             if (i > 0)
             {
-                _ = sb.Append(" , ");
+                _ = sb.Append(", ");
             }
 
             _ = sb.Append(_classificationMap[ct]);

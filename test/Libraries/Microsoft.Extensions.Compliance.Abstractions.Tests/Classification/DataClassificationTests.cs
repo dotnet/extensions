@@ -45,5 +45,8 @@ public static class DataClassificationTests
         var dc = new DataClassification(TaxonomyName, Value);
 
         Assert.Equal($"{TaxonomyName}:{Value}", dc.ToString());
+
+        Assert.Equal("None", DataClassification.None.ToString());
+        Assert.Equal("Unknown", DataClassification.Unknown.ToString());
     }
 }
