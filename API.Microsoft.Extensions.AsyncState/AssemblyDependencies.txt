@@ -1,0 +1,10 @@
+Microsoft.Extensions.DependencyInjection.Abstractions
+Microsoft.Extensions.DependencyInjection.AutoActivation
+Microsoft.Extensions.ObjectPool
+System.Collections
+System.Private.CoreLib
+System.Private.Uri
+System.Runtime
+System.Runtime.CompilerServices.Unsafe
+System.Runtime.InteropServices
+System.Threading

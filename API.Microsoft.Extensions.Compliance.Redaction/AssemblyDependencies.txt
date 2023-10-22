@@ -1,0 +1,15 @@
+Microsoft.Extensions.Compliance.Abstractions
+Microsoft.Extensions.Configuration.Abstractions
+Microsoft.Extensions.DependencyInjection.Abstractions
+Microsoft.Extensions.Options
+Microsoft.Extensions.Options.ConfigurationExtensions
+System.Collections
+System.Collections.Immutable
+System.ComponentModel.Annotations
+System.Memory
+System.Private.CoreLib
+System.Private.Uri
+System.Runtime
+System.Runtime.CompilerServices.Unsafe
+System.Runtime.InteropServices
+System.Security.Cryptography
