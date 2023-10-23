@@ -23,7 +23,7 @@ Or directly in the C# project file:
 
 ## Usage Example
 
-On install, a warning will be displayed that `The StaticAnalysisCodeType property is not defined, assuming 'General'`. The general ruleset is enabled by default. To select a different ruleset (or hide the warning) add the `StaticAnalysisCodeType` property to your project as follows.
+On install, a warning will be displayed that `The StaticAnalysisCodeType property is not defined, assuming 'General'`. The General set of diagnostics is enabled by default. To select a different set of diagnostics (or hide the warning) add the `StaticAnalysisCodeType` property to your project as follows.
 
 ```XML
   <PropertyGroup>
@@ -31,9 +31,9 @@ On install, a warning will be displayed that `The StaticAnalysisCodeType propert
   </PropertyGroup>
 ```
 
-## Available Rulesets
+## Available Sets Of Diagnostics
 
-Different pre-defined rulesets are available depending on the type of projecting being built. These can be specified in the StaticAnalysisCodeType property:
+Different pre-defined sets of diagnostics are available depending on the type of project being built. These can be specified in the StaticAnalysisCodeType property:
 - Benchmark: Projects used for benchmarking.
 - General: Any type of project.
 - NonProdExe: Projects that produce an exe for non-production use.
@@ -43,9 +43,9 @@ Different pre-defined rulesets are available depending on the type of projecting
 - Test: Projects used for testing.
 
 Each of these also has an optional `-Tier1` and a `-Tier2` variant (e.g. `General-Tier1`).
-- `Tier1` enables only the most important sets of rules.
-- `Tier2` includes Tier1 rules and others that aren't as critical.
-- The rulesets without `Tier` suffixes include all rules from tier's 1 and 2, and any other applicable rules.
+- `Tier1` enables only the most important diagnostics from this set.
+- `Tier2` includes Tier1 diagnostics and others that aren't as critical.
+- The names without `Tier` suffixes include all diagnostics from tier's 1 and 2, and any others that are applicable.
 
 ## Feedback & Contributing
 
