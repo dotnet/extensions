@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Logging;
 /// <summary>
 /// Interface for implementing log enrichers for incoming HTTP requests.
 /// </summary>
-[Experimental(diagnosticId: Experiments.HttpLogging, UrlFormat = Experiments.UrlFormat)]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.HttpLogging, UrlFormat = DiagnosticIds.UrlFormat)]
 public interface IHttpLogEnricher
 {
     /// <summary>

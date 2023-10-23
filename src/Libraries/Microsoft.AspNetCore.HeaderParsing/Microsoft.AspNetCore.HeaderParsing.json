@@ -170,7 +170,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HeaderParsingServiceCollectionExtensions.AddHeaderParsing(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions> configuration);",
+          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.HeaderParsingServiceCollectionExtensions.AddHeaderParsing(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HeaderParsing.HeaderParsingOptions> configure);",
           "Stage": "Stable"
         },
         {

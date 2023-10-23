@@ -42,15 +42,16 @@ public class LoggerEnrichmentOptions
     public bool UseFileInfoForStackTraces { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether to include exception messages in stack traces.
+    /// Gets or sets a value indicating whether to include the exception message when an exception is logged.
     /// </summary>
     /// <value>
     /// This defaults to <see langword="false"/>.
     /// </value>
     /// <remarks>
-    /// This property has no effect if <see cref="CaptureStackTraces"/> is <see langword="false"/>.
+    /// When both <see cref="IncludeExceptionMessage"/> and <see cref="CaptureStackTraces"/> are set to
+    /// <see langword="true"/> exception messages are also included in stack traces.
     /// </remarks>
-    public bool IncludeExceptionMessageInStackTraces { get; set; }
+    public bool IncludeExceptionMessage { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum stack trace length to emit for a given log record.

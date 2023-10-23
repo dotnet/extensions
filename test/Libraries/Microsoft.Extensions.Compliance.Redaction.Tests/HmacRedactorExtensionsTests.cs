@@ -1,38 +1,40 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Globalization;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.Extensions.Compliance.Redaction.Test;
+namespace Microsoft.Extensions.Compliance.Redaction.Tests;
 
-public class XXHash3RedactorExtensionsTests
+public class HmacRedactorExtensionsTests
 {
     [Fact]
     public void DelegateBased()
     {
-        var redactorProvider = new ServiceCollection()
-            .AddRedaction(redaction => redaction.SetXxHash3Redactor(o => o.HashSeed = 101, FakeClassifications.PrivateData))
-            .BuildServiceProvider()
+        using var serviceProvider = new ServiceCollection()
+            .AddRedaction(redaction => redaction.SetHmacRedactor(o => o.Key = HmacRedactorTest.HmacExamples[0].Key, FakeClassifications.PrivateData))
+            .BuildServiceProvider();
+
+        var redactorProvider = serviceProvider
             .GetRequiredService<IRedactorProvider>();
 
         CheckProvider(redactorProvider);
     }
 
     [Fact]
-    public void HostBuilder_GivenXXHashRedactorWithConfigurationSectionConfig_RegistersItAsHashingRedactorAndRedacts()
+    public void GivenRedactorWithConfigurationSectionConfig_RegistersItAsHashingRedactorAndRedacts()
     {
-        var redactorProvider = new ServiceCollection()
+        using var serviceProvider = new ServiceCollection()
             .AddRedaction(redaction =>
             {
-                var section = GetRedactorConfiguration(new ConfigurationBuilder(), 101);
-                redaction.SetXxHash3Redactor(section, FakeClassifications.PrivateData);
+                var section = HmacRedactorTest.GetRedactorConfiguration(new ConfigurationBuilder(), HmacRedactorTest.HmacExamples[0].KeyId, HmacRedactorTest.HmacExamples[0].Key);
+                redaction.SetHmacRedactor(section, FakeClassifications.PrivateData);
             })
-            .BuildServiceProvider()
+            .BuildServiceProvider();
+
+        var redactorProvider = serviceProvider
             .GetRequiredService<IRedactorProvider>();
 
         CheckProvider(redactorProvider);
@@ -58,8 +60,7 @@ public class XXHash3RedactorExtensionsTests
 
             if (dc == FakeClassifications.PrivateData)
             {
-                Assert.Equal(XxHash3Redactor.RedactedSize, expectedLength);
-                Assert.Equal(XxHash3Redactor.RedactedSize, actualLength);
+                Assert.Equal(expectedLength, actualLength);
             }
             else
             {
@@ -67,18 +68,5 @@ public class XXHash3RedactorExtensionsTests
                 Assert.True(actualLength == 0 || actualLength == Example.Length);
             }
         }
-    }
-
-    private static IConfigurationSection GetRedactorConfiguration(IConfigurationBuilder builder, ulong hashSeed)
-    {
-        XxHash3RedactorOptions options;
-
-        return builder
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                { $"{nameof(XxHash3RedactorOptions)}:{nameof(options.HashSeed)}", hashSeed.ToString(CultureInfo.InvariantCulture) },
-            })
-            .Build()
-            .GetSection(nameof(XxHash3RedactorOptions));
     }
 }

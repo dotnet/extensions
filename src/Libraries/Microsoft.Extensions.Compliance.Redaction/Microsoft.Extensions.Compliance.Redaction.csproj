@@ -6,7 +6,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <InjectxxH3OnLegacy>true</InjectxxH3OnLegacy>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
+    <InjectSharedDataValidation>true</InjectSharedDataValidation>
   </PropertyGroup>
 
   <PropertyGroup>

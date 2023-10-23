@@ -4,7 +4,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Hosting.Testing;

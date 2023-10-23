@@ -9,6 +9,7 @@
     <SkipLocalAnalyzers>true</SkipLocalAnalyzers>
     <SkipExtraAnalyzers>true</SkipExtraAnalyzers>
     <AnalyzerLanguage>cs</AnalyzerLanguage>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,5 +27,6 @@
 
   <ItemGroup>
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
+    <InternalsVisibleToTest Include="DiagPublisher" />
   </ItemGroup>
 </Project>

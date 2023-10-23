@@ -19,7 +19,7 @@ namespace Microsoft.Gen.Metrics;
 
 internal sealed class Parser
 {
-    private const int MaxTagNames = 20;
+    private const int MaxTagNames = 30;
 
     private static readonly Regex _regex = new("^[A-Z]+[A-za-z0-9]*$", RegexOptions.Compiled);
     private static readonly Regex _regexTagNames = new("^[A-Za-z]+[A-Za-z0-9_.:-]*$", RegexOptions.Compiled);
@@ -656,7 +656,7 @@ internal sealed class Parser
                 ex.NamedType.ToDisplayString());
         }
 
-        if (strongTypeAttributeParameters.StrongTypeConfigs.Count > MaxTagNames)
+        if (strongTypeAttributeParameters.TagHashSet.Count > MaxTagNames)
         {
             Diag(DiagDescriptors.ErrorTooManyTagNames, strongTypeSymbol.Locations[0]);
         }

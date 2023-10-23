@@ -39,6 +39,6 @@
   </ItemGroup>
 
   <Target Name="_CheckForMissingCodeType" BeforeTargets="BeforeCompile" Condition="'$(StaticAnalysisCodeType)' == ''" >
-    <Warning Code="LM000" Text="The StaticAnalysisCodeType property is not defined, assuming type 'General'" HelpLink="https://TODO" />
+    <Warning Code="LM000" Text="The StaticAnalysisCodeType property is not defined, assuming type 'General'" HelpLink="https://aka.ms/dotnet-extensions-warnings/LM000" />
   </Target>
 </Project>
