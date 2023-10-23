@@ -9,11 +9,10 @@ using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.EnumStrings;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Microsoft.Extensions.Resilience;
 using Microsoft.Shared.Diagnostics;
-using Microsoft.Shared.Text;
 using Polly;
 using Polly.Registry;
+using Polly.Telemetry;
 
 [assembly: EnumStrings(typeof(HttpStatusCode))]
 
@@ -149,17 +148,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
 
         _ = services
             .AddExceptionSummarizer(b => b.AddHttpProvider())
-            .ConfigureFailureResultContext<HttpResponseMessage>((response) =>
-            {
-                if (response != null)
-                {
-                    return FailureResultContext.Create(
-                        failureReason: ((int)response.StatusCode).ToInvariantString(),
-                        additionalInformation: response.StatusCode.ToInvariantString());
-                }
-
-                return FailureResultContext.Create();
-            });
+            .Configure<TelemetryOptions>(options => options.MeteringEnrichers.Add(new HttpResilienceMetricsEnricher()));
     }
 
     private sealed class Marker

@@ -2,34 +2,6 @@
   "Name": "Microsoft.Extensions.Resilience, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "readonly struct Microsoft.Extensions.Resilience.FailureResultContext",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "Microsoft.Extensions.Resilience.FailureResultContext.FailureResultContext();",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Resilience.FailureResultContext Microsoft.Extensions.Resilience.FailureResultContext.Create(string failureSource = \"unknown\", string failureReason = \"unknown\", string additionalInformation = \"unknown\");",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "string Microsoft.Extensions.Resilience.FailureResultContext.AdditionalInformation { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "string Microsoft.Extensions.Resilience.FailureResultContext.FailureReason { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "string Microsoft.Extensions.Resilience.FailureResultContext.FailureSource { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.Resilience.ResilienceContextExtensions",
       "Stage": "Stable",
       "Methods": [
@@ -49,10 +21,6 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ResilienceServiceCollectionExtensions.AddResilienceEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ResilienceServiceCollectionExtensions.ConfigureFailureResultContext<TResult>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Func<TResult, Microsoft.Extensions.Resilience.FailureResultContext> configure);",
           "Stage": "Stable"
         }
       ]
