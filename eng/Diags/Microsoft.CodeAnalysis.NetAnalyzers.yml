@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.CodeAnalysis.NetAnalyzers
-  Version: 8.0.8.35701
+  Version: 8.0.8.47201
 Diagnostics:
   CA1000:
     Metadata:
@@ -4514,8 +4514,8 @@ Diagnostics:
   CA1862:
     Metadata:
       Category: Performance
-      Title: Prefer using 'StringComparer' to perform case-insensitive string comparisons
-      Description: Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.
+      Title: Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+      Description: Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.
       HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862
       CustomTags:
       - Telemetry
@@ -4557,4 +4557,20 @@ Diagnostics:
     Tier: 2
     Attributes:
       general:
+        Severity: Warning
+  CA1869:
+    Metadata:
+      Category: Performance
+      Title: Cache and reuse 'JsonSerializerOptions' instances
+      Description: Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1869
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
         Severity: Warning

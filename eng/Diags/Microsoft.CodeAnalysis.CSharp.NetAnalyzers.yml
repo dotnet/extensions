@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.CodeAnalysis.CSharp.NetAnalyzers
-  Version: 8.0.8.35701
+  Version: 8.0.8.47201
 Diagnostics:
   CA1001:
     Metadata:
@@ -596,4 +596,20 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
+        Severity: Warning
+  CA1870:
+    Metadata:
+      Category: Performance
+      Title: Use a cached 'SearchValues' instance
+      Description: Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1870
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
         Severity: Warning

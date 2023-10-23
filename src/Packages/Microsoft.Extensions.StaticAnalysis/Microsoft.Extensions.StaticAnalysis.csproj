@@ -27,10 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Microsoft.Extensions.ExtraAnalyzers/Microsoft.Extensions.ExtraAnalyzers.csproj" PrivateAssets="None" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="build\*" PackagePath="build\" />
     <Content Include="build\config\*" PackagePath="build\config" />
   </ItemGroup>

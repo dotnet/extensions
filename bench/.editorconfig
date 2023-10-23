@@ -1,5 +1,5 @@
 # Created by DiagConfig, the diagnostic config generator
-# Generated : 2023-08-07 17:59:53Z
+# Generated : 2023-10-22 00:37:47Z
 # Max Tier  : 2147483647
 # Attributes: general, performance
 # Analyzers : ILLink.RoslynAnalyzer, Microsoft.Analyzers.Extra, Microsoft.Analyzers.Local, Microsoft.AspNetCore.App.Analyzers, Microsoft.AspNetCore.Components.Analyzers, Microsoft.CodeAnalysis.CodeStyle, Microsoft.CodeAnalysis.CSharp.CodeStyle, Microsoft.CodeAnalysis.CSharp.NetAnalyzers, Microsoft.CodeAnalysis.NetAnalyzers, Microsoft.VisualStudio.Threading.Analyzers, Microsoft.VisualStudio.Threading.Analyzers.CSharp, SonarAnalyzer.CSharp, StyleCop.Analyzers
@@ -868,7 +868,7 @@ dotnet_diagnostic.CA1860.severity = warning
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861
 dotnet_diagnostic.CA1861.severity = suggestion
 
-# Title    : Prefer using 'StringComparer' to perform case-insensitive string comparisons
+# Title    : Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862
 dotnet_diagnostic.CA1862.severity = warning
@@ -902,6 +902,16 @@ dotnet_diagnostic.CA1867.severity = warning
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1868
 dotnet_diagnostic.CA1868.severity = warning
+
+# Title    : Cache and reuse 'JsonSerializerOptions' instances
+# Category : Performance
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1869
+dotnet_diagnostic.CA1869.severity = warning
+
+# Title    : Use a cached 'SearchValues' instance
+# Category : Performance
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1870
+dotnet_diagnostic.CA1870.severity = warning
 
 # Title    : Dispose objects before losing scope
 # Category : Reliability
@@ -1720,62 +1730,77 @@ dotnet_diagnostic.CA5405.severity = none
 
 # Title    : Use source generated logging methods for improved performance
 # Category : Performance
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0000
 dotnet_diagnostic.EA0000.severity = warning
 
 # Title    : Perform message formatting in the body of the logging method
 # Category : Performance
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0001
 dotnet_diagnostic.EA0001.severity = warning
 
 # Title    : Use 'System.TimeProvider' to make the code easier to test
 # Category : Reliability
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0002
 dotnet_diagnostic.EA0002.severity = none
 
 # Title    : Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
 # Category : Performance
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0003
 dotnet_diagnostic.EA0003.severity = warning
 
 # Title    : Make types declared in an executable internal
 # Category : Performance
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0004
 dotnet_diagnostic.EA0004.severity = warning
 
 # Title    : Consider using an array instead of a collection
 # Category : Performance
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0005
 dotnet_diagnostic.EA0005.severity = none
 
 # Title    : Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance
 # Category : Performance
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0006
 dotnet_diagnostic.EA0006.severity = warning
 
 # Title    : Use 'System.ValueTuple' instead of 'System.Tuple' for improved performance
 # Category : Performance
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0007
 dotnet_diagnostic.EA0007.severity = warning
 
 # Title    : Use generic collections instead of legacy collections for improved performance
 # Category : Performance
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0008
 dotnet_diagnostic.EA0008.severity = warning
 
 # Title    : Use 'System.MemoryExtensions.Split' for improved performance
 # Category : Performance
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0009
 dotnet_diagnostic.EA0009.severity = warning
 
 # Title    : Fire-and-forget async call inside a 'using' block
 # Category : Correctness
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0010
 dotnet_diagnostic.EA0010.severity = warning
 
 # Title    : Consider removing unnecessary conditional access operator (?)
 # Category : Performance
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0011
 dotnet_diagnostic.EA0011.severity = warning
 
 # Title    : Consider removing unnecessary null coalescing assignment (??=)
 # Category : Performance
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0012
 dotnet_diagnostic.EA0012.severity = suggestion
 
 # Title    : Consider removing unnecessary null coalescing operator (??)
 # Category : Performance
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0013
 dotnet_diagnostic.EA0013.severity = suggestion
 
 # Title    : The async method doesn't support cancellation
 # Category : Resilience
+# Help Link: https://aka.ms/dotnet-extensions-warnings/EA0014
 dotnet_diagnostic.EA0014.severity = none
 
 # Title    : Set MSBuild property 'GenerateDocumentationFile' to 'true'
@@ -2407,6 +2432,26 @@ dotnet_diagnostic.IDE0300.severity = none
 # Category : Style
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0301
 dotnet_diagnostic.IDE0301.severity = suggestion
+
+# Title    : Simplify collection initialization
+# Category : Style
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0302
+dotnet_diagnostic.IDE0302.severity = none
+
+# Title    : Simplify collection initialization
+# Category : Style
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0303
+dotnet_diagnostic.IDE0303.severity = none
+
+# Title    : Simplify collection initialization
+# Category : Style
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0304
+dotnet_diagnostic.IDE0304.severity = none
+
+# Title    : Simplify collection initialization
+# Category : Style
+# Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0305
+dotnet_diagnostic.IDE0305.severity = none
 
 # Title    : Delegate invocation can be simplified.
 # Category : Style
