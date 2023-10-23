@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
-using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Options;
@@ -71,13 +70,13 @@ public sealed partial class HttpClientBuilderExtensionsTests
             context.OnPipelineDisposed(() => onPipelineDisposedCalled = true);
         });
 
-        var serviceProvider = services.BuildServiceProvider();
+        using (var serviceProvider = services.BuildServiceProvider())
+        {
+            var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
+            using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
 
-        var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
-        using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
-
-        await client.GetStringAsync("https://dummy");
-        serviceProvider.Dispose();
+            await client.GetStringAsync("https://dummy");
+        }
 
         onPipelineDisposedCalled.Should().BeTrue();
     }
@@ -117,15 +116,14 @@ public sealed partial class HttpClientBuilderExtensionsTests
                 options.Retry.Delay = TimeSpan.Zero;
             });
 
-        var client = services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("client");
+        using var serviceProvider = services.BuildServiceProvider();
+        var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
 
         using var response = await client.SendAsync(request);
 
         var lookup = enricher.Tags.ToLookup(t => t.Key, t => t.Value);
-        lookup["failure-reason"].Should().Contain("500");
-        lookup["failure-summary"].Should().Contain("InternalServerError");
-        lookup["failure-source"].Should().Contain(TelemetryConstants.Unknown);
+        lookup["error.type"].Should().Contain("InternalServerError");
     }
 
     [Fact]

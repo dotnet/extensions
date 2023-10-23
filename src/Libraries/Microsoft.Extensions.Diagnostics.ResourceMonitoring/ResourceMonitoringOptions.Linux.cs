@@ -13,7 +13,7 @@ public partial class ResourceMonitoringOptions
     internal static readonly TimeSpan DefaultRefreshInterval = TimeSpan.FromSeconds(5);
 
     /// <summary>
-    /// Gets or sets the default interval used for refreshing values reported by <see cref="ResourceUtilizationCounters.CpuConsumptionPercentage"/>.
+    /// Gets or sets the default interval used for refreshing values reported by <c>"process.cpu.utilization"</c> metrics.
     /// </summary>
     /// <value>
     /// The default value is 5 seconds.
@@ -26,7 +26,7 @@ public partial class ResourceMonitoringOptions
     public TimeSpan CpuConsumptionRefreshInterval { get; set; } = DefaultRefreshInterval;
 
     /// <summary>
-    /// Gets or sets the default interval used for refreshing values reported by <see cref="ResourceUtilizationCounters.MemoryConsumptionPercentage"/>.
+    /// Gets or sets the default interval used for refreshing values reported by <c>"dotnet.process.memory.virtual.utilization"</c> metrics.
     /// </summary>
     /// <value>
     /// The default value is 5 seconds.
