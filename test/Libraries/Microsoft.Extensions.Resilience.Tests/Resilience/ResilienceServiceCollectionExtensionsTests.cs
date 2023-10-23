@@ -59,14 +59,4 @@ public class ResilienceServiceCollectionExtensionsTests
 
         _services.Count.Should().Be(count);
     }
-
-    [Fact]
-    public void ConfigureFailureResultContext_Ok()
-    {
-        var count = _services.Count;
-        _services.ConfigureFailureResultContext<int>(_ => FailureResultContext.Create("dummy", "dummy", "dummy"));
-        var factories = _services.BuildServiceProvider().GetRequiredService<IOptions<FailureEventMetricsOptions>>().Value.Factories;
-
-        factories[typeof(int)](10).FailureReason.Should().Be("dummy");
-    }
 }

@@ -7,7 +7,6 @@ using System.Linq;
 using FluentAssertions;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Http.Diagnostics;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Resilience;
 using Microsoft.Extensions.Resilience.Internal;
 using Moq;
@@ -19,8 +18,7 @@ namespace Microsoft.Extensions.Resilience.Test.Resilience;
 
 public class ResilienceMetricsEnricherTests
 {
-    private readonly List<IOutgoingRequestContext> _outgoingRequestContexts = [];
-    private readonly FailureEventMetricsOptions _options = new();
+    private IOutgoingRequestContext? _outgoingRequestContext;
     private Mock<IExceptionSummarizer>? _summarizer = new(MockBehavior.Strict);
 
     private List<KeyValuePair<string, object?>> _tags = [];
@@ -60,18 +58,6 @@ public class ResilienceMetricsEnricherTests
     }
 
     [Fact]
-    public void AddResilienceEnricher_Outcome_EnsureDimensions()
-    {
-        _options.ConfigureFailureResultContext<string>(v => FailureResultContext.Create("my-source", "my-reason", v));
-
-        CreateSut().Enrich(CreateEnrichmentContext<string>(Outcome.FromResult("string-result")));
-
-        Tags["failure-source"].Should().Be("my-source");
-        Tags["failure-reason"].Should().Be("my-reason");
-        Tags["failure-summary"].Should().Be("string-result");
-    }
-
-    [Fact]
     public void AddResilienceEnricher_RequestMetadata_EnsureDimensions()
     {
         CreateSut().Enrich(CreateEnrichmentContext<string>(
@@ -86,7 +72,7 @@ public class ResilienceMetricsEnricherTests
     public void AddResilienceEnricher_RequestMetadataFromOutgoingRequestContext_EnsureDimensions()
     {
         var requestMetadata = new RequestMetadata { RequestName = "my-req", DependencyName = "my-dep" };
-        _outgoingRequestContexts.Add(Mock.Of<IOutgoingRequestContext>(v => v.RequestMetadata == requestMetadata));
+        _outgoingRequestContext = Mock.Of<IOutgoingRequestContext>(v => v.RequestMetadata == requestMetadata);
 
         CreateSut().Enrich(CreateEnrichmentContext<string>());
 
@@ -110,5 +96,5 @@ public class ResilienceMetricsEnricherTests
             _tags);
     }
 
-    private ResilienceMetricsEnricher CreateSut() => new(Options.Options.Create(_options), _outgoingRequestContexts, _summarizer?.Object);
+    private ResilienceMetricsEnricher CreateSut() => new(_outgoingRequestContext, _summarizer?.Object);
 }
