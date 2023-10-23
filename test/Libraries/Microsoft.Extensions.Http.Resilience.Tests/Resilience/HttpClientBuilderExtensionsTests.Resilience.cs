@@ -69,13 +69,13 @@ public sealed partial class HttpClientBuilderExtensionsTests
             context.OnPipelineDisposed(() => onPipelineDisposedCalled = true);
         });
 
-        var serviceProvider = services.BuildServiceProvider();
+        using (var serviceProvider = services.BuildServiceProvider())
+        {
+            var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
+            using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
 
-        var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
-        using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
-
-        await client.GetStringAsync("https://dummy");
-        serviceProvider.Dispose();
+            await client.GetStringAsync("https://dummy");
+        }
 
         onPipelineDisposedCalled.Should().BeTrue();
     }

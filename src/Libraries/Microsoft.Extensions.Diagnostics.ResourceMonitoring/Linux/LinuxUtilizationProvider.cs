@@ -9,7 +9,9 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 
 internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 {
-    private const float Hundred = 100.0f;
+    private const double One = 1.0;
+    private const long Hundred = 100L;
+
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
     private readonly LinuxUtilizationParser _parser;
@@ -48,7 +50,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var hostCpus = _parser.GetHostCpuCount();
         var availableCpus = _parser.GetCgroupLimitedCpus();
 
-        _scale = hostCpus * Hundred / availableCpus;
+        _scale = hostCpus / availableCpus;
         _scaleForTrackerApi = hostCpus / availableCpus;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
@@ -58,13 +60,13 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var meter = meterFactory.Create("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationCounters.CpuConsumptionPercentage, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationCounters.MemoryConsumptionPercentage, observeValue: MemoryPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.CpuUtilization, observeValue: CpuUtilization, unit: "1");
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.MemoryUtilization, observeValue: MemoryUtilization, unit: "1");
 
         Resources = new SystemResources(1, hostCpus, _totalMemoryInBytes, hostMemory);
     }
 
-    public double CpuPercentage()
+    public double CpuUtilization()
     {
         var now = _timeProvider.GetUtcNow();
         bool needUpdate = false;
@@ -91,7 +93,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
                     if (deltaHost > 0 && deltaCgroup > 0)
                     {
-                        var percentage = Math.Min(Hundred, deltaCgroup / deltaHost * _scale);
+                        var percentage = Math.Min(One, deltaCgroup / deltaHost * _scale);
 
                         _cpuPercentage = percentage;
                         _refreshAfterCpu = now.Add(_cpuRefreshInterval);
@@ -105,7 +107,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         return _cpuPercentage;
     }
 
-    public double MemoryPercentage()
+    public double MemoryUtilization()
     {
         var now = _timeProvider.GetUtcNow();
         bool needUpdate = false;
@@ -126,7 +128,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             {
                 if (now >= _refreshAfterMemory)
                 {
-                    var memoryPercentage = Math.Min(Hundred, (double)memoryUsed / _totalMemoryInBytes * Hundred);
+                    var memoryPercentage = Math.Min(One, (double)memoryUsed / _totalMemoryInBytes);
 
                     _memoryPercentage = memoryPercentage;
                     _refreshAfterMemory = now.Add(_memoryRefreshInterval);
@@ -149,9 +151,9 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var memoryUsed = _parser.GetMemoryUsageInBytes();
 
         return new Snapshot(
-            totalTimeSinceStart: TimeSpan.FromTicks(hostTime / (long)Hundred),
+            totalTimeSinceStart: TimeSpan.FromTicks(hostTime / Hundred),
             kernelTimeSinceStart: TimeSpan.Zero,
-            userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / (long)Hundred * _scaleForTrackerApi)),
+            userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / Hundred * _scaleForTrackerApi)),
             memoryUsageInBytes: memoryUsed);
     }
 }

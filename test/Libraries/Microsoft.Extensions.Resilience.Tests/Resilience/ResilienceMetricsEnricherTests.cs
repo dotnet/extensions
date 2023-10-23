@@ -41,7 +41,6 @@ public class ResilienceMetricsEnricherTests
         CreateSut().Enrich(CreateEnrichmentContext<string>(Outcome.FromException<string>(new InvalidOperationException { Source = "my-source" })));
 
         Tags["error.type"].Should().Be("type:desc:details");
-        Tags["dotnet.exception.source"].Should().Be("my-source");
     }
 
     [Fact]
@@ -51,9 +50,7 @@ public class ResilienceMetricsEnricherTests
 
         CreateSut().Enrich(CreateEnrichmentContext<string>(Outcome.FromException<string>(new InvalidOperationException { Source = "my-source" })));
 
-        Tags.Should().NotContainKey("failure-reason");
-        Tags.Should().NotContainKey("failure-summary");
-        Tags.Should().NotContainKey("failure-source");
+        Tags.Should().NotContainKey("error.type");
     }
 
     [Fact]
@@ -63,8 +60,8 @@ public class ResilienceMetricsEnricherTests
             Outcome.FromResult("string-result"),
             context => context.SetRequestMetadata(new RequestMetadata { RequestName = "my-req", DependencyName = "my-dep" })));
 
-        Tags["dotnet.dependency.name"].Should().Be("my-dep");
-        Tags["dotnet.request.name"].Should().Be("my-req");
+        Tags["request.dependency.name"].Should().Be("my-dep");
+        Tags["request.name"].Should().Be("my-req");
     }
 
     [Fact]
@@ -75,8 +72,8 @@ public class ResilienceMetricsEnricherTests
 
         CreateSut().Enrich(CreateEnrichmentContext<string>());
 
-        Tags["dotnet.dependency.name"].Should().Be("my-dep");
-        Tags["dotnet.request.name"].Should().Be("my-req");
+        Tags["request.dependency.name"].Should().Be("my-dep");
+        Tags["request.name"].Should().Be("my-req");
     }
 
     private EnrichmentContext<T, object> CreateEnrichmentContext<T>(Outcome<T>? outcome = null, Action<ResilienceContext>? configure = null)
