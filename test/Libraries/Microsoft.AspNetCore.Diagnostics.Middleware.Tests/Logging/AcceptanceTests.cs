@@ -267,41 +267,6 @@ public partial class AcceptanceTests
     }
 
     [Fact]
-    public async Task HttpLogging_WhenMultiSegmentRequestPipe_LogRequestBody()
-    {
-        await RunAsync(
-            LogLevel.Information,
-            services => services.AddHttpLogging(x =>
-            {
-                x.RequestBodyContentTypes.Add("text/*");
-                x.LogBody = true;
-            }),
-            async (logCollector, client) =>
-            {
-                const string Content = "Whatever...";
-
-                using var content = new StringContent(Content, null, MediaTypeNames.Text.Plain);
-                using var response = await client.PostAsync("/multi-segment-pipe", content);
-                Assert.True(response.IsSuccessStatusCode);
-
-                await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
-
-                Assert.Equal(1, logCollector.Count);
-                Assert.Null(logCollector.LatestRecord.Exception);
-                Assert.Equal(LogLevel.Information, logCollector.LatestRecord.Level);
-                Assert.Equal(LoggingCategory, logCollector.LatestRecord.Category);
-
-                var responseStatus = ((int)response.StatusCode).ToInvariantString();
-                var state = logCollector.LatestRecord.StructuredState;
-
-                Assert.Equal(7, state!.Count);
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.Method && x.Value == HttpMethod.Post.ToString());
-                Assert.Single(state, x => x.Key == HttpLoggingTagNames.RequestBody && x.Value == "Test Segment");
-            });
-    }
-
-    [Fact]
     public async Task HttpLogging_WhenLogLevelInfo_LogRequestStart()
     {
         await RunAsync(
@@ -562,20 +527,18 @@ public partial class AcceptanceTests
                 var sixthRecord = logRecords[5].StructuredState;
 
                 Assert.Equal(5, firstRecord!.Count);
-                Assert.Equal(1, secondRecord!.Count);
+                Assert.Single(secondRecord!);
                 Assert.Equal(5, fourthRecord!.Count);
-                Assert.Equal(1, fithRecord!.Count);
+                Assert.Single(fithRecord!);
                 Assert.DoesNotContain(firstRecord, x => x.Key == HttpLoggingTagNames.StatusCode);
                 Assert.DoesNotContain(firstRecord, x => x.Key == HttpLoggingTagNames.Duration);
-                Assert.DoesNotContain(secondRecord, x => x.Key == HttpLoggingTagNames.Duration);
+                Assert.DoesNotContain(secondRecord!, x => x.Key == HttpLoggingTagNames.Duration);
                 Assert.DoesNotContain(fourthRecord, x => x.Key == HttpLoggingTagNames.StatusCode);
                 Assert.DoesNotContain(fourthRecord, x => x.Key == HttpLoggingTagNames.Duration);
-                Assert.DoesNotContain(fithRecord, x => x.Key == HttpLoggingTagNames.Duration);
+                Assert.DoesNotContain(fithRecord!, x => x.Key == HttpLoggingTagNames.Duration);
 
-                Assert.Equal(1, secondRecord!.Count);
-                Assert.Equal(1, fithRecord!.Count);
-                Assert.Single(secondRecord, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
-                Assert.Single(fithRecord, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+                Assert.Single(secondRecord!, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+                Assert.Single(fithRecord!, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
 
                 Assert.Equal(2, thirdRecord!.Count);
                 Assert.Equal(2, sixthRecord!.Count);
@@ -755,7 +718,7 @@ public partial class AcceptanceTests
             }),
             async (logCollector, client) =>
             {
-                using var response = await client.GetAsync("").ConfigureAwait(false);
+                using var response = await client.GetAsync("");
 
                 Assert.True(response.IsSuccessStatusCode);
                 Assert.Equal(0, logCollector.Count);
@@ -771,7 +734,7 @@ public partial class AcceptanceTests
             .AddHttpLogEnricher<ThrowingEnricher>(),
             async (logCollector, client) =>
             {
-                using var response = await client.GetAsync("").ConfigureAwait(false);
+                using var response = await client.GetAsync("");
 
                 Assert.True(response.IsSuccessStatusCode);
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);

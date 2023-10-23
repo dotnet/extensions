@@ -162,8 +162,8 @@ public class HttpRequestReaderTest
         var actualRecord = new LogRecord();
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
-        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
+        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
+        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
         actualRecord.Should().BeEquivalentTo(
             expectedRecord,
