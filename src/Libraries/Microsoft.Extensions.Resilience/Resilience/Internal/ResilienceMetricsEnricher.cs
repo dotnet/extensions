@@ -28,9 +28,8 @@ internal sealed class ResilienceMetricsEnricher : MeteringEnricher
 
         if (_exceptionSummarizer is not null && outcome?.Exception is Exception e)
         {
-            context.Tags.Add(new(ResilienceTagNames.FailureSource, e.Source));
-            context.Tags.Add(new(ResilienceTagNames.FailureReason, e.GetType().Name));
-            context.Tags.Add(new(ResilienceTagNames.FailureSummary, _exceptionSummarizer.Summarize(e).ToString()));
+            context.Tags.Add(new(ResilienceTagNames.ExceptionSource, e.Source));
+            context.Tags.Add(new(ResilienceTagNames.ErrorType, _exceptionSummarizer.Summarize(e).ToString()));
         }
 
         if ((context.TelemetryEvent.Context.GetRequestMetadata() ?? _outgoingRequestContext?.RequestMetadata) is RequestMetadata requestMetadata)

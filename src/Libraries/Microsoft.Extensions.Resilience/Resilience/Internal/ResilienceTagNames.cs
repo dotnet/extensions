@@ -5,13 +5,11 @@ namespace Microsoft.Extensions.Resilience.Internal;
 
 internal static class ResilienceTagNames
 {
-    public const string FailureSource = "failure-source";
+    public const string ExceptionSource = "dotnet.exception.source";
 
-    public const string FailureReason = "failure-reason";
+    public const string ErrorType = "error.type";
 
-    public const string FailureSummary = "failure-summary";
+    public const string DependencyName = "dotnet.dependency.name";
 
-    public const string DependencyName = "dep-name";
-
-    public const string RequestName = "req-name";
+    public const string RequestName = "dotnet.request.name";
 }

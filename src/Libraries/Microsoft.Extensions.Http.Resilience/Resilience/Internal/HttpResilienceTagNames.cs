@@ -5,5 +5,5 @@ namespace Microsoft.Extensions.Http.Resilience.Internal;
 
 internal static class HttpResilienceTagNames
 {
-    public const string FailureReason = "failure-reason";
+    public const string ErrorType = "error.type";
 }

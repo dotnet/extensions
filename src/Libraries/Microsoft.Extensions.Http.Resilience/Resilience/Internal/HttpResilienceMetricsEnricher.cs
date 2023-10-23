@@ -18,7 +18,7 @@ internal sealed class HttpResilienceMetricsEnricher : MeteringEnricher
 
         if (context.TelemetryEvent.Outcome.HasValue && context.TelemetryEvent.Outcome.Value.Result is HttpResponseMessage response)
         {
-            context.Tags.Add(new(HttpResilienceTagNames.FailureReason, ((int)response.StatusCode).ToInvariantString()));
+            context.Tags.Add(new(HttpResilienceTagNames.ErrorType, ((int)response.StatusCode).ToInvariantString()));
         }
     }
 }
