@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Microsoft.Extensions.StaticAnalysis</PackageId>
-    <Description>Curated set of code analyzers and code analyzer settings.</Description>
+    <Description>A curated set of code analyzers and code analyzer settings.</Description>
     <Workstream>Fundamentals</Workstream>
     <Category>Static Analysis</Category>
   </PropertyGroup>
