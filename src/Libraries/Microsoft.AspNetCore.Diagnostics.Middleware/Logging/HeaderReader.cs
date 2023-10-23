@@ -16,28 +16,32 @@ internal sealed class HeaderReader
 {
     private readonly IRedactorProvider _redactorProvider;
     private readonly KeyValuePair<string, DataClassification>[] _headers;
+    private readonly string[] _normalizedHeaders;
 
-    public HeaderReader(IDictionary<string, DataClassification> headersToLog, IRedactorProvider redactorProvider)
+    public HeaderReader(IDictionary<string, DataClassification> headersToLog, IRedactorProvider redactorProvider, string prefix)
     {
         _redactorProvider = redactorProvider;
 
         _headers = headersToLog.Count == 0 ? [] : headersToLog.ToArray();
+        _normalizedHeaders = HeaderNormalizer.PrepareNormalizedHeaderNames(_headers, prefix);
     }
 
-    public void Read(IHeaderDictionary headers, IList<KeyValuePair<string, object?>> logContext, string prefix)
+    public void Read(IHeaderDictionary headers, IList<KeyValuePair<string, object?>> logContext)
     {
         if (headers.Count == 0)
         {
             return;
         }
 
-        foreach (var header in _headers)
+        for (int i = 0; i < _headers.Length; i++)
         {
+            var header = _headers[i];
+
             if (headers.TryGetValue(header.Key, out var headerValue))
             {
                 var provider = _redactorProvider.GetRedactor(header.Value);
                 var redacted = provider.Redact(headerValue.ToString());
-                logContext.Add(new(prefix + header.Key, redacted));
+                logContext.Add(new(_normalizedHeaders[i], redacted));
             }
         }
     }

@@ -26,22 +26,22 @@
         {
           "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.ApplicationName",
           "Stage": "Stable",
-          "Value": "AppName"
+          "Value": "service.name"
         },
         {
           "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.BuildVersion",
           "Stage": "Stable",
-          "Value": "CloudRoleVer"
+          "Value": "service.version"
         },
         {
           "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.DeploymentRing",
           "Stage": "Stable",
-          "Value": "CloudDeploymentRing"
+          "Value": "DeploymentRing"
         },
         {
           "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ApplicationEnricherTags.EnvironmentName",
           "Stage": "Stable",
-          "Value": "CloudEnv"
+          "Value": "deployment.environment"
         }
       ],
       "Properties": [
@@ -260,12 +260,12 @@
         {
           "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ProcessEnricherTagNames.ProcessId",
           "Stage": "Stable",
-          "Value": "pid"
+          "Value": "process.pid"
         },
         {
           "Member": "const string Microsoft.Extensions.Diagnostics.Enrichment.ProcessEnricherTagNames.ThreadId",
           "Stage": "Stable",
-          "Value": "tid"
+          "Value": "thread.id"
         }
       ],
       "Properties": [

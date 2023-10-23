@@ -316,7 +316,7 @@ internal sealed partial class Emitter : EmitterBase
                         {
                             if (!member.HasDataClassification)
                             {
-                                var propName = PropertyChainToString(propertyChain, member, "_", omitReferenceName: p.OmitReferenceName);
+                                var propName = PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
                                 var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
                                 var ts = ShouldStringifyProperty(member)
@@ -367,7 +367,7 @@ internal sealed partial class Emitter : EmitterBase
                         {
                             if (member.HasDataClassification)
                             {
-                                var propName = PropertyChainToString(propertyChain, member, "_", omitReferenceName: p.OmitReferenceName);
+                                var propName = PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
                                 var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
                                 var value = ShouldStringifyProperty(member)
@@ -391,7 +391,7 @@ internal sealed partial class Emitter : EmitterBase
                     {
                         if (member.HasDataClassification)
                         {
-                            var propName = PropertyChainToString(propertyChain, member, "_", omitReferenceName: p.OmitReferenceName);
+                            var propName = PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
                             var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
                             var value = ShouldStringifyProperty(member)
@@ -418,7 +418,7 @@ internal sealed partial class Emitter : EmitterBase
                         }
                         else
                         {
-                            var propName = PropertyChainToString(propertyChain, member, "_", omitReferenceName: p.OmitReferenceName);
+                            var propName = PropertyChainToString(propertyChain, member, ".", omitReferenceName: p.OmitReferenceName);
                             var accessExpression = PropertyChainToString(propertyChain, member, "?.", nonNullSeparator: ".");
 
                             var ts = ShouldStringifyProperty(member)
