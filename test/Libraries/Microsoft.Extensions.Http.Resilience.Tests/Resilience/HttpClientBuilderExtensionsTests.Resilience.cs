@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Polly;
 using Polly.Registry;
+using Polly.Telemetry;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Resilience.Test;
@@ -98,7 +100,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
     public async Task AddResilienceHandler_EnsureErrorType()
     {
         using var metricCollector = new MetricCollector<int>(null, "Polly", "resilience.polly.strategy.events");
-
+        var enricher = new TestMetricsEnricher();
         var clientBuilder = new ServiceCollection()
             .AddHttpClient("client")
             .ConfigurePrimaryHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.InternalServerError))
@@ -110,12 +112,14 @@ public sealed partial class HttpClientBuilderExtensionsTests
                 options.Retry.Delay = TimeSpan.Zero;
             });
 
+        clientBuilder.Services.Configure<TelemetryOptions>(o => o.MeteringEnrichers.Add(enricher));
+
         var client = clientBuilder.Services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("client");
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
 
         using var response = await client.SendAsync(request);
 
-        metricCollector.LastMeasurement!.Tags["error.type"].Should().BeOfType<string>().Subject.Should().Be("500");
+        enricher.Tags["error.type"].Should().BeOfType<string>().Subject.Should().Be("500");
     }
 
     [Fact]
@@ -253,4 +257,17 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     private void ConfigureBuilder(ResiliencePipelineBuilder<HttpResponseMessage> builder) => builder.AddTimeout(TimeSpan.FromSeconds(1));
+
+    private class TestMetricsEnricher : MeteringEnricher
+    {
+        public Dictionary<string, object?> Tags { get; } = [];
+
+        public override void Enrich<TResult, TArgs>(in EnrichmentContext<TResult, TArgs> context)
+        {
+            foreach (var tag in context.Tags)
+            {
+                Tags[tag.Key] = tag.Value;
+            }
+        }
+    }
 }
