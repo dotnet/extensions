@@ -20,7 +20,7 @@ public class HeaderNormalizerTests
             Prefix);
 
         Assert.Equal(2, headers.Length);
-        Assert.Equal(Prefix + "accept_charset", headers[0]);
-        Assert.Equal(Prefix + "content_type", headers[1]);
+        Assert.Equal(Prefix + "accept-charset", headers[0]);
+        Assert.Equal(Prefix + "content-type", headers[1]);
     }
 }

@@ -34,8 +34,8 @@ public class HttpClientLoggerTest
 {
     private const string TestRequestHeader = "Request-Header";
     private const string TestResponseHeader = "Response-Header";
-    private const string TestExpectedRequestHeaderKey = $"{HttpClientLoggingTagNames.RequestHeaderPrefix}request_header";
-    private const string TestExpectedResponseHeaderKey = $"{HttpClientLoggingTagNames.ResponseHeaderPrefix}response_header";
+    private const string TestExpectedRequestHeaderKey = $"{HttpClientLoggingTagNames.RequestHeaderPrefix}request-header";
+    private const string TestExpectedResponseHeaderKey = $"{HttpClientLoggingTagNames.ResponseHeaderPrefix}response-header";
 
     private const string TextPlain = "text/plain";
 

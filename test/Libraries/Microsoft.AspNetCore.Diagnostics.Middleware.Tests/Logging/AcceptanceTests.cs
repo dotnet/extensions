@@ -286,7 +286,7 @@ public partial class AcceptanceTests
                 const string Content = "Client: hello!";
 
                 const string NormalizedRequestHeader = "accept";
-                const string NormalizedResponseHeader = "transfer_encoding";
+                const string NormalizedResponseHeader = "transfer-encoding";
 
                 using var request = new HttpRequestMessage(HttpMethod.Post, "/")
                 {
@@ -350,7 +350,7 @@ public partial class AcceptanceTests
             async static (logCollector, client) =>
             {
                 const string NormalizedRequestHeader = "accept";
-                const string NormalizedResponseHeader = "transfer_encoding";
+                const string NormalizedResponseHeader = "transfer-encoding";
 
                 using var httpMessage = new HttpRequestMessage(HttpMethod.Get, "/");
                 httpMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));

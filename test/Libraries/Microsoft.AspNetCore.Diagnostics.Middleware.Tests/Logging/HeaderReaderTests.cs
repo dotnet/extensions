@@ -37,7 +37,7 @@ public class HeaderReaderTests
     public void ShouldAddHeaders_WhenHeadersCollectionNotEmpty()
     {
         const string Prefix = "prefix.";
-        const string NormalizedHeader = Prefix + "accept_charset";
+        const string NormalizedHeader = Prefix + "accept-charset";
 
         var headersToLog = new Dictionary<string, DataClassification>
         {

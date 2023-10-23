@@ -31,8 +31,8 @@ public class LoggerMessageStateExtensionsTests
         const string Header1 = "Accept-Charset";
         const string Header2 = "CONTENT-TYPE";
 
-        const string NormalizedHeader1 = "accept_charset";
-        const string NormalizedHeader2 = "content_type";
+        const string NormalizedHeader1 = "accept-charset";
+        const string NormalizedHeader2 = "content-type";
 
         List<KeyValuePair<string, string>> headers = [new(Header1, "v1"), new(Header2, "v2")];
 

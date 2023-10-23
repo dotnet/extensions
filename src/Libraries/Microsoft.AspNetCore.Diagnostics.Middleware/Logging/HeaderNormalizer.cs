@@ -23,6 +23,6 @@ internal static class HeaderNormalizer
         Justification = "Normalization to lower case is required by OTel's semantic conventions")]
     private static string Normalize(string header)
     {
-        return header.ToLowerInvariant().Replace('-', '_');
+        return header.ToLowerInvariant();
     }
 }

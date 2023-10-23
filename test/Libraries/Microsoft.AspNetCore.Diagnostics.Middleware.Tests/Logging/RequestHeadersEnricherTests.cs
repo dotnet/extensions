@@ -23,10 +23,10 @@ public class RequestHeadersEnricherTests
     private const string RequestId = "RequestIdTestValue";
     private const string TestValue = "TestValue";
 
-    private const string NormalizedHeaderKey1 = HttpLoggingTagNames.RequestHeaderPrefix + "x_requestid";
+    private const string NormalizedHeaderKey1 = HttpLoggingTagNames.RequestHeaderPrefix + "x-requestid";
     private const string NormalizedHeaderKey2 = HttpLoggingTagNames.RequestHeaderPrefix + "host";
     private const string NormalizedHeaderKey3 = HttpLoggingTagNames.RequestHeaderPrefix + "nullheader";
-    private const string NormalizedHeaderKey4 = HttpLoggingTagNames.RequestHeaderPrefix + "x_platform";
+    private const string NormalizedHeaderKey4 = HttpLoggingTagNames.RequestHeaderPrefix + "x-platform";
 
     private readonly Mock<IHttpContextAccessor> _accessorMock;
     private readonly Mock<IRedactorProvider> _redactorProviderMock;
