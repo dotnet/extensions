@@ -2,17 +2,14 @@
 
 This repository contains a suite of libraries that provide facilities commonly needed when creating production-ready applications. Initially developed to support high-scale and high-availability services within Microsoft, such as Microsoft Teams, these libraries deliver functionality that can help make applications more efficient, more robust, and more manageable.
 
-The code in this repo is preliminary and will be released in stable form with .NET 8
-
 The major functional areas this repo addresses are:
-- Compliance: Mechanisms to help manage application data according to privacy regulations and policies, which includes a data annotation framework, supporting analyzers, audit report generation, and telemetry redaction.
+- Compliance: Mechanisms to help manage application data according to privacy regulations and policies, which includes a data annotation framework, audit report generation, and telemetry redaction.
 - Diagnostics: Provides a set of APIs that can be used to gather and report diagnostic information about the health of a service.
 - Contextual Options: Extends the .NET Options model to enable experimentations in production.
-- Resilience: Builds on top of the popular Polly library to provide sophisticated resilience pipelines along with support for chaos engineering to make applications robust to transient errors.
+- Resilience: Builds on top of the popular Polly library to provide sophisticated resilience pipelines to make applications robust to transient errors.
 - Telemetry: Sophisticated telemetry facilities provide enhanced logging, metering, tracing, and latency measuring functionality.
 - AspNetCore extensions: Provides different middlewares and extensions that can be used to build high-performance and high-availability ASP.NET Core services.
-- Cloud Abstractions: A growing set of abstractions representing common cloud-native service types, making it possible to write applications that can work across multiple cloud providers with relative ease.
-- Static Analysis: Provides a set of Roslyn analyzers that can be used to enforce best practices and coding standards.
+- Static Analysis: Curated static analysis settings to help improve your code.
 - Testing: Dramatically simplifies testing around common .NET abstractions such as ILogger and the TimeProvider.
 
 [![Build Status](https://dev.azure.com/dnceng/internal/_apis/build/status/r9/dotnet-r9?branchName=main)](https://dev.azure.com/dnceng/internal/_build/latest?definitionId=1223&branchName=main)
