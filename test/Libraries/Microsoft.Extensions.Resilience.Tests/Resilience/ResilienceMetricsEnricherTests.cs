@@ -40,7 +40,7 @@ public class ResilienceMetricsEnricherTests
 
         CreateSut().Enrich(CreateEnrichmentContext<string>(Outcome.FromException<string>(new InvalidOperationException { Source = "my-source" })));
 
-        Tags["error.type"].Should().Be("type:desc:details");
+        Tags["error.type"].Should().Be("desc");
     }
 
     [Fact]
