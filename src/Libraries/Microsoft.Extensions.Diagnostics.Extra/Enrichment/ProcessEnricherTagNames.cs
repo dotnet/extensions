@@ -14,11 +14,13 @@ public static class ProcessEnricherTagNames
     /// <summary>
     /// Process ID.
     /// </summary>
+    // See https://github.com/open-telemetry/semantic-conventions/blob/main/docs/resource/process.md#process.
     public const string ProcessId = "process.pid";
 
     /// <summary>
     /// Thread ID.
     /// </summary>
+    // See https://github.com/open-telemetry/semantic-conventions/blob/main/docs/general/attributes.md#general-thread-attributes.
     public const string ThreadId = "thread.id";
 
     /// <summary>

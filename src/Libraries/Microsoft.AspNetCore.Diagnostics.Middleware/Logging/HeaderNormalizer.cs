@@ -20,9 +20,11 @@ internal static class HeaderNormalizer
     }
 
     [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase",
-        Justification = "Normalization to lower case is required by OTel's semantic conventions")]
+        Justification = "Normalization to lower case is required by OTel semantic conventions")]
     private static string Normalize(string header)
     {
+        // Normalization of header names required by OTel semantic-conventions:
+        // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/http/http-spans.md#common-attributes.
         return header.ToLowerInvariant();
     }
 }

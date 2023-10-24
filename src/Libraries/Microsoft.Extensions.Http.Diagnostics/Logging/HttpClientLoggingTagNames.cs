@@ -9,6 +9,9 @@ namespace Microsoft.Extensions.Http.Logging;
 /// <summary>
 /// Constants used for HTTP client logging tags.
 /// </summary>
+// There is no OTel semantic convention for HTTP logs, therefore we are using semantic conventions for HTTP spans:
+// https://github.com/open-telemetry/semantic-conventions/blob/main/docs/http/http-spans.md.
+// "Duration", "RequestBody" and "ResponseBody" are not part of the semantic conventions though.
 public static class HttpClientLoggingTagNames
 {
     /// <summary>

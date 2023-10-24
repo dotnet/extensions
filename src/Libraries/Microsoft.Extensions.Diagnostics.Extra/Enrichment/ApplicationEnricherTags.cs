@@ -14,11 +14,13 @@ public static class ApplicationEnricherTags
     /// <summary>
     /// Application name.
     /// </summary>
+    // See https://github.com/open-telemetry/semantic-conventions/blob/main/docs/resource/README.md#service.
     public const string ApplicationName = "service.name";
 
     /// <summary>
     /// Environment name.
     /// </summary>
+    // See https://github.com/open-telemetry/semantic-conventions/blob/main/docs/resource/deployment-environment.md#deployment.
     public const string EnvironmentName = "deployment.environment";
 
     /// <summary>
@@ -29,6 +31,7 @@ public static class ApplicationEnricherTags
     /// <summary>
     /// Build version.
     /// </summary>
+    // See https://github.com/open-telemetry/semantic-conventions/blob/main/docs/resource/README.md#service.
     public const string BuildVersion = "service.version";
 
     /// <summary>

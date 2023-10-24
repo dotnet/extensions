@@ -21,6 +21,8 @@ namespace Microsoft.Extensions.Logging;
 
 internal sealed partial class ExtendedLogger : ILogger
 {
+    // We are using OTel semantic conventions for Exceptions in Logs:
+    // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/exceptions/exceptions-logs.md.
     private const string ExceptionType = "exception.type";
     private const string ExceptionMessage = "exception.message";
     private const string ExceptionStackTrace = "exception.stacktrace";
