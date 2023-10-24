@@ -35,7 +35,7 @@ For example:
 services.AddExceptionSummarizer();
 ```
 
-The package comes with a predefined `IExceptionSummaryProvider` implementation can handle common
+The package comes with a predefined `IExceptionSummaryProvider` implementation that handles common
 exceptions that might be sent during a web request. Here is how to register it:
 
 ```csharp
