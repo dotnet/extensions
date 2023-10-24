@@ -8,7 +8,6 @@
   <PropertyGroup>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMetricsGenerator>true</UseMetricsGenerator>
-    <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedThrow>true</InjectSharedThrow>
     <InjectDiagnosticAttributesOnLegacy>true</InjectDiagnosticAttributesOnLegacy>

@@ -2,19 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
-using Microsoft.Extensions.EnumStrings;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 using Polly.Registry;
 using Polly.Telemetry;
-
-[assembly: EnumStrings(typeof(HttpStatusCode))]
 
 namespace Microsoft.Extensions.DependencyInjection;
 
