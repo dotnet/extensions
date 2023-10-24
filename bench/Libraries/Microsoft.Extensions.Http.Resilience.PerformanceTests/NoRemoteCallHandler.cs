@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.Http.Resilience.Bench;
+namespace Microsoft.Extensions.Http.Resilience.PerformanceTests;
 
 internal sealed class NoRemoteCallHandler : DelegatingHandler
 {
