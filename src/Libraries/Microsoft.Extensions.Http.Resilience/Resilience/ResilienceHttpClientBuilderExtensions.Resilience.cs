@@ -39,9 +39,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
         _ = Throw.IfNullOrEmpty(pipelineName);
         _ = Throw.IfNull(configure);
 
-        return builder.AddResilienceHandler(pipelineName, ConfigureBuilder);
-
-        void ConfigureBuilder(ResiliencePipelineBuilder<HttpResponseMessage> builder, ResilienceHandlerContext context) => configure(builder);
+        return builder.AddResilienceHandler(pipelineName, (builder, _) => configure(builder));
     }
 
     /// <summary>
