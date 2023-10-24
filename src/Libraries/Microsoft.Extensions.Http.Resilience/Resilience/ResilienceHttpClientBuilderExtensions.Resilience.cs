@@ -2,20 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
-using Microsoft.Extensions.EnumStrings;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Http.Resilience.Internal;
-using Microsoft.Extensions.Resilience;
 using Microsoft.Shared.Diagnostics;
-using Microsoft.Shared.Text;
 using Polly;
 using Polly.Registry;
-
-[assembly: EnumStrings(typeof(HttpStatusCode))]
+using Polly.Telemetry;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -44,9 +39,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
         _ = Throw.IfNullOrEmpty(pipelineName);
         _ = Throw.IfNull(configure);
 
-        return builder.AddResilienceHandler(pipelineName, ConfigureBuilder);
-
-        void ConfigureBuilder(ResiliencePipelineBuilder<HttpResponseMessage> builder, ResilienceHandlerContext context) => configure(builder);
+        return builder.AddResilienceHandler(pipelineName, (builder, _) => configure(builder));
     }
 
     /// <summary>
@@ -149,17 +142,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
 
         _ = services
             .AddExceptionSummarizer(b => b.AddHttpProvider())
-            .ConfigureFailureResultContext<HttpResponseMessage>((response) =>
-            {
-                if (response != null)
-                {
-                    return FailureResultContext.Create(
-                        failureReason: ((int)response.StatusCode).ToInvariantString(),
-                        additionalInformation: response.StatusCode.ToInvariantString());
-                }
-
-                return FailureResultContext.Create();
-            });
+            .Configure<TelemetryOptions>(options => options.MeteringEnrichers.Add(new HttpResilienceMetricsEnricher()));
     }
 
     private sealed class Marker

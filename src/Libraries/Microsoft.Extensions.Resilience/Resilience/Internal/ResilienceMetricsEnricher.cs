@@ -2,29 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Http.Diagnostics;
-using Microsoft.Extensions.Options;
 using Polly.Telemetry;
 
 namespace Microsoft.Extensions.Resilience.Internal;
 
 internal sealed class ResilienceMetricsEnricher : MeteringEnricher
 {
-    private readonly FrozenDictionary<Type, Func<object, FailureResultContext>> _faultFactories;
     private readonly IOutgoingRequestContext? _outgoingRequestContext;
     private readonly IExceptionSummarizer? _exceptionSummarizer;
 
     public ResilienceMetricsEnricher(
-        IOptions<FailureEventMetricsOptions> metricsOptions,
-        IEnumerable<IOutgoingRequestContext> outgoingRequestContext,
+        IOutgoingRequestContext? outgoingRequestContext = null,
         IExceptionSummarizer? exceptionSummarizer = null)
     {
-        _faultFactories = metricsOptions.Value.Factories.ToFrozenDictionary();
-        _outgoingRequestContext = outgoingRequestContext.FirstOrDefault();
+        _outgoingRequestContext = outgoingRequestContext;
         _exceptionSummarizer = exceptionSummarizer;
     }
 
@@ -34,12 +28,7 @@ internal sealed class ResilienceMetricsEnricher : MeteringEnricher
 
         if (_exceptionSummarizer is not null && outcome?.Exception is Exception e)
         {
-            context.Tags.Add(new(ResilienceTagNames.ErrorType, _exceptionSummarizer.Summarize(e).ToString()));
-        }
-        else if (outcome is not null && outcome.Value.Result is object result && _faultFactories.TryGetValue(result.GetType(), out var factory))
-        {
-            var failureContext = factory(result);
-            context.Tags.Add(new(ResilienceTagNames.ErrorType, failureContext.AdditionalInformation));
+            context.Tags.Add(new(ResilienceTagNames.ErrorType, _exceptionSummarizer.Summarize(e).Description));
         }
 
         if ((context.TelemetryEvent.Context.GetRequestMetadata() ?? _outgoingRequestContext?.RequestMetadata) is RequestMetadata requestMetadata)
