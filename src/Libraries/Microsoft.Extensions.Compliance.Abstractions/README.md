@@ -1,6 +1,6 @@
 # Microsoft.Extensions.Compliance.Abstractions
 
-This provides types necessary to extend the redaction feature.
+This package introduces data classification and data redaction features.
 
 ## Install the package
 
@@ -52,11 +52,11 @@ using Microsoft.Extensions.Compliance.Redaction;
 
 public sealed class StarRedactorProvider : IRedactorProvider
 {
-    private static StarRedactor _startRedactor = new();
+    private static readonly StarRedactor _starRedactor = new();
 
     public static StarRedactorProvider Instance { get; } = new();
 
-    public Redactor GetRedactor(DataClassification classification) => _startRedactor;
+    public Redactor GetRedactor(DataClassification classification) => _starRedactor;
 }
 ```
 
