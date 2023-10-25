@@ -31,10 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.Extra\Microsoft.Extensions.Diagnostics.Extra.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.AutoActivation\Microsoft.Extensions.DependencyInjection.AutoActivation.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExtraAbstractions\Microsoft.Extensions.Diagnostics.ExtraAbstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.TelemetryAbstractions\Microsoft.Extensions.TelemetryAbstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

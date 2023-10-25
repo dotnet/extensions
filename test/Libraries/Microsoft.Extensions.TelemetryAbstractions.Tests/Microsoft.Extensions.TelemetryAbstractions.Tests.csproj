@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.Extra</RootNamespace>
-    <Description>Unit tests for Microsoft.Extensions.Diagnostics.ExtraAbstractions.</Description>
+    <RootNamespace>Microsoft.Extensions.Telemetry</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.TelemetryAbstractions.</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.ExtraAbstractions\Microsoft.Extensions.Diagnostics.ExtraAbstractions.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.TelemetryAbstractions\Microsoft.Extensions.TelemetryAbstractions.csproj" ProjectUnderTest="true" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Testing\Microsoft.Extensions.Compliance.Testing.csproj" />
   </ItemGroup>
 

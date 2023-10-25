@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Diagnostics.ExtraAbstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.TelemetryAbstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "readonly struct Microsoft.Extensions.Diagnostics.Latency.Checkpoint : System.IEquatable<Microsoft.Extensions.Diagnostics.Latency.Checkpoint>",

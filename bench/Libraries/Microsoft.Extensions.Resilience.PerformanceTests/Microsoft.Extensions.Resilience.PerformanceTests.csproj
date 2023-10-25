@@ -6,6 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Resilience\Microsoft.Extensions.Resilience.csproj" />
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.ExtraAbstractions\Microsoft.Extensions.Diagnostics.ExtraAbstractions.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.TelemetryAbstractions\Microsoft.Extensions.TelemetryAbstractions.csproj" />
   </ItemGroup>
 </Project>

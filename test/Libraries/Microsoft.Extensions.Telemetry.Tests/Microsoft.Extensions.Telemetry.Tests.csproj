@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.Extra</RootNamespace>
-    <Description>Unit tests for Microsoft.Extensions.Diagnostics.Extra.</Description>
+    <RootNamespace>Microsoft.Extensions.Telemetry</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.Telemetry.</Description>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.Extra\Microsoft.Extensions.Diagnostics.Extra.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" ProjectUnderTest="true" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.TimeProvider.Testing\Microsoft.Extensions.TimeProvider.Testing.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Testing\Microsoft.Extensions.Compliance.Testing.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Hosting.Testing\Microsoft.Extensions.Hosting.Testing.csproj" />

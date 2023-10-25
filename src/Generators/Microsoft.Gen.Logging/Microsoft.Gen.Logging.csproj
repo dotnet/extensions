@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Gen.Logging</RootNamespace>
-    <Description>Code generator to support Microsoft.Extensions.Diagnostics.Extra's logging features.</Description>
+    <Description>Code generator to support Microsoft.Extensions.Telemetry's logging features.</Description>
     <Workstream>Telemetry</Workstream>
   </PropertyGroup>
 

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.Extra</RootNamespace>
+    <RootNamespace>Microsoft.Extensions.Telemetry</RootNamespace>
     <Description>Common abstractions for high-level telemetry primitives.</Description>
     <Workstream>Telemetry</Workstream>
   </PropertyGroup>

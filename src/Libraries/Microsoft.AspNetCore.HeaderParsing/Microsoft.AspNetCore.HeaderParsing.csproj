@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExtraAbstractions\Microsoft.Extensions.Diagnostics.ExtraAbstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.TelemetryAbstractions\Microsoft.Extensions.TelemetryAbstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.ObjectPool.DependencyInjection\Microsoft.Extensions.ObjectPool.DependencyInjection.csproj" />
   </ItemGroup>
 
