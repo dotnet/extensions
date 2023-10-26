@@ -51,7 +51,7 @@ public class RedactionFakesEventCollectorTests
     [Fact]
     public void RedactorRequested_Supports_Value_Semantic_Comparisons()
     {
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         var first = new RedactorRequested(dc, 0);
         var second = new RedactorRequested(dc, 0);
         var third = new RedactorRequested(dc, 1);

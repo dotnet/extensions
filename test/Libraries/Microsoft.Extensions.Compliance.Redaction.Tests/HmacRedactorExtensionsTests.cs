@@ -14,7 +14,7 @@ public class HmacRedactorExtensionsTests
     public void DelegateBased()
     {
         using var serviceProvider = new ServiceCollection()
-            .AddRedaction(redaction => redaction.SetHmacRedactor(o => o.Key = HmacRedactorTest.HmacExamples[0].Key, FakeClassifications.PrivateData))
+            .AddRedaction(redaction => redaction.SetHmacRedactor(o => o.Key = HmacRedactorTest.HmacExamples[0].Key, FakeTaxonomy.PrivateData))
             .BuildServiceProvider();
 
         var redactorProvider = serviceProvider
@@ -30,7 +30,7 @@ public class HmacRedactorExtensionsTests
             .AddRedaction(redaction =>
             {
                 var section = HmacRedactorTest.GetRedactorConfiguration(new ConfigurationBuilder(), HmacRedactorTest.HmacExamples[0].KeyId, HmacRedactorTest.HmacExamples[0].Key);
-                redaction.SetHmacRedactor(section, FakeClassifications.PrivateData);
+                redaction.SetHmacRedactor(section, FakeTaxonomy.PrivateData);
             })
             .BuildServiceProvider();
 
@@ -46,8 +46,8 @@ public class HmacRedactorExtensionsTests
 
         var classifications = new[]
         {
-            FakeClassifications.PublicData,
-            FakeClassifications.PrivateData
+            FakeTaxonomy.PublicData,
+            FakeTaxonomy.PrivateData
         };
 
         foreach (var dc in classifications)
@@ -58,7 +58,7 @@ public class HmacRedactorExtensionsTests
             var destination = new char[expectedLength];
             var actualLength = redactor.Redact(Example, destination);
 
-            if (dc == FakeClassifications.PrivateData)
+            if (dc == FakeTaxonomy.PrivateData)
             {
                 Assert.Equal(expectedLength, actualLength);
             }

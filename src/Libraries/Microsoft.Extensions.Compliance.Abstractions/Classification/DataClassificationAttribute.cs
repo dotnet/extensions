@@ -29,7 +29,7 @@ public class DataClassificationAttribute : Attribute
     public string Notes { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets the data class represented by this attribute.
+    /// Gets the classification represented by this attribute.
     /// </summary>
     public DataClassification Classification { get; }
 

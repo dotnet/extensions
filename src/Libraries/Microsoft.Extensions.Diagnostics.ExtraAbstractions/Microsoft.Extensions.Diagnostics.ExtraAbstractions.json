@@ -405,7 +405,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Logging.ITagCollector.Add(string tagName, object? tagValue, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "void Microsoft.Extensions.Logging.ITagCollector.Add(string tagName, object? tagValue, Microsoft.Extensions.Compliance.Classification.DataClassificationSet classifications);",
           "Stage": "Stable"
         }
       ]
@@ -517,7 +517,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "void Microsoft.Extensions.Logging.LoggerMessageState.AddClassifiedTag(string name, object? value, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "void Microsoft.Extensions.Logging.LoggerMessageState.AddClassifiedTag(string name, object? value, Microsoft.Extensions.Compliance.Classification.DataClassificationSet classifications);",
           "Stage": "Stable"
         },
         {
@@ -577,7 +577,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.ClassifiedTag(string name, object? value, Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.ClassifiedTag(string name, object? value, Microsoft.Extensions.Compliance.Classification.DataClassificationSet classifications);",
           "Stage": "Stable"
         },
         {
@@ -587,7 +587,7 @@
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.Classification { get; }",
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassificationSet Microsoft.Extensions.Logging.LoggerMessageState.ClassifiedTag.Classifications { get; }",
           "Stage": "Stable"
         },
         {

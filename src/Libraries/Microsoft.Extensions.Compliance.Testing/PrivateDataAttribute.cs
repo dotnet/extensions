@@ -14,7 +14,7 @@ public sealed class PrivateDataAttribute : DataClassificationAttribute
     /// Initializes a new instance of the <see cref="PrivateDataAttribute"/> class.
     /// </summary>
     public PrivateDataAttribute()
-        : base(FakeClassifications.PrivateData)
+        : base(FakeTaxonomy.PrivateData)
     {
     }
 }

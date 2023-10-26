@@ -8,12 +8,12 @@ namespace Microsoft.Extensions.Compliance.Classification.Tests;
 public static class DataClassificationAttributeTests
 {
     private const string TaxonomyName = "Tax";
-    private const ulong Mask = 123;
+    private const string Value = "123";
 
     private sealed class TestAttribute : DataClassificationAttribute
     {
         public TestAttribute()
-            : base(new DataClassification(TaxonomyName, Mask))
+            : base(new DataClassification(TaxonomyName, Value))
         {
         }
     }
@@ -23,7 +23,7 @@ public static class DataClassificationAttributeTests
     {
         var attribute = new TestAttribute();
         Assert.Equal(0, attribute.Notes.Length);
-        Assert.True(attribute.Classification == new DataClassification(TaxonomyName, Mask));
+        Assert.True(attribute.Classification == new DataClassification(TaxonomyName, Value));
 
         attribute.Notes = "Hello";
         Assert.Equal("Hello", attribute.Notes);

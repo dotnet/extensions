@@ -19,7 +19,7 @@ internal sealed class LoggerConfig
         bool useFileInfoForStackTraces,
         bool includeExceptionMessage,
         int maxStackTraceLength,
-        Func<DataClassification, Redactor> getRedactor,
+        Func<DataClassificationSet, Redactor> getRedactor,
         bool addRedactionDiscriminator)
     {
 #pragma warning restore S107 // Methods should not have too many parameters
@@ -39,6 +39,6 @@ internal sealed class LoggerConfig
     public bool UseFileInfoForStackTraces { get; }
     public bool IncludeExceptionMessage { get; }
     public int MaxStackTraceLength { get; }
-    public Func<DataClassification, Redactor> GetRedactor { get; }
+    public Func<DataClassificationSet, Redactor> GetRedactor { get; }
     public bool AddRedactionDiscriminator { get; }
 }

@@ -32,11 +32,11 @@ public class FakeRedactorProvider : IRedactorProvider
     }
 
     /// <inheritdoc/>
-    public Redactor GetRedactor(DataClassification classification)
+    public Redactor GetRedactor(DataClassificationSet classifications)
     {
         var order = Interlocked.Increment(ref _redactorsRequestedSoFar);
 
-        Collector.Append(new RedactorRequested(classification, order));
+        Collector.Append(new RedactorRequested(classifications, order));
 
         return _redactor;
     }

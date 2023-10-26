@@ -47,9 +47,9 @@ public static class NullRedactorTest
     [Fact]
     public static void NullRedactorProvider_Returns_Always_NullRedactor()
     {
-        var dc1 = new DataClassification("TAX", 1);
-        var dc2 = new DataClassification("TAX", 2);
-        var dc3 = new DataClassification("TAX", 4);
+        var dc1 = new DataClassification("TAX", "1");
+        var dc2 = new DataClassification("TAX", "2");
+        var dc3 = new DataClassification("TAX", "4");
 
         var rp = NullRedactorProvider.Instance;
         var redactor1 = NullRedactor.Instance;

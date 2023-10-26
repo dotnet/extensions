@@ -30,10 +30,10 @@ public interface ITagCollector
     /// </summary>
     /// <param name="tagName">The name of the tag to add.</param>
     /// <param name="tagValue">The value of the tag to add.</param>
-    /// <param name="classification">The data classification of the tag value.</param>
+    /// <param name="classifications">The data classifications of the tag value.</param>
     /// <exception cref="ArgumentNullException"><paramref name="tagName"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="tagName" /> is empty or contains exclusively whitespace,
     /// or when a tag of the same name has already been added.
     /// </exception>
-    void Add(string tagName, object? tagValue, DataClassification classification);
+    void Add(string tagName, object? tagValue, DataClassificationSet classifications);
 }

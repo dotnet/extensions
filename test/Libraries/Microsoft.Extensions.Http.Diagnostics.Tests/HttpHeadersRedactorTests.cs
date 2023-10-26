@@ -18,7 +18,7 @@ public class HttpHeadersRedactorTests
         var redactorProvider = new FakeRedactorProvider(new FakeRedactorOptions { RedactionFormat = "Redacted:{0}" });
         var headersRedactor = new HttpHeadersRedactor(redactorProvider);
 
-        var actual = headersRedactor.Redact(input, FakeClassifications.PrivateData);
+        var actual = headersRedactor.Redact(input, FakeTaxonomy.PrivateData);
 
         actual.Should().Be(expected);
     }
