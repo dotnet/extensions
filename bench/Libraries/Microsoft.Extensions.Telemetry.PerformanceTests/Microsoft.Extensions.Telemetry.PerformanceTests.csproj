@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Microsoft.Extensions.Diagnostics.Extra.Bench</RootNamespace>
-    <Description>Benchmarks for Microsoft.Extensions.Diagnostics.Extra.</Description>
+    <RootNamespace>Microsoft.Extensions.Telemetry.Bench</RootNamespace>
+    <Description>Benchmarks for Microsoft.Extensions.Telemetry.</Description>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Diagnostics.Extra\Microsoft.Extensions.Diagnostics.Extra.csproj" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Telemetry\Microsoft.Extensions.Telemetry.csproj" />
     <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.Compliance.Redaction\Microsoft.Extensions.Compliance.Redaction.csproj " />
   </ItemGroup>
 
