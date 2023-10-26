@@ -14,9 +14,9 @@ public static class AttributeTests
         DataClassificationAttribute a;
 
         a = new PrivateDataAttribute();
-        Assert.Equal(FakeClassifications.PrivateData, a.Classification);
+        Assert.Equal(FakeTaxonomy.PrivateData, a.Classification);
 
         a = new PublicDataAttribute();
-        Assert.Equal(FakeClassifications.PublicData, a.Classification);
+        Assert.Equal(FakeTaxonomy.PublicData, a.Classification);
     }
 }

@@ -82,7 +82,7 @@ internal static class Utils
         {
             builder.SetRedactor<PlusRedactor>(new PublicDataAttribute().Classification);
             builder.SetRedactor<MinusRedactor>(new PrivateDataAttribute().Classification);
-            builder.SetRedactor<HashRedactor>(new PrivateDataAttribute().Classification | new PublicDataAttribute().Classification);
+            builder.SetRedactor<HashRedactor>(new PrivateDataAttribute().Classification, new PublicDataAttribute().Classification);
             builder.SetFallbackRedactor<StarRedactor>();
         });
 

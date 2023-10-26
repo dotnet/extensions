@@ -25,7 +25,7 @@ public static class RedactionExtensions
     /// <returns>The value of <paramref name="builder" />.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="configure" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Compliance, UrlFormat = DiagnosticIds.UrlFormat)]
-    public static IRedactionBuilder SetHmacRedactor(this IRedactionBuilder builder, Action<HmacRedactorOptions> configure, params DataClassification[] classifications)
+    public static IRedactionBuilder SetHmacRedactor(this IRedactionBuilder builder, Action<HmacRedactorOptions> configure, params DataClassificationSet[] classifications)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(configure);
@@ -53,7 +53,7 @@ public static class RedactionExtensions
         "Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Addressed with [DynamicDependency]")]
-    public static IRedactionBuilder SetHmacRedactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassification[] classifications)
+    public static IRedactionBuilder SetHmacRedactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassificationSet[] classifications)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);

@@ -72,8 +72,8 @@ public class LoggingOptionsTest
     {
         var testHeaders = new Dictionary<string, DataClassification>
         {
-            { "header 1", FakeClassifications.PrivateData },
-            { "header 2", FakeClassifications.PrivateData }
+            { "header 1", FakeTaxonomy.PrivateData },
+            { "header 2", FakeTaxonomy.PrivateData }
         };
 
         _sut.RequestHeadersDataClasses = testHeaders;
@@ -86,8 +86,8 @@ public class LoggingOptionsTest
     {
         var testHeaders = new Dictionary<string, DataClassification>
         {
-            { "header 1", FakeClassifications.PrivateData },
-            { "header 2", FakeClassifications.PrivateData }
+            { "header 1", FakeTaxonomy.PrivateData },
+            { "header 2", FakeTaxonomy.PrivateData }
         };
 
         _sut.ResponseHeadersDataClasses = testHeaders;
@@ -121,12 +121,12 @@ public class LoggingOptionsTest
     {
         var paramsToRedacts = new Dictionary<string, DataClassification>
         {
-            { "foo", FakeClassifications.PrivateData },
-            { "bar", FakeClassifications.PrivateData },
+            { "foo", FakeTaxonomy.PrivateData },
+            { "bar", FakeTaxonomy.PrivateData },
         };
 
-        _sut.RouteParameterDataClasses.Add("foo", FakeClassifications.PrivateData);
-        _sut.RouteParameterDataClasses.Add("bar", FakeClassifications.PrivateData);
+        _sut.RouteParameterDataClasses.Add("foo", FakeTaxonomy.PrivateData);
+        _sut.RouteParameterDataClasses.Add("bar", FakeTaxonomy.PrivateData);
 
         _sut.RouteParameterDataClasses.Should().BeEquivalentTo(paramsToRedacts);
     }

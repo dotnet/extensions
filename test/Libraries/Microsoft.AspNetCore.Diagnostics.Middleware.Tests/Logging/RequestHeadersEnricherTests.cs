@@ -81,15 +81,15 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses =
             {
-                { HeaderKey1, FakeClassifications.PrivateData },
-                { HeaderKey4, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PrivateData },
+                { HeaderKey4, FakeTaxonomy.PublicData }
             }
         };
 
         Mock<IRedactorProvider> redactorProviderMock = new Mock<IRedactorProvider>();
-        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PublicData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeTaxonomy.PublicData))
             .Returns(new FakeRedactor());
-        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PrivateData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeTaxonomy.PrivateData))
             .Returns(FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "redacted:{0}" }));
 
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), redactorProviderMock.Object);
@@ -114,13 +114,13 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses =
             {
-                { HeaderKey1, FakeClassifications.PrivateData },
-                { HeaderKey2, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PrivateData },
+                { HeaderKey2, FakeTaxonomy.PublicData }
             }
         };
 
         Mock<IRedactorProvider> redactorProviderMock = new Mock<IRedactorProvider>();
-        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PrivateData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeTaxonomy.PrivateData))
             .Returns(FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "REDACTED:{0}" }));
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), redactorProviderMock.Object);
 
@@ -144,8 +144,8 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses =
             {
-                { HeaderKey1, FakeClassifications.PublicData },
-                { HeaderKey3, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PublicData },
+                { HeaderKey3, FakeTaxonomy.PublicData }
             }
         };
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
@@ -171,8 +171,8 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses =
             {
-                { HeaderKey1, FakeClassifications.PublicData },
-                { headerKey2, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PublicData },
+                { headerKey2, FakeTaxonomy.PublicData }
             }
         };
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
@@ -196,7 +196,7 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses =
             {
-                { HeaderKey1, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PublicData }
             }
         };
 
@@ -223,7 +223,7 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses =
             {
-                { HeaderKey1, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PublicData }
             }
         };
 
@@ -264,14 +264,14 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses = new Dictionary<string, DataClassification>
             {
-                { HeaderKey1, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PublicData }
             }
         };
 
         Mock<IRedactorProvider> redactorProviderMock = new Mock<IRedactorProvider>();
-        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PublicData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeTaxonomy.PublicData))
             .Returns(new FakeRedactor());
-        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PrivateData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeTaxonomy.PrivateData))
             .Returns(FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "redacted:{0}" }));
 
         var enricher = new RequestHeadersLogEnricher(accessorMock.Object, options.ToOptions(), redactorProviderMock.Object);

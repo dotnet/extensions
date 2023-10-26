@@ -7,10 +7,11 @@
 
   <PropertyGroup>
     <InjectSkipLocalsInitAttributeOnLegacy>true</InjectSkipLocalsInitAttributeOnLegacy>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InjectSharedPools>true</InjectSharedPools>
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup>

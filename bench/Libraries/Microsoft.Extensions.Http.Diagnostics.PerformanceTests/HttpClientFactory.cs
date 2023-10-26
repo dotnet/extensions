@@ -26,7 +26,7 @@ internal static class HttpClientFactory
             {
                 options.BodySizeLimit = readLimit;
                 options.RequestBodyContentTypes.Add(new("application/json"));
-                options.RequestHeadersDataClasses.Add("Content-Type", FakeClassifications.PrivateData);
+                options.RequestHeadersDataClasses.Add("Content-Type", FakeTaxonomy.PrivateData);
             })
             .AddHttpMessageHandler<NoRemoteCallHandler>()
             .Services
@@ -49,7 +49,7 @@ internal static class HttpClientFactory
             {
                 options.BodySizeLimit = readLimit;
                 options.ResponseBodyContentTypes.Add(new("application/json"));
-                options.ResponseHeadersDataClasses.Add("Content-Type", FakeClassifications.PrivateData);
+                options.ResponseHeadersDataClasses.Add("Content-Type", FakeTaxonomy.PrivateData);
             })
             .AddHttpMessageHandler<NoRemoteCallHandler>()
             .Services
@@ -73,10 +73,10 @@ internal static class HttpClientFactory
                 options.BodySizeLimit = readLimit;
 
                 options.RequestBodyContentTypes.Add(new("application/json"));
-                options.RequestHeadersDataClasses.Add("Content-Type", FakeClassifications.PrivateData);
+                options.RequestHeadersDataClasses.Add("Content-Type", FakeTaxonomy.PrivateData);
 
                 options.ResponseBodyContentTypes.Add(new("application/json"));
-                options.ResponseHeadersDataClasses.Add("Content-Type", FakeClassifications.PrivateData);
+                options.ResponseHeadersDataClasses.Add("Content-Type", FakeTaxonomy.PrivateData);
             })
             .AddHttpMessageHandler<NoRemoteCallHandler>()
             .Services
@@ -99,7 +99,7 @@ internal static class HttpClientFactory
             {
                 options.BodySizeLimit = readLimit;
                 options.RequestBodyContentTypes.Add("application/json");
-                options.RequestHeadersDataClasses.Add("Content-Type", FakeClassifications.PrivateData);
+                options.RequestHeadersDataClasses.Add("Content-Type", FakeTaxonomy.PrivateData);
             })
             .AddHttpMessageHandler<NoRemoteCallNotSeekableHandler>()
             .Services
@@ -122,7 +122,7 @@ internal static class HttpClientFactory
             {
                 options.BodySizeLimit = readLimit;
                 options.ResponseBodyContentTypes.Add("application/json");
-                options.ResponseHeadersDataClasses.Add("Content-Type", FakeClassifications.PrivateData);
+                options.ResponseHeadersDataClasses.Add("Content-Type", FakeTaxonomy.PrivateData);
             })
             .AddHttpMessageHandler<NoRemoteCallNotSeekableHandler>()
             .Services
@@ -146,10 +146,10 @@ internal static class HttpClientFactory
                 options.BodySizeLimit = readLimit;
 
                 options.RequestBodyContentTypes.Add("application/json");
-                options.RequestHeadersDataClasses.Add("Content-Type", FakeClassifications.PrivateData);
+                options.RequestHeadersDataClasses.Add("Content-Type", FakeTaxonomy.PrivateData);
 
                 options.ResponseBodyContentTypes.Add("application/json");
-                options.ResponseHeadersDataClasses.Add("Content-Type", FakeClassifications.PrivateData);
+                options.ResponseHeadersDataClasses.Add("Content-Type", FakeTaxonomy.PrivateData);
             })
             .AddHttpMessageHandler<NoRemoteCallNotSeekableHandler>()
             .Services

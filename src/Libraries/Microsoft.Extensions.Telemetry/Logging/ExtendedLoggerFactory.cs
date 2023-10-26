@@ -24,7 +24,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private readonly IDisposable? _redactionOptionsChangeTokenRegistration;
     private readonly Action<IEnrichmentTagCollector>[] _enrichers;
     private readonly KeyValuePair<string, object?>[] _staticTags;
-    private readonly Func<DataClassification, Redactor> _redactorProvider;
+    private readonly Func<DataClassificationSet, Redactor> _redactorProvider;
     private volatile bool _disposed;
     private LoggerFilterOptions _filterOptions;
     private IExternalScopeProvider? _scopeProvider;
