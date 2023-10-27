@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.Latency;
@@ -56,11 +55,6 @@ public static class LatencyConsoleExtensions
     /// <param name="section">Configuration of <see cref="LatencyConsoleOptions"/>.</param>
     /// <returns>Provided service collection with <see cref="LatencyConsoleExporter"/> added.</returns>
     /// <exception cref="ArgumentNullException">Either <paramref name="services"/> or <paramref name="section"/> is <see langword="null"/>.</exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LatencyConsoleOptions))]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed by [DynamicDependency]")]
     public static IServiceCollection AddConsoleLatencyDataExporter(this IServiceCollection services, IConfigurationSection section)
     {
         _ = Throw.IfNull(services);

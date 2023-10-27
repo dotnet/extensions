@@ -8,6 +8,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <InjectSharedThrow>false</InjectSharedThrow>
     <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>

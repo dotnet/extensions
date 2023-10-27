@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,12 +22,15 @@ public static class HttpStandardResiliencePipelineBuilderExtensions
     /// <param name="builder">The pipeline builder.</param>
     /// <param name="section">The section that the options will bind against.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HttpStandardResilienceOptions))]
     public static IHttpStandardResiliencePipelineBuilder Configure(this IHttpStandardResiliencePipelineBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
-        var options = Throw.IfNull(section.Get<HttpStandardResilienceOptions>());
+
+        if (!section.GetChildren().Any())
+        {
+            Throw.ArgumentNullException(nameof(section));
+        }
 
         _ = builder.Services.Configure<HttpStandardResilienceOptions>(
             builder.PipelineName,
