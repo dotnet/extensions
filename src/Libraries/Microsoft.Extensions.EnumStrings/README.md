@@ -1,6 +1,6 @@
 # Microsoft.Extensions.EnumStrings
 
-It's often necessary to convert a C# enum value to a string. The standard ToString() is normally used for this, but that can not be the best in terms of allocations or performance. This package introduces a source generator that is triggered by an attribute which produces an extension method for each enum type annotated with the attribute which can efficiently convert an enum value to a string.
+It's often necessary to convert a C# enum value to a string. The standard `ToString()` method is normally used for this, but that can not be the best in terms of allocations or performance. This package introduces a source generator that is triggered by an attribute which produces an extension method for each `enum` type annotated with the attribute which can efficiently convert an enumeration value to a string.
 
 ## Install the package
 
