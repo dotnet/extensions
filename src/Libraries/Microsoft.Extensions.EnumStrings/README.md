@@ -58,7 +58,7 @@ Which you can later use as follows:
 
 Both calls will return the same string, but the second one will be more efficient.
 
-### Using the generated with an enum from a different assembly
+### Using the generator with an enum from a different assembly
 
 You can also use this feature to generate efficient `ToInvariantString` extension methods on enums that are not part of your code. You can do this by applying the `EnumStrings` attribute at the assembly level, and passing in the type of the enum you want to generate the extension method for. For example:
 
