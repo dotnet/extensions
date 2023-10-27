@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Shared.Diagnostics;
 using Polly.DependencyInjection;
@@ -47,7 +48,7 @@ public sealed class ResilienceHandlerContext
     /// You can listen for changes only for single options. If you call this method multiple times, the preceding calls are ignored and only the last one wins.
     /// </para>
     /// </remarks>
-    public void EnableReloads<TOptions>(string? name = null) => _context.EnableReloads<TOptions>(name);
+    public void EnableReloads<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TOptions>(string? name = null) => _context.EnableReloads<TOptions>(name);
 
     /// <summary>
     /// Gets the options identified by <paramref name="name"/>.
