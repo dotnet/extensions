@@ -56,26 +56,17 @@ variables:
 
   - name: runAsPublic
     value: ${{ eq(variables['System.TeamProject'], 'public') }}
+
   - name: _BuildConfig
     value: Release
   - name: isOfficialBuild
     value: ${{ and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest')) }}
-  - name: IsDeltaBuild
-    value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
   - name: Build.Arcade.ArtifactsPath
     value: $(Build.SourcesDirectory)/artifacts/
   - name: Build.Arcade.LogsPath
     value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
   - name: Build.Arcade.TestResultsPath
     value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
-
-  # For full build we can do a shallow build, for a delta build we need the full history.
-  - ${{ if eq(variables['IsDeltaBuild'], 'true') }}:
-    - name: _FetchDepth
-      value: 0
-  - ${{ else }}:
-    - name: _FetchDepth
-      value: 1
 
   - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
     - name: PostBuildSign
@@ -163,7 +154,7 @@ stages:
           - checkout: self
             clean: true
             persistCredentials: true
-            fetchDepth: $(_FetchDepth)
+            fetchDepth: 1
 
         steps:
           - template: /eng/pipelines/templates/BuildAndTest.yml
@@ -173,7 +164,6 @@ stages:
               repoLogPath: $(Build.Arcade.LogsPath)
               repoTestResultsPath: $(Build.Arcade.TestResultsPath)
               skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
-              isDeltaBuild: $(IsDeltaBuild)
               isWindows: true
               warnAsError: 0
 
@@ -200,7 +190,7 @@ stages:
           - checkout: self
             clean: true
             persistCredentials: true
-            fetchDepth: $(_FetchDepth)
+            fetchDepth: 1
 
         steps:
           - template: /eng/pipelines/templates/BuildAndTest.yml
@@ -210,7 +200,6 @@ stages:
               repoLogPath: $(Build.Arcade.LogsPath)
               repoTestResultsPath: $(Build.Arcade.TestResultsPath)
               skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
-              isDeltaBuild: $(IsDeltaBuild)
               isWindows: false
               warnAsError: 0
 
@@ -262,8 +251,6 @@ stages:
           displayName: Init toolset
 
         - template: /eng/pipelines/templates/VerifyCoverageReport.yml
-          parameters:
-            isDeltaBuild: $(IsDeltaBuild)
 
 
 # ----------------------------------------------------------------
@@ -304,7 +291,7 @@ stages:
           - checkout: self
             clean: true
             persistCredentials: true
-            fetchDepth: $(_FetchDepth)
+            fetchDepth: 1
 
         steps:
           - template: \eng\pipelines\templates\BuildAndTest.yml
@@ -315,7 +302,6 @@ stages:
               repoTestResultsPath: $(Build.Arcade.TestResultsPath)
               skipTests: true
               skipQualityGates: true
-              isDeltaBuild: $(IsDeltaBuild)
               isWindows: false
 
 
