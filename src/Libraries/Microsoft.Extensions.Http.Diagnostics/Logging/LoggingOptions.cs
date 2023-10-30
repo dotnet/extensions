@@ -18,7 +18,7 @@ public class LoggingOptions
 {
     private const int MaxIncomingBodySize = 1_572_864; // 1.5 MB
     private const int Millisecond = 1;
-    private const int Hour = 60000 * 60; // 1 hour
+    private const int Minute = 60000;
     private const int DefaultReadSizeLimit = 32 * 1024;  // ≈ 32K
     private const OutgoingPathLoggingMode DefaultPathLoggingMode = OutgoingPathLoggingMode.Formatted;
     private const HttpRouteParameterRedactionMode DefaultPathParameterRedactionMode = HttpRouteParameterRedactionMode.Strict;
@@ -67,7 +67,7 @@ public class LoggingOptions
     /// <remarks>
     /// The value should be in the range of 1 millisecond to 1 minute.
     /// </remarks>
-    [TimeSpan(Millisecond, Hour)]
+    [TimeSpan(Millisecond, Minute)]
     public TimeSpan BodyReadTimeout { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
