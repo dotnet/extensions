@@ -9,7 +9,6 @@
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMetricsGenerator>true</UseMetricsGenerator>
     <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
-    <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
     <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>

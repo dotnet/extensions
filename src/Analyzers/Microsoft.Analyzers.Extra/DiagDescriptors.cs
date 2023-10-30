@@ -64,14 +64,6 @@ internal static class DiagDescriptors
         description: Resources.ArraysDescription,
         defaultSeverity: DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor EnumStrings { get; } = Make(
-        id: "EA0006",
-        messageFormat: Resources.EnumStringsMessage,
-        title: Resources.EnumStringsTitle,
-        category: Performance,
-        description: Resources.EnumStringsDescription,
-        defaultSeverity: DiagnosticSeverity.Warning);
-
     public static DiagnosticDescriptor ValueTuple { get; } = Make(
         id: "EA0007",
         messageFormat: Resources.ValueTupleMessage,
