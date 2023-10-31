@@ -180,15 +180,6 @@
   <data name="ArraysTitle" xml:space="preserve">
     <value>Consider using an array instead of a collection</value>
   </data>
-  <data name="EnumStringsDescription" xml:space="preserve">
-    <value>Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance</value>
-  </data>
-  <data name="EnumStringsTitle" xml:space="preserve">
-    <value>Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance</value>
-  </data>
-  <data name="EnumStringsMessage" xml:space="preserve">
-    <value>Use {0} instead of '{1}' for improved performance</value>
-  </data>
   <data name="ValueTupleDescription" xml:space="preserve">
     <value>Using 'System.ValueTuple' avoids allocations and is generally more efficient than 'System.Tuple'</value>
   </data>

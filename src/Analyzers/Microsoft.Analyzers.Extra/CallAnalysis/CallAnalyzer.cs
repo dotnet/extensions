@@ -17,7 +17,6 @@ public sealed partial class CallAnalyzer : DiagnosticAnalyzer
         DiagDescriptors.StartsEndsWith,
         DiagDescriptors.LegacyLogging,
         DiagDescriptors.StaticTime,
-        DiagDescriptors.EnumStrings,
         DiagDescriptors.ValueTuple,
         DiagDescriptors.Arrays,
         DiagDescriptors.LegacyCollection,
@@ -35,7 +34,6 @@ public sealed partial class CallAnalyzer : DiagnosticAnalyzer
             var reg = new Registrar(state, compilationStartContext.Compilation);
 
             _ = new Arrays(reg);
-            _ = new EnumStrings(reg);
             _ = new LegacyLogging(reg);
             _ = new StartsEndsWith(reg);
             _ = new StaticTime(reg);

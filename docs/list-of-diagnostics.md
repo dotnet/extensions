@@ -58,17 +58,6 @@
 | `EA0014` | Resilience  | The async method doesn't support cancellation |
 
 
-# EnumStrings
-
-| Diagnostic ID     | Description |
-| :---------------- | :---------- |
-| `ENUMSTRGEN000` | Invalid extension namespace |
-| `ENUMSTRGEN001` | Invalid attribute constructor used |
-| `ENUMSTRGEN002` | Invalid extension class name |
-| `ENUMSTRGEN003` | Invalid extension method name |
-| `ENUMSTRGEN004` | Invalid enum type specified |
-
-
 # Experiments
 
 As new functionality is introduced to this repo, new in-development APIs are marked as being experimental. Experimental APIs offer no

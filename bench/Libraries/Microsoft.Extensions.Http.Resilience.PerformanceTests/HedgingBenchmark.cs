@@ -22,9 +22,7 @@ public class HedgingBenchmark
     {
         var serviceProvider = HttpClientFactory.InitializeServiceProvider(Type);
         var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
-#pragma warning disable EA0006 // Replace uses of 'Enum.GetName' and 'Enum.ToString' with the '[EnumStrings]' code generator for improved performance
         _client = factory.CreateClient(Type.ToString());
-#pragma warning restore EA0006 // Replace uses of 'Enum.GetName' and 'Enum.ToString' with the '[EnumStrings]' code generator for improved performance
     }
 
     [Params(

@@ -54,15 +54,6 @@ internal static class DiagnosticIds
         internal const string AUTOCLIENTGEN022 = nameof(AUTOCLIENTGEN022);
     }
 
-    internal static class EnumStrings
-    {
-        internal const string ENUMSTRGEN000 = nameof(ENUMSTRGEN000);
-        internal const string ENUMSTRGEN001 = nameof(ENUMSTRGEN001);
-        internal const string ENUMSTRGEN002 = nameof(ENUMSTRGEN002);
-        internal const string ENUMSTRGEN003 = nameof(ENUMSTRGEN003);
-        internal const string ENUMSTRGEN004 = nameof(ENUMSTRGEN004);
-    }
-
     /// <summary>
     ///  Experiments supported by this repo.
     /// </summary>

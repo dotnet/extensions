@@ -6,7 +6,6 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.Gen.AutoClient;
 using Microsoft.Gen.ContextualOptions;
-using Microsoft.Gen.EnumStrings;
 using Microsoft.Gen.Logging;
 using Microsoft.Gen.Metrics;
 using Microsoft.Shared.DiagnosticIds;
@@ -25,7 +24,6 @@ public class Program
 
         _ = typeof(AutoClientGenerator).FullName;
         _ = typeof(ContextualOptionsGenerator).FullName;
-        _ = typeof(EnumStringsGenerator).FullName;
         _ = typeof(LoggingGenerator).FullName;
         _ = typeof(MetricsGenerator).FullName;
         _ = typeof(Microsoft.Extensions.ExtraAnalyzers.DiagDescriptors).FullName;
