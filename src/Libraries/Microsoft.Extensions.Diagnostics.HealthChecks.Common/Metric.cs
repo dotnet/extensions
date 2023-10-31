@@ -3,9 +3,6 @@
 
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.Metrics;
-using Microsoft.Extensions.EnumStrings;
-
-[assembly: EnumStrings(typeof(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus))]
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -18,8 +15,8 @@ internal static partial class Metric
     public static partial UnhealthyHealthCheckCounter CreateUnhealthyHealthCheckCounter(Meter meter);
 
     public static void RecordMetric(this HealthCheckReportCounter counterMetric, HealthStatus status)
-        => counterMetric.Add(1, status.ToInvariantString());
+        => counterMetric.Add(1, status.ToString());
 
     public static void RecordMetric(this UnhealthyHealthCheckCounter counterMetric, string name, HealthStatus status)
-        => counterMetric.Add(1, name, status.ToInvariantString());
+        => counterMetric.Add(1, name, status.ToString());
 }

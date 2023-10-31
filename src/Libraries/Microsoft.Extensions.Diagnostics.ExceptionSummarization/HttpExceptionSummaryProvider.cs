@@ -9,11 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Microsoft.Extensions.EnumStrings;
 using Microsoft.Shared.Diagnostics;
-
-[assembly: EnumStrings(typeof(WebExceptionStatus))]
-[assembly: EnumStrings(typeof(SocketError))]
 
 namespace Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 
@@ -42,7 +38,7 @@ internal sealed class HttpExceptionSummaryProvider : IExceptionSummaryProvider
         foreach (var v in Enum.GetValues(typeof(SocketError)))
         {
             var socketError = (SocketError)v!;
-            var name = socketError.ToInvariantString();
+            var name = socketError.ToString();
 
             socketErrors[socketError] = descriptions.Count;
             descriptions.Add(name);
@@ -52,7 +48,7 @@ internal sealed class HttpExceptionSummaryProvider : IExceptionSummaryProvider
         foreach (var v in Enum.GetValues(typeof(WebExceptionStatus)))
         {
             var status = (WebExceptionStatus)v!;
-            var name = status.ToInvariantString();
+            var name = status.ToString();
 
             webStatuses[status] = descriptions.Count;
             descriptions.Add(name);

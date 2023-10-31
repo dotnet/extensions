@@ -67,7 +67,7 @@ internal sealed class TelemetryHealthCheckPublisher : IHealthCheckPublisher
                     .Append(entry.Key)
                     .Append(": {")
                     .Append("status: ")
-                    .Append(entry.Value.Status.ToInvariantString())
+                    .Append(entry.Value.Status.ToString())
                     .Append(", description: ")
                     .Append(entry.Value.Description)
                     .Append('}');

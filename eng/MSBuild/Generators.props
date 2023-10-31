@@ -3,10 +3,6 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.Logging\Microsoft.Gen.Logging.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(UseEnumStringsGenerator)' == 'true' and '$(BuildingSlnForDocs)' != 'true'">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.EnumStrings\Microsoft.Gen.EnumStrings.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(UseMetricsGenerator)' == 'true' and '$(BuildingSlnForDocs)' != 'true'">
     <ProjectReference Include="$(MSBuildThisFileDirectory)\..\..\src\Generators\Microsoft.Gen.Metrics\Microsoft.Gen.Metrics.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Private="false" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>

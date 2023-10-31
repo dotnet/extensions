@@ -8,7 +8,6 @@
   <PropertyGroup>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
-    <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -16,10 +15,6 @@
     <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>100</MinMutationScore>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.EnumStrings\Microsoft.Extensions.EnumStrings.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
