@@ -7,8 +7,6 @@ parameters:
     type: string
   - name: repoTestResultsPath
     type: string
-  - name: isDeltaBuild
-    type: string
   - name: isWindows
     type: string
   - name: skipTests
@@ -22,24 +20,6 @@ parameters:
     default: 1
 
 steps:
-  # Debug
-  # - pwsh: |
-  #       Write-Host 'buildScript: ${{ parameters.buildScript }}'
-  #       Write-Host 'buildConfig: ${{ parameters.buildConfig }}'
-  #       Write-Host 'repoLogPath: ${{ parameters.repoLogPath }}'
-  #       Write-Host 'repoTestResultsPath: ${{ parameters.repoTestResultsPath }}'
-  #       Write-Host 'isDeltaBuild: ${{ parameters.isDeltaBuild }}'
-  #       Write-Host 'isWindows: ${{ parameters.isWindows }}'
-  #       Write-Host 'skipTests: ${{ parameters.skipTests }}'
-  #       Write-Host 'skipQualityGates: ${{ parameters.skipQualityGates }}'
-  #       Get-ChildItem env:* | Sort-Object Name
-  #   displayName: Debug
-
-  - pwsh: |
-        function Export { param($i); Write-Host "$i"; Write-Host "##$i" }
-        Export "vso[task.setvariable variable=IsDeltaBuild]${{ parameters.isDeltaBuild }}"
-    displayName: Set flags
-
   - script: ${{ parameters.buildScript }}
             -restore
             /bl:${{ parameters.repoLogPath }}/restore.binlog
