@@ -59,7 +59,7 @@ public sealed class ResilienceHandlerContext
     /// <remarks>
     /// If <paramref name="name"/> is <see langword="null"/> then the global options are returned.
     /// </remarks>
-    public TOptions GetOptions<TOptions>(string name) => _context.GetOptions<TOptions>(name);
+    public TOptions GetOptions<TOptions>(string? name = null) => _context.GetOptions<TOptions>(name);
 
     /// <summary>
     /// Registers a callback that is called when the pipeline instance being configured is disposed.
