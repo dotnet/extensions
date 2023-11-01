@@ -1,6 +1,6 @@
 # Microsoft.Extensions.Options.Contextual
 
-A common abstraction for contextual options.
+APIs for dynamically configuring options based on a given context.
 
 ## Install the package
 
@@ -111,9 +111,7 @@ static void ConfigureTemperatureScaleBasedOnCountry(IOptionsContext context, Wea
 And lastly, the service is called with some context.
 
 ```csharp
-var forecastService = host
-        .Services
-        .GetRequiredService<WeatherForecastService>();
+var forecastService = host.Services.GetRequiredService<WeatherForecastService>();
 
 var usForcast = await forecastService.GetForecast(new WeatherForecastContext { Country = "US" }, CancellationToken.None);
 var caForcast = await forecastService.GetForecast(new WeatherForecastContext { Country = "CA" }, CancellationToken.None);
