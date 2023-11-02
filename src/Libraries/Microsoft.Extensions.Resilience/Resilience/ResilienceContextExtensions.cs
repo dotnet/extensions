@@ -4,9 +4,8 @@
 using System;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Shared.Diagnostics;
-using Polly;
 
-namespace Microsoft.Extensions.Resilience;
+namespace Polly;
 
 /// <summary>
 /// Extensions for <see cref="ResilienceContext"/>.

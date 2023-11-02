@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Resilience</RootNamespace>
-    <Description>Mechanisms to harden applications against transient failures.</Description>
+    <Description>Extensions to the Polly libraries to enrich telemetry with metadata and exception summaries.</Description>
     <Workstream>Resilience</Workstream>
   </PropertyGroup>
 

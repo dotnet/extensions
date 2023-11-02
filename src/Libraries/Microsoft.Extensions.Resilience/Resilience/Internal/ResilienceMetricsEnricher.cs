@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Http.Diagnostics;
+using Polly;
 using Polly.Telemetry;
 
 namespace Microsoft.Extensions.Resilience.Internal;
