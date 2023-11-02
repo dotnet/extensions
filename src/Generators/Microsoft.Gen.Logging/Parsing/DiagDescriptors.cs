@@ -231,4 +231,10 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         title: Resources.InvalidAttributeUsageTitle,
         messageFormat: Resources.InvalidAttributeUsageMessage,
         category: Category);
+
+    public static DiagnosticDescriptor RecordTypeSensitiveArgumentIsInTemplate { get; } = Make(
+        id: DiagnosticIds.LoggerMessage.LOGGEN035,
+        title: Resources.RecordTypeSensitiveArgumentIsInTemplateTitle,
+        messageFormat: Resources.RecordTypeSensitiveArgumentIsInTemplateMessage,
+        category: Category);
 }

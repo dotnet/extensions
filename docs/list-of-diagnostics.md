@@ -129,6 +129,7 @@ if desired.
 | `LOGGEN032` | Can only have one of [LogProperties], [TagProvider], and [LogPropertyIgnore] |
 | `LOGGEN033` | Method parameter can't be used with a tag provider |
 | `LOGGEN034` | Attribute can't be used in this context |
+| `LOGGEN035` | The logging method parameter leaks sensitive data |
 
 
 # Metrics
