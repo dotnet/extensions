@@ -3,14 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
-using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Microsoft.Extensions.Options;
@@ -71,13 +69,13 @@ public sealed partial class HttpClientBuilderExtensionsTests
             context.OnPipelineDisposed(() => onPipelineDisposedCalled = true);
         });
 
-        var serviceProvider = services.BuildServiceProvider();
+        using (var serviceProvider = services.BuildServiceProvider())
+        {
+            var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
+            using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
 
-        var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
-        using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
-
-        await client.GetStringAsync("https://dummy");
-        serviceProvider.Dispose();
+            await client.GetStringAsync("https://dummy");
+        }
 
         onPipelineDisposedCalled.Should().BeTrue();
     }
@@ -98,15 +96,11 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     [Fact]
-    public async Task AddResilienceHandler_EnsureFailureResultContext()
+    public async Task AddResilienceHandler_EnsureErrorType()
     {
         using var metricCollector = new MetricCollector<int>(null, "Polly", "resilience.polly.strategy.events");
         var enricher = new TestMetricsEnricher();
-        var services = new ServiceCollection()
-            .AddResilienceEnricher()
-            .Configure<TelemetryOptions>(options => options.MeteringEnrichers.Add(enricher));
-
-        var clientBuilder = services
+        var clientBuilder = new ServiceCollection()
             .AddHttpClient("client")
             .ConfigurePrimaryHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.InternalServerError))
             .AddStandardResilienceHandler()
@@ -117,15 +111,14 @@ public sealed partial class HttpClientBuilderExtensionsTests
                 options.Retry.Delay = TimeSpan.Zero;
             });
 
-        var client = services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("client");
+        clientBuilder.Services.Configure<TelemetryOptions>(o => o.MeteringEnrichers.Add(enricher));
+
+        var client = clientBuilder.Services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("client");
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
 
         using var response = await client.SendAsync(request);
 
-        var lookup = enricher.Tags.ToLookup(t => t.Key, t => t.Value);
-        lookup["failure-reason"].Should().Contain("500");
-        lookup["failure-summary"].Should().Contain("InternalServerError");
-        lookup["failure-source"].Should().Contain(TelemetryConstants.Unknown);
+        enricher.Tags["error.type"].Should().BeOfType<string>().Subject.Should().Be("500");
     }
 
     [Fact]
@@ -266,11 +259,14 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
     private class TestMetricsEnricher : MeteringEnricher
     {
-        public List<KeyValuePair<string, object?>> Tags { get; } = [];
+        public Dictionary<string, object?> Tags { get; } = [];
 
         public override void Enrich<TResult, TArgs>(in EnrichmentContext<TResult, TArgs> context)
         {
-            Tags.AddRange(context.Tags);
+            foreach (var tag in context.Tags)
+            {
+                Tags[tag.Key] = tag.Value;
+            }
         }
     }
 }

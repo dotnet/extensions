@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.CodeAnalysis.CSharp.CodeStyle
-  Version: 4.8.8.35803
+  Version: 4.8.9.404
 Diagnostics:
   IDE0001:
     Metadata:
@@ -1777,6 +1777,62 @@ Diagnostics:
       Title: Simplify collection initialization
       Description: ''
       HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0300
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  IDE0304:
+    Metadata:
+      Category: Style
+      Title: Simplify collection initialization
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0304
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  IDE0305:
+    Metadata:
+      Category: Style
+      Title: Simplify collection initialization
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0305
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  IDE0303:
+    Metadata:
+      Category: Style
+      Title: Simplify collection initialization
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0303
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  IDE0302:
+    Metadata:
+      Category: Style
+      Title: Simplify collection initialization
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0302
       CustomTags:
       - Telemetry
       - EnforceOnBuild_Recommended

@@ -135,7 +135,7 @@ public sealed class HeaderParsingFeatureTests
     {
         using var meter = new Meter(nameof(TryParse_returns_false_on_error));
         var metrics = GetMockedMetrics(meter);
-        using var metricCollector = new MetricCollector<long>(meter, @"HeaderParsing.ParsingErrors");
+        using var metricCollector = new MetricCollector<long>(meter, "aspnetcore.header_parsing.parse_errors");
         Context.Request.Headers["Date"] = "Not a date.";
 
         var feature = new HeaderParsingFeature(Registry, _logger, metrics) { Context = Context };
@@ -147,10 +147,11 @@ public sealed class HeaderParsingFeatureTests
 
         Assert.Equal("Can't parse header 'Date' due to 'Unable to parse date time offset value.'.", _logger.Collector.LatestRecord.Message);
 
-        var latest = metricCollector.LastMeasurement!;
+        var latest = metricCollector.LastMeasurement;
+        Assert.NotNull(latest);
         latest.Value.Should().Be(1);
-        latest.Tags["HeaderName"].Should().Be("Date");
-        latest.Tags["Kind"].Should().Be("Unable to parse date time offset value.");
+        latest.Tags["aspnetcore.header_parsing.header.name"].Should().Be("Date");
+        latest.Tags["error.type"].Should().Be("Unable to parse date time offset value.");
     }
 
     [Fact]
@@ -190,7 +191,7 @@ public sealed class HeaderParsingFeatureTests
     {
         using var meter = new Meter(nameof(CachingWorks));
         var metrics = GetMockedMetrics(meter);
-        using var metricCollector = new MetricCollector<long>(meter, @"HeaderParsing.CacheAccess");
+        using var metricCollector = new MetricCollector<long>(meter, "aspnetcore.header_parsing.cache_accesses");
 
         Context.Request.Headers[HeaderNames.CacheControl] = "max-age=604800";
 
@@ -204,10 +205,11 @@ public sealed class HeaderParsingFeatureTests
         Assert.Same(value1, value2);
         Assert.Same(value1, value3);
 
-        var latest = metricCollector.LastMeasurement!;
+        var latest = metricCollector.LastMeasurement;
+        Assert.NotNull(latest);
         latest.Value.Should().Be(1);
-        latest.Tags["HeaderName"].Should().Be(HeaderNames.CacheControl);
-        latest.Tags["Type"].Should().Be("Hit");
+        latest.Tags["aspnetcore.header_parsing.header.name"].Should().Be(HeaderNames.CacheControl);
+        latest.Tags["aspnetcore.header_parsing.cache_access.type"].Should().Be("Hit");
     }
 
     private static HeaderParsingMetrics GetMockedMetrics(Meter meter)

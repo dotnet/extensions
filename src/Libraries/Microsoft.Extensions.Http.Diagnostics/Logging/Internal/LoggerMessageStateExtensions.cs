@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Http.Logging.Internal;
@@ -25,7 +26,7 @@ internal static class LoggerMessageStateExtensions
         {
             var key = _requestPrefixedNamesCache.GetOrAdd(
                 items[i].Key,
-                static (x, p) => p + x,
+                static (x, p) => p + Normalize(x),
                 HttpClientLoggingTagNames.RequestHeaderPrefix);
 
             state.TagArray[index++] = new(key, items[i].Value);
@@ -45,10 +46,17 @@ internal static class LoggerMessageStateExtensions
         {
             var key = _responsePrefixedNamesCache.GetOrAdd(
                 items[i].Key,
-                static (x, p) => p + x,
+                static (x, p) => p + Normalize(x),
                 HttpClientLoggingTagNames.ResponseHeaderPrefix);
 
             state.TagArray[index++] = new(key, items[i].Value);
         }
+    }
+
+    [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase",
+        Justification = "Normalization to lower case is required by OTel's semantic conventions")]
+    private static string Normalize(string header)
+    {
+        return header.ToLowerInvariant();
     }
 }

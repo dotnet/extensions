@@ -297,7 +297,7 @@ internal sealed class Emitter : EmitterBase
             foreach (var tagName in metricMethod.TagKeys)
             {
                 var paramName = GetSanitizedParamName(tagName);
-                OutLn($"new global::System.Collections.Generic.KeyValuePair<string, object?>(\"{paramName}\", {paramName}),");
+                OutLn($"new global::System.Collections.Generic.KeyValuePair<string, object?>(\"{tagName}\", {paramName}),");
             }
         }
         else

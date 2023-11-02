@@ -8,13 +8,13 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
 internal static partial class Log
 {
-    [LoggerMessage(0, LogLevel.Warning, "Process reporting unhealthy: {status}. Health check entries are {entries}")]
+    [LoggerMessage(0, LogLevel.Warning, "Process reporting unhealthy: {Status}. Health check entries are {Entries}")]
     public static partial void Unhealthy(
         ILogger logger,
         HealthStatus status,
         StringBuilder entries);
 
-    [LoggerMessage(1, LogLevel.Debug, "Process reporting healthy: {status}.")]
+    [LoggerMessage(1, LogLevel.Debug, "Process reporting healthy: {Status}.")]
     public static partial void Healthy(
         ILogger logger,
         HealthStatus status);

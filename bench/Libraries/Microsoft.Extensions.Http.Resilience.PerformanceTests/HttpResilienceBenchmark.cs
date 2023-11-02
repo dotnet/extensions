@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.Http.Resilience.Bench;
+namespace Microsoft.Extensions.Http.Resilience.PerformanceTests;
 
 public class HttpResilienceBenchmark
 {

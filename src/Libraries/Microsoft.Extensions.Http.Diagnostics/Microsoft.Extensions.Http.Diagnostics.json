@@ -82,47 +82,47 @@
         {
           "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.Duration",
           "Stage": "Stable",
-          "Value": "duration"
+          "Value": "Duration"
         },
         {
           "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.Host",
           "Stage": "Stable",
-          "Value": "httpHost"
+          "Value": "server.address"
         },
         {
           "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.Method",
           "Stage": "Stable",
-          "Value": "httpMethod"
+          "Value": "http.request.method"
         },
         {
           "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.Path",
           "Stage": "Stable",
-          "Value": "httpPath"
+          "Value": "url.path"
         },
         {
           "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.RequestBody",
           "Stage": "Stable",
-          "Value": "httpRequestBody"
+          "Value": "RequestBody"
         },
         {
           "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.RequestHeaderPrefix",
           "Stage": "Stable",
-          "Value": "httpRequestHeader_"
+          "Value": "http.request.header."
         },
         {
           "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.ResponseBody",
           "Stage": "Stable",
-          "Value": "httpResponseBody"
+          "Value": "ResponseBody"
         },
         {
           "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.ResponseHeaderPrefix",
           "Stage": "Stable",
-          "Value": "httpResponseHeader_"
+          "Value": "http.response.header."
         },
         {
           "Member": "const string Microsoft.Extensions.Http.Logging.HttpClientLoggingTagNames.StatusCode",
           "Stage": "Stable",
-          "Value": "httpStatusCode"
+          "Value": "http.response.status_code"
         }
       ],
       "Properties": [

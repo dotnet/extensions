@@ -56,6 +56,8 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
     public List<string> Requests { get; } = [];
 
+    public List<ResilienceContext?> RequestContexts { get; } = [];
+
     public void Dispose()
     {
         _requestRoutingStrategyMock.VerifyAll();
@@ -168,6 +170,25 @@ public abstract class HedgingTests<TBuilder> : IDisposable
     }
 
     [Fact]
+    public async Task SendAsync_EnsureDistinctContextForEachAttempt()
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
+
+        SetupRouting();
+        SetupRoutes(4);
+
+        AddResponse(HttpStatusCode.InternalServerError);
+        AddResponse(HttpStatusCode.InternalServerError);
+        AddResponse(HttpStatusCode.InternalServerError);
+
+        using var client = CreateClientWithHandler();
+
+        await client.SendAsync(request, _cancellationTokenSource.Token);
+
+        RequestContexts.Distinct().OfType<ResilienceContext>().Should().HaveCount(3);
+    }
+
+    [Fact]
     public async Task SendAsync_NoRoutesLeft_EnsureLessThanMaxHedgedAttempts()
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
@@ -229,6 +250,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
     private Task<HttpResponseMessage> InnerHandlerFunction(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         Requests.Add(request.RequestUri!.ToString());
+        RequestContexts.Add(request.GetResilienceContext());
 
         if (_failure)
         {

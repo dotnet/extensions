@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Shared.Diagnostics;
 using Polly.DependencyInjection;
@@ -43,11 +44,12 @@ public sealed class ResilienceHandlerContext
     /// <remarks>
     /// You can decide based on the <paramref name="name"/> to listen for changes in global options or named options.
     /// If <paramref name="name"/> is <see langword="null"/> then the global options are listened to.
+    /// By default, the <paramref name="name"/> parameter is <see langword="null"/>.
     /// <para>
     /// You can listen for changes only for single options. If you call this method multiple times, the preceding calls are ignored and only the last one wins.
     /// </para>
     /// </remarks>
-    public void EnableReloads<TOptions>(string? name = null) => _context.EnableReloads<TOptions>(name);
+    public void EnableReloads<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TOptions>(string? name = null) => _context.EnableReloads<TOptions>(name);
 
     /// <summary>
     /// Gets the options identified by <paramref name="name"/>.
@@ -57,8 +59,9 @@ public sealed class ResilienceHandlerContext
     /// <returns>The options instance.</returns>
     /// <remarks>
     /// If <paramref name="name"/> is <see langword="null"/> then the global options are returned.
+    /// By default, the <paramref name="name"/> parameter is <see langword="null"/>.
     /// </remarks>
-    public TOptions GetOptions<TOptions>(string name) => _context.GetOptions<TOptions>(name);
+    public TOptions GetOptions<TOptions>(string? name = null) => _context.GetOptions<TOptions>(name);
 
     /// <summary>
     /// Registers a callback that is called when the pipeline instance being configured is disposed.

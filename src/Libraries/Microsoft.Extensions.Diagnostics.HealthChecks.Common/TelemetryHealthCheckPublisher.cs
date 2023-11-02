@@ -49,8 +49,6 @@ internal sealed class TelemetryHealthCheckPublisher : IHealthCheckPublisher
             {
                 Log.Healthy(_logger, report.Status);
             }
-
-            _metrics.HealthCheckReportCounter.RecordMetric(true, report.Status);
         }
         else
         {
@@ -69,7 +67,7 @@ internal sealed class TelemetryHealthCheckPublisher : IHealthCheckPublisher
                     .Append(entry.Key)
                     .Append(": {")
                     .Append("status: ")
-                    .Append(entry.Value.Status.ToInvariantString())
+                    .Append(entry.Value.Status.ToString())
                     .Append(", description: ")
                     .Append(entry.Value.Description)
                     .Append('}');
@@ -79,9 +77,9 @@ internal sealed class TelemetryHealthCheckPublisher : IHealthCheckPublisher
 
             Log.Unhealthy(_logger, report.Status, stringBuilder);
             PoolFactory.SharedStringBuilderPool.Return(stringBuilder);
-
-            _metrics.HealthCheckReportCounter.RecordMetric(false, report.Status);
         }
+
+        _metrics.HealthCheckReportCounter.RecordMetric(report.Status);
 
         return Task.CompletedTask;
     }

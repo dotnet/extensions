@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 /// An exception summary represents a low-cardinality version of an exception's information, suitable for such
 /// cases.
 /// 
-/// The <see cref="ExceptionSummary.Description"/> property never include sensitive information.
+/// The <see cref="ExceptionSummary.Description"/> property never includes sensitive information.
 /// But the <see cref="ExceptionSummary.AdditionalDetails"/> property might contain sensitive information and should thus not be used in telemetry.
 /// </remarks>
 public readonly struct ExceptionSummary : IEquatable<ExceptionSummary>

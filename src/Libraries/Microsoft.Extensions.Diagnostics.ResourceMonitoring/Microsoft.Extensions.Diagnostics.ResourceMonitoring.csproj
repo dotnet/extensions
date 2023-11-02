@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExtraAbstractions\Microsoft.Extensions.Diagnostics.ExtraAbstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.DependencyInjection.AutoActivation\Microsoft.Extensions.DependencyInjection.AutoActivation.csproj" />
   </ItemGroup>
 
@@ -42,8 +42,6 @@
 
   <ItemGroup>
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
-    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="ResourceMonitoringBuilderExtensions.cs" />
-    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="ResourceMonitoringServiceCollectionExtensions.cs" />
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
   </ItemGroup>
 </Project>

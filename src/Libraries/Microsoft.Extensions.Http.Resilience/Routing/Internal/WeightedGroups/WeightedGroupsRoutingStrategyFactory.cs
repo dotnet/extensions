@@ -29,8 +29,6 @@ internal sealed class WeightedGroupsRoutingStrategyFactory : IPooledObjectPolicy
         return strategy;
     }
 
-    public void Return(WeightedGroupsRoutingStrategy strategy) => _pool.Return(strategy);
-
     WeightedGroupsRoutingStrategy IPooledObjectPolicy<WeightedGroupsRoutingStrategy>.Create() => new(_randomizer, _pool);
 
     bool IPooledObjectPolicy<WeightedGroupsRoutingStrategy>.Return(WeightedGroupsRoutingStrategy obj) => obj.TryReset();

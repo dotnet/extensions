@@ -33,7 +33,7 @@ public class LogPropertiesRedactionTests
         var expectedState = new Dictionary<string, string?>
         {
             ["P0"] = "----",
-            ["p1_StringPropertyBase"] = new('-', classToRedact.StringPropertyBase.Length),
+            ["p1.StringPropertyBase"] = new('-', classToRedact.StringPropertyBase.Length),
             ["{OriginalFormat}"] = "LogProperties with redaction: {P0}"
         };
 
@@ -59,7 +59,7 @@ public class LogPropertiesRedactionTests
         var expectedState = new Dictionary<string, string?>
         {
             ["p0"] = "----",
-            ["p1_StringPropertyBase"] = new('-', classToRedact.StringPropertyBase.Length),
+            ["p1.StringPropertyBase"] = new('-', classToRedact.StringPropertyBase.Length),
         };
 
         collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
@@ -81,14 +81,14 @@ public class LogPropertiesRedactionTests
 
         var expectedState = new Dictionary<string, string?>
         {
-            ["classToLog_StringProperty"] = new('+', classToRedact.StringProperty.Length),
-            ["classToLog_StringPropertyBase"] = new('-', classToRedact.StringPropertyBase.Length),
-            ["classToLog_SimplifiedNullableIntProperty"] = classToRedact.SimplifiedNullableIntProperty.ToString(CultureInfo.InvariantCulture),
-            ["classToLog_GetOnlyProperty"] = new('-', classToRedact.GetOnlyProperty.Length),
-            ["classToLog_TransitiveProp_TransitiveNumberProp"] = classToRedact.TransitiveProp.TransitiveNumberProp.ToString(CultureInfo.InvariantCulture),
-            ["classToLog_TransitiveProp_TransitiveStringProp"] = new('-', classToRedact.TransitiveProp.TransitiveStringProp.Length),
-            ["classToLog_NoRedactionProp"] = classToRedact.NoRedactionProp,
-            ["classToLog_NonFormattableProperty"] = new('-', classToRedact.NonFormattableProperty.ToString().Length),
+            ["classToLog.StringProperty"] = new('+', classToRedact.StringProperty.Length),
+            ["classToLog.StringPropertyBase"] = new('-', classToRedact.StringPropertyBase.Length),
+            ["classToLog.SimplifiedNullableIntProperty"] = classToRedact.SimplifiedNullableIntProperty.ToString(CultureInfo.InvariantCulture),
+            ["classToLog.GetOnlyProperty"] = new('-', classToRedact.GetOnlyProperty.Length),
+            ["classToLog.TransitiveProp.TransitiveNumberProp"] = classToRedact.TransitiveProp.TransitiveNumberProp.ToString(CultureInfo.InvariantCulture),
+            ["classToLog.TransitiveProp.TransitiveStringProp"] = new('-', classToRedact.TransitiveProp.TransitiveStringProp.Length),
+            ["classToLog.NoRedactionProp"] = classToRedact.NoRedactionProp,
+            ["classToLog.NonFormattableProperty"] = new('-', classToRedact.NonFormattableProperty.ToString().Length),
             ["{OriginalFormat}"] = "No template params"
         };
 
@@ -112,14 +112,14 @@ public class LogPropertiesRedactionTests
 
         var expectedState = new Dictionary<string, string?>
         {
-            ["classToLog_StringProperty"] = new('+', classToRedact.StringProperty.Length),
-            ["classToLog_StringPropertyBase"] = new('-', classToRedact.StringPropertyBase.Length),
-            ["classToLog_SimplifiedNullableIntProperty"] = classToRedact.SimplifiedNullableIntProperty.ToString(CultureInfo.InvariantCulture),
-            ["classToLog_GetOnlyProperty"] = new('-', classToRedact.GetOnlyProperty.Length),
-            ["classToLog_TransitiveProp_TransitiveNumberProp"] = classToRedact.TransitiveProp.TransitiveNumberProp.ToString(CultureInfo.InvariantCulture),
-            ["classToLog_TransitiveProp_TransitiveStringProp"] = new('-', classToRedact.TransitiveProp.TransitiveStringProp.Length),
-            ["classToLog_NoRedactionProp"] = classToRedact.NoRedactionProp,
-            ["classToLog_NonFormattableProperty"] = new('-', classToRedact.NonFormattableProperty.ToString().Length),
+            ["classToLog.StringProperty"] = new('+', classToRedact.StringProperty.Length),
+            ["classToLog.StringPropertyBase"] = new('-', classToRedact.StringPropertyBase.Length),
+            ["classToLog.SimplifiedNullableIntProperty"] = classToRedact.SimplifiedNullableIntProperty.ToString(CultureInfo.InvariantCulture),
+            ["classToLog.GetOnlyProperty"] = new('-', classToRedact.GetOnlyProperty.Length),
+            ["classToLog.TransitiveProp.TransitiveNumberProp"] = classToRedact.TransitiveProp.TransitiveNumberProp.ToString(CultureInfo.InvariantCulture),
+            ["classToLog.TransitiveProp.TransitiveStringProp"] = new('-', classToRedact.TransitiveProp.TransitiveStringProp.Length),
+            ["classToLog.NoRedactionProp"] = classToRedact.NoRedactionProp,
+            ["classToLog.NonFormattableProperty"] = new('-', classToRedact.NonFormattableProperty.ToString().Length),
         };
 
         collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
@@ -142,8 +142,8 @@ public class LogPropertiesRedactionTests
         var expectedState = new Dictionary<string, string?>
         {
             ["StringProperty"] = "-----------",
-            ["complexParam_TransitiveNumberProp"] = classToRedact.TransitiveNumberProp.ToString(CultureInfo.InvariantCulture),
-            ["complexParam_TransitiveStringProp"] = new('-', classToRedact.TransitiveStringProp.Length),
+            ["complexParam.TransitiveNumberProp"] = classToRedact.TransitiveNumberProp.ToString(CultureInfo.InvariantCulture),
+            ["complexParam.TransitiveStringProp"] = new('-', classToRedact.TransitiveStringProp.Length),
             ["{OriginalFormat}"] = "Only {StringProperty} as param"
         };
 
@@ -168,8 +168,8 @@ public class LogPropertiesRedactionTests
         var expectedState = new Dictionary<string, string?>
         {
             ["stringProperty"] = "-----------",
-            ["complexParam_TransitiveNumberProp"] = classToRedact.TransitiveNumberProp.ToString(CultureInfo.InvariantCulture),
-            ["complexParam_TransitiveStringProp"] = new('-', classToRedact.TransitiveStringProp.Length),
+            ["complexParam.TransitiveNumberProp"] = classToRedact.TransitiveNumberProp.ToString(CultureInfo.InvariantCulture),
+            ["complexParam.TransitiveStringProp"] = new('-', classToRedact.TransitiveStringProp.Length),
         };
 
         collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);

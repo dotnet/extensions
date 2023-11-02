@@ -296,7 +296,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "TOptions Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.GetOptions<TOptions>(string name);",
+          "Member": "TOptions Microsoft.Extensions.Http.Resilience.ResilienceHandlerContext.GetOptions<TOptions>(string? name = null);",
           "Stage": "Stable"
         },
         {

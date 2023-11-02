@@ -20,5 +20,5 @@ internal sealed class RedactorProviderOptions
     /// <summary>
     /// Gets a dictionary of classification-specific redactors.
     /// </summary>
-    public Dictionary<DataClassification, Type> Redactors { get; } = [];
+    public Dictionary<DataClassificationSet, Type> Redactors { get; } = [];
 }

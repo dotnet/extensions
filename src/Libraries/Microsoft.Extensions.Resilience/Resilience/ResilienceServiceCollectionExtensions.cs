@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Resilience;
 using Microsoft.Extensions.Resilience.Internal;
 using Microsoft.Shared.Diagnostics;
 using Polly.Telemetry;
@@ -29,9 +28,6 @@ public static class ResilienceServiceCollectionExtensions
     /// <list type="bullet">
     /// <item><description>
     /// Exception enrichment based on <see cref="IExceptionSummarizer"/>.</description>
-    /// </item>
-    /// <item><description>
-    /// Result enrichment based on <see cref="ConfigureFailureResultContext"/> and <see cref="FailureResultContext"/>.</description>
     /// </item>
     /// <item><description>
     /// Request metadata enrichment based on <see cref="RequestMetadata"/>.</description>
@@ -56,25 +52,5 @@ public static class ResilienceServiceCollectionExtensions
             .Configure<ResilienceMetricsEnricher>((options, enricher) => options.MeteringEnrichers.Add(enricher));
 
         return services;
-    }
-
-    /// <summary>
-    /// Configures the failure result dimensions.
-    /// </summary>
-    /// <typeparam name="TResult">The type of the policy result.</typeparam>
-    /// <param name="services">The services.</param>
-    /// <param name="configure">The configure result dimensions.</param>
-    /// <returns>The input <paramref name="services"/>.</returns>
-    /// <exception cref="ArgumentNullException">
-    /// <paramref name="services"/> or <paramref name="configure"/> is <see langword="null"/>.
-    /// </exception>
-    public static IServiceCollection ConfigureFailureResultContext<TResult>(
-       this IServiceCollection services,
-       Func<TResult, FailureResultContext> configure)
-    {
-        _ = Throw.IfNull(services);
-        _ = Throw.IfNull(configure);
-
-        return services.Configure<FailureEventMetricsOptions>(options => options.ConfigureFailureResultContext(configure));
     }
 }

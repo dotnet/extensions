@@ -751,7 +751,7 @@ public class LogMethodTests
 
         collector.Clear();
         AtSymbolsTestExtensions.M3(logger, LogLevel.Debug, o);
-        Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("event_class"));
+        Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("event.class"));
 
         collector.Clear();
         AtSymbolsTestExtensions.M5(logger, LogLevel.Debug, o);
@@ -892,7 +892,7 @@ public class LogMethodTests
         collector.Clear();
         FormattableTestExtensions.Method2(logger, new FormattableTestExtensions.ComplexObj());
         Assert.Equal(1, collector.Count);
-        Assert.Equal("Formatted!", collector.LatestRecord.StructuredState!.GetValue("p1_P1"));
+        Assert.Equal("Formatted!", collector.LatestRecord.StructuredState!.GetValue("p1.P1"));
 
         collector.Clear();
         FormattableTestExtensions.Method3(logger, default);
