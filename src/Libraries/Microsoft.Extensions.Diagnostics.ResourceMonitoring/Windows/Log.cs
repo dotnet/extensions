@@ -10,9 +10,9 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 
 internal static partial class Log
 {
-    [LoggerMessage(1, LogLevel.Information, "Resource Monitoring is running inside a Job Object. For more information about Job Objects see https://aka.ms/job-objects")]
+    [LoggerMessage(1, LogLevel.Information, "Resource Monitoring is running inside a Job Object. For more information about Job Objects see https://aka.ms/job-objects")] 
     public static partial void RunningInsideJobObject(ILogger logger);
 
-    [LoggerMessage(2, LogLevel.Information, "Resource Monitoring is running outside of Job Object. For more information about Job Objects see https://aka.ms/job-objects")]
+    [LoggerMessage(2, LogLevel.Information, "Resource Monitoring is running outside of Job Object. For more information about Job Objects see https://aka.ms/job-objects")] 
     public static partial void RunningOutsideJobObject(ILogger logger);
 }

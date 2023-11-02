@@ -60,9 +60,9 @@ internal sealed partial class HostTerminatorService : BackgroundService
         _host.Dispose();
     }
 
-    [LoggerMessage(0, LogLevel.Warning, "FakeHostOptions.TimeToLive set to {TimeToLive} is up, disposing the host.")]
+    [LoggerMessage(0, LogLevel.Warning, "FakeHostOptions.TimeToLive set to {TimeToLive} is up, disposing the host.")] 
     private partial void LogTimeToLiveUp(TimeSpan timeToLive);
 
-    [LoggerMessage(1, LogLevel.Information, "Debugger is attached. The host won't be automatically disposed.")]
+    [LoggerMessage(1, LogLevel.Information, "Debugger is attached. The host won't be automatically disposed.")] 
     private partial void LogDebuggerAttached();
 }

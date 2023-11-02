@@ -198,12 +198,12 @@ public sealed partial class HeaderParsingFeature
         }
     }
 
-    [LoggerMessage(LogLevel.Debug, "Can't parse header '{HeaderName}' due to '{Error}'.")]
+    [LoggerMessage(LogLevel.Debug, "Can't parse header '{HeaderName}' due to '{Error}'.")] 
     private partial void LogParsingError(string headerName, string error);
 
-    [LoggerMessage(LogLevel.Debug, "Using a default value for header '{HeaderName}'.")]
+    [LoggerMessage(LogLevel.Debug, "Using a default value for header '{HeaderName}'.")] 
     private partial void LogDefaultUsage(string headerName);
 
-    [LoggerMessage(LogLevel.Debug, "Header '{HeaderName}' not found.")]
+    [LoggerMessage(LogLevel.Debug, "Header '{HeaderName}' not found.")] 
     private partial void LogNotFound(string headerName);
 }

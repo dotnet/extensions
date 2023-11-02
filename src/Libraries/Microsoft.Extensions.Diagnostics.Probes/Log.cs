@@ -8,6 +8,6 @@ namespace Microsoft.Extensions.Diagnostics.Probes;
 
 internal static partial class Log
 {
-    [LoggerMessage(LogLevel.Error, "Error updating health status through TCP endpoint")]
+    [LoggerMessage(LogLevel.Error, "Error updating health status through TCP endpoint")] 
     public static partial void SocketExceptionCaughtTcpEndpoint(this ILogger logger, Exception e);
 }
