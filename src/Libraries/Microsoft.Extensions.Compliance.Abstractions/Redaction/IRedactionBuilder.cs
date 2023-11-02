@@ -18,10 +18,10 @@ public interface IRedactionBuilder
     IServiceCollection Services { get; }
 
     /// <summary>
-    /// Sets the redactor to use for a set of data classes.
+    /// Sets the redactor to use for a set of data classifications.
     /// </summary>
     /// <typeparam name="T">Redactor type.</typeparam>
-    /// <param name="classifications">The data classes for which the redactor type should be used.</param>
+    /// <param name="classifications">The data classifications for which the redactor type should be used.</param>
     /// <returns>The value of this instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="classifications" /> is <see langword="null" />.</exception>
     IRedactionBuilder SetRedactor<T>(params DataClassificationSet[] classifications)

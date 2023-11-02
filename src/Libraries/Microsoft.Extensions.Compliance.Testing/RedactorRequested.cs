@@ -24,7 +24,7 @@ public readonly struct RedactorRequested : IEquatable<RedactorRequested>
     /// <summary>
     /// Initializes a new instance of the <see cref="RedactorRequested"/> struct.
     /// </summary>
-    /// <param name="classifications">Data classes for which redactor was used.</param>
+    /// <param name="classifications">Data classifications for which redactor was used.</param>
     /// <param name="sequenceNumber">Order in which the request was used.</param>
     public RedactorRequested(DataClassificationSet classifications, int sequenceNumber)
     {
