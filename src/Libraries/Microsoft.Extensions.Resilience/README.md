@@ -1,6 +1,6 @@
 # Microsoft.Extensions.Resilience
 
-Mechanisms to harden applications against transient failures.
+Extensions to the Polly libraries to enrich telemetry with metadata and exception summaries.
 
 ## Install the package
 
@@ -18,6 +18,22 @@ Or directly in the C# project file:
 </ItemGroup>
 ```
 
+## Usage Examples
+
+The services can be registered using the following method:
+
+```csharp
+public static IServiceCollection AddResilienceEnricher(this IServiceCollection services)
+```
+
+This will optionally consume the `IExceptionSummarizer` service if it has been registered and add that data to Polly's telemetry. It will also include `RequestMetadata` that can be set or retrieved with these extensions:
+
+```csharp
+public static void SetRequestMetadata(this ResilienceContext context, RequestMetadata requestMetadata)
+public static RequestMetadata? GetRequestMetadata(this ResilienceContext context)
+```
+
+See the Polly docs for details about working with [`ResilienceContext`](https://www.pollydocs.org/advanced/resilience-context.html).
 
 ## Feedback & Contributing
 
