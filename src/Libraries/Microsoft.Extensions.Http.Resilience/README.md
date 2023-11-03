@@ -53,6 +53,21 @@ clientBuilder.AddStandardHedgingHandler().Configure(o =>
 });
 ```
 
+### Custom Resilience
+
+For more granular control a custom pipeline can be constructed.
+
+```csharp
+var clientBuilder = services.AddHttpClient("MyClient");
+
+clientBuilder.AddResilienceHandler("myHandler")
+ .AddBulkheadPolicy("customBulkhead", b => { })
+ .AddTimeoutPolicy("customTimeout", t => { })
+ .AddRetryPolicy("customRetry", r => { })
+ .AddFallbackPolicy("customFallback", f => { })
+ .AddCircuitBreakerPolicy("customCircuit", c => { });
+```
+
 ## Feedback & Contributing
 
 We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
