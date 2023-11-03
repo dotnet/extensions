@@ -682,7 +682,7 @@ public partial class ParserTests
     public async Task LogMethod_DetectsSensitiveMembersInRecord([CombinatorialRange(0, TotalSensitiveCases)] int positionNumber)
     {
         var sb = new System.Text.StringBuilder(@"
-            using Microsoft.R9.Extensions.Data.Classification;
+            using Microsoft.Extensions.Compliance.Testing;
             using System.Collections;
 
             {17}
@@ -731,16 +731,16 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod(LogLevel.Debug, ""Param is {p0}"")]
+                [LoggerMessage(LogLevel.Debug, ""Param is {p0}"")]
                 public static partial void LogTemplate(ILogger logger, IRedactorProvider provider, MyRecord /*0+*/p0/*-0*/);
 
-                [LogMethod(LogLevel.Debug, ""No param here"")]
+                [LoggerMessage(LogLevel.Debug, ""No param here"")]
                 public static partial void LogStructured(ILogger logger, MyRecord /*1+*/p0/*-1*/);
 
-                [LogMethod(LogLevel.Debug)]
+                [LoggerMessage(LogLevel.Debug)]
                 public static partial void LogFullyStructured(ILogger logger, MyRecord /*2+*/p0/*-2*/);
 
-                [LogMethod(LogLevel.Debug, ""Param is {p0}"")]
+                [LoggerMessage(LogLevel.Debug, ""Param is {p0}"")]
                 public static partial void LogProperties(ILogger logger, IRedactorProvider rp, [LogProperties] MyRecord /*3+*/p0/*-3*/);
             }");
 
@@ -760,28 +760,26 @@ public partial class ParserTests
         await RunGenerator(
             sb.ToString(),
             DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate,
-            ignoreDiag: DiagDescriptors.TemplateHasNoCorrespondingParameter);
+            ignoreDiag: DiagDescriptors.ParameterHasNoCorrespondingTemplate);
     }
 
-    // TODO: remove?
     [Theory]
-    [InlineData("System.Nullable<EUPI<string>>")]
-    [InlineData("System.Nullable<AccountData<string>>")]
-    [InlineData("EUPI<string>?")]
-    [InlineData("AccountData<string>?")]
+    [InlineData("System.Nullable<int>")]
+    [InlineData("int?")]
     public async Task LogMethod_DetectsSensitiveNullableMembersInRecord(string type)
     {
         await RunGenerator(@$"
-            using Microsoft.R9.Extensions.Data.Classification;
+            using Microsoft.Extensions.Compliance.Testing;
 
             record MyRecord
             {{
+                [PrivateData]
                 public {type} Field;
             }}
 
             partial class C
             {{
-                [LogMethod(LogLevel.Debug, ""Param is {{p0}}"")]
+                [LoggerMessage(LogLevel.Debug, ""Param is {{p0}}"")]
                 public static partial void LogTemplate(ILogger logger, MyRecord /*0+*/p0/*-0*/);
             }}",
             DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
@@ -793,13 +791,13 @@ public partial class ParserTests
     public async Task LogMethod_DetectsSensitiveMembersInRecord_WithPrimaryCtor(string annotation)
     {
         await RunGenerator(@$"
-            using Microsoft.R9.Extensions.Data.Classification;
+            using Microsoft.Extensions.Compliance.Testing;
 
             record MyRecord({annotation} string userIp);
 
             partial class C
             {{
-                [LogMethod(LogLevel.Debug, ""Param is {{p0}}"")]
+                [LoggerMessage(LogLevel.Debug, ""Param is {{p0}}"")]
                 public static partial void LogTemplate(ILogger logger, MyRecord /*0+*/p0/*-0*/);
             }}",
             DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
@@ -809,7 +807,7 @@ public partial class ParserTests
     public async Task LogMethod_SkipsNonSensitiveMembersInRecord()
     {
         await RunGenerator(@"
-            using Microsoft.R9.Extensions.Data.Classification;
+            using Microsoft.Extensions.Compliance.Testing;
 
             public record class BaseRecord
             {
@@ -842,7 +840,7 @@ public partial class ParserTests
 
             partial class C
             {
-                [LogMethod(LogLevel.Debug, ""Param is {p0}"")]
+                [LoggerMessage(LogLevel.Debug, ""Param is {p0}"")]
                 public static partial void LogFunc(ILogger logger, IRedactorProvider provider, MyRecord /*0+*/p0/*-0*/);
             }");
     }
@@ -944,7 +942,6 @@ public partial class ParserTests
 
             text = $@"
                     {nspaceStart}
-                    using Microsoft.Extensions.Logging;
                     using Microsoft.Extensions.Logging;
                     {code}
                     {nspaceEnd}";

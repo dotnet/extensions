@@ -76,20 +76,23 @@ public partial class ParserTests
             }");
     }
 
-    [Fact]
-    public static async Task LogProperties_AllowsRecordTypes()
+    [Theory]
+    [InlineData("record class")]
+    [InlineData("record struct")]
+    [InlineData("readonly record struct")]
+    public async Task LogProperties_AllowsRecordTypes(string type)
     {
-        await RunGenerator(@"
-            internal record class MyRecord(int Value)
-            {
+        await RunGenerator(@$"
+            internal {type} MyRecord(int Value)
+            {{
                 public int GetOnlyValue => Value + 1;
-            }
+            }}
 
             partial class C
-            {
+            {{
                 [LoggerMessage(LogLevel.Debug)]
                 public static partial void LogFunc(ILogger logger, [LogProperties] MyRecord p0);
-            }");
+            }}");
     }
 
     [Theory]

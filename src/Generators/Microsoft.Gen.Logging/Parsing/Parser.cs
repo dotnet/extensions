@@ -93,6 +93,7 @@ internal sealed partial class Parser
 
                         parameterSymbols[lp] = paramSymbol;
 
+                        var foundDataClassificationAttributesInProps = false;
                         var logPropertiesAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogPropertiesAttribute, paramSymbol);
                         if (logPropertiesAttribute is not null)
                         {
@@ -101,7 +102,8 @@ internal sealed partial class Parser
                                 lm,
                                 lp,
                                 paramSymbol,
-                                symbols))
+                                symbols,
+                                ref foundDataClassificationAttributesInProps))
                             {
                                 lp.Properties.Clear();
                             }
@@ -134,36 +136,49 @@ internal sealed partial class Parser
                         }
 
                         bool forceAsTemplateParam = false;
-                        if (lp.IsLogger && lm.TemplateToParameterName.ContainsKey(lp.Name))
+                        bool parameterInTemplate = lm.TemplateToParameterName.ContainsKey(lp.Name);
+                        var loggingProperties = logPropertiesAttribute != null || tagProviderAttribute != null;
+                        if (lp.IsLogger && parameterInTemplate)
                         {
                             Diag(DiagDescriptors.ShouldntMentionLoggerInMessage, attrLoc, lp.Name);
                             forceAsTemplateParam = true;
                         }
-                        else if (lp.IsException && lm.TemplateToParameterName.ContainsKey(lp.Name))
+                        else if (lp.IsException && parameterInTemplate)
                         {
                             Diag(DiagDescriptors.ShouldntMentionExceptionInMessage, attrLoc, lp.Name);
                             forceAsTemplateParam = true;
                         }
-                        else if (lp.IsLogLevel && lm.TemplateToParameterName.ContainsKey(lp.Name))
+                        else if (lp.IsLogLevel && parameterInTemplate)
                         {
                             Diag(DiagDescriptors.ShouldntMentionLogLevelInMessage, attrLoc, lp.Name);
                             forceAsTemplateParam = true;
                         }
-#pragma warning disable S1067 // Expressions should not be too complex
                         else if (lp.IsNormalParameter
-                            && !lm.TemplateToParameterName.ContainsKey(lp.Name)
-                            && logPropertiesAttribute == null
-                            && tagProviderAttribute == null
+                            && !parameterInTemplate
+                            && !loggingProperties
                             && !string.IsNullOrEmpty(lm.Message))
                         {
                             Diag(DiagDescriptors.ParameterHasNoCorrespondingTemplate, paramSymbol.GetLocation(), lp.Name);
                         }
-#pragma warning restore S1067 // Expressions should not be too complex
+
+                        var purelyStructuredLoggingParameter = loggingProperties && !parameterInTemplate;
+                        if (lp.IsNormalParameter &&
+                            !lp.HasDataClassification &&
+                            !purelyStructuredLoggingParameter &&
+                            paramSymbol.Type.IsRecord)
+                        {
+                            if (foundDataClassificationAttributesInProps ||
+                                RecordHasSensitivePublicMembers(paramSymbol.Type, symbols))
+                            {
+                                Diag(DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate, paramSymbol.GetLocation(), lm.Name, lp.Name);
+                                keepMethod = false;
+                            }
+                        }
 
                         lm.Parameters.Add(lp);
                         if (lp.IsNormalParameter || forceAsTemplateParam)
                         {
-                            if (lm.TemplateToParameterName.ContainsKey(lp.Name))
+                            if (parameterInTemplate)
                             {
                                 lp.UsedAsTemplate = true;
                             }
