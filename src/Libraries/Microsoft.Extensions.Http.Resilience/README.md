@@ -62,11 +62,14 @@ var clientBuilder = services.AddHttpClient("MyClient");
 
 clientBuilder.AddResilienceHandler("myHandler", b =>
 {
-    b.AddConcurrencyLimiter(new ConcurrencyLimiterOptions())
-     .AddTimeout(new TimeoutStrategyOptions())
-     .AddRetry(new RetryStrategyOptions<HttpResponseMessage>())
-     .AddFallback(new FallbackStrategyOptions<HttpResponseMessage>())
-     .AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>());
+    b.AddFallback(new FallbackStrategyOptions<HttpResponseMessage>()
+    {
+        FallbackAction = _ => Outcome.FromResultAsValueTask(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable))
+    })
+    .AddConcurrencyLimiter(100)
+    .AddRetry(new HttpRetryStrategyOptions())
+    .AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions())
+    .AddTimeout(new HttpTimeoutStrategyOptions());
 });
 ```
 
