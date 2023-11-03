@@ -88,6 +88,10 @@ if desired.
 | `EXTEXP0011` | Document database experiments |
 | `EXTEXP0012` | Auto-activation experiments |
 | `EXTEXP0013` | HttpLogging middleware experiments |
+| `EXTEXP0014` | ASP.NET Core integration testing experiments |
+| `EXTEXP0015` | Environmental probes experiments |
+| `EXTEXP0016` | Hosting integration testing experiments |
+| `EXTEXP0017` | Contextual options experiments |
 
 
 # LoggerMessage

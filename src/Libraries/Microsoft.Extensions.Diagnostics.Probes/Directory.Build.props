@@ -4,6 +4,8 @@
   the project itself. -->
   <PropertyGroup>
     <Stage>dev</Stage>
+    <StageDevDiagnosticId>EXTEXP0015</StageDevDiagnosticId>
   </PropertyGroup>
+
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 </Project>
