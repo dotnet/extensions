@@ -17,7 +17,6 @@
 
   <!-- Amend the description based on stage -->
   <PropertyGroup>
-    <Description Condition="'$(Stage)' == 'dev'">DEVELOPMENT BUILD - DO NOT USE IN PRODUCTION - $(Description)</Description>
     <Description Condition="'$(Stage)' == 'obsolete'">OBSOLETE PACKAGE - $(Description)</Description>
   </PropertyGroup>
 
