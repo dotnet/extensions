@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 /// <item><description>Total request timeout strategy applies an overall timeout to the execution,
 /// ensuring that the request including hedging attempts does not exceed the configured limit.</description></item>
 /// <item><description>The hedging strategy executes the requests against multiple endpoints in case the dependency is slow or returns a transient error.</description></item>
-/// <item><description>The bulkhead policy limits the maximum number of concurrent requests being send to the dependency.</description></item>
+/// <item><description>The rate limiter pipeline limits the maximum number of requests being send to the dependency.</description></item>
 /// <item><description>The circuit breaker blocks the execution if too many direct failures or timeouts are detected.</description></item>
 /// <item><description>The attempt timeout strategy limits each request attempt duration and throws if its exceeded.</description></item>
 /// </list>
