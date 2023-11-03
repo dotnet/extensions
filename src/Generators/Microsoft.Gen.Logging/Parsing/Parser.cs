@@ -170,7 +170,7 @@ internal sealed partial class Parser
                             if (foundDataClassificationAttributesInProps ||
                                 RecordHasSensitivePublicMembers(paramSymbol.Type, symbols))
                             {
-                                Diag(DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate, paramSymbol.GetLocation(), lm.Name, lp.Name);
+                                Diag(DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate, paramSymbol.GetLocation(), lp.Name, lm.Name);
                                 keepMethod = false;
                             }
                         }

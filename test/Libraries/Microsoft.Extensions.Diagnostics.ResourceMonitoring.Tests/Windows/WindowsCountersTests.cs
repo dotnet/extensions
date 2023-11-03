@@ -40,7 +40,10 @@ public sealed class WindowsCountersTests
         {
             InstrumentPublished = (instrument, listener) =>
             {
-                listener.EnableMeasurementEvents(instrument);
+                if (ReferenceEquals(meter, instrument.Meter))
+                {
+                    listener.EnableMeasurementEvents(instrument);
+                }
             }
         };
 
@@ -79,7 +82,7 @@ public sealed class WindowsCountersTests
         {
             InstrumentPublished = (instrument, listener) =>
             {
-                if (instrument.Meter == meter)
+                if (ReferenceEquals(meter, instrument.Meter))
                 {
                     listener.EnableMeasurementEvents(instrument);
                 }
