@@ -60,12 +60,14 @@ For more granular control a custom pipeline can be constructed.
 ```csharp
 var clientBuilder = services.AddHttpClient("MyClient");
 
-clientBuilder.AddResilienceHandler("myHandler")
- .AddBulkheadPolicy("customBulkhead", b => { })
- .AddTimeoutPolicy("customTimeout", t => { })
- .AddRetryPolicy("customRetry", r => { })
- .AddFallbackPolicy("customFallback", f => { })
- .AddCircuitBreakerPolicy("customCircuit", c => { });
+clientBuilder.AddResilienceHandler("myHandler", b =>
+{
+    b.AddConcurrencyLimiter(new ConcurrencyLimiterOptions())
+     .AddTimeout(new TimeoutStrategyOptions())
+     .AddRetry(new RetryStrategyOptions<HttpResponseMessage>())
+     .AddFallback(new FallbackStrategyOptions<HttpResponseMessage>())
+     .AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>());
+});
 ```
 
 ## Feedback & Contributing
