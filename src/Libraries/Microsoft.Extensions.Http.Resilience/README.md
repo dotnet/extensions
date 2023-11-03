@@ -20,10 +20,10 @@ Or directly in the C# project file:
 
 ## Usage Examples
 
-When configuring an HttpClient through the client factory the following extensions can add a set of pre-configured hedging or resilience behaviors. These pipelines combine multiple strategies with pre-configured defaults.
+When configuring an HttpClient through the [HTTP client factory](https://learn.microsoft.com/dotnet/core/extensions/httpclient-factory) the following extensions can add a set of pre-configured hedging or resilience behaviors. These pipelines combine multiple resilience strategies with pre-configured defaults.
 - The total request timeout pipeline applies an overall timeout to the execution, ensuring that the request including hedging attempts, does not exceed the configured limit.
 - The retry pipeline retries the request in case the dependency is slow or returns a transient error.
-- The bulkhead pipeline limits the maximum number of concurrent requests being send to the dependency.
+- The rate limiter pipeline limits the maximum number of requests being send to the dependency.
 - The circuit breaker blocks the execution if too many direct failures or timeouts are detected.
 - The attempt timeout pipeline limits each request attempt duration and throws if its exceeded.
 
