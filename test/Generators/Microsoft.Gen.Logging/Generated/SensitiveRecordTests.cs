@@ -38,7 +38,11 @@ public class SensitiveRecordTests
     public void TestSensitiveRecordWithLogPropsAndTemplate()
     {
         using var logger = Utils.GetLogger();
-        var dataToLog = new SensitiveRecordExtensions.RecordWithSensitiveMembers { PropGetSet = SensitiveRecordExtensions.Sensitive };
+        var dataToLog = new SensitiveRecordExtensions.RecordWithSensitiveMembers(SensitiveRecordExtensions.Sensitive, SensitiveRecordExtensions.Sensitive)
+        {
+            PropGetSet = SensitiveRecordExtensions.Sensitive
+        };
+
         SensitiveRecordExtensions.LogPropertiesWithTemplate(logger, dataToLog);
 
         var logRecord = Assert.Single(logger.FakeLogCollector.GetSnapshot());
@@ -51,7 +55,11 @@ public class SensitiveRecordTests
     public void TestSensitiveRecordWithLogPropsNoTemplate()
     {
         using var logger = Utils.GetLogger();
-        var dataToLog = new SensitiveRecordExtensions.RecordWithSensitiveMembers { PropGetSet = SensitiveRecordExtensions.Sensitive };
+        var dataToLog = new SensitiveRecordExtensions.RecordWithSensitiveMembers(SensitiveRecordExtensions.Sensitive, SensitiveRecordExtensions.Sensitive)
+        {
+            PropGetSet = SensitiveRecordExtensions.Sensitive
+        };
+
         SensitiveRecordExtensions.LogPropertiesFullyStructured(logger, dataToLog);
 
         var logRecord = Assert.Single(logger.FakeLogCollector.GetSnapshot());
@@ -64,7 +72,11 @@ public class SensitiveRecordTests
     public void TestSensitiveRecordWithInlineAnnotation()
     {
         using var logger = Utils.GetLogger();
-        var dataToLog = new SensitiveRecordExtensions.RecordWithSensitiveMembers { PropGetSet = SensitiveRecordExtensions.Sensitive };
+        var dataToLog = new SensitiveRecordExtensions.RecordWithSensitiveMembers(SensitiveRecordExtensions.Sensitive, SensitiveRecordExtensions.Sensitive)
+        {
+            PropGetSet = SensitiveRecordExtensions.Sensitive
+        };
+
         SensitiveRecordExtensions.LogInTemplateWithAnnotation(logger, dataToLog);
 
         var logRecord = Assert.Single(logger.FakeLogCollector.GetSnapshot());

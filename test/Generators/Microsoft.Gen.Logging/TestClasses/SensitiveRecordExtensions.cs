@@ -34,6 +34,8 @@ namespace TestClasses
             [PrivateData] public virtual string PropVirtual => Sensitive;
         }
 
+        // Even though this record and its base classes contain sensitive members,
+        // they won't be logged because the default record's ToString() implementation doesn't emit non-public and non-instance members.
         internal record class MyRecord : InterimRecord
         {
             [PrivateData] public const string ConstField = Sensitive;
@@ -56,7 +58,9 @@ namespace TestClasses
             public override string PropVirtual => "Regular";
         }
 
-        internal record RecordWithSensitiveMembers
+        internal record RecordWithSensitiveMembers(
+            [PrivateData] string AnnotatedArgFromPrimaryCtor,
+            [property: PrivateData] string AnnotatedPropFromPrimaryCtor)
         {
             [PrivateData]
             public string? PropGetSet { get; set; }
