@@ -328,7 +328,7 @@
     <value>Attribute can't be used in this context</value>
   </data>
   <data name="RecordTypeSensitiveArgumentIsInTemplateMessage" xml:space="preserve">
-    <value>Parameter "{0}" of logging method "{1}" has sensitive field/property in its type</value>
+    <value>Parameter "{0}" of logging method "{1}" has a sensitive field/property in its type</value>
   </data>
   <data name="RecordTypeSensitiveArgumentIsInTemplateTitle" xml:space="preserve">
     <value>The logging method parameter leaks sensitive data</value>
