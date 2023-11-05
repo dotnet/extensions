@@ -31,17 +31,25 @@ public static IServiceCollection AddRedaction(this IServiceCollection services, 
 
 ### Configuring a redactor
 
-Redactors can be configured using one of these `IRedactionBuilder` extension methods:
+Redactors are fetched at runtime using an `IRedactorProvider`. You can choose to implement your own provider and register it inside the `AddRedaction` call, or alternatively you can just use the default provider. Redactors can be configured using one of these `IRedactionBuilder` extension methods:
 
 ```csharp
-// Sets the redactor to use for a set of data classes.
-IRedactionBuilder SetRedactor<T>(params DataClassificationSet[] classifications);
+// Using the default redactor provider:
+builder.Services.AddRedaction(redactionBuilder =>
+{
+    // Assigns a redactor to use for a set of data classes.
+    redactionBuilder.SetRedactor<MyRedactor>(MySensitiveDataClassification);
+    // Assigns a fallback redactor to use when processing classified data for which no specific redactor has been registered. 
+    // The `ErasingRedactor` is the default fallback redactor. If no redactor is configured for a data classification then the data will be erased.
+    redactionBuilder.SetFallbackRedactor<MyFallbackRedactor>();
+});
 
-/// Sets the redactor to use when processing classified data for which no specific redactor has been registered.
-IRedactionBuilder SetFallbackRedactor<T>();
+// Using a custom redactor provider:
+builder.Services.AddRedaction(redactionBuilder =>
+{
+    redactionBuilder.Services.AddSingleton<IRedactorProvider, MyRedactorProvider>();
+});
 ```
-
-The `ErasingRedactor` is the default fallback redactor. If no redactor is configured for a data classification then the data will be erased.
 
 ### Configuring the HMAC redactor
 
