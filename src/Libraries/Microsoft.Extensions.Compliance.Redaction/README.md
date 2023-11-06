@@ -61,7 +61,7 @@ public static IRedactionBuilder SetHmacRedactor(this IRedactionBuilder builder, 
 public static IRedactionBuilder SetHmacRedactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassificationSet[] classifications);
 ```
 
-The `HmacRedactorOptions` requires its `KeyId` and `Key` properties to be set.
+The `HmacRedactorOptions` requires its `KeyId` and `Key` properties to be set. The `HmacRedactor` is still in the experimental phase, which means that the above two methods will show warning `EXTEXP0002` notifying you that the `HmacRedactor` is not yet stable. In order to use it, you will need to either add `<NoWarn>$(NoWarn);EXTEXP0002</NoWarn>` to your project file or add `#pragma warning disable EXTEXP0002` around the calls to `SetHmacRedactor`.
 
 ## Feedback & Contributing
 
