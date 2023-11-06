@@ -49,10 +49,10 @@ Logging data can be enriched by adding custom log enrichers to the service colle
 
 ```csharp
 // Using a specific implementation
-builder.services.AddLogEnricher(new CustomLogEnricher());
+builder.Services.AddLogEnricher(new CustomLogEnricher());
 
 // Using a generic type
-builder.services.AddLogEnricher<AnotherLogEnricher>();
+builder.Services.AddLogEnricher<AnotherLogEnricher>();
 ```
 
 Create custom log enrichers by implementing the `ILogEnricher` interface.
@@ -73,9 +73,9 @@ public class CustomLogEnricher : ILogEnricher
 To track latency in an application it is possible to register checkpoint, measure, and tag names using the following methods:
 
 ```csharp
-builder.services.RegisterCheckpointNames("databaseQuery", "externalApiCall");
-builder.services.RegisterMeasureNames("responseTime", "processingTime");
-builder.services.RegisterTagNames("userId", "transactionId");
+builder.Services.RegisterCheckpointNames("databaseQuery", "externalApiCall");
+builder.Services.RegisterMeasureNames("responseTime", "processingTime");
+builder.Services.RegisterTagNames("userId", "transactionId");
 ```
 
 Implement the `ILatencyDataExporter` to export latency data. This can be integrated with external systems or logging frameworks.
