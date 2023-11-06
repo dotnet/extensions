@@ -34,7 +34,7 @@ public static IServiceCollection AddRedaction(this IServiceCollection services, 
 Redactors can be configured using one of these `IRedactionBuilder` extension methods:
 
 ```csharp
-// Sets the redactor to use for a set of data classes.
+// Sets the redactor to use for a set of data classifications.
 IRedactionBuilder SetRedactor<T>(params DataClassificationSet[] classifications);
 
 /// Sets the redactor to use when processing classified data for which no specific redactor has been registered.
