@@ -26,10 +26,10 @@ Enriches logs with application-specific information based on `ApplicationMetadat
 
 ```csharp
 // Add service log enricher with default settings
-builder.services.AddServiceLogEnricher();
+builder.Services.AddServiceLogEnricher();
 
 // Or configure with options
-builder.services.AddServiceLogEnricher(options =>
+builder.Services.AddServiceLogEnricher(options =>
 {
     options.ApplicationName = true;
     options.BuildVersion = true;
@@ -40,16 +40,41 @@ builder.services.AddServiceLogEnricher(options =>
 
 ### Latency Monitoring
 
-Provides tools for latency data collection and export, particularly to console outputs.
+Provides tools for latency data collection and export. The bellow example uses the built-in Console exporter, but custom exporters can be created by implementing the `ILatencyDataExporter` interface.
 
 ```csharp
 // Add latency console data exporter with configuration
-builder.services.AddConsoleLatencyDataExporter(options =>
+builder.Services.AddConsoleLatencyDataExporter(options =>
 {
     options.OutputCheckpoints = true;
     options.OutputMeasures = true;
     options.OutputTags = true;
 });
+```
+
+In order for the latency data to be exported, a call to `ILatencyDataExporter.ExportAsync()` is required. This can either be called manually, or by using the Request Latency Middleware inside the `Microsoft.AspNetCore.Diagnostics.Middleware` package by adding:
+
+```csharp
+// Add Latency Context
+builder.Services.AddLatencyContext();
+
+// Add Checkpoints, Measures, Tags
+builder.Services.RegisterCheckpointNames("databaseQuery", "externalApiCall");
+builder.Services.RegisterMeasureNames("responseTime", "processingTime");
+builder.Services.RegisterTagNames("userId", "transactionId");
+
+// Add Console Latency exporter.
+builder.Services.AddConsoleLatencyDataExporter();
+// Optionally add custom exporters.
+builder.Services.AddSingleton<ILatencyDataExporter, MyCustomExporter>();
+
+// Add Request latency telemetry.
+builder.Services.AddRequestLatencyTelemetry();
+
+// ...
+
+// Add Request Latency Middleware which will automatically call ExportAsync on all registered latency exporters.
+app.UseRequestLatencyTelemetry();
 ```
 
 ### Logging Enhancements
