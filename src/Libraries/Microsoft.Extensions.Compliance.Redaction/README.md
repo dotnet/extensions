@@ -37,7 +37,7 @@ Redactors are fetched at runtime using an `IRedactorProvider`. You can choose to
 // Using the default redactor provider:
 builder.Services.AddRedaction(redactionBuilder =>
 {
-    // Assigns a redactor to use for a set of data classes.
+    // Assigns a redactor to use for a set of data classifications.
     redactionBuilder.SetRedactor<MyRedactor>(MySensitiveDataClassification);
     // Assigns a fallback redactor to use when processing classified data for which no specific redactor has been registered. 
     // The `ErasingRedactor` is the default fallback redactor. If no redactor is configured for a data classification then the data will be erased.
