@@ -52,7 +52,7 @@ internal sealed class WindowsCounters
 
         // IPv4:
         var snapshotV4 = _tcpTableInfo.GetIPv4CachingSnapshot();
-        measurements.Add(new Measurement<long>(snapshotV4.ClosedCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "closed") }));
+        measurements.Add(new Measurement<long>(snapshotV4.ClosedCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "close") }));
         measurements.Add(new Measurement<long>(snapshotV4.ListenCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "listen") }));
         measurements.Add(new Measurement<long>(snapshotV4.SynSentCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "syn_sent") }));
         measurements.Add(new Measurement<long>(snapshotV4.SynRcvdCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "syn_recv") }));
@@ -67,7 +67,7 @@ internal sealed class WindowsCounters
 
         // IPv6:
         var snapshotV6 = _tcpTableInfo.GetIPv6CachingSnapshot();
-        measurements.Add(new Measurement<long>(snapshotV6.ClosedCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "closed") }));
+        measurements.Add(new Measurement<long>(snapshotV6.ClosedCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "close") }));
         measurements.Add(new Measurement<long>(snapshotV6.ListenCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "listen") }));
         measurements.Add(new Measurement<long>(snapshotV6.SynSentCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "syn_sent") }));
         measurements.Add(new Measurement<long>(snapshotV6.SynRcvdCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "syn_recv") }));

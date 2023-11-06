@@ -12,7 +12,7 @@
     <!--
         When DotNetFinalVersionKind is set to 'release', this branch will produce stable outputs for 'Shipping' packages
     -->
-    <DotNetFinalVersionKind Condition="'$(DotNetFinalVersionKind)' == ''">release</DotNetFinalVersionKind>
+    <DotNetFinalVersionKind Condition="'$(DotNetFinalVersionKind)' == '' And '$(Stage)' != 'dev'">release</DotNetFinalVersionKind>
     <!-- Enabling this rule will cause build failures on undocumented public APIs. -->
     <SkipArcadeNoWarnCS1591>true</SkipArcadeNoWarnCS1591>
   </PropertyGroup>

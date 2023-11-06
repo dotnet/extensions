@@ -87,7 +87,7 @@ public class LoggingOptions
     public ISet<string> ResponseBodyContentTypes { get; set; } = new HashSet<string>();
 
     /// <summary>
-    /// Gets or sets the set of HTTP request headers to log and their respective data classes to use for redaction.
+    /// Gets or sets the set of HTTP request headers to log and their respective data classifications to use for redaction.
     /// </summary>
     /// <value>
     /// The default value is <see cref="HashSet{T}"/>.
@@ -102,7 +102,7 @@ public class LoggingOptions
     public IDictionary<string, DataClassification> RequestHeadersDataClasses { get; set; } = new Dictionary<string, DataClassification>();
 
     /// <summary>
-    /// Gets or sets the set of HTTP response headers to log and their respective data classes to use for redaction.
+    /// Gets or sets the set of HTTP response headers to log and their respective data classifications to use for redaction.
     /// </summary>
     /// <value>
     /// The default value is <see cref="HashSet{T}"/>.
@@ -137,7 +137,7 @@ public class LoggingOptions
     public HttpRouteParameterRedactionMode RequestPathParameterRedactionMode { get; set; } = DefaultPathParameterRedactionMode;
 
     /// <summary>
-    /// Gets or sets the route parameters to redact with their corresponding data classes to apply appropriate redaction.
+    /// Gets or sets the route parameters to redact with their corresponding data classifications to apply appropriate redaction.
     /// </summary>
     [Required]
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",

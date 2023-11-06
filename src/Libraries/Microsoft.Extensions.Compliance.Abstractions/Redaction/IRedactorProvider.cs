@@ -6,7 +6,7 @@ using Microsoft.Extensions.Compliance.Classification;
 namespace Microsoft.Extensions.Compliance.Redaction;
 
 /// <summary>
-/// Provides redactors for different data classes.
+/// Provides redactors for different data classifications.
 /// </summary>
 public interface IRedactorProvider
 {

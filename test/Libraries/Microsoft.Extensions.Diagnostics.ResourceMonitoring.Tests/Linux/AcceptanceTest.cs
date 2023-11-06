@@ -155,12 +155,18 @@ public sealed class AcceptanceTest
         var memoryFromGauge = 0.0d;
         using var e = new ManualResetEventSlim();
 
-        listener.InstrumentPublished = (i, m) =>
+        object? meterScope = null;
+        listener.InstrumentPublished = (instrument, meterListener) =>
         {
-            if (i.Name == ResourceUtilizationInstruments.CpuUtilization
-            || i.Name == ResourceUtilizationInstruments.MemoryUtilization)
+            if (!ReferenceEquals(instrument.Meter.Scope, meterScope))
             {
-                m.EnableMeasurementEvents(i);
+                return;
+            }
+
+            if (instrument.Name == ResourceUtilizationInstruments.CpuUtilization ||
+                instrument.Name == ResourceUtilizationInstruments.MemoryUtilization)
+            {
+                meterListener.EnableMeasurementEvents(instrument);
             }
         };
 
@@ -178,15 +184,17 @@ public sealed class AcceptanceTest
 
         listener.Start();
 
-        using var host = FakeHost.CreateBuilder().ConfigureServices(x =>
-            x.AddLogging()
-            .AddSingleton<TimeProvider>(clock)
-            .AddSingleton<IUserHz>(new FakeUserHz(100))
-            .AddSingleton<IFileSystem>(fileSystem)
-            .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
-            .AddResourceMonitoring())
+        using var host = FakeHost.CreateBuilder()
+            .ConfigureServices(x =>
+                x.AddLogging()
+                .AddSingleton<TimeProvider>(clock)
+                .AddSingleton<IUserHz>(new FakeUserHz(100))
+                .AddSingleton<IFileSystem>(fileSystem)
+                .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
+                .AddResourceMonitoring())
             .Build();
 
+        meterScope = host.Services.GetRequiredService<IMeterFactory>();
         var tracker = host.Services.GetService<IResourceMonitor>();
         Assert.NotNull(tracker);
 

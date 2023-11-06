@@ -457,6 +457,24 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; of logging method &quot;{1}&quot; has sensitive field/property in its type.
+        /// </summary>
+        internal static string RecordTypeSensitiveArgumentIsInTemplateMessage {
+            get {
+                return ResourceManager.GetString("RecordTypeSensitiveArgumentIsInTemplateMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The logging method parameter leaks sensitive data.
+        /// </summary>
+        internal static string RecordTypeSensitiveArgumentIsInTemplateTitle {
+            get {
+                return ResourceManager.GetString("RecordTypeSensitiveArgumentIsInTemplateTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Remove redundant qualifier (Info:, Warning:, Error:, etc) from the logging message since it is implicit in the specified log level..
         /// </summary>
         internal static string RedundantQualifierInMessageMessage {

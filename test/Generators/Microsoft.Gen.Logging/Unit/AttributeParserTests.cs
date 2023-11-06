@@ -178,18 +178,17 @@ public class AttributeParserTests
                 using Microsoft.Extensions.Compliance.Testing;
                 using Microsoft.Extensions.Compliance.Redaction;
                 using Microsoft.Extensions.Logging;
-                using Microsoft.Extensions.Logging;
                 {code}
                 }}
             ";
 
         var loggerAssembly = Assembly.GetAssembly(typeof(ILogger));
-        var logMethodAssembly = Assembly.GetAssembly(typeof(LoggerMessageAttribute));
+        var loggerMessageAssembly = Assembly.GetAssembly(typeof(LoggerMessageAttribute));
         var enrichmentAssembly = Assembly.GetAssembly(typeof(IEnrichmentTagCollector));
         var dataClassificationAssembly = Assembly.GetAssembly(typeof(DataClassification));
         var simpleDataClassificationAssembly = Assembly.GetAssembly(typeof(PrivateDataAttribute));
         var redactorProviderAssembly = Assembly.GetAssembly(typeof(IRedactorProvider));
-        var refs = new[] { loggerAssembly!, logMethodAssembly!, enrichmentAssembly!, dataClassificationAssembly!, simpleDataClassificationAssembly!, redactorProviderAssembly! };
+        var refs = new[] { loggerAssembly!, loggerMessageAssembly!, enrichmentAssembly!, dataClassificationAssembly!, simpleDataClassificationAssembly!, redactorProviderAssembly! };
 
         var (d, _) = await RoslynTestUtils.RunGenerator(
             new LoggingGenerator(),
