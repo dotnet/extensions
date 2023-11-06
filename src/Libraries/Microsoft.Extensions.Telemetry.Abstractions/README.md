@@ -30,11 +30,11 @@ Or directly in the C# project file:
 The package includes a custom logging generator that enhances the default .NET logging capabilities by replacing the default generator. This generator automatically logs the contents of collections and offers advanced logging features, significantly improving the debugging and monitoring process.
 
 ```csharp
-[LoggerMessage(1, LogLevel.Information, "These are the contents of my dictionary: {dictionary}")]
+[LoggerMessage(1, LogLevel.Information, "These are the contents of my dictionary: {temperature}")]
 internal static partial void LogMyDictionary(ILogger<Program> logger, Dictionary<int, string> temperature);
 ```
 
-It also adds the `LogProperties` attribute which can be applied to a an object parameter of a `LoggerMessage` method. It introspects the passed-in object and automatically adds tags for all its properties. This leads to more informative logs without the need for manual tagging of each property.
+It also adds the `LogProperties` attribute which can be applied to an object parameter of a `LoggerMessage` method. It introspects the passed-in object and automatically adds tags for all its properties. This leads to more informative logs without the need for manual tagging of each property.
 
 ```csharp
 [LoggerMessage(1, LogLevel.Information, "Detected a new temperature: {temperature}")]
@@ -45,7 +45,7 @@ internal record Temperature(double value, TemperatureUnit unit);
 
 ### Log Enrichment
 
-To enrich your logging data, you can add custom log enrichers to your service collection. This can be done using specific implementations or generic types.
+Logging data can be enriched by adding custom log enrichers to the service collection. This can be done using specific implementations or generic types.
 
 ```csharp
 // Using a specific implementation
@@ -70,7 +70,7 @@ public class CustomLogEnricher : ILogEnricher
 
 ### Latency Measurement
 
-To track latency in your application, register checkpoint, measure, and tag names using the provided methods.
+To track latency in an application it is possible to register checkpoint, measure, and tag names using the following methods:
 
 ```csharp
 builder.services.RegisterCheckpointNames("databaseQuery", "externalApiCall");
