@@ -45,10 +45,8 @@ builder.Services.AddRedaction(redactionBuilder =>
 });
 
 // Using a custom redactor provider:
-builder.Services.AddRedaction(redactionBuilder =>
-{
-    redactionBuilder.Services.AddSingleton<IRedactorProvider, MyRedactorProvider>();
-});
+builder.Services.AddSingleton<IRedactorProvider, MyRedactorProvider>();
+builder.Services.AddRedaction(redactionBuilder => { });
 ```
 
 ### Configuring the HMAC redactor

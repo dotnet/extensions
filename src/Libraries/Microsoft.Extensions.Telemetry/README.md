@@ -22,7 +22,7 @@ Or directly in the C# project file:
 
 ### Service Log Enrichment
 
-Enriches logs with application-specific information based on `ApplicationMetadata information. The bellow calls will add the service log enricher to the service collection.
+Enriches logs with application-specific information based on `ApplicationMetadata` information. The bellow calls will add the service log enricher to the service collection.
 
 ```csharp
 // Add service log enricher with default settings
