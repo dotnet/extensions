@@ -39,7 +39,7 @@ services.AddKubernetesProbes(options =>
 })
 ```
 
-The `TimeSpan HealthAssessmentPeriod` for each probe can be set between 5 seconds and 5 minutes, defaulting to 30 seconds.
+The `HealthAssessmentPeriod` property defines how often the health-checks are assessed. By default 30 seconds.
 
 Each probe can also specify `Func<HealthCheckRegistration, bool>? FilterChecks` to customize which health checks are run.
 
