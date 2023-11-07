@@ -49,6 +49,9 @@ builder.Services.AddRedaction();
 // Register HttpClient logging enrichment & redaction services:
 builder.Services.AddExtendedHttpClientLogging();
 
+// Register a logging enricher (the type should implement IHttpClientLogEnricher):
+builder.Services.AddHttpClientLogEnricher<MyHttpClientLogEnricher>();
+
 var host = builder.Build();
 ```
 
