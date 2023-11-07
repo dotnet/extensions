@@ -1,6 +1,6 @@
 # Microsoft.Extensions.Http.Diagnostics
 
-Telemetry support for HTTP Client that allows tracking latency and enriching and redacting log output.
+Telemetry support for `HttpClient` that allows tracking latency and enriching and redacting log output.
 
 ## Install the package
 
@@ -22,7 +22,7 @@ Or directly in the C# project file:
 
 ### HTTP Client Logs Enrichment and Redaction
 
-These components enable enriching and redacting HTTP Client request logs. They remove built-it HTTP Client logging.
+These components enable enriching and redacting `HttpClient` request logs. They remove built-it HTTP Client logging.
 
 In order to use the redaction feature, you need to reference the `Microsoft.Extensions.Compliance.Redaction` package.
 
