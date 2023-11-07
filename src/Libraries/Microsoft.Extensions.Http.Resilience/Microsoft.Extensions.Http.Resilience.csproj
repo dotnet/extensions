@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Http.Resilience</RootNamespace>
-    <Description>Resilience mechanisms for HTTP Client.</Description>
+    <Description>Resilience mechanisms for HttpClient.</Description>
     <Workstream>Resilience</Workstream>
   </PropertyGroup>
 

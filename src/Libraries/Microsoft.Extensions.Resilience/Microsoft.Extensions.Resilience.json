@@ -2,15 +2,15 @@
   "Name": "Microsoft.Extensions.Resilience, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.Extensions.Resilience.ResilienceContextExtensions",
+      "Type": "static class Polly.ResilienceContextExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Http.Diagnostics.RequestMetadata? Microsoft.Extensions.Resilience.ResilienceContextExtensions.GetRequestMetadata(this Polly.ResilienceContext context);",
+          "Member": "static Microsoft.Extensions.Http.Diagnostics.RequestMetadata? Polly.ResilienceContextExtensions.GetRequestMetadata(this Polly.ResilienceContext context);",
           "Stage": "Stable"
         },
         {
-          "Member": "static void Microsoft.Extensions.Resilience.ResilienceContextExtensions.SetRequestMetadata(this Polly.ResilienceContext context, Microsoft.Extensions.Http.Diagnostics.RequestMetadata requestMetadata);",
+          "Member": "static void Polly.ResilienceContextExtensions.SetRequestMetadata(this Polly.ResilienceContext context, Microsoft.Extensions.Http.Diagnostics.RequestMetadata requestMetadata);",
           "Stage": "Stable"
         }
       ]

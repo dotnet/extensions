@@ -88,6 +88,10 @@ if desired.
 | `EXTEXP0011` | Document database experiments |
 | `EXTEXP0012` | Auto-activation experiments |
 | `EXTEXP0013` | HttpLogging middleware experiments |
+| `EXTEXP0014` | ASP.NET Core integration testing experiments |
+| `EXTEXP0015` | Environmental probes experiments |
+| `EXTEXP0016` | Hosting integration testing experiments |
+| `EXTEXP0017` | Contextual options experiments |
 
 
 # LoggerMessage
@@ -129,6 +133,7 @@ if desired.
 | `LOGGEN032` | Can only have one of [LogProperties], [TagProvider], and [LogPropertyIgnore] |
 | `LOGGEN033` | Method parameter can't be used with a tag provider |
 | `LOGGEN034` | Attribute can't be used in this context |
+| `LOGGEN035` | The logging method parameter leaks sensitive data |
 
 
 # Metrics

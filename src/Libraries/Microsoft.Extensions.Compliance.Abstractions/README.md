@@ -56,7 +56,7 @@ public sealed class StarRedactorProvider : IRedactorProvider
 
     public static StarRedactorProvider Instance { get; } = new();
 
-    public Redactor GetRedactor(DataClassification classification) => _starRedactor;
+    public Redactor GetRedactor(DataClassificationSet classifications) => _starRedactor;
 }
 ```
 

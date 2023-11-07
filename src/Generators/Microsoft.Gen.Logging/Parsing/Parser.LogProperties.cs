@@ -20,12 +20,13 @@ internal partial class Parser
 {
     private static readonly HashSet<TypeKind> _allowedTypeKinds = [TypeKind.Class, TypeKind.Struct, TypeKind.Interface];
 
-    private bool ProcessLogPropertiesForParameter(
+    internal bool ProcessLogPropertiesForParameter(
         AttributeData logPropertiesAttribute,
         LoggingMethod lm,
         LoggingMethodParameter lp,
         IParameterSymbol paramSymbol,
-        SymbolHolder symbols)
+        SymbolHolder symbols,
+        ref bool foundDataClassificationAttributes)
     {
         var paramName = paramSymbol.Name;
         if (!lp.IsNormalParameter)
@@ -52,7 +53,7 @@ internal partial class Parser
 
         _ = typesChain.Add(paramTypeSymbol); // Add itself
 
-        var props = GetTypePropertiesToLog(paramTypeSymbol, typesChain, symbols);
+        var props = GetTypePropertiesToLog(paramTypeSymbol, typesChain, symbols, ref foundDataClassificationAttributes);
         if (props == null)
         {
             return false;
@@ -84,7 +85,8 @@ internal partial class Parser
         List<LoggingProperty>? GetTypePropertiesToLog(
             ITypeSymbol type,
             ISet<ITypeSymbol> typesChain,
-            SymbolHolder symbols)
+            SymbolHolder symbols,
+            ref bool foundDataClassificationAttributes)
         {
             var result = new List<LoggingProperty>();
             var seenProps = new HashSet<string>();
@@ -94,180 +96,212 @@ internal partial class Parser
                 _cancellationToken.ThrowIfCancellationRequested();
 
                 var members = namedType.GetMembers();
-                if (members != null)
+                if (members.IsDefaultOrEmpty)
                 {
-                    foreach (var property in members.Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>())
+                    namedType = namedType.BaseType;
+                    continue;
+                }
+
+                var sensitivePropsFromCtor = new Dictionary<string, List<INamedTypeSymbol>>();
+                if (namedType.IsRecord && !namedType.InstanceConstructors.IsDefaultOrEmpty)
+                {
+                    // We can also decide to skip here "protected", "internal" and "private" constructors in future:
+                    foreach (var ctor in namedType.InstanceConstructors)
                     {
-                        var logPropertiesAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogPropertiesAttribute, property);
-                        var logPropertyIgnoreAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogPropertyIgnoreAttribute, property);
-                        var tagProviderAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.TagProviderAttribute, property);
-
-                        var count = 0;
-                        if (logPropertiesAttribute != null)
+                        // Check if constructor has any sensitive parameters:
+                        foreach (var parameter in ctor.Parameters)
                         {
-                            count++;
+                            var maybeDataClasses = GetDataClassificationAttributes(parameter, symbols);
+                            if (maybeDataClasses.Count > 0)
+                            {
+                                sensitivePropsFromCtor[parameter.Name] = maybeDataClasses;
+                            }
                         }
+                    }
+                }
 
-                        if (logPropertyIgnoreAttribute != null)
+                foreach (var property in members.Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>())
+                {
+                    var logPropertiesAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogPropertiesAttribute, property);
+                    var logPropertyIgnoreAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogPropertyIgnoreAttribute, property);
+                    var tagProviderAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.TagProviderAttribute, property);
+
+                    var count = 0;
+                    if (logPropertiesAttribute != null)
+                    {
+                        count++;
+                    }
+
+                    if (logPropertyIgnoreAttribute != null)
+                    {
+                        count++;
+                    }
+
+                    if (tagProviderAttribute != null)
+                    {
+                        count++;
+                    }
+
+                    if (count > 1)
+                    {
+                        Diag(DiagDescriptors.CantMixAttributes, property.GetLocation());
+                        continue;
+                    }
+
+                    if (!seenProps.Add(property.Name))
+                    {
+                        // already saw this property in a derived type, skip it
+                        continue;
+                    }
+
+                    var classification = new HashSet<string>();
+                    var current = type;
+                    while (current != null)
+                    {
+                        classification.UnionWith(GetDataClassificationAttributes(current, symbols).Select(x => x.ToDisplayString()));
+                        current = current.BaseType;
+                    }
+
+                    classification.UnionWith(GetDataClassificationAttributes(property, symbols).Select(x => x.ToDisplayString()));
+
+                    // A property might be a sensitive parameter of a constructor:
+                    if (sensitivePropsFromCtor.TryGetValue(property.Name, out var dataClassesFromCtor))
+                    {
+                        classification.UnionWith(dataClassesFromCtor.Select(x => x.ToDisplayString()));
+                    }
+
+                    if (classification.Count > 0)
+                    {
+                        foundDataClassificationAttributes = true;
+                    }
+
+                    var extractedType = property.Type;
+                    if (extractedType.IsNullableOfT())
+                    {
+                        // extract the T from a Nullable<T>
+                        extractedType = ((INamedTypeSymbol)extractedType).TypeArguments[0];
+                    }
+
+                    var lp = new LoggingProperty
+                    {
+                        Name = property.Name,
+                        Type = property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                        ClassificationAttributeTypes = classification,
+                        IsReference = property.Type.IsReferenceType,
+                        IsEnumerable = property.Type.IsEnumerable(symbols),
+                        IsNullable = property.Type.NullableAnnotation == NullableAnnotation.Annotated,
+                        ImplementsIConvertible = property.Type.ImplementsIConvertible(symbols),
+                        ImplementsIFormattable = property.Type.ImplementsIFormattable(symbols),
+                        ImplementsISpanFormattable = property.Type.ImplementsISpanFormattable(symbols),
+                    };
+
+                    if (!property.DeclaringSyntaxReferences.IsDefaultOrEmpty)
+                    {
+                        var propertyIdentifier = GetPropertyIdentifier(property, _cancellationToken);
+
+                        if (!string.IsNullOrEmpty(propertyIdentifier))
                         {
-                            count++;
+                            lp.NeedsAtSign = propertyIdentifier[0] == '@';
                         }
+                    }
 
-                        if (tagProviderAttribute != null)
-                        {
-                            count++;
-                        }
+                    if (property.Type.IsValueType && !property.Type.IsNullableOfT())
+                    {
+#pragma warning disable S125
+                        // deal with an oddity in Roslyn. If you have this case:
+                        //
+                        // class Gen<T>
+                        // {
+                        //     public T? Value { get; set; }
+                        // }
+                        //
+                        // class Foo
+                        // {
+                        //     public Gen<int> MyInt { get; set; }
+                        // }
+                        //
+                        // then Roslyn claims that MyInt has nullable annotations. Yet, doing x.MyInt?.ToString isn't valid.
+                        // So we explicitly check whether the value is indeed a Nullable<T>.
+                        lp.IsNullable = false;
+#pragma warning restore S125
+                    }
 
-                        if (count > 1)
+                    // Check if this property hides a base property
+                    if (ParserUtilities.PropertyHasModifier(property, SyntaxKind.NewKeyword, _cancellationToken))
+                    {
+                        Diag(DiagDescriptors.LogPropertiesHiddenPropertyDetected, paramSymbol.GetLocation(), paramName, lm.Name, property.Name);
+                        return null;
+                    }
+
+                    if (logPropertiesAttribute != null)
+                    {
+                        _ = CanLogProperties(property, property.Type, symbols);
+
+                        if ((property.DeclaredAccessibility != Accessibility.Public || property.IsStatic)
+                            || (property.GetMethod == null || property.GetMethod.DeclaredAccessibility != Accessibility.Public))
                         {
-                            Diag(DiagDescriptors.CantMixAttributes, property.GetLocation());
+                            Diag(DiagDescriptors.InvalidAttributeUsage, logPropertiesAttribute.ApplicationSyntaxReference?.GetSyntax(_cancellationToken).GetLocation(), "LogProperties");
                             continue;
                         }
 
-                        if (!seenProps.Add(property.Name))
+                        // Checking "extractedType" here
+                        if (typesChain.Contains(extractedType))
                         {
-                            // already saw this property in a derived type, skip it
-                            continue;
+                            Diag(DiagDescriptors.LogPropertiesCycleDetected, paramSymbol.GetLocation(), paramName, namedType.ToDisplayString(), property.Type.ToDisplayString(), lm.Name);
+                            return null;
                         }
 
-                        var classification = new HashSet<string>();
-                        var current = type;
-                        while (current != null)
-                        {
-                            classification.UnionWith(GetDataClassificationAttributes(current, symbols).Select(x => x.ToDisplayString()));
-                            current = current.BaseType;
-                        }
+                        var propName = property.Name;
 
-                        classification.UnionWith(GetDataClassificationAttributes(property, symbols).Select(x => x.ToDisplayString()));
-
-                        var extractedType = property.Type;
+                        extractedType = property.Type;
                         if (extractedType.IsNullableOfT())
                         {
                             // extract the T from a Nullable<T>
                             extractedType = ((INamedTypeSymbol)extractedType).TypeArguments[0];
                         }
 
-                        var lp = new LoggingProperty
-                        {
-                            Name = property.Name,
-                            Type = property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                            ClassificationAttributeTypes = classification,
-                            IsReference = property.Type.IsReferenceType,
-                            IsEnumerable = property.Type.IsEnumerable(symbols),
-                            IsNullable = property.Type.NullableAnnotation == NullableAnnotation.Annotated,
-                            ImplementsIConvertible = property.Type.ImplementsIConvertible(symbols),
-                            ImplementsIFormattable = property.Type.ImplementsIFormattable(symbols),
-                            ImplementsISpanFormattable = property.Type.ImplementsISpanFormattable(symbols),
-                        };
+                        _ = typesChain.Add(namedType);
+                        var props = GetTypePropertiesToLog(extractedType, typesChain, symbols, ref foundDataClassificationAttributes);
+                        _ = typesChain.Remove(namedType);
 
-                        if (!property.DeclaringSyntaxReferences.IsDefaultOrEmpty)
+                        if (props != null)
                         {
-                            var propertyIdentifier = GetPropertyIdentifier(property, _cancellationToken);
-
-                            if (!string.IsNullOrEmpty(propertyIdentifier))
-                            {
-                                lp.NeedsAtSign = propertyIdentifier[0] == '@';
-                            }
+                            lp.Properties.AddRange(props);
                         }
-
-                        if (property.Type.IsValueType && !property.Type.IsNullableOfT())
-                        {
-#pragma warning disable S125
-                            // deal with an oddity in Roslyn. If you have this case:
-                            //
-                            // class Gen<T>
-                            // {
-                            //     public T? Value { get; set; }
-                            // }
-                            //
-                            // class Foo
-                            // {
-                            //     public Gen<int> MyInt { get; set; }
-                            // }
-                            //
-                            // then Roslyn claims that MyInt has nullable annotations. Yet, doing x.MyInt?.ToString isn't valid.
-                            // So we explicitly check whether the value is indeed a Nullable<T>.
-                            lp.IsNullable = false;
-#pragma warning restore S125
-                        }
-
-                        // Check if this property hides a base property
-                        if (ParserUtilities.PropertyHasModifier(property, SyntaxKind.NewKeyword, _cancellationToken))
-                        {
-                            Diag(DiagDescriptors.LogPropertiesHiddenPropertyDetected, paramSymbol.GetLocation(), paramName, lm.Name, property.Name);
-                            return null;
-                        }
-
-                        if (logPropertiesAttribute != null)
-                        {
-                            _ = CanLogProperties(property, property.Type, symbols);
-
-                            if ((property.DeclaredAccessibility != Accessibility.Public || property.IsStatic)
-                              || (property.GetMethod == null || property.GetMethod.DeclaredAccessibility != Accessibility.Public))
-                            {
-                                Diag(DiagDescriptors.InvalidAttributeUsage, logPropertiesAttribute.ApplicationSyntaxReference?.GetSyntax(_cancellationToken).GetLocation(), "LogProperties");
-                                continue;
-                            }
-
-                            // Checking "extractedType" here
-                            if (typesChain.Contains(extractedType))
-                            {
-                                Diag(DiagDescriptors.LogPropertiesCycleDetected, paramSymbol.GetLocation(), paramName, namedType.ToDisplayString(), property.Type.ToDisplayString(), lm.Name);
-                                return null;
-                            }
-
-                            var propName = property.Name;
-
-                            extractedType = property.Type;
-                            if (extractedType.IsNullableOfT())
-                            {
-                                // extract the T from a Nullable<T>
-                                extractedType = ((INamedTypeSymbol)extractedType).TypeArguments[0];
-                            }
-
-                            _ = typesChain.Add(namedType);
-                            var props = GetTypePropertiesToLog(extractedType, typesChain, symbols);
-                            _ = typesChain.Remove(namedType);
-
-                            if (props != null)
-                            {
-                                lp.Properties.AddRange(props);
-                            }
-                        }
-
-                        if (tagProviderAttribute != null)
-                        {
-                            if ((property.DeclaredAccessibility != Accessibility.Public || property.IsStatic)
-                              || (property.GetMethod == null || property.GetMethod.DeclaredAccessibility != Accessibility.Public))
-                            {
-                                Diag(DiagDescriptors.InvalidAttributeUsage, tagProviderAttribute.ApplicationSyntaxReference?.GetSyntax(_cancellationToken).GetLocation(), "TagProvider");
-                            }
-
-                            if (!ProcessTagProviderForProperty(tagProviderAttribute, lp, property, symbols))
-                            {
-                                lp.TagProvider = null;
-                            }
-                        }
-
-                        if (tagProviderAttribute == null && logPropertiesAttribute == null)
-                        {
-                            if ((property.DeclaredAccessibility != Accessibility.Public || property.IsStatic)
-                              || (property.GetMethod == null || property.GetMethod.DeclaredAccessibility != Accessibility.Public)
-                              || (property.Type.TypeKind == TypeKind.Delegate)
-                              || (logPropertyIgnoreAttribute != null))
-                            {
-                                continue;
-                            }
-                        }
-
-                        if (lp.HasDataClassification && (lp.HasProperties || lp.HasTagProvider))
-                        {
-                            Diag(DiagDescriptors.CantUseDataClassificationWithLogPropertiesOrTagProvider, property.GetLocation());
-                            lp.ClassificationAttributeTypes.Clear();
-                        }
-
-                        result.Add(lp);
                     }
+
+                    if (tagProviderAttribute != null)
+                    {
+                        if ((property.DeclaredAccessibility != Accessibility.Public || property.IsStatic)
+                            || (property.GetMethod == null || property.GetMethod.DeclaredAccessibility != Accessibility.Public))
+                        {
+                            Diag(DiagDescriptors.InvalidAttributeUsage, tagProviderAttribute.ApplicationSyntaxReference?.GetSyntax(_cancellationToken).GetLocation(), "TagProvider");
+                        }
+
+                        if (!ProcessTagProviderForProperty(tagProviderAttribute, lp, property, symbols))
+                        {
+                            lp.TagProvider = null;
+                        }
+                    }
+
+                    if (tagProviderAttribute == null && logPropertiesAttribute == null)
+                    {
+                        if ((property.DeclaredAccessibility != Accessibility.Public || property.IsStatic)
+                            || (property.GetMethod == null || property.GetMethod.DeclaredAccessibility != Accessibility.Public)
+                            || (property.Type.TypeKind == TypeKind.Delegate)
+                            || (logPropertyIgnoreAttribute != null))
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (lp.HasDataClassification && (lp.HasProperties || lp.HasTagProvider))
+                    {
+                        Diag(DiagDescriptors.CantUseDataClassificationWithLogPropertiesOrTagProvider, property.GetLocation());
+                        lp.ClassificationAttributeTypes.Clear();
+                    }
+
+                    result.Add(lp);
                 }
 
                 // This is to support inheritance, i.e. to fetch public properties of base class(-es) as well:
