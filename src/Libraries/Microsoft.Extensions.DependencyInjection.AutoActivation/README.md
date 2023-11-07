@@ -89,6 +89,16 @@ info: Microsoft.Hosting.Lifetime[14]
 info: Microsoft.Hosting.Lifetime[0]
       Application started. Press Ctrl+C to shut down.
 ```
+
+Services that are already registered can also be auto-activated:
+
+```csharp
+
+builder.Services.AddSingleton<OtherService>();
+// ...
+builder.Services.ActivateSingleton<OtherService>();
+```
+
 ## Feedback & Contributing
 
 We welcome feedback and contributions in [our GitHub repo](https://github.com/dotnet/extensions).
