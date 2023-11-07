@@ -1,6 +1,10 @@
 # Microsoft.Extensions.Diagnostics.HealthChecks.Common
 
-Health check implementations.
+This package contains common health check implementations. Here are the main features it provides:
+
+- A provider that's tied to the application's lifecycle
+- A provider that enables manual control of the application's health
+- A publisher which emits telemetry representing the application's health
 
 ## Install the package
 
@@ -18,6 +22,9 @@ Or directly in the C# project file:
 </ItemGroup>
 ```
 
+## Usage Example
+
+...coming soon...
 
 ## Feedback & Contributing
 
