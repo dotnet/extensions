@@ -61,7 +61,7 @@ app.MapHealthChecks("/healthz");
 app.Run();
 ```
 
-`CpuThresholds` and `MemoryThresholds`'s percentages default to `null` and will not be report as degraded or unhealthy unless configured. The `SamplingWindow` defaults to 5 seconds.
+`CpuThresholds` and `MemoryThresholds`'s percentages default to `null` and will not be reported as degraded or unhealthy unless configured. The `SamplingWindow` defaults to 5 seconds.
 
 ## Feedback & Contributing
 
