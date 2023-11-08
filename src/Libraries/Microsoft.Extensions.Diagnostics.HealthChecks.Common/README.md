@@ -129,6 +129,11 @@ For example:
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
+// register health check services as needed
+builder.Services.AddHealthChecks()
+    .AddCheck<SampleHealthCheck>("Sample");
+
+// register telemetry publisher
 builder.Services.AddTelemetryHealthCheckPublisher();
 
 var app = builder.Build();
