@@ -18,6 +18,8 @@ Telemetry Publisher
 
 See the [health checks](https://learn.microsoft.com/aspnet/core/host-and-deploy/health-checks) documentation for general usage guidance.
 
+See the [built in metrics](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/built-in-metrics-diagnostics#meter-microsoftextensionsdiagnosticshealthchecks) page for information regarding the metrics emitted by the telemetry publisher.
+
 ## Install the package
 
 From the command-line:
