@@ -51,18 +51,15 @@ public static class SerialExtendedLoggerTests
         var logger = lf.CreateLogger(Category);
         logger.Log<object?>(LogLevel.Error, new EventId(0, "ID0"), null, null, (_, _) => "MSG0");
 
-        var lmh = LogMethodHelper.GetHelper();
-        logger.Log(LogLevel.Error, new EventId(1, "ID1"), (LogMethodHelper?)null, null, (_, _) => "MSG1");
-
         var lms = LoggerMessageHelper.ThreadLocalState;
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), (LoggerMessageState?)null, null, (_, _) => "MSG2");
 
         var sink = provider.Logger!;
         var collector = sink.Collector;
         Assert.Equal(Category, sink.Category);
-        Assert.Equal(3, collector.Count);
+        Assert.Equal(2, collector.Count);
 
-        Assert.Equal(3, eventCount);
+        Assert.Equal(2, eventCount);
     }
 
     private sealed class Provider : ILoggerProvider

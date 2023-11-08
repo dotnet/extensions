@@ -9,12 +9,12 @@
     <ErrorLog>$(MSBuildProjectFullPath).$([System.Guid]::NewGuid().ToString().Substring(0,8)).sarif</ErrorLog>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(IsPackable)' == 'true' and '$(IsShipping)' == 'true' ">
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Condition="'$(IsPackable)' == 'true'" Include="README.md" Pack="true" PackagePath="\" />
+    <None Condition=" '$(IsPackable)' == 'true' and '$(IsShipping)' == 'true' " Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(RunRoslynSdlAnalyzers)' == 'True'">

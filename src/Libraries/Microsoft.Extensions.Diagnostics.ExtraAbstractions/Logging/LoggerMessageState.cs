@@ -16,9 +16,9 @@ namespace Microsoft.Extensions.Logging;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed partial class LoggerMessageState
 {
-    private KeyValuePair<string, object?>[] _tags = Array.Empty<KeyValuePair<string, object?>>();
-    private KeyValuePair<string, object?>[] _redactedTags = Array.Empty<KeyValuePair<string, object?>>();
-    private ClassifiedTag[] _classifiedTags = Array.Empty<ClassifiedTag>();
+    private KeyValuePair<string, object?>[] _tags = [];
+    private KeyValuePair<string, object?>[] _redactedTags = [];
+    private ClassifiedTag[] _classifiedTags = [];
 
 #pragma warning disable CA1819 // Properties should not return arrays
     /// <summary>

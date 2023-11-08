@@ -2,10 +2,9 @@
 
 <#
 .SYNOPSIS
-Create solution file that contains all packages referencing mentioned keywords.
+Creates a solution file that contains all the packages referencing specific keywords.
 .DESCRIPTION
-This script will help you when changing public API of the package and would like to adjust all internal R9 usages.
-It will generate a solution file with all packages that references a project matching given keywords.
+This script will generate a solution file with all the packages that reference a project matching given keywords.
 .EXAMPLE
     PS> .\SlngenReferencing.ps1 AsyncState
 #>

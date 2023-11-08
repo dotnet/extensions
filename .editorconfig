@@ -16,7 +16,7 @@ spelling_exclusion_path = .\eng\spellchecking_exclusions.dic
 
 file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.
 
-[*.{appxmanifest,axml,build,config,csproj,dbml,discomap,dtd,json,jsproj,lsproj,njsproj,nuspec,proj,props,resjson,resw,resx,StyleCop,targets,tasks,vbproj,yml,xml,xsd}]
+[*.{appxmanifest,axml,build,config,proj,csproj,dbml,discomap,dtd,json,jsproj,lsproj,njsproj,nuspec,proj,props,resjson,resw,resx,StyleCop,targets,tasks,vbproj,yml,xml,xsd}]
 indent_style = space
 indent_size = 2
 tab_width = 2

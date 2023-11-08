@@ -45,29 +45,36 @@ internal sealed class RequestHeadersLogEnricher : ILogEnricher
 
     public void Enrich(IEnrichmentTagCollector collector)
     {
-        if (_httpContextAccessor.HttpContext?.Request == null)
+        try
         {
-            return;
-        }
-
-        var request = _httpContextAccessor.HttpContext.Request;
-
-        if (_headersDataClasses.Count == 0)
-        {
-            return;
-        }
-
-        if (_headersDataClasses.Count != 0)
-        {
-            foreach (var header in _headersDataClasses)
+            if (_httpContextAccessor.HttpContext?.Request == null)
             {
-                if (request.Headers.TryGetValue(header.Key, out var headerValue) && !string.IsNullOrEmpty(headerValue))
+                return;
+            }
+
+            var request = _httpContextAccessor.HttpContext.Request;
+
+            if (_headersDataClasses.Count == 0)
+            {
+                return;
+            }
+
+            if (_headersDataClasses.Count != 0)
+            {
+                foreach (var header in _headersDataClasses)
                 {
-                    var redactor = _redactorProvider!.GetRedactor(header.Value);
-                    var redacted = redactor.Redact(headerValue);
-                    collector.Add(header.Key, redacted);
+                    if (request.Headers.TryGetValue(header.Key, out var headerValue) && !string.IsNullOrEmpty(headerValue))
+                    {
+                        var redactor = _redactorProvider!.GetRedactor(header.Value);
+                        var redacted = redactor.Redact(headerValue);
+                        collector.Add(header.Key, redacted);
+                    }
                 }
             }
+        }
+        catch (ObjectDisposedException)
+        {
+            // Noop.
         }
     }
 }

@@ -1,18 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET8_0_OR_GREATER
+
 using System;
-#if FIXME
-using System.Net.Mime;
-using Microsoft.Extensions.Compliance.Classification;
-#endif
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-#if FIXME
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Options;
-using Microsoft.Net.Http.Headers;
-using Microsoft.Extensions.Telemetry;
-#endif
 using Moq;
 using Xunit;
 
@@ -25,44 +21,34 @@ public class HttpLoggingServiceExtensionsTests
     {
         var services = Mock.Of<IServiceCollection>();
 
-        Assert.Throws<ArgumentNullException>(static () => HttpLoggingServiceCollectionExtensions.AddHttpLogging(null!));
         Assert.Throws<ArgumentNullException>(static () => HttpLoggingServiceCollectionExtensions.AddHttpLogEnricher<TestHttpLogEnricher>(null!));
-        Assert.Throws<ArgumentNullException>(
-            () => HttpLoggingServiceCollectionExtensions.AddHttpLogging(services, (Action<LoggingOptions>)null!));
 
         Assert.Throws<ArgumentNullException>(
-            () => HttpLoggingServiceCollectionExtensions.AddHttpLogging(services, (IConfigurationSection)null!));
+            () => HttpLoggingServiceCollectionExtensions.AddHttpLoggingRedaction(services, (IConfigurationSection)null!));
     }
 
-#if FIXME
     [Fact]
     public void AddHttpLogging_WhenConfiguredUsingConfigurationSection_IsCorrect()
     {
         var services = new ServiceCollection();
-        var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+        var builder = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string?>("HttpLogging:RequestPathLoggingMode", "Structured"),
+            new KeyValuePair<string, string?>("HttpLogging:RequestPathParameterRedactionMode","None"),
+            new KeyValuePair<string, string?>("HttpLogging:ExcludePathStartsWith:[0]","/path0toexclude"),
+            new KeyValuePair<string, string?>("HttpLogging:ExcludePathStartsWith:[1]","/path1toexclude"),
+        });
         var configuration = builder.Build();
-
-        services.AddHttpLogging(configuration.GetSection("HttpLogging"));
+        services.AddHttpLoggingRedaction(configuration.GetSection("HttpLogging"));
 
         using var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptions<LoggingOptions>>().Value;
+        var options = provider.GetRequiredService<IOptions<LoggingRedactionOptions>>().Value;
 
-        Assert.True(options.LogRequestStart);
-        Assert.True(options.RequestPathParameterRedactionMode == HttpRouteParameterRedactionMode.None);
-        Assert.Equal(64 * 1024, options.BodySizeLimit);
-        Assert.Equal(TimeSpan.FromSeconds(5), options.RequestBodyReadTimeout);
         Assert.Equal(IncomingPathLoggingMode.Structured, options.RequestPathLoggingMode);
         Assert.Equal(HttpRouteParameterRedactionMode.None, options.RequestPathParameterRedactionMode);
-        Assert.Collection(options.RequestHeadersDataClasses, static x => Assert.Equal(HeaderNames.Accept, x.Key));
-        Assert.Collection(options.RequestHeadersDataClasses, static x => Assert.Equal(DataClassification.None, x.Value));
-        Assert.Collection(options.ResponseHeadersDataClasses, static x => Assert.Equal(HeaderNames.ContentType, x.Key));
-        Assert.Collection(options.ResponseHeadersDataClasses, static x => Assert.Equal(SimpleClassifications.PrivateData, x.Value));
-        Assert.Collection(options.RequestBodyContentTypes, static x => Assert.Equal(MediaTypeNames.Text.Plain, x));
-        Assert.Collection(options.ResponseBodyContentTypes, static x => Assert.Equal(MediaTypeNames.Application.Json, x));
 
-        Assert.Equal(2, options.RouteParameterDataClasses.Count);
-        Assert.Contains(options.RouteParameterDataClasses, static x => x.Key == "userId" && x.Value == DataClass.EUII);
-        Assert.Contains(options.RouteParameterDataClasses, static x => x.Key == "userContent" && x.Value == SimpleClassifications.PrivateData);
+        Assert.Contains("/path0toexclude", options.ExcludePathStartsWith);
+        Assert.Contains("/path1toexclude", options.ExcludePathStartsWith);
     }
-#endif
 }
+#endif

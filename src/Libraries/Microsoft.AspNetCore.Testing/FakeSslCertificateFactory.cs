@@ -23,7 +23,7 @@ internal static class FakeSslCertificateFactory
     public static X509Certificate2 CreateSslCertificate()
     {
         var request = new CertificateRequest(
-            new X500DistinguishedName("CN=r9-self-signed-unit-test-certificate"),
+            new X500DistinguishedName("CN=dotnet-extensions-self-signed-unit-test-certificate"),
             _rsa,
             HashAlgorithmName.SHA256,
             RSASignaturePadding.Pkcs1);

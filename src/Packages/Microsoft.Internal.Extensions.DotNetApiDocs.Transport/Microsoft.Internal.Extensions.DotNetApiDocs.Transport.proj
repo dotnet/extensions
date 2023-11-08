@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>$(LatestTargetFramework)</TargetFramework>
+    <!-- Workaround https://github.com/microsoft/MSBuildSdks/issues/469 -->
+    <TargetFrameworks />
+
+    <Stage>transport</Stage>
+    <IsShipping>false</IsShipping>
+
+    <PackageDescription>Internal transport package to provide dotnet-api-docs with the reference assemblies and compiler generated documentation files from dotnet/extensions.</PackageDescription>
+    <IncludeBuildOutput>true</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <NoWarn>$(NoWarn);NU5128;NU5131</NoWarn>
+    <BuildProjectReferences Condition="'$(NoBuild)' == 'true'">false</BuildProjectReferences>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeProjectReferenceCompilerGeneratedSecondaryOutputInPackage</TargetsForTfmSpecificContentInPackage>
+    <!-- Reference the outputs to have them available as build outputs. -->
+    <NoTargetsDoNotReferenceOutputAssemblies>false</NoTargetsDoNotReferenceOutputAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Set PrivateAssets to avoid dependencies in the nupkg
+         Set Private=false to avoid copying the referenced projects to output -->
+    <ProjectReference PrivateAssets="all"
+      Private="false"
+      Include="$(SrcLibrariesDir)\*\*.*proj"
+      Exclude="$(MSBuildProjectFullPath)" />
+  </ItemGroup>
+
+  <!-- Include the reference assembly and put the documentation file next to it. -->
+  <Target Name="IncludeProjectReferenceCompilerGeneratedSecondaryOutputInPackage"
+      DependsOnTargets="BuildOnlySettings;ResolveReferences">
+    <ItemGroup>
+      <_projectReferencesToInclude Include="@(ReferencePath->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
+      <_referenceAssemblyFile Include="@(_projectReferencesToInclude->Metadata('ReferenceAssembly'))" />
+
+      <!-- Locate the XML next to the ReferencePath -->
+      <_referenceXmlDocFile Include="@(_projectReferencesToInclude->'%(RootDir)%(Directory)%(Filename).xml')" />
+      <TfmSpecificPackageFile Include="@(_referenceAssemblyFile);@(_referenceXmlDocFile)" PackagePath="ref\$(LatestTargetFramework)\" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>
