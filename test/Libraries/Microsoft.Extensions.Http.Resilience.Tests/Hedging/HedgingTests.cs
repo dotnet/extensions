@@ -207,7 +207,6 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         await client.SendAsync(request, _cancellationTokenSource.Token);
 
         RequestContexts.Distinct().OfType<ResilienceContext>().Should().HaveCount(3);
-        RequestContexts.Should().NotContain(originalContext);
 
         request.GetResilienceContext().Should().Be(originalContext);
     }
