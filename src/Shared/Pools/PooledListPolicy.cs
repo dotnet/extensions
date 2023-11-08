@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.ObjectPool;
 
-#pragma warning disable CA1716
 namespace Microsoft.Shared.Pools;
 
 /// <summary>
