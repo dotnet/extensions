@@ -88,6 +88,8 @@ public static partial class ResilienceHttpClientBuilderExtensions
                 }
 
                 var requestMessage = snapshot.CreateRequestMessage();
+
+                // The secondary request message should use the action resilience context
                 requestMessage.SetResilienceContext(args.ActionContext);
 
                 // replace the request message
