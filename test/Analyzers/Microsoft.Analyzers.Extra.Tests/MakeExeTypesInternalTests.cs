@@ -70,7 +70,7 @@ namespace Example
             new MakeExeTypesInternalFixer(),
             null,
             new[] { Source },
-            asExecutable: true);
+            asExecutable: true).ConfigureAwait(false);
 
         Assert.Equal(ExpectedFixedSource.Replace("\r\n", "\n", StringComparison.Ordinal), actualFixedSources[0]);
     }
@@ -156,11 +156,9 @@ namespace Example
             new MakeExeTypesInternalAnalyzer(),
             null,
             new[] { Source },
-            asExecutable: true);
+            asExecutable: true).ConfigureAwait(false);
 
-#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal(1, d.Count);
-#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
         for (int i = 0; i < d.Count; i++)
         {
             Source.AssertDiagnostic(i, DiagDescriptors.MakeExeTypesInternal, d[i]);

@@ -129,7 +129,6 @@ public static class LoggerMessageStateTests
     [Fact]
     public static void ReadOnlyListContract()
     {
-#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
         const string PropName = "Property Name";
         const string Value = "Value";
 
@@ -171,6 +170,5 @@ public static class LoggerMessageStateTests
         }
 
         Assert.Equal(1, count);
-#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
     }
 }

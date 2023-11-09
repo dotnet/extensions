@@ -567,6 +567,17 @@
     },
     {
       "taskType": "trigger",
+      "capabilityId": "ReleaseAnnouncement",
+      "subCapability": "ReleaseAnnouncement",
+      "version": "1.0",
+      "config": {
+        "taskName": "Release announcement",
+        "prReply": "The fix is included in ${pkgName} ${version}.",
+        "issueReply": "Fixed in ${pkgName} ${version}."
+      }
+    },
+    {
+      "taskType": "trigger",
       "capabilityId": "InPrLabel",
       "subCapability": "InPrLabel",
       "version": "1.0",
@@ -626,7 +637,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "9.0-preview1"
+              "milestoneName": "8.0 RC1"
             }
           }
         ],

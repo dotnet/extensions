@@ -44,7 +44,7 @@ public static class LegacyCollectionTests
                 Assembly.GetAssembly(typeof(System.Collections.Queue))!,
                 Assembly.GetAssembly(typeof(System.Collections.Specialized.HybridDictionary))!
             },
-            new[] { Source });
+            new[] { Source }).ConfigureAwait(false);
 
         Assert.Equal(8, d.Count);
         for (int i = 0; i < d.Count; i++)

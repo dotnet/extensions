@@ -76,9 +76,7 @@ public class ParserTests
     {
         var sv = new StringValues("csrftoken=u32t4o3tb3gg43");
         Assert.True(CookieHeaderValueListParser.Instance.TryParse(sv, out var result, out var error));
-#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal(1, result.Count);
-#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal("csrftoken", result[0].Name.Value);
         Assert.Equal("u32t4o3tb3gg43", result[0].Value.Value);
         Assert.Null(error);
@@ -204,9 +202,7 @@ public class ParserTests
     {
         var sv = new StringValues("text/html; charset=UTF-8");
         Assert.True(MediaTypeHeaderValueListParser.Instance.TryParse(sv, out var result, out var error));
-#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal(1, result.Count);
-#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal("text/html", result[0].MediaType);
         Assert.Equal("UTF-8", result[0].Charset);
         Assert.Null(error);
@@ -226,9 +222,7 @@ public class ParserTests
     {
         var sv = new StringValues("\"HelloWorld\"");
         Assert.True(EntityTagHeaderValueListParser.Instance.TryParse(sv, out var result, out var error));
-#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal(1, result!.Count);
-#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal("\"HelloWorld\"", result[0].Tag);
         Assert.Null(error);
     }
@@ -247,9 +241,7 @@ public class ParserTests
     {
         var sv = new StringValues("en-US");
         Assert.True(StringWithQualityHeaderValueListParser.Instance.TryParse(sv, out var result, out var error));
-#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal(1, result!.Count);
-#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal("en-US", result[0].Value);
         Assert.Null(error);
     }
@@ -309,9 +301,7 @@ public class ParserTests
         var sv = new StringValues("bytes=200-1000");
         Assert.True(RangeHeaderValueParser.Instance.TryParse(sv, out var result, out var error));
         Assert.Equal("bytes", result!.Unit);
-#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal(1, result.Ranges.Count);
-#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal(200, result.Ranges.Single().From);
         Assert.Equal(1000, result.Ranges.Single().To);
         Assert.Null(error);
