@@ -39,7 +39,7 @@ public class ApiLifecycleAnalyzerTest
                 },
                 options: options,
                 testAssemblyName: testAssemblyName)
-;
+            .ConfigureAwait(false);
 
         Assert.Equal(expectedDiagnostics, diagnostics.Count);
 
@@ -65,7 +65,7 @@ public class ApiLifecycleAnalyzerTest
                 },
                 options: options,
                 testAssemblyName: testAssemblyName)
-;
+            .ConfigureAwait(false);
 
         Assert.Equal(expectedDiagnostics, diagnostics.Count);
 
@@ -77,7 +77,7 @@ public class ApiLifecycleAnalyzerTest
         }
     }
 
-    public static IEnumerable<Assembly> References => new[]
+    public static IEnumerable<System.Reflection.Assembly> References => new[]
     {
         Assembly.GetAssembly(typeof(ObsoleteAttribute))!,
         Assembly.GetAssembly(typeof(EditorBrowsableAttribute))!,

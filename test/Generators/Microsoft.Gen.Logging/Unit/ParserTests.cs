@@ -978,7 +978,7 @@ public partial class ParserTests
         }
         else if (d.Count > 0)
         {
-            Assert.Fail($"Expected no diagnostics, got {d.Count} diagnostics");
+            Assert.True(false, $"Expected no diagnostics, got {d.Count} diagnostics");
         }
     }
 }

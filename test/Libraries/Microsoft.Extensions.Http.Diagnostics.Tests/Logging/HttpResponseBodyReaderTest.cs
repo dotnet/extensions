@@ -42,7 +42,7 @@ public class HttpResponseBodyReaderTest
             Content = new StringContent(expectedContentBody, Encoding.UTF8, "text/plain")
         };
 
-        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None);
+        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None).ConfigureAwait(false);
 
         responseBody.Should().BeEquivalentTo(expectedContentBody);
     }
@@ -61,7 +61,7 @@ public class HttpResponseBodyReaderTest
         };
 
         var httpResponseBodyReader = new HttpResponseBodyReader(options);
-        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None);
+        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None).ConfigureAwait(false);
 
         responseBody.Should().Be(Constants.NoContent);
     }
@@ -85,7 +85,7 @@ public class HttpResponseBodyReaderTest
             Content = new StringContent(expectedContentBody, Encoding.UTF8, contentType)
         };
 
-        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None);
+        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None).ConfigureAwait(false);
 
         responseBody.Should().Be(Constants.UnreadableContent);
     }
@@ -129,7 +129,7 @@ public class HttpResponseBodyReaderTest
             Content = new StringContent(bigContent, Encoding.UTF8, "text/plain")
         };
 
-        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None);
+        var responseBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None).ConfigureAwait(false);
 
         responseBody.Should().Be(bigContent.Substring(0, limit));
     }
@@ -156,7 +156,7 @@ public class HttpResponseBodyReaderTest
 
         httpResponse.Content.Headers.Add("Content-type", "text/plain");
 
-        var requestBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None);
+        var requestBody = await httpResponseBodyReader.ReadAsync(httpResponse, CancellationToken.None).ConfigureAwait(false);
 
         requestBody.Should().Be(Constants.ReadCancelled);
     }
