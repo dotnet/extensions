@@ -27,8 +27,8 @@ The `FakeRedactor` class provides options and services to verify redaction event
 The fake redactor services can be registered using one of the `AddFakeRedaction` overloads:
 
 ```csharp
-public static IServiceCollection AddFakeRedaction(this IServiceCollection services);
-public static IServiceCollection AddFakeRedaction(this IServiceCollection services, Action<FakeRedactorOptions> configure);
+public static IServiceCollection AddFakeRedaction(this IServiceCollection services)
+public static IServiceCollection AddFakeRedaction(this IServiceCollection services, Action<FakeRedactorOptions> configure)
 ```
 
 For example:

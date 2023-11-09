@@ -30,9 +30,9 @@ Or directly in the C# project file:
 The services can be registered using one of the `AddHeaderParsing` overloads:
 
 ```csharp
-public static IServiceCollection AddHeaderParsing(this IServiceCollection services);
-public static IServiceCollection AddHeaderParsing(this IServiceCollection services, Action<HeaderParsingOptions> configure);
-public static IServiceCollection AddHeaderParsing(this IServiceCollection services, IConfigurationSection section);
+public static IServiceCollection AddHeaderParsing(this IServiceCollection services)
+public static IServiceCollection AddHeaderParsing(this IServiceCollection services, Action<HeaderParsingOptions> configure)
+public static IServiceCollection AddHeaderParsing(this IServiceCollection services, IConfigurationSection section)
 ```
 
 For example:

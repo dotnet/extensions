@@ -25,8 +25,8 @@ Or directly in the C# project file:
 The services can be registered using the following methods:
 
 ```csharp
-public static IServiceCollection AddExceptionSummarizer(this IServiceCollection services);
-public static IServiceCollection AddExceptionSummarizer(this IServiceCollection services, Action<IExceptionSummarizationBuilder> configure);
+public static IServiceCollection AddExceptionSummarizer(this IServiceCollection services)
+public static IServiceCollection AddExceptionSummarizer(this IServiceCollection services, Action<IExceptionSummarizationBuilder> configure)
 ```
 
 For example:
