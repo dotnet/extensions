@@ -6,7 +6,7 @@ HTTP request diagnostics middleware for tracking latency and enriching and redac
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.AspNetCore.Diagnostics.Middleware
 ```
 
@@ -63,15 +63,15 @@ These APIs are only available for ASP.NET Core 8+.
 The services can be registered using the following methods:
 
 ```csharp
-public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<HeaderParsingOptions>? configure = null);
-public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, IConfigurationSection section);
+public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, Action<HeaderParsingOptions>? configure = null)
+public static IServiceCollection AddHttpLoggingRedaction(this IServiceCollection services, IConfigurationSection section)
 public static IServiceCollection AddHttpLogEnricher<T>(this IServiceCollection services)
 ```
 
 The middleware can be registered using the following method:
 
 ```csharp
-public static IApplicationBuilder UseHttpLogging(this IApplicationBuilder builder);
+public static IApplicationBuilder UseHttpLogging(this IApplicationBuilder builder)
 ```
 
 For example:

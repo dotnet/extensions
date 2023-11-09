@@ -6,7 +6,7 @@ Hand-crafted fakes to make telemetry-related testing easier.
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Diagnostics.Testing
 ```
 

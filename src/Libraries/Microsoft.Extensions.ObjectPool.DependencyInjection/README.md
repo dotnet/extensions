@@ -6,7 +6,7 @@ This provides the ability to retrieve pooled instances that can be initialized u
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.ObjectPool.DependencyInjection
 ```
 
@@ -25,9 +25,8 @@ Or directly in the C# project file:
 The object pools can be registered using the following methods:
 
 ```csharp
-    public static IServiceCollection AddPooled<TService>(this IServiceCollection services, Action<DependencyInjectionPoolOptions>? configure = null)
-
-    public static IServiceCollection AddPooled<TService, TImplementation>(this IServiceCollection services, Action<DependencyInjectionPoolOptions>? configure = null)
+public static IServiceCollection AddPooled<TService>(this IServiceCollection services, Action<DependencyInjectionPoolOptions>? configure = null)
+public static IServiceCollection AddPooled<TService, TImplementation>(this IServiceCollection services, Action<DependencyInjectionPoolOptions>? configure = null)
 ```
 
 For example:

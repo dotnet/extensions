@@ -6,7 +6,7 @@ This package provides test fakes for testing data classification and redaction.
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Compliance.Testing
 ```
 
@@ -27,8 +27,8 @@ The `FakeRedactor` class provides options and services to verify redaction event
 The fake redactor services can be registered using one of the `AddFakeRedaction` overloads:
 
 ```csharp
-public static IServiceCollection AddFakeRedaction(this IServiceCollection services);
-public static IServiceCollection AddFakeRedaction(this IServiceCollection services, Action<FakeRedactorOptions> configure);
+public static IServiceCollection AddFakeRedaction(this IServiceCollection services)
+public static IServiceCollection AddFakeRedaction(this IServiceCollection services, Action<FakeRedactorOptions> configure)
 ```
 
 For example:
