@@ -8,7 +8,7 @@ A singleton is typically created when it is first used, which can lead to higher
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.DependencyInjection.AutoActivation
 ```
 
@@ -27,37 +27,37 @@ Or directly in the C# project file:
 The services to auto-activate can be registered using the following methods:
 
 ```csharp
-static IServiceCollection ActivateSingleton<TService>(this IServiceCollection services);
-static IServiceCollection ActivateSingleton(this IServiceCollection services, Type serviceType);
-static IServiceCollection AddActivatedSingleton<TService, TImplementation>(this IServiceCollection services, Func<IServiceProvider, TImplementation> implementationFactory);
-static IServiceCollection AddActivatedSingleton<TService, TImplementation>(this IServiceCollection services);
-static IServiceCollection AddActivatedSingleton<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory);
-static IServiceCollection AddActivatedSingleton<TService>(this IServiceCollection services);
-static IServiceCollection AddActivatedSingleton(this IServiceCollection services, Type serviceType);
-static IServiceCollection AddActivatedSingleton(this IServiceCollection services, Type serviceType, Func<IServiceProvider, object> implementationFactory);
-static IServiceCollection AddActivatedSingleton(this IServiceCollection services, Type serviceType, Type implementationType);
-static void TryAddActivatedSingleton(this IServiceCollection services, Type serviceType);
-static void TryAddActivatedSingleton(this IServiceCollection services, Type serviceType, Type implementationType);
-static void TryAddActivatedSingleton(this IServiceCollection services, Type serviceType, Func<IServiceProvider, object> implementationFactory);
-static void TryAddActivatedSingleton<TService>(this IServiceCollection services);
-static void TryAddActivatedSingleton<TService, TImplementation>(this IServiceCollection services);
-static void TryAddActivatedSingleton<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory);
-
-static IServiceCollection ActivateKeyedSingleton<TService>(this IServiceCollection services, object? serviceKey);
-static IServiceCollection ActivateKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey);
-static IServiceCollection AddActivatedKeyedSingleton<TService, TImplementation>(this IServiceCollection services, object? serviceKey, Func<IServiceProvider, object?, TImplementation> implementationFactory);
-static IServiceCollection AddActivatedKeyedSingleton<TService, TImplementation>(this IServiceCollection services, object? serviceKey);
-static IServiceCollection AddActivatedKeyedSingleton<TService>(this IServiceCollection services, object? serviceKey, Func<IServiceProvider, object?, TService> implementationFactory);
-static IServiceCollection AddActivatedKeyedSingleton<TService>(this IServiceCollection services, object? serviceKey);
-static IServiceCollection AddActivatedKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey);
-static IServiceCollection AddActivatedKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey, Func<IServiceProvider, object?, object> implementationFactory);
-static IServiceCollection AddActivatedKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey, Type implementationType);
-static void TryAddActivatedKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey);
-static void TryAddActivatedKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey, Type implementationType);
-static void TryAddActivatedKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey, Func<IServiceProvider, object?, object> implementationFactory);
-static void TryAddActivatedKeyedSingleton<TService>(this IServiceCollection services, object? serviceKey);
-static void TryAddActivatedKeyedSingleton<TService, TImplementation>(this IServiceCollection services, object? serviceKey);
-TryAddActivatedKeyedSingleton<TService>(this IServiceCollection services, object? serviceKey, Func<IServiceProvider, object?, TService> implementationFactory)
+public static IServiceCollection ActivateSingleton<TService>(this IServiceCollection services)
+public static IServiceCollection ActivateSingleton(this IServiceCollection services, Type serviceType)
+public static IServiceCollection AddActivatedSingleton<TService, TImplementation>(this IServiceCollection services, Func<IServiceProvider, TImplementation> implementationFactory)
+public static IServiceCollection AddActivatedSingleton<TService, TImplementation>(this IServiceCollection services)
+public static IServiceCollection AddActivatedSingleton<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
+public static IServiceCollection AddActivatedSingleton<TService>(this IServiceCollection services)
+public static IServiceCollection AddActivatedSingleton(this IServiceCollection services, Type serviceType)
+public static IServiceCollection AddActivatedSingleton(this IServiceCollection services, Type serviceType, Func<IServiceProvider, object> implementationFactory)
+public static IServiceCollection AddActivatedSingleton(this IServiceCollection services, Type serviceType, Type implementationType)
+public static void TryAddActivatedSingleton(this IServiceCollection services, Type serviceType)
+public static void TryAddActivatedSingleton(this IServiceCollection services, Type serviceType, Type implementationType)
+public static void TryAddActivatedSingleton(this IServiceCollection services, Type serviceType, Func<IServiceProvider, object> implementationFactory)
+public static void TryAddActivatedSingleton<TService>(this IServiceCollection services)
+public static void TryAddActivatedSingleton<TService, TImplementation>(this IServiceCollection services)
+public static void TryAddActivatedSingleton<TService>(this IServiceCollection services, Func<IServiceProvider, TService> implementationFactory)
+ 
+public static IServiceCollection ActivateKeyedSingleton<TService>(this IServiceCollection services, object? serviceKey)
+public static IServiceCollection ActivateKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey)
+public static IServiceCollection AddActivatedKeyedSingleton<TService, TImplementation>(this IServiceCollection services, object? serviceKey, Func<IServiceProvider, object?, TImplementation> implementationFactory)
+public static IServiceCollection AddActivatedKeyedSingleton<TService, TImplementation>(this IServiceCollection services, object? serviceKey)
+public static IServiceCollection AddActivatedKeyedSingleton<TService>(this IServiceCollection services, object? serviceKey, Func<IServiceProvider, object?, TService> implementationFactory)
+public static IServiceCollection AddActivatedKeyedSingleton<TService>(this IServiceCollection services, object? serviceKey)
+public static IServiceCollection AddActivatedKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey)
+public static IServiceCollection AddActivatedKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey, Func<IServiceProvider, object?, object> implementationFactory)
+public static IServiceCollection AddActivatedKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey, Type implementationType)
+public static void TryAddActivatedKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey)
+public static void TryAddActivatedKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey, Type implementationType)
+public static void TryAddActivatedKeyedSingleton(this IServiceCollection services, Type serviceType, object? serviceKey, Func<IServiceProvider, object?, object> implementationFactory)
+public static void TryAddActivatedKeyedSingleton<TService>(this IServiceCollection services, object? serviceKey)
+public static void TryAddActivatedKeyedSingleton<TService, TImplementation>(this IServiceCollection services, object? serviceKey)
+public static void TryAddActivatedKeyedSingleton<TService>(this IServiceCollection services, object? serviceKey, Func<IServiceProvider, object?, TService> implementationFactory)
 ```
 
 For example:

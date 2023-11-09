@@ -6,7 +6,7 @@ Resilience mechanisms for `HttpClient` built on the [Polly framework](https://ww
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Http.Resilience
 ```
 

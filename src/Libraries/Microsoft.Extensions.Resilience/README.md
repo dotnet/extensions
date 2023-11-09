@@ -6,7 +6,7 @@ Extensions to the Polly libraries to enrich telemetry with metadata and exceptio
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Resilience
 ```
 

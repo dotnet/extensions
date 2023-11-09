@@ -6,7 +6,7 @@ This package introduces data classification and data redaction features.
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Compliance.Abstractions
 ```
 

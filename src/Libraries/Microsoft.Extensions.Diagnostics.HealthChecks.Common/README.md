@@ -24,7 +24,7 @@ See the [built in metrics](https://learn.microsoft.com/en-us/dotnet/core/diagnos
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Diagnostics.HealthChecks.Common
 ```
 

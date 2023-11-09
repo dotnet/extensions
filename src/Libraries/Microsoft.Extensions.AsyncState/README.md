@@ -6,7 +6,7 @@ This provides the ability to store and retrieve state objects that flow with the
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.AsyncState
 ```
 

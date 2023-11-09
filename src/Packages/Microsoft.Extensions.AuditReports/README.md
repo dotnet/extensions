@@ -6,7 +6,7 @@ Produces reports about the code being compiled which are useful during privacy a
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.AuditReports
 ```
 
