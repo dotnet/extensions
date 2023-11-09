@@ -6,7 +6,7 @@ Answers Kubernetes liveness, startup, and readiness TCP probes based on the resu
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Diagnostics.Probes
 ```
 

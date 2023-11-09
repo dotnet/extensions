@@ -6,7 +6,7 @@ HTTP request diagnostics middleware for tracking latency and enriching and redac
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.AspNetCore.Diagnostics.Middleware
 ```
 

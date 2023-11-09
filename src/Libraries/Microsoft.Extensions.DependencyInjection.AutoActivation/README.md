@@ -8,7 +8,7 @@ A singleton is typically created when it is first used, which can lead to higher
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.DependencyInjection.AutoActivation
 ```
 

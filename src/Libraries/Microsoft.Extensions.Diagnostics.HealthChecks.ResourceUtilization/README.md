@@ -6,7 +6,7 @@ This provides configurable health check reporting based on the current system re
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization
 ```
 

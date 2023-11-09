@@ -6,7 +6,7 @@ This flows runtime information for application-level ambient metadata such as th
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.AmbientMetadata.Application
 ```
 

@@ -6,7 +6,7 @@ This package provides test fakes for testing data classification and redaction.
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Compliance.Testing
 ```
 

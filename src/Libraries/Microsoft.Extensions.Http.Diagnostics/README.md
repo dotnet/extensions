@@ -6,7 +6,7 @@ Telemetry support for `HttpClient` that allows tracking latency and enriching an
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Http.Diagnostics
 ```
 

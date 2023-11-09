@@ -6,7 +6,7 @@ APIs for dynamically configuring options based on a given context.
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Options.Contextual
 ```
 

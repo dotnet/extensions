@@ -6,7 +6,7 @@ Provides a `FakeTimeProvider` for testing components that depend on `System.Time
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.TimeProvider.Testing
 ```
 

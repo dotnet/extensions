@@ -6,7 +6,7 @@ This provides the ability to retrieve pooled instances that can be initialized u
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.ObjectPool.DependencyInjection
 ```
 

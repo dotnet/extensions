@@ -6,7 +6,7 @@ This library provides advanced logging and telemetry enrichment capabilities for
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Telemetry
 ```
 
