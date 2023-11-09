@@ -25,7 +25,7 @@ Start with an option type.
 ```csharp
 internal class WeatherForecastOptions
 {
-    public string TemperatureScale { get; set; } = "Celcius"; // Celcius or Farenheit
+    public string TemperatureScale { get; set; } = "Celsius"; // Celsius or Fahrenheit
     public int ForecastDays { get; set; }
 }
 ```
@@ -103,7 +103,7 @@ static void ConfigureTemperatureScaleBasedOnCountry(IOptionsContext context, Wea
     context.PopulateReceiver(receiver);
     if (receiver.Country == "US")
     {
-        options.TemperatureScale = "Farenheit";
+        options.TemperatureScale = "Fahrenheit";
     }
 }
 ```
