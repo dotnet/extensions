@@ -81,7 +81,7 @@ the tool or by a human. The `eng/Diags` folder is where all these configuration 
 
 Use the following to extract diagnostic metadata from a Roslyn analyzer assembly:
 
-```bash
+```console
 > DiagConfig <config-directory> analyzer merge <analyzers>...
 ```
 
@@ -99,7 +99,7 @@ adjust the severity level of the diagnostics.
 If you already have an `.editorconfig` file which contains analyzer settings, you can extract them and insert them into
 the config directory state.
 
-```bash
+```console
 > DiagConfig <config-directory> editorconfig merge <editor-config-file> <editor-config-family>
 ```
 
@@ -110,7 +110,7 @@ update with the settings from the config file.
 
 You use the following to produce an `.editorconfig` file:
 
-```bash
+```console
 > DiagConfig <config-directory> editorconfig save <editor-config-file> [<editor-config-attributes>...]
 ```
 
@@ -127,7 +127,7 @@ When our customers want to adopt static analysis they cannot do it all at once i
 Adding the analysis NuGet turns on all analyzers by default for given assembly.
 By creating `all of` config file they can turn on analyzers only per specific directory and adopt it gradually.
 
-```bash
+```console
 > DiagConfig <config-directory> editorconfig save --all-off <editor-config-file> [<editor-config-attributes>...]
 ```
 

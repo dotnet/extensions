@@ -6,7 +6,7 @@ A curated set of code analyzers and code analyzer settings.
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.StaticAnalysis
 ```
 

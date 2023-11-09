@@ -73,7 +73,7 @@ This sets up necessary environmental variables and opens the repository in VS Co
 
 Building the solution is as easy as running:
 
-```bash
+```powershell
 > build.cmd
 ```
 

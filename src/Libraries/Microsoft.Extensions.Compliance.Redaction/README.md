@@ -6,7 +6,7 @@ A redaction engine and canonical redactors.
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Compliance.Redaction
 ```
 

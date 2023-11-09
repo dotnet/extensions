@@ -12,7 +12,7 @@ In particular:
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.AspNetCore.HeaderParsing
 ```
 

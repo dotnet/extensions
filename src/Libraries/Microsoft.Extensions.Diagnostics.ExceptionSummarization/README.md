@@ -6,7 +6,7 @@ This provides the ability to extract essential information from well-known excep
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Diagnostics.ExceptionSummarization
 ```
 
