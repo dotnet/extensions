@@ -6,7 +6,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification.DataClassification(string taxonomyName, ulong value);",
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification.DataClassification(string taxonomyName, string value);",
           "Stage": "Stable"
         },
         {
@@ -26,10 +26,6 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Classification.DataClassification.operator |(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
-          "Stage": "Stable"
-        },
-        {
           "Member": "static bool Microsoft.Extensions.Compliance.Classification.DataClassification.operator ==(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
           "Stage": "Stable"
         },
@@ -38,24 +34,8 @@
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Classification.DataClassification.Or(Microsoft.Extensions.Compliance.Classification.DataClassification left, Microsoft.Extensions.Compliance.Classification.DataClassification right);",
-          "Stage": "Stable"
-        },
-        {
           "Member": "override string Microsoft.Extensions.Compliance.Classification.DataClassification.ToString();",
           "Stage": "Stable"
-        }
-      ],
-      "Fields": [
-        {
-          "Member": "const ulong Microsoft.Extensions.Compliance.Classification.DataClassification.NoneTaxonomyValue",
-          "Stage": "Stable",
-          "Value": "0"
-        },
-        {
-          "Member": "const ulong Microsoft.Extensions.Compliance.Classification.DataClassification.UnknownTaxonomyValue",
-          "Stage": "Stable",
-          "Value": "9223372036854775808"
         }
       ],
       "Properties": [
@@ -72,7 +52,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "ulong Microsoft.Extensions.Compliance.Classification.DataClassification.Value { get; }",
+          "Member": "string Microsoft.Extensions.Compliance.Classification.DataClassification.Value { get; }",
           "Stage": "Stable"
         }
       ]
@@ -98,6 +78,52 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.Compliance.Classification.DataClassificationSet : System.IEquatable<Microsoft.Extensions.Compliance.Classification.DataClassificationSet>",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassificationSet.DataClassificationSet(Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassificationSet.DataClassificationSet(System.Collections.Generic.IEnumerable<Microsoft.Extensions.Compliance.Classification.DataClassification> classifications);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassificationSet.DataClassificationSet(params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override bool Microsoft.Extensions.Compliance.Classification.DataClassificationSet.Equals(object? obj);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "bool Microsoft.Extensions.Compliance.Classification.DataClassificationSet.Equals(Microsoft.Extensions.Compliance.Classification.DataClassificationSet? other);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassificationSet Microsoft.Extensions.Compliance.Classification.DataClassificationSet.FromDataClassification(Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.Compliance.Classification.DataClassificationSet.GetHashCode();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassificationSet.implicit operator Microsoft.Extensions.Compliance.Classification.DataClassificationSet(Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override string Microsoft.Extensions.Compliance.Classification.DataClassificationSet.ToString();",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassificationSet Microsoft.Extensions.Compliance.Classification.DataClassificationSet.Union(Microsoft.Extensions.Compliance.Classification.DataClassificationSet other);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "interface Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder",
       "Stage": "Stable",
       "Methods": [
@@ -106,7 +132,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder.SetRedactor<T>(params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Member": "Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder.SetRedactor<T>(params Microsoft.Extensions.Compliance.Classification.DataClassificationSet[] classifications);",
           "Stage": "Stable"
         }
       ],
@@ -122,7 +148,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Compliance.Redaction.Redactor Microsoft.Extensions.Compliance.Redaction.IRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "Microsoft.Extensions.Compliance.Redaction.Redactor Microsoft.Extensions.Compliance.Redaction.IRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassificationSet classifications);",
           "Stage": "Stable"
         }
       ]
@@ -174,7 +200,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Compliance.Redaction.Redactor Microsoft.Extensions.Compliance.Redaction.NullRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "Microsoft.Extensions.Compliance.Redaction.Redactor Microsoft.Extensions.Compliance.Redaction.NullRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassificationSet classifications);",
           "Stage": "Stable"
         }
       ],

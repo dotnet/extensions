@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Compliance.Redaction;
 [SuppressMessage("Performance", "CA1812: Avoid uninstantiated internal classes", Justification = "Instantiated via reflection.")]
 internal sealed class RedactorProvider : IRedactorProvider
 {
-    private readonly FrozenDictionary<DataClassification, Redactor> _classRedactors;
+    private readonly FrozenDictionary<DataClassificationSet, Redactor> _classRedactors;
     private readonly Redactor _fallbackRedactor;
 
     public RedactorProvider(IEnumerable<Redactor> redactors, IOptions<RedactorProviderOptions> options)
@@ -25,9 +25,9 @@ internal sealed class RedactorProvider : IRedactorProvider
         _fallbackRedactor = GetFallbackRedactor(redactors, options.Value.FallbackRedactor);
     }
 
-    public Redactor GetRedactor(DataClassification classification)
+    public Redactor GetRedactor(DataClassificationSet classifications)
     {
-        if (_classRedactors.TryGetValue(classification, out var result))
+        if (_classRedactors.TryGetValue(classifications, out var result))
         {
             return result;
         }
@@ -35,9 +35,9 @@ internal sealed class RedactorProvider : IRedactorProvider
         return _fallbackRedactor;
     }
 
-    private static FrozenDictionary<DataClassification, Redactor> GetClassRedactorMap(IEnumerable<Redactor> redactors, Dictionary<DataClassification, Type> map)
+    private static FrozenDictionary<DataClassificationSet, Redactor> GetClassRedactorMap(IEnumerable<Redactor> redactors, Dictionary<DataClassificationSet, Type> map)
     {
-        var dict = new Dictionary<DataClassification, Redactor>(map.Count);
+        var dict = new Dictionary<DataClassificationSet, Redactor>(map.Count);
         foreach (var m in map)
         {
             foreach (var r in redactors)

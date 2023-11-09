@@ -1,12 +1,12 @@
 Origin:
   AssemblyName: ILLink.RoslynAnalyzer
-  Version: 8.0.8.35901
+  Version: 8.0.9.408
 Diagnostics:
   IL2026:
     Metadata:
       Category: Trimming
       Title: Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2026
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -16,7 +16,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: "'RequiresUnreferencedCodeAttribute' annotations must match across all interface implementations or overrides."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2046
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -36,7 +36,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Either the type on which the MakeGenericType is called can't be statically determined, or the type parameters to be used for generic arguments can't be statically determined.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2055
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -46,7 +46,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Call to 'System.Reflection.MethodInfo.MakeGenericMethod' can not be statically analyzed. It's not possible to guarantee the availability of requirements of the generic method.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2060
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -56,7 +56,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Types that derive from a base class with 'RequiresUnreferencedCodeAttribute' need to explicitly use the 'RequiresUnreferencedCodeAttribute' or suppress this warning
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2109
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -96,7 +96,7 @@ Diagnostics:
     Metadata:
       Category: SingleFile
       Title: "'RequiresAssemblyFilesAttribute' annotations must match across all interface implementations or overrides."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/single-file/warnings/il3003
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -106,7 +106,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: The 'DynamicallyAccessedMembersAttribute' is not allowed on methods. It is allowed on method return value or method parameters.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2041
       DefaultSeverity: Warning
     Tier: 2
     Attributes:
@@ -116,7 +116,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: The parameter of method has a DynamicallyAccessedMembersAttribute, but the value passed to it can not be statically analyzed.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2062
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -126,7 +126,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: The return value of method has a DynamicallyAccessedMembersAttribute, but the value returned from the method can not be statically analyzed.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2063
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -136,7 +136,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: The field has a DynamicallyAccessedMembersAttribute, but the value assigned to it can not be statically analyzed.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2064
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -146,7 +146,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: The method has a DynamicallyAccessedMembersAttribute (which applies to the implicit 'this' parameter), but the value used for the 'this' parameter can not be statically analyzed.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2065
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -156,7 +156,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: The generic parameter of type or method has a DynamicallyAccessedMembersAttribute, but the value used for it can not be statically analyzed.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2066
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -166,7 +166,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The parameter of method does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2067
       DefaultSeverity: Warning
     Tier: 2
     Attributes:
@@ -176,7 +176,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target method return value does not satisfy 'DynamicallyAccessedMembersAttribute' requirements. The parameter of method does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2068
       DefaultSeverity: Warning
     Tier: 2
     Attributes:
@@ -186,7 +186,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Value stored in field does not satisfy 'DynamicallyAccessedMembersAttribute' requirements. The parameter of method does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2069
       DefaultSeverity: Warning
     Tier: 2
     Attributes:
@@ -196,7 +196,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: "'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The parameter of method does not have matching annotations."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2070
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -206,7 +206,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Generic argument does not satisfy 'DynamicallyAccessedMembersAttribute' in target method or type. The parameter of method does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2071
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -216,7 +216,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2072
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -226,7 +226,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target method return value does not satisfy 'DynamicallyAccessedMembersAttribute' requirements. The return value of the source method does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2073
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -236,7 +236,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Value stored in field does not satisfy 'DynamicallyAccessedMembersAttribute' requirements. The return value of the source method does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2074
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -246,7 +246,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: "'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2075
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -256,7 +256,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target generic argument does not satisfy 'DynamicallyAccessedMembersAttribute' in target method or type. The return value of the source method does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2076
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -266,7 +266,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The source field does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2077
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -276,7 +276,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target method return value does not satisfy 'DynamicallyAccessedMembersAttribute' requirements. The source field does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2078
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -286,7 +286,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Value stored in target field does not satisfy 'DynamicallyAccessedMembersAttribute' requirements. The source field does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2079
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -296,7 +296,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: "'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The source field does not have matching annotations."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2080
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -306,7 +306,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target generic argument does not satisfy 'DynamicallyAccessedMembersAttribute' in target method or type. The source field does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2081
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -316,7 +316,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The implicit 'this' argument of source method does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2082
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -326,7 +326,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target method return value does not satisfy 'DynamicallyAccessedMembersAttribute' requirements. The implicit 'this' argument of source method does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2083
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -336,7 +336,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Value stored in target field does not satisfy 'DynamicallyAccessedMembersAttribute' requirements. The implicit 'this' argument of source method does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2084
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -346,7 +346,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: "'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The implicit 'this' argument of source method does not have matching annotations."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2085
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -356,7 +356,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target generic argument does not satisfy 'DynamicallyAccessedMembersAttribute' in target method or type. The implicit 'this' argument of source method does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2086
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -366,7 +366,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The generic parameter of the source method or type does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2087
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -376,7 +376,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target method return value does not satisfy 'DynamicallyAccessedMembersAttribute' requirements. The generic parameter of the source method or type does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2088
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -386,7 +386,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Value stored in target field does not satisfy 'DynamicallyAccessedMembersAttribute' requirements. The generic parameter of the source method or type does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2089
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -396,7 +396,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: "'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The generic parameter of the source method or type does not have matching annotations."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2090
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -406,7 +406,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Target generic argument does not satisfy 'DynamicallyAccessedMembersAttribute' in target method or type. The generic parameter of the source method or type does not have matching annotations.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2091
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -416,7 +416,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Field has 'DynamicallyAccessedMembersAttribute', but that attribute can only be applied to fields of type 'System.Type' or 'System.String'.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2097
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -426,7 +426,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Parameter of method has 'DynamicallyAccessedMembersAttribute', but that attribute can only be applied to parameters of type 'System.Type' or 'System.String'.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2098
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -436,7 +436,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Property has 'DynamicallyAccessedMembersAttribute', but that attribute can only be applied to properties of type 'System.Type' or 'System.String'.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2099
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -446,7 +446,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Return type of method has 'DynamicallyAccessedMembersAttribute', but that attribute can only be applied to properties of type 'System.Type' or 'System.String'.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2106
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -456,7 +456,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Field with 'DynamicallyAccessedMembersAttribute' is accessed via reflection. Trimmer can't guarantee availability of the requirements of the field.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2110
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -466,7 +466,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Method with parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection. Trimmer can't guarantee availability of the requirements of the method.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2111
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -476,7 +476,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: The type passed to the RunClassConstructor is not statically known, Trimmer can't make sure that its static constructor is available.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2059
       DefaultSeverity: Warning
     Tier: 2
     Attributes:
@@ -486,7 +486,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: "'DynamicallyAccessedMemberTypes' on the return value of method don't match overridden return value of method. All overridden members must have the same 'DynamicallyAccessedMembersAttribute' usage."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2093
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -496,7 +496,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: "'DynamicallyAccessedMemberTypes' on the parameter of method don't match overridden parameter of method. All overridden members must have the same 'DynamicallyAccessedMembersAttribute' usage."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2092
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -506,7 +506,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: "'DynamicallyAccessedMemberTypes' on the generic parameter of method or type don't match overridden generic parameter method or type. All overridden members must have the same 'DynamicallyAccessedMembersAttribute' usage."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2095
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -516,7 +516,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: "'DynamicallyAccessedMemberTypes' on the implicit 'this' parameter of method don't match overridden implicit 'this' parameter of method. All overridden members must have the same 'DynamicallyAccessedMembersAttribute' usage."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2094
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -526,7 +526,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: "'DynamicallyAccessedMembersAttribute' on property conflicts with the same attribute on its accessor."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2043
       DefaultSeverity: Warning
     Tier: 2
     Attributes:
@@ -536,7 +536,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Value passed to the parameter of method cannot be statically determined as a property accessor.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2103
       DefaultSeverity: Warning
     Tier: 2
     Attributes:
@@ -546,7 +546,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Call to 'Type.GetType' method can perform case insensitive lookup of the type, currently trimming can not guarantee presence of all the matching types.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2096
       DefaultSeverity: Warning
     Tier: 3
     Attributes:
@@ -556,7 +556,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Unrecognized value passed to the parameter of method. It's not possible to guarantee the availability of the target type.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2057
       DefaultSeverity: Warning
     Tier: 2
     Attributes:
@@ -566,7 +566,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: The value passed as the assembly name or type name to the CreateInstance method can't be statically analyzed.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2032
       DefaultSeverity: Warning
     Tier: 2
     Attributes:
@@ -576,7 +576,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: Parameters passed to method cannot be analyzed. Consider using methods 'System.Type.GetType' and `System.Activator.CreateInstance` instead.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2058
       DefaultSeverity: Warning
     Tier: 2
     Attributes:
@@ -586,7 +586,7 @@ Diagnostics:
     Metadata:
       Category: SingleFile
       Title: The use of 'RequiresAssemblyFilesAttribute' on static constructors is disallowed since is a method not callable by the user, is only called by the runtime. Placing the attribute directly on the static constructor will have no effect, instead use 'RequiresUnreferencedCodeAttribute' on the type which will handle warning and silencing from the static constructor.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/single-file/warnings/il3004
       DefaultSeverity: Warning
     Tier: 3
     Attributes:
@@ -596,7 +596,7 @@ Diagnostics:
     Metadata:
       Category: AOT
       Title: Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/native-aot/warnings/il3050
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -606,7 +606,7 @@ Diagnostics:
     Metadata:
       Category: AOT
       Title: "'RequiresDynamicCodeAttribute' annotations must match across all interface implementations or overrides."
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/native-aot/warnings/il3051
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -616,7 +616,7 @@ Diagnostics:
     Metadata:
       Category: AOT
       Title: The use of 'RequiresDynamicCodeAttribute' on static constructors is disallowed since is a method not callable by the user, is only called by the runtime. Placing the attribute directly on the static constructor will have no effect, instead use 'RequiresUnreferencedCodeAttribute' on the type which will handle warning and silencing from the static constructor.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/native-aot/warnings/il3056
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -626,7 +626,7 @@ Diagnostics:
     Metadata:
       Category: Trimming
       Title: The use of 'RequiresUnreferencedCodeAttribute' on static constructors is disallowed since is a method not callable by the user, is only called by the runtime. Placing the attribute directly on the static constructor will have no effect, instead use 'RequiresUnreferencedCodeAttribute' on the type which will handle warning and silencing from the static constructor.
-      Description: ''
+      Description: https://learn.microsoft.com/dotnet/core/deploying/trimming/trim-warnings/il2116
       DefaultSeverity: Warning
     Tier: 1
     Attributes:

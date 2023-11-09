@@ -50,7 +50,7 @@ internal sealed class HttpClientLatencyLogEnricher : IHttpClientLogEnricher
                 AppendCheckpoints(lc, stringBuilder);
             }
 
-            collector.Add("latencyInfo", stringBuilder.ToString());
+            collector.Add("LatencyInfo", stringBuilder.ToString());
 
             _builderPool.Return(stringBuilder);
         }

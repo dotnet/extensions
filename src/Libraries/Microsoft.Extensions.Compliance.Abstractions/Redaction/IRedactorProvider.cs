@@ -6,14 +6,14 @@ using Microsoft.Extensions.Compliance.Classification;
 namespace Microsoft.Extensions.Compliance.Redaction;
 
 /// <summary>
-/// Provides redactors for different data classes.
+/// Provides redactors for different data classifications.
 /// </summary>
 public interface IRedactorProvider
 {
     /// <summary>
     /// Gets the redactor configured to handle the specified data class.
     /// </summary>
-    /// <param name="classification">Data classification of the data to redact.</param>
+    /// <param name="classifications">Data classifications of the data to redact.</param>
     /// <returns>A redactor suitable to redact data of the given class.</returns>
-    Redactor GetRedactor(DataClassification classification);
+    Redactor GetRedactor(DataClassificationSet classifications);
 }

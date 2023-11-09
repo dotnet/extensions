@@ -1,12 +1,13 @@
 <Project>
 
   <!-- Produce errors if we don't have all the right properties defined -->
-  <Target Name="_CheckPropsExist" Condition="'$(Stage)' != '' and $(Stage) != 'transport'" BeforeTargets="Build">
+  <Target Name="_CheckPropsExist" Condition="'$(IsPackable)' == 'true' and '$(Stage)' != '' and $(Stage) != 'transport'" BeforeTargets="Build">
     <Error Condition="'$(Stage)' != 'dev' AND '$(Stage)' != 'normal' AND '$(Stage)' != 'obsolete'" Text="Stage property must be dev|normal|obsolete" />
     <Error Condition="'$(Description)' == ''" Text="Missing Description property." />
     <Error Condition="'$(Workstream)' == ''" Text="Missing Workstream property." />
     <Error Condition="'$(MinCodeCoverage)' == ''" Text="Missing MinCodeCoverage property." />
     <Error Condition="'$(MinMutationScore)' == ''" Text="Missing MinMutationScore property." />
+    <Error Condition="'$(Stage)' == 'dev' AND '$(StageDevDiagnosticId)' == ''" Text="Experimental packages must define 'StageDevDiagnosticId'." />
   </Target>
 
   <!-- Produce errors if we don't have all the right property values for normal stage -->
@@ -17,8 +18,8 @@
 
   <!-- Amend the description based on stage -->
   <PropertyGroup>
-    <Description Condition="'$(Stage)' == 'dev'">DEVELOPMENT BUILD - DO NOT USE IN PRODUCTION - $(Description)</Description>
-    <Description Condition="'$(Stage)' == 'obsolete'">OBSOLETE PACKAGE - $(Description)</Description>
+    <Description Condition="'$(Stage)' == 'dev'">Experimental package. $(Description)</Description>
+    <Description Condition="'$(Stage)' == 'obsolete'">Obsolete Package. $(Description)</Description>
   </PropertyGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Hosting</RootNamespace>
-    <Description>Testing for integration test hosting and related test oriented helpers</Description>
+    <Description>Tools for integration testing of apps built with Microsoft.Extensions.Hosting</Description>
     <Workstream>Fundamentals</Workstream>
     <PackageTags>$(PackageTags);Testing</PackageTags>
   </PropertyGroup>
@@ -13,20 +13,18 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Stage>dev</Stage>
     <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>90</MinMutationScore>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.ExtraAbstractions\Microsoft.Extensions.Diagnostics.ExtraAbstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Diagnostics.Testing\Microsoft.Extensions.Diagnostics.Testing.csproj" />
     <ProjectReference Include="..\Microsoft.Extensions.Compliance.Testing\Microsoft.Extensions.Compliance.Testing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />
-    <xPackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 

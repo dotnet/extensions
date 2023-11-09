@@ -12,7 +12,7 @@ public class RedactorProviderTests
     [Fact]
     public void RedactorProvider_Returns_Redactor_For_Every_Data_Classification()
     {
-        var dc = new DataClassification("Foo", 0x2);
+        var dc = new DataClassification("Foo", "0x2");
 
         var redactorProvider = new RedactorProvider(
             redactors: new Redactor[] { ErasingRedactor.Instance, NullRedactor.Instance },
@@ -22,9 +22,9 @@ public class RedactorProviderTests
         Assert.IsAssignableFrom<Redactor>(r);
     }
 
-    private static readonly DataClassification _dataClassification1 = new("TAX", 1);
-    private static readonly DataClassification _dataClassification2 = new("TAX", 2);
-    private static readonly DataClassification _dataClassification3 = new("TAX", 4);
+    private static readonly DataClassification _dataClassification1 = new("TAX", "1");
+    private static readonly DataClassification _dataClassification2 = new("TAX", "2");
+    private static readonly DataClassification _dataClassification3 = new("TAX", "4");
 
     [Fact]
     public void RedactorProvider_Returns_Redactor_For_Data_Classifications()

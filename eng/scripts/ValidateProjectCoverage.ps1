@@ -1,5 +1,4 @@
 ﻿#!/usr/bin/env pwsh
-
 <#
 .SYNOPSIS
     Validates the code coverage policy for each project.
@@ -58,6 +57,8 @@ Get-ChildItem -Path src -Include '*.*sproj' -Recurse | ForEach-Object {
 $esc = [char]27
 $Errors = New-Object System.Collections.ArrayList
 $Kudos = New-Object System.Collections.ArrayList
+$ErrorsMarkdown = @();
+$KudosMarkdown = @();
 
 Write-Verbose "Collecting projects from code coverage report..."
 $CoberturaReport.coverage.packages.package | ForEach-Object {
@@ -80,10 +81,11 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
         # Detect the under-coverage
         if ($MinCodeCoverage -gt $LineCoverage) {
             $IsFailed = $true
+            $ErrorsMarkdown += "| $Name | Line | **$MinCodeCoverage** | $LineCoverage :small_red_triangle_down: |"
             [void]$Errors.Add(
                 (
                     New-Object PSObject -Property @{
-                        "Project" = $Name;
+                        "Project" = $Name.Replace('Microsoft.Extensions.', 'M.E.').Replace('Microsoft.AspNetCore.', 'M.AC.');
                         "Coverage Type" = "Line";
                         "Expected" = $MinCodeCoverage;
                         "Actual" = "$esc[1m$esc[0;31m$($LineCoverage)$esc[0m"
@@ -94,10 +96,11 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
 
         if ($MinCodeCoverage -gt $BranchCoverage) {
             $IsFailed = $true
+            $ErrorsMarkdown += "| $Name | Branch | **$MinCodeCoverage** | $BranchCoverage :small_red_triangle_down: |"
             [void]$Errors.Add(
                 (
                     New-Object PSObject -Property @{
-                        "Project" = $Name;
+                        "Project" = $Name.Replace('Microsoft.Extensions.', 'M.E.').Replace('Microsoft.AspNetCore.', 'M.AC.');
                         "Coverage Type" = "Branch";
                         "Expected" = $MinCodeCoverage;
                         "Actual" = "$esc[1m$esc[0;31m$($BranchCoverage)$esc[0m"
@@ -110,10 +113,11 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
         [int]$lowestReported = [math]::Min([math]::Truncate($LineCoverage), [math]::Truncate($BranchCoverage));
         Write-Debug "line: $LineCoverage, branch: $BranchCoverage, min: $lowestReported, threshold: $MinCodeCoverage"
         if ([int]$MinCodeCoverage -lt $lowestReported) {
+            $KudosMarkdown += "| $Name | $MinCodeCoverage | **$lowestReported** |"
             [void]$Kudos.Add(
                 (
                     New-Object PSObject -Property @{
-                        "Project" = $Name;
+                        "Project" = $Name.Replace('Microsoft.Extensions.', 'M.E.').Replace('Microsoft.AspNetCore.', 'M.AC.');
                         "Expected" = $MinCodeCoverage;
                         "Actual" = "$esc[1m$esc[0;32m$($lowestReported)$esc[0m";
                     }
@@ -129,8 +133,7 @@ $CoberturaReport.coverage.packages.package | ForEach-Object {
     }
 }
 
-if ($Kudos.Count -ne 0)
-{
+if ($Kudos.Count -ne 0) {
     Write-Header -message "`r`nGood job! The coverage increased" -isError $false
     $Kudos | `
         Sort-Object Project | `
@@ -139,6 +142,37 @@ if ($Kudos.Count -ne 0)
                     @{ Name="Actual"; Expression="Actual"; Width=10; Alignment = "Right" } `
                     -AutoSize -Wrap
     Write-Host "##vso[task.logissue type=warning;]Good job! The coverage increased, please update your projects"
+
+    $KudosMarkdown = @(':tada: **Good job! The coverage increased** :tada:', 'Update `MinCodeCoverage` in the project files.', "`r`n", '| Project | Expected | Actual |', '| --- | ---: | ---: |', $KudosMarkdown, "`r`n`r`n");
+}
+
+if ($Errors.Count -ne 0) {
+    Write-Header -message "`r`n[!!] Found $($Errors.Count) issues!" -isError ($Errors.Count -ne 0)
+    $Errors | `
+        Sort-Object Project, 'Coverage Type' | `
+        Format-Table "Project", `
+                    @{ Name="Expected"; Expression="Expected"; Width=10; Alignment = "Right" }, `
+                    @{ Name="Actual"; Expression="Actual"; Width=10; Alignment = "Right" }, `
+                    @{ Name="Coverage Type"; Expression="Coverage Type"; Width=10; Alignment = "Center" } `
+                    -AutoSize -Wrap
+
+    $ErrorsMarkdown = @(":bangbang: **Found issues** :bangbang: ", "`r`n", '| Project | Coverage Type |Expected | Actual | ', '| --- | :---: | ---: | ---: |', $ErrorsMarkdown, "`r`n`r`n");
+}
+
+# Write out markdown for publishing back to AzDO
+'' | Out-File coverage-report.md -Encoding ascii
+$ErrorsMarkdown | Out-File coverage-report.md -Encoding ascii -Append
+$KudosMarkdown | Out-File coverage-report.md -Encoding ascii -Append
+
+# Set the AzDO variable used by GitHubComment@0 task
+[string]$markdown = Get-Content coverage-report.md -Raw
+if (![string]::IsNullOrWhiteSpace($markdown)) {
+    # Add link back to the Code Coverage board
+    $link = "$($env:SYSTEM_COLLECTIONURI)$env:SYSTEM_TEAMPROJECT/_build/results?buildId=$env:BUILD_BUILDID&view=codecoverage-tab"
+    $markdown = "$markdown`n`nFull code coverage report: $link"
+
+    $gitHubCommentVar = '##vso[task.setvariable variable=GITHUB_COMMENT]' + $markdown.Replace("`r`n","`n").Replace("`n","%0D%0A")
+    Write-Host $gitHubCommentVar
 }
 
 if ($Errors.Count -eq 0)
@@ -147,13 +181,4 @@ if ($Errors.Count -eq 0)
     exit 0;
 }
 
-Write-Header -message "`r`n[!!] Found $($Errors.Count) issues!" -isError ($Errors.Count -ne 0)
-$Errors | `
-    Sort-Object Project, 'Coverage Type' | `
-    Format-Table "Project", `
-                @{ Name="Expected"; Expression="Expected"; Width=10; Alignment = "Right" }, `
-                @{ Name="Actual"; Expression="Actual"; Width=10; Alignment = "Right" }, `
-                @{ Name="Coverage Type"; Expression="Coverage Type"; Width=10; Alignment = "Center" } `
-                -AutoSize -Wrap
 exit -1;
-

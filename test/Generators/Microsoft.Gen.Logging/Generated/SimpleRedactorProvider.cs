@@ -20,6 +20,6 @@ namespace TestClasses
             _replacement = replacement;
         }
 
-        public Redactor GetRedactor(DataClassification dataClass) => new SimpleRedactor(_replacement);
+        public Redactor GetRedactor(DataClassificationSet classifications) => new SimpleRedactor(_replacement);
     }
 }

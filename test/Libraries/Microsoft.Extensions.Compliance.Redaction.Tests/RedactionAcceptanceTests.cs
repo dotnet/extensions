@@ -13,8 +13,8 @@ public class RedactionAcceptanceTests
     [Fact]
     public void RedactorProvider_Allows_To_Register_And_Use_Redactors_Using_DataClassification()
     {
-        var dc1 = new DataClassification("TAX", 1);
-        var dc2 = new DataClassification("TAX", 2);
+        var dc1 = new DataClassification("TAX", "1");
+        var dc2 = new DataClassification("TAX", "2");
         var data = "Mississippi";
 
         using var services = new ServiceCollection()
@@ -39,7 +39,7 @@ public class RedactionAcceptanceTests
     [Fact]
     public void Redaction_Can_Be_Registered_In_Service_Collection()
     {
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         using var services = new ServiceCollection()
             .AddLogging()
             .AddRedaction(x => x.SetRedactor<FakePlaintextRedactor>(dc))
@@ -65,7 +65,7 @@ public class RedactionAcceptanceTests
             .AddRedaction()
             .BuildServiceProvider();
 
-        var dc = new DataClassification("TAX", 1);
+        var dc = new DataClassification("TAX", "1");
         var redactorProvider = serviceProvider.GetRequiredService<IRedactorProvider>();
         var redactor = redactorProvider.GetRedactor(dc);
 

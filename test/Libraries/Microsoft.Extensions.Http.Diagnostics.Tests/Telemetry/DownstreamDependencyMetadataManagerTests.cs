@@ -18,6 +18,7 @@ public class DownstreamDependencyMetadataManagerTests : IDisposable
     {
         _sp = new ServiceCollection()
             .AddDownstreamDependencyMetadata(new BackslashDownstreamDependencyMetadata())
+            .AddDownstreamDependencyMetadata(new EmptyRouteDependencyMetadata())
             .BuildServiceProvider();
         _depMetadataManager = _sp.GetRequiredService<IDownstreamDependencyMetadataManager>();
     }
@@ -56,6 +57,27 @@ public class DownstreamDependencyMetadataManagerTests : IDisposable
         Assert.Equal(expectedRequestName, requestMetadata.RequestName);
         Assert.Equal(expectedRequestRoute, requestMetadata.RequestRoute);
         Assert.Equal(httpMethod, requestMetadata.MethodType);
+    }
+
+    [Theory]
+    [InlineData("GET", "https://emptyroute.com/", "EmptyRoute", "")]
+    [InlineData("GET", "https://emptyroute.com", "EmptyRoute", "")]
+    [InlineData("GET", "https://emptyroute.com/a", "PathWithoutBackslash", "a")]
+    public void GetRequestMetadata_EmptyRouteRegisteredForDependency_ShouldReturnMetadata(string httpMethod, string urlString, string expectedRequestName, string expectedRequestRoute)
+    {
+        using var requestMessage = new HttpRequestMessage
+        {
+            Method = new HttpMethod(method: httpMethod),
+            RequestUri = new Uri(uriString: urlString)
+        };
+
+        var requestMetadata = _depMetadataManager.GetRequestMetadata(requestMessage);
+
+        Assert.NotNull(requestMetadata);
+        Assert.Equal("EmptyRouteService", requestMetadata.DependencyName);
+        Assert.Equal(expectedRequestName, requestMetadata.RequestName);
+        Assert.Equal("GET", requestMetadata.MethodType);
+        Assert.Equal(expectedRequestRoute, requestMetadata.RequestRoute);
     }
 
     protected virtual void Dispose(bool disposing)

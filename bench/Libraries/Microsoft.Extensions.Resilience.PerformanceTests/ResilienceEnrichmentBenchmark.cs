@@ -23,11 +23,7 @@ public class ResilienceEnrichmentBenchmark
     {
         _listener = MetricsUtil.ListenPollyMetrics();
         _pipeline = CreateResiliencePipeline(_ => { });
-        _pipelineEnriched = CreateResiliencePipeline(services =>
-        {
-            services.AddResilienceEnricher();
-            services.ConfigureFailureResultContext<string>(res => FailureResultContext.Create("dummy", "dummy", "dummy"));
-        });
+        _pipelineEnriched = CreateResiliencePipeline(services => services.AddResilienceEnricher());
     }
 
     [GlobalCleanup]

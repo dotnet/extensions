@@ -6,7 +6,7 @@ using Microsoft.Extensions.Compliance.Classification;
 namespace Microsoft.Extensions.Compliance.Redaction;
 
 /// <summary>
-/// A provider that only returns the <see langword="null"/> redactor implementation used for situations that don't require redaction.
+/// A provider that only returns the <see cref="NullRedactor"/> redactor used for situations that don't require redaction.
 /// </summary>
 public sealed class NullRedactorProvider : IRedactorProvider
 {
@@ -16,5 +16,5 @@ public sealed class NullRedactorProvider : IRedactorProvider
     public static NullRedactorProvider Instance { get; } = new();
 
     /// <inheritdoc/>
-    public Redactor GetRedactor(DataClassification classification) => NullRedactor.Instance;
+    public Redactor GetRedactor(DataClassificationSet classifications) => NullRedactor.Instance;
 }

@@ -1,6 +1,6 @@
 # Microsoft.AspNetCore.HeaderParsing
 
-This package provides services to for strongly typed header parsing and value caching.
+This package provides services for strongly typed header parsing and value caching.
 
 In particular:
 
