@@ -1,6 +1,6 @@
 # Microsoft.Extensions.Diagnostics.Testing
 
-This library provides utilities for easy testing logging and metering functionality.
+This library provides utilities for convenient testing of logging and metering functionality.
 
 ## Install the package
 
@@ -20,11 +20,11 @@ Or directly in the C# project file:
 
 ## Usage Example
 
-### Logging fakes
+### Logs collection
 
 The `FakeLogger` is the implementation of the `Microsoft.Extensions.Logging.ILogger` that collects log messages
-in a memory list of log records. It is designed to be used for validation that the functionality under
-test writes the expected log messages:
+in a list of log records. It is designed to be used for validation that the functionality under
+test emits the expected log messages:
 
 ```csharp
 [Fact]
@@ -56,18 +56,19 @@ The following example shows the usage of fake logging in combination with the de
 [Fact]
 public void TestMethod()
 {
-  var serviceProvider = new ServiceCollection()
-    .AddFakeLogging();
+  using var serviceProvider = new ServiceCollection()
+    .AddFakeLogging()
     .AddSingleton<TheClassUnderTest>()
     .BuildServiceProvider();
 
+  // The "ILogger" is injected by DI as a constructor parameter to "TheClassUnderTest":
   var classUnderTest = serviceProvider.GetRequiredService<TheClassUnderTest>();
 
   // Run the functionality that is supposed to write log messages
   classUnderTest.DoSomething();
 
   var logCollector = serviceProvider.GetFakeLogCollector();
-  var loggedRecords = fakeLogger.Collector.GetSnapshot();
+  var loggedRecords = logCollector.GetSnapshot();
 
   // Assert that the expected messages were logged
   Assert.Equal(2, loggedRecords.Count);
@@ -85,8 +86,8 @@ The `MetricCollector` is a utility class that can be used to test that metrics a
 public void TestMethod()
 {
   using var meter = new Meter("MyMeter");
-  using var counterInstrument = meter.CreateCounter<long>("request.counter");
-  using var collector = new MetricCollector(meter, "request.counter");
+  var counterInstrument = meter.CreateCounter<long>("request.counter");
+  using var collector = new MetricCollector<long>(meter, "request.counter");
 
   // Record some metric
   counterInstrument.Add(3);
