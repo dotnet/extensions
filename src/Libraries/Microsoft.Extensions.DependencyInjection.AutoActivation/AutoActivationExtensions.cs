@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static partial class AutoActivationExtensions
 {
     /// <summary>
-    /// Enforces singleton activation at startup time rather then at runtime.
+    /// Enforces singleton activation at startup time rather than at runtime.
     /// </summary>
     /// <typeparam name="TService">The type of the service to activate.</typeparam>
     /// <param name="services">The service collection containing the service.</param>
@@ -50,7 +50,7 @@ public static partial class AutoActivationExtensions
     }
 
     /// <summary>
-    /// Enforces singleton activation at startup time rather then at runtime.
+    /// Enforces singleton activation at startup time rather than at runtime.
     /// </summary>
     /// <param name="services">The service collection containing the service.</param>
     /// <param name="serviceType">The type of the service to activate.</param>

@@ -7,6 +7,7 @@ Diagnostics:
       Category: Performance
       Title: Consider removing unnecessary null coalescing assignment (??=)
       Description: Using the null coalescing assignment operator (??=) with values which are statically known not to be null causes superfluous null checks to be performed at runtime
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0012
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -17,6 +18,7 @@ Diagnostics:
       Category: Performance
       Title: Consider removing unnecessary null coalescing operator (??)
       Description: Using the null coalescing operator (??) with values which are statically known to be null causes superfluous null checks to be performed at runtime
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0013
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -27,6 +29,7 @@ Diagnostics:
       Category: Performance
       Title: Make types declared in an executable internal
       Description: Making an executable's types internal enables dead code analysis along with other potential optimizations
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0004
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -39,6 +42,7 @@ Diagnostics:
       Category: Performance
       Title: Perform message formatting in the body of the logging method
       Description: Identifies calls to the 'ToString' method as arguments to a logging method
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0001
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -51,6 +55,7 @@ Diagnostics:
       Category: Performance
       Title: Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
       Description: When checking for a single character, prefer the character overloads of 'String.StartsWith' and 'String.EndsWith' for improved performance
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0003
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -63,6 +68,7 @@ Diagnostics:
       Category: Reliability
       Title: Use 'System.TimeProvider' to make the code easier to test
       Description: Identifies uses of time dependent APIs that can lead to flaky tests
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0002
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -75,6 +81,7 @@ Diagnostics:
       Category: Performance
       Title: Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance
       Description: Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0006
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -87,6 +94,7 @@ Diagnostics:
       Category: Performance
       Title: Use source generated logging methods for improved performance
       Description: Identifies calls to legacy logging methods
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0000
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -99,6 +107,7 @@ Diagnostics:
       Category: Performance
       Title: Use 'System.MemoryExtensions.Split' for improved performance
       Description: Use 'System.MemoryExtensions.Split' for improved performance
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0009
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -111,6 +120,7 @@ Diagnostics:
       Category: Performance
       Title: Use generic collections instead of legacy collections for improved performance
       Description: Using generic collections can avoid boxing overhead and provides strong typing
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0008
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -123,6 +133,7 @@ Diagnostics:
       Category: Performance
       Title: Consider using an array instead of a collection
       Description: Dictionaries and sets which use enums and bytes as keys can often be replaced with simple arrays for improved performance
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0005
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -135,6 +146,7 @@ Diagnostics:
       Category: Performance
       Title: Use 'System.ValueTuple' instead of 'System.Tuple' for improved performance
       Description: Using 'System.ValueTuple' avoids allocations and is generally more efficient than 'System.Tuple'
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0007
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -147,6 +159,7 @@ Diagnostics:
       Category: Correctness
       Title: Fire-and-forget async call inside a 'using' block
       Description: When skipping the await keyword for asynchronous operations inside a using block, then a disposable object could be disposed before the asynchronous invocation finishes. This might result in incorrect behavior and very often ends with a runtime exception notifying that the code is trying to operate on a disposed object.
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0010
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -157,6 +170,7 @@ Diagnostics:
       Category: Resilience
       Title: The async method doesn't support cancellation
       Description: Accepting a CancellationToken as a parameter allows caller to express a loss of interest in the result enabling the method to save cycles by finishing early
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0014
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -169,6 +183,7 @@ Diagnostics:
       Category: Performance
       Title: Consider removing unnecessary conditional access operator (?)
       Description: Using the conditional access operator (?) to access values which are statically known not to be null causes superfluous null checks to be performed at runtime
+      HelpLinkUri: https://aka.ms/dotnet-extensions-warnings/EA0011
       DefaultSeverity: Warning
     Tier: 1
     Attributes:

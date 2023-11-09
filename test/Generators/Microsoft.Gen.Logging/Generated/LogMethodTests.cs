@@ -209,7 +209,7 @@ public class LogMethodTests
 
         collector.Clear();
         CollectionTestExtensions.M9(logger, LogLevel.Critical, 0, new ArgumentException("Foo"), 1);
-        TestCollection(3, collector);
+        AssertLastState(collector, new("p0", "0"), new("p1", "1"));
     }
 
     [Fact]
@@ -751,7 +751,7 @@ public class LogMethodTests
 
         collector.Clear();
         AtSymbolsTestExtensions.M3(logger, LogLevel.Debug, o);
-        Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("event_class"));
+        Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("event.class"));
 
         collector.Clear();
         AtSymbolsTestExtensions.M5(logger, LogLevel.Debug, o);
@@ -892,7 +892,7 @@ public class LogMethodTests
         collector.Clear();
         FormattableTestExtensions.Method2(logger, new FormattableTestExtensions.ComplexObj());
         Assert.Equal(1, collector.Count);
-        Assert.Equal("Formatted!", collector.LatestRecord.StructuredState!.GetValue("p1_P1"));
+        Assert.Equal("Formatted!", collector.LatestRecord.StructuredState!.GetValue("p1.P1"));
 
         collector.Clear();
         FormattableTestExtensions.Method3(logger, default);
@@ -903,11 +903,10 @@ public class LogMethodTests
     private static void AssertLastState(FakeLogCollector collector, params KeyValuePair<string, string?>[] expected)
     {
         var rol = (IReadOnlyList<KeyValuePair<string, string>>)collector.LatestRecord.State!;
-        int count = 0;
+
         foreach (var kvp in expected)
         {
             Assert.Equal(kvp.Value, rol.GetValue(kvp.Key));
-            count++;
         }
     }
 

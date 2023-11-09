@@ -134,20 +134,6 @@
       ]
     },
     {
-      "Type": "static class Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilizationCounters",
-      "Stage": "Stable",
-      "Properties": [
-        {
-          "Member": "static string Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilizationCounters.CpuConsumptionPercentage { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static string Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilizationCounters.MemoryConsumptionPercentage { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "readonly struct Microsoft.Extensions.Diagnostics.ResourceMonitoring.SystemResources",
       "Stage": "Stable",
       "Methods": [

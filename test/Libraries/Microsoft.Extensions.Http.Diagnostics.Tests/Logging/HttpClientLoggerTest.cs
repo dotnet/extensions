@@ -32,10 +32,10 @@ namespace Microsoft.Extensions.Http.Logging.Test;
 
 public class HttpClientLoggerTest
 {
-    private const string TestRequestHeader = "RequestHeader";
-    private const string TestResponseHeader = "ResponseHeader";
-    private const string TestExpectedRequestHeaderKey = $"{HttpClientLoggingTagNames.RequestHeaderPrefix}{TestRequestHeader}";
-    private const string TestExpectedResponseHeaderKey = $"{HttpClientLoggingTagNames.ResponseHeaderPrefix}{TestResponseHeader}";
+    private const string TestRequestHeader = "Request-Header";
+    private const string TestResponseHeader = "Response-Header";
+    private const string TestExpectedRequestHeaderKey = $"{HttpClientLoggingTagNames.RequestHeaderPrefix}request-header";
+    private const string TestExpectedResponseHeaderKey = $"{HttpClientLoggingTagNames.ResponseHeaderPrefix}response-header";
 
     private const string TextPlain = "text/plain";
 
@@ -164,8 +164,8 @@ public class HttpClientLoggerTest
 
         var testEnricher = new TestEnricher();
 
-        var testSharedRequestHeaderKey = $"{HttpClientLoggingTagNames.RequestHeaderPrefix}Header3";
-        var testSharedResponseHeaderKey = $"{HttpClientLoggingTagNames.ResponseHeaderPrefix}Header3";
+        var testSharedRequestHeaderKey = $"{HttpClientLoggingTagNames.RequestHeaderPrefix}header3";
+        var testSharedResponseHeaderKey = $"{HttpClientLoggingTagNames.ResponseHeaderPrefix}header3";
 
         var expectedLogRecord = new LogRecord
         {
@@ -201,8 +201,8 @@ public class HttpClientLoggerTest
 
         var options = new LoggingOptions
         {
-            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, FakeClassifications.PrivateData }, { "Header3", FakeClassifications.PrivateData } },
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, FakeClassifications.PrivateData }, { "Header3", FakeClassifications.PrivateData } },
+            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, FakeTaxonomy.PrivateData }, { "Header3", FakeTaxonomy.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, FakeTaxonomy.PrivateData }, { "Header3", FakeTaxonomy.PrivateData } },
             ResponseBodyContentTypes = new HashSet<string> { TextPlain },
             RequestBodyContentTypes = new HashSet<string> { TextPlain },
             BodySizeLimit = 32000,
@@ -210,7 +210,7 @@ public class HttpClientLoggerTest
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured,
             LogRequestStart = false,
             LogBody = true,
-            RouteParameterDataClasses = { { "userId", FakeClassifications.PrivateData } },
+            RouteParameterDataClasses = { { "userId", FakeTaxonomy.PrivateData } },
         };
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
@@ -292,8 +292,8 @@ public class HttpClientLoggerTest
 
         var options = new LoggingOptions
         {
-            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, FakeClassifications.PrivateData } },
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, FakeClassifications.PrivateData } },
+            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, FakeTaxonomy.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, FakeTaxonomy.PrivateData } },
             ResponseBodyContentTypes = new HashSet<string> { TextPlain },
             RequestBodyContentTypes = new HashSet<string> { TextPlain },
             BodySizeLimit = 32000,
@@ -301,7 +301,7 @@ public class HttpClientLoggerTest
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured,
             LogRequestStart = true,
             LogBody = true,
-            RouteParameterDataClasses = { { "userId", FakeClassifications.PrivateData } },
+            RouteParameterDataClasses = { { "userId", FakeTaxonomy.PrivateData } },
         };
 
         var fakeLogger = new FakeLogger<HttpClientLogger>(
@@ -399,8 +399,8 @@ public class HttpClientLoggerTest
 
         var options = new LoggingOptions
         {
-            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, FakeClassifications.PrivateData } },
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, FakeClassifications.PrivateData } },
+            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, FakeTaxonomy.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, FakeTaxonomy.PrivateData } },
             ResponseBodyContentTypes = new HashSet<string> { TextPlain },
             RequestBodyContentTypes = new HashSet<string> { TextPlain },
             BodySizeLimit = 32000,
@@ -408,7 +408,7 @@ public class HttpClientLoggerTest
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured,
             LogRequestStart = false,
             LogBody = true,
-            RouteParameterDataClasses = { { "userId", FakeClassifications.PrivateData } },
+            RouteParameterDataClasses = { { "userId", FakeTaxonomy.PrivateData } },
         };
 
         var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector(Options.Options.Create(new FakeLogCollectorOptions())));
@@ -495,8 +495,8 @@ public class HttpClientLoggerTest
 
         var options = new LoggingOptions
         {
-            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, FakeClassifications.PrivateData } },
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, FakeClassifications.PrivateData } },
+            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, FakeTaxonomy.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, FakeTaxonomy.PrivateData } },
             ResponseBodyContentTypes = new HashSet<string> { TextPlain },
             RequestBodyContentTypes = new HashSet<string> { TextPlain },
             BodySizeLimit = 32000,
@@ -504,7 +504,7 @@ public class HttpClientLoggerTest
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured,
             LogRequestStart = false,
             LogBody = true,
-            RouteParameterDataClasses = { { "userId", FakeClassifications.PrivateData } },
+            RouteParameterDataClasses = { { "userId", FakeTaxonomy.PrivateData } },
         };
 
         var fakeLogger = new FakeLogger<HttpClientLogger>(
@@ -610,8 +610,8 @@ public class HttpClientLoggerTest
 
         var options = new LoggingOptions
         {
-            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, FakeClassifications.PrivateData } },
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, FakeClassifications.PrivateData } },
+            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, FakeTaxonomy.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, FakeTaxonomy.PrivateData } },
             ResponseBodyContentTypes = new HashSet<string> { TextPlain },
             RequestBodyContentTypes = new HashSet<string> { TextPlain },
             BodySizeLimit = 32000,
@@ -619,7 +619,7 @@ public class HttpClientLoggerTest
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured,
             LogRequestStart = false,
             LogBody = true,
-            RouteParameterDataClasses = { { "userId", FakeClassifications.PrivateData } },
+            RouteParameterDataClasses = { { "userId", FakeTaxonomy.PrivateData } },
         };
 
         var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector(Options.Options.Create(new FakeLogCollectorOptions())));
@@ -878,8 +878,8 @@ public class HttpClientLoggerTest
 
         var options = new LoggingOptions
         {
-            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, FakeClassifications.PrivateData } },
-            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, FakeClassifications.PrivateData } },
+            ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { TestResponseHeader, FakeTaxonomy.PrivateData } },
+            RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { TestRequestHeader, FakeTaxonomy.PrivateData } },
             ResponseBodyContentTypes = new HashSet<string> { TextPlain },
             RequestBodyContentTypes = new HashSet<string> { TextPlain },
             BodySizeLimit = 32000,
@@ -887,7 +887,7 @@ public class HttpClientLoggerTest
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured,
             LogRequestStart = false,
             LogBody = true,
-            RouteParameterDataClasses = { { "userId", FakeClassifications.PrivateData } },
+            RouteParameterDataClasses = { { "userId", FakeTaxonomy.PrivateData } },
         };
 
         var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector(Options.Options.Create(new FakeLogCollectorOptions())));

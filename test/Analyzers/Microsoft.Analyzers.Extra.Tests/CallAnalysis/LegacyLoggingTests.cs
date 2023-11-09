@@ -451,6 +451,176 @@ namespace Example.Example2
     }
 
     [Fact]
+    public static async Task TargetClassHasMethodsWithoutEventId()
+    {
+        const string OriginalTarget = @"
+                namespace Example
+                {
+                    public static partial class Log
+                    {
+                        [Microsoft.Extensions.Logging.LoggerMessage(Microsoft.Extensions.Logging.LogLevel.Debug, message: ""Test"")]
+                        internal static partial void WithoutEvent(Microsoft.Extensions.Logging.ILogger logger);
+                    }
+                }";
+
+        const string OriginalSource = @"
+                using Microsoft.Extensions.Logging;
+
+                namespace Example
+                {
+                    public class TestClass
+                    {
+                        private ILogger _logger;
+
+                        public TestClass(ILogger logger)
+                        {
+                            _logger = logger;
+                        }
+
+                        public void Test()
+                        {
+                            _logger.LogTrace(""Hello!"");
+                        }
+                    }
+                }";
+
+        const string ExpectedSource = @"
+                using Microsoft.Extensions.Logging;
+
+                namespace Example
+                {
+                    public class TestClass
+                    {
+                        private ILogger _logger;
+
+                        public TestClass(ILogger logger)
+                        {
+                            _logger = logger;
+                        }
+
+                        public void Test()
+                        {
+                            _logger.Hello();
+                        }
+                    }
+                }";
+
+        const string ExpectedTarget = @"
+                namespace Example
+                {
+                    public static partial class Log
+                    {
+                        [Microsoft.Extensions.Logging.LoggerMessage(Microsoft.Extensions.Logging.LogLevel.Debug, message: ""Test"")]
+                        internal static partial void WithoutEvent(Microsoft.Extensions.Logging.ILogger logger);
+
+        [Microsoft.Extensions.Logging.LoggerMessage(0, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello!"")]
+        internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger);
+    }
+                }";
+
+        var l = await RoslynTestUtils.RunAnalyzerAndFixer(
+            new CallAnalyzer(),
+            new LegacyLoggingFixer(),
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
+            new[] { OriginalSource, OriginalTarget },
+            defaultNamespace: "Example");
+
+        var actualSource = l[0];
+        var actualTarget = l[1];
+
+        Assert.Equal(ExpectedSource.Replace("\r\n", "\n", StringComparison.Ordinal), actualSource);
+        Assert.Equal(ExpectedTarget.Replace("\r\n", "\n", StringComparison.Ordinal), actualTarget);
+    }
+
+    [Fact]
+    public static async Task TargetClassHasMethodsWithAndWithoutEventId()
+    {
+        const string OriginalTarget = @"
+                namespace Example
+                {
+                    public static partial class Log
+                    {
+                        [Microsoft.Extensions.Logging.LoggerMessage(message: ""Test"")]
+                        internal static partial void WithoutEvent(Microsoft.Extensions.Logging.ILogger logger, Microsoft.Extensions.Logging.LogLevel level);
+
+                        [Microsoft.Extensions.Logging.LoggerMessage(1, Microsoft.Extensions.Logging.LogLevel.Debug, ""Test"")]
+                        internal static partial void WithEvent(Microsoft.Extensions.Logging.ILogger logger, string param1);
+                    }
+                }";
+
+        const string OriginalSource = @"
+                using Microsoft.Extensions.Logging;
+
+                namespace Example
+                {
+                    public class TestClass
+                    {
+                        private ILogger _logger;
+
+                        public TestClass(ILogger logger)
+                        {
+                            _logger = logger;
+                        }
+
+                        public void Test()
+                        {
+                            _logger.LogTrace(""Hello!"");
+                        }
+                    }
+                }";
+
+        const string ExpectedSource = @"
+                using Microsoft.Extensions.Logging;
+
+                namespace Example
+                {
+                    public class TestClass
+                    {
+                        private ILogger _logger;
+
+                        public TestClass(ILogger logger)
+                        {
+                            _logger = logger;
+                        }
+
+                        public void Test()
+                        {
+                            _logger.Hello();
+                        }
+                    }
+                }";
+
+        const string ExpectedTarget = @"
+                namespace Example
+                {
+                    public static partial class Log
+                    {
+                        [Microsoft.Extensions.Logging.LoggerMessage(message: ""Test"")]
+                        internal static partial void WithoutEvent(Microsoft.Extensions.Logging.ILogger logger, Microsoft.Extensions.Logging.LogLevel level);
+
+                        [Microsoft.Extensions.Logging.LoggerMessage(1, Microsoft.Extensions.Logging.LogLevel.Debug, ""Test"")]
+                        internal static partial void WithEvent(Microsoft.Extensions.Logging.ILogger logger, string param1);
+
+        [Microsoft.Extensions.Logging.LoggerMessage(2, Microsoft.Extensions.Logging.LogLevel.Trace, ""Hello!"")]
+        internal static partial void Hello(this Microsoft.Extensions.Logging.ILogger logger);
+    }
+                }";
+
+        var l = await RoslynTestUtils.RunAnalyzerAndFixer(
+            new CallAnalyzer(),
+            new LegacyLoggingFixer(),
+            new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
+            new[] { OriginalSource, OriginalTarget },
+            defaultNamespace: "Example");
+
+        var actualSource = l[0];
+        var actualTarget = l[1];
+
+        Assert.Equal(ExpectedSource.Replace("\r\n", "\n", StringComparison.Ordinal), actualSource);
+        Assert.Equal(ExpectedTarget.Replace("\r\n", "\n", StringComparison.Ordinal), actualTarget);
+    }
+
+    [Fact]
     public static async Task DuplicateFilename()
     {
         const string OriginalTarget = @"

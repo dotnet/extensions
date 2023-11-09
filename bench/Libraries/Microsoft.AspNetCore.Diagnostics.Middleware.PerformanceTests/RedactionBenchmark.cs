@@ -29,8 +29,8 @@ public class RedactionBenchmark
 
     public RedactionBenchmark()
     {
-        _routeParameterDataClasses.Add("userId", FakeClassifications.PrivateData);
-        _routeParameterDataClasses.Add("chatId", FakeClassifications.PrivateData);
+        _routeParameterDataClasses.Add("userId", FakeTaxonomy.PrivateData);
+        _routeParameterDataClasses.Add("chatId", FakeTaxonomy.PrivateData);
 
         _httpPath = "/users/{userId}/chats/{chatId}/test1/test2/{userId}";
         _stringBuilderPool = PoolFactory.CreateStringBuilderPool();

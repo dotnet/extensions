@@ -28,7 +28,7 @@
     <NoWarn>$(NoWarn);AD0001</NoWarn>
 
     <!-- Experimental warnings are for customers, not for this repo -->
-    <NoWarn>$(NoWarn);EXTEXP0001;EXTEXP0002;EXTEXP0003;EXTEXP0004;EXTEXP0005;EXTEXP0006;EXTEXP0007;EXTEXP0008;EXTEXP0009;EXTEXP0010;EXTEXP0011;EXTEXP0012;EXTEXP0013</NoWarn>
+    <NoWarn>$(NoWarn);EXTEXP0001;EXTEXP0002;EXTEXP0003;EXTEXP0004;EXTEXP0005;EXTEXP0006;EXTEXP0007;EXTEXP0008;EXTEXP0009;EXTEXP0010;EXTEXP0011;EXTEXP0012;EXTEXP0013;EXTEXP0014;EXTEXP0015;EXTEXP0016;EXTEXP0017</NoWarn>
 
     <!-- NU5104: A stable release of a package should not have a prerelease dependency -->
     <NoWarn>$(NoWarn);NU5104</NoWarn>
@@ -55,7 +55,7 @@
 
   <ItemGroup Condition="'$(Stage)' == 'dev' AND '$(OutputType)' != 'Exe' AND '$(Api)' != 'false'">
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExperimentalAttribute">
-      <_Parameter1>TBD</_Parameter1>
+      <_Parameter1>$(StageDevDiagnosticId)</_Parameter1>
       <_Parameter2>UrlFormat = "https://aka.ms/dotnet-extensions-warnings/{0}"</_Parameter2>
       <_Parameter2_IsLiteral>true</_Parameter2_IsLiteral>
     </AssemblyAttribute>

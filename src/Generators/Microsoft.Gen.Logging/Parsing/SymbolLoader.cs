@@ -52,7 +52,7 @@ internal static class SymbolLoader
     {
         var loggerSymbol = compilation.GetTypeByMetadataName(ILoggerType);
         var logLevelSymbol = compilation.GetTypeByMetadataName(LogLevelType);
-        var logMethodAttributeSymbol = compilation.GetTypeByMetadataName(LoggerMessageAttribute);
+        var loggerMessageAttributeSymbol = compilation.GetTypeByMetadataName(LoggerMessageAttribute);
         var logPropertiesAttributeSymbol = compilation.GetTypeByMetadataName(LogPropertiesAttribute);
         var tagProviderAttributeSymbol = compilation.GetTypeByMetadataName(TagProviderAttribute);
         var tagCollectorSymbol = compilation.GetTypeByMetadataName(ITagCollectorType);
@@ -62,7 +62,7 @@ internal static class SymbolLoader
 #pragma warning disable S1067 // Expressions should not be too complex
         if (loggerSymbol == null
             || logLevelSymbol == null
-            || logMethodAttributeSymbol == null
+            || loggerMessageAttributeSymbol == null
             || logPropertiesAttributeSymbol == null
             || tagProviderAttributeSymbol == null
             || tagCollectorSymbol == null
@@ -97,7 +97,7 @@ internal static class SymbolLoader
 
         return new(
             compilation,
-            logMethodAttributeSymbol,
+            loggerMessageAttributeSymbol,
             logPropertiesAttributeSymbol,
             tagProviderAttributeSymbol,
             logPropertyIgnoreAttributeSymbol,

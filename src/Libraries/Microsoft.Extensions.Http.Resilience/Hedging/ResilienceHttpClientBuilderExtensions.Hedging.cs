@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
@@ -87,6 +88,9 @@ public static partial class ResilienceHttpClientBuilderExtensions
                 }
 
                 var requestMessage = snapshot.CreateRequestMessage();
+
+                // The secondary request message should use the action resilience context
+                requestMessage.SetResilienceContext(args.ActionContext);
 
                 // replace the request message
                 args.ActionContext.Properties.Set(ResilienceKeys.RequestMessage, requestMessage);

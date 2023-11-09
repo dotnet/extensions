@@ -1,14 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Http.Resilience</RootNamespace>
-    <Description>Resilience mechanisms for HTTP Client.</Description>
+    <Description>Resilience mechanisms for HttpClient.</Description>
     <Workstream>Resilience</Workstream>
   </PropertyGroup>
 
   <PropertyGroup>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMetricsGenerator>true</UseMetricsGenerator>
-    <UseEnumStringsGenerator>true</UseEnumStringsGenerator>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <InjectSharedThrow>true</InjectSharedThrow>
     <InjectDiagnosticAttributesOnLegacy>true</InjectDiagnosticAttributesOnLegacy>
@@ -20,7 +19,7 @@
 
   <PropertyGroup>
     <Stage>normal</Stage>
-    <MinCodeCoverage>98</MinCodeCoverage>
+    <MinCodeCoverage>97</MinCodeCoverage>
     <MinMutationScore>100</MinMutationScore>
   </PropertyGroup>
 

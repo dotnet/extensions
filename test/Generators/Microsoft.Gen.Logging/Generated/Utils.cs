@@ -72,14 +72,17 @@ internal static class Utils
         {
             builder.SetMinimumLevel(LogLevel.Trace);
             builder.AddProvider(new Provider(fakeLogger));
-            builder.EnableRedaction();
+            builder.EnableRedaction(o =>
+            {
+                o.ApplyDiscriminator = false;
+            });
         });
 
         serviceCollection.AddRedaction(builder =>
         {
             builder.SetRedactor<PlusRedactor>(new PublicDataAttribute().Classification);
             builder.SetRedactor<MinusRedactor>(new PrivateDataAttribute().Classification);
-            builder.SetRedactor<HashRedactor>(new PrivateDataAttribute().Classification | new PublicDataAttribute().Classification);
+            builder.SetRedactor<HashRedactor>(new PrivateDataAttribute().Classification, new PublicDataAttribute().Classification);
             builder.SetFallbackRedactor<StarRedactor>();
         });
 

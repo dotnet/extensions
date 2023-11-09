@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.AsyncState;
 /// </summary>
 /// <typeparam name="T">The type of the asynchronous state.</typeparam>
 /// <remarks>This type is intended for internal use. Use <see cref="IAsyncContext{T}"/> instead.</remarks>
-[Experimental(diagnosticId: Experiments.AsyncState, UrlFormat = Experiments.UrlFormat)]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.AsyncState, UrlFormat = DiagnosticIds.UrlFormat)]
 [EditorBrowsable(EditorBrowsableState.Never)]
 #pragma warning disable S4023 // Interfaces should not be empty
 public interface IAsyncLocalContext<T> : IAsyncContext<T>

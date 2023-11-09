@@ -76,9 +76,9 @@ public class FakeRedactorTests
 
         var dc = new[]
         {
-            new DataClassification("TAX", 1),
-            new DataClassification("TAX", 2),
-            new DataClassification("TAX", 3),
+            new DataClassification("TAX", "1"),
+            new DataClassification("TAX", "2"),
+            new DataClassification("TAX", "3"),
         };
 
         Parallel.ForEach(iterations, iteration =>

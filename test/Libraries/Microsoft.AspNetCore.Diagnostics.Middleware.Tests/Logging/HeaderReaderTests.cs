@@ -17,40 +17,49 @@ public class HeaderReaderTests
     [Fact]
     public void ShouldNotAddHeaders_WhenFilteringSetEmpty()
     {
-        var reader = new HeaderReader(new Dictionary<string, DataClassification>(), null!);
+        var reader = new HeaderReader(new Dictionary<string, DataClassification>(), null!, string.Empty);
         var listToFill = new List<KeyValuePair<string, object?>>();
         var headers = new HeaderDictionary(new Dictionary<string, StringValues> { [HeaderNames.Accept] = MediaTypeNames.Text.Plain });
-        reader.Read(headers, listToFill, string.Empty);
+        reader.Read(headers, listToFill);
         Assert.Empty(listToFill);
     }
 
     [Fact]
     public void ShouldNotAddHeaders_WhenHeadersCollectionEmpty()
     {
-        var reader = new HeaderReader(new Dictionary<string, DataClassification> { [HeaderNames.Accept] = DataClassification.Unknown }, null!);
+        var reader = new HeaderReader(new Dictionary<string, DataClassification> { [HeaderNames.Accept] = DataClassification.Unknown }, null!, string.Empty);
         var listToFill = new List<KeyValuePair<string, object?>>();
-        reader.Read(new HeaderDictionary(), listToFill, string.Empty);
+        reader.Read(new HeaderDictionary(), listToFill);
         Assert.Empty(listToFill);
     }
 
     [Fact]
     public void ShouldAddHeaders_WhenHeadersCollectionNotEmpty()
     {
-        var headersToLog = new Dictionary<string, DataClassification> { [HeaderNames.Accept] = DataClassification.Unknown };
-        var reader = new HeaderReader(headersToLog, new FakeRedactorProvider(new FakeRedactorOptions { RedactionFormat = "<redacted:{0}>" }));
+        const string Prefix = "prefix.";
+        const string NormalizedHeader = Prefix + "accept-charset";
+
+        var headersToLog = new Dictionary<string, DataClassification>
+        {
+            [HeaderNames.AcceptCharset] = DataClassification.Unknown
+        };
+
+        var reader = new HeaderReader(headersToLog, new FakeRedactorProvider(
+            new FakeRedactorOptions { RedactionFormat = "<redacted:{0}>" }), Prefix);
+
         var headers = new Dictionary<string, StringValues>
         {
-            [HeaderNames.Accept] = MediaTypeNames.Text.Xml,
+            [HeaderNames.AcceptCharset] = MediaTypeNames.Text.Xml,
             [HeaderNames.ContentType] = MediaTypeNames.Application.Pdf
         };
 
         var listToFill = new List<KeyValuePair<string, object?>>();
-        reader.Read(new HeaderDictionary(headers), listToFill, string.Empty);
+        reader.Read(new HeaderDictionary(headers), listToFill);
 
         Assert.Single(listToFill);
 
         var redacted = listToFill[0];
-        Assert.Equal(HeaderNames.Accept, redacted.Key);
+        Assert.Equal(NormalizedHeader, redacted.Key);
         Assert.Equal($"<redacted:{MediaTypeNames.Text.Xml}>", redacted.Value);
     }
 }

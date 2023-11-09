@@ -2,43 +2,15 @@
   "Name": "Microsoft.Extensions.Resilience, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "readonly struct Microsoft.Extensions.Resilience.FailureResultContext",
+      "Type": "static class Polly.ResilienceContextExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Resilience.FailureResultContext.FailureResultContext();",
+          "Member": "static Microsoft.Extensions.Http.Diagnostics.RequestMetadata? Polly.ResilienceContextExtensions.GetRequestMetadata(this Polly.ResilienceContext context);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Resilience.FailureResultContext Microsoft.Extensions.Resilience.FailureResultContext.Create(string failureSource = \"unknown\", string failureReason = \"unknown\", string additionalInformation = \"unknown\");",
-          "Stage": "Stable"
-        }
-      ],
-      "Properties": [
-        {
-          "Member": "string Microsoft.Extensions.Resilience.FailureResultContext.AdditionalInformation { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "string Microsoft.Extensions.Resilience.FailureResultContext.FailureReason { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "string Microsoft.Extensions.Resilience.FailureResultContext.FailureSource { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Resilience.ResilienceContextExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.Http.Diagnostics.RequestMetadata? Microsoft.Extensions.Resilience.ResilienceContextExtensions.GetRequestMetadata(this Polly.ResilienceContext context);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static void Microsoft.Extensions.Resilience.ResilienceContextExtensions.SetRequestMetadata(this Polly.ResilienceContext context, Microsoft.Extensions.Http.Diagnostics.RequestMetadata requestMetadata);",
+          "Member": "static void Polly.ResilienceContextExtensions.SetRequestMetadata(this Polly.ResilienceContext context, Microsoft.Extensions.Http.Diagnostics.RequestMetadata requestMetadata);",
           "Stage": "Stable"
         }
       ]
@@ -49,10 +21,6 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ResilienceServiceCollectionExtensions.AddResilienceEnricher(this Microsoft.Extensions.DependencyInjection.IServiceCollection services);",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.DependencyInjection.IServiceCollection Microsoft.Extensions.DependencyInjection.ResilienceServiceCollectionExtensions.ConfigureFailureResultContext<TResult>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Func<TResult, Microsoft.Extensions.Resilience.FailureResultContext> configure);",
           "Stage": "Stable"
         }
       ]

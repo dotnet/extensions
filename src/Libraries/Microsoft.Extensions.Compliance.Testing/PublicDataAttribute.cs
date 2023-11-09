@@ -14,7 +14,7 @@ public sealed class PublicDataAttribute : DataClassificationAttribute
     /// Initializes a new instance of the <see cref="PublicDataAttribute"/> class.
     /// </summary>
     public PublicDataAttribute()
-        : base(FakeClassifications.PublicData)
+        : base(FakeTaxonomy.PublicData)
     {
     }
 }

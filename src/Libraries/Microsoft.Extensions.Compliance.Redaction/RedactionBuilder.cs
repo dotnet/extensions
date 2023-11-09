@@ -29,7 +29,7 @@ internal sealed class RedactionBuilder : IRedactionBuilder
         Services.TryAddEnumerable(ServiceDescriptor.Singleton<Redactor>(NullRedactor.Instance));
     }
 
-    public IRedactionBuilder SetRedactor<T>(params DataClassification[] classifications)
+    public IRedactionBuilder SetRedactor<T>(params DataClassificationSet[] classifications)
         where T : Redactor
     {
         _ = Throw.IfNull(classifications);

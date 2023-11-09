@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Logging;
 /// <summary>
 /// Top-level model for redacting incoming HTTP requests and their corresponding responses.
 /// </summary>
-[Experimental(diagnosticId: Experiments.HttpLogging, UrlFormat = Experiments.UrlFormat)]
+[Experimental(diagnosticId: DiagnosticIds.Experiments.HttpLogging, UrlFormat = DiagnosticIds.UrlFormat)]
 public class LoggingRedactionOptions
 {
     private const IncomingPathLoggingMode DefaultRequestPathLoggingMode = IncomingPathLoggingMode.Formatted;

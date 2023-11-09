@@ -55,8 +55,8 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
         _requestPathLogMode = EnsureRequestPathLoggingModeIsValid(optionsValue.RequestPathLoggingMode);
         _parameterRedactionMode = optionsValue.RequestPathParameterRedactionMode;
 
-        _requestHeadersReader = new(optionsValue.RequestHeadersDataClasses, redactorProvider);
-        _responseHeadersReader = new(optionsValue.ResponseHeadersDataClasses, redactorProvider);
+        _requestHeadersReader = new(optionsValue.RequestHeadersDataClasses, redactorProvider, HttpLoggingTagNames.RequestHeaderPrefix);
+        _responseHeadersReader = new(optionsValue.ResponseHeadersDataClasses, redactorProvider, HttpLoggingTagNames.ResponseHeaderPrefix);
 
         _excludePathStartsWith = optionsValue.ExcludePathStartsWith.ToArray();
     }
@@ -126,7 +126,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
 
         if (logContext.TryDisable(HttpLoggingFields.RequestHeaders))
         {
-            _requestHeadersReader.Read(context.Request.Headers, logContext.Parameters, HttpLoggingTagNames.RequestHeaderPrefix);
+            _requestHeadersReader.Read(context.Request.Headers, logContext.Parameters);
         }
 
         return default;
@@ -138,7 +138,7 @@ internal sealed class HttpLoggingRedactionInterceptor : IHttpLoggingInterceptor
 
         if (logContext.TryDisable(HttpLoggingFields.ResponseHeaders))
         {
-            _responseHeadersReader.Read(context.Response.Headers, logContext.Parameters, HttpLoggingTagNames.ResponseHeaderPrefix);
+            _responseHeadersReader.Read(context.Response.Headers, logContext.Parameters);
         }
 
         // Don't enrich if we're not going to log any part of the response

@@ -23,6 +23,11 @@ public class RequestHeadersEnricherTests
     private const string RequestId = "RequestIdTestValue";
     private const string TestValue = "TestValue";
 
+    private const string NormalizedHeaderKey1 = HttpLoggingTagNames.RequestHeaderPrefix + "x-requestid";
+    private const string NormalizedHeaderKey2 = HttpLoggingTagNames.RequestHeaderPrefix + "host";
+    private const string NormalizedHeaderKey3 = HttpLoggingTagNames.RequestHeaderPrefix + "nullheader";
+    private const string NormalizedHeaderKey4 = HttpLoggingTagNames.RequestHeaderPrefix + "x-platform";
+
     private readonly Mock<IHttpContextAccessor> _accessorMock;
     private readonly Mock<IRedactorProvider> _redactorProviderMock;
 
@@ -76,15 +81,15 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses =
             {
-                { HeaderKey1, FakeClassifications.PrivateData },
-                { HeaderKey4, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PrivateData },
+                { HeaderKey4, FakeTaxonomy.PublicData }
             }
         };
 
         Mock<IRedactorProvider> redactorProviderMock = new Mock<IRedactorProvider>();
-        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PublicData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeTaxonomy.PublicData))
             .Returns(new FakeRedactor());
-        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PrivateData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeTaxonomy.PrivateData))
             .Returns(FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "redacted:{0}" }));
 
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), redactorProviderMock.Object);
@@ -97,8 +102,8 @@ public class RequestHeadersEnricherTests
 
         // Assert
         Assert.True(enrichedState.Count == 2);
-        Assert.Equal($"redacted:{RequestId}", enrichedState[HeaderKey1].ToString());
-        Assert.Equal(TestValue, enrichedState[HeaderKey4].ToString());
+        Assert.Equal($"redacted:{RequestId}", enrichedState[NormalizedHeaderKey1].ToString());
+        Assert.Equal(TestValue, enrichedState[NormalizedHeaderKey4].ToString());
     }
 
     [Fact]
@@ -109,13 +114,13 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses =
             {
-                { HeaderKey1, FakeClassifications.PrivateData },
-                { HeaderKey2, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PrivateData },
+                { HeaderKey2, FakeTaxonomy.PublicData }
             }
         };
 
         Mock<IRedactorProvider> redactorProviderMock = new Mock<IRedactorProvider>();
-        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PrivateData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeTaxonomy.PrivateData))
             .Returns(FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "REDACTED:{0}" }));
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), redactorProviderMock.Object);
 
@@ -127,8 +132,8 @@ public class RequestHeadersEnricherTests
 
         // Assert
         Assert.Single(enrichedState);
-        Assert.Equal($"REDACTED:{RequestId}", enrichedState[HeaderKey1].ToString());
-        Assert.False(enrichedState.ContainsKey(HeaderKey2));
+        Assert.Equal($"REDACTED:{RequestId}", enrichedState[NormalizedHeaderKey1].ToString());
+        Assert.False(enrichedState.ContainsKey(NormalizedHeaderKey2));
     }
 
     [Fact]
@@ -139,8 +144,8 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses =
             {
-                { HeaderKey1, FakeClassifications.PublicData },
-                { HeaderKey3, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PublicData },
+                { HeaderKey3, FakeTaxonomy.PublicData }
             }
         };
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
@@ -153,8 +158,8 @@ public class RequestHeadersEnricherTests
 
         // Assert
         Assert.Single(enrichedState);
-        Assert.Equal(RequestId, enrichedState[HeaderKey1].ToString());
-        Assert.False(enrichedState.ContainsKey(HeaderKey3));
+        Assert.Equal(RequestId, enrichedState[NormalizedHeaderKey1].ToString());
+        Assert.False(enrichedState.ContainsKey(NormalizedHeaderKey3));
     }
 
     [Fact]
@@ -166,8 +171,8 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses =
             {
-                { HeaderKey1, FakeClassifications.PublicData },
-                { headerKey2, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PublicData },
+                { headerKey2, FakeTaxonomy.PublicData }
             }
         };
         var enricher = new RequestHeadersLogEnricher(_accessorMock.Object, options.ToOptions(), _redactorProviderMock.Object);
@@ -179,8 +184,8 @@ public class RequestHeadersEnricherTests
         var enrichedState = enrichedProperties.Properties;
 
         // Assert
-        Assert.Equal(RequestId, enrichedState[HeaderKey1].ToString());
-        Assert.False(enrichedState.ContainsKey(headerKey2));
+        Assert.Equal(RequestId, enrichedState[NormalizedHeaderKey1].ToString());
+        Assert.False(enrichedState.ContainsKey(HttpLoggingTagNames.RequestHeaderPrefix + headerKey2));
     }
 
     [Fact]
@@ -191,7 +196,7 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses =
             {
-                { HeaderKey1, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PublicData }
             }
         };
 
@@ -218,7 +223,7 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses =
             {
-                { HeaderKey1, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PublicData }
             }
         };
 
@@ -259,14 +264,14 @@ public class RequestHeadersEnricherTests
         {
             HeadersDataClasses = new Dictionary<string, DataClassification>
             {
-                { HeaderKey1, FakeClassifications.PublicData }
+                { HeaderKey1, FakeTaxonomy.PublicData }
             }
         };
 
         Mock<IRedactorProvider> redactorProviderMock = new Mock<IRedactorProvider>();
-        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PublicData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeTaxonomy.PublicData))
             .Returns(new FakeRedactor());
-        redactorProviderMock.Setup(x => x.GetRedactor(FakeClassifications.PrivateData))
+        redactorProviderMock.Setup(x => x.GetRedactor(FakeTaxonomy.PrivateData))
             .Returns(FakeRedactor.Create(new FakeRedactorOptions { RedactionFormat = "redacted:{0}" }));
 
         var enricher = new RequestHeadersLogEnricher(accessorMock.Object, options.ToOptions(), redactorProviderMock.Object);

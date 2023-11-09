@@ -223,33 +223,6 @@ namespace Microsoft.Extensions.ExtraAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Replace uses of &apos;Enum.GetName&apos; and &apos;Enum.ToString&apos; for improved performance.
-        /// </summary>
-        internal static string EnumStringsDescription {
-            get {
-                return ResourceManager.GetString("EnumStringsDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use {0} instead of &apos;{1}&apos; for improved performance.
-        /// </summary>
-        internal static string EnumStringsMessage {
-            get {
-                return ResourceManager.GetString("EnumStringsMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Replace uses of &apos;Enum.GetName&apos; and &apos;Enum.ToString&apos; for improved performance.
-        /// </summary>
-        internal static string EnumStringsTitle {
-            get {
-                return ResourceManager.GetString("EnumStringsTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Generate a strongly-typed logging method.
         /// </summary>
         internal static string GenerateStronglyTypedLoggingMethod {

@@ -2,37 +2,19 @@
   "Name": "Microsoft.Extensions.Compliance.Testing, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
-      "Type": "static class Microsoft.Extensions.Compliance.Testing.FakeClassifications",
-      "Stage": "Stable",
-      "Properties": [
-        {
-          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.FakeClassifications.PrivateData { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.FakeClassifications.PublicData { get; }",
-          "Stage": "Stable"
-        },
-        {
-          "Member": "static string Microsoft.Extensions.Compliance.Testing.FakeClassifications.TaxonomyName { get; }",
-          "Stage": "Stable"
-        }
-      ]
-    },
-    {
       "Type": "static class Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions",
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, params Microsoft.Extensions.Compliance.Classification.DataClassificationSet[] classifications);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, System.Action<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions> configure, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, System.Action<Microsoft.Extensions.Compliance.Testing.FakeRedactorOptions> configure, params Microsoft.Extensions.Compliance.Classification.DataClassificationSet[] classifications);",
           "Stage": "Stable"
         },
         {
-          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params Microsoft.Extensions.Compliance.Classification.DataClassification[] classifications);",
+          "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.FakeRedactionBuilderExtensions.SetFakeRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params Microsoft.Extensions.Compliance.Classification.DataClassificationSet[] classifications);",
           "Stage": "Stable"
         }
       ]
@@ -142,7 +124,7 @@
           "Stage": "Stable"
         },
         {
-          "Member": "Microsoft.Extensions.Compliance.Redaction.Redactor Microsoft.Extensions.Compliance.Testing.FakeRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "Microsoft.Extensions.Compliance.Redaction.Redactor Microsoft.Extensions.Compliance.Testing.FakeRedactorProvider.GetRedactor(Microsoft.Extensions.Compliance.Classification.DataClassificationSet classifications);",
           "Stage": "Stable"
         }
       ],
@@ -154,43 +136,19 @@
       ]
     },
     {
-      "Type": "enum Microsoft.Extensions.Compliance.Testing.FakeTaxonomy : ulong",
+      "Type": "static class Microsoft.Extensions.Compliance.Testing.FakeTaxonomy",
       "Stage": "Stable",
-      "Methods": [
+      "Properties": [
         {
-          "Member": "Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.FakeTaxonomy();",
+          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.PrivateData { get; }",
           "Stage": "Stable"
-        }
-      ],
-      "Fields": [
-        {
-          "Member": "const Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.None",
-          "Stage": "Stable",
-          "Value": "0"
         },
         {
-          "Member": "const Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.PrivateData",
-          "Stage": "Stable",
-          "Value": "2"
+          "Member": "static Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.PublicData { get; }",
+          "Stage": "Stable"
         },
         {
-          "Member": "const Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.PublicData",
-          "Stage": "Stable",
-          "Value": "1"
-        },
-        {
-          "Member": "const Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.Unknown",
-          "Stage": "Stable",
-          "Value": "9223372036854775808"
-        }
-      ]
-    },
-    {
-      "Type": "static class Microsoft.Extensions.Compliance.Classification.FakeTaxonomyExtensions",
-      "Stage": "Stable",
-      "Methods": [
-        {
-          "Member": "static Microsoft.Extensions.Compliance.Testing.FakeTaxonomy Microsoft.Extensions.Compliance.Classification.FakeTaxonomyExtensions.AsFakeTaxonomy(this Microsoft.Extensions.Compliance.Classification.DataClassification classification);",
+          "Member": "static string Microsoft.Extensions.Compliance.Testing.FakeTaxonomy.TaxonomyName { get; }",
           "Stage": "Stable"
         }
       ]
@@ -268,7 +226,7 @@
       "Stage": "Stable",
       "Methods": [
         {
-          "Member": "Microsoft.Extensions.Compliance.Testing.RedactorRequested.RedactorRequested(Microsoft.Extensions.Compliance.Classification.DataClassification classification, int sequenceNumber);",
+          "Member": "Microsoft.Extensions.Compliance.Testing.RedactorRequested.RedactorRequested(Microsoft.Extensions.Compliance.Classification.DataClassificationSet classifications, int sequenceNumber);",
           "Stage": "Stable"
         },
         {
@@ -298,7 +256,7 @@
       ],
       "Properties": [
         {
-          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassification Microsoft.Extensions.Compliance.Testing.RedactorRequested.DataClassification { get; }",
+          "Member": "Microsoft.Extensions.Compliance.Classification.DataClassificationSet Microsoft.Extensions.Compliance.Testing.RedactorRequested.DataClassifications { get; }",
           "Stage": "Stable"
         },
         {

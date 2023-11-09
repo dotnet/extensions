@@ -2,7 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Frozen;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
@@ -17,7 +18,8 @@ namespace Microsoft.AspNetCore.Diagnostics.Logging;
 /// </summary>
 internal sealed class RequestHeadersLogEnricher : ILogEnricher
 {
-    private readonly FrozenDictionary<string, DataClassification> _headersDataClasses;
+    private readonly KeyValuePair<string, DataClassification>[] _headersDataClasses;
+    private readonly string[] _normalizedHeaders;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IRedactorProvider? _redactorProvider;
 
@@ -33,11 +35,10 @@ internal sealed class RequestHeadersLogEnricher : ILogEnricher
         var opt = Throw.IfMemberNull(options, options.Value);
         _httpContextAccessor = httpContextAccessor;
 
-        _headersDataClasses = opt.HeadersDataClasses.Count == 0
-            ? FrozenDictionary<string, DataClassification>.Empty
-            : opt.HeadersDataClasses.ToFrozenDictionary(StringComparer.Ordinal);
+        _headersDataClasses = opt.HeadersDataClasses.Count == 0 ? [] : opt.HeadersDataClasses.ToArray();
+        _normalizedHeaders = HeaderNormalizer.PrepareNormalizedHeaderNames(_headersDataClasses, HttpLoggingTagNames.RequestHeaderPrefix);
 
-        if (_headersDataClasses.Count > 0)
+        if (_headersDataClasses.Length > 0)
         {
             _redactorProvider = Throw.IfNull(redactorProvider);
         }
@@ -54,20 +55,22 @@ internal sealed class RequestHeadersLogEnricher : ILogEnricher
 
             var request = _httpContextAccessor.HttpContext.Request;
 
-            if (_headersDataClasses.Count == 0)
+            if (_headersDataClasses.Length == 0)
             {
                 return;
             }
 
-            if (_headersDataClasses.Count != 0)
+            if (_headersDataClasses.Length != 0)
             {
-                foreach (var header in _headersDataClasses)
+                for (int i = 0; i < _headersDataClasses.Length; i++)
                 {
+                    var header = _headersDataClasses[i];
+
                     if (request.Headers.TryGetValue(header.Key, out var headerValue) && !string.IsNullOrEmpty(headerValue))
                     {
                         var redactor = _redactorProvider!.GetRedactor(header.Value);
                         var redacted = redactor.Redact(headerValue);
-                        collector.Add(header.Key, redacted);
+                        collector.Add(_normalizedHeaders[i], redacted);
                     }
                 }
             }
