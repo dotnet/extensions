@@ -29,10 +29,10 @@ In order to use the redaction feature, you need to reference the `Microsoft.Exte
 The services can be registered using the following methods:
 
 ```csharp
-public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services);
-public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services, IConfigurationSection section);
-public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services, Action<LoggingOptions> configure);
-public static IServiceCollection AddHttpClientLogEnricher<T>(this IServiceCollection services) where T : class, IHttpClientLogEnricher;
+public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services)
+public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services, IConfigurationSection section)
+public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services, Action<LoggingOptions> configure)
+public static IServiceCollection AddHttpClientLogEnricher<T>(this IServiceCollection services) where T : class, IHttpClientLogEnricher
 ```
 
 For example:
@@ -58,9 +58,9 @@ var host = builder.Build();
 You can also use the following extension methods to apply the logging to the specific `IHttpClientBuilder`:
 
 ```csharp
-public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder);
-public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, IConfigurationSection section);
-public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, Action<LoggingOptions> configure);
+public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder)
+public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, IConfigurationSection section)
+public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, Action<LoggingOptions> configure)
 ```
 
 For example:
@@ -87,9 +87,9 @@ These components enable tracking and reporting the latency of HTTP Client reques
 The services can be registered using the following methods:
 
 ```csharp
-public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services);
-public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services, IConfigurationSection section);
-public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services, Action<HttpClientLatencyTelemetryOptions> configure);
+public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services)
+public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services, IConfigurationSection section)
+public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services, Action<HttpClientLatencyTelemetryOptions> configure)
 ```
 
 For example:
