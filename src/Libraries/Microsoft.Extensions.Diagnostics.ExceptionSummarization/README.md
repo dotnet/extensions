@@ -6,7 +6,7 @@ This provides the ability to extract essential information from well-known excep
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Diagnostics.ExceptionSummarization
 ```
 
@@ -25,8 +25,8 @@ Or directly in the C# project file:
 The services can be registered using the following methods:
 
 ```csharp
-public static IServiceCollection AddExceptionSummarizer(this IServiceCollection services);
-public static IServiceCollection AddExceptionSummarizer(this IServiceCollection services, Action<IExceptionSummarizationBuilder> configure);
+public static IServiceCollection AddExceptionSummarizer(this IServiceCollection services)
+public static IServiceCollection AddExceptionSummarizer(this IServiceCollection services, Action<IExceptionSummarizationBuilder> configure)
 ```
 
 For example:

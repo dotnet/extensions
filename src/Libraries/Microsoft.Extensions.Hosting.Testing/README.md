@@ -6,7 +6,7 @@ Tools for integration testing of apps built with Microsoft.Extensions.Hosting.
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Hosting.Testing
 ```
 

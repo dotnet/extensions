@@ -24,7 +24,7 @@ internal partial class WeatherForecastContext // Note class must be partial
 
 internal class WeatherForecastOptions
 {
-    public string TemperatureScale { get; set; } = "Celcius"; // Celcius or Farenheit
+    public string TemperatureScale { get; set; } = "Celsius"; // Celsius or Fahrenheit
     public int ForecastDays { get; set; }
 }
 
@@ -92,8 +92,8 @@ public class AcceptanceTests
                 .Services
                 .GetRequiredService<IWeatherForecastService>();
 
-        Assert.Equal("Farenheit", (await forecastService.GetForecast(new WeatherForecastContext { Country = "US" }, CancellationToken.None)).First().TemperatureScale);
-        Assert.Equal("Celcius", (await forecastService.GetForecast(new WeatherForecastContext { Country = "CA" }, CancellationToken.None)).First().TemperatureScale);
+        Assert.Equal("Fahrenheit", (await forecastService.GetForecast(new WeatherForecastContext { Country = "US" }, CancellationToken.None)).First().TemperatureScale);
+        Assert.Equal("Celsius", (await forecastService.GetForecast(new WeatherForecastContext { Country = "CA" }, CancellationToken.None)).First().TemperatureScale);
 
         static void ConfigureTemperatureScaleBasedOnCountry(IOptionsContext context, WeatherForecastOptions options)
         {
@@ -101,7 +101,7 @@ public class AcceptanceTests
             context.PopulateReceiver(receiver);
             if (receiver.Country == "US")
             {
-                options.TemperatureScale = "Farenheit";
+                options.TemperatureScale = "Fahrenheit";
             }
         }
     }

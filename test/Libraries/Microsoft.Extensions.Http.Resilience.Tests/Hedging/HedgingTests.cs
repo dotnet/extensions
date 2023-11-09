@@ -189,6 +189,29 @@ public abstract class HedgingTests<TBuilder> : IDisposable
     }
 
     [Fact]
+    public async Task SendAsync_EnsureContextReplacedInRequestMessage()
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
+        var originalContext = ResilienceContextPool.Shared.Get();
+        request.SetResilienceContext(originalContext);
+
+        SetupRouting();
+        SetupRoutes(4);
+
+        AddResponse(HttpStatusCode.InternalServerError);
+        AddResponse(HttpStatusCode.InternalServerError);
+        AddResponse(HttpStatusCode.InternalServerError);
+
+        using var client = CreateClientWithHandler();
+
+        await client.SendAsync(request, _cancellationTokenSource.Token);
+
+        RequestContexts.Distinct().OfType<ResilienceContext>().Should().HaveCount(3);
+
+        request.GetResilienceContext().Should().Be(originalContext);
+    }
+
+    [Fact]
     public async Task SendAsync_NoRoutesLeft_EnsureLessThanMaxHedgedAttempts()
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");

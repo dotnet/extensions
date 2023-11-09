@@ -11,7 +11,7 @@ This package contains common abstractions for high-level telemetry primitives. H
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Telemetry.Abstractions
 ```
 

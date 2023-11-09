@@ -6,7 +6,7 @@ Measures and reports processor and memory usage.
 
 From the command-line:
 
-```dotnetcli
+```console
 dotnet add package Microsoft.Extensions.Diagnostics.ResourceMonitoring
 ```
 

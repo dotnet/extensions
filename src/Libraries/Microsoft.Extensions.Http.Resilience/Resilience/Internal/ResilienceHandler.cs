@@ -48,6 +48,11 @@ internal sealed class ResilienceHandler : DelegatingHandler
                 {
                     var request = context.Properties.GetValue(ResilienceKeys.RequestMessage, state.request);
 
+                    // Always re-assign the context to this request message before execution.
+                    // This is because for primary actions the context is also cloned and we need to re-assign it
+                    // here because Polly doesn't have any other events that we can hook into.
+                    request.SetResilienceContext(context);
+
                     try
                     {
                         var response = await state.instance.SendCoreAsync(request, context.CancellationToken).ConfigureAwait(context.ContinueOnCapturedContext);
@@ -74,6 +79,11 @@ internal sealed class ResilienceHandler : DelegatingHandler
             {
                 ResilienceContextPool.Shared.Return(context);
                 request.SetResilienceContext(null);
+            }
+            else
+            {
+                // Restore the original context
+                request.SetResilienceContext(context);
             }
         }
     }
