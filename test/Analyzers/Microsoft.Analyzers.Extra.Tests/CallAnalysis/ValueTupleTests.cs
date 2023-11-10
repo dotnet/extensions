@@ -46,7 +46,7 @@ public static class ValueTupleTests
         var d = await RoslynTestUtils.RunAnalyzer(
             new CallAnalyzer(),
             null,
-            new[] { Source });
+            new[] { Source }).ConfigureAwait(false);
 
         Assert.Equal(16, d.Count);
         for (int i = 0; i < d.Count; i++)

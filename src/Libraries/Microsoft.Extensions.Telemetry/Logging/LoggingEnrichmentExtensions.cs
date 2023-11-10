@@ -27,7 +27,7 @@ public static class LoggingEnrichmentExtensions
     /// Enables enrichment functionality within the logging infrastructure.
     /// </summary>
     /// <param name="builder">The dependency injection container to add logging to.</param>
-    /// <param name="configure">Delegate to fine-tune the options.</param>
+    /// <param name="configure">Delegate the fine-tune the options.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     public static ILoggingBuilder EnableEnrichment(this ILoggingBuilder builder, Action<LoggerEnrichmentOptions> configure)
     {

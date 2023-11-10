@@ -104,7 +104,7 @@ public static class ConditionalAccessAnalyzerTests
         var d = await RoslynTestUtils.RunAnalyzer(
             new ConditionalAccessAnalyzer(),
             null,
-            new[] { Source });
+            new[] { Source }).ConfigureAwait(false);
 
 #if NET6_0_OR_GREATER
         Assert.Equal(8, d.Count);

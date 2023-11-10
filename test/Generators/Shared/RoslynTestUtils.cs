@@ -140,7 +140,7 @@ internal static class RoslynTestUtils
         }
         else
         {
-            Assert.Fail($"Unexpected diagnostics {actual}");
+            Assert.True(false, $"Unexpected diagnostics {actual}");
         }
     }
 
@@ -155,7 +155,7 @@ internal static class RoslynTestUtils
                 expectedSpan = text.MakeTextSpan(spanNum);
                 if (expectedSpan == null)
                 {
-                    Assert.Fail($"No span detected for diagnostic #{spanNum}, {d}");
+                    Assert.True(false, $"No span detected for diagnostic #{spanNum}, {d}");
                 }
             }
 
@@ -173,7 +173,7 @@ internal static class RoslynTestUtils
 
         if (text.MakeTextSpan(spanNum) != null)
         {
-            Assert.Fail($"Diagnostic {spanNum} was not detected");
+            Assert.True(false, $"Diagnostic {spanNum} was not detected");
         }
     }
 
