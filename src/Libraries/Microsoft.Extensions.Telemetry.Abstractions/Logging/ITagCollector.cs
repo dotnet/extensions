@@ -7,7 +7,7 @@ using Microsoft.Extensions.Compliance.Classification;
 namespace Microsoft.Extensions.Logging;
 
 /// <summary>
-/// Represents a custom tag provider and enables it to emit tags.
+/// Interface given to custom tag providers, enabling them to emit tags.
 /// </summary>
 /// <remarks>
 /// See <see cref="TagProviderAttribute"/> for details on how this interface is used.
@@ -21,7 +21,7 @@ public interface ITagCollector
     /// <param name="tagValue">The value of the tag to add.</param>
     /// <exception cref="ArgumentNullException"><paramref name="tagName"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="tagName" /> is empty or contains exclusively whitespace,
-    /// or a tag of the same name has already been added.
+    /// or when a tag of the same name has already been added.
     /// </exception>
     void Add(string tagName, object? tagValue);
 
@@ -33,7 +33,7 @@ public interface ITagCollector
     /// <param name="classifications">The data classifications of the tag value.</param>
     /// <exception cref="ArgumentNullException"><paramref name="tagName"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><paramref name="tagName" /> is empty or contains exclusively whitespace,
-    /// or a tag of the same name has already been added.
+    /// or when a tag of the same name has already been added.
     /// </exception>
     void Add(string tagName, object? tagValue, DataClassificationSet classifications);
 }

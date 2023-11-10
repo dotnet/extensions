@@ -28,7 +28,7 @@ public static class UseThrowsTests
         var d = await RoslynTestUtils.RunAnalyzer(
             new CallAnalyzer(),
             _references,
-            new[] { original });
+            new[] { original }).ConfigureAwait(false);
 
         Assert.Single(d);
         original.AssertDiagnostic(0, DiagDescriptors.ThrowsStatement, d[0]);
@@ -42,7 +42,7 @@ public static class UseThrowsTests
         var d = await RoslynTestUtils.RunAnalyzer(
             new CallAnalyzer(),
             _references,
-            new[] { original });
+            new[] { original }).ConfigureAwait(false);
 
         Assert.Empty(d);
     }
@@ -276,7 +276,7 @@ namespace Example
         var d = await RoslynTestUtils.RunAnalyzer(
             new CallAnalyzer(),
             _references,
-            new[] { original });
+            new[] { original }).ConfigureAwait(false);
 
         Assert.Single(d);
         original.AssertDiagnostic(0, DiagDescriptors.ThrowsExpression, d[0]);

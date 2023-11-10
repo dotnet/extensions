@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.Extensions.LocalAnalyzers.ApiLifecycle;
@@ -13,7 +12,6 @@ internal static class Utils
     private static readonly char[] _colon = { ':' };
     private static readonly char[] _comma = { ',' };
 
-    [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Would add more burden than context in this case.")]
     public static string[] GetConstraints(string typeSignature)
     {
         var whereClauseIndex = typeSignature.IndexOf(" where ", StringComparison.Ordinal);
@@ -25,9 +23,11 @@ internal static class Utils
 
         var substrings = typeSignature.Split(_colon);
 
+#pragma warning disable S109 // Magic numbers should not be used
         return substrings.Length == 2
             ? substrings[1].Split(_comma).Select(x => x.Trim()).ToArray()
             : substrings[2].Split(_comma).Select(x => x.Trim()).ToArray();
+#pragma warning restore S109 // Magic numbers should not be used
     }
 
     public static string StripBaseAndConstraints(string typeSignature)

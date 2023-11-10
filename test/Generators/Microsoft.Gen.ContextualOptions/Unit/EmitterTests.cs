@@ -141,7 +141,7 @@ public class EmitterTests
                 typeof(ReadOnlySpan<>).Assembly
             },
             sources)
-;
+            .ConfigureAwait(false);
 
         Assert.Empty(d);
         _ = Assert.Single(r);
