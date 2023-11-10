@@ -1,15 +1,23 @@
 # Build instructions
 
-- [Introduction](#introduction)
-- [Ubuntu](#ubuntu)
-  * [Building from command line](#building-from-command-line)
-  * [Building from Visual Studio Code](#building-from-visual-studio-code)
-- [Windows](#windows)
-  * [Building from command line](#building-from-command-line-1)
-  * [Building from Visual Studio](#building-from-visual-studio)
-  * [Building from Visual Studio Code](#building-from-visual-studio-code-1)
-- [Build outputs](#build-outputs)
-- [Troubleshooting build errors](#troubleshooting-build-errors)
+- [Build instructions](#build-instructions)
+  - [Introduction](#introduction)
+  - [Ubuntu](#ubuntu)
+    - [Building from command line](#building-from-command-line)
+      - [TL;DR](#tldr)
+      - [Various scripts to build and test the solution](#various-scripts-to-build-and-test-the-solution)
+    - [Building from Visual Studio Code](#building-from-visual-studio-code)
+  - [Windows](#windows)
+    - [Building from command line](#building-from-command-line-1)
+      - [TL;DR](#tldr-1)
+      - [Various scripts to build and test the solution](#various-scripts-to-build-and-test-the-solution-1)
+    - [Building from Visual Studio](#building-from-visual-studio)
+      - [TL;DR](#tldr-2)
+      - [Various scripts to build and test the solution](#various-scripts-to-build-and-test-the-solution-2)
+    - [Building from Visual Studio Code](#building-from-visual-studio-code-1)
+  - [Build outputs](#build-outputs)
+  - [Troubleshooting build errors](#troubleshooting-build-errors)
+  - [\`\`\`](#)
 
 ## Introduction
 
