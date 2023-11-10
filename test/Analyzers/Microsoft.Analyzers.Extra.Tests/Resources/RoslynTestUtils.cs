@@ -146,7 +146,7 @@ internal static class RoslynTestUtils
         }
         catch (ArgumentOutOfRangeException)
         {
-            Assert.True(false, $"Unexpected warning {actual}");
+            Assert.Fail($"Unexpected warning {actual}");
         }
     }
 
