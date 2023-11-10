@@ -92,7 +92,7 @@ static partial class Log
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
-            new[] { OriginalSource, OriginalTarget }).ConfigureAwait(false);
+            new[] { OriginalSource, OriginalTarget });
 
         var actualSource = l[0];
         var actualTarget = l[1];
@@ -170,7 +170,7 @@ static partial class Log
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
             new[] { Assembly.GetAssembly(typeof(ILogger))! },
-            new[] { OriginalSource, OriginalTarget }).ConfigureAwait(false);
+            new[] { OriginalSource, OriginalTarget });
 
             actualSource = l[0];
             actualTarget = l[1];
@@ -234,7 +234,7 @@ static partial class Log
             new LegacyLoggingFixer(),
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource },
-            extraFile: "Log.cs").ConfigureAwait(false);
+            extraFile: "Log.cs");
 
         var actualSource = l[0];
         var actualTarget = l[1];
@@ -297,7 +297,7 @@ static partial class Log
             new LegacyLoggingFixer(),
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource },
-            extraFile: "Log.cs").ConfigureAwait(false);
+            extraFile: "Log.cs");
 
         var actualSource = l[0];
         var actualTarget = l[1];
@@ -358,7 +358,7 @@ static partial class Log
             new LegacyLoggingFixer(),
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource },
-            extraFile: "Log.cs").ConfigureAwait(false);
+            extraFile: "Log.cs");
 
         var actualSource = l[0];
         var actualTarget = l[1];
@@ -434,7 +434,7 @@ static partial class Log
             new LegacyLoggingFixer(),
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
             new[] { OriginalSource },
-            extraFile: "Log.cs").ConfigureAwait(false);
+            extraFile: "Log.cs");
 
         var actualSource = l[0];
         var actualTarget = l[1];
@@ -684,7 +684,7 @@ static partial class Log
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
-            new[] { OrriginalSource, OrriginalTarget }).ConfigureAwait(false);
+            new[] { OrriginalSource, OrriginalTarget });
 
         var actualSource = l[0];
         var actualTarget = l[1];
@@ -746,7 +746,7 @@ logger.Hello();
             new CallAnalyzer(),
             new LegacyLoggingFixer(),
             new[] { Assembly.GetAssembly(typeof(ILogger))!, Assembly.GetAssembly(typeof(LoggerMessageAttribute))! },
-            new[] { OrriginalSource, OrriginalTarget }).ConfigureAwait(false);
+            new[] { OrriginalSource, OrriginalTarget });
 
         var actualSource = l[0];
         var actualTarget = l[1];

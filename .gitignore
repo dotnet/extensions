@@ -38,6 +38,7 @@ bld/
 .vs/
 .build/
 .vscode
+!.vscode/settings.json
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
