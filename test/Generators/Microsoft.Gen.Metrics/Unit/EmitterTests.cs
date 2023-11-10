@@ -37,7 +37,7 @@ public class EmitterTests
                 Assembly.GetAssembly(typeof(HistogramAttribute<>))!,
             },
             sources)
-;
+            .ConfigureAwait(false);
 
         Assert.Empty(d);
         Assert.Equal(2, r.Length);

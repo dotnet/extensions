@@ -1,7 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <!-- Disable IsTrimmable on non-DefaultNetCoreTargetFrameworks even if explicitly enabled or else we'll get NETSDK1195 and NETSDK1210 errors -->
-    <IsTrimmable>false</IsTrimmable>
-    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
-  </PropertyGroup>
-</Project>

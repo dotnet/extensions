@@ -29,7 +29,7 @@ public class AsyncStateTests
             return Task.CompletedTask;
         }
 
-        await SetAsyncContext(state, context, token);
+        await SetAsyncContext(state, context, token).ConfigureAwait(false);
 
         Assert.Same(context, state.Get(token));
     }

@@ -4,7 +4,7 @@
 namespace Microsoft.Extensions.Diagnostics.Enrichment;
 
 /// <summary>
-/// Represents a component that augments log records with additional properties.
+/// Augments log records with additional properties.
 /// </summary>
 public interface ILogEnricher
 {

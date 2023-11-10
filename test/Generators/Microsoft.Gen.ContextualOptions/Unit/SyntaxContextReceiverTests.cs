@@ -26,7 +26,7 @@ public class SyntaxContextReceiverTests
             File.ReadAllText("TestClasses/Record1.cs"),
         };
 
-        var comp = await RoslynTestUtils.RunSyntaxContextReceiver(sut, new[] { typeof(OptionsContextAttribute).Assembly }, sources);
+        var comp = await RoslynTestUtils.RunSyntaxContextReceiver(sut, new[] { typeof(OptionsContextAttribute).Assembly }, sources).ConfigureAwait(true);
 
         Assert.True(sut.TryGetTypeDeclarations(comp, out var typeDeclarations));
 
@@ -49,7 +49,7 @@ public class SyntaxContextReceiverTests
             File.ReadAllText("TestClasses/Record1.cs"),
         };
 
-        var comp = await RoslynTestUtils.RunSyntaxContextReceiver(sut, Enumerable.Empty<Assembly>(), sources);
+        var comp = await RoslynTestUtils.RunSyntaxContextReceiver(sut, Enumerable.Empty<Assembly>(), sources).ConfigureAwait(true);
 
         Assert.False(sut.TryGetTypeDeclarations(comp, out _));
     }
@@ -64,7 +64,7 @@ public class SyntaxContextReceiverTests
             File.ReadAllText("TestClasses/Class2B.cs"),
         };
 
-        var comp = await RoslynTestUtils.RunSyntaxContextReceiver(sut, new[] { typeof(OptionsContextAttribute).Assembly }, sources);
+        var comp = await RoslynTestUtils.RunSyntaxContextReceiver(sut, new[] { typeof(OptionsContextAttribute).Assembly }, sources).ConfigureAwait(true);
         Assert.True(sut.TryGetTypeDeclarations(comp, out var typeDeclarations));
 
         Assert.Single(typeDeclarations!);
@@ -82,7 +82,7 @@ public class SyntaxContextReceiverTests
         var sut = new ContextReceiver(CancellationToken.None);
         var sources = new[] { File.ReadAllText("TestClasses/ClassWithNoAttribute.cs"), };
 
-        var comp = await RoslynTestUtils.RunSyntaxContextReceiver(sut, new[] { typeof(OptionsContextAttribute).Assembly }, sources);
+        var comp = await RoslynTestUtils.RunSyntaxContextReceiver(sut, new[] { typeof(OptionsContextAttribute).Assembly }, sources).ConfigureAwait(true);
 
         Assert.True(sut.TryGetTypeDeclarations(comp, out var typeDeclarations));
         Assert.Empty(typeDeclarations!);

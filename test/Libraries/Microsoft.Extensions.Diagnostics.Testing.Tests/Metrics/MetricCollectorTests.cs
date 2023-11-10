@@ -413,6 +413,6 @@ public static class MetricCollectorTests
 
         snap = collector.GetMeasurementSnapshot(true);
         Assert.Equal(3, snap.Count);
-        Assert.Empty(collector.GetMeasurementSnapshot());
+        Assert.Equal(0, collector.GetMeasurementSnapshot().Count);
     }
 }
