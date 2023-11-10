@@ -1,15 +1,23 @@
 # Build instructions
 
-- [Introduction](#introduction)
-- [Ubuntu](#ubuntu)
-  * [Building from command line](#building-from-command-line)
-  * [Building from Visual Studio Code](#building-from-visual-studio-code)
-- [Windows](#windows)
-  * [Building from command line](#building-from-command-line-1)
-  * [Building from Visual Studio](#building-from-visual-studio)
-  * [Building from Visual Studio Code](#building-from-visual-studio-code-1)
-- [Build outputs](#build-outputs)
-- [Troubleshooting build errors](#troubleshooting-build-errors)
+- [Build instructions](#build-instructions)
+  - [Introduction](#introduction)
+  - [Ubuntu](#ubuntu)
+    - [Building from command line](#building-from-command-line)
+      - [TL;DR](#tldr)
+      - [Various scripts to build and test the solution](#various-scripts-to-build-and-test-the-solution)
+    - [Building from Visual Studio Code](#building-from-visual-studio-code)
+  - [Windows](#windows)
+    - [Building from command line](#building-from-command-line-1)
+      - [TL;DR](#tldr-1)
+      - [Various scripts to build and test the solution](#various-scripts-to-build-and-test-the-solution-1)
+    - [Building from Visual Studio](#building-from-visual-studio)
+      - [TL;DR](#tldr-2)
+      - [Various scripts to build and test the solution](#various-scripts-to-build-and-test-the-solution-2)
+    - [Building from Visual Studio Code](#building-from-visual-studio-code-1)
+  - [Build outputs](#build-outputs)
+  - [Troubleshooting build errors](#troubleshooting-build-errors)
+  - [\`\`\`](#)
 
 ## Introduction
 
@@ -45,7 +53,7 @@ Here are few commands that you will likely use the most:
     - `build.sh --restore`: to install the required .NET SDK, .NET tools and the toolset. This is equivalent to running `./restore.sh`.
     - `build.sh --build`: to build the solution<sup>1</sup>.
     - `build.sh --test`: to run all unit tests in the solution<sup>1</sup>.
-    - `build.sh --vs <keywords>`: to generate a "filtered" solution and save it as `SDK.sln`. It also performs the "restore" operation. For example: `./build.sh --vs Http,Fakes`.<br />
+    - `build.sh --vs <keywords>`: to generate a "filtered" solution and save it as `SDK.sln`. It also performs the "restore" operation. Keywords can be any part of the name or path of project files you want to include. For example: `./build.sh --vs Http,Fakes,AspNetCore`.<br />
     If for some reason you wish to generate a solution with all projects you can pass `*` for the keyword, e.g.: `./build.sh --vs '*'` (Note: you have to escape the asterisk or use `set -f` to turn off expansion).<br />
       > Under the hood, this invokes `scripts/Slngen.ps1` script, which in turn executes [slngen tool][slngen-tool]. If you want to customize how the "filtered" solution is generated, you will need to invoke `scripts/Slngen.ps1` script directly.<br />
         Run `./scripts/Slngen.ps1 -help` for more details.
