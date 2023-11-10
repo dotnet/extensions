@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.ObjectPool;
 
-#pragma warning disable CA1716
 namespace Microsoft.Shared.Pools;
 
 /// <summary>
@@ -19,7 +18,7 @@ internal sealed class PooledListPolicy<T> : PooledObjectPolicy<List<T>>
     {
     }
 
-    public override List<T> Create() => new();
+    public override List<T> Create() => [];
 
     public override bool Return(List<T> obj)
     {

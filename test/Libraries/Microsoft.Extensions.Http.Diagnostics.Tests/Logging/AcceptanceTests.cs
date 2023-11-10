@@ -38,7 +38,7 @@ public class AcceptanceTests
             .BuildServiceProvider();
 
         using var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
-        using var _ = await httpClient.GetAsync(_unreachableRequestUri).ConfigureAwait(false);
+        using var _ = await httpClient.GetAsync(_unreachableRequestUri);
         var collector = sp.GetFakeLogCollector();
         var logRecord = Assert.Single(collector.GetSnapshot());
 
@@ -69,7 +69,7 @@ public class AcceptanceTests
             .BuildServiceProvider();
 
         using var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
-        using var _ = await httpClient.GetAsync(_unreachableRequestUri).ConfigureAwait(false);
+        using var _ = await httpClient.GetAsync(_unreachableRequestUri);
         var collector = sp.GetFakeLogCollector();
         Assert.Collection(
             collector.GetSnapshot(),
@@ -111,7 +111,7 @@ public class AcceptanceTests
             RequestUri = _unreachableRequestUri,
         };
 
-        _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+        _ = await httpClient.SendAsync(httpRequestMessage);
         var collector = sp.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);
 
@@ -248,7 +248,7 @@ public class AcceptanceTests
 
         httpRequestMessage.Headers.Add("requestHeader", "Request Value");
         httpRequestMessage.Headers.Add("ReQuEStHeAdEr2", new List<string> { "Request Value 2", "Request Value 3" });
-        var content = await firstClient!.SendRequest(httpRequestMessage).ConfigureAwait(false);
+        var content = await firstClient!.SendRequest(httpRequestMessage);
         var collector = provider.GetFakeLogCollector();
         var responseStream = await content.Content.ReadAsStreamAsync();
         var buffer = new byte[10000];
@@ -270,7 +270,7 @@ public class AcceptanceTests
         httpRequestMessage2.Headers.Add("requestHeader", "Request Value");
         httpRequestMessage2.Headers.Add("ReQuEStHeAdEr2", new List<string> { "Request Value 2", "Request Value 3" });
         collector.Clear();
-        content = await secondClient!.SendRequest(httpRequestMessage2).ConfigureAwait(false);
+        content = await secondClient!.SendRequest(httpRequestMessage2);
         responseStream = await content.Content.ReadAsStreamAsync();
         buffer = new byte[20000];
         _ = await responseStream.ReadAsync(buffer, 0, 20000);
@@ -316,7 +316,7 @@ public class AcceptanceTests
             RequestRoute = "/v1/unit/{unitId}/users/{userId}"
         });
 
-        _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+        _ = await httpClient.SendAsync(httpRequestMessage);
 
         var collector = sp.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);
@@ -357,7 +357,7 @@ public class AcceptanceTests
             RequestRoute = "/v1/unit/{unitId}/users/{userId}"
         });
 
-        using var _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+        using var _ = await httpClient.SendAsync(httpRequestMessage);
 
         var collector = sp.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);
@@ -518,7 +518,7 @@ public class AcceptanceTests
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _unreachableRequestUri);
 
-        _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+        _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
         var collector = provider.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
 
@@ -544,7 +544,7 @@ public class AcceptanceTests
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("normal");
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _unreachableRequestUri);
 
-        _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+        _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
         var collector = provider.GetFakeLogCollector();
         var logRecords = collector.GetSnapshot().Where(l => l.Category == "System.Net.Http.HttpClient.normal.LogicalHandler").ToList();
 
@@ -567,7 +567,7 @@ public class AcceptanceTests
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _unreachableRequestUri);
 
-        _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+        _ = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
         var collector = provider.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
 
@@ -613,7 +613,7 @@ public class AcceptanceTests
         httpRequestMessage.Headers.Add("requestHeader", "Request Value");
         httpRequestMessage.Headers.Add("ReQuEStHeAdEr2", new List<string> { "Request Value 2", "Request Value 3" });
 
-        var content = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+        var content = await client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead);
         var responseStream = await content.Content.ReadAsStreamAsync();
         var length = (int)responseStream.Length > limit ? limit : (int)responseStream.Length;
         var buffer = new byte[length];
