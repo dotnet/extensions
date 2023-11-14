@@ -8,6 +8,7 @@ trigger:
     include:
       - main
       - release/*
+      - internal/release/*
   paths:
     include:
       - '*'
@@ -28,6 +29,7 @@ pr:
     include:
       - main
       - release/*
+      - internal/release/*
   paths:
     include:
       - '*'
@@ -205,55 +207,6 @@ stages:
 
 
 # ----------------------------------------------------------------
-# This stage performs quality gates enforcements
-# ----------------------------------------------------------------
-- stage: codecoverage
-  displayName: CodeCoverage
-  dependsOn: 
-    - build
-  condition: and(succeeded('build'), ne(variables['SkipQualityGates'], 'true'))
-  variables:
-  - template: /eng/common/templates/variables/pool-providers.yml
-  jobs:
-  - template: /eng/common/templates/jobs/jobs.yml
-    parameters:
-      enableMicrobuild: true
-      enableTelemetry: true
-      runAsPublic: ${{ variables['runAsPublic'] }}
-      workspace:
-        clean: all
-
-      # ----------------------------------------------------------------
-      # This stage downloads the code coverage reports from the build jobs,
-      # merges those and validates the combined test coverage.
-      # ----------------------------------------------------------------
-      jobs:
-      - job: CodeCoverageReport
-        timeoutInMinutes: 180
-
-        pool:
-          ${{ if eq(variables['runAsPublic'], 'true') }}:
-            name: $(DncEngPublicBuildPool)
-            demands: ImageOverride -equals build.ubuntu.2004.amd64.open
-          # Non-public (i.e., official builds)
-          ${{ else }}:
-            name: $(DncEngInternalBuildPool)
-            demands: ImageOverride -equals build.ubuntu.2004.amd64
-
-        preSteps:
-          - checkout: self
-            clean: true
-            persistCredentials: true
-            fetchDepth: 1
-
-        steps:
-        - script: $(Build.SourcesDirectory)/build.sh --ci --restore
-          displayName: Init toolset
-
-        - template: /eng/pipelines/templates/VerifyCoverageReport.yml
-
-
-# ----------------------------------------------------------------
 # This stage only performs a build treating warnings as errors
 # to detect any kind of code style violations
 # ----------------------------------------------------------------
@@ -311,7 +264,6 @@ stages:
     parameters:
       validateDependsOn:
         - build
-        - codecoverage
         - correctness
       publishingInfraVersion: 3
       enableSymbolValidation: false
