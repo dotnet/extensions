@@ -9,6 +9,7 @@ trigger:
       - main
       - dev
       - release/*
+      - internal/release/*
   paths:
     include:
       - '*'
@@ -30,6 +31,7 @@ pr:
       - main
       - dev
       - release/*
+      - internal/release/*
   paths:
     include:
       - '*'
