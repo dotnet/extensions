@@ -89,7 +89,7 @@ public class FakeTimeProvider : TimeProvider
     /// Sets the date and time in the UTC time zone.
     /// </summary>
     /// <param name="value">The date and time in the UTC time zone.</param>
-    /// <exception cref="ArgumentOutOfRangeException">if the supplied time value is before the curent time.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">if the supplied time value is before the current time.</exception>
     public void SetUtcNow(DateTimeOffset value)
     {
         lock (Waiters)
