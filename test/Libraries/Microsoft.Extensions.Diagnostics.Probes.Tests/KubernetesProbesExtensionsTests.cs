@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 #else
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Internal;
 #endif
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
@@ -129,7 +128,6 @@ public class KubernetesProbesExtensionsTests
         return new WebHostBuilder()
             .ConfigureServices(configureServices)
             .Configure(app => app
-                .UseEndpointRouting()
                 .UseRouter(routes => { })
                 .UseMvc())
             .Build();
