@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.TestHost;
 #else
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Internal;
 #endif
 using System;
 using System.Collections.Generic;
@@ -187,7 +186,6 @@ public class TcpEndpointHealthCheckExtensionsTests
         return new WebHostBuilder()
             .ConfigureServices(configureServices)
             .Configure(app => app
-                .UseEndpointRouting()
                 .UseRouter(routes => { })
                 .UseMvc())
             .Build();
