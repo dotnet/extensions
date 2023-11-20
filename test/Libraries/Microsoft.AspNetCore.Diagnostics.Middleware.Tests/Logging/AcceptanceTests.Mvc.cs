@@ -61,7 +61,7 @@ public partial class AcceptanceTests
             async (logCollector, client) =>
             {
                 const string UserId = "testUserId";
-                using var response = await client.GetAsync($"/api/users/{UserId}/someTestData?{QueryParamName}=foo").ConfigureAwait(false);
+                using var response = await client.GetAsync($"/api/users/{UserId}/someTestData?{QueryParamName}=foo");
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, TimeSpan.FromSeconds(30));
@@ -96,7 +96,7 @@ public partial class AcceptanceTests
             async (logCollector, client) =>
             {
                 const string UserId = "testUserId";
-                using var response = await client.GetAsync($"/api/users/{UserId}/someTestData?{QueryParamName}=foo").ConfigureAwait(false);
+                using var response = await client.GetAsync($"/api/users/{UserId}/someTestData?{QueryParamName}=foo");
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, TimeSpan.FromSeconds(30));
@@ -142,7 +142,7 @@ public partial class AcceptanceTests
             {
                 const string UserId = "testUserId";
                 const string NoDataClassParamValue = "someTestData";
-                using var response = await client.GetAsync($"/api/users/{UserId}/{NoDataClassParamValue}?{QueryParamName}=foo").ConfigureAwait(false);
+                using var response = await client.GetAsync($"/api/users/{UserId}/{NoDataClassParamValue}?{QueryParamName}=foo");
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, TimeSpan.FromSeconds(30));
@@ -186,7 +186,7 @@ public partial class AcceptanceTests
             async (logCollector, client) =>
             {
                 const string UserId = "testUserId";
-                using var response = await client.GetAsync($"/api/users/{UserId}/someTestData?{QueryParamName}=foo").ConfigureAwait(false);
+                using var response = await client.GetAsync($"/api/users/{UserId}/someTestData?{QueryParamName}=foo");
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, TimeSpan.FromSeconds(30));
@@ -227,7 +227,7 @@ public partial class AcceptanceTests
             }),
             async (logCollector, client) =>
             {
-                using var response = await client.GetAsync(RequestPath).ConfigureAwait(false);
+                using var response = await client.GetAsync(RequestPath);
                 Assert.False(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, TimeSpan.FromSeconds(30));

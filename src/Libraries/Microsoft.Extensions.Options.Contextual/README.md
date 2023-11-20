@@ -37,18 +37,18 @@ Define a context and a receiver that will be used as inputs to dynamically confi
 internal partial class WeatherForecastContext // Note class must be partial
 {
     public Guid UserId { get; set; }
-    public string? Country { get; set; }
+    public string? CountryOrRegion { get; set; }
 }
 
-internal class CountryContextReceiver : IOptionsContextReceiver
+internal class CountryOrRegionContextReceiver : IOptionsContextReceiver
 {
-    public string? Country { get; private set; }
+    public string? CountryOrRegion { get; private set; }
 
     public void Receive<T>(string key, T value)
     {
-        if (key == nameof(Country))
+        if (key == nameof(CountryOrRegion))
         {
-            Country = value?.ToString();
+            CountryOrRegion = value?.ToString();
         }
     }
 }
@@ -93,15 +93,15 @@ The options can be configured with both global options (ForecastDays), and optio
 using var host = FakeHost.CreateBuilder()
     .ConfigureServices(services => services
         .Configure<WeatherForecastOptions>(options => options.ForecastDays = 7)
-        .Configure<WeatherForecastOptions>(ConfigureTemperatureScaleBasedOnCountry)
+        .Configure<WeatherForecastOptions>(ConfigureTemperatureScaleBasedOnCountryOrRegion)
         .AddSingleton<WeatherForecastService>())
         .Build();
 
-static void ConfigureTemperatureScaleBasedOnCountry(IOptionsContext context, WeatherForecastOptions options)
+static void ConfigureTemperatureScaleBasedOnCountryOrRegion(IOptionsContext context, WeatherForecastOptions options)
 {
-    CountryContextReceiver receiver = new();
+    CountryOrRegionContextReceiver receiver = new();
     context.PopulateReceiver(receiver);
-    if (receiver.Country == "US")
+    if (receiver.CountryOrRegion == "US")
     {
         options.TemperatureScale = "Fahrenheit";
     }
@@ -113,8 +113,8 @@ And lastly, the service is called with some context.
 ```csharp
 var forecastService = host.Services.GetRequiredService<WeatherForecastService>();
 
-var usForcast = await forecastService.GetForecast(new WeatherForecastContext { Country = "US" }, CancellationToken.None);
-var caForcast = await forecastService.GetForecast(new WeatherForecastContext { Country = "CA" }, CancellationToken.None);
+var usForcast = await forecastService.GetForecast(new WeatherForecastContext { CountryOrRegion = "US" }, CancellationToken.None);
+var caForcast = await forecastService.GetForecast(new WeatherForecastContext { CountryOrRegion = "CA" }, CancellationToken.None);
 ```
 
 ## Feedback & Contributing
