@@ -9,11 +9,11 @@ using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 
-/// <summary>
+/// <remarks>
 /// Parses Linux files to retrieve resource utilization data.
 /// This class is not thread safe.
 /// When the same instance is called by multiple threads it may return corrupted data.
-/// </summary>
+/// </remarks>
 internal sealed class LinuxUtilizationParser
 {
     /// <remarks>
