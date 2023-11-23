@@ -30,5 +30,10 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageReference Include="Microsoft.AspNetCore.Mvc" />
+
+    <!-- Direct dependencies as Microsoft.AspNetCore.Mvc references vulnerable versions. -->
+    <PackageReference Include="Microsoft.AspNetCore.Http" />
+    <PackageReference Include="System.IO.Pipelines" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 </Project>
