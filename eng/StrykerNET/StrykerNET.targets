@@ -62,7 +62,7 @@
       <_TestRunner Condition="'$(_TestRunner)'==''">$(DotNetTool)</_TestRunner>
 
        <!-- https://stryker-mutator.io/docs/stryker-net/configuration/#project-information -->
-      <_TestRunnerArgs>stryker --project "$(_ProjectUnderTestPath)" --test-project "$(MSBuildProjectFullPath)" --config-file "$(_StrykerJsonConfigFile)" --target-framework "$(LatestTargetFramework)" --output "$(_TestResultsDir)"</_TestRunnerArgs>
+      <_TestRunnerArgs>stryker --project "$(_ProjectUnderTestPath)" --test-project "$(MSBuildProjectFullPath)" --config-file "$(_StrykerJsonConfigFile)" --output "$(_TestResultsDir)"</_TestRunnerArgs>
       <_TestRunnerArgs Condition=" '$(StrykerLogToFile)' == 'true' ">$(_TestRunnerArgs) --log-to-file </_TestRunnerArgs>
 
       <_TestRunnerCommand>"$(_TestRunner)" $(_TestRunnerArgs)</_TestRunnerCommand>

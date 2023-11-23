@@ -172,7 +172,7 @@ if ($mutationTesting) {
   $testCoverage = $false
 
   $test = $true;
-  $properties += '/p:TestRunnerName=StrykerNET';
+  $properties += '/p:TestRunnerName=StrykerNET /m:1';
 
   # Set envvars so that Stryker can locate the .NET SDK
   $env:DOTNET_ROOT = $(Resolve-Path "$PSScriptRoot/../.dotnet");
