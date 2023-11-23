@@ -316,7 +316,7 @@ stages:
       # This job runs mutation testing using Stryker.NET
       # ----------------------------------------------------------------
       - job: MutationTesting
-        timeoutInMinutes: 30
+        timeoutInMinutes: 300
 
         pool:
           ${{ if eq(variables['runAsPublic'], 'true') }}:
