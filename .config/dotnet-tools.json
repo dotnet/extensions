@@ -20,6 +20,12 @@
         "slngen"
       ]
     },
+    "dotnet-stryker": {
+      "version": "3.9.2",
+      "commands": [
+        "dotnet-stryker"
+      ]
+    },
     "PowerShell": {
       "version": "7.3.3",
       "commands": [

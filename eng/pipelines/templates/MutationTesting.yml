@@ -1,0 +1,50 @@
+parameters:
+  - name: buildScript
+    type: string
+  - name: buildConfig
+    type: string
+  - name: repoLogPath
+    type: string
+  - name: repoTestResultsPath
+    type: string
+
+steps:
+  - script: ${{ parameters.buildScript }}
+            -restore -build
+            /bl:${{ parameters.repoLogPath }}/build.binlog
+    displayName: Restore
+
+  - script: ${{ parameters.buildScript }}
+            -mutationTesting 
+            -configuration ${{ parameters.buildConfig }}
+            -warnAsError 0
+            /bl:${{ parameters.repoLogPath }}/mutationtesting.binlog
+    displayName: Mutation testing
+
+  # Publish mutation reports. Only run in public infra
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - task: PublishMutationReport@1
+      displayName: Publish Mutation Reports
+      inputs:
+        reportPattern: '${{ parameters.repoTestResultsPath }}/**/mutation-report-merged.html'
+      continueOnError: true
+      condition: always()
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Logs
+    inputs:
+      PathtoPublish: '${{ parameters.repoLogPath }}'
+      PublishLocation: Container
+      ArtifactName: '$(Agent.Os)_$(Agent.JobName)'
+    continueOnError: true
+    condition: always()
+
+  - ${{ if eq(variables['PublishMutationTestingResults'], 'true') }}:
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Test Results
+      inputs:
+        PathtoPublish: '${{ parameters.repoTestResultsPath }}'
+        PublishLocation: Container
+        ArtifactName: '$(Agent.Os)_$(Agent.JobName)'
+      continueOnError: true
+      condition: always()

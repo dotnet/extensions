@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.3",
+  "thresholds": {
+    "high": 80,
+    "low": 60
+  },
+  "files": {}
+}

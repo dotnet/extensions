@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script defer src="https://www.unpkg.com/mutation-testing-elements"></script>
+    </head>
+    <body>
+        <mutation-test-report-app title-postfix="Stryker.NET Report"></mutation-test-report-app>
+        
+        <script>
+            document.querySelector('mutation-test-report-app').report = REPORT_PLACEHOLDER;
+        </script>
+    </body>
+</html>

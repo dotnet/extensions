@@ -306,6 +306,7 @@ BenchmarkDotNet.artifacts/
 
 /out.txt
 /.targetframeworks
+/.mutationtesting
 
 /_TEST
 

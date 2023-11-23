@@ -117,4 +117,5 @@
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\LegacySupport.props" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Shared.props" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Generators.props" />
+  <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\MutationTesting.props" Condition="Exists('$(MSBuildThisFileDirectory)\.mutationtesting')" />
 </Project>

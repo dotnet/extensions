@@ -1,0 +1,18 @@
+{
+    "stryker-config": {
+      "reporters": [
+        "json",
+        "html"
+      ],
+      "ignore-methods": [
+        "*Exception.ctor",
+        "ConfigureAwait",
+        "Throw.*",
+        "ValidationResult.ctor"
+      ],
+      "thresholds": {
+        "high": 100,
+        "low": 100
+      }
+    }
+  }
