@@ -172,7 +172,7 @@ if ($mutationTesting) {
   $testCoverage = $false
 
   $test = $true;
-  $properties += '/p:TestRunnerName=StrykerNET /m:1';
+  $properties += '/p:TestRunnerName=StrykerNET';
 
   # Set envvars so that Stryker can locate the .NET SDK
   $env:DOTNET_ROOT = $(Resolve-Path "$PSScriptRoot/../.dotnet");
@@ -181,7 +181,7 @@ if ($mutationTesting) {
 
   # Create a marker file
   '' | Out-File .mutationtesting
-  'net8.0' | Out-File .targetframeworks
+  #'net8.0' | Out-File .targetframeworks
 }
 
 try {
