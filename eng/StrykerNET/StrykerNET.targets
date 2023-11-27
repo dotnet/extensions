@@ -46,7 +46,20 @@
       <_TestResultsDir>$([MSBuild]::NormalizePath('$(_MutationTestingResultsDir)', '$(MSBuildProjectName)'))</_TestResultsDir>
       <_ResultFileNameNoExt>$(MSBuildProjectName)_$(LatestTargetFramework)_$(TestArchitectures)</_ResultFileNameNoExt>
       <_ResultsStdOutPath>$(_MutationTestingResultsLogDir)$(_ResultFileNameNoExt).log</_ResultsStdOutPath>
+
+      <_UseSince>false</_UseSince>
+      <_UseSince Condition="'$(SYSTEM_PULLREQUEST_PULLREQUESTID)' != ''">true</_UseSince>
     </PropertyGroup>
+
+    <Message Text="git merge-base HEAD $(SYSTEM_PULLREQUEST_TARGETBRANCHNAME)" Importance="high"/>
+    <Exec Command='git merge-base HEAD $(SYSTEM_PULLREQUEST_TARGETBRANCHNAME)'
+          LogStandardErrorAsError="false"
+          WorkingDirectory="$(_TargetDir)"
+          ContinueOnError="WarnAndContinue"
+          Condition=" '$(_UseSince)' == 'true' ">
+      <Output TaskParameter="ConsoleOutput" PropertyName="BaseCommit" />
+    </Exec>
+    <Message Text="BaseCommit: $(BaseCommit)" Importance="high"/>
 
     <MakeDir Directories="$(_MutationTestingResultsLogDir)"/>
     <MakeDir Directories="$(_TestResultsDir)"/>
@@ -61,8 +74,10 @@
       <_TestRunner Condition="'%(_FilteredTestToRun.Architecture)'=='x86' And Exists('$(DotNetRoot)x86\dotnet.exe')">$(DotNetRoot)x86\dotnet.exe</_TestRunner>
       <_TestRunner Condition="'$(_TestRunner)'==''">$(DotNetTool)</_TestRunner>
 
+      <_StrykerSince Condition=" '$(_UseSince)' == 'true' ">--since:$(BaseCommit)</_StrykerSince>
+
        <!-- https://stryker-mutator.io/docs/stryker-net/configuration/#project-information -->
-      <_TestRunnerArgs>stryker --project "$(_ProjectUnderTestPath)" --test-project "$(MSBuildProjectFullPath)" --config-file "$(_StrykerJsonConfigFile)" --since:c8383902da237c8efd61a37808e444ac9b838f59 --output "$(_TestResultsDir)"</_TestRunnerArgs>
+      <_TestRunnerArgs>stryker --project "$(_ProjectUnderTestPath)" --test-project "$(MSBuildProjectFullPath)" --config-file "$(_StrykerJsonConfigFile)" $(_StrykerSince) --output "$(_TestResultsDir)"</_TestRunnerArgs>
       <_TestRunnerArgs Condition=" '$(StrykerLogToFile)' == 'true' ">$(_TestRunnerArgs) --log-to-file </_TestRunnerArgs>
 
       <_TestRunnerCommand>"$(_TestRunner)" $(_TestRunnerArgs)</_TestRunnerCommand>
