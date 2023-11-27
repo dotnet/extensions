@@ -51,11 +51,10 @@
       <_UseSince Condition="'$(SYSTEM_PULLREQUEST_PULLREQUESTID)' != ''">true</_UseSince>
     </PropertyGroup>
 
-    <Message Text="git merge-base HEAD $(SYSTEM_PULLREQUEST_TARGETBRANCHNAME)" Importance="high"/>
-    <Exec Command='git merge-base HEAD $(SYSTEM_PULLREQUEST_TARGETBRANCHNAME)'
+    <Message Text="git merge-base HEAD origin/$(SYSTEM_PULLREQUEST_TARGETBRANCHNAME)" Importance="high"/>
+    <Exec Command='git merge-base HEAD origin/$(SYSTEM_PULLREQUEST_TARGETBRANCHNAME)'
           LogStandardErrorAsError="false"
           WorkingDirectory="$(_TargetDir)"
-          ContinueOnError="WarnAndContinue"
           Condition=" '$(_UseSince)' == 'true' ">
       <Output TaskParameter="ConsoleOutput" PropertyName="BaseCommit" />
     </Exec>
