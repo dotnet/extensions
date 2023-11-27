@@ -53,6 +53,7 @@
 
     <Message Text="git merge-base HEAD origin/$(SYSTEM_PULLREQUEST_TARGETBRANCHNAME)" Importance="high"/>
     <Exec Command='git merge-base HEAD origin/$(SYSTEM_PULLREQUEST_TARGETBRANCHNAME)'
+          ConsoleToMSBuild="true"
           LogStandardErrorAsError="false"
           WorkingDirectory="$(_TargetDir)"
           Condition=" '$(_UseSince)' == 'true' ">
