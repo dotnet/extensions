@@ -62,7 +62,7 @@
       <_TestRunner Condition="'$(_TestRunner)'==''">$(DotNetTool)</_TestRunner>
 
        <!-- https://stryker-mutator.io/docs/stryker-net/configuration/#project-information -->
-      <_TestRunnerArgs>stryker --project "$(_ProjectUnderTestPath)" --test-project "$(MSBuildProjectFullPath)" --config-file "$(_StrykerJsonConfigFile)" --output "$(_TestResultsDir)"</_TestRunnerArgs>
+      <_TestRunnerArgs>stryker --project "$(_ProjectUnderTestPath)" --test-project "$(MSBuildProjectFullPath)" --config-file "$(_StrykerJsonConfigFile)" --since:c8383902da237c8efd61a37808e444ac9b838f59 --output "$(_TestResultsDir)"</_TestRunnerArgs>
       <_TestRunnerArgs Condition=" '$(StrykerLogToFile)' == 'true' ">$(_TestRunnerArgs) --log-to-file </_TestRunnerArgs>
 
       <_TestRunnerCommand>"$(_TestRunner)" $(_TestRunnerArgs)</_TestRunnerCommand>
@@ -75,6 +75,7 @@
     </PropertyGroup>
 
     <Message Text="Mutating $(_ProjectUnderTestPath) [$(_TestEnvironment)]" Importance="high"/>
+    <Message Text="$(_TestRunnerCommand)" Importance="high"/>
     <Exec Command='$(_TestRunnerCommand)'
           LogStandardErrorAsError="false"
           WorkingDirectory="$(_TargetDir)"

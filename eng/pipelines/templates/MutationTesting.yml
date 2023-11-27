@@ -9,6 +9,10 @@ parameters:
     type: string
 
 steps:
+  - pwsh: |
+        Get-ChildItem env:* | Sort-Object Name  
+    displayName: Debug
+
   - script: ${{ parameters.buildScript }}
             -restore -build
             /bl:${{ parameters.repoLogPath }}/build.binlog

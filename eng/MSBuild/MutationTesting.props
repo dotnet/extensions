@@ -13,7 +13,7 @@
     <SkipAnalyzers>true</SkipAnalyzers>
 
     <!-- Stryker debug option, see https://github.com/stryker-mutator/stryker-net/blob/master/docs/configuration.md#log-to-file-flag -->
-    <StrykerLogToFile>true</StrykerLogToFile>
+    <StrykerLogToFile>false</StrykerLogToFile>
   </PropertyGroup>
 
 </Project>

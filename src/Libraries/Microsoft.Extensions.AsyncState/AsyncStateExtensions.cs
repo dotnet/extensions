@@ -25,7 +25,9 @@ public static class AsyncStateExtensions
 
         services.TryAddSingleton(typeof(IAsyncContext<>), typeof(AsyncContext<>));
         services.TryAddActivatedSingleton<IAsyncState, Microsoft.Extensions.AsyncState.AsyncState>();
+#pragma warning disable EXTEXP0006 // Type is for evaluation purposes only and is subject to change or removal in future updates
         services.TryAddSingleton(typeof(IAsyncLocalContext<>), typeof(AsyncContext<>));
+#pragma warning restore EXTEXP0006 // Type is for evaluation purposes only and is subject to change or removal in future updates
 
         return services;
     }

@@ -6,7 +6,9 @@ namespace Microsoft.Extensions.AsyncState;
 /// <summary>
 /// Represents an implementation of the <see cref="IAsyncContext{T}"/> interface.
 /// </summary>
+#pragma warning disable EXTEXP0006 // Type is for evaluation purposes only and is subject to change or removal in future updates
 internal sealed class AsyncContext<T> : IAsyncLocalContext<T>
+#pragma warning restore EXTEXP0006 // Type is for evaluation purposes only and is subject to change or removal in future updates
     where T : class
 {
     private readonly AsyncStateToken _token;

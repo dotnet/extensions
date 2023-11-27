@@ -7,6 +7,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.AspNetCore.AsyncState;
 
+#pragma warning disable EXTEXP0006 // Type is for evaluation purposes only and is subject to change or removal in future updates
 internal sealed class AsyncContextHttpContext<T> : IAsyncContext<T>
     where T : class
 {
@@ -57,3 +58,4 @@ internal sealed class AsyncContextHttpContext<T> : IAsyncContext<T>
         return true;
     }
 }
+#pragma warning restore EXTEXP0006 // Type is for evaluation purposes only and is subject to change or removal in future updates

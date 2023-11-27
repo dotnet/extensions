@@ -334,7 +334,7 @@ stages:
           - checkout: self
             clean: true
             persistCredentials: true
-            fetchDepth: 1
+            fetchDepth: 0
 
         steps:
           - template: /eng/pipelines/templates/MutationTesting.yml
