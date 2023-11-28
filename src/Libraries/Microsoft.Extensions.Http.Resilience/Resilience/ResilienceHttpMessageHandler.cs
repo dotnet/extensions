@@ -6,18 +6,32 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Extensions.Http.Resilience.Internal;
 using Polly;
 
-namespace Microsoft.Extensions.Http.Resilience.Internal;
+namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Base class for resilience handler, i.e. handlers that use resilience strategies  to send the requests.
+/// An HTTP message handler using resilience strategies to send requests.
 /// </summary>
-internal sealed class ResilienceHandler : DelegatingHandler
+public sealed class ResilienceHttpMessageHandler : DelegatingHandler
 {
     private readonly Func<HttpRequestMessage, ResiliencePipeline<HttpResponseMessage>> _pipelineProvider;
 
-    public ResilienceHandler(Func<HttpRequestMessage, ResiliencePipeline<HttpResponseMessage>> pipelineProvider)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ResilienceHttpMessageHandler"/> class using a resilience pipeline.
+    /// </summary>
+    /// <param name="pipeline">The pipeline to use for requests.</param>
+    public ResilienceHttpMessageHandler(ResiliencePipeline<HttpResponseMessage> pipeline)
+        : this(x => pipeline)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ResilienceHttpMessageHandler"/> class using a resilience pipeline delegate.
+    /// </summary>
+    /// <param name="pipelineProvider">The delegate to select a pipeline for a request.</param>
+    public ResilienceHttpMessageHandler(Func<HttpRequestMessage, ResiliencePipeline<HttpResponseMessage>> pipelineProvider)
     {
         _pipelineProvider = pipelineProvider;
     }

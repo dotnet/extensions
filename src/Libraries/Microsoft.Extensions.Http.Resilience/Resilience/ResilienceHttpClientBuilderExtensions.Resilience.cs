@@ -69,7 +69,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
             var selector = CreatePipelineSelector(serviceProvider, pipelineBuilder.PipelineName);
             var provider = serviceProvider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
 
-            return new ResilienceHandler(selector);
+            return new ResilienceHttpMessageHandler(selector);
         });
 
         return pipelineBuilder;
