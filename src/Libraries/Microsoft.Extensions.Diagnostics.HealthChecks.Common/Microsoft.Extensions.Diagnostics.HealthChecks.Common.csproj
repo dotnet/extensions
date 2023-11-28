@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMetricsGenerator>true</UseMetricsGenerator>
     <InjectSharedPools>true</InjectSharedPools>
