@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.Latency;
@@ -54,11 +53,6 @@ public static class LatencyContextExtensions
     /// <param name="services">The dependency injection container.</param>
     /// <param name="section">The configuration of <see cref="LatencyContextOptions"/>.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LatencyContextOptions))]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed by [DynamicDependency]")]
     public static IServiceCollection AddLatencyContext(this IServiceCollection services, IConfigurationSection section)
     {
         _ = Throw.IfNull(services);

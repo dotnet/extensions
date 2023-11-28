@@ -90,12 +90,6 @@
     <MsbuildTaskMicrosoftCodeAnalysisCSharpVersion>$(MicrosoftCodeAnalysisCSharpVersion)</MsbuildTaskMicrosoftCodeAnalysisCSharpVersion>
   </PropertyGroup>
 
-  <Target Name="DisableBrokenAnalyzers" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <Analyzer Remove="@(Analyzer)" Condition="'%(Filename)' == 'Microsoft.Extensions.Configuration.Binder.SourceGeneration'"/>
-    </ItemGroup>
-  </Target>
-
   <!-- Test configuration -->
   <PropertyGroup>
     <!-- Disable building Integration Test projects in LUT. -->

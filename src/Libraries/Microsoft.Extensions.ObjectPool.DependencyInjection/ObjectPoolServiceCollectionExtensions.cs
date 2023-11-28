@@ -78,11 +78,6 @@ public static class ObjectPoolServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
     /// <param name="section">The configuration section to bind.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(DependencyInjectionPoolOptions))]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed by [DynamicDependency]")]
     public static IServiceCollection ConfigurePools(this IServiceCollection services, IConfigurationSection section)
     {
         foreach (var child in Throw.IfNull(section).GetChildren())
