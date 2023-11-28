@@ -2,6 +2,8 @@
 
 This provides the ability to store and retrieve state objects that flow with the current `HttpContext` across asynchronous operations. See [Microsoft.Extensions.AsyncState](../Microsoft.Extensions.AsyncState/README.md) for additional information.
 
+The lifetime of the shared data is controlled automatically and will be the same as of `HttpContext`.
+
 ## Install the package
 
 From the command-line:
