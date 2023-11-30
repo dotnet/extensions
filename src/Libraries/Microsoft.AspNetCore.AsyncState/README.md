@@ -1,6 +1,8 @@
 # Microsoft.AspNetCore.AsyncState
 
-This provides the ability to store and retrieve state objects that flow with the current `HttpContext` across asynchronous operations. See `Microsoft.Extensions.AsyncState` for additional information.
+This provides the ability to store and retrieve state objects that flow with the current `HttpContext` across asynchronous operations. See [Microsoft.Extensions.AsyncState](../Microsoft.Extensions.AsyncState/README.md) for additional information.
+
+The lifetime of the shared data is controlled automatically and will be the same as of `HttpContext`.
 
 ## Install the package
 
@@ -27,6 +29,8 @@ The services can be registered using the following method:
 ```csharp
 public static IServiceCollection AddAsyncStateHttpContext(this IServiceCollection services)
 ```
+
+Note: When calling `AddAsyncStateHttpContext()` there is no need to also invoke `AddAsyncState()` from the `Microsoft.Extensions.AsyncState` package.
 
 ### Consuming Services
 
