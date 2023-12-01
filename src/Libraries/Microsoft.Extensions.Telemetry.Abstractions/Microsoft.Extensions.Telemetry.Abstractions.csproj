@@ -23,12 +23,25 @@
     <ProjectReference Include="..\Microsoft.Extensions.Compliance.Abstractions\Microsoft.Extensions.Compliance.Abstractions.csproj" />
   </ItemGroup>
 
+  <!--
+    The .NET pre-defined props/targets that disable the Microsoft.Extensions.Logging.Abstractions source generator.
+    This is needed because there are several ways Microsoft.Extensions.Logging.Abstractions source generator can be
+    referenced in a .NET application (whether it's a console app or an ASP.NET Core app).
+
+    For net462 we auto-generate the targets, see below and refer to eng/MSBuild/Packaging.targets for more details.
+   -->
   <ItemGroup>
     <None Include="buildTransitive\**\*" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="buildTransitive\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
-  <!-- For net462 we automatically add package buildtransitive target files, so we need to Include
-  the code that will disable the Microsoft.Extensions.Logging.Abstractions source generator. -->
+  <!-- 
+    For net462 we automatically add package buildtransitive target files, so we need to include
+    the code that will disable the Microsoft.Extensions.Logging.Abstractions source generator.
+    There's only one way how the generator can get referenced in net462, so there's no need for
+    additional logic that's requires for .NET scenarios.
+
+    For .NET we have pre-defined props/targets, see above.
+   -->
   <PropertyGroup>
     <_AdditionalNETStandardCompatErrorFileContents>
 <![CDATA[
@@ -55,4 +68,8 @@
   <ItemGroup>
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
   </ItemGroup>
+
+  <Target Name="_VerifyBuildTransitiveFolderName" BeforeTargets="Compile">
+    <Error Text="'buildTransitive\$(MinimumSupportedTfmForPackaging)' does not exist" Condition="!Exists('$(MSBuildThisFileDirectory)\buildTransitive\$(MinimumSupportedTfmForPackaging)\$(AssemblyName).props')" />
+  </Target>
 </Project>
