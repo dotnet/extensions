@@ -245,7 +245,7 @@ public sealed class ResourceMonitoringServiceTests
             }),
             new List<IResourceUtilizationPublisher>
             {
-                new GenericPublisher((_) => e.Set())
+                new GenericPublisher((_) => ResilientSetEvent(e))
             },
             clock);
 
@@ -322,7 +322,7 @@ public sealed class ResourceMonitoringServiceTests
                 new GenericPublisher(_ =>
                 {
                     publisherCalled = true;
-                    autoResetEvent.Set();
+                    ResilientSetEvent(autoResetEvent);
                 })
             },
             clock);
@@ -415,10 +415,7 @@ public sealed class ResourceMonitoringServiceTests
             Create(options),
             new List<IResourceUtilizationPublisher>
             {
-                new GenericPublisher(_ =>
-                {
-                    autoResetEvent.Set();
-                }),
+                new GenericPublisher(_ => ResilientSetEvent(autoResetEvent))
             },
             clock);
 
@@ -527,10 +524,7 @@ public sealed class ResourceMonitoringServiceTests
             Create(options),
             new List<IResourceUtilizationPublisher>
             {
-                new GenericPublisher(_ =>
-                {
-                    autoResetEvent.Set();
-                }),
+                new GenericPublisher(_ => ResilientSetEvent(autoResetEvent))
             },
             clock);
 
@@ -710,5 +704,33 @@ public sealed class ResourceMonitoringServiceTests
         var typ = typeof(ResourceMonitorService);
         var type = typ.GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
         return (T?)type?.GetValue(tracker);
+    }
+
+    private static void ResilientSetEvent(AutoResetEvent e)
+    {
+        try
+        {
+            e.Set();
+        }
+#pragma warning disable CA1031
+        catch
+#pragma warning restore CA1031
+        {
+            // can happen since test termination is racy and the event might have already been disposed
+        }
+    }
+
+    private static void ResilientSetEvent(ManualResetEventSlim e)
+    {
+        try
+        {
+            e.Set();
+        }
+#pragma warning disable CA1031
+        catch
+#pragma warning restore CA1031
+        {
+            // can happen since test termination is racy and the event might have already been disposed
+        }
     }
 }
