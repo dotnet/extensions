@@ -22,6 +22,14 @@
                                        ($(TargetFrameworks.Contains('$(MinimumSupportedTfmForPackaging)')) and $(TargetFrameworks.Contains('$(ConditionalNet462)')))" />
   </ItemGroup>
 
+  <PropertyGroup Condition=" '$(IsPackable)' == 'true' and '$(IsShipping)' == 'true' ">
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Condition=" '$(IsPackable)' == 'true' and '$(IsShipping)' == 'true' " Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
   <!-- Verify that the minimum supported TFM is actually used. -->
   <Target Name="_VerifyMinimumSupportedTfmForPackagingIsUsed"
           Condition="'$(IsPackable)' == 'true' and '$(DisableNETStandardCompatErrors)' != 'true'">
