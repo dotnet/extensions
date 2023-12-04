@@ -51,8 +51,6 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
 
     private readonly TimeSpan _collectionWindow;
 
-    private readonly CancellationTokenSource _stoppingTokenSource = new();
-
     public ResourceMonitorService(
         ISnapshotProvider provider,
         ILogger<ResourceMonitorService> logger,
@@ -86,15 +84,6 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
         _snapshotsStore = new CircularBuffer<Snapshot>(bufferSize + 1, firstSnapshot);
     }
 
-    /// <summary>
-    /// Dispose the tracker.
-    /// </summary>
-    public override void Dispose()
-    {
-        _stoppingTokenSource.Dispose();
-        base.Dispose();
-    }
-
     /// <inheritdoc />
     public ResourceUtilization GetUtilization(TimeSpan window)
     {
@@ -110,18 +99,6 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
         }
 
         return Calculator.CalculateUtilization(t.first, t.last, _provider.Resources);
-    }
-
-    /// <inheritdoc/>
-    public override async Task StopAsync(CancellationToken cancellationToken)
-    {
-        // Stop the execution.
-#if NET8_0_OR_GREATER
-        await _stoppingTokenSource.CancelAsync().ConfigureAwait(false);
-#else
-        _stoppingTokenSource.Cancel();
-#endif
-        await base.StopAsync(cancellationToken).ConfigureAwait(false);
     }
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally Consume All. Allow no escapes.")]
@@ -144,14 +121,12 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
     }
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentionally Consume All. Allow no escapes.")]
+    [SuppressMessage("Blocker Bug", "S2190:Loops and recursions should not be infinite", Justification = "Terminate when Delay throws an exception on cancellation")]
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _stoppingTokenSource.Token);
-        var linkedTokenSourceToken = linkedTokenSource.Token;
-
-        while (!linkedTokenSourceToken.IsCancellationRequested)
+        while (true)
         {
-            await _timeProvider.Delay(_samplingInterval, linkedTokenSourceToken).ConfigureAwait(false);
+            await _timeProvider.Delay(_samplingInterval, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -164,7 +139,7 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
                 Log.HandledGatherStatisticsException(_logger, e);
             }
 
-            await PublishUtilizationAsync(linkedTokenSource.Token).ConfigureAwait(false);
+            await PublishUtilizationAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }
