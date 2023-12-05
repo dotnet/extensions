@@ -20,7 +20,7 @@ public static class LatencyContextExtensions
     /// Adds latency context.
     /// </summary>
     /// <param name="services">The dependency injection container.</param>
-    /// <returns>The provided service collection with <see cref="ILatencyContext"/> added.</returns>
+    /// <returns>The value of <paramref name="services" />.</returns>
     public static IServiceCollection AddLatencyContext(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
@@ -37,7 +37,7 @@ public static class LatencyContextExtensions
     /// </summary>
     /// <param name="services">The dependency injection container.</param>
     /// <param name="configure">The <see cref="LatencyContextOptions"/> configuration delegate.</param>
-    /// <returns>The provided service collection with <see cref="LatencyContextProvider"/> added.</returns>
+    /// <returns>The value of <paramref name="services" />.</returns>
     public static IServiceCollection AddLatencyContext(this IServiceCollection services, Action<LatencyContextOptions> configure)
     {
         _ = Throw.IfNull(services);
@@ -53,7 +53,7 @@ public static class LatencyContextExtensions
     /// </summary>
     /// <param name="services">The dependency injection container.</param>
     /// <param name="section">The configuration of <see cref="LatencyContextOptions"/>.</param>
-    /// <returns>The provided service collection with <see cref="LatencyContextProvider"/> added.</returns>
+    /// <returns>The value of <paramref name="services" />.</returns>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LatencyContextOptions))]
     [UnconditionalSuppressMessage(
         "Trimming",
