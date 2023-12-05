@@ -538,12 +538,15 @@ public sealed class ResourceMonitoringServiceTests
         {
             provider.SetNextSnapshot(snapshotsSequence[i]);
 
-            do
+            // Advance time.
+            clock.Advance(TimeSpan.FromMilliseconds(TimerPeriod));
+
+            // This is to allow the service code to execute until it gets blocked in Task.Delay, and then
+            // make sure it gets unblocked from the Delay.
+            while (!autoResetEvent.WaitOne(10))
             {
-                // Advance time.
-                clock.Advance(TimeSpan.FromMilliseconds(TimerPeriod));
+                clock.Advance(TimeSpan.FromTicks(1));
             }
-            while (!autoResetEvent.WaitOne(1));
 
             var utilization = tracker.GetUtilization(options.CollectionWindow);
             cpuValuesWithNoHighSpikes[i] = (int)utilization.CpuUsedPercentage;
