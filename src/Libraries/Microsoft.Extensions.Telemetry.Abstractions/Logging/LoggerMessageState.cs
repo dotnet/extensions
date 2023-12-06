@@ -100,7 +100,7 @@ public sealed partial class LoggerMessageState
     }
 
     /// <summary>
-    /// Resets state of this object to its initial condition.
+    /// Resets the state of this object to its initial condition.
     /// </summary>
     public void Clear()
     {
@@ -113,12 +113,12 @@ public sealed partial class LoggerMessageState
     }
 
     /// <summary>
-    /// Gets a value indicating the number of unclassified tags currently in this instance.
+    /// Gets the number of unclassified tags currently in this instance.
     /// </summary>
     public int TagsCount { get; private set; }
 
     /// <summary>
-    /// Gets a value indicating the number of classified tags currently in this instance.
+    /// Gets the number of classified tags currently in this instance.
     /// </summary>
     public int ClassifiedTagsCount { get; private set; }
 

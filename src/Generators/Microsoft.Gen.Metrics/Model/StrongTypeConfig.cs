@@ -8,7 +8,7 @@ namespace Microsoft.Gen.Metrics.Model;
 /// </summary>
 /// <example>
 /// As an example:
-/// <code>
+/// <code language="csharp">
 /// public class Dims
 /// {
 ///     public string Dim1 { get; set; }

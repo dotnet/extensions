@@ -15,8 +15,8 @@ public interface IResourceMonitor
     /// </summary>
     /// <param name="window">A <see cref="TimeSpan"/> representing the time window for which utilization is requested.</param>
     /// <returns>The utilization during the time window specified by <paramref name="window"/>.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// when <paramref name="window"/> is greater than the maximum window size configured while adding the service to the services collection.
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="window"/> is greater than the maximum window size
+    /// configured while adding the service to the services collection.
     /// </exception>
     ResourceUtilization GetUtilization(TimeSpan window);
 }

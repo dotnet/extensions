@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class FakeLoggerServiceCollectionExtensions
 {
     /// <summary>
-    /// Configure fake logging.
+    /// Configures fake logging.
     /// </summary>
     /// <param name="services">Service collection.</param>
     /// <param name="section">Configuration section that contains <see cref="FakeLogCollectorOptions"/>.</param>
@@ -23,7 +23,7 @@ public static class FakeLoggerServiceCollectionExtensions
         => services.AddLogging(x => x.AddFakeLogging(section));
 
     /// <summary>
-    /// Configure fake logging.
+    /// Configures fake logging.
     /// </summary>
     /// <param name="services">Service collection.</param>
     /// <param name="configure">Logging configuration options.</param>
@@ -32,7 +32,7 @@ public static class FakeLoggerServiceCollectionExtensions
         => services.AddLogging(x => x.AddFakeLogging(configure));
 
     /// <summary>
-    /// Configure fake logging with default options.
+    /// Configures fake logging with default options.
     /// </summary>
     /// <param name="services">Service collection.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>

@@ -23,7 +23,7 @@ public static class ApplicationMetadataConfigurationBuilderExtensions
     /// <param name="sectionName">Section name to save configuration into. Default set to "ambientmetadata:application".</param>
     /// <returns>The value of <paramref name="builder"/>>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="hostEnvironment"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="sectionName"/> is either <see langword="null"/>, empty or whitespace.</exception>
+    /// <exception cref="ArgumentException"><paramref name="sectionName"/> is either <see langword="null"/>, empty, or whitespace.</exception>
     public static IConfigurationBuilder AddApplicationMetadata(this IConfigurationBuilder builder, IHostEnvironment hostEnvironment, string sectionName = DefaultSectionName)
     {
         _ = Throw.IfNull(builder);

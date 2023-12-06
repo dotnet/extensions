@@ -22,9 +22,9 @@ public static class ApplicationMetadataHostBuilderExtensions
     /// </summary>
     /// <param name="builder">The host builder.</param>
     /// <param name="sectionName">Section name to bind configuration from. Default set to "ambientmetadata:application".</param>
-    /// <returns>The value of <paramref name="builder"/>>.</returns>
+    /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException"><paramref name="sectionName"/> is either <see langword="null"/>, empty or whitespace.</exception>
+    /// <exception cref="ArgumentException"><paramref name="sectionName"/> is either <see langword="null"/>, empty, or whitespace.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ApplicationMetadata))]
     [UnconditionalSuppressMessage(
         "Trimming",
