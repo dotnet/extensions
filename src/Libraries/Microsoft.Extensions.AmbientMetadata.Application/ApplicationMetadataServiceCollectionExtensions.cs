@@ -19,7 +19,7 @@ public static class ApplicationMetadataServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The dependency injection container to add the instance to.</param>
     /// <param name="section">The configuration section to bind.</param>
-    /// <returns>The value of <paramref name="services"/>>.</returns>
+    /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="section"/> or <paramref name="section"/> is <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ApplicationMetadata))]
     [UnconditionalSuppressMessage(

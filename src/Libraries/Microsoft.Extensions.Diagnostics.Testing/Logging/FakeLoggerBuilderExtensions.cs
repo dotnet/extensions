@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Logging;
 public static class FakeLoggerBuilderExtensions
 {
     /// <summary>
-    /// Configure fake logging.
+    /// Configures fake logging.
     /// </summary>
     /// <param name="builder">Logging builder.</param>
     /// <param name="section">Configuration section that contains <see cref="FakeLogCollectorOptions"/>.</param>
@@ -41,7 +41,7 @@ public static class FakeLoggerBuilderExtensions
     }
 
     /// <summary>
-    /// Configure fake logging.
+    /// Configures fake logging.
     /// </summary>
     /// <param name="builder">Logging builder.</param>
     /// <param name="configure">Logging configuration options.</param>
@@ -59,7 +59,7 @@ public static class FakeLoggerBuilderExtensions
     }
 
     /// <summary>
-    /// Configure fake logging with default options.
+    /// Configures fake logging with default options.
     /// </summary>
     /// <param name="builder">Logging builder.</param>
     /// <returns>Logging <paramref name="builder"/>.</returns>

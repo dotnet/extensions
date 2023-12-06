@@ -6,15 +6,15 @@ using System;
 namespace Microsoft.Extensions.Diagnostics.Metrics;
 
 /// <summary>
-/// Provides tag information for strongly-typed metrics.
+/// Provides tag information for strongly typed metrics.
 /// </summary>
 /// <remarks>
 /// This attribute is applied to fields or properties of a metric class to override default tag names. By default,
-/// the tag name is the same as the respective field or property. Using this attribute you can override the default
+/// the tag name is the same as the respective field or property. You can use this attribute to override the default
 /// and provide a custom tag name.
 /// </remarks>
 /// <example>
-/// <code>
+/// <code language="csharp">
 /// public class MyStrongTypeMetric
 /// {
 ///     [TagName("tag_name_as_per_some_convention1")]

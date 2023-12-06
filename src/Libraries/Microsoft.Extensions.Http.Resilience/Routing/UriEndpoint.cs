@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Http.Resilience;
 #pragma warning disable IDE0032 // Use auto property
 
 /// <summary>
-/// Represents an URI based endpoint.
+/// Represents a URI-based endpoint.
 /// </summary>
 public class UriEndpoint
 {
@@ -19,7 +19,7 @@ public class UriEndpoint
     /// Gets or sets the URL of the endpoint.
     /// </summary>
     /// <remarks>
-    /// Only schema, domain name and, port will be used, rest of the URL is constructed from request URL.
+    /// Only schema, domain name, and port are used. The rest of the URL is constructed from the request URL.
     /// </remarks>
     [Required]
     public Uri? Uri
