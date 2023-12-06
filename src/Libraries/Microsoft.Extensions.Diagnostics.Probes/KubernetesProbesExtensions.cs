@@ -33,7 +33,7 @@ public static class KubernetesProbesExtensions
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(section);
 
-        return services.AddKubernetesProbes(section.Bind);
+        return services.AddKubernetesProbes(o => section.Bind(o));
     }
 
     /// <summary>

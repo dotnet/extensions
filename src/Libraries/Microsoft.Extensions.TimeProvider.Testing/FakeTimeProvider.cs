@@ -59,7 +59,7 @@ public class FakeTimeProvider : TimeProvider
     /// <remarks>
     /// This defaults to <see cref="TimeSpan.Zero"/>.
     /// </remarks>
-    /// <exception cref="ArgumentOutOfRangeException">if the time value is set to less than <see cref="TimeSpan.Zero"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The time value is set to less than <see cref="TimeSpan.Zero"/>.</exception>
     public TimeSpan AutoAdvanceAmount
     {
         get => _autoAdvanceAmount;
@@ -89,7 +89,7 @@ public class FakeTimeProvider : TimeProvider
     /// Sets the date and time in the UTC time zone.
     /// </summary>
     /// <param name="value">The date and time in the UTC time zone.</param>
-    /// <exception cref="ArgumentOutOfRangeException">if the supplied time value is before the current time.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The supplied time value is before the current time.</exception>
     public void SetUtcNow(DateTimeOffset value)
     {
         lock (Waiters)
@@ -115,7 +115,7 @@ public class FakeTimeProvider : TimeProvider
     /// marches forward automatically in hardware, for the fake time provider the application is responsible for
     /// doing this explicitly by calling this method.
     /// </remarks>
-    /// <exception cref="ArgumentOutOfRangeException">if the time value is less than <see cref="TimeSpan.Zero"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">The time value is less than <see cref="TimeSpan.Zero"/>.</exception>
     public void Advance(TimeSpan delta)
     {
         _ = Throw.IfLessThan(delta.Ticks, 0);

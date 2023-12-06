@@ -35,7 +35,7 @@ public sealed class HistogramAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="HistogramAttribute"/> class.
     /// </summary>
-    /// <param name="tagNames">variable array of tag names.</param>
+    /// <param name="tagNames">A variable array of tag names.</param>
     public HistogramAttribute(params string[] tagNames)
     {
         TagNames = tagNames;

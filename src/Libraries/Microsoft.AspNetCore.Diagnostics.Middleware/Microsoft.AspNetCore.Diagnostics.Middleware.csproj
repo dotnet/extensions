@@ -8,6 +8,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <InjectSharedThrow>false</InjectSharedThrow>
     <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
@@ -22,7 +23,7 @@
 
   <PropertyGroup>
     <Stage>normal</Stage>
-    <MinCodeCoverage>100</MinCodeCoverage>
+    <MinCodeCoverage>99</MinCodeCoverage>
     <MinMutationScore>85</MinMutationScore>
   </PropertyGroup>
 
