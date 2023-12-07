@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Diagnostics.Metrics;
 /// </list>
 /// </remarks>
 /// <example>
-/// <code>
+/// <code language="csharp">
 /// static partial class Metric
 /// {
 ///     [Histogram&lt;int&gt;("RequestName", "RequestStatusCode")]
@@ -62,8 +62,8 @@ public sealed class HistogramAttribute<T> : Attribute
     /// </summary>
     /// <example>
     /// In this example metric name is <c>SampleMetric</c>.
-    /// If <c>Name</c> wasn't passed, it would be <c>RequestLatency</c>.
-    /// <code>
+    /// If <c>Name</c> wasn't passed, the metric name would be <c>RequestLatency</c>.
+    /// <code language="csharp">
     /// static partial class Metric
     /// {
     ///     [Histogram&lt;int&gt;("RequestName", "RequestStatusCode", Name = "SampleMetric")]
@@ -71,11 +71,6 @@ public sealed class HistogramAttribute<T> : Attribute
     /// }
     /// </code>
     /// </example>
-    /// <remarks>
-    /// In this example, the metric name is <c>SampleMetric</c>. When <c>Name</c> is not provided,
-    /// the return type of the method is used as the metric name. In this example, this would
-    /// be <c>RequestLatency</c> if <c>Name</c> wasn't provided.
-    /// </remarks>
     public string? Name { get; set; }
 
     /// <summary>

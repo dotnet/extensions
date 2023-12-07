@@ -7,10 +7,10 @@ using System.Diagnostics;
 namespace Microsoft.Extensions.Diagnostics.Metrics;
 
 /// <summary>
-/// Provides information to guide the production of a strongly-typed 64 bit integer counter metric factory method and associated type.
+/// Provides information to guide the production of a strongly typed 64 bit integer counter metric factory method and associated type.
 /// </summary>
 /// <remarks>
-/// This attribute is applied to a method which has the following constraints:
+/// This attribute is applied to a method that has the following constraints:
 /// <list type="bullet">
 /// <item><description>Must be a partial method.</description></item>
 /// <item><description>Must return <c>metricName</c> as the type. A class with that name will be generated.</description></item>
@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Diagnostics.Metrics;
 /// </list>
 /// </remarks>
 /// <example>
-/// <code>
+/// <code language="csharp">
 /// static partial class Metric
 /// {
 ///     [Counter("RequestName", "RequestStatusCode")]
@@ -54,7 +54,10 @@ public sealed class CounterAttribute : Attribute
     /// Gets or sets the name of the metric.
     /// </summary>
     /// <example>
-    /// <code>
+    /// In this example, the metric name is <c>SampleMetric</c>. When <c>Name</c> is not
+    /// provided, the return type of the method is used as the metric name. In this example,
+    /// the metric name would be <c>RequestCounter</c> if <c>Name</c> wasn't provided.
+    /// <code language="csharp">
     /// static partial class Metric
     /// {
     ///     [Counter("RequestName", "RequestStatusCode", Name="SampleMetric")]
@@ -62,11 +65,6 @@ public sealed class CounterAttribute : Attribute
     /// }
     /// </code>
     /// </example>
-    /// <remarks>
-    /// In this example, the metric name is <c>SampleMetric</c>. When <c>Name</c> is not provided
-    /// the return type of the method is used as metric name. In this example, this would
-    /// be <c>RequestCounter</c> if <c>Name</c> wasn't provided.
-    /// </remarks>
     public string? Name { get; set; }
 
     /// <summary>

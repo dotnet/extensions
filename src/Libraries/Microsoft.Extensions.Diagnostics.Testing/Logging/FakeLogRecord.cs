@@ -17,7 +17,7 @@ public class FakeLogRecord
     /// Initializes a new instance of the <see cref="FakeLogRecord"/> class.
     /// </summary>
     /// <param name="level">The level used when producing the log record.</param>
-    /// <param name="id">The id representing the specific log statement.</param>
+    /// <param name="id">The ID representing the specific log statement.</param>
     /// <param name="state">The opaque state supplied by the caller when creating the log record.</param>
     /// <param name="exception">An optional exception associated with the log record.</param>
     /// <param name="message">The formatted message text for the record.</param>
@@ -46,7 +46,7 @@ public class FakeLogRecord
     public LogLevel Level { get; }
 
     /// <summary>
-    /// Gets the id representing the specific log statement.
+    /// Gets the ID representing the specific log statement.
     /// </summary>
     public EventId Id { get; }
 

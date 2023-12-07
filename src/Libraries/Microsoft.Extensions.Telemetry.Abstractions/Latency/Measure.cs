@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Diagnostics.Latency;
 /// <remarks>
 /// Measures are used to aggregate or record values. They are used to track
 /// statistics about recurring operations. Example: number of calls to
-/// a database, total latency of database calls etc.
+/// a database, or total latency of database calls.
 /// </remarks>
 public readonly struct Measure : IEquatable<Measure>
 {
@@ -40,14 +40,14 @@ public readonly struct Measure : IEquatable<Measure>
     /// Determines whether this and a specified object are identical.
     /// </summary>
     /// /// <param name="obj">The object to compare.</param>
-    /// <returns><see langword="true"/> if identical;<see langword="false"/> otherwise.</returns>
+    /// <returns><see langword="true"/> if identical; <see langword="false"/> otherwise.</returns>
     public override bool Equals(object? obj) => obj is Measure m && Equals(m);
 
     /// <summary>
     /// Determines whether this and a specified measure are identical.
     /// </summary>
     /// <param name="other">The other measure.</param>
-    /// <returns><see langword="true"/> if identical;<see langword="false"/> otherwise.</returns>
+    /// <returns><see langword="true"/> if identical; <see langword="false"/> otherwise.</returns>
     public bool Equals(Measure other) => Value == other.Value && Name.Equals(other.Name, StringComparison.Ordinal);
 
     /// <summary>

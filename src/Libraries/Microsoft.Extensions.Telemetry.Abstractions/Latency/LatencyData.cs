@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Extensions.Diagnostics.Latency;
 
 /// <summary>
-/// Encapsulates the state accumulated while measuring the latency of an operaiton.
+/// Encapsulates the state accumulated while measuring the latency of an operation.
 /// </summary>
 [SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Comparing instances is not an expected scenario")]
 public readonly struct LatencyData

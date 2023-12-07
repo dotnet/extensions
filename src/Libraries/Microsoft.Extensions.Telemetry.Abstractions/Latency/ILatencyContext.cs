@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Diagnostics.Latency;
 /// <remarks>
 /// The context ties in latency signals such as checkpoints and measures for a scope along with
 /// mechanisms such as tags that allow describing the scope. For example, a context lets you record
-/// tags, checkpoints and measures within the scope of a web request.
+/// tags, checkpoints, and measures within the scope of a web request.
 /// </remarks>
 public interface ILatencyContext : IDisposable
 {
@@ -22,8 +22,8 @@ public interface ILatencyContext : IDisposable
     /// <param name="value">The value of the tag.</param>
     /// <remarks>
     /// Tags are used to provide metadata to the context. These are pivots that are useful to
-    /// slice and dice the data for analysis. Examples include API, Client, UserType etc.
-    /// Setting a tag with same name overrides its prior value i.e., last call wins.
+    /// slice and dice the data for analysis. Examples include API, Client, and UserType.
+    /// Setting a tag with the same name overrides its prior value, that is, the last call wins.
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     void SetTag(TagToken token, string value);
@@ -46,7 +46,7 @@ public interface ILatencyContext : IDisposable
     /// <remarks>
     /// Adds the value to a measure. Measures are used for tracking total latency
     /// or the count for repeating operations. Example: Latency for all database calls,
-    /// number of calls to an external service, etc.</remarks>
+    /// or number of calls to an external service.</remarks>
     void AddMeasure(MeasureToken token, long value);
 
     /// <summary>

@@ -11,12 +11,12 @@ namespace Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 /// </summary>
 /// <remarks>
 /// Metric tags typically support a limited number of distinct values, and as such they are not suitable
-/// to represent values which are highly variable, such as the result of <see cref="Exception.ToString"/>.
+/// to represent values that are highly variable, such as the result of <see cref="Exception.ToString"/>.
 /// An exception summary represents a low-cardinality version of an exception's information, suitable for such
 /// cases.
-/// 
+///
 /// The <see cref="ExceptionSummary.Description"/> property never includes sensitive information.
-/// But the <see cref="ExceptionSummary.AdditionalDetails"/> property might contain sensitive information and should thus not be used in telemetry.
+/// But the <see cref="ExceptionSummary.AdditionalDetails"/> property might contain sensitive information and thus shouldn't be used in telemetry.
 /// </remarks>
 public readonly struct ExceptionSummary : IEquatable<ExceptionSummary>
 {
