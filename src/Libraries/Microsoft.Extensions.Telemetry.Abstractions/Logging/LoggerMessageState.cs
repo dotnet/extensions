@@ -100,7 +100,7 @@ public sealed partial class LoggerMessageState
     }
 
     /// <summary>
-    /// Resets state of this object to its initial condition.
+    /// Resets the state of this object to its initial condition.
     /// </summary>
     public void Clear()
     {

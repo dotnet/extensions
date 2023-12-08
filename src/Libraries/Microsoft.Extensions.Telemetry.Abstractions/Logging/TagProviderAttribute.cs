@@ -19,31 +19,31 @@ public sealed class TagProviderAttribute : Attribute
     /// Initializes a new instance of the <see cref="TagProviderAttribute"/> class with custom tags provider.
     /// </summary>
     /// <param name="providerType">A type containing a method that provides a custom set of tags to log.</param>
-    /// <param name="providerMethod">The name of a method on the provider type which generates a custom set of tags to log.</param>
+    /// <param name="providerMethod">The name of a method on the provider type that generates a custom set of tags to log.</param>
     /// <exception cref="ArgumentNullException">
-    /// When <paramref name="providerMethod"/> or <paramref name="providerType"/> is <see langword="null"/>.
+    ///   <paramref name="providerMethod"/> or <paramref name="providerType"/> is <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// When <paramref name="providerMethod"/> is either an empty string or contains only whitespace.
+    ///   <paramref name="providerMethod"/> is either an empty string or contains only whitespace.
     /// </exception>
     /// <remarks>
     /// You can create your own method that will generate the exact set of tags to log
     /// for a given input object.
     ///
-    /// The method referenced by this constructor should be non-generic, <c>static</c>, <c>public</c> and it should have two parameters:
-    /// <list type="number">
+    /// The method referenced by this constructor should be non-generic, <c>static</c>, and <c>public</c>, and it should have two parameters:
+    /// <list type="bullet">
     ///   <item>
-    ///     <description>First one of <see cref="ITagCollector"/> type</description>
+    ///     <description>First parameter of type <see cref="ITagCollector"/>.</description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///     Second one of <c>T?</c> type, where <c>T</c> is a type of logging method parameter that you want to log.
+    ///     Second parameter of type <c>T?</c>, where <c>T</c> is the type of logging method parameter that you want to log.
     ///     </description>
     ///   </item>
     ///   </list>
     /// </remarks>
     /// <example>
-    /// <code>
+    /// <code language="csharp">
     /// [LoggerMessage(1, LogLevel.Warning, "Custom tags for {Param}.")]
     /// static partial void LogMethod(ILogger logger,
     ///     [TagProvider(typeof(CustomProvider), nameof(CustomProvider.GetTagsToLog))] ClassToLog o);

@@ -20,10 +20,10 @@ public static class RedactionExtensions
     /// Sets the HMAC redactor to use for a set of data classifications.
     /// </summary>
     /// <param name="builder">The builder to attach the redactor to.</param>
-    /// <param name="configure">Configuration function.</param>
+    /// <param name="configure">The configuration function.</param>
     /// <param name="classifications">The data classifications for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="configure" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="configure" />, or <paramref name="classifications" /> is <see langword="null"/>.</exception>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Compliance, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IRedactionBuilder SetHmacRedactor(this IRedactionBuilder builder, Action<HmacRedactorOptions> configure, params DataClassificationSet[] classifications)
     {
@@ -43,10 +43,10 @@ public static class RedactionExtensions
     /// Sets the HMAC redactor to use for a set of data classifications.
     /// </summary>
     /// <param name="builder">The builder to attach the redactor to.</param>
-    /// <param name="section">Configuration section.</param>
+    /// <param name="section">The configuration section.</param>
     /// <param name="classifications">The data classifications for which the redactor type should be used.</param>
     /// <returns>The value of <paramref name="builder" />.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="section" /> or <paramref name="classifications" /> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="builder"/>, <paramref name="section" />, or <paramref name="classifications" /> is <see langword="null"/>.</exception>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Compliance, UrlFormat = DiagnosticIds.UrlFormat)]
     public static IRedactionBuilder SetHmacRedactor(this IRedactionBuilder builder, IConfigurationSection section, params DataClassificationSet[] classifications)
     {

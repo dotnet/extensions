@@ -16,7 +16,7 @@ public static class FakeLoggerServiceProviderExtensions
     /// </summary>
     /// <param name="services">The service provider containing the logger.</param>
     /// <exception cref="InvalidOperationException">No collector exists in the provider.</exception>
-    /// <returns>The collector which tracks records logged to fake loggers.</returns>
+    /// <returns>The collector that tracks records logged to fake loggers.</returns>
     public static FakeLogCollector GetFakeLogCollector(this IServiceProvider services)
         => services.GetService<FakeLogCollector>() ?? throw new InvalidOperationException("No fake log collector registered");
 }

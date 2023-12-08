@@ -92,7 +92,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// <param name="builder">The builder instance.</param>
     /// <param name="selectorFactory">The factory that returns key selector.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <remarks>The pipeline key is used in metrics and logs, do not return any sensitive value.</remarks>
+    /// <remarks>The pipeline key is used in metrics and logs, so don't return any sensitive values.</remarks>
     public static IStandardHedgingHandlerBuilder SelectPipelineBy(this IStandardHedgingHandlerBuilder builder, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory)
     {
         _ = Throw.IfNull(builder);

@@ -94,7 +94,7 @@ public static class HttpStandardResiliencePipelineBuilderExtensions
     /// <param name="builder">The pipeline builder.</param>
     /// <param name="selectorFactory">The factory that returns a key selector.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <remarks>The pipeline key is used in metrics and logs, do not return any sensitive value.</remarks>
+    /// <remarks>The pipeline key is used in metrics and logs, so don't return any sensitive values.</remarks>
     public static IHttpStandardResiliencePipelineBuilder SelectPipelineBy(this IHttpStandardResiliencePipelineBuilder builder, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory)
     {
         _ = Throw.IfNull(builder);
