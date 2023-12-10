@@ -451,8 +451,6 @@ public static class ExtendedLoggerTests
         Assert.Equal(new EventId(2, "ID2b"), snap[3].Id);
         Assert.Equal("MSG2b", snap[3].Message);
 
-        var state = snap[3].StructuredState;
-
         var exceptionType = snap[3].GetStructuredStateValue("exception.type")!;
         Assert.Equal("System.AggregateException", exceptionType);
 
@@ -474,6 +472,7 @@ public static class ExtendedLoggerTests
         }
         else
         {
+            var state = snap[3].StructuredState;
             Assert.DoesNotContain(state!, x => x.Key == "exception.message");
 
             Assert.DoesNotContain("EM1", stackTrace);

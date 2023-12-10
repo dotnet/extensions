@@ -80,7 +80,7 @@ public class FakeLogRecord
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public string? GetStructuredStateValue(string key)
     {
-        if (StructuredState != null)
+        if (StructuredState is not null)
         {
             foreach (var kvp in StructuredState)
             {
