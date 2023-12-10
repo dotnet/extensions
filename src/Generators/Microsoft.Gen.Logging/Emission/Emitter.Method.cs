@@ -99,7 +99,7 @@ internal sealed partial class Emitter : EmitterBase
 
         var lambdaStateName = PickUniqueName("s", lm.TemplateToParameterName.Select(kvp => kvp.Key));
 
-        OutLn($"static ({lambdaStateName}, {exceptionLambdaName}) =>");
+        OutLn($"[{GeneratorUtilities.GeneratedCodeAttribute}] static ({lambdaStateName}, {exceptionLambdaName}) =>");
         OutOpenBrace();
 
         if (GenVariableAssignments(lm, lambdaStateName, numReservedUnclassifiedTags, numReservedClassifiedTags))

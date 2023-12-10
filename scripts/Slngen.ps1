@@ -70,7 +70,7 @@ param (
     [Parameter(Mandatory = $false, HelpMessage="Minimizes console output.")]
     [switch]$Quiet = $false,
     [Parameter(Mandatory = $false, HelpMessage="Output file name.")]
-    [string]$OutSln = "SDK.sln",
+    [string]$OutSln = "Extensions.sln",
     [Parameter(Mandatory = $false, HelpMessage="Parameters passed to MSBuild with slngen.")]
     [string[]]$MsBuildParams,
     [Parameter(Mandatory = $false, HelpMessage="Path to the repository.")]
