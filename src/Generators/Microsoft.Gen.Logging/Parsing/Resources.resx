@@ -256,7 +256,7 @@
     <value>Tag provider method not found</value>
   </data>
   <data name="TagProviderMethodInvalidSignatureTitle" xml:space="preserve">
-    <value>Property provider method has an invalid signature</value>
+    <value>Tag provider method has an invalid signature</value>
   </data>
   <data name="LoggingMethodParameterRefKindMessage" xml:space="preserve">
     <value>Logging method "{0}" has parameter "{1}" with either "ref" or "out" modifier</value>
@@ -295,7 +295,7 @@
     <value>Logging method "{0}" doesn't have anything to be logged</value>
   </data>
   <data name="TagProviderMethodInvalidSignatureMessage" xml:space="preserve">
-    <value>Property provider method "{0}" in type "{1}" doesn't have a signature compatible with "{2}"</value>
+    <value>Tag provider method "{0}" in type "{1}" doesn't have a signature compatible with "{2}"</value>
   </data>
   <data name="TemplateStartsWithAtSymbolMessage" xml:space="preserve">
     <value>Logging method "{0}" has template(s) that start with "@": {1}</value>
