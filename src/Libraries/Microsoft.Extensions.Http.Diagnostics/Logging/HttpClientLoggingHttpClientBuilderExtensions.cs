@@ -27,6 +27,8 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
+    /// A lot of the information logged by this method (like bodies, methods, host, path, and duration) will be added as enrichment tags to the structured log. Make sure
+    /// you have a way of viewing structured logs in order to view this extra information.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Argument <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder)
@@ -44,6 +46,8 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
+    /// A lot of the information logged by this method (like bodies, methods, host, path, and duration) will be added as enrichment tags to the structured log. Make sure
+    /// you have a way of viewing structured logs in order to view this extra information.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
@@ -66,6 +70,8 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <remarks>
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
+    /// A lot of the information logged by this method (like bodies, methods, host, path, and duration) will be added as enrichment tags to the structured log. Make sure
+    /// you have a way of viewing structured logs in order to view this extra information.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
