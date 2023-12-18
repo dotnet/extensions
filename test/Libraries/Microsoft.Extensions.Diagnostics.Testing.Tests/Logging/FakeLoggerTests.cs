@@ -107,6 +107,15 @@ public class FakeLoggerTests
     }
 
     [Fact]
+    public void NullState()
+    {
+        var logger = new FakeLogger();
+        logger.Log<object?>(LogLevel.Error, new EventId(0), null, null, (_, _) => "MESSAGE");
+
+        Assert.Null(logger.LatestRecord.GetStructuredStateValue("K0"));
+    }
+
+    [Fact]
     public void StateInvariant()
     {
         var oldCulture = Thread.CurrentThread.CurrentCulture;
