@@ -619,7 +619,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Property provider method &quot;{0}&quot; in type &quot;{1}&quot; doesn&apos;t have a signature compatible with &quot;{2}&quot;.
+        ///   Looks up a localized string similar to Tag provider method &quot;{0}&quot; in type &quot;{1}&quot; doesn&apos;t have a signature compatible with &quot;{2}&quot;.
         /// </summary>
         internal static string TagProviderMethodInvalidSignatureMessage {
             get {
@@ -628,7 +628,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Property provider method has an invalid signature.
+        ///   Looks up a localized string similar to Tag provider method has an invalid signature.
         /// </summary>
         internal static string TagProviderMethodInvalidSignatureTitle {
             get {
