@@ -277,40 +277,78 @@ internal sealed class LinuxUtilizationParser
     }
 
     /// <remarks>
-    /// The file format is the following:
-    /// 0-18
-    /// So, it is array indexed number of cpus.
+    /// Comma-separated list of integers, with dashes ("-") to represent ranges. For example "0-1,5", or "0", or "1,2,3".
+    /// Each value represents the zero-based index of a CPU.
     /// </remarks>
     public float GetHostCpuCount()
     {
         _fileSystem.ReadFirstLine(_cpuSetCpus, _buffer);
         var stats = _buffer.WrittenSpan;
 
-        var start = stats.IndexOf("-", StringComparison.Ordinal);
-
-        if (stats.IsEmpty || start == -1 || start == 0)
+        if (stats.IsEmpty)
         {
-            Throw.InvalidOperationException($"Could not parse '{_cpuSetCpus}'. Expected integer based range separated by dash (like 0-8) but got '{new string(stats)}'.");
+            ThrowException(stats);
         }
 
-        var first = stats.Slice(0, start);
-        var second = stats.Slice(start + 1, stats.Length - start - 1);
+        var cpuCount = 0L;
 
-        _ = GetNextNumber(first, out var startCpu);
-        var next = GetNextNumber(second, out var endCpu);
-
-        if (startCpu == -1 || endCpu == -1 || endCpu < startCpu || next != -1)
+        // Iterate over groups (comma-separated)
+        while (true)
         {
-            Throw.InvalidOperationException($"Could not parse '{_cpuSetCpus}'. Expected integer based range separated by dash (like 0-8) but got '{new string(stats)}'.");
+            var groupIndex = stats.IndexOf(',');
+
+            var group = groupIndex == -1 ? stats : stats.Slice(0, groupIndex);
+
+            var rangeIndex = group.IndexOf('-');
+
+            if (rangeIndex == -1)
+            {
+                // Single number
+                _ = GetNextNumber(group, out var singleCpu);
+
+                if (singleCpu == -1)
+                {
+                    ThrowException(stats);
+                }
+
+                cpuCount += 1;
+            }
+            else
+            {
+                // Range
+                var first = group.Slice(0, rangeIndex);
+                _ = GetNextNumber(first, out var startCpu);
+
+                var second = group.Slice(rangeIndex + 1);
+                var next = GetNextNumber(second, out var endCpu);
+
+                if (endCpu == -1 || startCpu == -1 || endCpu < startCpu || next != -1)
+                {
+                    ThrowException(stats);
+                }
+
+                cpuCount += endCpu - startCpu + 1;
+            }
+
+            if (groupIndex == -1)
+            {
+                break;
+            }
+
+            stats = stats.Slice(groupIndex + 1);
         }
 
         _buffer.Reset();
 
-        return endCpu - startCpu + 1;
+        return cpuCount;
+
+        static void ThrowException(ReadOnlySpan<char> content) =>
+            Throw.InvalidOperationException(
+                $"Could not parse '{_cpuSetCpus}'. Expected comma-separated list of integers, with dashes (\"-\") based ranges (\"0\", \"2-6,12\") but got '{new string(content)}'.");
     }
 
     /// <remarks>
-    /// The input must contain only number. If there is something more than whitespace before the number, it will return failure.
+    /// The input must contain only number. If there is something more than whitespace before the number, it will return failure (-1).
     /// </remarks>
     [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used",
         Justification = "We are adding another digit, so we need to multiply by ten.")]
