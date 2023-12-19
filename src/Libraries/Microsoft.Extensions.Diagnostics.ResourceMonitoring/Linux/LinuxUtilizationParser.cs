@@ -320,9 +320,9 @@ internal sealed class LinuxUtilizationParser
                 _ = GetNextNumber(first, out var startCpu);
 
                 var second = group.Slice(rangeIndex + 1);
-                _ = GetNextNumber(second, out var endCpu);
+                var next = GetNextNumber(second, out var endCpu);
 
-                if (endCpu == -1 || startCpu == -1 || endCpu < startCpu)
+                if (endCpu == -1 || startCpu == -1 || endCpu < startCpu || next != -1)
                 {
                     ThrowException(stats);
                 }
