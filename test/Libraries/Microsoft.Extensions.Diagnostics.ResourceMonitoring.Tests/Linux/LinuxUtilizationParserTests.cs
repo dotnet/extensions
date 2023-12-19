@@ -177,12 +177,23 @@ public sealed class LinuxUtilizationParserTests
         Assert.Equal(bytes, memory);
     }
 
-    [ConditionalFact]
-    public void When_No_Cgroup_Cpu_Limits_Are_Not_Set_We_Get_Available_Cpus_From_CpuSetCpus()
+    [ConditionalTheory]
+    [InlineData("0-11", 12)]
+    [InlineData("0", 1)]
+    [InlineData("1000", 1)]
+    [InlineData("0,1", 2)]
+    [InlineData("0,1,2", 3)]
+    [InlineData("0,1,2,4", 4)]
+    [InlineData("0,1-2,3", 4)]
+    [InlineData("0,1,2-3,4", 5)]
+    [InlineData("0-1,2-3", 4)]
+    [InlineData("0-1,2-3,4-5", 6)]
+    [InlineData("0-2,3-5,6-8", 9)]
+    public void When_No_Cgroup_Cpu_Limits_Are_Not_Set_We_Get_Available_Cpus_From_CpuSetCpus(string content, int result)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
-            { new FileInfo("/sys/fs/cgroup/cpuset/cpuset.cpus"), $"0-11" },
+            { new FileInfo("/sys/fs/cgroup/cpuset/cpuset.cpus"), content },
             { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "-1" },
             { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_period_us"), "-1" }
         });
@@ -190,7 +201,7 @@ public sealed class LinuxUtilizationParserTests
         var p = new LinuxUtilizationParser(f, new FakeUserHz(100));
         var cpus = p.GetCgroupLimitedCpus();
 
-        Assert.Equal(12, cpus);
+        Assert.Equal(result, cpus);
     }
 
     [ConditionalTheory]
