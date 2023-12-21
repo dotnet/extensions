@@ -207,17 +207,17 @@
   <data name="ShouldntMentionLoggerInMessageTitle" xml:space="preserve">
     <value>Don't include logger parameters as templates</value>
   </data>
-  <data name="MissingLoggerFieldMessage" xml:space="preserve">
-    <value>Couldn't find a field of type "Microsoft.Extensions.Logging.ILogger" in type "{0}"</value>
+  <data name="MissingLoggerMemberMessage" xml:space="preserve">
+    <value>Couldn't find a field or property of type "Microsoft.Extensions.Logging.ILogger" in type "{0}"</value>
   </data>
-  <data name="MissingLoggerFieldTitle" xml:space="preserve">
-    <value>Couldn't find a field of type "Microsoft.Extensions.Logging.ILogger"</value>
+  <data name="MissingLoggerMemberTitle" xml:space="preserve">
+    <value>Couldn't find a field or property of type "Microsoft.Extensions.Logging.ILogger"</value>
   </data>
-  <data name="MultipleLoggerFieldsMessage" xml:space="preserve">
-    <value>Found multiple fields of type "Microsoft.Extensions.Logging.ILogger" in type "{0}"</value>
+  <data name="MultipleLoggerMembersMessage" xml:space="preserve">
+    <value>Found multiple fields or properties of type "Microsoft.Extensions.Logging.ILogger" in type "{0}"</value>
   </data>
-  <data name="MultipleLoggerFieldsTitle" xml:space="preserve">
-    <value>Multiple fields of type "Microsoft.Extensions.Logging.ILogger" were found</value>
+  <data name="MultipleLoggerMembersTitle" xml:space="preserve">
+    <value>Multiple fields or properties of type "Microsoft.Extensions.Logging.ILogger" were found</value>
   </data>
   <data name="InvalidTypeToLogPropertiesMessage" xml:space="preserve">
     <value>Can't log properties of items of type "{0}"</value>

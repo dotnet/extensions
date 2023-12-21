@@ -24,8 +24,8 @@ internal sealed class LoggingMethod
     public bool IsExtensionMethod;
     public bool IsStatic;
     public string Modifiers = string.Empty;
-    public string LoggerField = "_logger";
-    public bool LoggerFieldNullable;
+    public string LoggerMember = "_logger";
+    public bool LoggerMemberNullable;
     public bool HasXmlDocumentation;
 
     public string GetParameterNameInTemplate(LoggingMethodParameter parameter)

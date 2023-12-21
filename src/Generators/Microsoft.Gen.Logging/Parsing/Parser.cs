@@ -58,9 +58,9 @@ internal sealed partial class Parser
 
                 LoggingType? lt = null;
                 string nspace = string.Empty;
-                string? loggerField = null;
-                bool loggerFieldNullable = false;
-                IFieldSymbol? secondLoggerField = null;
+                string? loggerMember = null;
+                bool loggerMemberNullable = false;
+                ISymbol? secondLoggerMember = null;
 
                 ids.Clear();
                 foreach (var method in typeDec.Members.Where(m => m.IsKind(SyntaxKind.MethodDeclaration)).Cast<MethodDeclarationSyntax>())
@@ -199,25 +199,25 @@ internal sealed partial class Parser
                         {
                             if (!parsingState.FoundLogger)
                             {
-                                if (loggerField == null)
+                                if (loggerMember == null)
                                 {
-                                    (loggerField, secondLoggerField, loggerFieldNullable) = FindField(sm, typeDec, symbols.ILoggerSymbol);
+                                    (loggerMember, secondLoggerMember, loggerMemberNullable) = FindMember(sm, typeDec, symbols.ILoggerSymbol);
                                 }
 
-                                if (secondLoggerField != null)
+                                if (secondLoggerMember != null)
                                 {
-                                    Diag(DiagDescriptors.MultipleLoggerFields, secondLoggerField.GetLocation(), typeDec.Identifier.Text);
+                                    Diag(DiagDescriptors.MultipleLoggerMembers, secondLoggerMember.GetLocation(), typeDec.Identifier.Text);
                                     keepMethod = false;
                                 }
-                                else if (loggerField == null)
+                                else if (loggerMember == null)
                                 {
-                                    Diag(DiagDescriptors.MissingLoggerField, method.Identifier.GetLocation(), typeDec.Identifier.Text);
+                                    Diag(DiagDescriptors.MissingLoggerMember, method.Identifier.GetLocation(), typeDec.Identifier.Text);
                                     keepMethod = false;
                                 }
                                 else
                                 {
-                                    lm.LoggerField = loggerField;
-                                    lm.LoggerFieldNullable = loggerFieldNullable;
+                                    lm.LoggerMember = loggerMember;
+                                    lm.LoggerMemberNullable = loggerMemberNullable;
                                 }
                             }
 
@@ -592,35 +592,67 @@ internal sealed partial class Parser
         return null;
     }
 
-    private (string? field, IFieldSymbol? secondLoggerField, bool isNullable) FindField(SemanticModel sm, TypeDeclarationSyntax classDec, ITypeSymbol symbol)
+    private (string? member, ISymbol? secondMember, bool isNullable) FindMember(SemanticModel sm, TypeDeclarationSyntax classDec, ITypeSymbol symbol)
     {
-        string? field = null;
+        string? member = null;
         bool isNullable = false;
 
-        foreach (var m in classDec.Members)
+        INamedTypeSymbol? type = sm.GetDeclaredSymbol(classDec);
+        var originType = type!;
+        while (type != null)
         {
-            if (m is FieldDeclarationSyntax fds)
+            foreach (var m in type.GetMembers())
             {
-                foreach (var v in fds.Declaration.Variables)
+                if (m is IPropertySymbol p)
                 {
-                    var fs = sm.GetDeclaredSymbol(v, _cancellationToken) as IFieldSymbol;
-                    if (fs != null && ParserUtilities.IsBaseOrIdentity(fs.Type, symbol, _compilation))
+                    var gm = p.GetMethod;
+                    if (gm != null)
                     {
-                        if (field == null)
+                        if (ParserUtilities.IsBaseOrIdentity(gm.ReturnType, symbol, _compilation))
                         {
-                            field = v.Identifier.Text;
-                            isNullable = fs.Type.NullableAnnotation == NullableAnnotation.Annotated;
+                            if (!originType.CanAccess(gm))
+                            {
+                                continue;
+                            }
+
+                            if (member == null)
+                            {
+                                member = p.Name;
+                                isNullable = gm.ReturnType.NullableAnnotation == NullableAnnotation.Annotated;
+                            }
+                            else
+                            {
+                                return (null, p, isNullable);
+                            }
+                        }
+                    }
+                }
+                else if (m is IFieldSymbol f)
+                {
+                    if (f.AssociatedSymbol == null && ParserUtilities.IsBaseOrIdentity(f.Type, symbol, _compilation))
+                    {
+                        if (!originType.CanAccess(f))
+                        {
+                            continue;
+                        }
+
+                        if (member == null)
+                        {
+                            member = f.Name;
+                            isNullable = f.Type.NullableAnnotation == NullableAnnotation.Annotated;
                         }
                         else
                         {
-                            return (null, fs, isNullable);
+                            return (null, f, isNullable);
                         }
                     }
                 }
             }
+
+            type = type.BaseType;
         }
 
-        return (field, null, isNullable);
+        return (member, null, isNullable);
     }
 
     private void Diag(DiagnosticDescriptor desc, Location? location, params object?[]? messageArgs)
