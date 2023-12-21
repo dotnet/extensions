@@ -349,20 +349,20 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Couldn&apos;t find a field of type &quot;Microsoft.Extensions.Logging.ILogger&quot; in type &quot;{0}&quot;.
+        ///   Looks up a localized string similar to Couldn&apos;t find a field or property of type &quot;Microsoft.Extensions.Logging.ILogger&quot; in type &quot;{0}&quot;.
         /// </summary>
-        internal static string MissingLoggerFieldMessage {
+        internal static string MissingLoggerMemberMessage {
             get {
-                return ResourceManager.GetString("MissingLoggerFieldMessage", resourceCulture);
+                return ResourceManager.GetString("MissingLoggerMemberMessage", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Couldn&apos;t find a field of type &quot;Microsoft.Extensions.Logging.ILogger&quot;.
+        ///   Looks up a localized string similar to Couldn&apos;t find a field or property of type &quot;Microsoft.Extensions.Logging.ILogger&quot;.
         /// </summary>
-        internal static string MissingLoggerFieldTitle {
+        internal static string MissingLoggerMemberTitle {
             get {
-                return ResourceManager.GetString("MissingLoggerFieldTitle", resourceCulture);
+                return ResourceManager.GetString("MissingLoggerMemberTitle", resourceCulture);
             }
         }
         
@@ -421,20 +421,20 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Found multiple fields of type &quot;Microsoft.Extensions.Logging.ILogger&quot; in type &quot;{0}&quot;.
+        ///   Looks up a localized string similar to Found multiple fields or properties of type &quot;Microsoft.Extensions.Logging.ILogger&quot; in type &quot;{0}&quot;.
         /// </summary>
-        internal static string MultipleLoggerFieldsMessage {
+        internal static string MultipleLoggerMembersMessage {
             get {
-                return ResourceManager.GetString("MultipleLoggerFieldsMessage", resourceCulture);
+                return ResourceManager.GetString("MultipleLoggerMembersMessage", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple fields of type &quot;Microsoft.Extensions.Logging.ILogger&quot; were found.
+        ///   Looks up a localized string similar to Multiple fields or properties of type &quot;Microsoft.Extensions.Logging.ILogger&quot; were found.
         /// </summary>
-        internal static string MultipleLoggerFieldsTitle {
+        internal static string MultipleLoggerMembersTitle {
             get {
-                return ResourceManager.GetString("MultipleLoggerFieldsTitle", resourceCulture);
+                return ResourceManager.GetString("MultipleLoggerMembersTitle", resourceCulture);
             }
         }
         
@@ -457,7 +457,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; of logging method &quot;{1}&quot; has sensitive field/property in its type.
+        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; of logging method &quot;{1}&quot; has a sensitive field/property in its type.
         /// </summary>
         internal static string RecordTypeSensitiveArgumentIsInTemplateMessage {
             get {
