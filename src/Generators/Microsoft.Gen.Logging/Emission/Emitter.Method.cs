@@ -540,8 +540,8 @@ internal sealed partial class Emitter : EmitterBase
 
         static (string name, bool isNullable) GetLogger(LoggingMethod lm)
         {
-            string logger = lm.LoggerField;
-            bool isNullable = lm.LoggerFieldNullable;
+            string logger = lm.LoggerMember;
+            bool isNullable = lm.LoggerMemberNullable;
 
             foreach (var p in lm.Parameters)
             {

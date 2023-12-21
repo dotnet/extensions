@@ -24,37 +24,51 @@ public partial class ParserTests
     public async Task IncompatibleAttributes()
     {
         await RunGenerator(@$"
-            using Microsoft.Extensions.Compliance.Testing;
-
-            class MyClass2
+            namespace TestClasses
             {{
-                public int A {{ get; set; }}
+                public partial class LoggerInPropertyTestClass
+                {{
+                    public ILogger Logger {{ get; set; }} = null!;
+
+                    [LoggerMessage(0, LogLevel.Debug, ""M0 {{p0}}"")]
+                    public partial void M0(string p0);
+                }}
+
+                public partial class LoggerInNullablePropertyTestClass
+                {{
+                    public ILogger? Logger {{ get; set; }}
+
+                    [LoggerMessage(0, LogLevel.Debug, ""M0 {{p0}}"")]
+                    public partial void M0(string p0);
+                }}
+
+                public partial class GenericLoggerInPropertyTestClass
+                {{
+                    public ILogger<int> Logger {{ get; set; }} = null!;
+
+                    [LoggerMessage(0, LogLevel.Debug, ""M0 {{p0}}"")]
+                    public partial void M0(string p0);
+                }}
+
+                public partial class LoggerInPropertyDerivedTestClass : LoggerInPropertyTestClass
+                {{
+                    [LoggerMessage(1, LogLevel.Debug, ""M1 {{p0}}"")]
+                    public partial void M1(string p0);
+                }}
+
+                public partial class LoggerInNullablePropertyDerivedTestClass : LoggerInNullablePropertyTestClass
+                {{
+                    [LoggerMessage(1, LogLevel.Debug, ""M1 {{p0}}"")]
+                    public partial void M1(string p0);
+                }}
+
+                public partial class GenericLoggerInPropertyDerivedTestClass : LoggerInNullablePropertyTestClass
+                {{
+                    [LoggerMessage(1, LogLevel.Debug, ""M1 {{p0}}"")]
+                    public partial void M1(string p0);
+                }}
             }}
-
-            class MyClass
-            {{
-                public string P0 {{ get; set; }} = ""Hello"";
-
-                [PrivateData, LogProperties]
-                public MyClass2 /*0+*/P1/*-0*/ {{ get; set; }} = ""Hello"";
-
-                [PrivateData, TagProvider(typeof(Provider), nameof(Provider.Provide)]
-                public string /*1+*/P2/*-1*/ {{ get; set; }} = ""Hello"";
-            }}
-
-            static class Provider
-            {{
-                public static void Provide(ITagCollector collector, string value) {{ }}
-            }}
-
-            internal partial class C
-            {{
-                [LoggerMessage(0, LogLevel.Debug, ""M0 {{p0}}"")]
-                partial static void M0(ILogger logger, [PrivateData, LogProperties] MyClass /*2+*/p0/*-2*/);
-
-                [LoggerMessage(1, LogLevel.Debug, ""M1 {{p0}}"")]
-                partial static void M1(ILogger logger, [PrivateData, TagProvider(typeof(Provider), nameof(Provider.Provide))] string /*3+*/p0/*-3*/);
-            }}", DiagDescriptors.CantUseDataClassificationWithLogPropertiesOrTagProvider);
+        ");
     }
 
     [Fact]
@@ -559,11 +573,11 @@ public partial class ParserTests
                 }
             ";
 
-        await RunGenerator(Source, DiagDescriptors.MissingLoggerField);
+        await RunGenerator(Source, DiagDescriptors.MissingLoggerMember);
     }
 
     [Fact]
-    public async Task MultipleILoggerFields()
+    public async Task MultipleILoggerMembers()
     {
         const string Source = @"
                 partial class C
@@ -574,9 +588,43 @@ public partial class ParserTests
                     [LoggerMessage(0, LogLevel.Debug, ""M1"")]
                     public partial void M1();
                 }
+
+                partial class D
+                {
+                    public ILogger? Logger { get; set; } = null!;
+                    public ILogger /*1+*/_logger2/*-1*/;
+
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
+                    public partial void M1();
+                }
+
+                partial class E
+                {
+                    public ILogger<int> Logger { get; set; } = null!;
+                    public ILogger /*2+*/_logger2/*-2*/;
+
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
+                    public partial void M1();
+                }
+
+                partial class F
+                {
+                    public ILogger? /*3+*/Logger/*-3*/ { get; set; }
+
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
+                    public partial void M1();
+                }
+
+                partial class G : F
+                {
+                    private readonly ILogger? _logger;
+
+                    [LoggerMessage(1, LogLevel.Debug, ""M2"")]
+                    public partial void M2();
+                }
             ";
 
-        await RunGenerator(Source, DiagDescriptors.MultipleLoggerFields);
+        await RunGenerator(Source, DiagDescriptors.MultipleLoggerMembers);
     }
 
     [Fact]
