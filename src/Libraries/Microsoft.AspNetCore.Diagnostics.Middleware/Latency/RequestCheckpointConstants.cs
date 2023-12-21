@@ -19,7 +19,7 @@ public static class RequestCheckpointConstants
     public const string ElapsedTillFinished = "eltltf";
 
     /// <summary>
-    /// The time elapsed before hitting the <see cref="CapturePipelineExitMiddleware"/> middleware.
+    /// The time elapsed before hitting the pipeline exit middleware.
     /// </summary>
     public const string ElapsedTillPipelineExitMiddleware = "eltexm";
 
