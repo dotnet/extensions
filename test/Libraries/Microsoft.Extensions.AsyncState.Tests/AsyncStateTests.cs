@@ -205,28 +205,4 @@ public class AsyncStateTests
 
         Assert.Equal(3, asyncState.ContextCount);
     }
-
-    [Fact]
-    public void EnsureCount_IncreasesCountCorrectly()
-    {
-        var l = new List<object?>();
-        AsyncState.EnsureCount(l, 5);
-        Assert.Equal(5, l.Count);
-    }
-
-    [Fact]
-    public void EnsureCount_WhenCountLessThanExpected()
-    {
-        var l = new List<object?>(new object?[5]);
-        AsyncState.EnsureCount(l, 2);
-        Assert.Equal(5, l.Count);
-    }
-
-    [Fact]
-    public void EnsureCount_WhenCountEqualWithExpected()
-    {
-        var l = new List<object?>(new object?[5]);
-        AsyncState.EnsureCount(l, 5);
-        Assert.Equal(5, l.Count);
-    }
 }

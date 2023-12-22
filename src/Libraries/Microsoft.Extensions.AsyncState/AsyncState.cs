@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Diagnostics;
@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AsyncState;
 internal sealed class AsyncState : IAsyncState
 {
     private static readonly AsyncLocal<AsyncStateHolder> _asyncContextCurrent = new();
-    private static readonly ObjectPool<List<object?>> _featuresPool = PoolFactory.CreatePool(new FeaturesPooledPolicy());
+    private static readonly ObjectPool<ConcurrentDictionary<AsyncStateToken, object?>> _featuresPool = PoolFactory.CreatePool(new FeaturesPooledPolicy());
     private int _contextCount;
 
     public void Initialize()
@@ -60,9 +60,7 @@ internal sealed class AsyncState : IAsyncState
             return false;
         }
 
-        EnsureCount(_asyncContextCurrent.Value.Features, token.Index + 1);
-
-        value = _asyncContextCurrent.Value.Features[token.Index];
+        _ = _asyncContextCurrent.Value.Features.TryGetValue(token, out value);
         return true;
     }
 
@@ -86,28 +84,13 @@ internal sealed class AsyncState : IAsyncState
             Throw.InvalidOperationException("Context is not initialized");
         }
 
-        EnsureCount(_asyncContextCurrent.Value.Features, token.Index + 1);
-
-        _asyncContextCurrent.Value.Features[token.Index] = value;
-    }
-
-    internal static void EnsureCount(List<object?> features, int count)
-    {
-#if NET6_0_OR_GREATER
-        features.EnsureCapacity(count);
-#endif
-        var difference = count - features.Count;
-
-        for (int i = 0; i < difference; i++)
-        {
-            features.Add(null);
-        }
+        _asyncContextCurrent.Value.Features[token] = value;
     }
 
     internal int ContextCount => Volatile.Read(ref _contextCount);
 
     private sealed class AsyncStateHolder
     {
-        public List<object?>? Features { get; set; }
+        public ConcurrentDictionary<AsyncStateToken, object?>? Features { get; set; }
     }
 }

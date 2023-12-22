@@ -21,12 +21,12 @@ public class FeaturesPooledPolicyTests
     {
         var policy = new FeaturesPooledPolicy();
 
-        var list = policy.Create();
-        list.Add(string.Empty);
-        list.Add(Array.Empty<int>());
-        list.Add(new object());
+        var dictionary = policy.Create();
+        dictionary[new AsyncStateToken(0)] = string.Empty;
+        dictionary[new AsyncStateToken(1)] = Array.Empty<int>();
+        dictionary[new AsyncStateToken(2)] = new object();
 
-        Assert.True(policy.Return(list));
-        Assert.All(list, el => Assert.Null(el));
+        Assert.True(policy.Return(dictionary));
+        Assert.All(dictionary, el => Assert.Null(el));
     }
 }
