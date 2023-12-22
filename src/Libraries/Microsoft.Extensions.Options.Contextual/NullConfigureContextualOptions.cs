@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Options.Contextual;
 public static class NullConfigureContextualOptions
 {
     /// <summary>
-    /// Gets a singleton instance of <see cref="NullConfigureContextualOptions{TOptions}"/>.
+    /// Gets a singleton instance of an empty configuration context.
     /// </summary>
     /// <typeparam name="TOptions">The options type to configure.</typeparam>
     /// <returns>A do-nothing instance of <see cref="IConfigureContextualOptions{TOptions}"/>.</returns>

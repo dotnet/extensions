@@ -204,4 +204,13 @@
   <data name="DeprecatedSymbolsMustBeMarkedObsoleteDescription" xml:space="preserve">
     <value>Symbols that have been removed from the public API of an assembly must be marked as obsolete</value>
   </data>
+  <data name="InternalReferencedInPublicDocDescription" xml:space="preserve">
+    <value>Externally visible XML documentation references an internal member, this will perplex the readers.</value>
+  </data>
+  <data name="InternalReferencedInPublicDocMessage" xml:space="preserve">
+    <value>Remove the reference or make '{0}' externally visible; also consider making the referencing member private or internal</value>
+  </data>
+  <data name="InternalReferencedInPublicDocTitle" xml:space="preserve">
+    <value>Externally visible documentation references internals</value>
+  </data>
 </root>
