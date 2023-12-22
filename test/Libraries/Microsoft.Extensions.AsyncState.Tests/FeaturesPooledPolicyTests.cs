@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.Extensions.AsyncState.Test;
@@ -27,6 +26,6 @@ public class FeaturesPooledPolicyTests
         dictionary[new AsyncStateToken(2)] = new object();
 
         Assert.True(policy.Return(dictionary));
-        Assert.All(dictionary, el => Assert.Null(el));
+        Assert.True(dictionary.IsEmpty);
     }
 }
