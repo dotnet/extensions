@@ -63,6 +63,16 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         _filterOptionsChangeTokenRegistration = filterOptions.OnChange(RefreshFilters);
         RefreshFilters(filterOptions.CurrentValue);
 
+        if (enrichmentOptions == null)
+        {
+            // enrichmentOptions is only present if EnableEnrichment was called, so if it's null
+            // then ignore all the supplied enrichers, we're not doing enrichment
+#pragma warning disable S1226
+            enrichers = [];
+            staticEnrichers = [];
+#pragma warning restore S1226
+        }
+
         _enrichers = enrichers.Select<ILogEnricher, Action<IEnrichmentTagCollector>>(e => e.Enrich).ToArray();
         _enrichmentOptionsChangeTokenRegistration = enrichmentOptions?.OnChange(UpdateEnrichmentOptions);
         _redactionOptionsChangeTokenRegistration = redactionOptions?.OnChange(UpdateRedactionOptions);
@@ -80,7 +90,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         }
 
         _staticTags = [.. tags];
-        Config = ComputeConfig(enrichmentOptions?.CurrentValue, redactionOptions?.CurrentValue);
+        Config = ComputeConfig(enrichmentOptions?.CurrentValue ?? new(), redactionOptions?.CurrentValue ?? new() { ApplyDiscriminator = false });
     }
 
     public void Dispose()
