@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Diagnostics.Testing, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Diagnostics.Testing, Version=8.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.Diagnostics.Metrics.Testing.CollectedMeasurement<T> where T : struct",
@@ -255,6 +255,10 @@
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Logging.Testing.FakeLogRecord.FakeLogRecord(Microsoft.Extensions.Logging.LogLevel level, Microsoft.Extensions.Logging.EventId id, object? state, System.Exception? exception, string message, System.Collections.Generic.IReadOnlyList<object?> scopes, string? category, bool enabled, System.DateTimeOffset timestamp);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "string? Microsoft.Extensions.Logging.Testing.FakeLogRecord.GetStructuredStateValue(string key);",
           "Stage": "Stable"
         },
         {

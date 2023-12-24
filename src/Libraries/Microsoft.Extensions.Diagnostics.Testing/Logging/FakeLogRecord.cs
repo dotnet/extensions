@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Logging.Testing;
@@ -77,7 +75,6 @@ public class FakeLogRecord
     /// The value associated with the key, or <see langword="null"/> if the key was not found. If the structured
     /// state contains multiple entries with the same key, the value associated with the first matching key encountered is returned.
     /// </returns>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public string? GetStructuredStateValue(string key)
     {
         if (StructuredState is not null)
