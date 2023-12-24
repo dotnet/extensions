@@ -97,6 +97,24 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The type &quot;{0}&quot; doesn&apos;t implement ToString(), IConvertible, or IFormattable (did you forget to apply [LogProperties] or [TagProvider] to &quot;{1}&quot;?).
+        /// </summary>
+        internal static string DefaultToStringMessage {
+            get {
+                return ResourceManager.GetString("DefaultToStringMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A value being logged doesn&apos;t have an effective way to be converted into a string.
+        /// </summary>
+        internal static string DefaultToStringTitle {
+            get {
+                return ResourceManager.GetString("DefaultToStringTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Logging method &quot;{0}&quot; doesn&apos;t have anything to be logged.
         /// </summary>
         internal static string EmptyLoggingMethodMessage {
@@ -309,24 +327,6 @@ namespace Microsoft.Gen.Logging.Parsing {
         internal static string LogPropertiesInvalidUsageTitle {
             get {
                 return ResourceManager.GetString("LogPropertiesInvalidUsageTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; causes name conflict with name &quot;{1}&quot; within logging method &quot;{2}&quot;.
-        /// </summary>
-        internal static string LogPropertiesNameCollisionMessage {
-            get {
-                return ResourceManager.GetString("LogPropertiesNameCollisionMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A logging method parameter causes name conflicts.
-        /// </summary>
-        internal static string LogPropertiesNameCollisionTitle {
-            get {
-                return ResourceManager.GetString("LogPropertiesNameCollisionTitle", resourceCulture);
             }
         }
         
@@ -579,6 +579,24 @@ namespace Microsoft.Gen.Logging.Parsing {
         internal static string ShouldntReuseEventNamesTitle {
             get {
                 return ResourceManager.GetString("ShouldntReuseEventNamesTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; causes a tag name conflict with name &quot;{1}&quot; within logging method &quot;{2}&quot;.
+        /// </summary>
+        internal static string TagNameCollisionMessage {
+            get {
+                return ResourceManager.GetString("TagNameCollisionMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A logging method parameter causes a tag name conflicts.
+        /// </summary>
+        internal static string TagNameCollisionTitle {
+            get {
+                return ResourceManager.GetString("TagNameCollisionTitle", resourceCulture);
             }
         }
         

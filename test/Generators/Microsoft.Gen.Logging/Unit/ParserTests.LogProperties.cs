@@ -53,11 +53,11 @@ public partial class ParserTests
 
             partial class C
             {
-                [LoggerMessage(0, LogLevel.Debug, ""Parameterless..."")]
-                static partial void M0(ILogger logger, [LogProperties(OmitReferenceName = true)] MyType /*0+*/p0/*-0*/);
+                [LoggerMessage(LogLevel.Debug)]
+                static partial void M0(ILogger logger, int p0, [LogProperties(OmitReferenceName = true)] MyType /*0+*/p1/*-0*/);
             }";
 
-        await RunGenerator(Source, DiagDescriptors.LogPropertiesNameCollision);
+        await RunGenerator(Source, DiagDescriptors.TagNameCollision);
     }
 
     [Fact]
@@ -207,7 +207,7 @@ public partial class ParserTests
                 static partial void M(ILogger logger, string param, string /*0+*/Param/*-0*/);
             }";
 
-        await RunGenerator(Source, DiagDescriptors.LogPropertiesNameCollision);
+        await RunGenerator(Source, DiagDescriptors.TagNameCollision);
     }
 
     [Fact]
@@ -217,15 +217,21 @@ public partial class ParserTests
             class MyClass
             {
                 public int A { get; set; }
+
+                [LogPropertyIgnore]
+                public int B { get; set; }
             }
 
             partial class C
             {
-                [LoggerMessage(0, LogLevel.Debug, ""{param_A}"")]
-                static partial void M(ILogger logger, string param_A, [LogProperties] MyClass /*0+*/param/*-0*/);
+                [LoggerMessage(LogLevel.Debug)]
+                static partial void M0(ILogger logger, string param_A, [LogProperties] MyClass /*0+*/param/*-0*/);
+
+                [LoggerMessage(LogLevel.Debug)]
+                static partial void M1(ILogger logger, string param_B, [LogProperties] MyClass param);
             }";
 
-        await RunGenerator(Source, DiagDescriptors.LogPropertiesNameCollision);
+        await RunGenerator(Source, DiagDescriptors.TagNameCollision);
     }
 
     [Fact]
@@ -251,7 +257,7 @@ public partial class ParserTests
                 static partial void M(ILogger logger, [LogProperties] MyClass /*0+*/param/*-0*/);
             }";
 
-        await RunGenerator(Source, DiagDescriptors.LogPropertiesNameCollision);
+        await RunGenerator(Source, DiagDescriptors.TagNameCollision);
     }
 
     [Theory]
@@ -386,5 +392,45 @@ public partial class ParserTests
             }";
 
         await RunGenerator(Source, DiagDescriptors.LogPropertiesHiddenPropertyDetected);
+    }
+
+    [Fact]
+    public async Task DefaultToString()
+    {
+        await RunGenerator(@"
+            record class MyRecordClass(int x);
+            record struct MyRecordStruct(int x);
+
+            class MyClass2
+            {
+            }
+
+            class MyClass3
+            {
+                public override string ToString() => ""FIND ME!"";
+            }
+
+            class MyClass<T>
+            {
+                public object /*0+*/P0/*-0*/ { get; set; }
+                public MyClass2 /*1+*/P1/*-1*/ { get; set; }
+                public MyClass3 P2 { get; set; }
+                public int P3 { get; set; }
+                public System.Numerics.BigInteger P4 { get; set; }
+                public T P5 { get; set; }
+            }
+
+            partial class C<T>
+            {
+                [LoggerMessage(LogLevel.Debug)]
+                static partial void M0(this ILogger logger,
+                    object /*2+*/p0/*-2*/,
+                    MyClass2 /*3+*/p1/*-3*/,
+                    MyClass3 p2,
+                    [LogProperties] MyClass<int> p3,
+                    T p4,
+                    MyRecordClass p5,
+                    MyRecordStruct p6);
+            }", DiagDescriptors.DefaultToString);
     }
 }

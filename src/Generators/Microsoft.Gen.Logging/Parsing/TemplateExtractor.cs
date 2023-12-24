@@ -13,19 +13,15 @@ internal static class TemplateExtractor
     /// <summary>
     /// Finds the template arguments contained in the message string.
     /// </summary>
-    internal static void ExtractTemplates(string? message, IDictionary<string, string> templateToParameterName, out ICollection<string> templatesWithAtSymbol)
+    internal static void ExtractTemplates(string? message, List<string> templates)
     {
         if (string.IsNullOrEmpty(message))
         {
-            templatesWithAtSymbol = Array.Empty<string>();
             return;
         }
 
         var scanIndex = 0;
         var endIndex = message!.Length;
-#pragma warning disable CA1859 // Use concrete types when possible for improved performance
-        ICollection<string>? foundAtTemplates = null;
-#pragma warning restore CA1859 // Use concrete types when possible for improved performance
         while (scanIndex < endIndex)
         {
             var openBraceIndex = FindBraceIndex(message, '{', scanIndex, endIndex);
@@ -41,19 +37,10 @@ internal static class TemplateExtractor
                 var formatDelimiterIndex = FindIndexOfAny(message, _formatDelimiters, openBraceIndex, closeBraceIndex);
 
                 var templateName = message.Substring(openBraceIndex + 1, formatDelimiterIndex - openBraceIndex - 1).Trim();
-                if (templateName[0] == '@')
-                {
-                    foundAtTemplates ??= new List<string>();
-                    foundAtTemplates.Add(templateName);
-                    templateName = templateName.Substring(1);
-                }
-
-                templateToParameterName[templateName] = templateName;
+                templates.Add(templateName);
                 scanIndex = closeBraceIndex + 1;
             }
         }
-
-        templatesWithAtSymbol = foundAtTemplates ?? Array.Empty<string>();
     }
 
     internal static int FindIndexOfAny(string message, char[] chars, int startIndex, int endIndex)

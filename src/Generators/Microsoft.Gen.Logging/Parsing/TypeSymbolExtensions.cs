@@ -10,7 +10,8 @@ namespace Microsoft.Gen.Logging.Parsing;
 internal static class TypeSymbolExtensions
 {
     internal static bool IsEnumerable(this ITypeSymbol sym, SymbolHolder symbols)
-        => sym.ImplementsInterface(symbols.EnumerableSymbol) && sym.SpecialType != SpecialType.System_String;
+        => (sym.ImplementsInterface(symbols.EnumerableSymbol) || SymbolEqualityComparer.Default.Equals(sym, symbols.EnumerableSymbol))
+            && sym.SpecialType != SpecialType.System_String;
 
     internal static bool ImplementsIConvertible(this ITypeSymbol sym, SymbolHolder symbols)
     {
@@ -56,7 +57,7 @@ internal static class TypeSymbolExtensions
     }
 
     internal static bool ImplementsISpanFormattable(this ITypeSymbol sym, SymbolHolder symbols)
-        => symbols.SpanFormattableSymbol != null && sym.ImplementsInterface(symbols.SpanFormattableSymbol);
+        => symbols.SpanFormattableSymbol != null && (sym.ImplementsInterface(symbols.SpanFormattableSymbol) || SymbolEqualityComparer.Default.Equals(sym, symbols.SpanFormattableSymbol));
 
     internal static bool IsSpecialType(this ITypeSymbol typeSymbol, SymbolHolder symbols)
         => typeSymbol.SpecialType != SpecialType.None ||
@@ -64,4 +65,21 @@ internal static class TypeSymbolExtensions
 #pragma warning disable RS1024
         symbols.IgnorePropertiesSymbols.Contains(typeSymbol);
 #pragma warning restore RS1024
+
+    internal static bool HasCustomToString(this ITypeSymbol type)
+    {
+        ITypeSymbol? current = type;
+        while (current != null && current.SpecialType != SpecialType.System_Object)
+        {
+            if (current.GetMembers("ToString").Where(m => m.Kind == SymbolKind.Method && m.DeclaredAccessibility == Accessibility.Public).Cast<IMethodSymbol>().Any(m => m.Parameters.Length == 0))
+            {
+                return true;
+            }
+
+            current = current.BaseType;
+        }
+
+        return false;
+    }
+
 }

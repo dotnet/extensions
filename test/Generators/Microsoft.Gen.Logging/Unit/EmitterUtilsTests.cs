@@ -58,7 +58,7 @@ public class EmitterUtilsTests
         lm.Parameters.Add(new LoggingMethodParameter
         {
             IsLogLevel = true,
-            Name = ParamName
+            ParameterName = ParamName
         });
 
         Assert.Equal(ParamName, Emitter.GetLoggerMethodLogLevel(lm));
