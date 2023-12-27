@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Compliance.Redaction, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Compliance.Redaction, Version=8.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "sealed class Microsoft.Extensions.Compliance.Redaction.ErasingRedactor : Microsoft.Extensions.Compliance.Redaction.Redactor",
@@ -26,22 +26,40 @@
       ]
     },
     {
+      "Type": "sealed class Microsoft.Extensions.Compliance.Redaction.HmacRedactor : Microsoft.Extensions.Compliance.Redaction.Redactor",
+      "Stage": "Stable",
+      "Methods": [
+        {
+          "Member": "Microsoft.Extensions.Compliance.Redaction.HmacRedactor.HmacRedactor(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Compliance.Redaction.HmacRedactorOptions> options);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.Compliance.Redaction.HmacRedactor.GetRedactedLength(System.ReadOnlySpan<char> input);",
+          "Stage": "Stable"
+        },
+        {
+          "Member": "override int Microsoft.Extensions.Compliance.Redaction.HmacRedactor.Redact(System.ReadOnlySpan<char> source, System.Span<char> destination);",
+          "Stage": "Stable"
+        }
+      ]
+    },
+    {
       "Type": "class Microsoft.Extensions.Compliance.Redaction.HmacRedactorOptions",
-      "Stage": "Experimental",
+      "Stage": "Stable",
       "Methods": [
         {
           "Member": "Microsoft.Extensions.Compliance.Redaction.HmacRedactorOptions.HmacRedactorOptions();",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ],
       "Properties": [
         {
           "Member": "string Microsoft.Extensions.Compliance.Redaction.HmacRedactorOptions.Key { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "int? Microsoft.Extensions.Compliance.Redaction.HmacRedactorOptions.KeyId { get; set; }",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
@@ -51,11 +69,11 @@
       "Methods": [
         {
           "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.SetHmacRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, System.Action<Microsoft.Extensions.Compliance.Redaction.HmacRedactorOptions> configure, params Microsoft.Extensions.Compliance.Classification.DataClassificationSet[] classifications);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         },
         {
           "Member": "static Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder Microsoft.Extensions.Compliance.Redaction.RedactionExtensions.SetHmacRedactor(this Microsoft.Extensions.Compliance.Redaction.IRedactionBuilder builder, Microsoft.Extensions.Configuration.IConfigurationSection section, params Microsoft.Extensions.Compliance.Classification.DataClassificationSet[] classifications);",
-          "Stage": "Experimental"
+          "Stage": "Stable"
         }
       ]
     },
