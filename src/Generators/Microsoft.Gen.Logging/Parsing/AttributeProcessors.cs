@@ -15,6 +15,7 @@ internal static class AttributeProcessors
     private const string SkipEnabledCheckProperty = "SkipEnabledCheck";
     private const string SkipNullProperties = "SkipNullProperties";
     private const string OmitReferenceName = "OmitReferenceName";
+    private const string Transitive = "Transitive";
 
     private const int LogLevelError = 4;
     private const int LogLevelCritical = 5;
@@ -124,10 +125,11 @@ internal static class AttributeProcessors
         return (eventId, level, message, eventName, skipEnabledCheck);
     }
 
-    public static (bool skipNullProperties, bool omitReferenceName) ExtractLogPropertiesAttributeValues(AttributeData attr)
+    public static (bool skipNullProperties, bool omitReferenceName, bool transitive) ExtractLogPropertiesAttributeValues(AttributeData attr)
     {
         bool skipNullProperties = false;
         bool omitReferenceName = false;
+        bool transitive = false;
 
         foreach (var a in attr.NamedArguments)
         {
@@ -148,10 +150,17 @@ internal static class AttributeProcessors
                         omitReferenceName = b;
                     }
                 }
+                else if (a.Key == Transitive)
+                {
+                    if (v is bool b)
+                    {
+                        transitive = b;
+                    }
+                }
             }
         }
 
-        return (skipNullProperties, omitReferenceName);
+        return (skipNullProperties, omitReferenceName, transitive);
     }
 
     public static (bool omitReferenceName, ITypeSymbol providerType, string providerMethodName) ExtractTagProviderAttributeValues(AttributeData attr)
@@ -180,4 +189,7 @@ internal static class AttributeProcessors
 
         return (omitReferenceName, providerType!, providerMethodName!);
     }
+
+    public static string ExtractTagNameAttributeValues(AttributeData attr)
+        => attr.ConstructorArguments[0].Value as string ?? string.Empty;
 }
