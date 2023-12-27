@@ -63,7 +63,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
         _filterOptionsChangeTokenRegistration = filterOptions.OnChange(RefreshFilters);
         RefreshFilters(filterOptions.CurrentValue);
 
-        if (enrichmentOptions == null)
+        if (enrichmentOptions is null)
         {
             // enrichmentOptions is only present if EnableEnrichment was called, so if it's null
             // then ignore all the supplied enrichers, we're not doing enrichment
