@@ -563,6 +563,7 @@ public class AcceptanceTests
              .AddExtendedHttpClientLogging()
              .BlockRemoteCall()
              .BuildServiceProvider();
+
         var options = provider.GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get("test");
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _unreachableRequestUri);

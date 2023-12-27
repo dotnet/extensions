@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Http.Logging.Bench;
 
 internal static class HttpClientFactory
 {
-    public static System.Net.Http.HttpClient CreateWithLoggingLogRequest(string fileName, int readLimit)
+    public static HttpClient CreateWithLoggingLogRequest(string fileName, int readLimit)
     {
         var services = new ServiceCollection();
 
@@ -35,7 +35,7 @@ internal static class HttpClientFactory
             .CreateClient(nameof(fileName));
     }
 
-    public static System.Net.Http.HttpClient CreateWithLoggingLogResponse(string fileName, int readLimit)
+    public static HttpClient CreateWithLoggingLogResponse(string fileName, int readLimit)
     {
         var services = new ServiceCollection();
 
@@ -58,7 +58,7 @@ internal static class HttpClientFactory
             .CreateClient(nameof(fileName));
     }
 
-    public static System.Net.Http.HttpClient CreateWithLoggingLogAll(string fileName, int readLimit)
+    public static HttpClient CreateWithLoggingLogAll(string fileName, int readLimit)
     {
         var services = new ServiceCollection();
 
@@ -85,7 +85,7 @@ internal static class HttpClientFactory
             .CreateClient(nameof(fileName));
     }
 
-    public static System.Net.Http.HttpClient CreateWithLoggingLogRequest_ChunkedEncoding(string fileName, int readLimit)
+    public static HttpClient CreateWithLoggingLogRequest_ChunkedEncoding(string fileName, int readLimit)
     {
         var services = new ServiceCollection();
 
@@ -108,7 +108,7 @@ internal static class HttpClientFactory
             .CreateClient(nameof(fileName));
     }
 
-    public static System.Net.Http.HttpClient CreateWithLoggingLogResponse_ChunkedEncoding(string fileName, int readLimit)
+    public static HttpClient CreateWithLoggingLogResponse_ChunkedEncoding(string fileName, int readLimit)
     {
         var services = new ServiceCollection();
 
@@ -131,7 +131,7 @@ internal static class HttpClientFactory
             .CreateClient(nameof(fileName));
     }
 
-    public static System.Net.Http.HttpClient CreateWithLoggingLogAll_ChunkedEncoding(string fileName, int readLimit)
+    public static HttpClient CreateWithLoggingLogAll_ChunkedEncoding(string fileName, int readLimit)
     {
         var services = new ServiceCollection();
 
@@ -158,7 +158,7 @@ internal static class HttpClientFactory
             .CreateClient(nameof(fileName));
     }
 
-    public static System.Net.Http.HttpClient CreateWithoutLogging(string fileName)
+    public static HttpClient CreateWithoutLogging(string fileName)
         => new ServiceCollection()
             .AddSingleton(_ => NoRemoteCallHandler.Create(fileName))
             .AddHttpClient(nameof(fileName))
@@ -168,7 +168,7 @@ internal static class HttpClientFactory
             .GetRequiredService<IHttpClientFactory>()
             .CreateClient(nameof(fileName));
 
-    public static System.Net.Http.HttpClient CreateWithoutLogging_ChunkedEncoding(string fileName)
+    public static HttpClient CreateWithoutLogging_ChunkedEncoding(string fileName)
         => new ServiceCollection()
             .AddSingleton(_ => NoRemoteCallNotSeekableHandler.Create(fileName))
             .AddHttpClient(nameof(fileName))

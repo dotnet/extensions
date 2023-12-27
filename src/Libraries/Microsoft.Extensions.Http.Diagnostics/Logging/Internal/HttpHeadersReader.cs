@@ -15,8 +15,8 @@ namespace Microsoft.Extensions.Http.Logging.Internal;
 
 internal sealed class HttpHeadersReader : IHttpHeadersReader
 {
-    private readonly FrozenDictionary<string, DataClassification> _requestHeaders;
-    private readonly FrozenDictionary<string, DataClassification> _responseHeaders;
+    private readonly FrozenDictionary<string, DataClassification> _requestHeadersToLog;
+    private readonly FrozenDictionary<string, DataClassification> _responseHeadersToLog;
     private readonly IHttpHeadersRedactor _redactor;
 
     public HttpHeadersReader(IOptionsMonitor<LoggingOptions> optionsMonitor, IHttpHeadersRedactor redactor, [ServiceKey] string? serviceKey = null)
@@ -25,8 +25,8 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
 
         _redactor = redactor;
 
-        _requestHeaders = options.RequestHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
-        _responseHeaders = options.ResponseHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        _requestHeadersToLog = options.RequestHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        _responseHeadersToLog = options.ResponseHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
     }
 
     public void ReadRequestHeaders(HttpRequestMessage request, List<KeyValuePair<string, string>>? destination)
@@ -36,7 +36,11 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
             return;
         }
 
-        ReadHeaders(request.Headers, _requestHeaders, destination);
+        ReadHeaders(request.Headers, _requestHeadersToLog, destination);
+        if (request.Content is not null)
+        {
+            ReadHeaders(request.Content.Headers, _requestHeadersToLog, destination);
+        }
     }
 
     public void ReadResponseHeaders(HttpResponseMessage response, List<KeyValuePair<string, string>>? destination)
@@ -46,19 +50,21 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
             return;
         }
 
-        ReadHeaders(response.Headers, _responseHeaders, destination);
+        ReadHeaders(response.Headers, _responseHeadersToLog, destination);
+        if (response.Content is not null)
+        {
+            ReadHeaders(response.Content.Headers, _responseHeadersToLog, destination);
+        }
     }
 
-    private void ReadHeaders(HttpHeaders requestHeaders, FrozenDictionary<string, DataClassification> headersToLog, List<KeyValuePair<string, string>> destination)
+    // TODO: test whether this implementation is generally more optimal than the previous one
+    private void ReadHeaders(HttpHeaders headers, FrozenDictionary<string, DataClassification> headersToLog, List<KeyValuePair<string, string>> destination)
     {
-        foreach (var kvp in headersToLog)
+        foreach (var header in headers)
         {
-            var classification = kvp.Value;
-            var header = kvp.Key;
-
-            if (requestHeaders.TryGetValues(header, out var values))
+            if (headersToLog.TryGetValue(header.Key, out var classification))
             {
-                destination.Add(new(header, _redactor.Redact(values, classification)));
+                destination.Add(new(header.Key, _redactor.Redact(header.Value, classification)));
             }
         }
     }
