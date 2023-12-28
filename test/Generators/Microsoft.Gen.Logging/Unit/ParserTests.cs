@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Numerics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1005,6 +1006,7 @@ public partial class ParserTests
                 Assembly.GetAssembly(typeof(IEnrichmentTagCollector))!,
                 Assembly.GetAssembly(typeof(DataClassification))!,
                 Assembly.GetAssembly(typeof(PrivateDataAttribute))!,
+                Assembly.GetAssembly(typeof(BigInteger))!,
             };
         }
 

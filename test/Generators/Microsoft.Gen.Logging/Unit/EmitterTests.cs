@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Compliance.Classification;
@@ -44,6 +45,7 @@ public class EmitterTests
                 Assembly.GetAssembly(typeof(DataClassification))!,
                 Assembly.GetAssembly(typeof(IRedactorProvider))!,
                 Assembly.GetAssembly(typeof(PrivateDataAttribute))!,
+                Assembly.GetAssembly(typeof(BigInteger))!,
             },
             sources,
             symbols)

@@ -16,8 +16,9 @@ namespace Microsoft.Extensions.Logging.Test;
 
 public static class ExtendedLoggerTests
 {
-    [Fact]
-    public static void Basic()
+    [Theory]
+    [CombinatorialData]
+    public static void FeatureEnablement(bool enableRedaction, bool enableEnrichment)
     {
         const string Category = "C1";
 
@@ -39,11 +40,14 @@ public static class ExtendedLoggerTests
             RedactionFormat = "REDACTED<{0}>",
         });
 
+        var enrichmentOptions = enableEnrichment ? new StaticOptionsMonitor<LoggerEnrichmentOptions>(new()) : null;
+        var redactionOptions = enableRedaction ? new StaticOptionsMonitor<LoggerRedactionOptions>(new() { ApplyDiscriminator = false }) : null;
+
         using var lf = new ExtendedLoggerFactory(
             providers: new[] { provider },
             filterOptions: new StaticOptionsMonitor<LoggerFilterOptions>(new()),
-            enrichmentOptions: new StaticOptionsMonitor<LoggerEnrichmentOptions>(new()),
-            redactionOptions: new StaticOptionsMonitor<LoggerRedactionOptions>(new() { ApplyDiscriminator = false }),
+            enrichmentOptions: enrichmentOptions,
+            redactionOptions: redactionOptions,
             enrichers: new[] { enricher },
             staticEnrichers: new[] { staticEnricher },
             redactorProvider: redactorProvider,
@@ -74,18 +78,45 @@ public static class ExtendedLoggerTests
         Assert.Null(snap[0].Exception);
         Assert.Equal(new EventId(0), snap[0].Id);
         Assert.Equal("MSG0", snap[0].Message);
-        Assert.Equal("EV1", snap[0].GetStructuredStateValue("EK1"));
-        Assert.Equal("SEV1", snap[0].GetStructuredStateValue("SEK1"));
+
+        if (enableEnrichment)
+        {
+            Assert.Equal("SEV1", snap[0].GetStructuredStateValue("SEK1"));
+            Assert.Equal("EV1", snap[0].GetStructuredStateValue("EK1"));
+        }
+        else
+        {
+            Assert.Null(snap[0].GetStructuredStateValue("SEK1"));
+            Assert.Null(snap[0].GetStructuredStateValue("EK1"));
+        }
 
         Assert.Equal(Category, snap[1].Category);
         Assert.Null(snap[1].Exception);
         Assert.Equal(new EventId(2, "ID2"), snap[1].Id);
         Assert.Equal("MSG2", snap[1].Message);
         Assert.Equal("PV2", snap[1].GetStructuredStateValue("PK2"));
-        Assert.Equal("REDACTED<PV3>", snap[1].GetStructuredStateValue("PK3"));
+
+        if (enableRedaction)
+        {
+            Assert.Equal("REDACTED<PV3>", snap[1].GetStructuredStateValue("PK3"));
+        }
+        else
+        {
+            Assert.Equal("PV3", snap[1].GetStructuredStateValue("PK3"));
+        }
+
         Assert.Null(snap[1].GetStructuredStateValue("PK4"));
-        Assert.Equal("EV1", snap[1].GetStructuredStateValue("EK1"));
-        Assert.Equal("SEV1", snap[1].GetStructuredStateValue("SEK1"));
+
+        if (enableEnrichment)
+        {
+            Assert.Equal("SEV1", snap[1].GetStructuredStateValue("SEK1"));
+            Assert.Equal("EV1", snap[1].GetStructuredStateValue("EK1"));
+        }
+        else
+        {
+            Assert.Null(snap[1].GetStructuredStateValue("SEK1"));
+            Assert.Null(snap[1].GetStructuredStateValue("EK1"));
+        }
     }
 
     [Theory]

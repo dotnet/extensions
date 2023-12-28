@@ -9,7 +9,8 @@ namespace Microsoft.Gen.Logging.Model;
 [DebuggerDisplay("{Name}")]
 internal sealed class LoggingProperty
 {
-    public string Name = string.Empty;
+    public string PropertyName = string.Empty;
+    public string TagName = string.Empty;
     public string Type = string.Empty;
     public HashSet<string> ClassificationAttributeTypes = [];
     public bool NeedsAtSign;
@@ -19,6 +20,7 @@ internal sealed class LoggingProperty
     public bool ImplementsIConvertible;
     public bool ImplementsIFormattable;
     public bool ImplementsISpanFormattable;
+    public bool HasCustomToString;
     public List<LoggingProperty> Properties = [];
     public bool OmitReferenceName;
     public TagProvider? TagProvider;
@@ -26,6 +28,7 @@ internal sealed class LoggingProperty
     public bool HasDataClassification => ClassificationAttributeTypes.Count > 0;
     public bool HasProperties => Properties.Count > 0;
     public bool HasTagProvider => TagProvider is not null;
-    public string NameWithAt => NeedsAtSign ? "@" + Name : Name;
+    public string PropertyNameWithAt => NeedsAtSign ? "@" + PropertyName : PropertyName;
     public bool PotentiallyNull => IsReference || IsNullable;
+    public bool IsStringifiable => HasCustomToString || ImplementsIConvertible || ImplementsIFormattable || IsEnumerable;
 }
