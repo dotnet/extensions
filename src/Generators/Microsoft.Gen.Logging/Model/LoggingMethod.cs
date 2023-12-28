@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Microsoft.Gen.Logging.Model;
 
@@ -14,7 +15,7 @@ namespace Microsoft.Gen.Logging.Model;
 internal sealed class LoggingMethod
 {
     public readonly List<LoggingMethodParameter> Parameters = [];
-    public readonly Dictionary<string, string> TemplateToParameterName = new(StringComparer.OrdinalIgnoreCase);
+    public readonly List<string> Templates = [];
     public string Name = string.Empty;
     public string Message = string.Empty;
     public int? Level;
@@ -28,8 +29,33 @@ internal sealed class LoggingMethod
     public bool LoggerMemberNullable;
     public bool HasXmlDocumentation;
 
-    public string GetParameterNameInTemplate(LoggingMethodParameter parameter)
-        => TemplateToParameterName.TryGetValue(parameter.Name, out var value)
-            ? value
-            : parameter.Name;
+    public LoggingMethodParameter? GetParameterForTemplate(string templateName)
+    {
+        foreach (var p in Parameters)
+        {
+            if (templateName.Equals(p.ParameterName, StringComparison.OrdinalIgnoreCase))
+            {
+                return p;
+            }
+        }
+
+        return null;
+    }
+
+    public List<string> GetTemplatesForParameter(LoggingMethodParameter lp)
+        => GetTemplatesForParameter(lp.ParameterName);
+
+    public List<string> GetTemplatesForParameter(string parameterName)
+    {
+        HashSet<string> templates = [];
+        foreach (var t in Templates)
+        {
+            if (parameterName.Equals(t, StringComparison.OrdinalIgnoreCase))
+            {
+                _ = templates.Add(t);
+            }
+        }
+
+        return templates.ToList();
+    }
 }

@@ -84,7 +84,7 @@ internal sealed partial class Parser
 
                     foreach (var paramSymbol in methodSymbol.Parameters)
                     {
-                        var lp = ProcessParameter(paramSymbol, symbols, ref parsingState);
+                        var lp = ProcessParameter(lm, paramSymbol, symbols, ref parsingState);
                         if (lp == null)
                         {
                             keepMethod = false;
@@ -94,6 +94,7 @@ internal sealed partial class Parser
                         parameterSymbols[lp] = paramSymbol;
 
                         var foundDataClassificationAttributesInProps = false;
+
                         var logPropertiesAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogPropertiesAttribute, paramSymbol);
                         if (logPropertiesAttribute is not null)
                         {
@@ -135,22 +136,43 @@ internal sealed partial class Parser
                             lp.TagProvider = null;
                         }
 
+#pragma warning disable S1067 // Expressions should not be too complex
+                        if (lp.IsNormalParameter
+                            && (logPropertiesAttribute is null)
+                            && (tagProviderAttribute is null)
+                            && !lp.IsStringifiable
+                            && paramSymbol.Type.Kind != SymbolKind.TypeParameter)
+                        {
+                            Diag(DiagDescriptors.DefaultToString, paramSymbol.GetLocation(), paramSymbol.Type, paramSymbol.Name);
+                        }
+#pragma warning restore S1067 // Expressions should not be too complex
+
                         bool forceAsTemplateParam = false;
-                        bool parameterInTemplate = lm.TemplateToParameterName.ContainsKey(lp.Name);
+
+                        bool parameterInTemplate = false;
+                        foreach (var t in lm.Templates)
+                        {
+                            if (lp.ParameterName.Equals(t, StringComparison.OrdinalIgnoreCase))
+                            {
+                                parameterInTemplate = true;
+                                break;
+                            }
+                        }
+
                         var loggingProperties = logPropertiesAttribute != null || tagProviderAttribute != null;
                         if (lp.IsLogger && parameterInTemplate)
                         {
-                            Diag(DiagDescriptors.ShouldntMentionLoggerInMessage, attrLoc, lp.Name);
+                            Diag(DiagDescriptors.ShouldntMentionLoggerInMessage, attrLoc, lp.ParameterName);
                             forceAsTemplateParam = true;
                         }
                         else if (lp.IsException && parameterInTemplate)
                         {
-                            Diag(DiagDescriptors.ShouldntMentionExceptionInMessage, attrLoc, lp.Name);
+                            Diag(DiagDescriptors.ShouldntMentionExceptionInMessage, attrLoc, lp.ParameterName);
                             forceAsTemplateParam = true;
                         }
                         else if (lp.IsLogLevel && parameterInTemplate)
                         {
-                            Diag(DiagDescriptors.ShouldntMentionLogLevelInMessage, attrLoc, lp.Name);
+                            Diag(DiagDescriptors.ShouldntMentionLogLevelInMessage, attrLoc, lp.ParameterName);
                             forceAsTemplateParam = true;
                         }
                         else if (lp.IsNormalParameter
@@ -158,7 +180,7 @@ internal sealed partial class Parser
                             && !loggingProperties
                             && !string.IsNullOrEmpty(lm.Message))
                         {
-                            Diag(DiagDescriptors.ParameterHasNoCorrespondingTemplate, paramSymbol.GetLocation(), lp.Name);
+                            Diag(DiagDescriptors.ParameterHasNoCorrespondingTemplate, paramSymbol.GetLocation(), lp.ParameterName);
                         }
 
                         var purelyStructuredLoggingParameter = loggingProperties && !parameterInTemplate;
@@ -170,7 +192,7 @@ internal sealed partial class Parser
                             if (foundDataClassificationAttributesInProps ||
                                 RecordHasSensitivePublicMembers(paramSymbol.Type, symbols))
                             {
-                                Diag(DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate, paramSymbol.GetLocation(), lp.Name, lm.Name);
+                                Diag(DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate, paramSymbol.GetLocation(), lp.ParameterName, lm.Name);
                                 keepMethod = false;
                             }
                         }
@@ -246,12 +268,12 @@ internal sealed partial class Parser
                             }
                         }
 
-                        foreach (var t in lm.TemplateToParameterName)
+                        foreach (var t in lm.Templates)
                         {
                             bool found = false;
                             foreach (var p in lm.Parameters)
                             {
-                                if (t.Key.Equals(p.Name, StringComparison.OrdinalIgnoreCase))
+                                if (t.Equals(p.ParameterName, StringComparison.OrdinalIgnoreCase))
                                 {
                                     found = true;
                                     break;
@@ -260,11 +282,11 @@ internal sealed partial class Parser
 
                             if (!found)
                             {
-                                Diag(DiagDescriptors.TemplateHasNoCorrespondingParameter, attrLoc, t.Key);
+                                Diag(DiagDescriptors.TemplateHasNoCorrespondingParameter, attrLoc, t);
                             }
                         }
 
-                        CheckMethodParametersAreUnique(lm, parameterSymbols);
+                        CheckTagNamesAreUnique(lm, parameterSymbols);
                     }
 
                     if (lt == null)
@@ -367,8 +389,6 @@ internal sealed partial class Parser
                 HasXmlDocumentation = HasXmlDocumentation(method),
             };
 
-            TemplateExtractor.ExtractTemplates(message, lm.TemplateToParameterName, out var templatesWithAtSymbol);
-
             var keepMethod = true;
 
             if (!methodSymbol.ReturnsVoid)
@@ -378,12 +398,26 @@ internal sealed partial class Parser
                 keepMethod = false;
             }
 
-            if (templatesWithAtSymbol.Count > 0)
+            TemplateExtractor.ExtractTemplates(message, lm.Templates);
+
+#pragma warning disable EA0003 // Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
+            var templatesWithAtSymbol = lm.Templates.Where(x => x.StartsWith("@", StringComparison.Ordinal)).ToArray();
+            if (templatesWithAtSymbol.Length > 0)
             {
                 // there is/are template(s) that start with @, which is not allowed
                 Diag(DiagDescriptors.TemplateStartsWithAtSymbol, attrLoc, method.Identifier.Text, string.Join("; ", templatesWithAtSymbol));
                 keepMethod = false;
+
+                for (int i = 0; i < lm.Templates.Count; i++)
+                {
+                    if (lm.Templates[i].StartsWith("@", StringComparison.Ordinal))
+                    {
+                        lm.Templates[i] = lm.Templates[i].Substring(1);
+                    }
+                }
+
             }
+#pragma warning restore EA0003 // Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
 
             if (method.Arity > 0)
             {
@@ -462,15 +496,14 @@ internal sealed partial class Parser
             .Select(static x => x!)
             .ToList();
 
-    private void CheckMethodParametersAreUnique(LoggingMethod lm, Dictionary<LoggingMethodParameter, IParameterSymbol> parameterSymbols)
+    private void CheckTagNamesAreUnique(LoggingMethod lm, Dictionary<LoggingMethodParameter, IParameterSymbol> parameterSymbols)
     {
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (var parameter in lm.Parameters)
         {
-            var parameterName = lm.GetParameterNameInTemplate(parameter);
-            if (!names.Add(parameterName))
+            if (!parameter.IsNormalParameter)
             {
-                Diag(DiagDescriptors.LogPropertiesNameCollision, parameterSymbols[parameter].GetLocation(), parameter.Name, parameterName, lm.Name);
+                continue;
             }
 
             if (parameter.HasProperties)
@@ -482,17 +515,25 @@ internal sealed partial class Parser
                         chain = chain.Skip(1);
                     }
 
-                    var fullName = string.Join("_", chain.Concat(new[] { leaf }).Select(static x => x.Name));
+                    var fullName = string.Join("_", chain.Concat(new[] { leaf }).Select(static x => x.TagName));
                     if (!names.Add(fullName))
                     {
-                        Diag(DiagDescriptors.LogPropertiesNameCollision, parameterSymbols[parameter].GetLocation(), parameter.Name, fullName, lm.Name);
+                        Diag(DiagDescriptors.TagNameCollision, parameterSymbols[parameter].GetLocation(), parameter.ParameterName, fullName, lm.Name);
                     }
                 });
+            }
+            else
+            {
+                if (!names.Add(parameter.TagName))
+                {
+                    Diag(DiagDescriptors.TagNameCollision, parameterSymbols[parameter].GetLocation(), parameter.ParameterName, parameter.TagName, lm.Name);
+                }
             }
         }
     }
 
     private LoggingMethodParameter? ProcessParameter(
+        LoggingMethod lm,
         IParameterSymbol paramSymbol,
         SymbolHolder symbols,
         ref MethodParsingState parsingState)
@@ -550,9 +591,15 @@ internal sealed partial class Parser
             extractedType = ((INamedTypeSymbol)paramTypeSymbol).TypeArguments[0];
         }
 
+        var tagNameAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.TagNameAttribute, paramSymbol);
+        var tagName = tagNameAttribute != null
+            ? AttributeProcessors.ExtractTagNameAttributeValues(tagNameAttribute)
+            : lm.GetTemplatesForParameter(paramName).FirstOrDefault() ?? paramName;
+
         var lp = new LoggingMethodParameter
         {
-            Name = paramName,
+            ParameterName = paramName,
+            TagName = tagName,
             Type = typeName,
             Qualifier = qualifier,
             NeedsAtSign = needsAtSign,
@@ -566,6 +613,7 @@ internal sealed partial class Parser
             ImplementsIConvertible = paramTypeSymbol.ImplementsIConvertible(symbols),
             ImplementsIFormattable = paramTypeSymbol.ImplementsIFormattable(symbols),
             ImplementsISpanFormattable = paramTypeSymbol.ImplementsISpanFormattable(symbols),
+            HasCustomToString = paramTypeSymbol.HasCustomToString(),
         };
 
         parsingState.FoundLogger |= lp.IsLogger;

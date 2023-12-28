@@ -12,6 +12,7 @@ internal static class SymbolLoader
     internal const string LoggerMessageAttribute = "Microsoft.Extensions.Logging.LoggerMessageAttribute";
     internal const string LogPropertiesAttribute = "Microsoft.Extensions.Logging.LogPropertiesAttribute";
     internal const string TagProviderAttribute = "Microsoft.Extensions.Logging.TagProviderAttribute";
+    internal const string TagNameAttribute = "Microsoft.Extensions.Logging.TagNameAttribute";
     internal const string LogPropertyIgnoreAttribute = "Microsoft.Extensions.Logging.LogPropertyIgnoreAttribute";
     internal const string ITagCollectorType = "Microsoft.Extensions.Logging.ITagCollector";
     internal const string ILoggerType = "Microsoft.Extensions.Logging.ILogger";
@@ -55,6 +56,7 @@ internal static class SymbolLoader
         var loggerMessageAttributeSymbol = compilation.GetTypeByMetadataName(LoggerMessageAttribute);
         var logPropertiesAttributeSymbol = compilation.GetTypeByMetadataName(LogPropertiesAttribute);
         var tagProviderAttributeSymbol = compilation.GetTypeByMetadataName(TagProviderAttribute);
+        var tagNameAttributeSymbol = compilation.GetTypeByMetadataName(TagNameAttribute);
         var tagCollectorSymbol = compilation.GetTypeByMetadataName(ITagCollectorType);
         var logPropertyIgnoreAttributeSymbol = compilation.GetTypeByMetadataName(LogPropertyIgnoreAttribute);
         var dataClassificationAttribute = compilation.GetTypeByMetadataName(DataClassificationAttribute);
@@ -65,6 +67,7 @@ internal static class SymbolLoader
             || loggerMessageAttributeSymbol == null
             || logPropertiesAttributeSymbol == null
             || tagProviderAttributeSymbol == null
+            || tagNameAttributeSymbol == null
             || tagCollectorSymbol == null
             || logPropertyIgnoreAttributeSymbol == null)
         {
@@ -100,6 +103,7 @@ internal static class SymbolLoader
             loggerMessageAttributeSymbol,
             logPropertiesAttributeSymbol,
             tagProviderAttributeSymbol,
+            tagNameAttributeSymbol,
             logPropertyIgnoreAttributeSymbol,
             tagCollectorSymbol,
             loggerSymbol,

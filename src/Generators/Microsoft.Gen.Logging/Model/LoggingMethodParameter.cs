@@ -13,7 +13,8 @@ namespace Microsoft.Gen.Logging.Model;
 [DebuggerDisplay("{Name}")]
 internal sealed class LoggingMethodParameter
 {
-    public string Name = string.Empty;
+    public string ParameterName = string.Empty;
+    public string TagName = string.Empty;
     public string Type = string.Empty;
     public string? Qualifier;
     public bool NeedsAtSign;
@@ -26,6 +27,7 @@ internal sealed class LoggingMethodParameter
     public bool ImplementsIConvertible;
     public bool ImplementsIFormattable;
     public bool ImplementsISpanFormattable;
+    public bool HasCustomToString;
     public bool SkipNullProperties;
     public bool OmitReferenceName;
     public bool UsedAsTemplate;
@@ -33,7 +35,7 @@ internal sealed class LoggingMethodParameter
     public List<LoggingProperty> Properties = [];
     public TagProvider? TagProvider;
 
-    public string NameWithAt => NeedsAtSign ? "@" + Name : Name;
+    public string ParameterNameWithAt => NeedsAtSign ? "@" + ParameterName : ParameterName;
 
     public string PotentiallyNullableType
         => (IsReference && !IsNullable)
@@ -48,4 +50,5 @@ internal sealed class LoggingMethodParameter
     public bool HasProperties => Properties.Count > 0;
     public bool HasTagProvider => TagProvider is not null;
     public bool PotentiallyNull => (IsReference && !IsLogger) || IsNullable;
+    public bool IsStringifiable => HasCustomToString || ImplementsIConvertible || ImplementsIFormattable || IsEnumerable;
 }
