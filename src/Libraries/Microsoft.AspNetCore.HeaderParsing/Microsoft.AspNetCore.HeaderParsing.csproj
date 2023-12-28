@@ -8,6 +8,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <!-- blocked by https://github.com/dotnet/runtime/issues/94547 -->
+    <IsAotCompatible>false</IsAotCompatible>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMetricsGenerator>true</UseMetricsGenerator>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>

@@ -626,7 +626,7 @@
           {
             "name": "addMilestone",
             "parameters": {
-              "milestoneName": "8.1"
+              "milestoneName": "9.0-preview1"
             }
           }
         ],

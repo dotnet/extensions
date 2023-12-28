@@ -4,6 +4,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)$(ConditionalNet462)</TargetFrameworks>
     <IsTrimmable Condition="'$(IsTrimmable)' == '' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">true</IsTrimmable>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
 
     <InjectDiagnosticAttributesOnLegacy Condition="'$(InjectDiagnosticAttributesOnLegacy)' == ''">true</InjectDiagnosticAttributesOnLegacy>
     <InjectIsExternalInitOnLegacy Condition="'$(InjectIsExternalInitOnLegacy)' == ''">true</InjectIsExternalInitOnLegacy>

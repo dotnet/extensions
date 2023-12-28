@@ -55,11 +55,7 @@ public static partial class AutoActivationExtensions
     /// <param name="services">The service collection containing the service.</param>
     /// <param name="serviceType">The type of the service to activate.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed with [DynamicallyAccessedMembers]")]
-    public static IServiceCollection ActivateSingleton(this IServiceCollection services, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type serviceType)
+    public static IServiceCollection ActivateSingleton(this IServiceCollection services, Type serviceType)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(serviceType);
@@ -69,7 +65,7 @@ public static partial class AutoActivationExtensions
             .AddOptions<AutoActivatorOptions>()
             .Configure(ao =>
             {
-                var constructed = typeof(IEnumerable<>).MakeGenericType(serviceType);
+                var constructed = GetEnumerableServiceType(serviceType);
                 if (ao.AutoActivators.Contains(constructed))
                 {
                     return;
@@ -82,6 +78,10 @@ public static partial class AutoActivationExtensions
                 }
 
                 _ = ao.AutoActivators.Add(serviceType);
+
+                [UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode",
+                    Justification = "When IsDynamicCodeSupported is not supported, DependencyInjection ensures IEnumerable service types are not a ValueType.")]
+                static Type GetEnumerableServiceType(Type serviceType) => typeof(IEnumerable<>).MakeGenericType(serviceType);
             });
 
         return services;
