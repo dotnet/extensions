@@ -25,7 +25,7 @@ internal static class HttpClientFactory
             .AddExtendedHttpClientLogging(options =>
             {
                 options.BodySizeLimit = readLimit;
-                options.RequestBodyContentTypes.Add(new("application/json"));
+                options.RequestBodyContentTypes.Add("application/json");
                 options.RequestHeadersDataClasses.Add("Content-Type", FakeTaxonomy.PrivateData);
             })
             .AddHttpMessageHandler<NoRemoteCallHandler>()
@@ -48,7 +48,7 @@ internal static class HttpClientFactory
             .AddExtendedHttpClientLogging(options =>
             {
                 options.BodySizeLimit = readLimit;
-                options.ResponseBodyContentTypes.Add(new("application/json"));
+                options.ResponseBodyContentTypes.Add("application/json");
                 options.ResponseHeadersDataClasses.Add("Content-Type", FakeTaxonomy.PrivateData);
             })
             .AddHttpMessageHandler<NoRemoteCallHandler>()
@@ -72,10 +72,10 @@ internal static class HttpClientFactory
             {
                 options.BodySizeLimit = readLimit;
 
-                options.RequestBodyContentTypes.Add(new("application/json"));
+                options.RequestBodyContentTypes.Add("application/json");
                 options.RequestHeadersDataClasses.Add("Content-Type", FakeTaxonomy.PrivateData);
 
-                options.ResponseBodyContentTypes.Add(new("application/json"));
+                options.ResponseBodyContentTypes.Add("application/json");
                 options.ResponseHeadersDataClasses.Add("Content-Type", FakeTaxonomy.PrivateData);
             })
             .AddHttpMessageHandler<NoRemoteCallHandler>()
