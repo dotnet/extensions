@@ -81,13 +81,13 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
     private void ReadHeadersNew(HttpHeaders headers, FrozenDictionary<string, DataClassification> headersToLog, List<KeyValuePair<string, string>> destination)
     {
 #if NET6_0_OR_GREATER
-        var nonValidated = headers.NonValidated;
-        if (nonValidated.Count == 0)
+        var headersCount = headers.NonValidated.Count;
+        if (headersCount == 0)
         {
             return;
         }
 
-        if (nonValidated.Count < _headersCountThreshold)
+        if (headersCount < _headersCountThreshold)
         {
             // We have less headers than registered for logging, iterating over the smaller collection
             foreach (var header in headers)
