@@ -43,6 +43,20 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
         }
     }
 
+    public void ReadRequestHeadersNew(HttpRequestMessage request, List<KeyValuePair<string, string>>? destination)
+    {
+        if (destination is null)
+        {
+            return;
+        }
+
+        ReadHeadersNew(request.Headers, _requestHeadersToLog, destination);
+        if (request.Content is not null)
+        {
+            ReadHeadersNew(request.Content.Headers, _requestHeadersToLog, destination);
+        }
+    }
+
     public void ReadResponseHeaders(HttpResponseMessage response, List<KeyValuePair<string, string>>? destination)
     {
         if (destination is null)
@@ -57,14 +71,27 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
         }
     }
 
-    // TODO: test whether this implementation is generally more optimal than the previous one
-    private void ReadHeaders(HttpHeaders headers, FrozenDictionary<string, DataClassification> headersToLog, List<KeyValuePair<string, string>> destination)
+    private void ReadHeadersNew(HttpHeaders headers, FrozenDictionary<string, DataClassification> headersToLog, List<KeyValuePair<string, string>> destination)
     {
         foreach (var header in headers)
         {
             if (headersToLog.TryGetValue(header.Key, out var classification))
             {
                 destination.Add(new(header.Key, _redactor.Redact(header.Value, classification)));
+            }
+        }
+    }
+
+    private void ReadHeaders(HttpHeaders headers, FrozenDictionary<string, DataClassification> headersToLog, List<KeyValuePair<string, string>> destination)
+    {
+        foreach (var kvp in headersToLog)
+        {
+            var classification = kvp.Value;
+            var header = kvp.Key;
+
+            if (headers.TryGetValues(header, out var values))
+            {
+                destination.Add(new(header, _redactor.Redact(values, classification)));
             }
         }
     }
