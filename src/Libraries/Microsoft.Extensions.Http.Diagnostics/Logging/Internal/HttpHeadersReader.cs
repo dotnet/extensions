@@ -17,7 +17,9 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
 {
     private readonly FrozenDictionary<string, DataClassification> _requestHeadersToLog;
     private readonly FrozenDictionary<string, DataClassification> _responseHeadersToLog;
+#if NET6_0_OR_GREATER
     private readonly int _headersCountThreshold;
+#endif
     private readonly IHttpHeadersRedactor _redactor;
 
     public HttpHeadersReader(IOptionsMonitor<LoggingOptions> optionsMonitor, IHttpHeadersRedactor redactor, [ServiceKey] string? serviceKey = null)
@@ -29,7 +31,9 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
         _requestHeadersToLog = options.RequestHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
         _responseHeadersToLog = options.ResponseHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
+#if NET6_0_OR_GREATER
         _headersCountThreshold = _requestHeadersToLog.Count;
+#endif
     }
 
     public void ReadRequestHeaders(HttpRequestMessage request, List<KeyValuePair<string, string>>? destination)
