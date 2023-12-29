@@ -282,11 +282,11 @@
   <data name="LogPropertiesHiddenPropertyDetectedTitle" xml:space="preserve">
     <value>Logging method parameter's type has a hidden property</value>
   </data>
-  <data name="LogPropertiesNameCollisionMessage" xml:space="preserve">
-    <value>Parameter "{0}" causes name conflict with name "{1}" within logging method "{2}"</value>
+  <data name="TagNameCollisionMessage" xml:space="preserve">
+    <value>Parameter "{0}" causes a tag name conflict with name "{1}" within logging method "{2}"</value>
   </data>
-  <data name="LogPropertiesNameCollisionTitle" xml:space="preserve">
-    <value>A logging method parameter causes name conflicts</value>
+  <data name="TagNameCollisionTitle" xml:space="preserve">
+    <value>A logging method parameter causes a tag name conflicts</value>
   </data>
   <data name="EmptyLoggingMethodTitle" xml:space="preserve">
     <value>Logging method doesn't log anything</value>
@@ -332,5 +332,11 @@
   </data>
   <data name="RecordTypeSensitiveArgumentIsInTemplateTitle" xml:space="preserve">
     <value>The logging method parameter leaks sensitive data</value>
+  </data>
+  <data name="DefaultToStringMessage" xml:space="preserve">
+    <value>The type "{0}" doesn't implement ToString(), IConvertible, or IFormattable (did you forget to apply [LogProperties] or [TagProvider] to "{1}"?)</value>
+  </data>
+  <data name="DefaultToStringTitle" xml:space="preserve">
+    <value>A value being logged doesn't have an effective way to be converted into a string</value>
   </data>
 </root>

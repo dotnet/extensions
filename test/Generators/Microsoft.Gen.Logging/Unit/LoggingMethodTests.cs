@@ -17,22 +17,4 @@ public class LoggingMethodTests
         Assert.Empty(instance.Modifiers);
         Assert.Equal("_logger", instance.LoggerMember);
     }
-
-    [Fact]
-    public void ShouldReturnParameterNameIfNotFoundInMap()
-    {
-        var p = new LoggingMethodParameter { Name = "paramName" };
-        var method = new LoggingMethod();
-        Assert.Equal(p.Name, method.GetParameterNameInTemplate(p));
-    }
-
-    [Fact]
-    public void ShouldReturnNameForParameterFromMap()
-    {
-        var p = new LoggingMethodParameter { Name = "paramName" };
-        var method = new LoggingMethod();
-        method.TemplateToParameterName[p.Name] = "Name from the map";
-
-        Assert.Equal(method.TemplateToParameterName[p.Name], method.GetParameterNameInTemplate(p));
-    }
 }

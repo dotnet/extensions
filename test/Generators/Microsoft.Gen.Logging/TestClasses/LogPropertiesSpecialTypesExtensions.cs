@@ -19,7 +19,9 @@ namespace TestClasses
             public Version? P4 { get; set; }
             public Uri? P5 { get; set; }
             public IPAddress? P6 { get; set; }
+#pragma warning disable LOGGEN036
             public EndPoint? P7 { get; set; }
+#pragma warning restore LOGGEN036
             public IPEndPoint? P8 { get; set; }
             public DnsEndPoint? P9 { get; set; }
             public BigInteger P10 { get; set; }
