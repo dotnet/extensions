@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if false
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Linq;
-using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using TestClasses;
 using Xunit;
 
@@ -16,18 +14,15 @@ namespace Microsoft.Gen.Metrics.Test;
 
 public partial class MetricTests : IDisposable
 {
-    private const string BaseMeterName = "Microsoft.GeneratedCode.Test.Metrics." + nameof(MetricTests) + ".";
-
-    private readonly Meter _meter;
-    private readonly FakeMetricsCollector _collector;
+    private const string BaseMeterName = "Microsoft.Gen.Metrics.Test." + nameof(MetricTests) + ".";
     private readonly string _meterName;
+    private readonly Meter _meter;
     private bool _disposedValue;
 
     public MetricTests()
     {
         _meterName = BaseMeterName + Guid.NewGuid().ToString("d", CultureInfo.InvariantCulture);
         _meter = new Meter(_meterName);
-        _collector = new FakeMetricsCollector(new HashSet<string> { _meterName });
     }
 
     protected virtual void Dispose(bool disposing)
@@ -37,7 +32,6 @@ public partial class MetricTests : IDisposable
             if (disposing)
             {
                 _meter.Dispose();
-                _collector.Dispose();
             }
 
             _disposedValue = true;
@@ -53,12 +47,13 @@ public partial class MetricTests : IDisposable
     [Fact]
     public void NonGenericCounter0DInstrumentTests()
     {
+        using var collector = new MetricCollector<long>(_meter, nameof(Counter0D));
         Counter0D counter0D = CounterTestExtensions.CreateCounter0D(_meter);
         counter0D.Add(10L);
         counter0D.Add(5L);
 
-        var measurements = _collector.GetSnapshot();
-        Assert.Collection(measurements, x => Assert.Equal(10L, x.GetValueOrThrow<long>()), x => Assert.Equal(5L, x.GetValueOrThrow<long>()));
+        var measurements = collector.GetMeasurementSnapshot();
+        Assert.Collection(measurements, x => Assert.Equal(10L, x.Value), x => Assert.Equal(5L, x.Value));
         Assert.All(measurements, x => Assert.Empty(x.Tags));
     }
 
@@ -67,23 +62,25 @@ public partial class MetricTests : IDisposable
     {
         const long Value = int.MaxValue + 4L;
 
+        using var collector = new MetricCollector<long>(_meter, nameof(Counter2D));
         Counter2D counter2D = CounterTestExtensions.CreateCounter2D(_meter);
         counter2D.Add(Value, "val1", "val2");
 
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(Value, measurement.GetValueOrThrow<long>());
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(Value, measurement.Value);
         Assert.Equal(new (string, object?)[] { ("s1", "val1"), ("s2", "val2") }, measurement.Tags.Select(x => (x.Key, x.Value)));
     }
 
     [Fact]
     public void NonGenericHistogram0DInstrumentTests()
     {
+        using var collector = new MetricCollector<long>(_meter, nameof(Histogram0D));
         Histogram0D histogram0D = HistogramTestExtensions.CreateHistogram0D(_meter);
         histogram0D.Record(12L);
         histogram0D.Record(6L);
 
-        var measurements = _collector.GetSnapshot();
-        Assert.Collection(measurements, x => Assert.Equal(12L, x.GetValueOrThrow<long>()), x => Assert.Equal(6L, x.GetValueOrThrow<long>()));
+        var measurements = collector.GetMeasurementSnapshot();
+        Assert.Collection(measurements, x => Assert.Equal(12L, x.Value), x => Assert.Equal(6L, x.Value));
         Assert.All(measurements, x => Assert.Empty(x.Tags));
     }
 
@@ -92,11 +89,12 @@ public partial class MetricTests : IDisposable
     {
         const long Value = int.MaxValue + 3L;
 
+        using var collector = new MetricCollector<long>(_meter, nameof(Histogram1D));
         Histogram1D histogram1D = HistogramTestExtensions.CreateHistogram1D(_meter);
         histogram1D.Record(Value, "val_1");
 
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(Value, measurement.GetValueOrThrow<long>());
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(Value, measurement.Value);
         var tag = Assert.Single(measurement.Tags);
         Assert.Equal(new KeyValuePair<string, object?>("s1", "val_1"), tag);
     }
@@ -104,12 +102,13 @@ public partial class MetricTests : IDisposable
     [Fact]
     public void GenericCounter0DInstrumentTests()
     {
+        using var collector = new MetricCollector<int>(_meter, nameof(GenericIntCounter0D));
         GenericIntCounter0D counter0D = CounterTestExtensions.CreateGenericIntCounter0D(_meter);
         counter0D.Add(10);
         counter0D.Add(5);
 
-        var measurements = _collector.GetSnapshot();
-        Assert.Collection(measurements, x => Assert.Equal(10, x.GetValueOrThrow<int>()), x => Assert.Equal(5, x.GetValueOrThrow<int>()));
+        var measurements = collector.GetMeasurementSnapshot();
+        Assert.Collection(measurements, x => Assert.Equal(10, x.Value), x => Assert.Equal(5, x.Value));
         Assert.All(measurements, x => Assert.Empty(x.Tags));
     }
 
@@ -118,11 +117,12 @@ public partial class MetricTests : IDisposable
     {
         const int Value = int.MaxValue - 1;
 
+        using var collector = new MetricCollector<int>(_meter, nameof(GenericIntCounter1D));
         GenericIntCounter1D counter2D = CounterTestExtensions.CreateGenericIntCounter1D(_meter);
         counter2D.Add(Value, "val1");
 
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(Value, measurement.GetValueOrThrow<int>());
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(Value, measurement.Value);
         var tag = Assert.Single(measurement.Tags);
         Assert.Equal(new KeyValuePair<string, object?>("s1", "val1"), tag);
     }
@@ -130,12 +130,13 @@ public partial class MetricTests : IDisposable
     [Fact]
     public void GenericHistogram0DInstrumentTests()
     {
+        using var collector = new MetricCollector<int>(_meter, nameof(GenericIntHistogram0D));
         GenericIntHistogram0D histogram0D = HistogramTestExtensions.CreateGenericIntHistogram0D(_meter);
         histogram0D.Record(12);
         histogram0D.Record(6);
 
-        var measurements = _collector.GetSnapshot();
-        Assert.Collection(measurements, x => Assert.Equal(12, x.GetValueOrThrow<int>()), x => Assert.Equal(6, x.GetValueOrThrow<int>()));
+        var measurements = collector.GetMeasurementSnapshot();
+        Assert.Collection(measurements, x => Assert.Equal(12, x.Value), x => Assert.Equal(6, x.Value));
         Assert.All(measurements, x => Assert.Empty(x.Tags));
     }
 
@@ -144,11 +145,12 @@ public partial class MetricTests : IDisposable
     {
         const int Value = short.MaxValue + 2;
 
+        using var collector = new MetricCollector<int>(_meter, nameof(GenericIntHistogram2D));
         GenericIntHistogram2D histogram1D = HistogramTestExtensions.CreateGenericIntHistogram2D(_meter);
         histogram1D.Record(Value, "val_1", "val_2");
 
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(Value, measurement.GetValueOrThrow<int>());
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(Value, measurement.Value);
         Assert.Equal(new (string, object?)[] { ("s1", "val_1"), ("s2", "val_2") }, measurement.Tags.Select(x => (x.Key, x.Value)));
     }
 
@@ -157,6 +159,7 @@ public partial class MetricTests : IDisposable
     {
         const long Value = int.MaxValue + 2L;
 
+        using var collector = new MetricCollector<long>(_meter, nameof(Counter4D));
         Counter4D counter4D = CounterTestExtensions.CreateCounter4D(_meter);
         Counter4D newCounter4D = CounterTestExtensions.CreateCounter4D(_meter);
         Assert.Same(counter4D, newCounter4D);
@@ -164,10 +167,9 @@ public partial class MetricTests : IDisposable
         counter4D.Add(Value, "val1", "val2", "val3", "val4");
         newCounter4D.Add(Value, "val3", "val4", "val5", "val6");
 
-        Assert.Equal(2, _collector.Count);
-        var measurements = _collector.GetSnapshot();
-        Assert.All(measurements, x => Assert.Equal(Value, x.GetValueOrThrow<long>()));
-        Assert.Same(measurements[0].Instrument, measurements[1].Instrument);
+        var measurements = collector.GetMeasurementSnapshot();
+        Assert.Equal(2, measurements.Count);
+        Assert.All(measurements, x => Assert.Equal(Value, x.Value));
 
         var tags = measurements[0].Tags.Select(x => (x.Key, x.Value));
         Assert.Equal(new (string, object?)[] { ("s1", "val1"), ("s2", "val2"), ("s3", "val3"), ("s4", "val4") }, tags);
@@ -181,6 +183,7 @@ public partial class MetricTests : IDisposable
     {
         const long Value = int.MaxValue + 1L;
 
+        using var collector = new MetricCollector<long>(_meter, nameof(Histogram4D));
         Histogram4D histogram4D = HistogramTestExtensions.CreateHistogram4D(_meter);
         Histogram4D newHistogram4D = HistogramTestExtensions.CreateHistogram4D(_meter);
         Assert.Same(histogram4D, newHistogram4D);
@@ -188,10 +191,9 @@ public partial class MetricTests : IDisposable
         histogram4D.Record(Value, "val1", "val2", "val3", "val4");
         newHistogram4D.Record(Value, "val3", "val4", "val5", "val6");
 
-        Assert.Equal(2, _collector.Count);
-        var measurements = _collector.GetSnapshot();
-        Assert.All(measurements, x => Assert.Equal(Value, x.GetValueOrThrow<long>()));
-        Assert.Same(measurements[0].Instrument, measurements[1].Instrument);
+        var measurements = collector.GetMeasurementSnapshot();
+        Assert.Equal(2, measurements.Count);
+        Assert.All(measurements, x => Assert.Equal(Value, x.Value));
 
         var tags = measurements[0].Tags.Select(x => (x.Key, x.Value));
         Assert.Equal(new (string, object?)[] { ("s1", "val1"), ("s2", "val2"), ("s3", "val3"), ("s4", "val4") }, tags);
@@ -241,96 +243,102 @@ public partial class MetricTests : IDisposable
     [Fact]
     public void ValidateCounterWithDifferentDimensions()
     {
+        using var collector = new MetricCollector<long>(_meter, nameof(Counter2D));
         Counter2D counter2D = CounterTestExtensions.CreateCounter2D(_meter);
 
         counter2D.Add(17L, "val1", "val2");
 
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(17L, measurement.GetValueOrThrow<long>());
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(17L, measurement.Value);
         Assert.Equal(new (string, object?)[] { ("s1", "val1"), ("s2", "val2") }, measurement.Tags.Select(x => (x.Key, x.Value)));
-        _collector.Clear();
+        collector.Clear();
 
         counter2D.Add(5L, "val1", "val2");
-        measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(5L, measurement.GetValueOrThrow<long>());
+        measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(5L, measurement.Value);
         Assert.Equal(new (string, object?)[] { ("s1", "val1"), ("s2", "val2") }, measurement.Tags.Select(x => (x.Key, x.Value)));
-        _collector.Clear();
+        collector.Clear();
 
         // Different Dimensions
         counter2D.Add(5L, "val1", "val4");
-        measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(5L, measurement.GetValueOrThrow<long>());
+        measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(5L, measurement.Value);
         Assert.Equal(new (string, object?)[] { ("s1", "val1"), ("s2", "val4") }, measurement.Tags.Select(x => (x.Key, x.Value)));
     }
 
     [Fact]
     public void ValidateHistogramWithDifferentDimensions()
     {
+        using var collector = new MetricCollector<long>(_meter, nameof(Histogram2D));
         Histogram2D histogram = HistogramTestExtensions.CreateHistogram2D(_meter);
         histogram.Record(10L, "val1", "val2");
 
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(10L, measurement.GetValueOrThrow<long>());
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(10L, measurement.Value);
         Assert.Equal(new (string, object?)[] { ("s1", "val1"), ("s2", "val2") }, measurement.Tags.Select(x => (x.Key, x.Value)));
-        _collector.Clear();
+        collector.Clear();
 
         histogram.Record(5L, "val1", "val2");
-        measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(5L, measurement.GetValueOrThrow<long>());
+        measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(5L, measurement.Value);
         Assert.Equal(new (string, object?)[] { ("s1", "val1"), ("s2", "val2") }, measurement.Tags.Select(x => (x.Key, x.Value)));
-        _collector.Clear();
+        collector.Clear();
 
         // Different Dimensions
         histogram.Record(5L, "val1", "val4");
-        measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(5L, measurement.GetValueOrThrow<long>());
+        measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(5L, measurement.Value);
         Assert.Equal(new (string, object?)[] { ("s1", "val1"), ("s2", "val4") }, measurement.Tags.Select(x => (x.Key, x.Value)));
+    }
+
+    [Fact]
+    public void ValidateCounterWithFileScopedNamespaceNoDims()
+    {
+        using var collector = new MetricCollector<long>(_meter, nameof(FileScopedNamespaceCounter));
+        FileScopedNamespaceCounter longCounter = FileScopedExtensions.CreateCounter(_meter);
+        longCounter.Add(12L);
+
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(12L, measurement.Value);
+        Assert.Empty(measurement.Tags);
     }
 
     [Fact]
     public void ValidateCounterWithFileScopedNamespace()
     {
-        var longCunter = FileScopedExtensions.CreateCounter(_meter);
-        longCunter.Add(12L);
-
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(12L, measurement.GetValueOrThrow<long>());
-        Assert.Empty(measurement.Tags);
-        _collector.Clear();
+        using var collector = new MetricCollector<double>(_meter, nameof(FileScopedNamespaceGenericDoubleCounter));
 
         var genericDoubleCounter = FileScopedExtensions.CreateGenericDoubleCounter(_meter);
         genericDoubleCounter.Add(1.05D);
 
-        measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(1.05D, measurement.GetValueOrThrow<double>());
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(1.05D, measurement.Value);
         Assert.Empty(measurement.Tags);
     }
 
     [Fact]
     public void ValidateCounterWithVariableParamsDimensions()
     {
+        using var collector = new MetricCollector<long>(_meter, "MyCounterMetric");
         CounterWithVariableParams counter = CounterTestExtensions.CreateCounterWithVariableParams(_meter);
 
         counter.Add(100_500L, Dim1: "val1", Dim_2: "val2", Dim_3: "val3");
 
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(100_500L, measurement.GetValueOrThrow<long>());
-        Assert.NotNull(measurement.Instrument);
-        Assert.Equal("MyCounterMetric", measurement.Instrument.Name);
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(100_500L, measurement.Value);
         Assert.Equal(new (string, object?)[] { ("Dim1", "val1"), ("Dim_2", "val2"), ("Dim_3", "val3") }, measurement.Tags.Select(x => (x.Key, x.Value)));
     }
 
     [Fact]
     public void ValidateHistogramWithVariableParamsDimensions()
     {
+        using var collector = new MetricCollector<long>(_meter, "MyHistogramMetric");
         HistogramWithVariableParams histogram = HistogramTestExtensions.CreateHistogramWithVariableParams(_meter);
 
         histogram.Record(100L, Dim1: "val1", Dim_2: "val2", Dim_3: "val3");
 
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(100L, measurement.GetValueOrThrow<long>());
-        Assert.NotNull(measurement.Instrument);
-        Assert.Equal("MyHistogramMetric", measurement.Instrument.Name);
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(100L, measurement.Value);
         Assert.Equal(new (string, object?)[] { ("Dim1", "val1"), ("Dim_2", "val2"), ("Dim_3", "val3") }, measurement.Tags.Select(x => (x.Key, x.Value)));
     }
 
@@ -346,13 +354,12 @@ public partial class MetricTests : IDisposable
             Operations2 = HistogramOperations.Operation1
         };
 
+        using var collector = new MetricCollector<long>(_meter, "MyHistogramStructTypeMetric");
         StructTypeHistogram recorder = HistogramTestExtensions.CreateHistogramStructType(_meter);
         recorder.Record(10L, histogramStruct);
 
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(10L, measurement.GetValueOrThrow<long>());
-        Assert.NotNull(measurement.Instrument);
-        Assert.Equal("MyHistogramStructTypeMetric", measurement.Instrument.Name);
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(10L, measurement.Value);
         Assert.Equal(
             new (string, object?)[]
             {
@@ -391,13 +398,12 @@ public partial class MetricTests : IDisposable
             }
         };
 
+        using var collector = new MetricCollector<long>(_meter, "MyHistogramStrongTypeMetric");
         StrongTypeHistogram recorder = HistogramTestExtensions.CreateHistogramStrongType(_meter);
         recorder.Record(1L, histogramDimensionsTest);
 
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(1L, measurement.GetValueOrThrow<long>());
-        Assert.NotNull(measurement.Instrument);
-        Assert.Equal("MyHistogramStrongTypeMetric", measurement.Instrument.Name);
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(1L, measurement.Value);
         Assert.Equal(
             new (string, object?)[]
             {
@@ -415,14 +421,12 @@ public partial class MetricTests : IDisposable
             measurement.Tags.Select(x => (x.Key, x.Value)));
 
         histogramDimensionsTest.ChildDimensionsObject = null!;
-        _collector.Clear();
+        collector.Clear();
 
         recorder.Record(2L, histogramDimensionsTest);
 
-        measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(2L, measurement.GetValueOrThrow<long>());
-        Assert.NotNull(measurement.Instrument);
-        Assert.Equal("MyHistogramStrongTypeMetric", measurement.Instrument.Name);
+        measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(2L, measurement.Value);
         Assert.Equal(
             new (string, object?)[]
             {
@@ -440,14 +444,12 @@ public partial class MetricTests : IDisposable
             measurement.Tags.Select(x => (x.Key, x.Value)));
 
         histogramDimensionsTest.GrandChildrenDimensionsObject = null!;
-        _collector.Clear();
+        collector.Clear();
 
         recorder.Record(3L, histogramDimensionsTest);
 
-        measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(3L, measurement.GetValueOrThrow<long>());
-        Assert.NotNull(measurement.Instrument);
-        Assert.Equal("MyHistogramStrongTypeMetric", measurement.Instrument.Name);
+        measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(3L, measurement.Value);
         Assert.Equal(
             new (string, object?)[]
             {
@@ -468,13 +470,19 @@ public partial class MetricTests : IDisposable
     [Fact]
     public void ThrowsOnNullStrongTypeObject()
     {
-        StrongTypeHistogram recorder = HistogramTestExtensions.CreateHistogramStrongType(_meter);
-        var ex = Assert.Throws<ArgumentNullException>(() => recorder.Record(4L, null!));
-        Assert.NotNull(ex);
+        using (var collector = new MetricCollector<long>(_meter, "MyHistogramStrongTypeMetric"))
+        {
+            StrongTypeHistogram recorder = HistogramTestExtensions.CreateHistogramStrongType(_meter);
+            var ex = Assert.Throws<ArgumentNullException>(() => recorder.Record(4L, null!));
+            Assert.NotNull(ex);
+        }
 
-        StrongTypeDecimalCounter counter = CounterTestExtensions.CreateStrongTypeDecimalCounter(_meter);
-        ex = Assert.Throws<ArgumentNullException>(() => counter.Add(4M, null!));
-        Assert.NotNull(ex);
+        using (var collector = new MetricCollector<decimal>(_meter, "MyCounterStrongTypeMetric"))
+        {
+            StrongTypeDecimalCounter counter = CounterTestExtensions.CreateStrongTypeDecimalCounter(_meter);
+            var ex = Assert.Throws<ArgumentNullException>(() => counter.Add(4M, null!));
+            Assert.NotNull(ex);
+        }
     }
 
     [Fact]
@@ -489,13 +497,12 @@ public partial class MetricTests : IDisposable
             Operations2 = CounterOperations.Operation1
         };
 
+        using var collector = new MetricCollector<long>(_meter, "MyCounterStructTypeMetric");
         StructTypeCounter recorder = CounterTestExtensions.CreateCounterStructType(_meter);
         recorder.Add(11L, counterStruct);
 
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(11L, measurement.GetValueOrThrow<long>());
-        Assert.NotNull(measurement.Instrument);
-        Assert.Equal("MyCounterStructTypeMetric", measurement.Instrument.Name);
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(11L, measurement.Value);
         Assert.Equal(
             new (string, object?)[]
             {
@@ -534,13 +541,12 @@ public partial class MetricTests : IDisposable
             Dim1 = "Dim1",
         };
 
+        using var collector = new MetricCollector<decimal>(_meter, "MyCounterStrongTypeMetric");
         StrongTypeDecimalCounter counter = CounterTestExtensions.CreateStrongTypeDecimalCounter(_meter);
         counter.Add(1M, counterDimensionsTest);
 
-        var measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(1M, measurement.GetValueOrThrow<decimal>());
-        Assert.NotNull(measurement.Instrument);
-        Assert.Equal("MyCounterStrongTypeMetric", measurement.Instrument.Name);
+        var measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(1M, measurement.Value);
         Assert.Equal(
             new (string, object?)[]
             {
@@ -558,14 +564,12 @@ public partial class MetricTests : IDisposable
             measurement.Tags.Select(x => (x.Key, x.Value)));
 
         counterDimensionsTest.ChildDimensionsObject = null!;
-        _collector.Clear();
+        collector.Clear();
 
         counter.Add(2M, counterDimensionsTest);
 
-        measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(2M, measurement.GetValueOrThrow<decimal>());
-        Assert.NotNull(measurement.Instrument);
-        Assert.Equal("MyCounterStrongTypeMetric", measurement.Instrument.Name);
+        measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(2M, measurement.Value);
         Assert.Equal(
             new (string, object?)[]
             {
@@ -583,13 +587,11 @@ public partial class MetricTests : IDisposable
             measurement.Tags.Select(x => (x.Key, x.Value)));
 
         counterDimensionsTest.GrandChildDimensionsObject = null!;
-        _collector.Clear();
+        collector.Clear();
         counter.Add(3M, counterDimensionsTest);
 
-        measurement = Assert.Single(_collector.GetSnapshot());
-        Assert.Equal(3M, measurement.GetValueOrThrow<decimal>());
-        Assert.NotNull(measurement.Instrument);
-        Assert.Equal("MyCounterStrongTypeMetric", measurement.Instrument.Name);
+        measurement = Assert.Single(collector.GetMeasurementSnapshot());
+        Assert.Equal(3M, measurement.Value);
         Assert.Equal(
             new (string, object?)[]
             {
@@ -607,5 +609,3 @@ public partial class MetricTests : IDisposable
             measurement.Tags.Select(x => (x.Key, x.Value)));
     }
 }
-
-#endif
