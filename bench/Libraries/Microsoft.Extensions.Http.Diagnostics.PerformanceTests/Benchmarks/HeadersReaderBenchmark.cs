@@ -42,7 +42,7 @@ public class HeadersReaderBenchmark
             options.RequestHeadersDataClasses.Add($"Header{i}", FakeTaxonomy.PublicData);
         }
 
-        var redactor = new HttpHeadersRedactor(NullRedactorProvider.Instance);
+        var redactor = new HttpHeadersRedactor(ErasingRedactorProvider.Instance);
         _headersReader = new HttpHeadersReader(new StaticOptionsMonitor<LoggingOptions>(options), redactor);
     }
 

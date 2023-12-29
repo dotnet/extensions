@@ -17,6 +17,7 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
 {
     private readonly FrozenDictionary<string, DataClassification> _requestHeadersToLog;
     private readonly FrozenDictionary<string, DataClassification> _responseHeadersToLog;
+    private readonly int _headersCountThreshold;
     private readonly IHttpHeadersRedactor _redactor;
 
     public HttpHeadersReader(IOptionsMonitor<LoggingOptions> optionsMonitor, IHttpHeadersRedactor redactor, [ServiceKey] string? serviceKey = null)
@@ -27,6 +28,8 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
 
         _requestHeadersToLog = options.RequestHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
         _responseHeadersToLog = options.ResponseHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
+        _headersCountThreshold = _requestHeadersToLog.Count;
     }
 
     public void ReadRequestHeaders(HttpRequestMessage request, List<KeyValuePair<string, string>>? destination)
@@ -73,11 +76,36 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
 
     private void ReadHeadersNew(HttpHeaders headers, FrozenDictionary<string, DataClassification> headersToLog, List<KeyValuePair<string, string>> destination)
     {
-        foreach (var header in headers)
+#if NET6_0_OR_GREATER
+        var nonValidated = headers.NonValidated;
+        if (nonValidated.Count == 0)
         {
-            if (headersToLog.TryGetValue(header.Key, out var classification))
+            return;
+        }
+
+        if (nonValidated.Count < _headersCountThreshold)
+        {
+            // We have less headers than registered for logging, iterating over the smaller collection
+            foreach (var header in headers)
             {
-                destination.Add(new(header.Key, _redactor.Redact(header.Value, classification)));
+                if (headersToLog.TryGetValue(header.Key, out var classification))
+                {
+                    destination.Add(new(header.Key, _redactor.Redact(header.Value, classification)));
+                }
+            }
+
+            return;
+        }
+#endif
+
+        foreach (var kvp in headersToLog)
+        {
+            var classification = kvp.Value;
+            var header = kvp.Key;
+
+            if (headers.TryGetValues(header, out var values))
+            {
+                destination.Add(new(header, _redactor.Redact(values, classification)));
             }
         }
     }
