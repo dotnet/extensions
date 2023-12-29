@@ -171,7 +171,10 @@ internal static class Log
         var requestHeadersCount = record.RequestHeaders?.Count ?? 0;
         var responseHeadersCount = record.ResponseHeaders?.Count ?? 0;
 
-        var index = loggerMessageState.ReserveTagSpace(MinimalPropertyCount + statusCodePropertyCount + requestHeadersCount + responseHeadersCount);
+        var spaceToReserve = MinimalPropertyCount + statusCodePropertyCount + requestHeadersCount + responseHeadersCount +
+            record.PathParametersCount + (record.RequestBody is null ? 0 : 1) + (record.ResponseBody is null ? 0 : 1);
+
+        var index = loggerMessageState.ReserveTagSpace(spaceToReserve);
         loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Method, record.Method);
         loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Host, record.Host);
         loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.Path, record.Path);
@@ -192,14 +195,19 @@ internal static class Log
             loggerMessageState.AddResponseHeaders(record.ResponseHeaders!, ref index);
         }
 
+        if (record.PathParameters is not null)
+        {
+            loggerMessageState.AddPathParameters(record.PathParameters, record.PathParametersCount, ref index);
+        }
+
         if (record.RequestBody is not null)
         {
-            loggerMessageState.AddTag(HttpClientLoggingTagNames.RequestBody, record.RequestBody);
+            loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.RequestBody, record.RequestBody);
         }
 
         if (record.ResponseBody is not null)
         {
-            loggerMessageState.AddTag(HttpClientLoggingTagNames.ResponseBody, record.ResponseBody);
+            loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.ResponseBody, record.ResponseBody);
         }
 
         logger.Log(
