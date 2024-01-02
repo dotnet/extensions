@@ -102,8 +102,9 @@ public class HttpHeadersReaderTest
         responseBuffer.Should().BeEquivalentTo(expectedResponse);
     }
 
-    [Fact]
-    public void HttpHeadersReader_WhenProvided_ReadsContentHeaders()
+    [Theory]
+    [CombinatorialData]
+    public void HttpHeadersReader_WhenProvided_ReadsContentHeaders(bool logContentHeaders)
     {
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), FakeTaxonomy.PublicData))
@@ -122,7 +123,8 @@ public class HttpHeadersReaderTest
                 { "Header3", FakeTaxonomy.PublicData },
                 { "Content-Header2", FakeTaxonomy.PublicData },
                 { "Content-Length", FakeTaxonomy.PublicData }
-            }
+            },
+            LogContentHeaders = logContentHeaders
         };
 
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
@@ -145,19 +147,16 @@ public class HttpHeadersReaderTest
         httpResponse.Headers.Add("Header3", "Value.3");
         httpResponse.Headers.Add("Header4", "Value.4");
 
-        var expectedRequest = new[]
+        List<KeyValuePair<string, string>> expectedRequest = [new KeyValuePair<string, string>("Header1", "Value.1")];
+        List<KeyValuePair<string, string>> expectedResponse = [new KeyValuePair<string, string>("Header3", "Value.3")];
+        if (logContentHeaders)
         {
-            new KeyValuePair<string, string>("Header1", "Value.1"),
-            new KeyValuePair<string, string>("Content-Header1", "Content.1"),
-            new KeyValuePair<string, string>("Content-Type", MediaTypeNames.Application.Soap),
-        };
+            expectedRequest.Add(new KeyValuePair<string, string>("Content-Header1", "Content.1"));
+            expectedRequest.Add(new KeyValuePair<string, string>("Content-Type", MediaTypeNames.Application.Soap));
 
-        var expectedResponse = new[]
-        {
-            new KeyValuePair<string, string>("Header3", "Value.3"),
-            new KeyValuePair<string, string>("Content-Header2", "Content.2"),
-            new KeyValuePair<string, string>("Content-Length", "24"),
-        };
+            expectedResponse.Add(new KeyValuePair<string, string>("Content-Header2", "Content.2"));
+            expectedResponse.Add(new KeyValuePair<string, string>("Content-Length", "24"));
+        }
 
         List<KeyValuePair<string, string>> requestBuffer = [];
         headersReader.ReadRequestHeaders(httpRequest, requestBuffer);

@@ -60,7 +60,7 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
         }
 
         ReadHeadersNew(request.Headers, _requestHeadersToLog, destination);
-        if (request.Content is not null)
+        if (_logContentHeaders && request.Content is not null)
         {
             ReadHeadersNew(request.Content.Headers, _requestHeadersToLog, destination);
         }

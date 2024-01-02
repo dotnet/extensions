@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Shared.Data.Validation;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.Logging;
 
@@ -154,5 +155,6 @@ public class LoggingOptions
     /// This property controls whether the logging of HTTP request and response representation headers (e.g. <c>Content-Type</c>) is enabled.
     /// It doesn't affect the logging if <see cref="RequestHeadersDataClasses"/> or <see cref="ResponseHeadersDataClasses"/> don't contain any representation headers.
     /// </remarks>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public bool LogContentHeaders { get; set; }
 }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Http.Diagnostics</RootNamespace>
     <Description>Telemetry support for HTTP Client.</Description>
@@ -13,7 +13,8 @@
     <UseMetricsReportsGenerator>true</UseMetricsReportsGenerator>
     <InjectGetOrAddOnLegacy>false</InjectGetOrAddOnLegacy>
     <InjectTaskWaitAsyncOnLegacy>true</InjectTaskWaitAsyncOnLegacy>
-    <InjectExperimentalAttributeOnLegacy>false</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
     <InjectSharedDebugger>true</InjectSharedDebugger>
     <InjectSharedDataValidation>false</InjectSharedDataValidation>
