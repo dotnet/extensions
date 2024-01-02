@@ -15,7 +15,7 @@ internal sealed class HttpRouteFormatter : IHttpRouteFormatter
 {
     private const char ForwardSlashSymbol = '/';
 
-#if NETCOREAPP3_1_OR_GREATER
+#if NET6_0_OR_GREATER
     private const char ForwardSlash = ForwardSlashSymbol;
 #else
 #pragma warning disable IDE1006 // Naming Styles
