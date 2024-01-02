@@ -17,6 +17,7 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
 {
     private readonly FrozenDictionary<string, DataClassification> _requestHeadersToLog;
     private readonly FrozenDictionary<string, DataClassification> _responseHeadersToLog;
+    private readonly bool _logContentHeaders;
     private readonly IHttpHeadersRedactor _redactor;
 
     public HttpHeadersReader(IOptionsMonitor<LoggingOptions> optionsMonitor, IHttpHeadersRedactor redactor, [ServiceKey] string? serviceKey = null)
@@ -27,6 +28,7 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
 
         _requestHeadersToLog = options.RequestHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
         _responseHeadersToLog = options.ResponseHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        _logContentHeaders = options.LogContentHeaders;
     }
 
     public void ReadRequestHeaders(HttpRequestMessage request, List<KeyValuePair<string, string>>? destination)
@@ -37,7 +39,7 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
         }
 
         ReadHeaders(request.Headers, _requestHeadersToLog, destination);
-        if (request.Content is not null)
+        if (_logContentHeaders && request.Content is not null)
         {
             ReadHeaders(request.Content.Headers, _requestHeadersToLog, destination);
         }
@@ -51,7 +53,7 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
         }
 
         ReadHeaders(response.Headers, _responseHeadersToLog, destination);
-        if (response.Content is not null)
+        if (_logContentHeaders && response.Content is not null)
         {
             ReadHeaders(response.Content.Headers, _responseHeadersToLog, destination);
         }

@@ -143,4 +143,16 @@ public class LoggingOptions
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
     public IDictionary<string, DataClassification> RouteParameterDataClasses { get; set; } = new Dictionary<string, DataClassification>();
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the HTTP request and response content headers are logged.
+    /// </summary>
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
+    /// <remarks>
+    /// This property controls whether the logging of HTTP request and response representation headers (e.g. <c>Content-Type</c>) is enabled.
+    /// It doesn't affect the logging if <see cref="RequestHeadersDataClasses"/> or <see cref="ResponseHeadersDataClasses"/> don't contain any representation headers.
+    /// </remarks>
+    public bool LogContentHeaders { get; set; }
 }
