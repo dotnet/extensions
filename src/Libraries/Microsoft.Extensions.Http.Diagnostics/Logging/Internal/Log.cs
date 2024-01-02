@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Http.Logging.Internal;
 /// Logs <see cref="HttpRequestMessage"/>, <see cref="HttpResponseMessage"/> and the exceptions due to errors of request/response.
 /// </summary>
 [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Event ID's.")]
-internal static class Log
+internal static partial class Log
 {
     internal const string OriginalFormat = "{OriginalFormat}";
     private const string NullString = "(null)";
@@ -72,6 +72,14 @@ internal static class Log
 
         state.Clear();
     }
+
+    [LoggerMessage(LogLevel.Error, RequestReadErrorMessage)]
+    public static partial void RequestReadErrorSG(
+        ILogger logger,
+        Exception exception,
+        [TagName(HttpClientLoggingTagNames.Method)] HttpMethod method,
+        [TagName(HttpClientLoggingTagNames.Host)] string? host,
+        [TagName(HttpClientLoggingTagNames.Path)] string? path);
 
     public static void ResponseReadError(ILogger logger, Exception exception, HttpMethod method, string host, string path)
     {
