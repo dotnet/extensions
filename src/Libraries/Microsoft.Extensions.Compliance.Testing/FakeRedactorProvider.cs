@@ -28,7 +28,7 @@ public class FakeRedactorProvider : IRedactorProvider
     public FakeRedactorProvider(FakeRedactorOptions? options = null, FakeRedactionCollector? eventCollector = null)
     {
         Collector = eventCollector ?? new FakeRedactionCollector();
-        _redactor = new FakeRedactor(Microsoft.Extensions.Options.Options.Create(options ?? new FakeRedactorOptions()), Collector);
+        _redactor = new FakeRedactor(Options.Options.Create(options ?? new FakeRedactorOptions()), Collector);
     }
 
     /// <inheritdoc/>

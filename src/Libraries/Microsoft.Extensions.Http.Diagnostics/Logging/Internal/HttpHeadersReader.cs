@@ -18,6 +18,9 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
     private readonly FrozenDictionary<string, DataClassification> _requestHeadersToLog;
     private readonly FrozenDictionary<string, DataClassification> _responseHeadersToLog;
     private readonly bool _logContentHeaders;
+#if NET6_0_OR_GREATER
+    private readonly int _headersCountThreshold;
+#endif
     private readonly IHttpHeadersRedactor _redactor;
 
     public HttpHeadersReader(IOptionsMonitor<LoggingOptions> optionsMonitor, IHttpHeadersRedactor redactor, [ServiceKey] string? serviceKey = null)
@@ -29,6 +32,10 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
         _requestHeadersToLog = options.RequestHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
         _responseHeadersToLog = options.ResponseHeadersDataClasses.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
         _logContentHeaders = options.LogContentHeaders;
+
+#if NET6_0_OR_GREATER
+        _headersCountThreshold = _requestHeadersToLog.Count;
+#endif
     }
 
     public void ReadRequestHeaders(HttpRequestMessage request, List<KeyValuePair<string, string>>? destination)
@@ -42,6 +49,20 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
         if (_logContentHeaders && request.Content is not null)
         {
             ReadHeaders(request.Content.Headers, _requestHeadersToLog, destination);
+        }
+    }
+
+    public void ReadRequestHeadersNew(HttpRequestMessage request, List<KeyValuePair<string, string>>? destination)
+    {
+        if (destination is null)
+        {
+            return;
+        }
+
+        ReadHeadersNew(request.Headers, _requestHeadersToLog, destination);
+        if (request.Content is not null)
+        {
+            ReadHeadersNew(request.Content.Headers, _requestHeadersToLog, destination);
         }
     }
 
@@ -59,14 +80,52 @@ internal sealed class HttpHeadersReader : IHttpHeadersReader
         }
     }
 
-    // TODO: test whether this implementation is generally more optimal than the previous one
+    private void ReadHeadersNew(HttpHeaders headers, FrozenDictionary<string, DataClassification> headersToLog, List<KeyValuePair<string, string>> destination)
+    {
+#if NET6_0_OR_GREATER
+        var headersCount = headers.NonValidated.Count;
+        if (headersCount == 0)
+        {
+            return;
+        }
+
+        if (headersCount < _headersCountThreshold)
+        {
+            // We have less headers than registered for logging, iterating over the smaller collection
+            foreach (var header in headers)
+            {
+                if (headersToLog.TryGetValue(header.Key, out var classification))
+                {
+                    destination.Add(new(header.Key, _redactor.Redact(header.Value, classification)));
+                }
+            }
+
+            return;
+        }
+#endif
+
+        foreach (var kvp in headersToLog)
+        {
+            var classification = kvp.Value;
+            var header = kvp.Key;
+
+            if (headers.TryGetValues(header, out var values))
+            {
+                destination.Add(new(header, _redactor.Redact(values, classification)));
+            }
+        }
+    }
+
     private void ReadHeaders(HttpHeaders headers, FrozenDictionary<string, DataClassification> headersToLog, List<KeyValuePair<string, string>> destination)
     {
-        foreach (var header in headers)
+        foreach (var kvp in headersToLog)
         {
-            if (headersToLog.TryGetValue(header.Key, out var classification))
+            var classification = kvp.Value;
+            var header = kvp.Key;
+
+            if (headers.TryGetValues(header, out var values))
             {
-                destination.Add(new(header.Key, _redactor.Redact(header.Value, classification)));
+                destination.Add(new(header, _redactor.Redact(values, classification)));
             }
         }
     }

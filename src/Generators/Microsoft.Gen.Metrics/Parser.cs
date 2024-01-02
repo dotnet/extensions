@@ -215,8 +215,8 @@ internal sealed class Parser
             : symbol.TypeArguments[0];
 
     private static (InstrumentKind instrumentKind, ITypeSymbol? genericType) GetInstrumentType(
-    INamedTypeSymbol? methodAttributeSymbol,
-    SymbolHolder symbols)
+        INamedTypeSymbol? methodAttributeSymbol,
+        SymbolHolder symbols)
     {
         if (methodAttributeSymbol == null)
         {
@@ -492,13 +492,11 @@ internal sealed class Parser
             Diag(DiagDescriptors.ErrorMethodHasBody, methodSymbol.GetLocation());
             keepMethod = false;
         }
-#pragma warning disable S2583 // Conditionally executed code should be reachable
         else if (!isPartial)
         {
             Diag(DiagDescriptors.ErrorNotPartialMethod, methodSymbol.GetLocation());
             keepMethod = false;
         }
-#pragma warning restore S2583 // Conditionally executed code should be reachable
 
         // ensure Metric name is not empty and starts with a Capital letter.
         // ensure there are no duplicate ids.
@@ -668,14 +666,14 @@ internal sealed class Parser
     /// <summary>
     /// Called recursively to build all required StrongTypeDimensionConfigs.
     /// </summary>
-    /// <param name="symbol">The Symbol being extracted.</param>
+    /// <param name="member">The Symbol being extracted.</param>
     /// <param name="typesChain">A set of symbols in the current type chain.</param>
     /// <param name="tagHashSet">HashSet of all dimensions seen so far.</param>
     /// <param name="symbols">Shared symbols.</param>
     /// <param name="stringBuilder">List of all property names when walking down the object model. See StrongTypeDimensionConfigs for an example.</param>
     /// <returns>List of all StrongTypeDimensionConfigs seen so far.</returns>
     private List<StrongTypeConfig> BuildTagConfigs(
-        ISymbol symbol,
+        ISymbol member,
         ISet<ITypeSymbol> typesChain,
         HashSet<string> tagHashSet,
         Dictionary<string, string> tagDescriptionDictionary,
@@ -688,15 +686,16 @@ internal sealed class Parser
         SpecialType specialType;
         ITypeSymbol typeSymbol;
 
-        if (symbol.IsImplicitlyDeclared)
+        if (member.IsImplicitlyDeclared ||
+            member.IsStatic)
         {
             return tagConfigs;
         }
 
-        switch (symbol.Kind)
+        switch (member.Kind)
         {
             case SymbolKind.Property:
-                var propertySymbol = symbol as IPropertySymbol;
+                var propertySymbol = member as IPropertySymbol;
 
                 kind = propertySymbol!.Type.TypeKind;
                 specialType = propertySymbol.Type.SpecialType;
@@ -704,7 +703,7 @@ internal sealed class Parser
                 break;
 
             case SymbolKind.Field:
-                var fieldSymbol = symbol as IFieldSymbol;
+                var fieldSymbol = member as IFieldSymbol;
 
                 kind = fieldSymbol!.Type.TypeKind;
                 specialType = fieldSymbol.Type.SpecialType;
@@ -726,28 +725,28 @@ internal sealed class Parser
         {
             if (kind == TypeKind.Enum)
             {
-                var name = TryGetTagNameFromAttribute(symbol, symbols, out var tagName)
+                var name = TryGetTagNameFromAttribute(member, symbols, out var tagName)
                     ? tagName
-                    : symbol.Name;
+                    : member.Name;
 
                 if (!tagHashSet.Add(name))
                 {
-                    Diag(DiagDescriptors.ErrorDuplicateTagName, symbol.Locations[0], symbol.Name);
+                    Diag(DiagDescriptors.ErrorDuplicateTagName, member.Locations[0], member.Name);
                 }
                 else
                 {
                     tagConfigs.Add(new StrongTypeConfig
                     {
-                        Name = symbol.Name,
+                        Name = member.Name,
                         Path = stringBuilder.ToString(),
                         TagName = name,
                         StrongTypeMetricObjectType = StrongTypeMetricObjectType.Enum
                     });
 
-                    var xmlDefinition = GetSymbolXmlCommentSummary(symbol);
+                    var xmlDefinition = GetSymbolXmlCommentSummary(member);
                     if (!string.IsNullOrEmpty(xmlDefinition))
                     {
-                        tagDescriptionDictionary.Add(string.IsNullOrEmpty(tagName) ? symbol.Name : tagName, xmlDefinition);
+                        tagDescriptionDictionary.Add(string.IsNullOrEmpty(tagName) ? member.Name : tagName, xmlDefinition);
                     }
                 }
 
@@ -758,28 +757,28 @@ internal sealed class Parser
             {
                 if (specialType == SpecialType.System_String)
                 {
-                    var name = TryGetTagNameFromAttribute(symbol, symbols, out var tagName)
+                    var name = TryGetTagNameFromAttribute(member, symbols, out var tagName)
                         ? tagName
-                        : symbol.Name;
+                        : member.Name;
 
                     if (!tagHashSet.Add(name))
                     {
-                        Diag(DiagDescriptors.ErrorDuplicateTagName, symbol.Locations[0], symbol.Name);
+                        Diag(DiagDescriptors.ErrorDuplicateTagName, member.Locations[0], member.Name);
                     }
                     else
                     {
                         tagConfigs.Add(new StrongTypeConfig
                         {
-                            Name = symbol.Name,
+                            Name = member.Name,
                             Path = stringBuilder.ToString(),
                             TagName = name,
                             StrongTypeMetricObjectType = StrongTypeMetricObjectType.String
                         });
 
-                        var xmlDefinition = GetSymbolXmlCommentSummary(symbol);
+                        var xmlDefinition = GetSymbolXmlCommentSummary(member);
                         if (!string.IsNullOrEmpty(xmlDefinition))
                         {
-                            tagDescriptionDictionary.Add(string.IsNullOrEmpty(tagName) ? symbol.Name : tagName, xmlDefinition);
+                            tagDescriptionDictionary.Add(string.IsNullOrEmpty(tagName) ? member.Name : tagName, xmlDefinition);
                         }
                     }
 
@@ -793,13 +792,13 @@ internal sealed class Parser
 
                         tagConfigs.Add(new StrongTypeConfig
                         {
-                            Name = symbol.Name,
+                            Name = member.Name,
                             Path = stringBuilder.ToString(),
                             StrongTypeMetricObjectType = StrongTypeMetricObjectType.Class
                         });
 
                         tagConfigs.AddRange(
-                            WalkObjectModel(symbol, typesChain, namedTypeSymbol, stringBuilder,
+                            WalkObjectModel(member, typesChain, namedTypeSymbol, stringBuilder,
                                 tagHashSet, tagDescriptionDictionary, symbols, true));
 
                         return tagConfigs;
@@ -807,7 +806,7 @@ internal sealed class Parser
                 }
                 else
                 {
-                    Diag(DiagDescriptors.ErrorInvalidTagNameType, symbol.Locations[0]);
+                    Diag(DiagDescriptors.ErrorInvalidTagNameType, member.Locations[0]);
                     return tagConfigs;
                 }
             }
@@ -816,20 +815,20 @@ internal sealed class Parser
             {
                 if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
                 {
-                    Diag(DiagDescriptors.ErrorInvalidTagNameType, symbol.Locations[0]);
+                    Diag(DiagDescriptors.ErrorInvalidTagNameType, member.Locations[0]);
                 }
                 else
                 {
                     // User defined struct. First add into dimensionConfigs, then walk down the rest of the struct.
                     tagConfigs.Add(new StrongTypeConfig
                     {
-                        Name = symbol.Name,
+                        Name = member.Name,
                         Path = stringBuilder.ToString(),
                         StrongTypeMetricObjectType = StrongTypeMetricObjectType.Struct
                     });
 
                     tagConfigs.AddRange(
-                        WalkObjectModel(symbol, typesChain, namedTypeSymbol, stringBuilder,
+                        WalkObjectModel(member, typesChain, namedTypeSymbol, stringBuilder,
                             tagHashSet, tagDescriptionDictionary, symbols, false));
                 }
 
@@ -837,7 +836,7 @@ internal sealed class Parser
             }
             else
             {
-                Diag(DiagDescriptors.ErrorInvalidTagNameType, symbol.Locations[0]);
+                Diag(DiagDescriptors.ErrorInvalidTagNameType, member.Locations[0]);
                 return tagConfigs;
             }
         }
@@ -846,9 +845,9 @@ internal sealed class Parser
             _builders.ReturnStringBuilder(stringBuilder);
         }
     }
-#pragma warning disable S107 // Methods should not have too many parameters
 
     // we can deal with this warning later
+#pragma warning disable S107 // Methods should not have too many parameters
     private List<StrongTypeConfig> WalkObjectModel(
         ISymbol parentSymbol,
         ISet<ITypeSymbol> typesChain,
