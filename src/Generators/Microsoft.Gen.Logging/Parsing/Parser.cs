@@ -658,7 +658,7 @@ internal sealed partial class Parser
                     {
                         if (ParserUtilities.IsBaseOrIdentity(gm.ReturnType, symbol, _compilation))
                         {
-                            if (!originType.CanAccess(gm))
+                            if (!sm.Compilation.IsSymbolAccessibleWithin(gm, originType, type))
                             {
                                 continue;
                             }
@@ -679,7 +679,7 @@ internal sealed partial class Parser
                 {
                     if (f.AssociatedSymbol == null && ParserUtilities.IsBaseOrIdentity(f.Type, symbol, _compilation))
                     {
-                        if (!originType.CanAccess(f))
+                        if (!sm.Compilation.IsSymbolAccessibleWithin(f, originType, type))
                         {
                             continue;
                         }
