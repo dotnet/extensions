@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Http.Logging.Internal;
 /// Logs <see cref="HttpRequestMessage"/>, <see cref="HttpResponseMessage"/> and the exceptions due to errors of request/response.
 /// </summary>
 [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used", Justification = "Event ID's.")]
-internal static partial class Log
+internal static class Log
 {
     internal const string OriginalFormat = "{OriginalFormat}";
     private const string NullString = "(null)";
@@ -34,7 +34,7 @@ internal static partial class Log
         "An error occurred in enricher '{Enricher}' while enriching the logger context for request: " +
         $"{{{HttpClientLoggingTagNames.Method}}} {{{HttpClientLoggingTagNames.Host}}}/{{{HttpClientLoggingTagNames.Path}}}";
 
-    private static readonly Func<LoggerMessageState, Exception?, string> _originalFormatValueFMTFunc = OriginalFormatValueFMT;
+    private static readonly Func<LoggerMessageState, Exception?, string> _originalFormatValueFMTFunc = OriginalFormatValueFmt;
 
     public static void OutgoingRequest(ILogger logger, LogLevel level, LogRecord record)
     {
@@ -72,14 +72,6 @@ internal static partial class Log
 
         state.Clear();
     }
-
-    [LoggerMessage(LogLevel.Error, RequestReadErrorMessage)]
-    public static partial void RequestReadErrorSG(
-        ILogger logger,
-        Exception exception,
-        [TagName(HttpClientLoggingTagNames.Method)] HttpMethod method,
-        [TagName(HttpClientLoggingTagNames.Host)] string? host,
-        [TagName(HttpClientLoggingTagNames.Path)] string? path);
 
     public static void ResponseReadError(ILogger logger, Exception exception, HttpMethod method, string host, string path)
     {
@@ -123,7 +115,7 @@ internal static partial class Log
             new(0, nameof(LoggerContextMissing)),
             state,
             exception,
-            (s, _) =>
+            static (s, _) =>
             {
                 var requestState = s.TagArray[3].Value ?? NullString;
                 var method = s.TagArray[2].Value ?? NullString;
@@ -150,7 +142,7 @@ internal static partial class Log
             new(0, nameof(EnrichmentError)),
             state,
             exception,
-            (s, _) =>
+            static (s, _) =>
             {
                 var enricher = s.TagArray[4].Value ?? NullString;
                 var method = s.TagArray[3].Value ?? NullString;
@@ -215,7 +207,7 @@ internal static partial class Log
 
         if (record.ResponseBody is not null)
         {
-            loggerMessageState.TagArray[index++] = new(HttpClientLoggingTagNames.ResponseBody, record.ResponseBody);
+            loggerMessageState.TagArray[index] = new(HttpClientLoggingTagNames.ResponseBody, record.ResponseBody);
         }
 
         logger.Log(
@@ -231,7 +223,7 @@ internal static partial class Log
         }
     }
 
-    private static string OriginalFormatValueFMT(LoggerMessageState request, Exception? _)
+    private static string OriginalFormatValueFmt(LoggerMessageState request, Exception? _)
     {
         int startIndex = FindStartIndex(request);
         var httpMethod = request[startIndex].Value;
