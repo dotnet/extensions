@@ -756,6 +756,11 @@ public class LogMethodTests
         collector.Clear();
         AtSymbolsTestExtensions.M5(logger, LogLevel.Debug, o);
         Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("class"));
+
+        collector.Clear();
+        AtSymbolsTestExtensions.M6(logger, "42");
+        Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("class"));
+        Assert.Equal("M6 class 42", collector.LatestRecord.Message);
     }
 
     [Fact]

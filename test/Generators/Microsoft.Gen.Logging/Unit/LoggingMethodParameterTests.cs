@@ -61,9 +61,9 @@ public class LoggingMethodParameterTests
             NeedsAtSign = false,
         };
 
-        Assert.Equal(lp.ParameterName, lp.ParameterNameWithAt);
+        Assert.Equal(lp.ParameterName, lp.ParameterNameWithAtIfNeeded);
         lp.NeedsAtSign = true;
-        Assert.Equal("@" + lp.ParameterName, lp.ParameterNameWithAt);
+        Assert.Equal("@" + lp.ParameterName, lp.ParameterNameWithAtIfNeeded);
 
         lp.Type = "Foo";
         lp.IsReference = false;

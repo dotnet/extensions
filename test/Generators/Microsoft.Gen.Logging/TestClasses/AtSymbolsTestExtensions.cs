@@ -32,5 +32,8 @@ namespace TestClasses
 
         [LoggerMessage("M5")]
         internal static partial void M5(ILogger logger, LogLevel level, [LogProperties(OmitReferenceName = true)] SpecialNames @event);
+
+        [LoggerMessage(LogLevel.Information, "M6 class {class}")]
+        internal static partial void M6(ILogger logger, string @class);
     }
 }

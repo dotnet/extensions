@@ -152,7 +152,7 @@ internal sealed partial class Parser
                         bool parameterInTemplate = false;
                         foreach (var t in lm.Templates)
                         {
-                            if (lp.ParameterName.Equals(t, StringComparison.OrdinalIgnoreCase))
+                            if (lp.TagName.Equals(t, StringComparison.OrdinalIgnoreCase))
                             {
                                 parameterInTemplate = true;
                                 break;
@@ -273,9 +273,10 @@ internal sealed partial class Parser
                             bool found = false;
                             foreach (var p in lm.Parameters)
                             {
-                                if (t.Equals(p.ParameterName, StringComparison.OrdinalIgnoreCase))
+                                if (t.Equals(p.TagName, StringComparison.OrdinalIgnoreCase))
                                 {
                                     found = true;
+                                    p.TagName = t;
                                     break;
                                 }
                             }
@@ -398,7 +399,7 @@ internal sealed partial class Parser
                 keepMethod = false;
             }
 
-            TemplateExtractor.ExtractTemplates(message, lm.Templates);
+            TemplateProcessor.ExtractTemplates(message, lm.Templates);
 
 #pragma warning disable EA0003 // Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
             var templatesWithAtSymbol = lm.Templates.Where(x => x.StartsWith("@", StringComparison.Ordinal)).ToArray();
@@ -522,12 +523,9 @@ internal sealed partial class Parser
                     }
                 });
             }
-            else
+            else if (!names.Add(parameter.TagName))
             {
-                if (!names.Add(parameter.TagName))
-                {
-                    Diag(DiagDescriptors.TagNameCollision, parameterSymbols[parameter].GetLocation(), parameter.ParameterName, parameter.TagName, lm.Name);
-                }
+                Diag(DiagDescriptors.TagNameCollision, parameterSymbols[parameter].GetLocation(), parameter.ParameterName, parameter.TagName, lm.Name);
             }
         }
     }
@@ -658,7 +656,7 @@ internal sealed partial class Parser
                     {
                         if (ParserUtilities.IsBaseOrIdentity(gm.ReturnType, symbol, _compilation))
                         {
-                            if (!originType.CanAccess(gm))
+                            if (!sm.Compilation.IsSymbolAccessibleWithin(gm, originType, type))
                             {
                                 continue;
                             }
@@ -679,7 +677,7 @@ internal sealed partial class Parser
                 {
                     if (f.AssociatedSymbol == null && ParserUtilities.IsBaseOrIdentity(f.Type, symbol, _compilation))
                     {
-                        if (!originType.CanAccess(f))
+                        if (!sm.Compilation.IsSymbolAccessibleWithin(f, originType, type))
                         {
                             continue;
                         }
