@@ -154,7 +154,8 @@ public class LoggingOptions
     /// </value>
     /// <remarks>
     /// This property controls whether the logging of HTTP request and response representation headers (e.g. <c>Content-Type</c>) is enabled.
-    /// It doesn't affect the logging if <see cref="RequestHeadersDataClasses"/> or <see cref="ResponseHeadersDataClasses"/> don't contain any representation headers.
+    /// Keep this option disabled if <see cref="RequestHeadersDataClasses"/> or <see cref="ResponseHeadersDataClasses"/>
+    /// don't contain any representation headers, otherwise it will create unnecessary minor performance impact on the headers logging.
     /// </remarks>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
     public bool LogContentHeaders { get; set; }

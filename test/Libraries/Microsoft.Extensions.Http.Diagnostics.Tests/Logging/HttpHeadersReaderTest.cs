@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Mime;
@@ -92,7 +91,7 @@ public class HttpHeadersReaderTest
         {
             new KeyValuePair<string, string>("Header3", "Value.3"),
             new KeyValuePair<string, string>("Header4", "Value.4"),
-            new KeyValuePair<string, string>("Header7", Redacted),
+            new KeyValuePair<string, string>("hEaDeR7", Redacted)
         };
 
         headersReader.ReadRequestHeaders(httpRequest, requestBuffer);

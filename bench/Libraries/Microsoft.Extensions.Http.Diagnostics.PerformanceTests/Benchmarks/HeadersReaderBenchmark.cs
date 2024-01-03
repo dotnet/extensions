@@ -23,6 +23,9 @@ public class HeadersReaderBenchmark
     [Params(1, 3, 5, 10)]
     public int HeadersToLogCount { get; set; }
 
+    [Params(false, true)]
+    public bool LogContentHeaders { get; set; }
+
     public HttpRequestMessage? Request { get; set; }
 
     [GlobalSetup]
@@ -35,7 +38,7 @@ public class HeadersReaderBenchmark
             Request.Headers.Add($"Header{i}", $"Value{i}");
         }
 
-        var options = new LoggingOptions();
+        var options = new LoggingOptions { LogContentHeaders = LogContentHeaders };
         for (var i = 0; i < HeadersToLogCount; i++)
         {
             options.RequestHeadersDataClasses.Add($"Header{i}", FakeTaxonomy.PublicData);
@@ -54,19 +57,16 @@ public class HeadersReaderBenchmark
     }
 
     [Benchmark]
-    public void HeadersReaderOld()
+    public void HeadersReader()
     {
         _headersReader.ReadRequestHeaders(Request!, _outputBuffer);
-    }
-
-    [Benchmark]
-    public void HeadersReaderNew()
-    {
-        _headersReader.ReadRequestHeadersNew(Request!, _outputBuffer);
     }
 }
 
 /*
+ 
+ These results show comparison between a plain logic (when we enumerate over "headersToLog" dictionary),
+ and an updated logic when we choose the strategy based on the number of headers to read and the number of headers to log.
 
 BenchmarkDotNet=v0.13.5, OS=Windows 11 (10.0.22631.2861), VM=Hyper-V
 Intel Xeon Platinum 8370C CPU 2.80GHz, 1 CPU, 16 logical and 8 physical cores
