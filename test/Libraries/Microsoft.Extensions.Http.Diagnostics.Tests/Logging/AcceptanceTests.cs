@@ -14,7 +14,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Http.Logging.Test.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -23,7 +22,7 @@ namespace Microsoft.Extensions.Http.Logging.Test;
 public class AcceptanceTests
 {
     private const string LoggingCategory = "Microsoft.Extensions.Http.Logging.HttpClientLogger";
-    private static readonly Uri _unreachableRequestUri = new("https://we.wont.hit.this.doman.anyway");
+    private static readonly Uri _unreachableRequestUri = new("https://we.wont.hit.this.domain.anyway");
 
     [Fact]
     public async Task AddHttpClientLogEnricher_WhenNullEnricherRegistered_SkipsNullEnrichers()
@@ -116,14 +115,15 @@ public class AcceptanceTests
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);
 
         Assert.Equal($"{httpRequestMessage.Method} {httpRequestMessage.RequestUri.Host}/{TelemetryConstants.Redacted}", logRecord.Message);
-        var state = logRecord.StructuredState;
         var enricher1 = sp.GetServices<IHttpClientLogEnricher>().SingleOrDefault(enn => enn is EnricherWithCounter) as EnricherWithCounter;
         var enricher2 = sp.GetServices<IHttpClientLogEnricher>().SingleOrDefault(enn => enn is TestEnricher) as TestEnricher;
 
         enricher1.Should().NotBeNull();
         enricher2.Should().NotBeNull();
-
         enricher1!.TimesCalled.Should().Be(1);
+
+        var state = logRecord.StructuredState;
+        state.Should().NotBeNull();
         state!.Single(kvp => kvp.Key == enricher2!.KvpRequest.Key).Value.Should().Be(enricher2!.KvpRequest.Value!.ToString());
     }
 
@@ -170,7 +170,7 @@ public class AcceptanceTests
         var responseString = await SendRequest(namedClient1, httpRequestMessage);
         var collector = provider.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
-        var state = logRecord.State as List<KeyValuePair<string, string>>;
+        var state = logRecord.StructuredState;
         state.Should().Contain(kvp => kvp.Value == responseString);
         state.Should().Contain(kvp => kvp.Value == "Request Value");
         state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
@@ -186,7 +186,7 @@ public class AcceptanceTests
         collector.Clear();
         responseString = await SendRequest(namedClient2, httpRequestMessage2);
         logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
-        state = logRecord.State as List<KeyValuePair<string, string>>;
+        state = logRecord.StructuredState;
         state.Should().Contain(kvp => kvp.Value == responseString);
         state.Should().Contain(kvp => kvp.Value == "Request Value");
         state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
@@ -256,7 +256,8 @@ public class AcceptanceTests
         var responseString = Encoding.UTF8.GetString(buffer);
 
         var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
-        var state = logRecord.State as List<KeyValuePair<string, string>>;
+        var state = logRecord.StructuredState;
+        state.Should().NotBeNull();
         state.Should().Contain(kvp => kvp.Value == responseString);
         state.Should().Contain(kvp => kvp.Value == "Request Value");
         state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
@@ -277,7 +278,7 @@ public class AcceptanceTests
         responseString = Encoding.UTF8.GetString(buffer);
 
         logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
-        state = logRecord.State as List<KeyValuePair<string, string>>;
+        state = logRecord.StructuredState;
         state.Should().Contain(kvp => kvp.Value == responseString);
         state.Should().Contain(kvp => kvp.Value == "Request Value");
         state.Should().Contain(kvp => kvp.Value == "Request Value 2,Request Value 3");
@@ -320,8 +321,79 @@ public class AcceptanceTests
 
         var collector = sp.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);
-        var state = logRecord.State as List<KeyValuePair<string, string>>;
+        var state = logRecord.StructuredState;
+        state.Should().NotBeNull();
         state!.Single(kvp => kvp.Key == HttpClientLoggingTagNames.Path).Value.Should().Be(redactedPath);
+    }
+
+    [Theory]
+    [InlineData(HttpRouteParameterRedactionMode.Strict, "REDACTED", "<REDACTED:123>")]
+    [InlineData(HttpRouteParameterRedactionMode.Loose, "999", "<REDACTED:123>")]
+    [InlineData(HttpRouteParameterRedactionMode.None, "999", "123")]
+    public async Task AddHttpClientLogging_StructuredPathLogging_RedactsSensitiveParams(
+        HttpRouteParameterRedactionMode parameterRedactionMode,
+        string expectedUnitId,
+        string expectedUserId)
+    {
+        const string RequestPath = "https://fake.com/v1/unit/999/users/123";
+        const string RequestRoute = "/v1/unit/{unitId}/users/{userId}";
+
+        await using var sp = new ServiceCollection()
+            .AddFakeLogging()
+            .AddFakeRedaction(o => o.RedactionFormat = "<REDACTED:{0}>")
+            .AddHttpClient()
+            .AddExtendedHttpClientLogging(o =>
+            {
+                o.RouteParameterDataClasses.Add("userId", FakeTaxonomy.PrivateData);
+                o.RequestPathParameterRedactionMode = parameterRedactionMode;
+                o.RequestPathLoggingMode = OutgoingPathLoggingMode.Structured;
+            })
+            .BlockRemoteCall()
+            .BuildServiceProvider();
+
+        using var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
+        using var httpRequestMessage = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri(RequestPath)
+        };
+
+        httpRequestMessage.SetRequestMetadata(new RequestMetadata(httpRequestMessage.Method.ToString(), RequestRoute));
+
+        using var _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+
+        var collector = sp.GetFakeLogCollector();
+        var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);
+        var state = logRecord.StructuredState;
+        var loggedPath = state.Should().NotBeNull().And
+            .ContainSingle(kvp => kvp.Key == HttpClientLoggingTagNames.Path)
+            .Subject.Value;
+
+        state.Should().ContainSingle(kvp => kvp.Key == HttpClientLoggingTagNames.Host)
+            .Which.Value.Should().Be(httpRequestMessage.RequestUri.Host);
+
+        state.Should().ContainSingle(kvp => kvp.Key == HttpClientLoggingTagNames.Method)
+            .Which.Value.Should().Be(httpRequestMessage.Method.ToString());
+
+        state.Should().ContainSingle(kvp => kvp.Key == HttpClientLoggingTagNames.StatusCode)
+            .Which.Value.Should().Be("200");
+
+        state.Should().ContainSingle(kvp => kvp.Key == HttpClientLoggingTagNames.Duration)
+            .Which.Value.Should().NotBeEmpty();
+
+        // When the redaction mode is set to "None", the RequestPathLoggingMode is ignored
+        if (parameterRedactionMode == HttpRouteParameterRedactionMode.None)
+        {
+            loggedPath.Should().Be(httpRequestMessage.RequestUri.AbsolutePath);
+            state.Should().HaveCount(5);
+        }
+        else
+        {
+            loggedPath.Should().Be(RequestRoute);
+            state.Should().ContainSingle(kvp => kvp.Key == "userId").Which.Value.Should().Be(expectedUserId);
+            state.Should().ContainSingle(kvp => kvp.Key == "unitId").Which.Value.Should().Be(expectedUnitId);
+            state.Should().HaveCount(7);
+        }
     }
 
     [Theory]
@@ -361,7 +433,8 @@ public class AcceptanceTests
 
         var collector = sp.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);
-        var state = logRecord.State as List<KeyValuePair<string, string>>;
+        var state = logRecord.StructuredState;
+        state.Should().NotBeNull();
         state!.Single(kvp => kvp.Key == HttpClientLoggingTagNames.Path).Value.Should().Be(redactedPath);
     }
 
@@ -514,7 +587,6 @@ public class AcceptanceTests
              .BlockRemoteCall()
              .BuildServiceProvider();
 
-        var options = provider.GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get("test");
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _unreachableRequestUri);
 
@@ -522,7 +594,7 @@ public class AcceptanceTests
         var collector = provider.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(l => l.Category == LoggingCategory);
 
-        logRecord.Scopes.Should().HaveCount(0);
+        logRecord.Scopes.Should().BeEmpty();
     }
 
     [Fact]
@@ -564,7 +636,6 @@ public class AcceptanceTests
              .BlockRemoteCall()
              .BuildServiceProvider();
 
-        var options = provider.GetRequiredService<IOptionsMonitor<LoggingOptions>>().Get("test");
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("test");
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _unreachableRequestUri);
 

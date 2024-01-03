@@ -97,7 +97,7 @@ public class HttpClientLoggerTest
         using var handler = new TestLoggingHandler(
             new HttpClientLogger(
                 NullLogger<HttpClientLogger>.Instance,
-                new HttpRequestReader(options, GetHttpRouteFormatter(), headersReader, RequestMetadataContext),
+                new HttpRequestReader(options, GetHttpRouteFormatter(), Mock.Of<IHttpRouteParser>(), headersReader, RequestMetadataContext),
                 Enumerable.Empty<IHttpClientLogEnricher>(),
                 options),
             new TestingHandlerStub((_, _) => throw exception));
@@ -209,22 +209,23 @@ public class HttpClientLoggerTest
             BodyReadTimeout = TimeSpan.FromMinutes(5),
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured,
             LogRequestStart = false,
-            LogBody = true,
-            RouteParameterDataClasses = { { "userId", FakeTaxonomy.PrivateData } },
+            LogBody = true
         };
 
         var mockHeadersRedactor = new Mock<IHttpHeadersRedactor>();
         mockHeadersRedactor.Setup(r => r.Redact(It.IsAny<IEnumerable<string>>(), It.IsAny<DataClassification>()))
             .Returns(Redacted);
+
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
 
-        var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector(Options.Options.Create(new FakeLogCollectorOptions())));
+        var fakeLogger = new FakeLogger<HttpClientLogger>();
 
         var logger = new HttpClientLogger(
             fakeLogger,
             new HttpRequestReader(
                 options,
                 GetHttpRouteFormatter(),
+                Mock.Of<IHttpRouteParser>(),
                 headersReader, RequestMetadataContext),
             new List<IHttpClientLogEnricher> { testEnricher },
             options);
@@ -300,8 +301,7 @@ public class HttpClientLoggerTest
             BodyReadTimeout = TimeSpan.FromMinutes(5),
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured,
             LogRequestStart = true,
-            LogBody = true,
-            RouteParameterDataClasses = { { "userId", FakeTaxonomy.PrivateData } },
+            LogBody = true
         };
 
         var fakeLogger = new FakeLogger<HttpClientLogger>(
@@ -321,6 +321,7 @@ public class HttpClientLoggerTest
             new HttpRequestReader(
                 options,
                 GetHttpRouteFormatter(),
+                Mock.Of<IHttpRouteParser>(),
                 headersReader, RequestMetadataContext),
             new List<IHttpClientLogEnricher> { testEnricher },
             options);
@@ -407,8 +408,7 @@ public class HttpClientLoggerTest
             BodyReadTimeout = TimeSpan.FromMinutes(5),
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured,
             LogRequestStart = false,
-            LogBody = true,
-            RouteParameterDataClasses = { { "userId", FakeTaxonomy.PrivateData } },
+            LogBody = true
         };
 
         var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector(Options.Options.Create(new FakeLogCollectorOptions())));
@@ -426,6 +426,7 @@ public class HttpClientLoggerTest
                 new HttpRequestReader(
                     options,
                     GetHttpRouteFormatter(),
+                    Mock.Of<IHttpRouteParser>(),
                     headersReader, RequestMetadataContext),
                 new List<IHttpClientLogEnricher> { testEnricher },
                 options),
@@ -503,8 +504,7 @@ public class HttpClientLoggerTest
             BodyReadTimeout = TimeSpan.FromMinutes(5),
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured,
             LogRequestStart = false,
-            LogBody = true,
-            RouteParameterDataClasses = { { "userId", FakeTaxonomy.PrivateData } },
+            LogBody = true
         };
 
         var fakeLogger = new FakeLogger<HttpClientLogger>(
@@ -519,7 +519,7 @@ public class HttpClientLoggerTest
 
         var exception = new InvalidOperationException("test");
 
-        var actualRequestReader = new HttpRequestReader(options, GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+        var actualRequestReader = new HttpRequestReader(options, GetHttpRouteFormatter(), Mock.Of<IHttpRouteParser>(), headersReader, RequestMetadataContext);
         var mockedRequestReader = new Mock<IHttpRequestReader>();
         mockedRequestReader
             .Setup(m =>
@@ -618,8 +618,7 @@ public class HttpClientLoggerTest
             BodyReadTimeout = TimeSpan.FromMinutes(5),
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured,
             LogRequestStart = false,
-            LogBody = true,
-            RouteParameterDataClasses = { { "userId", FakeTaxonomy.PrivateData } },
+            LogBody = true
         };
 
         var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector(Options.Options.Create(new FakeLogCollectorOptions())));
@@ -635,6 +634,7 @@ public class HttpClientLoggerTest
                 new HttpRequestReader(
                     options,
                     GetHttpRouteFormatter(),
+                    Mock.Of<IHttpRouteParser>(),
                     headersReader, RequestMetadataContext),
                 new List<IHttpClientLogEnricher> { testEnricher },
                 options),
@@ -676,6 +676,7 @@ public class HttpClientLoggerTest
                 new HttpRequestReader(
                     options,
                     GetHttpRouteFormatter(),
+                    Mock.Of<IHttpRouteParser>(),
                     new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object),
                     RequestMetadataContext),
                 new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object },
@@ -718,6 +719,7 @@ public class HttpClientLoggerTest
                 new HttpRequestReader(
                     options,
                     GetHttpRouteFormatter(),
+                    Mock.Of<IHttpRouteParser>(),
                     new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object),
                     RequestMetadataContext),
                 new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object },
@@ -754,7 +756,7 @@ public class HttpClientLoggerTest
         var fakeLogger = new FakeLogger<HttpClientLogger>();
         var options = new LoggingOptions();
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), Mock.Of<IHttpHeadersRedactor>());
-        var requestReader = new HttpRequestReader(options, GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+        var requestReader = new HttpRequestReader(options, GetHttpRouteFormatter(), Mock.Of<IHttpRouteParser>(), headersReader, RequestMetadataContext);
         var enrichers = new List<IHttpClientLogEnricher> { enricher1.Object, enricher2.Object };
 
         using var handler = new TestLoggingHandler(
@@ -886,8 +888,7 @@ public class HttpClientLoggerTest
             BodyReadTimeout = TimeSpan.FromMinutes(5),
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured,
             LogRequestStart = false,
-            LogBody = true,
-            RouteParameterDataClasses = { { "userId", FakeTaxonomy.PrivateData } },
+            LogBody = true
         };
 
         var fakeLogger = new FakeLogger<HttpClientLogger>(new FakeLogCollector(Options.Options.Create(new FakeLogCollectorOptions())));
@@ -903,6 +904,7 @@ public class HttpClientLoggerTest
                 new HttpRequestReader(
                     options,
                     GetHttpRouteFormatter(),
+                    Mock.Of<IHttpRouteParser>(),
                     headersReader, RequestMetadataContext),
                 new List<IHttpClientLogEnricher> { testEnricher },
                 options),
@@ -944,7 +946,7 @@ public class HttpClientLoggerTest
         var options = new LoggingOptions();
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), new Mock<IHttpHeadersRedactor>().Object);
         var requestReader = new HttpRequestReader(
-            options, GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+            options, GetHttpRouteFormatter(), Mock.Of<IHttpRouteParser>(), headersReader, RequestMetadataContext);
 
         using var handler = new TestLoggingHandler(
             new HttpClientLogger(fakeLogger, requestReader, Array.Empty<IHttpClientLogEnricher>(), options),
@@ -993,7 +995,7 @@ public class HttpClientLoggerTest
         var options = new LoggingOptions();
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), Mock.Of<IHttpHeadersRedactor>());
         var requestReader = new HttpRequestReader(
-            options, GetHttpRouteFormatter(), headersReader, RequestMetadataContext);
+            options, GetHttpRouteFormatter(), Mock.Of<IHttpRouteParser>(), headersReader, RequestMetadataContext);
 
         var logger = new HttpClientLogger(new FakeLogger<HttpClientLogger>(), requestReader, Array.Empty<IHttpClientLogEnricher>(), options);
         using var httpRequestMessage = new HttpRequestMessage();

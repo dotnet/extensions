@@ -124,8 +124,9 @@ public class LoggingOptions
     /// The default value is <see cref="OutgoingPathLoggingMode.Formatted"/>.
     /// </value>
     /// <remarks>
-    /// This option is applied only when the <see cref="RequestPathLoggingMode"/> option is not set to <see cref="HttpRouteParameterRedactionMode.None"/>,
-    /// otherwise this setting is ignored and the unredacted HTTP request path is logged.
+    /// This option is applied only when the <see cref="RequestPathParameterRedactionMode"/> option is not set to
+    /// <see cref="HttpRouteParameterRedactionMode.None"/>,
+    /// otherwise this setting is ignored and the non-redacted HTTP request path is logged.
     /// </remarks>
     public OutgoingPathLoggingMode RequestPathLoggingMode { get; set; } = DefaultPathLoggingMode;
 

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -19,6 +20,7 @@ namespace Microsoft.Extensions.Http.Logging.Internal;
 internal sealed class HttpRequestReader : IHttpRequestReader
 {
     private readonly IHttpRouteFormatter _routeFormatter;
+    private readonly IHttpRouteParser _httpRouteParser;
     private readonly IHttpHeadersReader _httpHeadersReader;
     private readonly FrozenDictionary<string, DataClassification> _defaultSensitiveParameters;
 
@@ -44,12 +46,14 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         IServiceProvider serviceProvider,
         IOptionsMonitor<LoggingOptions> optionsMonitor,
         IHttpRouteFormatter routeFormatter,
+        IHttpRouteParser httpRouteParser,
         IOutgoingRequestContext requestMetadataContext,
         IDownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null,
         [ServiceKey] string? serviceKey = null)
         : this(
               optionsMonitor.GetKeyedOrCurrent(serviceKey),
               routeFormatter,
+              httpRouteParser,
               serviceProvider.GetRequiredOrKeyedRequiredService<IHttpHeadersReader>(serviceKey),
               requestMetadataContext,
               downstreamDependencyMetadataManager)
@@ -59,6 +63,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
     internal HttpRequestReader(
         LoggingOptions options,
         IHttpRouteFormatter routeFormatter,
+        IHttpRouteParser httpRouteParser,
         IHttpHeadersReader httpHeadersReader,
         IOutgoingRequestContext requestMetadataContext,
         IDownstreamDependencyMetadataManager? downstreamDependencyMetadataManager = null)
@@ -67,6 +72,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         _httpHeadersReader = httpHeadersReader;
 
         _routeFormatter = routeFormatter;
+        _httpRouteParser = httpRouteParser;
         _requestMetadataContext = requestMetadataContext;
         _downstreamDependencyMetadataManager = downstreamDependencyMetadataManager;
 
@@ -92,7 +98,7 @@ internal sealed class HttpRequestReader : IHttpRequestReader
     {
         logRecord.Host = request.RequestUri?.Host ?? TelemetryConstants.Unknown;
         logRecord.Method = request.Method;
-        logRecord.Path = GetRedactedPath(request);
+        GetRedactedPathAndParameters(request, logRecord);
 
         if (_logRequestHeaders)
         {
@@ -125,16 +131,19 @@ internal sealed class HttpRequestReader : IHttpRequestReader
         logRecord.StatusCode = (int)response.StatusCode;
     }
 
-    private string GetRedactedPath(HttpRequestMessage request)
+    private void GetRedactedPathAndParameters(HttpRequestMessage request, LogRecord logRecord)
     {
+        logRecord.PathParameters = null;
         if (request.RequestUri is null)
         {
-            return TelemetryConstants.Unknown;
+            logRecord.Path = TelemetryConstants.Unknown;
+            return;
         }
 
         if (_routeParameterRedactionMode == HttpRouteParameterRedactionMode.None)
         {
-            return request.RequestUri.AbsolutePath;
+            logRecord.Path = request.RequestUri.AbsolutePath;
+            return;
         }
 
         var requestMetadata = request.GetRequestMetadata() ??
@@ -143,19 +152,36 @@ internal sealed class HttpRequestReader : IHttpRequestReader
 
         if (requestMetadata == null)
         {
-            return TelemetryConstants.Redacted;
+            logRecord.Path = TelemetryConstants.Redacted;
+            return;
         }
 
         var route = requestMetadata.RequestRoute;
         if (route == TelemetryConstants.Unknown)
         {
-            return requestMetadata.RequestName;
+            logRecord.Path = requestMetadata.RequestName;
+            return;
         }
 
-        return _outgoingPathLogMode switch
+        var routeSegments = _httpRouteParser.ParseRoute(route);
+
+        if (_outgoingPathLogMode == OutgoingPathLoggingMode.Formatted)
         {
-            OutgoingPathLoggingMode.Formatted => _routeFormatter.Format(route, request.RequestUri.AbsolutePath, _routeParameterRedactionMode, _defaultSensitiveParameters),
-            _ => route
-        };
+            logRecord.Path = _routeFormatter.Format(in routeSegments, request.RequestUri.AbsolutePath, _routeParameterRedactionMode, _defaultSensitiveParameters);
+            logRecord.PathParameters = null;
+        }
+        else
+        {
+            // Case when logging mode is "OutgoingPathLoggingMode.Structured"
+            logRecord.Path = route;
+            var routeParams = ArrayPool<HttpRouteParameter>.Shared.Rent(routeSegments.ParameterCount);
+
+            // Setting this value right away to be able to return it back to pool in a callee's "finally" block:
+            logRecord.PathParameters = routeParams;
+            if (_httpRouteParser.TryExtractParameters(request.RequestUri.AbsolutePath, in routeSegments, _routeParameterRedactionMode, _defaultSensitiveParameters, ref routeParams))
+            {
+                logRecord.PathParametersCount = routeSegments.ParameterCount;
+            }
+        }
     }
 }

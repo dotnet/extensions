@@ -28,12 +28,10 @@ internal interface IHttpRouteParser
     /// <param name="parametersToRedact">Dictionary of parameters with their data classification that needs to be redacted.</param>
     /// <param name="httpRouteParameters">Output array where parameters will be stored. Caller must provide the array with enough capacity to hold all parameters in route segment.</param>
     /// <returns>Returns true if parameters were extracted successfully, return false otherwise.</returns>
-#pragma warning disable CA1045 // Do not pass types by reference
     bool TryExtractParameters(
         string httpPath,
         in ParsedRouteSegments routeSegments,
         HttpRouteParameterRedactionMode redactionMode,
         IReadOnlyDictionary<string, DataClassification> parametersToRedact,
         ref HttpRouteParameter[] httpRouteParameters);
-#pragma warning restore CA1045 // Do not pass types by reference
 }
