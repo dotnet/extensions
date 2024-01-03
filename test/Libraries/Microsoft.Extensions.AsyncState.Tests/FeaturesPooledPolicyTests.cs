@@ -12,7 +12,7 @@ public class FeaturesPooledPolicyTests
     {
         var policy = new FeaturesPooledPolicy();
 
-        Assert.True(policy.Return(new Features()));
+        Assert.True(policy.Return([]));
     }
 
     [Fact]
@@ -20,14 +20,12 @@ public class FeaturesPooledPolicyTests
     {
         var policy = new FeaturesPooledPolicy();
 
-        var features = policy.Create();
-        features.Set(0, string.Empty);
-        features.Set(1, Array.Empty<int>());
-        features.Set(2, new object());
+        var dictionary = policy.Create();
+        dictionary[new AsyncStateToken(0)] = string.Empty;
+        dictionary[new AsyncStateToken(1)] = Array.Empty<int>();
+        dictionary[new AsyncStateToken(2)] = new object();
 
-        Assert.True(policy.Return(features));
-        Assert.Null(features.Get(0));
-        Assert.Null(features.Get(1));
-        Assert.Null(features.Get(2));
+        Assert.True(policy.Return(dictionary));
+        Assert.True(dictionary.IsEmpty);
     }
 }
