@@ -17,7 +17,7 @@ public class TemplatesExtractorTests
     [InlineData("NewLine \n Test", 8)]
     public void Should_FindIndexOfAny_Correctly(string message, int expectedResult)
     {
-        var result = TemplateExtractor.FindIndexOfAny(message, new[] { '\n', 'a', 'b', 'z' }, 0, message.Length);
+        var result = TemplateProcessor.FindIndexOfAny(message, new[] { '\n', 'a', 'b', 'z' }, 0, message.Length);
         Assert.Equal(expectedResult, result);
     }
 }

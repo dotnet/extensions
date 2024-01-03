@@ -10,7 +10,7 @@ namespace Microsoft.Gen.Logging.Model;
 /// <summary>
 /// A single parameter to a logger method.
 /// </summary>
-[DebuggerDisplay("{Name}")]
+[DebuggerDisplay("{ParameterName}")]
 internal sealed class LoggingMethodParameter
 {
     public string ParameterName = string.Empty;
@@ -35,7 +35,7 @@ internal sealed class LoggingMethodParameter
     public List<LoggingProperty> Properties = [];
     public TagProvider? TagProvider;
 
-    public string ParameterNameWithAt => NeedsAtSign ? "@" + ParameterName : ParameterName;
+    public string ParameterNameWithAtIfNeeded => NeedsAtSign ? "@" + ParameterName : ParameterName;
 
     public string PotentiallyNullableType
         => (IsReference && !IsNullable)

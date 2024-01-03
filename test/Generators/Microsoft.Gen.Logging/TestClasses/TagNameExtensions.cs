@@ -9,5 +9,8 @@ namespace TestClasses
     {
         [LoggerMessage(LogLevel.Warning)]
         internal static partial void M0(ILogger logger, [TagName("TN1")] int p0);
+
+        [LoggerMessage(LogLevel.Warning, Message = "{foo.bar}")]
+        internal static partial void M1(ILogger logger, [TagName("foo.bar")] int p0);
     }
 }

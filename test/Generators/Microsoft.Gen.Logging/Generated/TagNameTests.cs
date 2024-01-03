@@ -17,12 +17,19 @@ public class TagNameTests
         var logger = new FakeLogger();
 
         TagNameExtensions.M0(logger, 0);
-
-        var expectedState = new Dictionary<string, string?>
+        logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(new Dictionary<string, string?>
         {
             ["TN1"] = "0",
-        };
+        });
 
-        logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+        logger.Collector.Clear();
+        TagNameExtensions.M1(logger, 0);
+        logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(new Dictionary<string, string?>
+        {
+            ["foo.bar"] = "0",
+            ["{OriginalFormat}"] = "{foo.bar}",
+        });
+
+        Assert.Equal("0", logger.Collector.LatestRecord.Message);
     }
 }

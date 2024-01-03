@@ -3,10 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Microsoft.Gen.Logging.Parsing;
 
-internal static class TemplateExtractor
+internal static class TemplateProcessor
 {
     private static readonly char[] _formatDelimiters = { ',', ':' };
 
@@ -29,18 +30,57 @@ internal static class TemplateExtractor
 
             if (closeBraceIndex == endIndex)
             {
-                scanIndex = endIndex;
+                return;
             }
-            else
-            {
-                // Format item syntax : { index[,alignment][ :formatString] }.
-                var formatDelimiterIndex = FindIndexOfAny(message, _formatDelimiters, openBraceIndex, closeBraceIndex);
 
-                var templateName = message.Substring(openBraceIndex + 1, formatDelimiterIndex - openBraceIndex - 1).Trim();
-                templates.Add(templateName);
-                scanIndex = closeBraceIndex + 1;
-            }
+            // Format item syntax : { index[,alignment][ :formatString] }.
+            var formatDelimiterIndex = FindIndexOfAny(message, _formatDelimiters, openBraceIndex, closeBraceIndex);
+
+            var templateName = message.Substring(openBraceIndex + 1, formatDelimiterIndex - openBraceIndex - 1).Trim();
+            templates.Add(templateName);
+            scanIndex = closeBraceIndex + 1;
         }
+    }
+
+    /// <summary>
+    /// Allows replacing individual template arguments with different strings.
+    /// </summary>
+    internal static string? MapTemplates(string? message, Func<string, string> mapTemplate)
+    {
+        if (string.IsNullOrEmpty(message))
+        {
+            return message;
+        }
+
+        var sb = new StringBuilder();
+
+        var scanIndex = 0;
+        var endIndex = message!.Length;
+        while (scanIndex < endIndex)
+        {
+            var openBraceIndex = FindBraceIndex(message, '{', scanIndex, endIndex);
+            var closeBraceIndex = FindBraceIndex(message, '}', openBraceIndex, endIndex);
+
+            if (closeBraceIndex == endIndex)
+            {
+                break;
+            }
+
+            // Format item syntax : { index[,alignment][ :formatString] }.
+            var formatDelimiterIndex = FindIndexOfAny(message, _formatDelimiters, openBraceIndex, closeBraceIndex);
+
+            var templateName = message.Substring(openBraceIndex + 1, formatDelimiterIndex - openBraceIndex - 1).Trim();
+            var mapped = mapTemplate(templateName);
+
+            _ = sb.Append(message, scanIndex, openBraceIndex - scanIndex + 1);
+            _ = sb.Append(mapped);
+            _ = sb.Append(message, formatDelimiterIndex, closeBraceIndex - formatDelimiterIndex + 1);
+
+            scanIndex = closeBraceIndex + 1;
+        }
+
+        _ = sb.Append(message, scanIndex, message.Length - scanIndex);
+        return sb.ToString();
     }
 
     internal static int FindIndexOfAny(string message, char[] chars, int startIndex, int endIndex)
