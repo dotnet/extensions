@@ -33,7 +33,7 @@ internal sealed class LoggingMethod
     {
         foreach (var p in Parameters)
         {
-            if (templateName.Equals(p.ParameterName, StringComparison.OrdinalIgnoreCase))
+            if (templateName.Equals(p.TagName, StringComparison.OrdinalIgnoreCase))
             {
                 return p;
             }
@@ -43,19 +43,29 @@ internal sealed class LoggingMethod
     }
 
     public List<string> GetTemplatesForParameter(LoggingMethodParameter lp)
-        => GetTemplatesForParameter(lp.ParameterName);
-
-    public List<string> GetTemplatesForParameter(string parameterName)
     {
         HashSet<string> templates = [];
         foreach (var t in Templates)
         {
-            if (parameterName.Equals(t, StringComparison.OrdinalIgnoreCase))
+            if (lp.TagName.Equals(t, StringComparison.OrdinalIgnoreCase))
             {
                 _ = templates.Add(t);
             }
         }
 
         return templates.ToList();
+    }
+
+    public List<string> GetTemplatesForParameter(string parameterName)
+    {
+        foreach (var p in Parameters)
+        {
+            if (parameterName == p.ParameterName)
+            {
+                return GetTemplatesForParameter(p);
+            }
+        }
+
+        return [];
     }
 }
