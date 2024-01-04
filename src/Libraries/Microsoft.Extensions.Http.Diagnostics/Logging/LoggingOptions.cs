@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Shared.Data.Validation;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Http.Logging;
 
@@ -123,8 +124,9 @@ public class LoggingOptions
     /// The default value is <see cref="OutgoingPathLoggingMode.Formatted"/>.
     /// </value>
     /// <remarks>
-    /// This option is applied only when the <see cref="RequestPathLoggingMode"/> option is not set to <see cref="HttpRouteParameterRedactionMode.None"/>,
-    /// otherwise this setting is ignored and the unredacted HTTP request path is logged.
+    /// This option is applied only when the <see cref="RequestPathParameterRedactionMode"/> option is not set to
+    /// <see cref="HttpRouteParameterRedactionMode.None"/>,
+    /// otherwise this setting is ignored and the non-redacted HTTP request path is logged.
     /// </remarks>
     public OutgoingPathLoggingMode RequestPathLoggingMode { get; set; } = DefaultPathLoggingMode;
 
@@ -143,4 +145,18 @@ public class LoggingOptions
     [SuppressMessage("Usage", "CA2227:Collection properties should be read only",
         Justification = "Options pattern.")]
     public IDictionary<string, DataClassification> RouteParameterDataClasses { get; set; } = new Dictionary<string, DataClassification>();
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the HTTP request and response content headers are logged.
+    /// </summary>
+    /// <value>
+    /// The default value is <see langword="false"/>.
+    /// </value>
+    /// <remarks>
+    /// This property controls whether the logging of HTTP request and response representation headers (e.g. <c>Content-Type</c>) is enabled.
+    /// Keep this option disabled if <see cref="RequestHeadersDataClasses"/> or <see cref="ResponseHeadersDataClasses"/>
+    /// don't contain any representation headers, otherwise it will create unnecessary minor performance impact on the headers logging.
+    /// </remarks>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+    public bool LogContentHeaders { get; set; }
 }

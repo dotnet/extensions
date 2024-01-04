@@ -1,8 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.Extensions.Http.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 
@@ -63,8 +65,24 @@ internal sealed class LogRecord : IResettable
     /// </summary>
     public LoggerMessageState? EnrichmentTags { get; set; }
 
+    /// <summary>
+    /// Gets or sets request path parameters.
+    /// </summary>
+    public HttpRouteParameter[]? PathParameters { get; set; }
+
+    /// <summary>
+    /// Gets or sets request path parameters count for <see cref="PathParameters"/>.
+    /// </summary>
+    public int PathParametersCount { get; set; }
+
     public bool TryReset()
     {
+        if (PathParameters != null)
+        {
+            ArrayPool<HttpRouteParameter>.Shared.Return(PathParameters);
+            PathParameters = null;
+        }
+
         Host = string.Empty;
         Method = null;
         Path = string.Empty;
@@ -75,6 +93,7 @@ internal sealed class LogRecord : IResettable
         EnrichmentTags = null;
         RequestHeaders = null;
         ResponseHeaders = null;
+        PathParametersCount = 0;
         return true;
     }
 }

@@ -16,28 +16,28 @@ public class SmallHttpClientLoggingBenchmark
     private const int ReadSizeLimit = 8192;
     private static HttpRequestMessage Request => new(HttpMethod.Post, "https://www.microsoft.com");
 
-    private static readonly System.Net.Http.HttpClient _smallNoLog
+    private static readonly HttpClient _smallNoLog
         = HttpClientFactory.CreateWithoutLogging(DataFileName);
 
-    private static readonly System.Net.Http.HttpClient _smallLogAll
+    private static readonly HttpClient _smallLogAll
         = HttpClientFactory.CreateWithLoggingLogAll(DataFileName, ReadSizeLimit);
 
-    private static readonly System.Net.Http.HttpClient _smallLogRequest
+    private static readonly HttpClient _smallLogRequest
         = HttpClientFactory.CreateWithLoggingLogRequest(DataFileName, ReadSizeLimit);
 
-    private static readonly System.Net.Http.HttpClient _smallLogResponse
+    private static readonly HttpClient _smallLogResponse
         = HttpClientFactory.CreateWithLoggingLogResponse(DataFileName, ReadSizeLimit);
 
-    private static readonly System.Net.Http.HttpClient _smallNoLogChunked
+    private static readonly HttpClient _smallNoLogChunked
         = HttpClientFactory.CreateWithoutLogging_ChunkedEncoding(DataFileName);
 
-    private static readonly System.Net.Http.HttpClient _smallLogAllChunked
+    private static readonly HttpClient _smallLogAllChunked
         = HttpClientFactory.CreateWithLoggingLogAll_ChunkedEncoding(DataFileName, ReadSizeLimit);
 
-    private static readonly System.Net.Http.HttpClient _smallLogRequestChunked
+    private static readonly HttpClient _smallLogRequestChunked
         = HttpClientFactory.CreateWithLoggingLogRequest_ChunkedEncoding(DataFileName, ReadSizeLimit);
 
-    private static readonly System.Net.Http.HttpClient _smallLogResponseChunked
+    private static readonly HttpClient _smallLogResponseChunked
         = HttpClientFactory.CreateWithLoggingLogResponse_ChunkedEncoding(DataFileName, ReadSizeLimit);
 
     [Benchmark(Baseline = true)]

@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Telemetry.Internal.Test;
 
-public class TelemetryCommonExtensions2Tests
+public class TelemetryCommonExtensionsTests
 {
     [Fact]
     public void GetDependencyName_DependencyNameMissing_ReturnsUnknown()

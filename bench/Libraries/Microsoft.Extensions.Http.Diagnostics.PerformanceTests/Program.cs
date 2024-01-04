@@ -18,7 +18,7 @@ internal static class Program
         var dontRequireSlnToRunBenchmarks = ManualConfig
             .Create(DefaultConfig.Instance)
             .AddJob(Job.MediumRun
-                .WithRuntime(CoreRuntime.Core50)
+                .WithRuntime(CoreRuntime.Core80)
                 .WithGcServer(true)
                 .WithJit(Jit.RyuJit)
                 .WithPlatform(Platform.X64)

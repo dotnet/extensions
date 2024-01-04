@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +27,7 @@ namespace Microsoft.Extensions.Http.Logging.Test;
 public class HttpRequestReaderTest
 {
     private const string Redacted = "REDACTED";
+    private const string RequestedHost = "default-uri.com";
 
     private readonly Fixture _fixture;
 
@@ -38,14 +41,12 @@ public class HttpRequestReaderTest
     {
         var requestContent = _fixture.Create<string>();
         var responseContent = _fixture.Create<string>();
-        var host = "default-uri.com";
-        var plainTextMedia = "text/plain";
         var header1 = new KeyValuePair<string, string>("Header1", "Value1");
         var header2 = new KeyValuePair<string, string>("Header2", "Value2");
         var header3 = new KeyValuePair<string, string>("Header3", "Value3");
         var expectedRecord = new LogRecord
         {
-            Host = host,
+            Host = RequestedHost,
             Method = HttpMethod.Post,
             Path = TelemetryConstants.Redacted,
             StatusCode = 200,
@@ -59,8 +60,8 @@ public class HttpRequestReaderTest
         {
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeTaxonomy.PrivateData }, { header3.Key, FakeTaxonomy.PrivateData } },
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, FakeTaxonomy.PrivateData }, { header3.Key, FakeTaxonomy.PrivateData } },
-            RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
-            ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
+            RequestBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
+            ResponseBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
             BodyReadTimeout = TimeSpan.FromSeconds(100000),
             LogBody = true,
         };
@@ -74,7 +75,7 @@ public class HttpRequestReaderTest
         using var serviceProvider = GetServiceProvider(headersReader, serviceKey);
 
         var reader = new HttpRequestReader(serviceProvider, options.ToOptionsMonitor(serviceKey), serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
-            RequestMetadataContext, serviceKey: serviceKey);
+            serviceProvider.GetRequiredService<IHttpRouteParser>(), RequestMetadataContext, serviceKey: serviceKey);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -101,15 +102,7 @@ public class HttpRequestReaderTest
         await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         await reader.ReadResponseAsync(logRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
-        logRecord.Should().BeEquivalentTo(
-            expectedRecord,
-            o => o
-                .Excluding(m => m.RequestBody)
-                .Excluding(m => m.ResponseBody)
-                .ComparingByMembers<LogRecord>());
-
-        logRecord.RequestBody.Should().BeEquivalentTo(expectedRecord.RequestBody);
-        logRecord.ResponseBody.Should().BeEquivalentTo(expectedRecord.ResponseBody);
+        logRecord.Should().BeEquivalentTo(expectedRecord);
     }
 
     [Fact]
@@ -144,7 +137,8 @@ public class HttpRequestReaderTest
         var headersReader = new HttpHeadersReader(options.ToOptionsMonitor(), mockHeadersRedactor.Object);
         using var serviceProvider = GetServiceProvider(headersReader);
 
-        var reader = new HttpRequestReader(serviceProvider, options.ToOptionsMonitor(), serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
+        var reader = new HttpRequestReader(serviceProvider, options.ToOptionsMonitor(), serviceProvider.GetRequiredService<IHttpRouteFormatter>(),
+            serviceProvider.GetRequiredService<IHttpRouteParser>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -165,15 +159,7 @@ public class HttpRequestReaderTest
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
-        actualRecord.Should().BeEquivalentTo(
-            expectedRecord,
-            o => o
-                .Excluding(m => m.RequestBody)
-                .Excluding(m => m.ResponseBody)
-                .ComparingByMembers<LogRecord>());
-
-        actualRecord.RequestBody.Should().BeEquivalentTo(expectedRecord.RequestBody);
-        actualRecord.ResponseBody.Should().BeEquivalentTo(expectedRecord.ResponseBody);
+        actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
 
     [Fact]
@@ -181,14 +167,12 @@ public class HttpRequestReaderTest
     {
         var requestContent = _fixture.Create<string>();
         var responseContent = _fixture.Create<string>();
-        var host = "default-uri.com";
-        var plainTextMedia = "text/plain";
         var header1 = new KeyValuePair<string, string>("Header1", "Value1");
         var header2 = new KeyValuePair<string, string>("Header2", "Value2");
 
         var expectedRecord = new LogRecord
         {
-            Host = host,
+            Host = RequestedHost,
             Method = HttpMethod.Post,
             Path = "foo/bar/123",
             StatusCode = 200,
@@ -202,8 +186,8 @@ public class HttpRequestReaderTest
         {
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeTaxonomy.PrivateData } },
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, FakeTaxonomy.PrivateData } },
-            RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
-            ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
+            RequestBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
+            ResponseBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
         };
@@ -217,7 +201,7 @@ public class HttpRequestReaderTest
         using var serviceProvider = GetServiceProvider(headersReader);
 
         var reader = new HttpRequestReader(serviceProvider, opts.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), serviceProvider.GetRequiredService<IHttpRouteParser>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -246,14 +230,7 @@ public class HttpRequestReaderTest
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
-        actualRecord.Should().BeEquivalentTo(
-            expectedRecord,
-            o => o
-                .Excluding(m => m.RequestBody)
-                .Excluding(m => m.ResponseBody)
-                .ComparingByMembers<LogRecord>());
-        actualRecord.RequestBody.Should().BeEquivalentTo(expectedRecord.RequestBody);
-        actualRecord.ResponseBody.Should().BeEquivalentTo(expectedRecord.ResponseBody);
+        actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
 
     [Fact]
@@ -261,14 +238,12 @@ public class HttpRequestReaderTest
     {
         var requestContent = _fixture.Create<string>();
         var responseContent = _fixture.Create<string>();
-        var host = "default-uri.com";
-        var plainTextMedia = "text/plain";
         var header1 = new KeyValuePair<string, string>("Header1", "Value1");
         var header2 = new KeyValuePair<string, string>("Header2", "Value2");
 
         var expectedRecord = new LogRecord
         {
-            Host = host,
+            Host = RequestedHost,
             Method = HttpMethod.Post,
             Path = "foo/bar/{userId}",
             StatusCode = 200,
@@ -276,6 +251,7 @@ public class HttpRequestReaderTest
             ResponseHeaders = [new("Header2", Redacted)],
             RequestBody = requestContent,
             ResponseBody = responseContent,
+            PathParametersCount = 1
         };
 
         var opts = new LoggingOptions
@@ -284,8 +260,8 @@ public class HttpRequestReaderTest
             LogBody = true,
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeTaxonomy.PrivateData } },
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, FakeTaxonomy.PrivateData } },
-            RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
-            ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
+            RequestBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
+            ResponseBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured
         };
@@ -297,15 +273,15 @@ public class HttpRequestReaderTest
             .Returns(Redacted);
 
         var headersReader = new HttpHeadersReader(opts.ToOptionsMonitor(), mockHeadersRedactor.Object);
-        using var serviceProvider = GetServiceProvider(headersReader);
+        using var serviceProvider = GetServiceProvider(headersReader, configureRedaction: x => x.RedactionFormat = Redacted);
 
         var reader = new HttpRequestReader(serviceProvider, opts.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), serviceProvider.GetRequiredService<IHttpRouteParser>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
-            RequestUri = new Uri("http://default-uri.com/foo/bar/123"),
+            RequestUri = new Uri($"http://{RequestedHost}/foo/bar/123"),
             Content = new StringContent(requestContent, Encoding.UTF8),
         };
 
@@ -329,28 +305,22 @@ public class HttpRequestReaderTest
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
-        actualRecord.Should().BeEquivalentTo(
-            expectedRecord,
-            o => o
-                .Excluding(m => m.RequestBody)
-                .Excluding(m => m.ResponseBody)
-                .ComparingByMembers<LogRecord>());
-        actualRecord.RequestBody.Should().BeEquivalentTo(expectedRecord.RequestBody);
-        actualRecord.ResponseBody.Should().BeEquivalentTo(expectedRecord.ResponseBody);
+        actualRecord.Should().BeEquivalentTo(expectedRecord, o => o.Excluding(x => x.PathParameters));
+
+        HttpRouteParameter[] expectedParameters = [new("userId", Redacted, true)];
+        actualRecord.PathParameters.Should().NotBeNull().And.Subject.Take(actualRecord.PathParametersCount).Should().BeEquivalentTo(expectedParameters);
     }
 
     [Fact]
     public async Task ReadAsync_RouteParameterRedactionModeNone_ReturnsLogRecordWithUnredactedRoute()
     {
         var requestContent = _fixture.Create<string>();
-        var host = "default-uri.com";
-        var plainTextMedia = "text/plain";
         var header1 = new KeyValuePair<string, string>("Header1", "Value1");
         var header2 = new KeyValuePair<string, string>("Header2", "Value2");
 
         var expectedRecord = new LogRecord
         {
-            Host = host,
+            Host = RequestedHost,
             Method = HttpMethod.Post,
             Path = "/foo/bar/123",
             RequestHeaders = [new("Header1", Redacted)],
@@ -363,7 +333,7 @@ public class HttpRequestReaderTest
             LogBody = true,
             RequestPathParameterRedactionMode = HttpRouteParameterRedactionMode.None,
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeTaxonomy.PrivateData } },
-            RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
+            RequestBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             RequestPathLoggingMode = OutgoingPathLoggingMode.Structured
         };
@@ -378,7 +348,7 @@ public class HttpRequestReaderTest
         using var serviceProvider = GetServiceProvider(headersReader);
 
         var reader = new HttpRequestReader(serviceProvider, opts.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), serviceProvider.GetRequiredService<IHttpRouteParser>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -394,12 +364,7 @@ public class HttpRequestReaderTest
         var actualRecord = new LogRecord();
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
 
-        actualRecord.Should().BeEquivalentTo(
-            expectedRecord,
-            o => o
-                .Excluding(m => m.RequestBody)
-                .Excluding(m => m.ResponseBody)
-                .ComparingByMembers<LogRecord>());
+        actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
 
     [Fact]
@@ -407,14 +372,12 @@ public class HttpRequestReaderTest
     {
         var requestContent = _fixture.Create<string>();
         var responseContent = _fixture.Create<string>();
-        var host = "default-uri.com";
-        var plainTextMedia = "text/plain";
         var header1 = new KeyValuePair<string, string>("Header1", "Value1");
         var header2 = new KeyValuePair<string, string>("Header2", "Value2");
 
         var expectedRecord = new LogRecord
         {
-            Host = host,
+            Host = RequestedHost,
             Method = HttpMethod.Post,
             Path = "TestRequest",
             StatusCode = 200,
@@ -428,8 +391,8 @@ public class HttpRequestReaderTest
         {
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeTaxonomy.PrivateData } },
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, FakeTaxonomy.PrivateData } },
-            RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
-            ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
+            RequestBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
+            ResponseBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
         };
@@ -443,7 +406,7 @@ public class HttpRequestReaderTest
         using var serviceProvider = GetServiceProvider(headersReader);
 
         var reader = new HttpRequestReader(serviceProvider, opts.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), serviceProvider.GetRequiredService<IHttpRouteParser>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -472,15 +435,7 @@ public class HttpRequestReaderTest
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
-        actualRecord.Should().BeEquivalentTo(
-            expectedRecord,
-            o => o
-                .Excluding(m => m.RequestBody)
-                .Excluding(m => m.ResponseBody)
-                .ComparingByMembers<LogRecord>());
-
-        actualRecord.RequestBody.Should().BeEquivalentTo(expectedRecord.RequestBody);
-        actualRecord.ResponseBody.Should().BeEquivalentTo(expectedRecord.ResponseBody);
+        actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
 
     [Fact]
@@ -488,14 +443,12 @@ public class HttpRequestReaderTest
     {
         var requestContent = _fixture.Create<string>();
         var responseContent = _fixture.Create<string>();
-        var host = "default-uri.com";
-        var plainTextMedia = "text/plain";
         var header1 = new KeyValuePair<string, string>("Header1", "Value1");
         var header2 = new KeyValuePair<string, string>("Header2", "Value2");
 
         var expectedRecord = new LogRecord
         {
-            Host = host,
+            Host = RequestedHost,
             Method = HttpMethod.Post,
             Path = TelemetryConstants.Redacted,
             StatusCode = 200,
@@ -509,8 +462,8 @@ public class HttpRequestReaderTest
         {
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeTaxonomy.PrivateData } },
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, FakeTaxonomy.PrivateData } },
-            RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
-            ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
+            RequestBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
+            ResponseBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
         };
@@ -524,7 +477,7 @@ public class HttpRequestReaderTest
         using var serviceProvider = GetServiceProvider(headersReader);
 
         var reader = new HttpRequestReader(serviceProvider, opts.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), serviceProvider.GetRequiredService<IHttpRouteParser>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -549,14 +502,7 @@ public class HttpRequestReaderTest
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
-        actualRecord.Should().BeEquivalentTo(
-            expectedRecord,
-            o => o
-                .Excluding(m => m.RequestBody)
-                .Excluding(m => m.ResponseBody)
-                .ComparingByMembers<LogRecord>());
-        actualRecord.RequestBody.Should().BeEquivalentTo(expectedRecord.RequestBody);
-        actualRecord.ResponseBody.Should().BeEquivalentTo(expectedRecord.ResponseBody);
+        actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
 
     [Fact]
@@ -564,14 +510,12 @@ public class HttpRequestReaderTest
     {
         var requestContent = _fixture.Create<string>();
         var responseContent = _fixture.Create<string>();
-        var host = "default-uri.com";
-        var plainTextMedia = "text/plain";
         var header1 = new KeyValuePair<string, string>("Header1", "Value1");
         var header2 = new KeyValuePair<string, string>("Header2", "Value2");
 
         var expectedRecord = new LogRecord
         {
-            Host = host,
+            Host = RequestedHost,
             Method = HttpMethod.Post,
             Path = TelemetryConstants.Unknown,
             StatusCode = 200,
@@ -585,8 +529,8 @@ public class HttpRequestReaderTest
         {
             RequestHeadersDataClasses = new Dictionary<string, DataClassification> { { header1.Key, FakeTaxonomy.PrivateData } },
             ResponseHeadersDataClasses = new Dictionary<string, DataClassification> { { header2.Key, FakeTaxonomy.PrivateData } },
-            RequestBodyContentTypes = new HashSet<string> { plainTextMedia },
-            ResponseBodyContentTypes = new HashSet<string> { plainTextMedia },
+            RequestBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
+            ResponseBodyContentTypes = new HashSet<string> { MediaTypeNames.Text.Plain },
             BodyReadTimeout = TimeSpan.FromSeconds(10),
             LogBody = true,
         };
@@ -600,7 +544,7 @@ public class HttpRequestReaderTest
         using var serviceProvider = GetServiceProvider(headersReader);
 
         var reader = new HttpRequestReader(serviceProvider, opts.ToOptionsMonitor(),
-            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), RequestMetadataContext);
+            serviceProvider.GetRequiredService<IHttpRouteFormatter>(), serviceProvider.GetRequiredService<IHttpRouteParser>(), RequestMetadataContext);
 
         using var httpRequestMessage = new HttpRequestMessage
         {
@@ -626,18 +570,13 @@ public class HttpRequestReaderTest
         await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
         await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
-        actualRecord.Should().BeEquivalentTo(
-            expectedRecord,
-            o => o
-                .Excluding(m => m.RequestBody)
-                .Excluding(m => m.ResponseBody)
-                .ComparingByMembers<LogRecord>());
-
-        actualRecord.RequestBody.Should().BeEquivalentTo(expectedRecord.RequestBody);
-        actualRecord.ResponseBody.Should().BeEquivalentTo(expectedRecord.ResponseBody);
+        actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
 
-    private static ServiceProvider GetServiceProvider(HttpHeadersReader headersReader, string? serviceKey = null)
+    private static ServiceProvider GetServiceProvider(
+        HttpHeadersReader headersReader,
+        string? serviceKey = null,
+        Action<FakeRedactorOptions>? configureRedaction = null)
     {
         var services = new ServiceCollection();
         if (serviceKey is null)
@@ -650,7 +589,7 @@ public class HttpRequestReaderTest
         }
 
         return services
-            .AddFakeRedaction()
+            .AddFakeRedaction(configureRedaction ?? (_ => { }))
             .AddHttpRouteProcessor()
             .BuildServiceProvider();
     }
