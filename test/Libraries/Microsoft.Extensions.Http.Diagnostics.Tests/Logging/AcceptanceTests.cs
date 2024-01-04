@@ -360,7 +360,7 @@ public class AcceptanceTests
 
         httpRequestMessage.SetRequestMetadata(new RequestMetadata(httpRequestMessage.Method.ToString(), RequestRoute));
 
-        using var _ = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+        using var _ = await httpClient.SendAsync(httpRequestMessage);
 
         var collector = sp.GetFakeLogCollector();
         var logRecord = collector.GetSnapshot().Single(logRecord => logRecord.Category == LoggingCategory);

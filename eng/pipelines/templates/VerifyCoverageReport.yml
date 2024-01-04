@@ -39,3 +39,4 @@ steps:
         repositoryName: '$(Build.Repository.Name)'
         id: $(System.PullRequest.PullRequestNumber)
       displayName: Report coverage to GitHub
+      continueOnError: 'true' # Temporary setting to avoid failing the build if the GitHub comment fails
