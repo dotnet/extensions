@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.AsyncState;
 internal sealed class AsyncState : IAsyncState
 {
     private static readonly AsyncLocal<AsyncStateHolder> _asyncContextCurrent = new();
-    private static readonly ObjectPool<ConcurrentDictionary<AsyncStateToken, object?>> _featuresPool = PoolFactory.CreatePool(new FeaturesPooledPolicy());
+    private static readonly ObjectPool<ConcurrentDictionary<AsyncStateToken, object?>> _featuresPool = PoolFactory.CreatePool(new ConcurrentDictionaryPooledPolicy());
     private int _contextCount;
 
     public void Initialize()
@@ -24,7 +24,7 @@ internal sealed class AsyncState : IAsyncState
         // so it can be cleared in all ExecutionContexts when its cleared.
         var features = new AsyncStateHolder
         {
-            Features = _featuresPool.Get()
+            Dictionary = _featuresPool.Get()
         };
 
         _asyncContextCurrent.Value = features;
@@ -36,10 +36,10 @@ internal sealed class AsyncState : IAsyncState
         if (holder != null)
         {
             // Clear current AsyncContext trapped in the AsyncLocals, as its done.
-            if (holder.Features != null)
+            if (holder.Dictionary != null)
             {
-                _featuresPool.Return(holder.Features);
-                holder.Features = null;
+                _featuresPool.Return(holder.Dictionary);
+                holder.Dictionary = null;
             }
         }
     }
@@ -53,14 +53,14 @@ internal sealed class AsyncState : IAsyncState
     {
         // Context is not initialized
 #pragma warning disable EA0011
-        if (_asyncContextCurrent.Value?.Features == null)
+        if (_asyncContextCurrent.Value?.Dictionary == null)
 #pragma warning restore EA0011
         {
             value = null;
             return false;
         }
 
-        _ = _asyncContextCurrent.Value.Features.TryGetValue(token, out value);
+        _ = _asyncContextCurrent.Value.Dictionary.TryGetValue(token, out value);
         return true;
     }
 
@@ -78,19 +78,19 @@ internal sealed class AsyncState : IAsyncState
     {
         // Context is not initialized
 #pragma warning disable EA0011
-        if (_asyncContextCurrent.Value?.Features == null)
+        if (_asyncContextCurrent.Value?.Dictionary == null)
 #pragma warning restore EA0011
         {
             Throw.InvalidOperationException("Context is not initialized");
         }
 
-        _asyncContextCurrent.Value.Features[token] = value;
+        _asyncContextCurrent.Value.Dictionary[token] = value;
     }
 
     internal int ContextCount => Volatile.Read(ref _contextCount);
 
     private sealed class AsyncStateHolder
     {
-        public ConcurrentDictionary<AsyncStateToken, object?>? Features { get; set; }
+        public ConcurrentDictionary<AsyncStateToken, object?>? Dictionary { get; set; }
     }
 }

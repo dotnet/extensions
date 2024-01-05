@@ -6,7 +6,7 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.Extensions.AsyncState;
 
-internal sealed class FeaturesPooledPolicy : IPooledObjectPolicy<ConcurrentDictionary<AsyncStateToken, object?>>
+internal sealed class ConcurrentDictionaryPooledPolicy : IPooledObjectPolicy<ConcurrentDictionary<AsyncStateToken, object?>>
 {
     /// <inheritdoc/>
     public ConcurrentDictionary<AsyncStateToken, object?> Create()
