@@ -234,13 +234,13 @@ public class FakeTimeProvider : TimeProvider
                         candidate = waiter;
                     }
                 }
-            }
 
-            if (candidate == null)
-            {
-                // didn't find a candidate to wake, we're done
-                _wakeWaitersGate = 0;
-                return;
+                if (candidate == null)
+                {
+                    // didn't find a candidate to wake, we're done
+                    _wakeWaitersGate = 0;
+                    return;
+                }
             }
 
             var oldTicks = _now.Ticks;
