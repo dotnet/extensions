@@ -5,6 +5,9 @@
   <PropertyGroup>
     <Stage>dev</Stage>
     <StageDevDiagnosticId>EXTEXP0014</StageDevDiagnosticId>
+    <!-- In 8.0, we shipped this package as stable even when it was in the dev stage, so we
+    keep it as stable for compatiblity. -->
+    <DotNetFinalVersionKind>release</DotNetFinalVersionKind>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
