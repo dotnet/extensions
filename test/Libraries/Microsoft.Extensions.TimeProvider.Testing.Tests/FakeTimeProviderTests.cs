@@ -300,7 +300,7 @@ public class FakeTimeProviderTests
         cts.Cancel();
 
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
-        await Assert.ThrowsAsync<TaskCanceledException>(() => t).ConfigureAwait(false);
+        await Assert.ThrowsAsync<TaskCanceledException>(() => t);
 #pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
     }
 
