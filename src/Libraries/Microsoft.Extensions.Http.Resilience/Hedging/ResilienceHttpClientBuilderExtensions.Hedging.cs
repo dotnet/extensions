@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
@@ -138,6 +139,9 @@ public static partial class ResilienceHttpClientBuilderExtensions
                     .AddTimeout(options.Endpoint.Timeout);
             })
             .SelectPipelineByAuthority();
+
+        // Disable the HttpClient timeout to allow the timeout strategies to control the timeout.
+        _ = builder.ConfigureHttpClient(client => client.Timeout = Timeout.InfiniteTimeSpan);
 
         return new StandardHedgingHandlerBuilder(builder.Name, builder.Services, routingBuilder);
     }

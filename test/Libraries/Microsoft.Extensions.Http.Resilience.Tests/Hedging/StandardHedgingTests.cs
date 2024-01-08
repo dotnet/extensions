@@ -247,6 +247,14 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     }
 
     [Fact]
+    public void AddStandardResilienceHandler_EnsureHttpClientTimeoutDisabled()
+    {
+        var client = CreateClientWithHandler();
+
+        client.Timeout.Should().Be(Timeout.InfiniteTimeSpan);
+    }
+
+    [Fact]
     public async Task NoRouting_Ok()
     {
         // arrange
