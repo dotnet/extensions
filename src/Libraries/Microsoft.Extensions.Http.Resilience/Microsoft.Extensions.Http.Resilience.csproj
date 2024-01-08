@@ -15,6 +15,7 @@
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
     <InjectSharedPools>true</InjectSharedPools>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
   </PropertyGroup>
 
   <PropertyGroup>
