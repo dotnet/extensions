@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Condition="'$(TargetFramework)' == 'net462'" />
