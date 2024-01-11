@@ -60,7 +60,7 @@ public static class HttpLoggingServiceCollectionExtensions
     {
         _ = Throw.IfNull(section);
 
-        return services.AddHttpLoggingRedaction(section.Bind);
+        return services.AddHttpLoggingRedaction(o => section.Bind(o));
     }
 
     /// <summary>

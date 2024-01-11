@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Shared.Diagnostics;
@@ -56,11 +55,6 @@ public static class ResourceUtilizationHealthCheckExtensions
     /// <param name="section">Configuration for <see cref="ResourceUtilizationHealthCheckOptions"/>.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder" /> or <paramref name="section"/> is <see langword="null" />.</exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ResourceUtilizationHealthCheckOptions))]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed by [DynamicDependency]")]
     public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(
         this IHealthChecksBuilder builder,
         IConfigurationSection section)
@@ -80,11 +74,6 @@ public static class ResourceUtilizationHealthCheckExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder" />, <paramref name="section"/> or <paramref name="tags"/> is <see langword="null" />.</exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ResourceUtilizationHealthCheckOptions))]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed by [DynamicDependency]")]
     public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(
         this IHealthChecksBuilder builder,
         IConfigurationSection section,
@@ -106,11 +95,6 @@ public static class ResourceUtilizationHealthCheckExtensions
     /// <param name="tags">A list of tags that can be used to filter health checks.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder" />, <paramref name="section"/> or <paramref name="tags"/> is <see langword="null" />.</exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ResourceUtilizationHealthCheckOptions))]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed by [DynamicDependency]")]
     public static IHealthChecksBuilder AddResourceUtilizationHealthCheck(
         this IHealthChecksBuilder builder,
         IConfigurationSection section,

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -39,10 +38,6 @@ public static class ResourceMonitoringBuilderExtensions
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="ResourceMonitoringOptions"/>.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException">Either <paramref name="builder"/> or <paramref name="section"/> is <see langword="null" />.</exception>
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed with [DynamicDependency]")]
     public static IResourceMonitorBuilder ConfigureMonitor(
         this IResourceMonitorBuilder builder,
         IConfigurationSection section)
