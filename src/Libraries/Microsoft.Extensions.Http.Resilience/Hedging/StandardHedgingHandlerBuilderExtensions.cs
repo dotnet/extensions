@@ -32,7 +32,7 @@ public static class StandardHedgingHandlerBuilderExtensions
 
         if (!section.GetChildren().Any())
         {
-            Throw.ArgumentNullException(nameof(section));
+            Throw.ArgumentException(nameof(section), "Configuration section cannot be empty.");
         }
 
         _ = builder.Services.Configure<HttpStandardHedgingResilienceOptions>(builder.Name, section, o => o.ErrorOnUnknownConfiguration = true);
