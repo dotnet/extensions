@@ -35,9 +35,14 @@ internal sealed class HttpExceptionSummaryProvider : IExceptionSummaryProvider
         };
 
         var socketErrors = new Dictionary<SocketError, int>();
+#if NET5_0_OR_GREATER
+        foreach (var socketError in Enum.GetValues<SocketError>())
+        {
+#else
         foreach (var v in Enum.GetValues(typeof(SocketError)))
         {
             var socketError = (SocketError)v!;
+#endif
             var name = socketError.ToString();
 
             socketErrors[socketError] = descriptions.Count;
@@ -45,9 +50,14 @@ internal sealed class HttpExceptionSummaryProvider : IExceptionSummaryProvider
         }
 
         var webStatuses = new Dictionary<WebExceptionStatus, int>();
+#if NET5_0_OR_GREATER
+        foreach (var status in Enum.GetValues<WebExceptionStatus>())
+        {
+#else
         foreach (var v in Enum.GetValues(typeof(WebExceptionStatus)))
         {
             var status = (WebExceptionStatus)v!;
+#endif
             var name = status.ToString();
 
             webStatuses[status] = descriptions.Count;

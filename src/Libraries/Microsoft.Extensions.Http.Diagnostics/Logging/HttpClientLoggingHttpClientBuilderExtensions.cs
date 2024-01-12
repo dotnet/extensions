@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -50,10 +49,6 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// you have a way of viewing structured logs in order to view this extra information.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
-    [UnconditionalSuppressMessage("Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed with [DynamicDependency]")]
     public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
@@ -74,10 +69,6 @@ public static class HttpClientLoggingHttpClientBuilderExtensions
     /// you have a way of viewing structured logs in order to view this extra information.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
-    [UnconditionalSuppressMessage("Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed with [DynamicDependency]")]
     public static IHttpClientBuilder AddExtendedHttpClientLogging(this IHttpClientBuilder builder, Action<LoggingOptions> configure)
     {
         _ = Throw.IfNull(builder);

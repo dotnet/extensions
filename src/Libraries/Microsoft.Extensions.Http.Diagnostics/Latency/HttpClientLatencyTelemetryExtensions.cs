@@ -2,13 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Latency;
 using Microsoft.Extensions.Http.Latency.Internal;
-using Microsoft.Extensions.Http.Logging;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -58,10 +56,6 @@ public static class HttpClientLatencyTelemetryExtensions
     /// <param name="services">The <see cref="IServiceCollection" />.</param>
     /// <param name="section">The <see cref="IConfigurationSection"/> to use for configuring <see cref="HttpClientLatencyTelemetryOptions"/>.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
-    [UnconditionalSuppressMessage("Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed with [DynamicDependency]")]
     public static IServiceCollection AddHttpClientLatencyTelemetry(this IServiceCollection services, IConfigurationSection section)
     {
         _ = Throw.IfNull(section);

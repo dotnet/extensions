@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AmbientMetadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Shared.Diagnostics;
@@ -21,11 +20,6 @@ public static class ApplicationMetadataServiceCollectionExtensions
     /// <param name="section">The configuration section to bind.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="section"/> or <paramref name="section"/> is <see langword="null"/>.</exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ApplicationMetadata))]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed with [DynamicDependency]")]
     public static IServiceCollection AddApplicationMetadata(this IServiceCollection services, IConfigurationSection section)
     {
         _ = Throw.IfNull(services);

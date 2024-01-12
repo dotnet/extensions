@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Diagnostics;
@@ -49,6 +50,44 @@ public class HttpLoggingServiceExtensionsTests
 
         Assert.Contains("/path0toexclude", options.ExcludePathStartsWith);
         Assert.Contains("/path1toexclude", options.ExcludePathStartsWith);
+    }
+
+    [Fact]
+    public void AddHttpLogging_CanConfigureDataClasses()
+    {
+        var services = new ServiceCollection();
+        services.AddHttpLoggingRedaction(o =>
+        {
+            o.RouteParameterDataClasses = new Dictionary<string, DataClassification>
+            {
+                { "one", new DataClassification("Taxonomy1", "Value1") },
+            };
+
+            o.RequestHeadersDataClasses = new Dictionary<string, DataClassification>
+            {
+                { "two", new DataClassification("Taxonomy2", "Value2") },
+            };
+
+            o.ResponseHeadersDataClasses = new Dictionary<string, DataClassification>
+            {
+                { "three", new DataClassification("Taxonomy3", "Value3") },
+            };
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptions<LoggingRedactionOptions>>().Value;
+
+        Assert.Single(options.RouteParameterDataClasses);
+        Assert.Equal("Taxonomy1", options.RouteParameterDataClasses["one"].TaxonomyName);
+        Assert.Equal("Value1", options.RouteParameterDataClasses["one"].Value);
+
+        Assert.Single(options.RequestHeadersDataClasses);
+        Assert.Equal("Taxonomy2", options.RequestHeadersDataClasses["two"].TaxonomyName);
+        Assert.Equal("Value2", options.RequestHeadersDataClasses["two"].Value);
+
+        Assert.Single(options.ResponseHeadersDataClasses);
+        Assert.Equal("Taxonomy3", options.ResponseHeadersDataClasses["three"].TaxonomyName);
+        Assert.Equal("Value3", options.ResponseHeadersDataClasses["three"].Value);
     }
 }
 #endif
