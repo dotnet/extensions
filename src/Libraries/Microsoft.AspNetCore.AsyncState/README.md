@@ -5,7 +5,7 @@ This provides the ability to store and retrieve state objects that flow with the
 The lifetime of the shared data is controlled automatically and will be the same as of `HttpContext`.
 
 > [!NOTE]
-> Please note, the implementation of `IAsyncContext<T>` is not designed to be thread-safe.
+> Please note, the implementation of `IAsyncContext<T>` provided by this library is not thread-safe.
 
 ## Install the package
 

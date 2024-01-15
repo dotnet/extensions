@@ -7,7 +7,7 @@ It has a few advantages over using the [`AsyncLocal<T>`](https://learn.microsoft
 - Provides a way to manage the lifetime of the ambient data objects.
 
 > [!NOTE]
-> Please note, the implementations of `IAsyncState` and `IAsyncContext<T>` are not designed to be thread-safe.
+> Please note, the implementations of `IAsyncState` and `IAsyncContext<T>` are not thread-safe.
 
 ## Install the package
 
