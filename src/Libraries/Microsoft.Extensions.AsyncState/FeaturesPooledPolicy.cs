@@ -1,22 +1,27 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.Extensions.AsyncState;
 
-internal sealed class FeaturesPooledPolicy : IPooledObjectPolicy<Features>
+internal sealed class FeaturesPooledPolicy : IPooledObjectPolicy<List<object?>>
 {
     /// <inheritdoc/>
-    public Features Create()
+    public List<object?> Create()
     {
-        return new Features();
+        return [];
     }
 
     /// <inheritdoc/>
-    public bool Return(Features obj)
+    public bool Return(List<object?> obj)
     {
-        obj.Clear();
+        for (int i = 0; i < obj.Count; i++)
+        {
+            obj[i] = null;
+        }
+
         return true;
     }
 }
