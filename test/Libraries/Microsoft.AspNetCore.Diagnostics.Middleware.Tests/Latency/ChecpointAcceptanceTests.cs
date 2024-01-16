@@ -44,7 +44,7 @@ public class ChecpointAcceptanceTests
                 app.Use(async (context, next) =>
                 {
                     var latencyContext = context.RequestServices.GetRequiredService<ILatencyContext>();
-                    await next.Invoke().ConfigureAwait(false);
+                    await next.Invoke();
                     latencyContext.TryGetCheckpoint(RequestCheckpointConstants.ElapsedTillPipelineExitMiddleware, out var exitPipeline, out var exitPipelineFreq);
                     latencyContext.TryGetCheckpoint(RequestCheckpointConstants.ElapsedResponseProcessed, out var responseProcessed, out var responseProcessedFreq);
 
@@ -59,7 +59,7 @@ public class ChecpointAcceptanceTests
             }))
             .StartAsync();
 
-        _ = await host.GetTestClient().GetAsync("/").ConfigureAwait(false);
+        _ = await host.GetTestClient().GetAsync("/");
 
         Assert.True(reachedLambda);
         Assert.InRange(exitPipelineValue, 0, 10_000);
@@ -80,7 +80,7 @@ public class ChecpointAcceptanceTests
                 app.Use(async (context, next) =>
                 {
                     var latencyContext = context.RequestServices.GetRequiredService<ILatencyContext>();
-                    await next.Invoke().ConfigureAwait(false);
+                    await next.Invoke();
                     latencyContext.TryGetCheckpoint(RequestCheckpointConstants.ElapsedTillPipelineExitMiddleware, out var exitPipeline, out var exitPipelineFreq);
                     latencyContext.TryGetCheckpoint(RequestCheckpointConstants.ElapsedResponseProcessed, out var responseProcessed, out var responsedProcessedFreq);
                     exitPipelineValue = ((double)exitPipeline / exitPipelineFreq) * 1000;
@@ -102,7 +102,7 @@ public class ChecpointAcceptanceTests
 
         HttpResponseMessage? response = null;
 
-        var e = await Record.ExceptionAsync(async () => response = await host.GetTestClient().GetAsync("/").ConfigureAwait(false));
+        var e = await Record.ExceptionAsync(async () => response = await host.GetTestClient().GetAsync("/"));
 
         Assert.Null(e);
         Assert.NotNull(response);

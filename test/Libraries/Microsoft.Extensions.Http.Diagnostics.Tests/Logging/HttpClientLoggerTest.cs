@@ -70,7 +70,7 @@ public class HttpClientLoggerTest
         using var client = new HttpClient(handler);
 
         var act = async () =>
-            await client.SendAsync(null!, It.IsAny<CancellationToken>()).ConfigureAwait(false);
+            await client.SendAsync(null!, It.IsAny<CancellationToken>());
 
         await Assert.ThrowsAsync<ArgumentNullException>(act);
     }
@@ -105,7 +105,7 @@ public class HttpClientLoggerTest
         using var client = new HttpClient(handler);
 
         var act = async () =>
-            await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
+            await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
 
         var actualException = await Assert.ThrowsAsync<HttpRequestException>(act);
         Assert.Same(exception, actualException);
@@ -148,7 +148,7 @@ public class HttpClientLoggerTest
         using var httpClient = new HttpClient(handler);
 
         var act = async () =>
-            await httpClient.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
+            await httpClient.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
 
         var exception = await Record.ExceptionAsync(act);
         Assert.Null(exception);
@@ -235,7 +235,7 @@ public class HttpClientLoggerTest
             new TestingHandlerStub((_, _) => Task.FromResult(httpResponseMessage)));
 
         using var client = new HttpClient(handler);
-        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
+        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
         var logRecord = Assert.Single(logRecords);
@@ -331,7 +331,7 @@ public class HttpClientLoggerTest
             new TestingHandlerStub((_, _) => Task.FromResult(httpResponseMessage)));
 
         using var client = new HttpClient(handler);
-        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
+        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
         Assert.Equal(2, logRecords.Count);
@@ -550,7 +550,7 @@ public class HttpClientLoggerTest
         using var client = new HttpClient(handler);
         var act = async () => await client
             .SendAsync(httpRequestMessage, It.IsAny<CancellationToken>())
-            .ConfigureAwait(false);
+;
         await Assert.ThrowsAsync<InvalidOperationException>(act);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
@@ -641,7 +641,7 @@ public class HttpClientLoggerTest
             new TestingHandlerStub((_, _) => Task.FromResult(httpResponseMessage)));
 
         using var client = new HttpClient(handler);
-        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
+        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
         var logRecord = Assert.Single(logRecords);
@@ -691,7 +691,7 @@ public class HttpClientLoggerTest
             Content = new StringContent(_fixture.Create<string>(), Encoding.UTF8, TextPlain)
         };
 
-        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
+        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
         _ = Assert.Single(logRecords);
@@ -734,7 +734,7 @@ public class HttpClientLoggerTest
             Content = new StringContent(_fixture.Create<string>(), Encoding.UTF8, TextPlain)
         };
 
-        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
+        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
         Assert.Equal(2, logRecords.Count);
@@ -772,7 +772,7 @@ public class HttpClientLoggerTest
             Content = new StringContent(_fixture.Create<string>(), Encoding.UTF8, TextPlain)
         };
 
-        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
+        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
         Assert.Equal(2, logRecords.Count);
@@ -915,7 +915,7 @@ public class HttpClientLoggerTest
             }));
 
         using var client = new HttpClient(handler);
-        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
+        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
         var logRecord = Assert.Single(logRecords).GetStructuredState();
@@ -961,7 +961,7 @@ public class HttpClientLoggerTest
             Content = new StringContent("request_content", Encoding.UTF8, TextPlain)
         };
 
-        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
+        await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
 
         var logRecord = fakeLogger.Collector.GetSnapshot().Single();
         Assert.Equal(expectedLogLevel, logRecord.Level);
