@@ -29,7 +29,7 @@ public static class HttpStandardResiliencePipelineBuilderExtensions
 
         if (!section.GetChildren().Any())
         {
-            Throw.ArgumentNullException(nameof(section));
+            Throw.ArgumentException(nameof(section), "Configuration section cannot be empty.");
         }
 
         _ = builder.Services.Configure<HttpStandardResilienceOptions>(
