@@ -8,6 +8,7 @@ namespace Microsoft.Extensions.AsyncState;
 
 /// <summary>
 /// Provides access to the current async context.
+/// Some implementations of this interface may not be thread safe.
 /// </summary>
 /// <typeparam name="T">The type of the asynchronous state.</typeparam>
 [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Getter and setter throw exceptions.")]

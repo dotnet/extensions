@@ -9,6 +9,7 @@ namespace Microsoft.Extensions.AsyncState;
 
 /// <summary>
 /// Encapsulates all information within the asynchronous flow in an <see cref="AsyncLocal{T}"/> variable.
+/// Some implementations of this interface may not be thread safe.
 /// </summary>
 [SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "Getter and setter throw exceptions.")]
 public interface IAsyncState

@@ -7,6 +7,7 @@ namespace Microsoft.Extensions.AsyncState;
 
 /// <summary>
 /// Provides access to the current async context stored outside of the HTTP pipeline.
+/// Some implementations of this interface may not be thread safe.
 /// </summary>
 /// <typeparam name="T">The type of the asynchronous state.</typeparam>
 /// <remarks>This type is intended for internal use. Use <see cref="IAsyncContext{T}"/> instead.</remarks>

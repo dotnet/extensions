@@ -15,6 +15,7 @@ public static class AsyncStateExtensions
 {
     /// <summary>
     /// Adds default implementations for <see cref="IAsyncState"/>, <see cref="IAsyncContext{T}"/>, and <see cref="IAsyncLocalContext{T}"/> services.
+    /// Please note that implementations of these interfaces are not thread safe.
     /// </summary>
     /// <param name="services">The dependency injection container to add the implementations to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
