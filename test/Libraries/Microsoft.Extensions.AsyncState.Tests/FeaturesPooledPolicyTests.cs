@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.Extensions.AsyncState.Test;
@@ -12,7 +13,7 @@ public class FeaturesPooledPolicyTests
     {
         var policy = new FeaturesPooledPolicy();
 
-        Assert.True(policy.Return(new Features()));
+        Assert.True(policy.Return([]));
     }
 
     [Fact]
@@ -20,14 +21,12 @@ public class FeaturesPooledPolicyTests
     {
         var policy = new FeaturesPooledPolicy();
 
-        var features = policy.Create();
-        features.Set(0, string.Empty);
-        features.Set(1, Array.Empty<int>());
-        features.Set(2, new object());
+        var list = policy.Create();
+        list.Add(string.Empty);
+        list.Add(Array.Empty<int>());
+        list.Add(new object());
 
-        Assert.True(policy.Return(features));
-        Assert.Null(features.Get(0));
-        Assert.Null(features.Get(1));
-        Assert.Null(features.Get(2));
+        Assert.True(policy.Return(list));
+        Assert.All(list, el => Assert.Null(el));
     }
 }
