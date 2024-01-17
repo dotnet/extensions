@@ -77,7 +77,7 @@ public class HttpLatencyTelemetryHandlerTest
         };
 
         using var client = new System.Net.Http.HttpClient(handler);
-        await client.SendAsync(req, It.IsAny<CancellationToken>()).ConfigureAwait(false);
+        await client.SendAsync(req, It.IsAny<CancellationToken>());
         Assert.Null(context.Get());
     }
 
