@@ -24,3 +24,4 @@ jobs:
       with:
         quality: 'daily'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+        branch-name: dev
