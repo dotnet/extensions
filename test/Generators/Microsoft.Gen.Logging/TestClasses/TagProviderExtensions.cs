@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Text;
 
@@ -49,6 +50,12 @@ namespace TestClasses
             ILogger logger,
             LogLevel level,
             [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideTags))] int? param);
+
+        [LoggerMessage]
+        internal static partial void Enumerable(
+            ILogger logger,
+            LogLevel level,
+            [TagProvider(typeof(CustomProvider), nameof(CustomProvider.ProvideForEnumerable))] IEnumerable<string> things);
     }
 
     internal static class CustomProvider
@@ -94,6 +101,16 @@ namespace TestClasses
         {
             list.Add(nameof(ClassToLog.MyIntProperty), param.MyIntProperty);
             list.Add("Custom_property_name", param.MyStringProperty);
+        }
+
+        public static void ProvideForEnumerable(ITagCollector list, IEnumerable<string> e)
+        {
+            int i = 0;
+            foreach (var s in e)
+            {
+                list.Add($"Foo{i}", s);
+                i++;
+            }
         }
     }
 

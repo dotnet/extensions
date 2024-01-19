@@ -91,7 +91,7 @@ internal sealed partial class Emitter : EmitterBase
         }
         else
         {
-            OutLn($"new(0, {eventName}),");
+            OutLn($"new({GetNonRandomizedHashCode(eventName)}, {eventName}),");
         }
 
         OutLn($"{stateName},");
@@ -133,6 +133,26 @@ internal sealed partial class Emitter : EmitterBase
         OutLn();
         OutLn($"{stateName}.Clear();");
         OutCloseBrace();
+
+        /// <summary>
+        /// Returns a non-randomized hash code for the given string.
+        /// </summary>
+        /// <remarks>
+        /// We always return a positive value.
+        /// This code is cloned from the logging generator in dotnet/runtime in
+        /// order to retain the same event ids when upgrading to this generator.
+        /// </remarks>
+        static int GetNonRandomizedHashCode(string s)
+        {
+            const int Mult = 16_777_619;
+            uint result = 2_166_136_261u;
+            foreach (char c in s)
+            {
+                result = (c ^ result) * Mult;
+            }
+
+            return Math.Abs((int)result);
+        }
 
         static bool ShouldStringifyParameter(LoggingMethodParameter p)
         {
@@ -395,7 +415,7 @@ internal sealed partial class Emitter : EmitterBase
 
             foreach (var p in lm.Parameters)
             {
-                if (p.HasProperties && p.SkipNullProperties)
+                if (p.HasProperties && p.SkipNullProperties && !p.HasTagProvider)
                 {
                     p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
                     {
