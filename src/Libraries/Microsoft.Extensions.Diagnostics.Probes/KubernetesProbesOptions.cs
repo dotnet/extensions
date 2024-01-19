@@ -6,7 +6,7 @@ namespace Microsoft.Extensions.Diagnostics.Probes;
 /// <summary>
 /// Options for Kubernetes probes.
 /// </summary>
-public partial class KubernetesProbesOptions
+public class KubernetesProbesOptions
 {
     private const int DefaultLivenessProbePort = 2305;
     private const int DefaultStartupProbePort = 2306;
@@ -18,7 +18,7 @@ public partial class KubernetesProbesOptions
     /// <remarks>
     /// Default port is 2305.
     /// </remarks>
-    public EndpointOptions LivenessProbe { get; set; } = new EndpointOptions
+    public TcpEndpointOptions LivenessProbe { get; set; } = new TcpEndpointOptions
     {
         TcpPort = DefaultLivenessProbePort,
     };
@@ -29,7 +29,7 @@ public partial class KubernetesProbesOptions
     /// <remarks>
     /// Default port is 2306.
     /// </remarks>
-    public EndpointOptions StartupProbe { get; set; } = new EndpointOptions
+    public TcpEndpointOptions StartupProbe { get; set; } = new TcpEndpointOptions
     {
         TcpPort = DefaultStartupProbePort,
     };
@@ -40,7 +40,7 @@ public partial class KubernetesProbesOptions
     /// <remarks>
     /// Default port is 2307.
     /// </remarks>
-    public EndpointOptions ReadinessProbe { get; set; } = new EndpointOptions
+    public TcpEndpointOptions ReadinessProbe { get; set; } = new TcpEndpointOptions
     {
         TcpPort = DefaultReadinessProbePort,
     };

@@ -22,12 +22,12 @@ internal sealed class TcpEndpointHealthCheckService : BackgroundService
 
     private readonly ILogger<TcpEndpointHealthCheckService> _logger;
     private readonly HealthCheckService _healthCheckService;
-    private readonly KubernetesProbesOptions.EndpointOptions _options;
+    private readonly TcpEndpointOptions _options;
 #pragma warning disable CA2213 // 'TcpEndpointHealthCheckService' contains field '_listener' that is of IDisposable type 'TcpListener'
     private readonly TcpListener _listener;
 #pragma warning restore CA2213
 
-    public TcpEndpointHealthCheckService(ILogger<TcpEndpointHealthCheckService> logger, HealthCheckService healthCheckService, KubernetesProbesOptions.EndpointOptions options)
+    public TcpEndpointHealthCheckService(ILogger<TcpEndpointHealthCheckService> logger, HealthCheckService healthCheckService, TcpEndpointOptions options)
     {
         _logger = logger;
         _healthCheckService = healthCheckService;

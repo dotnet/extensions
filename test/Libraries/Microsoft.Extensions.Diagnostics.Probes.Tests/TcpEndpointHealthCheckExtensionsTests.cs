@@ -53,7 +53,7 @@ public class TcpEndpointHealthCheckExtensionsTests
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointHealthCheckService);
-        var configurations = host.Services.GetServices<IOptions<KubernetesProbesOptions.EndpointOptions>>();
+        var configurations = host.Services.GetServices<IOptions<TcpEndpointOptions>>();
 
         Assert.Single(hostedServices);
         var config = Assert.Single(configurations);
@@ -90,7 +90,7 @@ public class TcpEndpointHealthCheckExtensionsTests
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointHealthCheckService);
-        var configurations = host.Services.GetServices<IOptionsMonitor<KubernetesProbesOptions.EndpointOptions>>();
+        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointOptions>>();
 
         Assert.Single(hostedServices);
         var config = Assert.Single(configurations);
@@ -116,7 +116,7 @@ public class TcpEndpointHealthCheckExtensionsTests
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointHealthCheckService);
-        var configurations = host.Services.GetServices<IOptions<KubernetesProbesOptions.EndpointOptions>>();
+        var configurations = host.Services.GetServices<IOptions<TcpEndpointOptions>>();
 
         Assert.Single(hostedServices);
         var configuration = Assert.Single(configurations);
@@ -141,7 +141,7 @@ public class TcpEndpointHealthCheckExtensionsTests
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointHealthCheckService);
-        var configurations = host.Services.GetServices<IOptionsMonitor<KubernetesProbesOptions.EndpointOptions>>();
+        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointOptions>>();
 
         Assert.Single(hostedServices);
         Assert.Single(configurations);
@@ -162,7 +162,7 @@ public class TcpEndpointHealthCheckExtensionsTests
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointHealthCheckService);
-        var configurations = host.Services.GetServices<IOptionsMonitor<KubernetesProbesOptions.EndpointOptions>>();
+        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointOptions>>();
 
         Assert.Equal(2, hostedServices.Count());
         Assert.Single(configurations);

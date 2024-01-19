@@ -34,7 +34,7 @@ public class KubernetesProbesExtensionsTests
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(service => service.GetType().Name == "TcpEndpointHealthCheckService");
-        var configurations = host.Services.GetServices<IOptionsMonitor<KubernetesProbesOptions.EndpointOptions>>();
+        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointOptions>>();
 
         Assert.Equal(3, hostedServices.Count());
         Assert.Single(configurations);
@@ -75,7 +75,7 @@ public class KubernetesProbesExtensionsTests
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(service => service.GetType().Name == "TcpEndpointHealthCheckService");
-        var configurations = host.Services.GetServices<IOptionsMonitor<KubernetesProbesOptions.EndpointOptions>>();
+        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointOptions>>();
 
         Assert.Equal(3, hostedServices.Count());
         Assert.Single(configurations);
@@ -103,7 +103,7 @@ public class KubernetesProbesExtensionsTests
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(service => service.GetType().Name == "TcpEndpointHealthCheckService");
-        var configurations = host.Services.GetServices<IOptionsMonitor<KubernetesProbesOptions.EndpointOptions>>();
+        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointOptions>>();
 
         Assert.Equal(3, hostedServices.Count());
         Assert.Single(configurations);

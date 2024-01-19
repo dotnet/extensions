@@ -24,7 +24,7 @@ public class TcpEndpointHealthCheckServiceTests
 
         var healthCheckService = new MockHealthCheckService();
 
-        var options = new KubernetesProbesOptions.EndpointOptions
+        var options = new TcpEndpointOptions
         {
             TcpPort = port,
         };
@@ -73,7 +73,7 @@ public class TcpEndpointHealthCheckServiceTests
 
         var healthCheckService = new MockHealthCheckService();
 
-        var options = new KubernetesProbesOptions.EndpointOptions
+        var options = new TcpEndpointOptions
         {
             TcpPort = port,
         };
