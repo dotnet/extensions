@@ -18,7 +18,7 @@ public class KubernetesProbesOptions
     /// <remarks>
     /// Default port is 2305.
     /// </remarks>
-    public TcpEndpointOptions LivenessProbe { get; set; } = new TcpEndpointOptions
+    public TcpEndpointProbesOptions LivenessProbe { get; set; } = new TcpEndpointProbesOptions
     {
         TcpPort = DefaultLivenessProbePort,
     };
@@ -29,7 +29,7 @@ public class KubernetesProbesOptions
     /// <remarks>
     /// Default port is 2306.
     /// </remarks>
-    public TcpEndpointOptions StartupProbe { get; set; } = new TcpEndpointOptions
+    public TcpEndpointProbesOptions StartupProbe { get; set; } = new TcpEndpointProbesOptions
     {
         TcpPort = DefaultStartupProbePort,
     };
@@ -40,7 +40,7 @@ public class KubernetesProbesOptions
     /// <remarks>
     /// Default port is 2307.
     /// </remarks>
-    public TcpEndpointOptions ReadinessProbe { get; set; } = new TcpEndpointOptions
+    public TcpEndpointProbesOptions ReadinessProbe { get; set; } = new TcpEndpointProbesOptions
     {
         TcpPort = DefaultReadinessProbePort,
     };

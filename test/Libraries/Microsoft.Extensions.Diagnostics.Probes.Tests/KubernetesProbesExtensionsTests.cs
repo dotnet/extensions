@@ -33,8 +33,8 @@ public class KubernetesProbesExtensionsTests
             services.AddKubernetesProbes().AddHealthChecks();
         });
 
-        var hostedServices = host.Services.GetServices<IHostedService>().Where(service => service.GetType().Name == "TcpEndpointHealthCheckService");
-        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointOptions>>();
+        var hostedServices = host.Services.GetServices<IHostedService>().Where(service => service.GetType().Name == "TcpEndpointProbesService");
+        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointProbesOptions>>();
 
         Assert.Equal(3, hostedServices.Count());
         Assert.Single(configurations);
@@ -74,8 +74,8 @@ public class KubernetesProbesExtensionsTests
             }).AddHealthChecks();
         });
 
-        var hostedServices = host.Services.GetServices<IHostedService>().Where(service => service.GetType().Name == "TcpEndpointHealthCheckService");
-        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointOptions>>();
+        var hostedServices = host.Services.GetServices<IHostedService>().Where(service => service.GetType().Name == "TcpEndpointProbesService");
+        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointProbesOptions>>();
 
         Assert.Equal(3, hostedServices.Count());
         Assert.Single(configurations);
@@ -102,8 +102,8 @@ public class KubernetesProbesExtensionsTests
             services.AddKubernetesProbes(configuration.GetSection("KubernetesProbes")).AddHealthChecks();
         });
 
-        var hostedServices = host.Services.GetServices<IHostedService>().Where(service => service.GetType().Name == "TcpEndpointHealthCheckService");
-        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointOptions>>();
+        var hostedServices = host.Services.GetServices<IHostedService>().Where(service => service.GetType().Name == "TcpEndpointProbesService");
+        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointProbesOptions>>();
 
         Assert.Equal(3, hostedServices.Count());
         Assert.Single(configurations);

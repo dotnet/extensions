@@ -21,7 +21,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Probes.Test;
 
-public class TcpEndpointHealthCheckExtensionsTests
+public class TcpEndpointProbesExtensionsTests
 {
     [Fact]
     public void AddTcpEndpointHealthCheckTest_WithoutConfig()
@@ -33,7 +33,7 @@ public class TcpEndpointHealthCheckExtensionsTests
                 .AddTcpEndpointHealthCheck();
         });
 
-        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointHealthCheckService);
+        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointProbesService);
 
         Assert.Single(hostedServices);
     }
@@ -52,8 +52,8 @@ public class TcpEndpointHealthCheckExtensionsTests
                 });
         });
 
-        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointHealthCheckService);
-        var configurations = host.Services.GetServices<IOptions<TcpEndpointOptions>>();
+        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointProbesService);
+        var configurations = host.Services.GetServices<IOptions<TcpEndpointProbesOptions>>();
 
         Assert.Single(hostedServices);
         var config = Assert.Single(configurations);
@@ -70,7 +70,7 @@ public class TcpEndpointHealthCheckExtensionsTests
                 .AddTcpEndpointHealthCheck("Liveness");
         });
 
-        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointHealthCheckService);
+        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointProbesService);
 
         Assert.Single(hostedServices);
     }
@@ -89,8 +89,8 @@ public class TcpEndpointHealthCheckExtensionsTests
                 });
         });
 
-        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointHealthCheckService);
-        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointOptions>>();
+        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointProbesService);
+        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointProbesOptions>>();
 
         Assert.Single(hostedServices);
         var config = Assert.Single(configurations);
@@ -115,8 +115,8 @@ public class TcpEndpointHealthCheckExtensionsTests
                 .AddTcpEndpointHealthCheck(config.GetSection("TcpHealthCheck"));
         });
 
-        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointHealthCheckService);
-        var configurations = host.Services.GetServices<IOptions<TcpEndpointOptions>>();
+        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointProbesService);
+        var configurations = host.Services.GetServices<IOptions<TcpEndpointProbesOptions>>();
 
         Assert.Single(hostedServices);
         var configuration = Assert.Single(configurations);
@@ -140,8 +140,8 @@ public class TcpEndpointHealthCheckExtensionsTests
                 .AddTcpEndpointHealthCheck("Liveness", config.GetSection("TcpHealthCheck"));
         });
 
-        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointHealthCheckService);
-        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointOptions>>();
+        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointProbesService);
+        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointProbesOptions>>();
 
         Assert.Single(hostedServices);
         Assert.Single(configurations);
@@ -161,8 +161,8 @@ public class TcpEndpointHealthCheckExtensionsTests
                 .AddTcpEndpointHealthCheck("Readiness");
         });
 
-        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointHealthCheckService);
-        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointOptions>>();
+        var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointProbesService);
+        var configurations = host.Services.GetServices<IOptionsMonitor<TcpEndpointProbesOptions>>();
 
         Assert.Equal(2, hostedServices.Count());
         Assert.Single(configurations);

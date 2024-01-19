@@ -16,18 +16,18 @@ namespace Microsoft.Extensions.Diagnostics.Probes;
 /// <summary>
 /// Opens a TCP port if the service is healthy and closes it otherwise.
 /// </summary>
-internal sealed class TcpEndpointHealthCheckService : BackgroundService
+internal sealed class TcpEndpointProbesService : BackgroundService
 {
     internal TimeProvider TimeProvider { get; set; } = TimeProvider.System;
 
-    private readonly ILogger<TcpEndpointHealthCheckService> _logger;
+    private readonly ILogger<TcpEndpointProbesService> _logger;
     private readonly HealthCheckService _healthCheckService;
-    private readonly TcpEndpointOptions _options;
-#pragma warning disable CA2213 // 'TcpEndpointHealthCheckService' contains field '_listener' that is of IDisposable type 'TcpListener'
+    private readonly TcpEndpointProbesOptions _options;
+#pragma warning disable CA2213 // 'TcpEndpointProbesService' contains field '_listener' that is of IDisposable type 'TcpListener'
     private readonly TcpListener _listener;
 #pragma warning restore CA2213
 
-    public TcpEndpointHealthCheckService(ILogger<TcpEndpointHealthCheckService> logger, HealthCheckService healthCheckService, TcpEndpointOptions options)
+    public TcpEndpointProbesService(ILogger<TcpEndpointProbesService> logger, HealthCheckService healthCheckService, TcpEndpointProbesOptions options)
     {
         _logger = logger;
         _healthCheckService = healthCheckService;
