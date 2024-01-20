@@ -24,13 +24,13 @@ namespace Microsoft.Extensions.Diagnostics.Probes.Test;
 public class TcpEndpointProbesExtensionsTests
 {
     [Fact]
-    public void AddTcpEndpointHealthCheckTest_WithoutConfig()
+    public void AddTcpEndpointProbeTest_WithoutConfig()
     {
         using var host = CreateWebHost(services =>
         {
             services
                 .AddRouting()
-                .AddTcpEndpointHealthCheck();
+                .AddTcpEndpointProbe();
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointProbesService);
@@ -39,13 +39,13 @@ public class TcpEndpointProbesExtensionsTests
     }
 
     [Fact]
-    public void AddTcpEndpointHealthCheckTest_WithAction()
+    public void AddTcpEndpointProbeTest_WithAction()
     {
         using var host = CreateWebHost(services =>
         {
             services
                 .AddRouting()
-                .AddTcpEndpointHealthCheck(o =>
+                .AddTcpEndpointProbe(o =>
                 {
                     o.FilterChecks = _ => false;
                     o.HealthAssessmentPeriod = TimeSpan.FromSeconds(15);
@@ -61,13 +61,13 @@ public class TcpEndpointProbesExtensionsTests
     }
 
     [Fact]
-    public void AddTcpEndpointHealthCheckTest_WithName_WithoutConfig()
+    public void AddTcpEndpointProbeTest_WithName_WithoutConfig()
     {
         using var host = CreateWebHost(services =>
         {
             services
                 .AddRouting()
-                .AddTcpEndpointHealthCheck("Liveness");
+                .AddTcpEndpointProbe("Liveness");
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointProbesService);
@@ -76,13 +76,13 @@ public class TcpEndpointProbesExtensionsTests
     }
 
     [Fact]
-    public void AddTcpEndpointHealthCheckTest_WithName_WithAction()
+    public void AddTcpEndpointProbeTest_WithName_WithAction()
     {
         using var host = CreateWebHost(services =>
         {
             services
                 .AddRouting()
-                .AddTcpEndpointHealthCheck("Liveness", o =>
+                .AddTcpEndpointProbe("Liveness", o =>
                 {
                     o.FilterChecks = _ => false;
                     o.HealthAssessmentPeriod = TimeSpan.FromSeconds(5);
@@ -99,7 +99,7 @@ public class TcpEndpointProbesExtensionsTests
     }
 
     [Fact]
-    public void AddTcpEndpointHealthCheckTest_WithConfigurationSection()
+    public void AddTcpEndpointProbeTest_WithConfigurationSection()
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -112,7 +112,7 @@ public class TcpEndpointProbesExtensionsTests
         {
             services
                 .AddRouting()
-                .AddTcpEndpointHealthCheck(config.GetSection("TcpHealthCheck"));
+                .AddTcpEndpointProbe(config.GetSection("TcpHealthCheck"));
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointProbesService);
@@ -124,7 +124,7 @@ public class TcpEndpointProbesExtensionsTests
     }
 
     [Fact]
-    public void AddTcpEndpointHealthCheckTest_WithName_WithConfigurationSection()
+    public void AddTcpEndpointProbeTest_WithName_WithConfigurationSection()
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -137,7 +137,7 @@ public class TcpEndpointProbesExtensionsTests
         {
             services
                 .AddRouting()
-                .AddTcpEndpointHealthCheck("Liveness", config.GetSection("TcpHealthCheck"));
+                .AddTcpEndpointProbe("Liveness", config.GetSection("TcpHealthCheck"));
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointProbesService);
@@ -151,14 +151,14 @@ public class TcpEndpointProbesExtensionsTests
     }
 
     [Fact]
-    public void AddTcpEndpointHealthCheckTest_MultipleNamed()
+    public void AddTcpEndpointProbeTest_MultipleNamed()
     {
         using var host = CreateWebHost(services =>
         {
             services
                 .AddRouting()
-                .AddTcpEndpointHealthCheck("Liveness")
-                .AddTcpEndpointHealthCheck("Readiness");
+                .AddTcpEndpointProbe("Liveness")
+                .AddTcpEndpointProbe("Readiness");
         });
 
         var hostedServices = host.Services.GetServices<IHostedService>().Where(x => x is TcpEndpointProbesService);

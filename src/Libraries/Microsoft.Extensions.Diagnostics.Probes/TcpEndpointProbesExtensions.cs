@@ -23,11 +23,11 @@ public static class TcpEndpointProbesExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add the services to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection AddTcpEndpointHealthCheck(this IServiceCollection services)
+    public static IServiceCollection AddTcpEndpointProbe(this IServiceCollection services)
     {
         _ = Throw.IfNull(services);
 
-        return services.AddTcpEndpointHealthCheck(Microsoft.Extensions.Options.Options.DefaultName);
+        return services.AddTcpEndpointProbe(Microsoft.Extensions.Options.Options.DefaultName);
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ public static class TcpEndpointProbesExtensions
     /// <param name="services">The <see cref="IServiceCollection" /> to add the services to.</param>
     /// <param name="name">Name used to retrieve the options.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection AddTcpEndpointHealthCheck(this IServiceCollection services, string name)
+    public static IServiceCollection AddTcpEndpointProbe(this IServiceCollection services, string name)
     {
         _ = Throw.IfNull(services);
 
@@ -62,7 +62,7 @@ public static class TcpEndpointProbesExtensions
     /// <param name="services">The <see cref="IServiceCollection" /> to add the services to.</param>
     /// <param name="configure">Configuration for <see cref="TcpEndpointProbesOptions"/>.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection AddTcpEndpointHealthCheck(
+    public static IServiceCollection AddTcpEndpointProbe(
         this IServiceCollection services,
         Action<TcpEndpointProbesOptions> configure)
     {
@@ -71,7 +71,7 @@ public static class TcpEndpointProbesExtensions
 
         _ = services.Configure(configure);
 
-        return services.AddTcpEndpointHealthCheck();
+        return services.AddTcpEndpointProbe();
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public static class TcpEndpointProbesExtensions
     /// <param name="name">Name for the options.</param>
     /// <param name="configure">Configuration for <see cref="TcpEndpointProbesOptions"/>.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection AddTcpEndpointHealthCheck(
+    public static IServiceCollection AddTcpEndpointProbe(
         this IServiceCollection services,
         string name,
         Action<TcpEndpointProbesOptions> configure)
@@ -92,7 +92,7 @@ public static class TcpEndpointProbesExtensions
 
         _ = services.Configure(name, configure);
 
-        return services.AddTcpEndpointHealthCheck(name);
+        return services.AddTcpEndpointProbe(name);
     }
 
     /// <summary>
@@ -102,7 +102,7 @@ public static class TcpEndpointProbesExtensions
     /// <param name="services">The <see cref="IServiceCollection" /> to add the services to.</param>
     /// <param name="configurationSection">Configuration for <see cref="TcpEndpointProbesOptions"/>.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection AddTcpEndpointHealthCheck(
+    public static IServiceCollection AddTcpEndpointProbe(
         this IServiceCollection services,
         IConfigurationSection configurationSection)
     {
@@ -111,7 +111,7 @@ public static class TcpEndpointProbesExtensions
 
         _ = services.Configure<TcpEndpointProbesOptions>(configurationSection);
 
-        return services.AddTcpEndpointHealthCheck();
+        return services.AddTcpEndpointProbe();
     }
 
     /// <summary>
@@ -122,7 +122,7 @@ public static class TcpEndpointProbesExtensions
     /// <param name="name">Name for the options.</param>
     /// <param name="configurationSection">Configuration for <see cref="TcpEndpointProbesOptions"/>.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection AddTcpEndpointHealthCheck(
+    public static IServiceCollection AddTcpEndpointProbe(
         this IServiceCollection services,
         string name,
         IConfigurationSection configurationSection)
@@ -132,6 +132,6 @@ public static class TcpEndpointProbesExtensions
 
         _ = services.Configure<TcpEndpointProbesOptions>(name, configurationSection);
 
-        return services.AddTcpEndpointHealthCheck(name);
+        return services.AddTcpEndpointProbe(name);
     }
 }
