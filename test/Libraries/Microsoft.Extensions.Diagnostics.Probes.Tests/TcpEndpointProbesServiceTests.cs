@@ -12,8 +12,8 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.Probes.Test;
 
-[CollectionDefinition(nameof(TcpEndpointHealthCheckServiceTests), DisableParallelization = true)]
-public class TcpEndpointHealthCheckServiceTests
+[CollectionDefinition(nameof(TcpEndpointProbesServiceTests), DisableParallelization = true)]
+public class TcpEndpointProbesServiceTests
 {
     [Fact]
     public async Task ExecuteAsync_CheckListenerOpenAndCloseAfterHealthStatusEvents()
@@ -24,13 +24,13 @@ public class TcpEndpointHealthCheckServiceTests
 
         var healthCheckService = new MockHealthCheckService();
 
-        var options = new KubernetesProbesOptions.EndpointOptions
+        var options = new TcpEndpointProbesOptions
         {
             TcpPort = port,
         };
         var timeProvider = new FakeTimeProvider();
-        using var tcpEndpointHealthCheckService = new TcpEndpointHealthCheckService(
-            new FakeLogger<TcpEndpointHealthCheckService>(),
+        using var tcpEndpointProbesService = new TcpEndpointProbesService(
+            new FakeLogger<TcpEndpointProbesService>(),
             healthCheckService,
             options)
         {
@@ -39,8 +39,8 @@ public class TcpEndpointHealthCheckServiceTests
 
         Assert.False(IsTcpOpened(port));
 
-        await tcpEndpointHealthCheckService.StartAsync(cts.Token);
-        await tcpEndpointHealthCheckService.UpdateHealthStatusAsync(cts.Token);
+        await tcpEndpointProbesService.StartAsync(cts.Token);
+        await tcpEndpointProbesService.UpdateHealthStatusAsync(cts.Token);
 
         Assert.True(IsTcpOpened(port));
 
@@ -49,7 +49,7 @@ public class TcpEndpointHealthCheckServiceTests
         Assert.True(IsTcpOpened(port));
 
         healthCheckService.IsHealthy = false;
-        await tcpEndpointHealthCheckService.UpdateHealthStatusAsync(cts.Token);
+        await tcpEndpointProbesService.UpdateHealthStatusAsync(cts.Token);
 
         Assert.False(IsTcpOpened(port));
 
@@ -58,7 +58,7 @@ public class TcpEndpointHealthCheckServiceTests
         Assert.False(IsTcpOpened(port));
 
         healthCheckService.IsHealthy = true;
-        await tcpEndpointHealthCheckService.UpdateHealthStatusAsync(cts.Token);
+        await tcpEndpointProbesService.UpdateHealthStatusAsync(cts.Token);
 
         Assert.True(IsTcpOpened(port));
 
@@ -73,13 +73,13 @@ public class TcpEndpointHealthCheckServiceTests
 
         var healthCheckService = new MockHealthCheckService();
 
-        var options = new KubernetesProbesOptions.EndpointOptions
+        var options = new TcpEndpointProbesOptions
         {
             TcpPort = port,
         };
         var timeProvider = new FakeTimeProvider();
-        using var tcpEndpointHealthCheckService = new TcpEndpointHealthCheckService(
-            new FakeLogger<TcpEndpointHealthCheckService>(),
+        using var tcpEndpointProbesService = new TcpEndpointProbesService(
+            new FakeLogger<TcpEndpointProbesService>(),
             healthCheckService,
             options)
         {
@@ -89,7 +89,7 @@ public class TcpEndpointHealthCheckServiceTests
         using var cts = new CancellationTokenSource();
 
         cts.Cancel();
-        await tcpEndpointHealthCheckService.StartAsync(cts.Token);
+        await tcpEndpointProbesService.StartAsync(cts.Token);
 
         Assert.False(IsTcpOpened(port));
     }

@@ -6,6 +6,6 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Diagnostics.Probes;
 
 [OptionsValidator]
-internal sealed partial class EndpointOptionsValidator : IValidateOptions<KubernetesProbesOptions.EndpointOptions>
+internal sealed partial class TcpEndpointProbesOptionsValidator : IValidateOptions<TcpEndpointProbesOptions>
 {
 }
