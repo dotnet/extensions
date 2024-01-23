@@ -1952,7 +1952,7 @@ csharp_style_expression_bodied_accessors = true
 # Title    : Simplify collection initialization
 # Category : Style
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0028
-dotnet_diagnostic.IDE0028.severity = warning
+dotnet_diagnostic.IDE0028.severity = none
 dotnet_style_collection_initializer = true
 
 # Title    : Use coalesce expression
