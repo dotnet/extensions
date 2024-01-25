@@ -137,7 +137,7 @@ namespace TestClasses
 
         public string MyStringProperty { get; set; }
 
-        public override string ToString() => "Custom struct string representation";
+        public override readonly string ToString() => "Custom struct string representation";
     }
 
     internal interface IInterfaceToLog

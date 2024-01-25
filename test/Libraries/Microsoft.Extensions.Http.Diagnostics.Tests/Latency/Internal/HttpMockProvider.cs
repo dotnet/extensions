@@ -9,7 +9,7 @@ using Moq;
 
 namespace Microsoft.Extensions.Http.Latency.Test.Internal;
 
-internal class HttpMockProvider
+internal static class HttpMockProvider
 {
     public static HttpRequestLatencyListener GetListener(HttpClientLatencyContext httpClientLatencyContext, ILatencyContextTokenIssuer tokenIssuer)
     {
