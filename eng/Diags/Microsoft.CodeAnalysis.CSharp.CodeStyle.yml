@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.CodeAnalysis.CSharp.CodeStyle
-  Version: 4.8.9.404
+  Version: 4.8.9.2411
 Diagnostics:
   IDE0001:
     Metadata:
@@ -131,9 +131,9 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: Silent
+        Severity: Suggestion
         Options:
-        - csharp_style_var_elsewhere = true
+        - csharp_style_var_elsewhere = false
         - csharp_style_var_for_built_in_types = false
         - csharp_style_var_when_type_is_apparent = true
   IDE0008:
@@ -400,7 +400,7 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: Warning
+        Severity: Suggestion
         Options:
         - dotnet_style_collection_initializer = true
   IDE0029:
@@ -416,7 +416,7 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: Warning
+        Severity: Suggestion
         Options:
         - dotnet_style_coalesce_expression = true
   IDE0030:
@@ -432,7 +432,7 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: Warning
+        Severity: Suggestion
         Options:
         - dotnet_style_coalesce_expression = true
   IDE0031:
@@ -1289,7 +1289,7 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: Warning
+        Severity: Suggestion
         Options:
         - csharp_style_implicit_object_creation_when_type_is_apparent = true
   IDE0110:
@@ -1715,6 +1715,20 @@ Diagnostics:
     Attributes:
       general:
         Severity: Silent
+  IDE0290:
+    Metadata:
+      Category: Style
+      Title: Use primary constructor
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0290
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
   EnableGenerateDocumentationFile:
     Metadata:
       Category: Style
@@ -1729,12 +1743,12 @@ Diagnostics:
     Attributes:
       general:
         Severity: Warning
-  IDE0251:
+  IDE0304:
     Metadata:
       Category: Style
-      Title: Make member 'readonly'
+      Title: Simplify collection initialization
       Description: ''
-      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0251
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0304
       CustomTags:
       - Telemetry
       - EnforceOnBuild_Recommended
@@ -1743,12 +1757,12 @@ Diagnostics:
     Attributes:
       general:
         Severity: None
-  IDE0290:
+  IDE0305:
     Metadata:
       Category: Style
-      Title: Use primary constructor
+      Title: Simplify collection initialization
       Description: ''
-      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0290
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0305
       CustomTags:
       - Telemetry
       - EnforceOnBuild_Recommended
@@ -1770,41 +1784,13 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: Suggestion
+        Severity: None
   IDE0300:
     Metadata:
       Category: Style
       Title: Simplify collection initialization
       Description: ''
       HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0300
-      CustomTags:
-      - Telemetry
-      - EnforceOnBuild_Recommended
-      DefaultSeverity: None
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-  IDE0304:
-    Metadata:
-      Category: Style
-      Title: Simplify collection initialization
-      Description: ''
-      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0304
-      CustomTags:
-      - Telemetry
-      - EnforceOnBuild_Recommended
-      DefaultSeverity: None
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-  IDE0305:
-    Metadata:
-      Category: Style
-      Title: Simplify collection initialization
-      Description: ''
-      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0305
       CustomTags:
       - Telemetry
       - EnforceOnBuild_Recommended
@@ -1841,3 +1827,19 @@ Diagnostics:
     Attributes:
       general:
         Severity: None
+  IDE0251:
+    Metadata:
+      Category: Style
+      Title: Make member 'readonly'
+      Description: ''
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0251
+      CustomTags:
+      - Telemetry
+      - EnforceOnBuild_Recommended
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+        Options:
+        - csharp_style_prefer_readonly_struct_members = true

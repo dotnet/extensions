@@ -146,7 +146,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
         return new StandardHedgingHandlerBuilder(builder.Name, builder.Services, routingBuilder);
     }
 
-    private record StandardHedgingHandlerBuilder(
+    private sealed record StandardHedgingHandlerBuilder(
         string Name,
         IServiceCollection Services,
         IRoutingStrategyBuilder RoutingStrategyBuilder) : IStandardHedgingHandlerBuilder;

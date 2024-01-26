@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Extensions.Http.Resilience.Routing.Internal;
 
-internal class RequestRoutingOptions
+internal sealed class RequestRoutingOptions
 {
     public Func<RequestRoutingStrategy>? RoutingStrategyProvider { get; set; }
 }

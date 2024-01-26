@@ -17,7 +17,7 @@ namespace TestClasses
 
         internal record struct MyRecordStruct(int IntValue, string StringValue)
         {
-            public long GetOnlyValue => IntValue + 1L;
+            public readonly long GetOnlyValue => IntValue + 1L;
         }
 
         internal readonly record struct MyReadonlyRecordStruct(int IntValue, string StringValue)

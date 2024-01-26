@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: xunit.analyzers
-  Version: 1.1.0
+  Version: 1.4.0
 Diagnostics:
   xUnit1000:
     Metadata:
@@ -615,7 +615,7 @@ Diagnostics:
   xUnit3000:
     Metadata:
       Category: Extensibility
-      Title: Test case classes must derive directly or indirectly from Xunit.LongLivedMarshalByRefObject
+      Title: Classes which cross AppDomain boundaries must derive directly or indirectly from LongLivedMarshalByRefObject
       Description: ''
       HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit3000
       DefaultSeverity: Error
@@ -664,3 +664,198 @@ Diagnostics:
         Severity: None
       test:
         Severity: Suggestion
+  xUnit1031:
+    Metadata:
+      Category: Usage
+      Title: Do not use blocking task operations in test method
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1031
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit1030:
+    Metadata:
+      Category: Usage
+      Title: Do not call ConfigureAwait(false) in test method
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1030
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit1029:
+    Metadata:
+      Category: Usage
+      Title: Local functions cannot be test functions
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1029
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1034:
+    Metadata:
+      Category: Usage
+      Title: Null should only be used for nullable parameters
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1034
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit1035:
+    Metadata:
+      Category: Usage
+      Title: The value is not convertible to the method parameter type
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1035
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1036:
+    Metadata:
+      Category: Usage
+      Title: There is no matching method parameter
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1036
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1037:
+    Metadata:
+      Category: Usage
+      Title: There are fewer TheoryData type arguments than required by the parameters of the test method
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1037
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1038:
+    Metadata:
+      Category: Usage
+      Title: There are more TheoryData type arguments than allowed by the parameters of the test method
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1038
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1039:
+    Metadata:
+      Category: Usage
+      Title: The type argument to TheoryData is not compatible with the type of the corresponding test method parameter
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1039
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1040:
+    Metadata:
+      Category: Usage
+      Title: The type argument to TheoryData is nullable, while the type of the corresponding test method parameter is not
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1040
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning
+  xUnit1032:
+    Metadata:
+      Category: Usage
+      Title: Test classes cannot be nested within a generic class
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1032
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit1028:
+    Metadata:
+      Category: Usage
+      Title: Test method must have valid return type
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit1028
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit2021:
+    Metadata:
+      Category: Assertions
+      Title: Async assertions should be awaited
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2021
+      DefaultSeverity: Error
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Error
+  xUnit2022:
+    Metadata:
+      Category: Assertions
+      Title: Boolean assertions should not be negated
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2022
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Suggestion
+  xUnit2020:
+    Metadata:
+      Category: Assertions
+      Title: Do not use always-failing boolean assertions
+      Description: ''
+      HelpLinkUri: https://xunit.net/xunit.analyzers/rules/xUnit2020
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      test:
+        Severity: Warning

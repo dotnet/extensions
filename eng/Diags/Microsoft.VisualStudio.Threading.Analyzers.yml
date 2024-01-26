@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.VisualStudio.Threading.Analyzers
-  Version: 17.5.22.27812
+  Version: 17.7.30.5607
 Diagnostics:
   VSTHRD100:
     Metadata:

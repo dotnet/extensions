@@ -93,5 +93,5 @@ public static partial class ResilienceHttpClientBuilderExtensions
         return new HttpStandardResiliencePipelineBuilder(optionsName, builder.Services);
     }
 
-    private record HttpStandardResiliencePipelineBuilder(string PipelineName, IServiceCollection Services) : IHttpStandardResiliencePipelineBuilder;
+    private sealed record HttpStandardResiliencePipelineBuilder(string PipelineName, IServiceCollection Services) : IHttpStandardResiliencePipelineBuilder;
 }

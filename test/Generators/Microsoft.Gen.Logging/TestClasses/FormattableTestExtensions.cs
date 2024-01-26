@@ -19,7 +19,7 @@ namespace TestClasses
 
         internal struct Formattable : IFormattable
         {
-            public string ToString(string? format, IFormatProvider? formatProvider)
+            public readonly string ToString(string? format, IFormatProvider? formatProvider)
             {
                 return "Formatted!";
             }
@@ -27,24 +27,24 @@ namespace TestClasses
 
         internal struct Convertible : IConvertible
         {
-            public TypeCode GetTypeCode() => throw new NotSupportedException();
-            public bool ToBoolean(IFormatProvider? provider) => throw new NotSupportedException();
-            public byte ToByte(IFormatProvider? provider) => throw new NotSupportedException();
-            public char ToChar(IFormatProvider? provider) => throw new NotSupportedException();
-            public DateTime ToDateTime(IFormatProvider? provider) => throw new NotSupportedException();
-            public decimal ToDecimal(IFormatProvider? provider) => throw new NotSupportedException();
-            public double ToDouble(IFormatProvider? provider) => throw new NotSupportedException();
-            public short ToInt16(IFormatProvider? provider) => throw new NotSupportedException();
-            public int ToInt32(IFormatProvider? provider) => throw new NotSupportedException();
-            public long ToInt64(IFormatProvider? provider) => throw new NotSupportedException();
-            public sbyte ToSByte(IFormatProvider? provider) => throw new NotSupportedException();
-            public float ToSingle(IFormatProvider? provider) => throw new NotSupportedException();
-            public object ToType(Type conversionType, IFormatProvider? provider) => throw new NotSupportedException();
-            public ushort ToUInt16(IFormatProvider? provider) => throw new NotSupportedException();
-            public uint ToUInt32(IFormatProvider? provider) => throw new NotSupportedException();
-            public ulong ToUInt64(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly TypeCode GetTypeCode() => throw new NotSupportedException();
+            public readonly bool ToBoolean(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly byte ToByte(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly char ToChar(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly DateTime ToDateTime(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly decimal ToDecimal(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly double ToDouble(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly short ToInt16(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly int ToInt32(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly long ToInt64(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly sbyte ToSByte(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly float ToSingle(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly object ToType(Type conversionType, IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly ushort ToUInt16(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly uint ToUInt32(IFormatProvider? provider) => throw new NotSupportedException();
+            public readonly ulong ToUInt64(IFormatProvider? provider) => throw new NotSupportedException();
 
-            public string ToString(IFormatProvider? provider) => "Converted!";
+            public readonly string ToString(IFormatProvider? provider) => "Converted!";
         }
 
         internal class ComplexObj
