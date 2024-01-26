@@ -9,7 +9,7 @@ namespace TestClasses
     {
         internal struct S
         {
-            public override string ToString() => "Hello from S";
+            public override readonly string ToString() => "Hello from S";
         }
 
         [LoggerMessage(0, LogLevel.Information, "M0 {s}")]

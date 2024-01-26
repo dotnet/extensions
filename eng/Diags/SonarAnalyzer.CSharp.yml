@@ -1,12 +1,12 @@
 Origin:
   AssemblyName: SonarAnalyzer.CSharp
-  Version: 8.52.0.60960
+  Version: 9.12.0.78982
 Diagnostics:
   S100:
     Metadata:
       Category: Minor Code Smell
       Title: Methods and properties should be named in PascalCase
-      Description: Shared naming conventions allow teams to collaborate efficiently. This rule checks whether or not method and property names are PascalCased. To reduce noise, two consecutive upper case characters are allowed unless they form the whole name. So, MyXMethod is compliant, but XM on its own is not.
+      Description: Shared naming conventions allow teams to collaborate efficiently.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-100
       CustomTags:
       - C#
@@ -22,7 +22,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Method overrides should not change parameter defaults
-      Description: Default arguments are determined by the static type of the object. If a default argument is different for a parameter in an overriding method, the value used in the call will be different when calls are made via the base or derived object, which may be contrary to developer expectations.
+      Description: Default arguments are determined by the static type of the object.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1006
       CustomTags:
       - C#
@@ -38,7 +38,7 @@ Diagnostics:
     Metadata:
       Category: Minor Code Smell
       Title: Types should be named in PascalCase
-      Description: Shared naming conventions allow teams to collaborate efficiently. This rule checks whether or not type names are using PascalCase. To reduce noise, two consecutive upper case characters are allowed unless they form the whole type name. So, MyXClass is compliant, but XC on its own is not.
+      Description: Shared naming conventions allow teams to collaborate efficiently.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-101
       CustomTags:
       - C#
@@ -55,7 +55,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Lines should not be too long
-      Description: Having to scroll horizontally makes it harder to get a quick overview and understanding of any piece of code.
+      Description: Scrolling horizontally to see a full line of code lowers the code readability.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-103
       CustomTags:
       - C#
@@ -70,7 +70,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Files should not have too many lines of code
-      Description: A source file that grows too much tends to aggregate too many responsibilities and inevitably becomes harder to understand and therefore to maintain. Above a specific threshold, it is strongly advised to refactor it into smaller pieces of code which focus on well defined tasks. Those smaller files will not only be easier to understand but also probably easier to test.
+      Description: When a source file grows too much, it can accumulate numerous responsibilities and become challenging to understand and maintain.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-104
       CustomTags:
       - C#
@@ -84,8 +84,8 @@ Diagnostics:
   S1048:
     Metadata:
       Category: Blocker Bug
-      Title: Destructors should not throw exceptions
-      Description: If Finalize or an override of Finalize throws an exception, and the runtime is not hosted by an application that overrides the default policy, the runtime terminates the process immediately without graceful cleanup (finally blocks and finalizers are not executed). This behavior ensures process integrity if the finalizer cannot free or destroy resources.
+      Title: Finalizers should not throw exceptions
+      Description: The finalizers are used to perform any necessary final clean-up when the garbage collector is collecting a class instance. The programmer has no control over when the finalizer is called; the garbage collector decides when to call it.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1048
       CustomTags:
       - C#
@@ -101,7 +101,7 @@ Diagnostics:
     Metadata:
       Category: Minor Code Smell
       Title: Tabulation characters should not be used
-      Description: Developers should not need to configure the tab width of their text editors in order to be able to read source code.
+      Description: The tab width can differ from one development environment to another. Using tabs may require other developers to configure their environment (text editor, preferences, etc.) to read source code.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-105
       CustomTags:
       - C#
@@ -164,7 +164,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Methods should not have too many parameters
-      Description: A long parameter list can indicate that a new structure should be created to wrap the numerous parameters or that the function is doing too many things.
+      Description: Methods with a long parameter list are difficult to use, as maintainers must figure out the role of each parameter and keep track of their position.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-107
       CustomTags:
       - C#
@@ -195,7 +195,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Nested blocks of code should not be left empty
-      Description: Most of the time a block of code is empty when a piece of code is really missing. So such empty block must be either filled or removed.
+      Description: An empty code block is confusing. It will require some effort from maintainers to determine if it is intentional or indicates the implementation is incomplete.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-108
       CustomTags:
       - C#
@@ -225,7 +225,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Inheritance tree of classes should not be too deep
-      Description: Inheritance is certainly one of the most valuable concepts in object-oriented programming. It’s a way to compartmentalize and reuse code by creating collections of attributes and behaviors called classes which can be based on previously created classes. But abusing this concept by creating a deep inheritance tree can lead to very complex and unmaintainable source code. Most of the time a too deep inheritance tree is due to bad object oriented design which has led to systematically use 'inheritance' when for instance 'composition' would suit better.
+      Description: Inheritance is one of the most valuable concepts in object-oriented programming. It’s a way to categorize and reuse code by creating collections of attributes and behaviors called classes, which can be based on previously created classes.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-110
       CustomTags:
       - C#
@@ -306,8 +306,8 @@ Diagnostics:
   S1117:
     Metadata:
       Category: Major Code Smell
-      Title: Local variables should not shadow class fields
-      Description: Overriding or shadowing a variable declared in an outer scope can strongly impact the readability, and therefore the maintainability, of a piece of code. Further, it could lead maintainers to introduce bugs because they think they’re using one variable but are really using another.
+      Title: Local variables should not shadow class fields or properties
+      Description: Overriding or shadowing a field or a property declared in an outer scope can strongly impact the readability, and therefore the maintainability, of a piece of code. Developers may mistakenly assume they are modifying or accessing the class field/property when, in fact, they are working with the local variable.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1117
       CustomTags:
       - C#
@@ -451,7 +451,7 @@ Diagnostics:
     Metadata:
       Category: Info Code Smell
       Title: Track uses of "TODO" tags
-      Description: TODO tags are commonly used to mark places where some more code is required, but which the developer wants to implement later.
+      Description: Developers often use TOOO tags to mark areas in the code where additional work or improvements are needed but are not implemented immediately. However, these TODO tags sometimes get overlooked or forgotten, leading to incomplete or unfinished code. This code smell class aims to identify and address such unattended TODO tags to ensure a clean and maintainable codebase. This description will explore why this is a problem and how it can be fixed to improve the overall code quality.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1135
       CustomTags:
       - C#
@@ -467,15 +467,14 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Unused private types or members should be removed
-      Description: 'private or internal types or private members that are never executed or referenced are dead code: unnecessary, inoperative code that should be removed. Cleaning out dead code decreases the size of the maintained codebase, making it easier to understand the program and preventing bugs from being introduced.'
+      Description: 'private or internal types or private members that are never executed or referenced are unused code: unnecessary, inoperative code that should be removed.'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1144
       CustomTags:
       - C#
       - MainSourceScope
       - TestSourceScope
       - SonarWay
-      - Unnecessary
-      DefaultSeverity: Suggestion
+      DefaultSeverity: Warning
     Tier: 2
     Attributes:
       general:
@@ -542,7 +541,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Exceptions should not be thrown in finally blocks
-      Description: Throwing an exception from within a finally block will mask any exception which was previously thrown in the try or catch block, and the masked’s exception message and stack trace will be lost.
+      Description: If an exception is already being thrown within the try block or caught in a catch block, throwing another exception in the finally block will override the original exception. This means that the original exception’s message and stack trace will be lost, potentially making it challenging to diagnose and troubleshoot the root cause of the problem.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1163
       CustomTags:
       - C#
@@ -606,7 +605,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Methods should not be empty
-      Description: 'There are several reasons for a method not to have a method body:'
+      Description: An empty method is generally considered bad practice and can lead to confusion, readability, and maintenance issues. Empty methods bring no functionality and are misleading to others as they might think the method implementation fulfills a specific and identified requirement.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1186
       CustomTags:
       - C#
@@ -651,7 +650,7 @@ Diagnostics:
   S1200:
     Metadata:
       Category: Major Code Smell
-      Title: Classes should not be coupled to too many other classes (Single Responsibility Principle)
+      Title: Classes should not be coupled to too many other classes
       Description: 'According to the Single Responsibility Principle, introduced by Robert C. Martin in his book "Principles of Object Oriented Design", a class should have only one responsibility:'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1200
       CustomTags:
@@ -666,7 +665,7 @@ Diagnostics:
     Metadata:
       Category: Minor Bug
       Title: '"Equals(Object)" and "GetHashCode()" should be overridden in pairs'
-      Description: 'There is a contract between Equals(object) and GetHashCode(): If two objects are equal according to the Equals(object) method, then calling GetHashCode() on each of them must yield the same result. If this is not the case, many collections won’t handle class instances correctly.'
+      Description: Suppose you override Object.Equals in a type, you must also override Object.GetHashCode. If two objects are equal according to the Equals method, then calling GetHashCode on each of them must yield the same integer. If this is not the case, many collections, such as a Hashtable or a Dictionary won’t handle class instances correctly.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1206
       CustomTags:
       - C#
@@ -682,7 +681,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Control structures should use curly braces
-      Description: While not technically incorrect, the omission of curly braces can be misleading, and may lead to the introduction of errors during maintenance.
+      Description: Control structures are code statements that impact the program’s control flow (e.g., if statements, for loops, etc.)
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-121
       CustomTags:
       - C#
@@ -714,7 +713,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: '"GC.Collect" should not be called'
-      Description: Calling GC.Collect is rarely necessary, and can significantly affect application performance. That’s because it triggers a blocking operation that examines every object in memory for cleanup. Further, you don’t have control over when this blocking cleanup will actually run.
+      Description: GC.Collect is a method that forces or suggests to the garbage collector to run a collection of objects in the managed heap that are no longer being used and free their memory.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1215
       CustomTags:
       - C#
@@ -732,7 +731,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Statements should be on separate lines
-      Description: For better readability, do not put more than one statement on a single line.
+      Description: Putting multiple statements on a single line lowers the code readability and makes debugging the code more complex.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-122
       CustomTags:
       - C#
@@ -1066,7 +1065,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Variables should not be self-assigned
-      Description: There is no reason to re-assign a variable to itself. Either this statement is redundant and should be removed, or the re-assignment is a mistake and some other value or variable was intended for the assignment instead.
+      Description: 'Re-assigning a variable to itself is a defect as it has no actual effect and indicates meaning to do something else. It usually means that:'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1656
       CustomTags:
       - C#
@@ -1168,7 +1167,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Loops with at most one iteration should be refactored
-      Description: A loop with at most one iteration is equivalent to the use of an if statement to conditionally execute one piece of code. If the initial intention of the author was really to conditionally execute one piece of code, an if statement should be used instead. If that was not the initial intention of the author, the body of the loop should be fixed to use the nested return, break or throw statements in a more appropriate way.
+      Description: A loop statement with at most one iteration is equivalent to an if statement; the following block is executed only once.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1751
       CustomTags:
       - C#
@@ -1183,8 +1182,8 @@ Diagnostics:
   S1764:
     Metadata:
       Category: Major Bug
-      Title: Identical expressions should not be used on both sides of a binary operator
-      Description: Using the same value on either side of a binary operator is almost always a mistake. In the case of logical operators, it is either a copy/paste error and therefore a bug, or it is simply wasted code, and should be simplified. In the case of bitwise operators and most binary mathematical operators, having the same value on both sides of an operator yields predictable results, and should be simplified.
+      Title: Identical expressions should not be used on both sides of operators
+      Description: Using the same value on both sides of certain operators is a code defect. In the case of logical operators, it is either a copy/paste error and, therefore, a bug, or it is simply duplicated code and should be simplified. For bitwise operators and most binary mathematical operators, having the same value on both sides of an operator yields predictable results and should be simplified as well to avoid further code defects.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1764
       CustomTags:
       - C#
@@ -1214,7 +1213,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Objects should not be created to be dropped immediately without being used
-      Description: There is no good reason to create a new object to not do anything with it. Most of the time, this is due to a missing piece of code and so could lead to an unexpected behavior in production.
+      Description: Creating objects that are not used is a vulnerability that can lead to unexpected behavior.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1848
       CustomTags:
       - C#
@@ -1261,7 +1260,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Related "if/else if" statements should not have the same condition
-      Description: 'A chain of if/else if statements is evaluated from top to bottom. At most, only one branch will be executed: the first one with a condition that evaluates to true.'
+      Description: 'A chain of if/else if statements is evaluated from top to bottom. At most, only one branch will be executed: the first statement with a condition that evaluates to true. Therefore, duplicating a condition leads to unreachable code inside the duplicated condition block. Usually, this is due to a copy/paste error.'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1862
       CustomTags:
       - C#
@@ -1340,8 +1339,8 @@ Diagnostics:
   S1944:
     Metadata:
       Category: Critical Code Smell
-      Title: Inappropriate casts should not be made
-      Description: Inappropriate casts are issues that will lead to unexpected behavior or runtime errors, such as InvalidCastExceptions. The compiler will catch bad casts from one class to another, but not bad casts to interfaces. Nor will it catch nullable values that are known to be null but that are cast to their underlying value types anyway.
+      Title: Invalid casts should be avoided
+      Description: A cast is an explicit conversion, which is a way to tell the compiler the intent to convert from one type to another.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1944
       CustomTags:
       - C#
@@ -1372,7 +1371,7 @@ Diagnostics:
     Metadata:
       Category: Critical Vulnerability
       Title: Hashes should include an unpredictable salt
-      Description: In cryptography, a "salt" is an extra piece of data which is included when hashing a password. This makes rainbow-table attacks more difficult. Using a cryptographic hash function without an unpredictable salt increases the likelihood that an attacker could successfully find the hash value in databases of precomputed hashes (called rainbow-tables).
+      Description: This vulnerability increases the likelihood that attackers are able to compute the cleartext of password hashes.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2053
       CustomTags:
       - C#
@@ -1447,7 +1446,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Collections should not be passed as arguments to their own methods
-      Description: Passing a collection as an argument to the collection’s own method is either an error - some other argument was intended - or simply nonsensical code.
+      Description: Passing a collection as an argument to the collection’s own method is a code defect. Doing so might either have unexpected side effects or always have the same result.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2114
       CustomTags:
       - C#
@@ -1463,7 +1462,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Values should not be uselessly incremented
-      Description: A value that is incremented or decremented and then not stored is at best wasted code and at worst a bug.
+      Description: When using the postfix increment operator, it is important to know that the result of the expression x++ is the value before the operation x.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2123
       CustomTags:
       - C#
@@ -1509,7 +1508,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Code Smell
       Title: Short-circuit logic should be used in boolean contexts
-      Description: The use of non-short-circuit logic in a boolean context is likely a mistake - one that could cause serious program errors as conditions are evaluated under the wrong circumstances.
+      Description: Short-circuit evaluation is an evaluation strategy for Boolean operators, that doesn’t evaluates the second argument of the operator if it is not needed to determine the result of the operation.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2178
       CustomTags:
       - C#
@@ -1524,7 +1523,7 @@ Diagnostics:
     Metadata:
       Category: Minor Bug
       Title: Integral numbers should not be shifted by zero or more than their number of bits-1
-      Description: Shifting an integral number by 0 is equivalent to doing nothing but makes the code confusing for maintainers.
+      Description: The shifting operators are used to do an arithmetic shift to the bits of an integral numeric value, either to the left or the right.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2183
       CustomTags:
       - C#
@@ -1555,8 +1554,8 @@ Diagnostics:
   S2187:
     Metadata:
       Category: Blocker Code Smell
-      Title: TestCases should contain tests
-      Description: There’s no point in having a test class without any test methods.This could lead a maintainer to assume a class is covered by tests even though it is not.
+      Title: Test classes should contain at least one test case
+      Description: To ensure proper testing, it is important to include test cases in a test class. If a test class does not have any test cases, it can give the wrong impression that the class being tested has been thoroughly tested, when in reality, it has not.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2187
       CustomTags:
       - C#
@@ -1570,8 +1569,8 @@ Diagnostics:
   S2190:
     Metadata:
       Category: Blocker Bug
-      Title: Recursion should not be infinite
-      Description: Recursion happens when control enters a loop that has no exit. This can happen a method invokes itself, when a pair of methods invoke each other, or when goto statements are used to move between two segments of code. It can be a useful tool, but unless the method includes a provision to break out of the recursion and return, the recursion will continue until the stack overflows and the program crashes.
+      Title: Loops and recursions should not be infinite
+      Description: Having an infinite loop or recursion will lead to a program failure or a program never finishing the execution.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2190
       CustomTags:
       - C#
@@ -1601,8 +1600,8 @@ Diagnostics:
   S2201:
     Metadata:
       Category: Major Bug
-      Title: Return values from functions without side effects should not be ignored
-      Description: When the call to a function doesn’t have any side effects, what is the point of making the call if the results are ignored? In such case, either the function call is useless and should be dropped or the source code doesn’t behave as expected.
+      Title: Methods without side effects should not have their return values ignored
+      Description: When you do not use the return value of a method with no side effects, it indicates that something is wrong. Either this method is unnecessary, or the source code does not behave as expected and could lead to code defects. For example, there are methods, such as DateTime.AddYears, that don’t change the value of the input object, but instead, they return a new object whose value is the result of this operation, and as a result that you will have unexpected effects if you do not use the return value.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2201
       CustomTags:
       - C#
@@ -1648,7 +1647,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Non-constant static fields should not be visible
-      Description: A static field that is neither constant nor read-only is not thread-safe. Correctly accessing these fields from different threads needs synchronization with locks. Improper synchronization may lead to unexpected results, thus publicly visible static fields are best suited for storing non-changing data shared by many consumers. To enforce this intent, these fields should be marked readonly or converted to constants.
+      Description: Unlike instance fields, which can only be accessed by code having a hold on the instance, static fields can be accessed by any code having visibility of the field and its type.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2223
       CustomTags:
       - C#
@@ -1663,7 +1662,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: '"ToString()" method should not return null'
-      Description: Calling ToString() on an object should always return a string. Returning null instead contravenes the method’s implicit contract.
+      Description: Calling ToString() on an object should always return a string. Thus, overriding the ToString method should never return null, as it breaks the method’s implicit contract, and as a result the consumer’s expectations.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2225
       CustomTags:
       - C#
@@ -1693,8 +1692,8 @@ Diagnostics:
   S2234:
     Metadata:
       Category: Major Code Smell
-      Title: Parameters should be passed in the correct order
-      Description: When the names of parameters in a method call match the names of the method arguments, it contributes to clearer, more readable code. However, when the names match, but are passed in a different order than the method arguments, it indicates a mistake in the parameter order which will likely lead to unexpected results.
+      Title: Arguments should be passed in the same order as the method parameters
+      Description: Calling a method with argument variables whose names match the method parameter names but in a different order can cause confusion. It could indicate a mistake in the arguments' order, leading to unexpected results.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2234
       CustomTags:
       - C#
@@ -1725,7 +1724,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: A "for" loop update clause should move the counter in the right direction
-      Description: A for loop with a counter that moves in the wrong direction is not an infinite loop. Because of wraparound, the loop will eventually reach its stop condition, but in doing so, it will run many, many more times than anticipated, potentially causing unexpected behavior.
+      Description: A for loop with a counter that moves in the wrong direction, away from the stop condition, is not an infinite loop. Because of wraparound, the loop will eventually reach its stop condition, but in doing so, it will probably run more times than anticipated, potentially causing unexpected behavior.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2251
       CustomTags:
       - C#
@@ -1741,7 +1740,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: For-loop conditions should be true at least once
-      Description: If a for loop’s condition is false before the first loop iteration, the loop will never be executed. Such loops are almost always bugs, particularly when the initial value and stop conditions are hard-coded.
+      Description: A for loop is a fundamental programming construct used to execute a block of code repeatedly. However, if the loop’s condition is false before the first iteration, the loop will never execute.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2252
       CustomTags:
       - C#
@@ -1786,7 +1785,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Null pointers should not be dereferenced
-      Description: A reference to null should never be dereferenced/accessed. Doing so will cause a NullReferenceException to be thrown. At best, such an exception will cause abrupt program termination. At worst, it could expose debugging information that would be useful to an attacker, or it could allow an attacker to bypass security measures.
+      Description: Accessing a null value will always throw a NullReferenceException most likely causing an abrupt program termination.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2259
       CustomTags:
       - C#
@@ -1802,7 +1801,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Bug
       Title: Composite format strings should not lead to unexpected behavior at runtime
-      Description: Because composite format strings are interpreted at runtime, rather than validated by the compiler, they can contain errors that lead to unexpected behaviors or runtime errors. This rule statically validates the good behavior of composite formats when calling the methods of String.Format, StringBuilder.AppendFormat, Console.Write, Console.WriteLine, TextWriter.Write, TextWriter.WriteLine, Debug.WriteLine(String, Object[]), Trace.TraceError(String, Object[]), Trace.TraceInformation(String, Object[]), Trace.TraceWarning(String, Object[]) and TraceSource.TraceInformation(String, Object[]).
+      Description: 'Composite format strings in C# are evaluated at runtime, which means they are not verified by the compiler. Introducing an ill-formed format item, or indexing mismatch can lead to unexpected behaviors or runtime errors. The purpose of this rule is to perform static validation on composite format strings used in various string formatting functions to ensure their correct usage. This rule validates the proper behavior of composite formats when invoking the following methods:'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2275
       CustomTags:
       - C#
@@ -1831,7 +1830,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Field-like events should not be virtual
-      Description: Field-like events are events that do not have explicit add and remove methods. The compiler generates a private delegate field to back the event, as well as generating the implicit add and remove methods.
+      Description: Field-like events are events that do not have explicit add and remove accessors.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2290
       CustomTags:
       - C#
@@ -1847,7 +1846,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Overflow checking should not be disabled for "Enumerable.Sum"
-      Description: Enumerable.Sum() always executes addition in a checked context, so an OverflowException will be thrown if the value exceeds MaxValue even if an unchecked context was specified. Using an unchecked context anyway represents a misunderstanding of how Sum works.
+      Description: Enumerable.Sum() always executes addition in a checked context, so an OverflowException will be thrown if the value exceeds MaxValue, even if an unchecked context was specified. Therefore, using this method inside an unchecked context will only make the code more confusing, since the behavior will still be checked.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2291
       CustomTags:
       - C#
@@ -1893,7 +1892,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Code Smell
       Title: '"async" and "await" should not be used as identifiers'
-      Description: Since C# 5.0, async and await are contextual keywords. Contextual keywords do have a particular meaning in some contexts, but can still be used as variable names. Keywords, on the other hand, are always reserved, and therefore are not valid variable names. To avoid any confusion though, it is best to not use async and await as identifiers.
+      Description: Since C# 5.0, async and await are contextual keywords. Contextual keywords do have a particular meaning in some contexts, but are not reserved and therefore can be used as variable names.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2306
       CustomTags:
       - C#
@@ -2049,7 +2048,7 @@ Diagnostics:
     Metadata:
       Category: Minor Bug
       Title: Flags enumerations should explicitly initialize all their members
-      Description: Flags enumerations should not rely on the language to initialize the values of their members. Implicit initialization will set the first member to 0, and increment the value by one for each subsequent member. This implicit behavior does not allow members to be combined using the bitwise or operator in a useful way.
+      Description: When you annotate an Enum with the Flags attribute, you must not rely on the values that are automatically set by the language to the Enum members, but you should define the enumeration constants in powers of two (1, 2, 4, 8, and so on). Automatic value initialization will set the first member to zero and increment the value by one for each subsequent member. As a result, you won’t be able to use the enum members with bitwise operators.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2345
       CustomTags:
       - C#
@@ -2065,7 +2064,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Flags enumerations zero-value members should be named "None"
-      Description: Consistent use of "None" in flags enumerations indicates that all flag values are cleared. The value 0 should not be used to indicate any other state, since there is no way to check that the bit 0 is set.
+      Description: 'An enumeration can be decorated with the FlagsAttribute to indicate that it can be used as a bit field: a set of flags, that can be independently set and reset.'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2346
       CustomTags:
       - C#
@@ -2112,7 +2111,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Properties should not make collection or array copies
-      Description: Most developers expect property access to be as efficient as field access. However, if a property returns a copy of an array or collection, it will be much slower than simple field access, contrary to the caller’s likely expectations. Therefore, such properties should be refactored into methods so that callers are not surprised by the unexpectedly poor performance.
+      Description: Most developers expect property access to be as efficient as field access. However, if a property returns a copy of an array or collection, it will be much slower than a simple field access, contrary to the caller’s likely expectations. Therefore, such properties should be refactored into methods so that callers are not surprised by the unexpectedly poor performance.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2365
       CustomTags:
       - C#
@@ -2127,7 +2126,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Code Smell
       Title: Public methods should not have multidimensional array parameters
-      Description: Exposing methods with multidimensional array parameters requires developers to have advanced knowledge about the language in order to be able to use them. Moreover, what exactly to pass to such parameters is not intuitive. Therefore, such methods should not be exposed, but can be used internally.
+      Description: Using multidimensional and jagged arrays as method parameters in C# can be challenging for developers.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2368
       CustomTags:
       - C#
@@ -2218,8 +2217,8 @@ Diagnostics:
   S2437:
     Metadata:
       Category: Blocker Code Smell
-      Title: Silly bit operations should not be performed
-      Description: Certain bit operations are just silly and should not be performed because their results are predictable.
+      Title: Unnecessary bit operations should not be performed
+      Description: Certain bitwise operations are not needed and should not be performed because their results are predictable.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2437
       CustomTags:
       - C#
@@ -2236,7 +2235,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Whitespace and control characters in string literals should be explicit
-      Description: 'Non-encoded control characters and whitespace characters are often injected in the source code because of a bad manipulation. They are either invisible or difficult to recognize, which can result in bugs when the string is not what the developer expects. If you actually need to use a control character use their encoded version (ex: ASCII \n,\t,…​ or Unicode U+000D, U+0009,…​).'
+      Description: 'Non-encoded control characters and whitespace characters are often injected in the source code because of a bad manipulation. They are either invisible or difficult to recognize, which can result in bugs when the string is not what the developer expects. If you actually need to use a control character use their encoded version:'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2479
       CustomTags:
       - C#
@@ -2266,7 +2265,7 @@ Diagnostics:
     Metadata:
       Category: Critical Bug
       Title: Shared resources should not be used for locking
-      Description: Shared resources should not be used for locking as it increases the chance of deadlocks. Any other thread could acquire (or attempt to acquire) the same lock for another unrelated purpose.
+      Description: A shared resource refers to a resource or data that can be accessed or modified by multiple threads or concurrent parts of a program. It could be any piece of data, object, file, database connection, or system resource that needs to be accessed or manipulated by multiple parts of a program concurrently.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2551
       CustomTags:
       - C#
@@ -2277,13 +2276,12 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: None
-        Redundant: CA2002
+        Severity: Warning
   S2583:
     Metadata:
       Category: Major Bug
       Title: Conditionally executed code should be reachable
-      Description: Conditional expressions which are always true or false can lead to dead code. Such code is always buggy and should never be used in production.
+      Description: Conditional expressions which are always true or false can lead to unreachable code.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2583
       CustomTags:
       - C#
@@ -2300,7 +2298,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Boolean expressions should not be gratuitous
-      Description: If a boolean expression doesn’t change the evaluation of the condition, then it is entirely unnecessary, and can be removed. If it is gratuitous because it does not match the programmer’s intent, then it’s a bug and the expression should be fixed.
+      Description: An operand of a boolean expression that never changes the result of the expression might not match the programmer’s intent and can lead to unexpected behavior and potential bugs.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2589
       CustomTags:
       - C#
@@ -2311,7 +2309,8 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: Warning
+        Severity: None
+        Comment: Too many false positives.
   S2674:
     Metadata:
       Category: Minor Bug
@@ -2330,7 +2329,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Multiline blocks should be enclosed in curly braces
-      Description: Curly braces can be omitted from a one-line block, such as with an if statement or for loop, but doing so can be misleading and induce bugs.
+      Description: Having inconsistent indentation and omitting curly braces from a control structure, such as an if statement or for loop, is misleading and can induce bugs.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2681
       CustomTags:
       - C#
@@ -2346,7 +2345,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: '"NaN" should not be used in comparisons'
-      Description: NaN is not equal to anything, even itself. Testing for equality or inequality against NaN will yield predictable results, but probably not the ones you want.
+      Description: double.NaN and float.NaN are not equal to anything, not even themselves.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2688
       CustomTags:
       - C#
@@ -2362,7 +2361,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: '"IndexOf" checks should not be for positive numbers'
-      Description: Most checks against an IndexOf value compare it with -1 because 0 is a valid index. Any checks which look for values > 0 ignore the first element, which is likely a bug. If the intent is merely to check inclusion of a value in a string, List, or an array, consider using the Contains method instead.
+      Description: Most checks against an IndexOf value compare it with -1 because 0 is a valid index.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2692
       CustomTags:
       - C#
@@ -2378,7 +2377,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Instance members should not write to "static" fields
-      Description: Correctly updating a static field from a non-static method is tricky to get right and could easily lead to bugs if there are multiple class instances and/or multiple threads in play.
+      Description: This rule raises an issue each time a static field is updated from a non-static method or property.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2696
       CustomTags:
       - C#
@@ -2393,7 +2392,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Code Smell
       Title: Tests should include assertions
-      Description: A test case without assertions ensures only that no exceptions are thrown. Beyond basic runnability, it ensures nothing about the behavior of the code under test.
+      Description: The rule targets test methods that lack an assertion and consist solely of an action and, optionally, a setup.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2699
       CustomTags:
       - C#
@@ -2422,7 +2421,7 @@ Diagnostics:
     Metadata:
       Category: Minor Code Smell
       Title: '"catch" clauses should do more than rethrow'
-      Description: A catch clause that only rethrows the caught exception has the same effect as omitting the catch altogether and letting it bubble up automatically, but with more code and the additional detriment of leaving maintainers scratching their heads.
+      Description: A catch clause that only rethrows the caught exception has the same effect as omitting the catch altogether and letting it bubble up automatically.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2737
       CustomTags:
       - C#
@@ -2453,7 +2452,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Vulnerability
       Title: XML parsers should not be vulnerable to XXE attacks
-      Description: XML standard allows the use of entities, declared in the DOCTYPE of the document, which can be internal or external.
+      Description: This vulnerability allows the usage of external entities in XML.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2755
       CustomTags:
       - C#
@@ -2467,8 +2466,8 @@ Diagnostics:
   S2757:
     Metadata:
       Category: Major Bug
-      Title: '"=+" should not be used instead of "+="'
-      Description: The use of operators pairs ( =+, =- or =! ) where the reversed, single operator was meant (+=, -= or !=) will compile and run, but not produce the expected results.
+      Title: Non-existent operators like "=+" should not be used
+      Description: Using operator pairs (=+, =-, or =!) that look like reversed single operators (+=, -= or !=) is confusing. They compile and run but do not produce the same result as their mirrored counterpart.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2757
       CustomTags:
       - C#
@@ -2513,7 +2512,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Doubled prefix operators "!!" and "~~" should not be used
-      Description: 'Calling the ! or ~ prefix operator twice does nothing: the second invocation undoes the first. Such mistakes are typically caused by accidentally double-tapping the key in question without noticing.'
+      Description: The repetition of a prefix operator (!, or ~) is usually a typo. The second operator invalidates the first one.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2761
       CustomTags:
       - C#
@@ -2529,7 +2528,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Bug
       Title: SQL keywords should be delimited by whitespace
-      Description: Badly formed SQL is likely to cause errors at runtime.
+      Description: When concatenating strings, it is very easy to forget a whitespace.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2857
       CustomTags:
       - C#
@@ -2544,7 +2543,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Bug
       Title: '"IDisposables" should be disposed'
-      Description: "When writing managed code, you don’t need to worry about allocating or freeing memory: The garbage collector takes care of it. For efficiency reasons, some objects such as Bitmap use unmanaged memory, enabling for example the use of pointer arithmetic. Such objects have potentially huge unmanaged memory footprints, but will have tiny managed ones. Unfortunately, the garbage collector only sees the tiny managed footprint, and fails to reclaim the unmanaged memory (by calling Bitmap's finalizer method) in a timely fashion."
+      Description: When writing managed code, there is no need to worry about memory allocation or deallocation as it is taken care of by the garbage collector. However, certain objects, such as Bitmap, utilize unmanaged memory for specific purposes like pointer arithmetic. These objects may have substantial unmanaged memory footprints while having minimal managed footprints. Unfortunately, the garbage collector only recognizes the small managed footprint and does not promptly reclaim the corresponding unmanaged memory (by invoking the finalizer method of Bitmap) for efficiency reasons.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2930
       CustomTags:
       - C#
@@ -2594,7 +2593,7 @@ Diagnostics:
     Metadata:
       Category: Minor Bug
       Title: Property assignments should not be made for "readonly" fields not constrained to reference types
-      Description: While the properties of a readonly reference type field can still be changed after initialization, those of a readonly value field, such as a struct, cannot.
+      Description: While the properties of a readonly reference type field can still be changed after initialization, those of a readonly value type field, such as a struct, cannot.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2934
       CustomTags:
       - C#
@@ -2624,7 +2623,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Code Smell
       Title: Methods named "Dispose" should implement "IDisposable.Dispose"
-      Description: Dispose as a method name should be used exclusively to implement IDisposable.Dispose to prevent any confusion.
+      Description: IDisposable is an interface implemented by all types which need to provide a mechanism for releasing unmanaged resources.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2953
       CustomTags:
       - C#
@@ -2670,7 +2669,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: '"Object.ReferenceEquals" should not be used for value types'
-      Description: Using Object.ReferenceEquals to compare the references of two value types simply won’t return the expected results most of the time because such types are passed by value, not by reference.
+      Description: In C#, the Object.ReferenceEquals method is used to compare two reference type variables. If you use this method to compare two value types, such as int, float, or bool you will not get the expected results because value type variables contain an instance of the type and not a reference to it.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2995
       CustomTags:
       - C#
@@ -2702,7 +2701,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: '"IDisposables" created in a "using" statement should not be returned'
-      Description: Typically you want to use using to create a local IDisposable variable; it will trigger disposal of the object when control passes out of the block’s scope. The exception to this rule is when your method returns that IDisposable. In that case using disposes of the object before the caller can make use of it, likely causing exceptions at runtime. So you should either remove using or avoid returning the IDisposable.
+      Description: When you use a using statement, the goal is to ensure the correct disposal of an IDisposable instance when the control leaves the using statement block.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2997
       CustomTags:
       - C#
@@ -2718,7 +2717,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: '"ThreadStatic" should not be used on non-static fields'
-      Description: When a non-static class field is annotated with ThreadStatic, the code seems to show that the field can have different values for different calling threads, but that’s not the case, since the ThreadStatic attribute is simply ignored on non-static fields.
+      Description: When you annotate a field with the ThreadStatic attribute, it is an indication that the value of this field is unique for each thread. But if you don’t mark the field as static, then the ThreadStatic attribute is ignored.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3005
       CustomTags:
       - C#
@@ -2749,7 +2748,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Reflection should not be used to increase accessibility of classes, methods, or fields
-      Description: This rule raises an issue when reflection is used to change the visibility of a class, method or field, and when it is used to directly update a field value. Altering or bypassing the accessibility of classes, methods, or fields violates the encapsulation principle and could lead to run-time errors.
+      Description: Altering or bypassing the accessibility of classes, methods, or fields through reflection violates the encapsulation principle. This can break the internal contracts of the accessed target and lead to maintainability issues and runtime errors.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3011
       CustomTags:
       - C#
@@ -2780,7 +2779,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Code Smell
       Title: '"is" should not be used with "this"'
-      Description: There’s no valid reason to test this with is. The only plausible explanation for such a test is that you’re executing code in a parent class conditionally based on the kind of child class this is. But code that’s specific to a child class should be in that child class, not in the parent.
+      Description: 'One of the possible ways of performing type-testing is via the is operator: food is Pizza.'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3060
       CustomTags:
       - C#
@@ -2795,7 +2794,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: '"async" methods should not return "void"'
-      Description: An async method with a void return type is a "fire and forget" method best reserved for event handlers because there’s no way to wait for the method’s execution to complete and respond accordingly. There’s also no way to catch exceptions thrown from the method.
+      Description: An async method with a void return type does not follow the task asynchronous programming (TAP) model since the return type should be Task or Task<TResult>
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3168
       CustomTags:
       - C#
@@ -2873,7 +2872,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: '"Explicit" conversions of "foreach" loops should not be used'
-      Description: The foreach statement was introduced in the C# language prior to generics to make it easier to work with the non-generic collections available at that time such as ArrayList. The foreach statements allows you to downcast elements of a collection of Objects to any other type. The problem is that to achieve the cast, the foreach statements silently performs explicit type conversion, which at runtime can result in an InvalidCastException.
+      Description: The foreach statement was introduced in the C# language prior to generics to make it easier to work with the non-generic collections available at that time such as ArrayList. The foreach statements allow you to downcast elements of a collection of Objects to any other type.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3217
       CustomTags:
       - C#
@@ -2889,7 +2888,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Inner class members should not shadow outer class "static" or type members
-      Description: It’s possible to name the members of an inner class the same as the static members of its enclosing class - possible, but a bad idea. That’s because maintainers may be confused about which members are being used where. Instead the inner class' members should be renamed and all the references updated.
+      Description: Naming the members of an inner class the same as the static members of its enclosing class is possible but generally considered a bad practice. That’s because maintainers may be confused about which members are being used in a given context. Instead the inner class member should be given distinct and descriptive name, and all references to it should be updated accordingly.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3218
       CustomTags:
       - C#
@@ -2966,8 +2965,8 @@ Diagnostics:
   S3237:
     Metadata:
       Category: Blocker Code Smell
-      Title: '"value" parameters should be used'
-      Description: In property and indexer set methods, and in event add and remove methods, the implicit value parameter holds the value the accessor was called with. Not using the value means that the accessor ignores the caller’s intent which could cause unexpected results at runtime.
+      Title: '"value" contextual keyword should be used'
+      Description: When you need to get external input for set and init methods defined for properties and indexers or for remove and add methods for events, you should always get this input throught the value contextual keyword.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3237
       CustomTags:
       - C#
@@ -2999,7 +2998,7 @@ Diagnostics:
     Metadata:
       Category: Minor Code Smell
       Title: Methods should not return values that are never used
-      Description: Private methods are clearly intended for use only within their own scope. When such methods return values that are never used by any of their callers, then clearly there is no need to actually make the return, and it should be removed in the interests of efficiency and clarity.
+      Description: Private methods are intended for use only within their scope. If these methods return values that are not utilized by any calling functions, it indicates that the return operation is unnecessary. Removing such returns can enhance both efficiency and code clarity.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3241
       CustomTags:
       - C#
@@ -3031,7 +3030,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Anonymous delegates should not be used to unsubscribe from Events
-      Description: 'It is possible to subscribe to events with anonymous delegates, but having done so, it is impossible to unsubscribe from them. That’s because the process of subscribing adds the delegate to a list. The process of unsubscribing essentially says: remove this item from the subscription list. But because an anonymous delegate was used in both cases, the unsubscribe attempt tries to remove a different item from the list than was added. The result: NOOP.'
+      Description: When working with anonymous functions, it is important to keep in mind that each time you create one, it is a completely new instance.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3244
       CustomTags:
       - C#
@@ -3078,7 +3077,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Classes directly extending "object" should not call "base" in "GetHashCode" or "Equals"
-      Description: Making a base call in an overriding method is generally a good idea, but not in GetHashCode and Equals for classes that directly extend object because those methods are based on the object reference. Meaning that no two objects that use those base methods will ever be equal or have the same hash.
+      Description: Making a base call when overriding a method is generally a good idea, but not in the case of GetHashCode and Equals for classes that directly extend Object. These methods are based on the object’s reference, meaning that no two objects that use those base methods can be equal or have the same hash.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3249
       CustomTags:
       - C#
@@ -3163,7 +3162,8 @@ Diagnostics:
     Tier: 3
     Attributes:
       general:
-        Severity: Warning
+        Severity: None
+        Comment: Too many false positives
   S3261:
     Metadata:
       Category: Minor Code Smell
@@ -3232,7 +3232,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Non-flags enums should not be used in bitwise operations
-      Description: enums are usually used to identify distinct elements in a set of values. However enums can be treated as bit fields and bitwise operations can be used on them to combine the values. This is a good way of specifying multiple elements of set with a single value. When enums are used this way, it is a best practice to mark the enum with the FlagsAttribute.
+      Description: Enumerations are commonly used to identify distinct elements from a set of values.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3265
       CustomTags:
       - C#
@@ -3248,7 +3248,7 @@ Diagnostics:
     Metadata:
       Category: Critical Vulnerability
       Title: Cipher Block Chaining IVs should be unpredictable
-      Description: When encrypting data with the Cipher Block Chaining (CBC) mode an Initialization Vector (IV) is used to randomize the encryption, ie under a given key the same plaintext doesn’t always produce the same ciphertext. The IV doesn’t need to be secret but should be unpredictable to avoid "Chosen-Plaintext Attack".
+      Description: This vulnerability exposes encrypted data to a number of attacks whose goal is to recover the plaintext.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3329
       CustomTags:
       - C#
@@ -3279,7 +3279,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Caller information parameters should come at the end of the parameter list
-      Description: 'Caller information attributes (CallerFilePathAttribute, CallerLineNumberAttribute, CallerMemberNameAttribute, and CallerArgumentExpressionAttribute) provide a way to get information about the caller of a method through optional parameters. But they only work right if their values aren’t provided explicitly. So if you define a method with caller info attributes in the middle of the parameter list, you put your callers in a bad position: they are forced to use named arguments if they want to use the method properly.'
+      Description: Caller information attributes provide a way to get information about the caller of a method through optional parameters. But they only work right if their values aren’t provided explicitly. So if you define a method with caller info attributes in the middle of the parameter list, the caller is forced to use named arguments if they want to use the method properly.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3343
       CustomTags:
       - C#
@@ -3323,7 +3323,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Ternary operators should not be nested
-      Description: Just because you can do something, doesn’t mean you should, and that’s the case with nested ternary operations. Nesting ternary operators results in the kind of code that may seem clear as day when you write it, but six months later will leave maintainers (or worse - future you) scratching their heads and cursing.
+      Description: Nested ternaries are hard to read and can make the order of operations complex to understand.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3358
       CustomTags:
       - C#
@@ -3415,8 +3415,8 @@ Diagnostics:
   S3427:
     Metadata:
       Category: Blocker Code Smell
-      Title: 'Method overloads with default parameter values should not overlap '
-      Description: The rules for method resolution are complex and perhaps not properly understood by all coders. Having overloads with optional parameter values makes the matter even harder to understand.
+      Title: Method overloads with default parameter values should not overlap
+      Description: The rules for method resolution can be complex and may not be fully understood by all developers. The situation becomes even more challenging when dealing with method overloads that have optional parameter values.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3427
       CustomTags:
       - C#
@@ -3446,7 +3446,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Code Smell
       Title: Test method signatures should be correct
-      Description: A method is detected as test method if marked with one of the following attributes [TestMethod] or [DataTestMethod] (for mstest), [Fact] or [Theory] (for xunit) or [Test], [TestCase], [TestCaseSource] or [Theory] (for nunit). However, whether or not they have a test attribute, non-public methods are not recognized as tests, and therefore not executed. Neither are async void methods, or methods with generics anywhere in their signatures.
+      Description: 'A method is identified as a test method if it is marked with one of the following attributes:'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3433
       CustomTags:
       - C#
@@ -3492,7 +3492,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: '"abstract" classes should not have "public" constructors'
-      Description: Since abstract classes can’t be instantiated, there’s no point in their having public or internal constructors. If there is basic initialization logic that should run when an extending class instance is created, you can by all means put it in a constructor, but make that constructor private, private protected or protected.
+      Description: The abstract modifier in a class declaration is used to indicate that a class is intended only to be a base class of other classes, not instantiated on its own.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3442
       CustomTags:
       - C#
@@ -3508,7 +3508,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Code Smell
       Title: Type should not be examined on "System.Type" instances
-      Description: If you call GetType() on a Type variable, the return value will always be typeof(System.Type). So there’s no real point in making that call. The same applies to passing a type argument to IsInstanceOfType. In both cases the results are entirely predictable.
+      Description: Calling GetType on a Type variable will always return the System.Type representation, which is equivalent to typeof(System.Type). This also applies to passing a Type argument to IsInstanceOfType which always returns false.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3443
       CustomTags:
       - C#
@@ -3539,7 +3539,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Exceptions should not be explicitly rethrown
-      Description: When rethrowing an exception, you should do it by simply calling throw; and not throw exc;, because the stack trace is reset with the second syntax, making debugging a lot harder.
+      Description: 'In C#, the throw statement can be used in two different ways:'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3445
       CustomTags:
       - C#
@@ -3554,7 +3554,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: '"[Optional]" should not be used on "ref" or "out" parameters'
-      Description: The use of ref or out in combination with [Optional] is both confusing and contradictory. [Optional] indicates that the parameter doesn’t have to be provided, while out and ref mean that the parameter will be used to return data to the caller (ref additionally indicates that the parameter may also be used to pass data into the method).
+      Description: The use of ref or out in combination with Optional attribute is both confusing and contradictory. [Optional] indicates that the parameter doesn’t have to be provided, while out and ref mean that the parameter will be used to return data to the caller (ref additionally indicates that the parameter may also be used to pass data into the method).
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3447
       CustomTags:
       - C#
@@ -3570,7 +3570,7 @@ Diagnostics:
     Metadata:
       Category: Critical Bug
       Title: Right operands of shift operators should be integers
-      Description: Numbers can be shifted with the << and >> operators, but the right operand of the operation needs to be an int or a type that has an implicit conversion to int. However, with dynamic, the compiler’s type checking is turned off, so you can pass anything to a shift operator and have it compile. And if the argument can’t be converted to int at runtime, then a RuntimeBinderException will be raised.
+      Description: Numbers can be shifted with the << and >> operators, but the right operand of the operation needs to be an int or a type that has an implicit conversion to int. However, when the left operand is dynamic, the compiler’s type checking is turned off, so you can pass anything to the right of a shift operator and have it compile. And if the argument can’t be implicitly converted to int at runtime, then a RuntimeBinderException will be raised.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3449
       CustomTags:
       - C#
@@ -3602,7 +3602,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: '"[DefaultValue]" should not be used when "[DefaultParameterValue]" is meant'
-      Description: The use of [DefaultValue] with [Optional] has no more effect than [Optional] alone. That’s because [DefaultValue] doesn’t actually do anything; it merely indicates the intent for the value. More than likely, [DefaultValue] was used in confusion instead of [DefaultParameterValue].
+      Description: DefaultValue does not make the compiler set the default value, as its name may suggest. What you probably wanted to use is DefaultParameterValue.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3451
       CustomTags:
       - C#
@@ -3618,7 +3618,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Classes should not have only "private" constructors
-      Description: A class with only private constructors can’t be instantiated, thus, it seems to be pointless code.
+      Description: When a class has only a private constructor, it can’t be instantiated except within the class itself. Such classes can be considered dead code and should be fixed
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3453
       CustomTags:
       - C#
@@ -3634,7 +3634,7 @@ Diagnostics:
     Metadata:
       Category: Minor Bug
       Title: '"string.ToCharArray()" and "ReadOnlySpan<T>.ToArray()" should not be called redundantly'
-      Description: ToCharArray can be omitted when the operation on the array could have been done directly on the string, such as when iterating over the characters in a string, and when accessing a character in a string via an array index. In those cases, explicit ToCharArray calls should be omitted.
+      Description: The string type offers an indexer property that allows you to treat it as a char array. Therefore, if you just need to access a specific character or iterate over all of them, the ToCharArray call should be omitted. For these cases, not omitting makes the code harder to read and less efficient as ToCharArray copies the characters from the string object into a new Unicode character array.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3456
       CustomTags:
       - C#
@@ -3698,7 +3698,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Bug
       Title: Type inheritance should not be recursive
-      Description: Recursion is acceptable in methods, where you can break out of it. But with class types, you end up with code that will compile but not run if you try to instantiate the class.
+      Description: Recursion is a technique used to define a problem in terms of the problem itself, usually in terms of a simpler version of the problem itself.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3464
       CustomTags:
       - C#
@@ -3713,7 +3713,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Optional parameters should be passed to "base" calls
-      Description: Generally, writing the least code that will readably do the job is a good thing, so omitting default parameter values seems to make sense. Unfortunately, when you omit them from the base call in an override, you’re not actually getting the job done thoroughly, because you’re ignoring the value the caller passed in. The result will likely not be what the caller expected.
+      Description: When optional parameter values are not passed to base method calls, the value passed in by the caller is ignored. This can cause the function to behave differently than expected, leading to errors and making the code difficult to debug.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3466
       CustomTags:
       - C#
@@ -3760,7 +3760,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: One-way "OperationContract" methods should have "void" return type
-      Description: When declaring a Windows Communication Foundation (WCF) OperationContract method one-way, that service method won’t return any result, not even an underlying empty confirmation message. These are fire-and-forget methods that are useful in event-like communication. Specifying a return type therefore does not make sense.
+      Description: When declaring a Windows Communication Foundation (WCF) OperationContract method as one-way, that service method won’t return any result, not even an underlying empty confirmation message. These are fire-and-forget methods that are useful in event-like communication. Therefore, specifying a return type has no effect and can confuse readers.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3598
       CustomTags:
       - C#
@@ -3792,7 +3792,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: 'Methods with "Pure" attribute should return a value '
-      Description: Marking a method with the Pure attribute specifies that the method doesn’t make any visible changes; thus, the method should return a result, otherwise the call to the method should be equal to no-operation. So Pure on a void method is either a mistake, or the method doesn’t do any meaningful task.
+      Description: Marking a method with the Pure attribute indicates that the method doesn’t make any visible state changes. Therefore, a Pure method should return a result otherwise it indicates a no-operation call.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3603
       CustomTags:
       - C#
@@ -3824,7 +3824,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Nullable type comparison should not be redundant
-      Description: Calling GetType() on a nullable object returns the underlying value type. Thus, comparing the returned Type object to typeof(Nullable<SomeType>) doesn’t make sense. The comparison either throws an exception or the result can be known at compile time.
+      Description: Calling GetType() on a nullable value type object returns the underlying value type. Therefore, comparing the returned Type object to typeof(Nullable<SomeType>) will either throw an NullReferenceException or the result will always be true or false and can be known at compile time.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3610
       CustomTags:
       - C#
@@ -3856,7 +3856,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Empty nullable value should not be accessed
-      Description: Nullable value types can hold either a value or null. The value held in the nullable type can be accessed with the Value property, but .Value throws an InvalidOperationException when the value is null. To avoid the exception, a nullable type should always be tested before .Value is accessed.
+      Description: Nullable value types can hold either a value or null.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3655
       CustomTags:
       - C#
@@ -3901,7 +3901,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Cognitive Complexity of methods should not be too high
-      Description: Cognitive Complexity is a measure of how hard the control flow of a method is to understand. Methods with high Cognitive Complexity will be difficult to maintain.
+      Description: Cognitive Complexity Complexity is a measure of how hard the control flow of a method is to understand.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3776
       CustomTags:
       - C#
@@ -3918,7 +3918,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Bug
       Title: '"SafeHandle.DangerousGetHandle" should not be called'
-      Description: Not surprisingly, the SafeHandle.DangerousGetHandle method is dangerous. That’s because it may not return a valid handle. Using it can lead to leaks and vulnerabilities. While it is possible to use the method successfully, it’s extremely difficult to do correctly, so the method should simply be avoided altogether.
+      Description: The SafeHandle.DangerousGetHandle method poses significant risks and should be used carefully. This method carries the inherent danger of potentially returning an invalid handle, which can result in resource leaks and security vulnerabilities. Although it is technically possible to utilize this method without encountering issues, doing so correctly requires a high level of expertise. Therefore, it is recommended to avoid using this method altogether.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3869
       CustomTags:
       - C#
@@ -3982,7 +3982,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Code Smell
       Title: '"operator==" should not be overloaded on reference types'
-      Description: The use of == to compare two objects is expected to do a reference comparison. That is, it is expected to return true if and only if they are the same object instance. Overloading the operator to do anything else will inevitably lead to the introduction of bugs by callers. On the other hand, overloading it to do exactly that is pointless; that’s what == does by default.
+      Description: The use of == to compare two objects is expected to do a reference comparison. That is, it is expected to return true if and only if they are the same object instance. Overloading the operator to do anything else will inevitably lead to the introduction of bugs by callers.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3875
       CustomTags:
       - C#
@@ -4013,7 +4013,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Code Smell
       Title: Exceptions should not be thrown from unexpected methods
-      Description: It is expected that some methods should be called with caution, but others, such as ToString, are expected to "just work". Throwing an exception from such a method is likely to break callers' code unexpectedly.
+      Description: The rule is reporting when an exception is thrown from certain methods and constructors. These methods are expected to behave in a specific way and throwing an exception from them can lead to unexpected behavior and break the calling code.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3877
       CustomTags:
       - C#
@@ -4062,13 +4062,12 @@ Diagnostics:
     Metadata:
       Category: Blocker Vulnerability
       Title: '"CoSetProxyBlanket" and "CoInitializeSecurity" should not be used'
-      Description: CoSetProxyBlanket and CoInitializeSecurity both work to set the permissions context in which the process invoked immediately after is executed. Calling them from within that process is useless because it’s too late at that point; the permissions context has already been set.
+      Description: This rule is deprecated, and will eventually be removed.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3884
       CustomTags:
       - C#
       - MainSourceScope
       - TestSourceScope
-      - SonarWay
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
@@ -4094,7 +4093,7 @@ Diagnostics:
     Metadata:
       Category: Minor Bug
       Title: Mutable, non-private fields should not be "readonly"
-      Description: Using the readonly keyword on a field means that it can’t be changed after initialization. However, when applied to collections or arrays, that’s only partly true. readonly enforces that another instance can’t be assigned to the field, but it cannot keep the contents from being updated. That means that in practice, the field value really can be changed, and the use of readonly on such a field is misleading, and you’re likely to not be getting the behavior you expect.
+      Description: Using the readonly keyword on a field means it can’t be changed after initialization. However, that’s only partly true when applied to collections or arrays. The readonly keyword enforces that another instance can’t be assigned to the field, but it cannot keep the contents from being updated. In practice, the field value can be changed, and the use of readonly on such a field is misleading, and you’re likely not getting the behavior you expect.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3887
       CustomTags:
       - C#
@@ -4109,8 +4108,8 @@ Diagnostics:
   S3889:
     Metadata:
       Category: Blocker Bug
-      Title: Neither "Thread.Resume" nor "Thread.Suspend" should be used
-      Description: Thread.Suspend and Thread.Resume can give unpredictable results, and both methods have been deprecated. Indeed, if Thread.Suspend is not used very carefully, a thread can be suspended while holding a lock, thus leading to a deadlock. Other safer synchronization mechanisms should be used, such as Monitor, Mutex, and Semaphore.
+      Title: '"Thread.Resume" and "Thread.Suspend" should not be used'
+      Description: Thread.Suspend and Thread.Resume can give unpredictable results, and both methods have been deprecated. Indeed, if Thread.Suspend is not used very carefully, a thread can be suspended while holding a lock, thus leading to a deadlock.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3889
       CustomTags:
       - C#
@@ -4157,7 +4156,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Arguments of public methods should be validated against null
-      Description: A publicly accessible method can be called from anywhere, which means you should validate parameters to be within the expected constraints. In general, checking against null is recommended defensive programming.
+      Description: Methods declared as public, protected, or protected internal can be accessed from other assemblies, which means you should validate parameters to be within the expected constraints. In general, checking against null is recommended in defensive programming.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3900
       CustomTags:
       - C#
@@ -4205,7 +4204,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Assemblies should have version information
-      Description: If no AssemblyVersionAttribute is provided, the same default version will be used for every build. Since the version number is used by The .NET Framework to uniquely identify an assembly this can lead to broken dependencies.
+      Description: The AssemblyVersion attribute is used to specify the version number of an assembly. An assembly is a compiled unit of code, which can be marked with a version number by applying the attribute to an assembly’s source code file.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3904
       CustomTags:
       - C#
@@ -4266,7 +4265,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: All branches in a conditional structure should not have exactly the same implementation
-      Description: Having all branches in a switch or if chain with the same implementation is an error. Either a copy-paste error was made and something different should be executed, or there shouldn’t be a switch/if chain at all.
+      Description: Having all branches of a switch or if chain with the same implementation indicates a problem.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3923
       CustomTags:
       - C#
@@ -4282,7 +4281,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: '"ISerializable" should be implemented correctly'
-      Description: The ISerializable interface is the mechanism to control the type serialization process. If not implemented correctly this could result in an invalid serialization and hard to detect bugs.
+      Description: The ISerializable interface is the mechanism to control the type serialization process. If not implemented correctly this could result in an invalid serialization and hard-to-detect bugs.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3925
       CustomTags:
       - C#
@@ -4314,7 +4313,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Serialization event handlers should be implemented correctly
-      Description: Serialization event handlers that don’t have the correct signature will simply not be called, thus bypassing any attempts to augment the automated de/serialization.
+      Description: Serialization event handlers that don’t have the correct signature will not be called, bypassing augmentations to the automated de/serialization.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3927
       CustomTags:
       - C#
@@ -4369,8 +4368,8 @@ Diagnostics:
       - C#
       - MainSourceScope
       - TestSourceScope
-      - Unnecessary
-      DefaultSeverity: Suggestion
+      - SonarWay
+      DefaultSeverity: Warning
     Tier: 1
     Attributes:
       general:
@@ -4427,7 +4426,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Objects should not be disposed more than once
-      Description: Disposing an object twice, either with the using keyword or by calling Dispose directly, in the same method is at best confusing and at worst error-prone. The next developer might see only one of the Dispose/using and try to use an already-disposed object.
+      Description: Disposing an object twice in the same method, either with the using keyword or by calling Dispose directly, is confusing and error-prone. For example, another developer might try to use an already-disposed object, or there can be runtime errors for specific paths in the code.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3966
       CustomTags:
       - C#
@@ -4474,7 +4473,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Conditionals should start on new lines
-      Description: Code is clearest when each statement has its own line. Nonetheless, it is a common pattern to combine on the same line an if and its resulting then statement. However, when an if is placed on the same line as the closing } from a preceding then, else or else if part, it is either an error - else is missing - or the invitation to a future error as maintainers fail to understand that the two statements are unconnected.
+      Description: Placing an if statement on the same line as the closing } from a preceding if, else, or else if block can lead to confusion and potential errors. It may indicate a missing else statement or create ambiguity for maintainers who might fail to understand that the two statements are unconnected.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3972
       CustomTags:
       - C#
@@ -4490,7 +4489,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: A conditionally executed single line should be denoted by indentation
-      Description: In the absence of enclosing curly braces, the line immediately after a conditional is the one that is conditionally executed. By both convention and good practice, such lines are indented. In the absence of both curly braces and indentation the intent of the original programmer is entirely unclear and perhaps not actually what is executed. Additionally, such code is highly likely to be confusing to maintainers.
+      Description: When the line immediately after conditional statements has neither curly braces nor indentation, the intent of the code is unclear and perhaps not executed as expected. Additionally, such code is confusing to maintainers.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3973
       CustomTags:
       - C#
@@ -4506,7 +4505,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Collection sizes and array length comparisons should make sense
-      Description: The size of a collection and the length of an array are always greater than or equal to zero. So testing that a size or length is greater than or equal to zero doesn’t make sense, since the result is always true. Similarly testing that it is less than zero will always return false. Perhaps the intent was to check the non-emptiness of the collection or array instead.
+      Description: The size of a collection and the length of an array are always greater than or equal to zero. Testing it doesn’t make sense, since the result is always true.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3981
       CustomTags:
       - C#
@@ -4522,7 +4521,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Exceptions should not be created without being thrown
-      Description: Creating a new Exception without actually throwing it is useless and is probably due to a mistake.
+      Description: Creating a new Exception without actually throwing does not achieve the intended purpose.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3984
       CustomTags:
       - C#
@@ -4646,7 +4645,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Threads should not lock on objects with weak identity
-      Description: 'A thread acquiring a lock on an object that can be accessed across application domain boundaries runs the risk of being blocked by another thread in a different application domain. Objects that can be accessed across application domain boundaries are said to have weak identity. Types with weak identity are:'
+      Description: Objects that can be accessed across application domain boundaries are said to have weak identity. This means that these objects can be considered shared resources outside of the domain, which can be lead to them being accessed or modified by multiple threads or concurrent parts of a program, outside of the domain.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3998
       CustomTags:
       - C#
@@ -4724,7 +4723,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Inherited member visibility should not be decreased
-      Description: Changing an inherited member to private will not prevent access to the base class implementation.
+      Description: Decreasing the accessibility level of an inherited method that is not overridable to private will shadow the name of the base method and can lead to confusion.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4015
       CustomTags:
       - C#
@@ -4785,7 +4784,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Base class methods should not be hidden
-      Description: When a method in a derived class has the same name as a method in the base class but with a signature that only differs by types that are weakly derived (e.g. object vs string), the result is that the base method becomes hidden.
+      Description: 'When a method in a derived class has:'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4019
       CustomTags:
       - C#
@@ -4816,7 +4815,7 @@ Diagnostics:
     Metadata:
       Category: Minor Code Smell
       Title: Interfaces should not be empty
-      Description: Empty interfaces are usually used as a marker or a way to identify groups of types. The preferred way to achieve this is to use custom attributes.
+      Description: Empty interfaces should be avoided as they do not provide any functional requirements for implementing classes.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4023
       CustomTags:
       - C#
@@ -4825,7 +4824,9 @@ Diagnostics:
     Tier: 3
     Attributes:
       general:
-        Severity: Warning
+        Severity: None
+      api:
+        Severity: Suggestion
   S4025:
     Metadata:
       Category: Critical Code Smell
@@ -5180,7 +5181,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: Collection elements should not be replaced unconditionally
-      Description: It is highly suspicious when a value is saved for a key or index and then unconditionally overwritten. Such replacements are likely errors.
+      Description: Storing a value inside a collection at a given key or index and then unconditionally overwriting it without reading the initial value is a case of a "dead store".
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4143
       CustomTags:
       - C#
@@ -5196,7 +5197,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: Methods should not have identical implementations
-      Description: When two methods have the same implementation, either it was a mistake - something else was intended - or the duplication was intentional, but may be confusing to maintainers. In the latter case, one implementation should invoke the other.
+      Description: Two methods having the same implementation are suspicious. It might be that something else was intended. Or the duplication is intentional, which becomes a maintenance burden.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4144
       CustomTags:
       - C#
@@ -5212,7 +5213,7 @@ Diagnostics:
     Metadata:
       Category: Minor Bug
       Title: Empty collections should not be accessed or iterated
-      Description: When a collection is empty it makes no sense to access or iterate it. Doing so anyway is surely an error; either population was accidentally omitted or the developer doesn’t understand the situation.
+      Description: When a collection is empty, iterating it has no effect. Doing so anyway is likely a bug; either population was accidentally omitted, or the iteration needs to be revised.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4158
       CustomTags:
       - C#
@@ -5223,12 +5224,13 @@ Diagnostics:
     Tier: 2
     Attributes:
       general:
-        Severity: Warning
+        Severity: None
+        Comment: Too many false positives
   S4159:
     Metadata:
       Category: Blocker Bug
       Title: Classes should implement their "ExportAttribute" interfaces
-      Description: In the Attributed Programming Model, the ExportAttribute declares that a part "exports", or provides to the composition container, an object that fulfills a particular contract. During composition, parts with imports that have matching contracts will have those dependencies filled by the exported object.
+      Description: The Attributed Programming Model, also known as Attribute-oriented programming (@OP), is a programming model used to embed attributes within codes.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4159
       CustomTags:
       - C#
@@ -5320,7 +5322,7 @@ Diagnostics:
     Metadata:
       Category: Major Code Smell
       Title: '"P/Invoke" methods should not be visible'
-      Description: Methods marked with the System.Runtime.InteropServices.DllImportAttribute attribute use Platform Invocation Services to access unmanaged code and should not be exposed. Keeping them private or internal makes sure that their access is controlled and properly managed.
+      Description: This rule is deprecated; use {rule:csharpsquid:S4200} instead.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4214
       CustomTags:
       - C#
@@ -5350,7 +5352,7 @@ Diagnostics:
     Metadata:
       Category: Minor Code Smell
       Title: Extension methods should not extend "object"
-      Description: Creating an extension method that extends object is not recommended because it makes the method available on every type. Extensions should be applied at the most specialized level possible, and that is very unlikely to be object.
+      Description: ﻿Creating an extension method that extends object is not recommended because it makes the method available on every type. Extensions should be applied at the most specialized level possible, and that is very unlikely to be object.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4225
       CustomTags:
       - C#
@@ -5380,7 +5382,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: '"ConstructorArgument" parameters should exist in constructors'
-      Description: When creating a custom Markup Extension that accepts parameters in WPF, the ConstructorArgument markup must be used to identify the discrete properties that match these parameters. However since this is done via a string, the compiler will not notice if there are typos.
+      Description: When creating a custom Markup Extension that accepts parameters in WPF, the ConstructorArgument markup must be used to identify the discrete properties that match these parameters. However since this is done via a string, the compiler won’t give you any warning in case there are typos.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4260
       CustomTags:
       - C#
@@ -5411,7 +5413,7 @@ Diagnostics:
     Metadata:
       Category: Critical Bug
       Title: Getters and setters should access the expected fields
-      Description: Properties provide a way to enforce encapsulation by providing public, protected or internal methods that give controlled access to private fields. However in classes with multiple fields it is not unusual that cut and paste is used to quickly create the needed properties, which can result in the wrong field being accessed by a getter or setter.
+      Description: Properties provide a way to enforce encapsulation by providing accessors that give controlled access to private fields. However, in classes with multiple fields, it is not unusual that copy-and-paste is used to quickly create the needed properties, which can result in the wrong field being accessed by a getter or setter.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4275
       CustomTags:
       - C#
@@ -5442,7 +5444,7 @@ Diagnostics:
     Metadata:
       Category: Critical Vulnerability
       Title: Weak SSL/TLS protocols should not be used
-      Description: Older versions of SSL/TLS protocol like "SSLv3" have been proven to be insecure.
+      Description: This vulnerability exposes encrypted data to a number of attacks whose goal is to recover the plaintext.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4423
       CustomTags:
       - C#
@@ -5457,7 +5459,7 @@ Diagnostics:
     Metadata:
       Category: Critical Vulnerability
       Title: Cryptographic keys should be robust
-      Description: Most of cryptographic systems require a sufficient key size to be robust against brute-force attacks.
+      Description: This vulnerability exposes encrypted data to attacks whose goal is to recover the plaintext.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4426
       CustomTags:
       - C#
@@ -5472,7 +5474,7 @@ Diagnostics:
     Metadata:
       Category: Major Bug
       Title: '"PartCreationPolicyAttribute" should be used with "ExportAttribute"'
-      Description: The PartCreationPolicyAttribute attribute, which is part of the Managed Extensibility Framework (MEF), is used to specify how the exported object will be created. Therefore it doesn’t make sense not to export this a class with this attribute using the ExportAttribute attribute.
+      Description: To customize the default behavior for an export in the Managed Extensibility Framework (MEF), applying the PartCreationPolicyAttribute is necessary. For the PartCreationPolicyAttribute to be meaningful in the context of an export, it is required to also annotate the class with the ExportAttribute.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4428
       CustomTags:
       - C#
@@ -5501,7 +5503,7 @@ Diagnostics:
     Metadata:
       Category: Critical Vulnerability
       Title: LDAP connections should be authenticated
-      Description: An LDAP client authenticates to an LDAP server with a "bind request" which provides, among other, a simple authentication method.
+      Description: 'Lightweight Directory Access Protocol (LDAP) servers provide two main authentication methods: the SASL and Simple ones. The Simple Authentication method also breaks down into three different mechanisms:'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4433
       CustomTags:
       - C#
@@ -5562,15 +5564,14 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Unread "private" fields should be removed
-      Description: Private fields only used to store values without reading them later is a case of dead store. So changing the value of such field is useless and most probably indicates a serious error in the code.
+      Description: Private fields which are written but never read are a case of "dead store". Changing the value of such a field is useless and most probably indicates an error in the code.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4487
       CustomTags:
       - C#
       - MainSourceScope
       - TestSourceScope
       - SonarWay
-      - Unnecessary
-      DefaultSeverity: Suggestion
+      DefaultSeverity: Warning
     Tier: 1
     Attributes:
       general:
@@ -5580,7 +5581,7 @@ Diagnostics:
     Metadata:
       Category: Minor Security Hotspot
       Title: Delivering code in production with debug features activated is security-sensitive
-      Description: 'Delivering code in production with debug features activated is security-sensitive. It has led in the past to the following vulnerabilities:'
+      Description: Development tools and frameworks usually have options to make debugging easier for developers. Although these features are useful during development, they should never be enabled for applications deployed in production. Debug instructions or error messages can leak detailed information about the system, like the application’s path or file names.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4507
       CustomTags:
       - C#
@@ -5595,7 +5596,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: '"default" clauses should be first or last'
-      Description: 'switch can contain a default clause for various reasons: to handle unexpected values, to show that all the cases were properly considered.'
+      Description: The switch statement is a conditional statement that executes a sequence of instructions based on patterns matching the provided value.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4524
       CustomTags:
       - C#
@@ -5641,7 +5642,7 @@ Diagnostics:
     Metadata:
       Category: Critical Bug
       Title: Calls to delegate's method "BeginInvoke" should be paired with calls to "EndInvoke"
-      Description: Calling the BeginInvoke method of a delegate will allocate some resources that are only freed-up when EndInvoke is called. This is why you should always pair BeginInvoke with an EndInvoke to complete your asynchronous call.
+      Description: When calling the BeginInvoke method of a delegate, resources are allocated that are only freed up when EndInvoke is called. Failing to pair BeginInvoke with EndInvoke can lead to resource leaks and incomplete asynchronous calls.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4583
       CustomTags:
       - C#
@@ -5657,7 +5658,7 @@ Diagnostics:
     Metadata:
       Category: Critical Bug
       Title: Non-async "Task/Task<T>" methods should not return null
-      Description: Returning null from a non-async Task/Task<T> method will cause a NullReferenceException at runtime. This problem can be avoided by returning Task.FromResult<T>(null) instead.
+      Description: Returning null from a non-async Task/Task<TResult> method will cause a NullReferenceException at runtime if the method is awaited. This problem can be avoided by returning Task.CompletedTask or Task.FromResult<TResult>(null) respectively.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4586
       CustomTags:
       - C#
@@ -5672,8 +5673,8 @@ Diagnostics:
   S4635:
     Metadata:
       Category: Critical Code Smell
-      Title: String offset-based methods should be preferred for finding substrings from offsets
-      Description: 'Looking for a given substring starting from a specified offset can be achieved by such code: str.Substring(startIndex).IndexOf(char1). This works well, but it creates a new string for each call to the Substring method. When this is done in a loop, a lot of strings are created for nothing, which can lead to performance problems if str is large.'
+      Title: Start index should be used instead of calling Substring
+      Description: 'It is important to be careful when searching for characters within a substring. Let’s consider the following example:'
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4635
       CustomTags:
       - C#
@@ -5789,7 +5790,7 @@ Diagnostics:
     Metadata:
       Category: Critical Vulnerability
       Title: Server certificates should be verified during SSL/TLS connections
-      Description: Validation of X.509 certificates is essential to create secure SSL/TLS sessions not vulnerable to man-in-the-middle attacks.
+      Description: This vulnerability makes it possible that an encrypted communication is intercepted.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4830
       CustomTags:
       - C#
@@ -5819,7 +5820,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: '"ValueTask" should be consumed correctly'
-      Description: ValueTask<TResult> was introduced in .NET Core 2.0 to optimize memory allocation when functions return their results synchronously.
+      Description: ValueTask<TResult> provides a value type that wraps a Task<TResult> and the corresponding TResult. It was introduced in .NET Core 2.0 to optimize memory allocation when functions return their results synchronously.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-5034
       CustomTags:
       - C#
@@ -5865,7 +5866,7 @@ Diagnostics:
     Metadata:
       Category: Critical Vulnerability
       Title: Encryption algorithms should be used with secure mode and padding scheme
-      Description: Encryption algorithms should use secure modes and padding schemes where appropriate to guarantee data confidentiality and integrity.
+      Description: This vulnerability exposes encrypted data to a number of attacks whose goal is to recover the plaintext.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-5542
       CustomTags:
       - C#
@@ -5880,7 +5881,7 @@ Diagnostics:
     Metadata:
       Category: Critical Vulnerability
       Title: Cipher algorithms should be robust
-      Description: Strong cipher algorithms are cryptographic systems resistant to cryptanalysis, they are not vulnerable to well-known attacks like brute force attacks for example.
+      Description: This vulnerability makes it possible that the cleartext of the encrypted message might be recoverable without prior knowledge of the key.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-5547
       CustomTags:
       - C#
@@ -5895,7 +5896,7 @@ Diagnostics:
     Metadata:
       Category: Critical Vulnerability
       Title: JWT should be signed and verified with strong cipher algorithms
-      Description: If a JSON Web Token (JWT) is not signed with a strong cipher algorithm (or not signed at all) an attacker can forge it and impersonate user identities.
+      Description: This vulnerability allows forging of JSON Web Tokens to impersonate other users.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-5659
       CustomTags:
       - C#
@@ -5941,7 +5942,7 @@ Diagnostics:
     Metadata:
       Category: Major Vulnerability
       Title: Types allowed to be deserialized should be restricted
-      Description: During the deserialization process, the state of an object will be reconstructed from the serialized data stream which can contain dangerous operations.
+      Description: Deserialization is the process of converting serialized data (such as objects or data structures) back into their original form. Types allowed to be unserialized should be strictly controlled.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-5773
       CustomTags:
       - C#
@@ -6003,7 +6004,7 @@ Diagnostics:
     Metadata:
       Category: Critical Code Smell
       Title: Parameter names should match base declaration and other partial definitions
-      Description: The name of a parameter in an externally visible. This rule raises an issue when method override does not match the name of the parameter in the base declaration of the method, or the name of the parameter in the interface declaration of the method or the name of any other partial definition.
+      Description: Parameters are part of the method signature and its identity.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-927
       CustomTags:
       - C#
@@ -6141,7 +6142,7 @@ Diagnostics:
     Metadata:
       Category: Critical Vulnerability
       Title: Insecure temporary file creation methods should not be used
-      Description: 'Creating temporary files using insecure methods exposes the application to race conditions on filenames: a malicious user can try to create a file with a predictable name before the application does. A successful attack can result in other files being accessed, modified, corrupted or deleted. This risk is even higher if the application run with elevated permissions.'
+      Description: Temporary files are considered insecurely created when the file existence check is performed separately from the actual file creation. Such a situation can occur when creating temporary files using normal file handling functions or when using dedicated temporary file handling functions that are not atomic.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-5445
       CustomTags:
       - C#
@@ -6156,7 +6157,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Vulnerability
       Title: A secure password should be used when connecting to a database
-      Description: When relying on the password authentication mode for the database connection, a secure password should be chosen.
+      Description: When accessing a database, an empty password should be avoided as it introduces a weakness.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2115
       CustomTags:
       - C#
@@ -6231,7 +6232,7 @@ Diagnostics:
     Metadata:
       Category: Minor Code Smell
       Title: Non-derived "private" classes and records should be "sealed"
-      Description: private classes and records aren’t visible outside of their assemblies anyway, so if they’re not extended inside the assemblies, they should be made explicitly non-extensible with the addition of the sealed keyword.
+      Description: Classes and records with either private or file access modifiers aren’t visible outside of their assemblies or files, so if they’re not extended inside their scope, they should be made explicitly non-extensible with the addition of the sealed keyword.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3260
       CustomTags:
       - C#
@@ -6242,7 +6243,7 @@ Diagnostics:
     Attributes:
       general:
         Severity: None
-        Redundant: CA1852
+        Redundant: R9A013
   S3059:
     Metadata:
       Category: Major Code Smell
@@ -6261,7 +6262,7 @@ Diagnostics:
     Metadata:
       Category: Critical Bug
       Title: Locks should be released on all paths
-      Description: If a lock is held or acquired and then released within a method, it should be released along all execution paths.
+      Description: To prevent potential deadlocks in an application, it is crucial to release any locks that are acquired within a method along all possible execution paths.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2222
       CustomTags:
       - C#
@@ -6286,12 +6287,12 @@ Diagnostics:
     Attributes:
       general:
         Severity: None
-        Redundant: EA0002
+        Redundant: R9A022
   S6422:
     Metadata:
       Category: Blocker Code Smell
       Title: Calls to "async" methods should not be blocking in Azure Functions
-      Description: Making blocking calls to async methods transforms code that was intended to be asynchronous into a blocking operation. Doing so inside an Azure Function can lead to thread exhaustion.
+      Description: Making blocking calls to async methods transforms the code into a synchronous operation. Doing so inside an Azure Function can lead to thread pool exhaustion.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6422
       CustomTags:
       - C#
@@ -6364,7 +6365,7 @@ Diagnostics:
     Metadata:
       Category: Blocker Code Smell
       Title: Interfaces for durable entities should satisfy the restrictions
-      Description: The recommended way to access Azure Durable Entities is Interfaces via generated proxy objects.
+      Description: The recommended way to access Azure Durable Entities is through generated proxy objects with the help of interfaces.
       HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6424
       CustomTags:
       - C#
@@ -6385,6 +6386,612 @@ Diagnostics:
       - C#
       - MainSourceScope
       - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      production:
+        Severity: Warning
+  S6562:
+    Metadata:
+      Category: Major Code Smell
+      Title: Always set the "DateTimeKind" when creating new "DateTime" instances
+      Description: Not knowing the Kind of the DateTime object that an application is using can lead to misunderstandings when displaying or comparing them. Explicitly setting the Kind property helps the application to stay consistent, and its maintainers understand what kind of date is being managed. To achieve this, when instantiating a new DateTime object you should always use a constructor overload that allows you to define the Kind property.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6562
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Comment: Noise
+  S3878:
+    Metadata:
+      Category: Minor Code Smell
+      Title: Arrays should not be created for params parameters
+      Description: There’s no point in creating an array solely for the purpose of passing it to a params parameter. Simply pass the elements directly. They will be consolidated into an array automatically.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3878
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  S2970:
+    Metadata:
+      Category: Blocker Code Smell
+      Title: Assertions should be complete
+      Description: 'This rule addresses the issue of incomplete assertions that can occur when using certain test frameworks. Incomplete assertions can lead to tests that do not effectively verify anything. The rule enforces the use of complete assertions in specific cases, namely:'
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2970
+      CustomTags:
+      - C#
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S6561:
+    Metadata:
+      Category: Major Code Smell
+      Title: Avoid using "DateTime.Now" for benchmarking or timing operations
+      Description: The rule targets the use of DateTime.Now call followed by some arithmetic operation.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6561
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S2166:
+    Metadata:
+      Category: Major Code Smell
+      Title: Classes named like "Exception" should extend "Exception" or a subclass
+      Description: Clear, communicative naming is important in code. It helps maintainers and API users understand the intentions for and uses of a unit of code. Using "exception" in the name of a class that does not extend Exception or one of its subclasses is a clear violation of the expectation that a class' name will indicate what it is and/or does.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2166
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S2094:
+    Metadata:
+      Category: Minor Code Smell
+      Title: Classes should not be empty
+      Description: There is no good excuse for an empty class. If it’s being used simply as a common extension point, it should be replaced with an interface. If it was stubbed in as a placeholder for future development it should be fleshed-out. In any other case, it should be eliminated.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2094
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  S4663:
+    Metadata:
+      Category: Minor Code Smell
+      Title: Comments should not be empty
+      Description: Empty comments like the following don’t improve readability and might indicate an oversight.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4663
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 3
+    Attributes:
+      general:
+        Severity: Suggestion
+  S3363:
+    Metadata:
+      Category: Minor Bug
+      Title: Date and time should not be used as a type for primary keys
+      Description: You should only set a property of a temporal type (like DateTime or DateTimeOffset) as the primary key of a table if the values are guaranteed to be unique.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3363
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S6585:
+    Metadata:
+      Category: Minor Code Smell
+      Title: Don't hardcode the format when turning dates and times to strings
+      Description: Hardcoding the date and time format strings can lead to formats that consumers misunderstand. Also, if the same format is meant to be used in multiple places, it is easier to make a mistake when it’s hardcoded instead of using a format provided by an IFormatProvider or using one of the standard format strings.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6585
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  S4545:
+    Metadata:
+      Category: Major Code Smell
+      Title: '"DebuggerDisplayAttribute" strings should reference existing members'
+      Description: The DebuggerDisplayAttribute is used to determine how an object is displayed in the debugger window.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-4545
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S6563:
+    Metadata:
+      Category: Major Code Smell
+      Title: Use UTC when recording DateTime instants
+      Description: You should avoid recording time instants with the use of property DateTime.Now. The property DateTime.Now returns the current date and time expressed in the machine’s local time without containing any timezone-related information (for example, the offset from Coordinated Universal Time). Not having this information means that if you need to display this DateTime object or use it for computations in another machine placed in a different time zone, you won’t be able to reconstruct it in the second machine’s local time without knowing the origin’s offset. This will likely lead to confusion and potential bugs.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6563
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  S6513:
+    Metadata:
+      Category: Minor Code Smell
+      Title: '"ExcludeFromCodeCoverage" attributes should include a justification'
+      Description: The ExcludeFromCodeCoverageAttribute is used to exclude portions of code from code coverage reporting. It is a bad practice to retain code that is not covered by unit tests. In .Net 5, the Justification property was added to the ExcludeFromCodeCoverageAttribute as an opportunity to document the rationale for the exclusion. This rule raises an issue when no such justification is given.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6513
+      CustomTags:
+      - C#
+      - MainSourceScope
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  S6602:
+    Metadata:
+      Category: Minor Code Smell
+      Title: '"Find" method should be used instead of the "FirstOrDefault" extension'
+      Description: Both the List.Find method and IEnumerable.FirstOrDefault method can be used to find the first element that satisfies a given condition in a collection. However, List.Find can be faster than IEnumerable.FirstOrDefault for List objects. For small collections, the performance difference may be minor, but for large collections, it can make a noticeable difference. The same applies for ImmutableList and arrays too.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6602
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  S6640:
+    Metadata:
+      Category: Major Security Hotspot
+      Title: Using unsafe code blocks is security-sensitive
+      Description: Using unsafe code blocks can lead to unintended security or stability risks.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6640
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S6605:
+    Metadata:
+      Category: Minor Code Smell
+      Title: Collection-specific "Exists" method should be used instead of the "Any" extension
+      Description: Both the List.Exists method and IEnumerable.Any method can be used to find the first element that satisfies a predicate in a collection. However, List.Exists can be faster than IEnumerable.Any for List objects, as well as requires significantly less memory. For small collections, the performance difference may be negligible, but for large collections, it can be noticeable. The same applies to ImmutableList and arrays too.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6605
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  S6617:
+    Metadata:
+      Category: Minor Code Smell
+      Title: '"Contains" should be used instead of "Any" for simple equality checks'
+      Description: 'When testing if a collection contains a specific item by simple equality, both ICollection.Contains(T item) and IEnumerable.Any(x ⇒ x == item) can be used. However, Any searches the data structure in a linear manner using a foreach loop, whereas Contains is considerably faster in some collection types, because of the underlying implementation. More specifically:'
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6617
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  S6613:
+    Metadata:
+      Category: Minor Code Smell
+      Title: '"First" and "Last" properties of "LinkedList" should be used instead of the "First()" and "Last()" extension methods'
+      Description: Both the Enumerable.First extension method and the LinkedList<T>.First property can be used to find the first value in a LinkedList<T>. However, LinkedList<T>.First is much faster than Enumerable.First. For small collections, the performance difference may be minor, but for large collections, it can be noticeable. The same applies for the Last property as well.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6613
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  S2445:
+    Metadata:
+      Category: Major Bug
+      Title: Blocks should be synchronized on read-only fields
+      Description: Locking on a class field synchronizes not on the field itself, but on the object assigned to it. Thus, there are some good practices to follow to avoid problems related to thread synchronization.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2445
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Comment: Noise
+  S6507:
+    Metadata:
+      Category: Major Bug
+      Title: Blocks should not be synchronized on local variables
+      Description: Locking on a local variable can undermine synchronization because two different threads running the same method in parallel will potentially lock on different instances of the same object, allowing them to access the synchronized block at the same time.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6507
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Comment: Too many false positives
+  S1133:
+    Metadata:
+      Category: Info Code Smell
+      Title: Deprecated code should be removed
+      Description: This rule is meant to be used as a way to track code which is marked as being deprecated. Deprecated code should eventually be removed.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-1133
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  S3398:
+    Metadata:
+      Category: Minor Code Smell
+      Title: '"private" methods called only by inner classes should be moved to those classes'
+      Description: When a private static method is only invoked by a nested class, there’s no reason not to move it into that class. It will still have the same access to the outer class' static members, but the outer class will be clearer and less cluttered.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3398
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S5856:
+    Metadata:
+      Category: Critical Bug
+      Title: Regular expressions should be syntactically valid
+      Description: Regular expressions have their own syntax that is understood by regular expression engines. Those engines will throw an exception at runtime if they are given a regular expression that does not conform to that syntax.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-5856
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S6609:
+    Metadata:
+      Category: Minor Code Smell
+      Title: '"Min/Max" properties of "Set" types should be used instead of the "Enumerable" extension methods'
+      Description: Both the Enumerable.Max extension method and the SortedSet<T>.Max property can be used to find the maximum value in a SortedSet<T>. However, SortedSet<T>.Max is much faster than Enumerable.Max. For small collections, the performance difference may be minor, but for large collections, it can be noticeable. The same applies for the Min property as well.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6609
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  S2925:
+    Metadata:
+      Category: Major Code Smell
+      Title: '"Thread.Sleep" should not be used in tests'
+      Description: Using Thread.Sleep in a test might introduce unpredictable and inconsistent results depending on the environment. Furthermore, it will block the thread, which means the system resources are not being fully used.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2925
+      CustomTags:
+      - C#
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+  S2198:
+    Metadata:
+      Category: Critical Code Smell
+      Title: Unnecessary mathematical comparisons should not be made
+      Description: Certain mathematical comparisons will always return the same value, and should not be performed.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-2198
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S3063:
+    Metadata:
+      Category: Major Code Smell
+      Title: '"StringBuilder" data should be used'
+      Description: StringBuilder instances that never build a string clutter the code and worse are a drag on performance. Either they should be removed, or the missing ToString() call should be added.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-3063
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S6610:
+    Metadata:
+      Category: Minor Code Smell
+      Title: '"StartsWith" and "EndsWith" overloads that take a "char" should be used instead of the ones that take a "string"'
+      Description: With string.StartsWith(char) and string.EndsWith(char), only the first character of the string is compared to the provided character, whereas the string versions of those methods have to do checks about the current StringComparison and CultureInfo. Thus, the char overloads are significantly faster for default comparison scenarios.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6610
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  S6566:
+    Metadata:
+      Category: Major Code Smell
+      Title: Use "DateTimeOffset" instead of "DateTime"
+      Description: This rule recommends using DateTimeOffset instead of DateTime for projects targeting .NET Framework 2.0 or later.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6566
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+        Comment: Noise
+  S6575:
+    Metadata:
+      Category: Major Code Smell
+      Title: Use "TimeZoneInfo.FindSystemTimeZoneById" without converting the timezones with "TimezoneConverter"
+      Description: Since .NET 6 you don’t have to use the TimeZoneConverter library to manually do the conversion between IANA and Windows timezones. The .NET 6.0 introduced new Time Zone enhancements, one being the TimeZoneInfo.FindSystemTimeZoneById(string timezone) method now accepts as input both IANA and Windows time zone IDs on any operating system with installed time zone data. TimeZoneInfo.FindSystemTimeZoneById will automatically convert its input from IANA to Windows and vice versa if the requested time zone is not found on the system.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6575
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S6580:
+    Metadata:
+      Category: Major Code Smell
+      Title: Use a format provider when parsing date and time
+      Description: When converting a string representation of a date and time to a DateTime object or any other temporal type with one of the available system parsing methods, you should always provide an IFormatProvider parameter.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6580
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S6608:
+    Metadata:
+      Category: Minor Code Smell
+      Title: Prefer indexing instead of "Enumerable" methods on types implementing "IList"
+      Description: Indexes in C# provide direct access to an element at a specific position within an array or collection. When compared to Enumerable methods, indexing can be more efficient for certain scenarios, such as iterating over a large collection, due to avoiding the overhead of checking the underlying collection type before accessing it.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6608
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  S6612:
+    Metadata:
+      Category: Minor Code Smell
+      Title: The lambda parameter should be used instead of capturing arguments in "ConcurrentDictionary" methods
+      Description: When using the ConcurrentDictionary, there are many overloads of the GetOrAdd and AddOrUpdate methods that take both a TKey argument and a lambda that expects a TKey parameter. This means that the right side of the lambda can be written using either the lambda’s parameter or the method’s argument. However, using the method’s argument leads to the lambda capturing it, and the compiler will need to generate a class and instantiate it before the call. This means memory allocations, as well as more time spend during Garbage Collection.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6612
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  S6618:
+    Metadata:
+      Category: Minor Code Smell
+      Title: '"string.Create" should be used instead of "FormattableString"'
+      Description: In order to produce a formatted string, both string.Create and either FormattableString.Invariant or FormattableString.CurrentCulture can be used. However, string.Create rents array buffers from ArrayPool<char> making it more performant, as well as preventing unnecessary allocations and future stress on the Garbage Collector.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6618
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  S6603:
+    Metadata:
+      Category: Minor Code Smell
+      Title: The collection-specific "TrueForAll" method should be used instead of the "All" extension
+      Description: Both the List.TrueForAll method and the IEnumerable.All method can be used to check if all list elements satisfy a given condition in a collection. However, List.TrueForAll can be faster than IEnumerable.All for List objects. The performance difference may be minor for small collections, but for large collections, it can be noticeable.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6603
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  S6588:
+    Metadata:
+      Category: Minor Code Smell
+      Title: Use the "UnixEpoch" field instead of creating "DateTime" instances that point to the beginning of the Unix epoch
+      Description: With .NET Core the UnixEpoch field was introduced to DateTime and DateTimeOffset types. Using this field clearly states that the intention is to use the beginning of the Unix epoch.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6588
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
+  S6607:
+    Metadata:
+      Category: Minor Code Smell
+      Title: The collection should be filtered before sorting by using "Where" before "OrderBy"
+      Description: When working with LINQ in C#, it is recommended to pay attention to the order in which methods are chained, especially when using Where and OrderBy methods. It is advised to call the Where method before OrderBy because Where filters the elements of the sequence based on a given condition and returns a new sequence containing only the elements that satisfy that condition. Calling OrderBy before Where, may end up sorting elements that will be later discarded, which can lead to inefficiency. Conversely, calling Where before OrderBy, will first filter the sequence to include only the elements of interest, and then sort them based on the specified order.
+      HelpLinkUri: https://rules.sonarsource.com/csharp/RSPEC-6607
+      CustomTags:
+      - C#
+      - MainSourceScope
+      - TestSourceScope
+      - SonarWay
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: None
+      performance:
+        Severity: Warning
+  S9999-warning:
+    Metadata:
+      Category: ''
+      Title: Analysis Warning generator
+      Description: ''
+      CustomTags:
+      - MainSourceScope
+      - TestSourceScope
+      - Utility
+      - NotConfigurable
       DefaultSeverity: Warning
     Tier: 1
     Attributes:
