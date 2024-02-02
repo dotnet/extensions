@@ -11,7 +11,7 @@ internal readonly record struct HttpKey(string Name, string InstanceName)
 {
     public static readonly IEqualityComparer<HttpKey> BuilderComparer = new BuilderEqualityComparer();
 
-    private class BuilderEqualityComparer : IEqualityComparer<HttpKey>
+    private sealed class BuilderEqualityComparer : IEqualityComparer<HttpKey>
     {
         public bool Equals(HttpKey x, HttpKey y) => StringComparer.Ordinal.Equals(x.Name, y.Name);
 

@@ -50,7 +50,7 @@ public static class KubernetesProbesExtensions
         var wrapperOptions = new KubernetesProbesOptions();
 
         return services
-            .AddTcpEndpointHealthCheck(ProbeTags.Liveness, options =>
+            .AddTcpEndpointProbe(ProbeTags.Liveness, options =>
             {
                 wrapperOptions.LivenessProbe = options;
                 configure(wrapperOptions);
@@ -64,7 +64,7 @@ public static class KubernetesProbesExtensions
                     options.FilterChecks = (check) => check.Tags.Contains(ProbeTags.Liveness) && originalPredicate(check);
                 }
             })
-            .AddTcpEndpointHealthCheck(ProbeTags.Startup, options =>
+            .AddTcpEndpointProbe(ProbeTags.Startup, options =>
             {
                 wrapperOptions.StartupProbe = options;
                 configure(wrapperOptions);
@@ -78,7 +78,7 @@ public static class KubernetesProbesExtensions
                     options.FilterChecks = (check) => check.Tags.Contains(ProbeTags.Startup) && originalPredicate(check);
                 }
             })
-            .AddTcpEndpointHealthCheck(ProbeTags.Readiness, (options) =>
+            .AddTcpEndpointProbe(ProbeTags.Readiness, (options) =>
             {
                 wrapperOptions.ReadinessProbe = options;
                 configure(wrapperOptions);

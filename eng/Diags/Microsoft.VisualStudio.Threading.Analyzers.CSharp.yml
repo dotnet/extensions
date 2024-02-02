@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.VisualStudio.Threading.Analyzers.CSharp
-  Version: 17.5.22.27812
+  Version: 17.7.30.5607
 Diagnostics:
   VSTHRD001:
     Metadata:
@@ -103,8 +103,7 @@ Diagnostics:
     Attributes:
       general:
         Severity: None
-      performance:
-        Severity: Warning
+        Redundant: CA1849
   VSTHRD104:
     Metadata:
       Category: Usage

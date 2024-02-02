@@ -1,5 +1,5 @@
 # Created by DiagConfig, the diagnostic config generator
-# Generated : 2023-10-22 00:37:45Z
+# Generated : 2024-01-25 20:57:43Z
 # Max Tier  : 2147483647
 # Attributes: general, performance, production
 # Analyzers : ILLink.RoslynAnalyzer, Microsoft.Analyzers.Extra, Microsoft.Analyzers.Local, Microsoft.AspNetCore.App.Analyzers, Microsoft.AspNetCore.Components.Analyzers, Microsoft.CodeAnalysis.CodeStyle, Microsoft.CodeAnalysis.CSharp.CodeStyle, Microsoft.CodeAnalysis.CSharp.NetAnalyzers, Microsoft.CodeAnalysis.NetAnalyzers, Microsoft.VisualStudio.Threading.Analyzers, Microsoft.VisualStudio.Threading.Analyzers.CSharp, SonarAnalyzer.CSharp, StyleCop.Analyzers
@@ -107,7 +107,7 @@ dotnet_diagnostic.CA1001.severity = warning
 # Title    : Types that own disposable fields should be disposable
 # Category : Design
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1001
-dotnet_diagnostic.CA1001.severity = warning
+dotnet_diagnostic.CA1001.severity = none
 
 # Title    : Do not expose generic lists
 # Category : Design
@@ -197,6 +197,7 @@ dotnet_diagnostic.CA1028.severity = none
 # Category : Design
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1030
 dotnet_diagnostic.CA1030.severity = warning
+dotnet_code_quality.CA1030.api_surface = public
 
 # Title    : Do not catch general exception types
 # Category : Design
@@ -276,6 +277,7 @@ dotnet_diagnostic.CA1051.severity = none
 # Category : Design
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1052
 dotnet_diagnostic.CA1052.severity = warning
+dotnet_code_quality.CA1052.api_surface = all
 
 # Title    : URI-like parameters should not be strings
 # Category : Design
@@ -318,6 +320,7 @@ dotnet_diagnostic.CA1062.severity = none
 # Category : Design
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1063
 dotnet_diagnostic.CA1063.severity = warning
+dotnet_code_quality.CA1063.api_surface = public
 
 # Title    : Exceptions should be public
 # Category : Design
@@ -577,6 +580,7 @@ dotnet_diagnostic.CA1724.severity = none
 # Category : Naming
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1725
 dotnet_diagnostic.CA1725.severity = warning
+dotnet_code_quality.CA1725.api_surface = public, protected
 
 # Title    : Use PascalCase for named placeholders
 # Category : Naming
@@ -599,6 +603,7 @@ dotnet_diagnostic.CA1801.severity = none
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1802
 dotnet_diagnostic.CA1802.severity = warning
+dotnet_code_quality.CA1802.required_modifiers = static
 
 # Title    : Use literals where appropriate
 # Category : Performance
@@ -646,6 +651,7 @@ dotnet_diagnostic.CA1814.severity = warning
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1815
 dotnet_diagnostic.CA1815.severity = warning
+dotnet_code_quality.CA1815.api_surface = public
 
 # Title    : Dispose methods should call SuppressFinalize
 # Category : Usage
@@ -656,6 +662,7 @@ dotnet_diagnostic.CA1816.severity = warning
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1819
 dotnet_diagnostic.CA1819.severity = warning
+dotnet_code_quality.CA1819.api_surface = public
 
 # Title    : Test for empty strings using string length
 # Category : Performance
@@ -671,6 +678,7 @@ dotnet_diagnostic.CA1821.severity = warning
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1822
 dotnet_diagnostic.CA1822.severity = warning
+dotnet_code_quality.CA1822.api_surface = all
 
 # Title    : Avoid unused private fields
 # Category : Performance
@@ -801,7 +809,7 @@ dotnet_diagnostic.CA1847.severity = warning
 # Title    : Use the LoggerMessage delegates
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848
-# Comment  : Use the code generated model instead.
+# Comment  : Use R9 logging model instead
 dotnet_diagnostic.CA1848.severity = none
 
 # Title    : Call async methods when in an async method
@@ -822,7 +830,8 @@ dotnet_diagnostic.CA1851.severity = suggestion
 # Title    : Seal internal types
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1852
-dotnet_diagnostic.CA1852.severity = none
+dotnet_diagnostic.CA1852.severity = warning
+dotnet_code_quality.CA1852.ignore_internalsvisibleto = true
 
 # Title    : Unnecessary call to 'Dictionary.ContainsKey(key)'
 # Category : Performance
@@ -852,7 +861,7 @@ dotnet_diagnostic.CA1857.severity = warning
 # Title    : Use 'StartsWith' instead of 'IndexOf'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1858
-dotnet_diagnostic.CA1858.severity = warning
+dotnet_diagnostic.CA1858.severity = suggestion
 
 # Title    : Use concrete types when possible for improved performance
 # Category : Performance
@@ -862,7 +871,7 @@ dotnet_diagnostic.CA1859.severity = warning
 # Title    : Avoid using 'Enumerable.Any()' extension method
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860
-dotnet_diagnostic.CA1860.severity = warning
+dotnet_diagnostic.CA1860.severity = suggestion
 
 # Title    : Avoid constant arrays as arguments
 # Category : Performance
@@ -872,17 +881,17 @@ dotnet_diagnostic.CA1861.severity = suggestion
 # Title    : Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862
-dotnet_diagnostic.CA1862.severity = warning
+dotnet_diagnostic.CA1862.severity = suggestion
 
 # Title    : Use 'CompositeFormat'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1863
-dotnet_diagnostic.CA1863.severity = warning
+dotnet_diagnostic.CA1863.severity = none
 
 # Title    : Prefer the 'IDictionary.TryAdd(TKey, TValue)' method
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864
-dotnet_diagnostic.CA1864.severity = warning
+dotnet_diagnostic.CA1864.severity = suggestion
 
 # Title    : Use char overload
 # Category : Performance
@@ -902,17 +911,17 @@ dotnet_diagnostic.CA1867.severity = warning
 # Title    : Unnecessary call to 'Contains(item)'
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1868
-dotnet_diagnostic.CA1868.severity = warning
+dotnet_diagnostic.CA1868.severity = suggestion
 
 # Title    : Cache and reuse 'JsonSerializerOptions' instances
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1869
-dotnet_diagnostic.CA1869.severity = warning
+dotnet_diagnostic.CA1869.severity = suggestion
 
 # Title    : Use a cached 'SearchValues' instance
 # Category : Performance
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1870
-dotnet_diagnostic.CA1870.severity = warning
+dotnet_diagnostic.CA1870.severity = suggestion
 
 # Title    : Dispose objects before losing scope
 # Category : Reliability
@@ -928,6 +937,8 @@ dotnet_diagnostic.CA2002.severity = warning
 # Category : Reliability
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007
 dotnet_diagnostic.CA2007.severity = warning
+dotnet_code_quality.CA2007.output_kinds = all
+dotnet_code_quality.CA2007.exclude_async_void_methods = false
 
 # Title    : Do not create tasks without passing a TaskScheduler
 # Category : Reliability
@@ -1048,6 +1059,7 @@ dotnet_diagnostic.CA2207.severity = warning
 # Category : Usage
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2208
 dotnet_diagnostic.CA2208.severity = warning
+dotnet_code_quality.CA2208.api_surface = all
 
 # Title    : Non-constant fields should not be visible
 # Category : Usage
@@ -1111,11 +1123,13 @@ dotnet_diagnostic.CA2229.severity = none
 # Category : Usage
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2231
 dotnet_diagnostic.CA2231.severity = error
+dotnet_code_quality.CA2231.api_surface = public
 
 # Title    : Pass system uri objects instead of strings
 # Category : Usage
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2234
 dotnet_diagnostic.CA2234.severity = warning
+dotnet_code_quality.CA2234.api_surface = all
 
 # Title    : Mark all non-serializable fields
 # Category : Usage
@@ -1133,6 +1147,7 @@ dotnet_diagnostic.CA2237.severity = none
 # Category : Usage
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2241
 dotnet_diagnostic.CA2241.severity = warning
+dotnet_code_quality.CA2241.try_determine_additional_string_formatting_methods_automatically = false
 
 # Title    : Test for NaN correctly
 # Category : Usage
@@ -1850,8 +1865,8 @@ dotnet_diagnostic.IDE0005_gen.severity = none
 # Title    : Use implicit type
 # Category : Style
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0007
-dotnet_diagnostic.IDE0007.severity = silent
-csharp_style_var_elsewhere = true
+dotnet_diagnostic.IDE0007.severity = suggestion
+csharp_style_var_elsewhere = false
 csharp_style_var_for_built_in_types = false
 csharp_style_var_when_type_is_apparent = true
 
@@ -1952,19 +1967,19 @@ csharp_style_expression_bodied_accessors = true
 # Title    : Simplify collection initialization
 # Category : Style
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0028
-dotnet_diagnostic.IDE0028.severity = warning
+dotnet_diagnostic.IDE0028.severity = suggestion
 dotnet_style_collection_initializer = true
 
 # Title    : Use coalesce expression
 # Category : Style
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0029
-dotnet_diagnostic.IDE0029.severity = warning
+dotnet_diagnostic.IDE0029.severity = suggestion
 dotnet_style_coalesce_expression = true
 
 # Title    : Use coalesce expression
 # Category : Style
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0030
-dotnet_diagnostic.IDE0030.severity = warning
+dotnet_diagnostic.IDE0030.severity = suggestion
 dotnet_style_coalesce_expression = true
 
 # Title    : Use null propagation
@@ -2300,7 +2315,7 @@ csharp_style_prefer_not_pattern = true
 # Title    : Use 'new(...)'
 # Category : Style
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0090
-dotnet_diagnostic.IDE0090.severity = warning
+dotnet_diagnostic.IDE0090.severity = suggestion
 csharp_style_implicit_object_creation_when_type_is_apparent = true
 
 # Title    : Remove redundant equality
@@ -2403,7 +2418,8 @@ dotnet_diagnostic.IDE0250.severity = warning
 # Title    : Make member 'readonly'
 # Category : Style
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0251
-dotnet_diagnostic.IDE0251.severity = none
+dotnet_diagnostic.IDE0251.severity = warning
+csharp_style_prefer_readonly_struct_members = true
 
 # Title    : Use pattern matching
 # Category : Style
@@ -2433,7 +2449,7 @@ dotnet_diagnostic.IDE0300.severity = none
 # Title    : Simplify collection initialization
 # Category : Style
 # Help Link: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/style-rules/ide0301
-dotnet_diagnostic.IDE0301.severity = suggestion
+dotnet_diagnostic.IDE0301.severity = none
 
 # Title    : Simplify collection initialization
 # Category : Style
@@ -2901,7 +2917,7 @@ dotnet_diagnostic.S103.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-104
 dotnet_diagnostic.S104.severity = warning
 
-# Title    : Destructors should not throw exceptions
+# Title    : Finalizers should not throw exceptions
 # Category : Blocker Bug
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1048
 # Redundant: CA1065
@@ -2977,7 +2993,7 @@ dotnet_diagnostic.S1110.severity = none
 # Redundant: SA1106
 dotnet_diagnostic.S1116.severity = none
 
-# Title    : Local variables should not shadow class fields
+# Title    : Local variables should not shadow class fields or properties
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1117
 dotnet_diagnostic.S1117.severity = warning
@@ -3019,6 +3035,11 @@ dotnet_diagnostic.S1128.severity = warning
 # Category : Minor Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-113
 dotnet_diagnostic.S113.severity = none
+
+# Title    : Deprecated code should be removed
+# Category : Info Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-1133
+dotnet_diagnostic.S1133.severity = suggestion
 
 # Title    : Track uses of "FIXME" tags
 # Category : Major Code Smell
@@ -3092,7 +3113,7 @@ dotnet_diagnostic.S1192.severity = suggestion
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1199
 dotnet_diagnostic.S1199.severity = warning
 
-# Title    : Classes should not be coupled to too many other classes (Single Responsibility Principle)
+# Title    : Classes should not be coupled to too many other classes
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1200
 dotnet_diagnostic.S1200.severity = none
@@ -3273,7 +3294,7 @@ dotnet_diagnostic.S1699.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1751
 dotnet_diagnostic.S1751.severity = warning
 
-# Title    : Identical expressions should not be used on both sides of a binary operator
+# Title    : Identical expressions should not be used on both sides of operators
 # Category : Major Bug
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1764
 dotnet_diagnostic.S1764.severity = warning
@@ -3325,7 +3346,7 @@ dotnet_diagnostic.S1939.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1940
 dotnet_diagnostic.S1940.severity = warning
 
-# Title    : Inappropriate casts should not be made
+# Title    : Invalid casts should be avoided
 # Category : Critical Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-1944
 dotnet_diagnostic.S1944.severity = warning
@@ -3362,6 +3383,11 @@ dotnet_diagnostic.S2077.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2092
 dotnet_diagnostic.S2092.severity = warning
 
+# Title    : Classes should not be empty
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-2094
+dotnet_diagnostic.S2094.severity = none
+
 # Title    : Collections should not be passed as arguments to their own methods
 # Category : Major Bug
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2114
@@ -3387,6 +3413,11 @@ dotnet_diagnostic.S2148.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2156
 dotnet_diagnostic.S2156.severity = warning
 
+# Title    : Classes named like "Exception" should extend "Exception" or a subclass
+# Category : Major Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-2166
+dotnet_diagnostic.S2166.severity = warning
+
 # Title    : Short-circuit logic should be used in boolean contexts
 # Category : Blocker Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2178
@@ -3402,12 +3433,12 @@ dotnet_diagnostic.S2183.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2184
 dotnet_diagnostic.S2184.severity = warning
 
-# Title    : TestCases should contain tests
+# Title    : Test classes should contain at least one test case
 # Category : Blocker Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2187
 dotnet_diagnostic.S2187.severity = warning
 
-# Title    : Recursion should not be infinite
+# Title    : Loops and recursions should not be infinite
 # Category : Blocker Bug
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2190
 dotnet_diagnostic.S2190.severity = warning
@@ -3417,7 +3448,12 @@ dotnet_diagnostic.S2190.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2197
 dotnet_diagnostic.S2197.severity = warning
 
-# Title    : Return values from functions without side effects should not be ignored
+# Title    : Unnecessary mathematical comparisons should not be made
+# Category : Critical Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-2198
+dotnet_diagnostic.S2198.severity = warning
+
+# Title    : Methods without side effects should not have their return values ignored
 # Category : Major Bug
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2201
 # Redundant: CA1806
@@ -3453,7 +3489,7 @@ dotnet_diagnostic.S2225.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2228
 dotnet_diagnostic.S2228.severity = warning
 
-# Title    : Parameters should be passed in the correct order
+# Title    : Arguments should be passed in the same order as the method parameters
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2234
 dotnet_diagnostic.S2234.severity = warning
@@ -3630,10 +3666,16 @@ dotnet_diagnostic.S2387.severity = warning
 # Redundant: CA1005
 dotnet_diagnostic.S2436.severity = none
 
-# Title    : Silly bit operations should not be performed
+# Title    : Unnecessary bit operations should not be performed
 # Category : Blocker Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2437
 dotnet_diagnostic.S2437.severity = warning
+
+# Title    : Blocks should be synchronized on read-only fields
+# Category : Major Bug
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-2445
+# Comment  : Noise
+dotnet_diagnostic.S2445.severity = none
 
 # Title    : Whitespace and control characters in string literals should be explicit
 # Category : Critical Code Smell
@@ -3648,8 +3690,7 @@ dotnet_diagnostic.S2486.severity = warning
 # Title    : Shared resources should not be used for locking
 # Category : Critical Bug
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2551
-# Redundant: CA2002
-dotnet_diagnostic.S2551.severity = none
+dotnet_diagnostic.S2551.severity = warning
 
 # Title    : Conditionally executed code should be reachable
 # Category : Major Bug
@@ -3660,7 +3701,8 @@ dotnet_diagnostic.S2583.severity = none
 # Title    : Boolean expressions should not be gratuitous
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2589
-dotnet_diagnostic.S2589.severity = warning
+# Comment  : Too many false positives.
+dotnet_diagnostic.S2589.severity = none
 
 # Title    : Setting loose file permissions is security-sensitive
 # Category : Major Security Hotspot
@@ -3717,7 +3759,7 @@ dotnet_diagnostic.S2743.severity = none
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2755
 dotnet_diagnostic.S2755.severity = warning
 
-# Title    : "=+" should not be used instead of "+="
+# Title    : Non-existent operators like "=+" should not be used
 # Category : Major Bug
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2757
 dotnet_diagnostic.S2757.severity = warning
@@ -3741,6 +3783,11 @@ dotnet_diagnostic.S2761.severity = warning
 # Category : Blocker Bug
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2857
 dotnet_diagnostic.S2857.severity = warning
+
+# Title    : "Thread.Sleep" should not be used in tests
+# Category : Major Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-2925
+dotnet_diagnostic.S2925.severity = none
 
 # Title    : "IDisposables" should be disposed
 # Category : Blocker Bug
@@ -3779,6 +3826,11 @@ dotnet_diagnostic.S2953.severity = warning
 # Category : Minor Bug
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-2955
 dotnet_diagnostic.S2955.severity = warning
+
+# Title    : Assertions should be complete
+# Category : Blocker Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-2970
+dotnet_diagnostic.S2970.severity = warning
 
 # Title    : "IEnumerable" LINQs should be simplified
 # Category : Major Code Smell
@@ -3830,6 +3882,11 @@ dotnet_diagnostic.S3059.severity = none
 # Category : Blocker Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3060
 dotnet_diagnostic.S3060.severity = warning
+
+# Title    : "StringBuilder" data should be used
+# Category : Major Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-3063
+dotnet_diagnostic.S3063.severity = warning
 
 # Title    : "async" methods should not return "void"
 # Category : Major Bug
@@ -3888,7 +3945,7 @@ dotnet_diagnostic.S3235.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3236
 dotnet_diagnostic.S3236.severity = warning
 
-# Title    : "value" parameters should be used
+# Title    : "value" contextual keyword should be used
 # Category : Blocker Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3237
 dotnet_diagnostic.S3237.severity = warning
@@ -3953,12 +4010,13 @@ dotnet_diagnostic.S3256.severity = warning
 # Title    : Declarations and initializations should be as concise as possible
 # Category : Minor Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3257
-dotnet_diagnostic.S3257.severity = warning
+# Comment  : Too many false positives
+dotnet_diagnostic.S3257.severity = none
 
 # Title    : Non-derived "private" classes and records should be "sealed"
 # Category : Minor Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3260
-# Redundant: CA1852
+# Redundant: R9A013
 dotnet_diagnostic.S3260.severity = none
 
 # Title    : Namespaces should not be empty
@@ -4022,6 +4080,11 @@ dotnet_diagnostic.S3353.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3358
 dotnet_diagnostic.S3358.severity = warning
 
+# Title    : Date and time should not be used as a type for primary keys
+# Category : Minor Bug
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-3363
+dotnet_diagnostic.S3363.severity = warning
+
 # Title    : "this" should not be exposed from constructors
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3366
@@ -4038,6 +4101,11 @@ dotnet_diagnostic.S3376.severity = none
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3397
 dotnet_diagnostic.S3397.severity = warning
 
+# Title    : "private" methods called only by inner classes should be moved to those classes
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-3398
+dotnet_diagnostic.S3398.severity = warning
+
 # Title    : Methods should not return constants
 # Category : Minor Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3400
@@ -4048,7 +4116,7 @@ dotnet_diagnostic.S3400.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3415
 dotnet_diagnostic.S3415.severity = warning
 
-# Title    : Method overloads with default parameter values should not overlap 
+# Title    : Method overloads with default parameter values should not overlap
 # Category : Blocker Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3427
 dotnet_diagnostic.S3427.severity = warning
@@ -4246,6 +4314,11 @@ dotnet_diagnostic.S3876.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3877
 dotnet_diagnostic.S3877.severity = warning
 
+# Title    : Arrays should not be created for params parameters
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-3878
+dotnet_diagnostic.S3878.severity = suggestion
+
 # Title    : Finalizers should not be empty
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3880
@@ -4271,7 +4344,7 @@ dotnet_diagnostic.S3885.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3887
 dotnet_diagnostic.S3887.severity = warning
 
-# Title    : Neither "Thread.Resume" nor "Thread.Suspend" should be used
+# Title    : "Thread.Resume" and "Thread.Suspend" should not be used
 # Category : Blocker Bug
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-3889
 dotnet_diagnostic.S3889.severity = warning
@@ -4511,7 +4584,7 @@ dotnet_diagnostic.S4022.severity = warning
 # Title    : Interfaces should not be empty
 # Category : Minor Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-4023
-dotnet_diagnostic.S4023.severity = warning
+dotnet_diagnostic.S4023.severity = none
 
 # Title    : Child class fields should not differ from parent class fields only by capitalization
 # Category : Critical Code Smell
@@ -4649,7 +4722,8 @@ dotnet_diagnostic.S4144.severity = warning
 # Title    : Empty collections should not be accessed or iterated
 # Category : Minor Bug
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-4158
-dotnet_diagnostic.S4158.severity = warning
+# Comment  : Too many false positives
+dotnet_diagnostic.S4158.severity = none
 
 # Title    : Classes should implement their "ExportAttribute" interfaces
 # Category : Blocker Bug
@@ -4783,6 +4857,11 @@ dotnet_diagnostic.S4507.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-4524
 dotnet_diagnostic.S4524.severity = warning
 
+# Title    : "DebuggerDisplayAttribute" strings should reference existing members
+# Category : Major Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-4545
+dotnet_diagnostic.S4545.severity = warning
+
 # Title    : ASP.NET HTTP request validation feature should not be disabled
 # Category : Major Vulnerability
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-4564
@@ -4803,10 +4882,15 @@ dotnet_diagnostic.S4583.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-4586
 dotnet_diagnostic.S4586.severity = warning
 
-# Title    : String offset-based methods should be preferred for finding substrings from offsets
+# Title    : Start index should be used instead of calling Substring
 # Category : Critical Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-4635
 dotnet_diagnostic.S4635.severity = warning
+
+# Title    : Comments should not be empty
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-4663
+dotnet_diagnostic.S4663.severity = suggestion
 
 # Title    : Using regular expressions is security-sensitive
 # Category : Critical Security Hotspot
@@ -4919,10 +5003,15 @@ dotnet_diagnostic.S5766.severity = warning
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-5773
 dotnet_diagnostic.S5773.severity = warning
 
+# Title    : Regular expressions should be syntactically valid
+# Category : Critical Bug
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-5856
+dotnet_diagnostic.S5856.severity = warning
+
 # Title    : Use a testable date/time provider
 # Category : Major Code Smell
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-6354
-# Redundant: EA0002
+# Redundant: R9A022
 dotnet_diagnostic.S6354.severity = none
 
 # Title    : Azure Functions should be stateless
@@ -4959,6 +5048,119 @@ dotnet_diagnostic.S6424.severity = warning
 # Category : Major Security Hotspot
 # Help Link: https://rules.sonarsource.com/csharp/RSPEC-6444
 dotnet_diagnostic.S6444.severity = warning
+
+# Title    : Blocks should not be synchronized on local variables
+# Category : Major Bug
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6507
+# Comment  : Too many false positives
+dotnet_diagnostic.S6507.severity = none
+
+# Title    : "ExcludeFromCodeCoverage" attributes should include a justification
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6513
+dotnet_diagnostic.S6513.severity = suggestion
+
+# Title    : Avoid using "DateTime.Now" for benchmarking or timing operations
+# Category : Major Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6561
+dotnet_diagnostic.S6561.severity = warning
+
+# Title    : Always set the "DateTimeKind" when creating new "DateTime" instances
+# Category : Major Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6562
+# Comment  : Noise
+dotnet_diagnostic.S6562.severity = none
+
+# Title    : Use UTC when recording DateTime instants
+# Category : Major Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6563
+dotnet_diagnostic.S6563.severity = none
+
+# Title    : Use "DateTimeOffset" instead of "DateTime"
+# Category : Major Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6566
+# Comment  : Noise
+dotnet_diagnostic.S6566.severity = none
+
+# Title    : Use "TimeZoneInfo.FindSystemTimeZoneById" without converting the timezones with "TimezoneConverter"
+# Category : Major Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6575
+dotnet_diagnostic.S6575.severity = warning
+
+# Title    : Use a format provider when parsing date and time
+# Category : Major Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6580
+dotnet_diagnostic.S6580.severity = warning
+
+# Title    : Don't hardcode the format when turning dates and times to strings
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6585
+dotnet_diagnostic.S6585.severity = none
+
+# Title    : Use the "UnixEpoch" field instead of creating "DateTime" instances that point to the beginning of the Unix epoch
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6588
+dotnet_diagnostic.S6588.severity = warning
+
+# Title    : "Find" method should be used instead of the "FirstOrDefault" extension
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6602
+dotnet_diagnostic.S6602.severity = warning
+
+# Title    : The collection-specific "TrueForAll" method should be used instead of the "All" extension
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6603
+dotnet_diagnostic.S6603.severity = warning
+
+# Title    : Collection-specific "Exists" method should be used instead of the "Any" extension
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6605
+dotnet_diagnostic.S6605.severity = warning
+
+# Title    : The collection should be filtered before sorting by using "Where" before "OrderBy"
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6607
+dotnet_diagnostic.S6607.severity = warning
+
+# Title    : Prefer indexing instead of "Enumerable" methods on types implementing "IList"
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6608
+dotnet_diagnostic.S6608.severity = warning
+
+# Title    : "Min/Max" properties of "Set" types should be used instead of the "Enumerable" extension methods
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6609
+dotnet_diagnostic.S6609.severity = warning
+
+# Title    : "StartsWith" and "EndsWith" overloads that take a "char" should be used instead of the ones that take a "string"
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6610
+dotnet_diagnostic.S6610.severity = warning
+
+# Title    : The lambda parameter should be used instead of capturing arguments in "ConcurrentDictionary" methods
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6612
+dotnet_diagnostic.S6612.severity = warning
+
+# Title    : "First" and "Last" properties of "LinkedList" should be used instead of the "First()" and "Last()" extension methods
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6613
+dotnet_diagnostic.S6613.severity = warning
+
+# Title    : "Contains" should be used instead of "Any" for simple equality checks
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6617
+dotnet_diagnostic.S6617.severity = warning
+
+# Title    : "string.Create" should be used instead of "FormattableString"
+# Category : Minor Code Smell
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6618
+dotnet_diagnostic.S6618.severity = warning
+
+# Title    : Using unsafe code blocks is security-sensitive
+# Category : Major Security Hotspot
+# Help Link: https://rules.sonarsource.com/csharp/RSPEC-6640
+dotnet_diagnostic.S6640.severity = warning
 
 # Title    : Literal suffixes should be upper case
 # Category : Minor Code Smell
@@ -5004,6 +5206,10 @@ dotnet_diagnostic.S9999-symbolRef.severity = warning
 # Title    : Token type calculator
 # Category : 
 dotnet_diagnostic.S9999-token-type.severity = warning
+
+# Title    : Analysis Warning generator
+# Category : 
+dotnet_diagnostic.S9999-warning.severity = warning
 
 # Title    : XML comment analysis disabled
 # Category : StyleCop.CSharp.SpecialRules
@@ -5284,7 +5490,8 @@ dotnet_diagnostic.SA1118.severity = warning
 # Title    : Statement should not use unnecessary parenthesis
 # Category : StyleCop.CSharp.MaintainabilityRules
 # Help Link: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1119.md
-dotnet_diagnostic.SA1119.severity = warning
+# Redundant: IDE0047
+dotnet_diagnostic.SA1119.severity = none
 
 # Title    : Statement should not use unnecessary parenthesis
 # Category : StyleCop.CSharp.MaintainabilityRules
@@ -6099,7 +6306,8 @@ dotnet_diagnostic.VSTHRD102.severity = suggestion
 # Title    : Call async methods when in an async method
 # Category : Usage
 # Help Link: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD103.md
-dotnet_diagnostic.VSTHRD103.severity = warning
+# Redundant: CA1849
+dotnet_diagnostic.VSTHRD103.severity = none
 
 # Title    : Offer async methods
 # Category : Usage

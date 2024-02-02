@@ -38,6 +38,7 @@ public partial class AcceptanceTests
     private const int SlashRouteProcessingTimeMs = 2_000;
     private static readonly TimeSpan _defaultLogTimeout = TimeSpan.FromSeconds(5);
 
+    [SuppressMessage("Design", "CA1052:Static holder types should be Static or NotInheritable", Justification = "Needed for reflection")]
     private class TestStartup
     {
         [SuppressMessage("Major Code Smell", "S1144:Unused private types or members should be removed", Justification = "Used through reflection")]

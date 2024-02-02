@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
 namespace TestClasses
@@ -22,6 +23,7 @@ namespace TestClasses
     }
 
     // test that particular method signature variations are generated correctly
+    [SuppressMessage("Design", "CA1052:Static holder types should be Static or NotInheritable", Justification = "Needed for reflection")]
     internal partial class SignatureTestExtensions<T>
         where T : class
     {

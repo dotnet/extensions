@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: ILLink.RoslynAnalyzer
-  Version: 8.0.9.408
+  Version: 8.0.9.3103
 Diagnostics:
   IL2026:
     Metadata:
