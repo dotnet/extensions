@@ -47,7 +47,7 @@ public class ResilienceEnrichmentBenchmark
         return services.BuildServiceProvider().GetRequiredService<ResiliencePipelineProvider<string>>().GetPipeline("my-pipeline");
     }
 
-    private class DummyStrategy : ResilienceStrategy
+    private sealed class DummyStrategy : ResilienceStrategy
     {
         private readonly ResilienceStrategyTelemetry _telemetry;
 
@@ -67,7 +67,7 @@ public class ResilienceEnrichmentBenchmark
         }
     }
 
-    private class DummyOptions : ResilienceStrategyOptions
+    private sealed class DummyOptions : ResilienceStrategyOptions
     {
     }
 }

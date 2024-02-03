@@ -150,5 +150,5 @@ public static partial class ResilienceHttpClientBuilderExtensions
         public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Marker, Marker>();
     }
 
-    private record HttpResiliencePipelineBuilder(string PipelineName, IServiceCollection Services) : IHttpResiliencePipelineBuilder;
+    private sealed record HttpResiliencePipelineBuilder(string PipelineName, IServiceCollection Services) : IHttpResiliencePipelineBuilder;
 }

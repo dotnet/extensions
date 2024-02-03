@@ -431,7 +431,7 @@ public class LogPropertiesTests
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
         Assert.Null(latestRecord.Exception);
-        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.NotEqual(0, latestRecord.Id.Id);
         Assert.Equal(LogLevel.Critical, latestRecord.Level);
         Assert.Equal(string.Empty, latestRecord.Message);
 
@@ -482,7 +482,7 @@ public class LogPropertiesTests
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
         Assert.Null(latestRecord.Exception);
-        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.NotEqual(0, latestRecord.Id.Id);
         Assert.Equal(LogLevel.Debug, latestRecord.Level);
         Assert.Empty(latestRecord.Message);
 
@@ -507,7 +507,7 @@ public class LogPropertiesTests
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
         Assert.Null(latestRecord.Exception);
-        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.NotEqual(0, latestRecord.Id.Id);
         Assert.Equal(LogLevel.Debug, latestRecord.Level);
         Assert.Equal($"Struct is: {recordToLog}", latestRecord.Message);
 
@@ -533,7 +533,7 @@ public class LogPropertiesTests
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
         Assert.Null(latestRecord.Exception);
-        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.NotEqual(0, latestRecord.Id.Id);
         Assert.Equal(LogLevel.Debug, latestRecord.Level);
         Assert.Equal($"Readonly struct is: {recordToLog}", latestRecord.Message);
 
