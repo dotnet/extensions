@@ -92,7 +92,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         // add twice intentionally
         builder.AddResilienceHandler("test", ConfigureBuilder);
 
-        builder.Services.Should().HaveCount(count + 2);
+        builder.Services.Should().HaveCount(count + 3);
     }
 
     [Fact]
