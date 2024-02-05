@@ -92,6 +92,12 @@ public sealed partial class HttpClientBuilderExtensionsTests
         // add twice intentionally
         builder.AddResilienceHandler("test", ConfigureBuilder);
 
+        // We check that the count of existing services is not unnecessary increased.
+        //
+        // The additional 3 services that are registered are related to:
+        // - Configuration of HTTP client options
+        // - Configuration of resilience pipeline
+        // - Registration of keyed service for resilience pipeline
         builder.Services.Should().HaveCount(count + 3);
     }
 
