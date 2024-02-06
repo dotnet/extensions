@@ -74,7 +74,7 @@ services.AddHttpClient("foo")
         // Enable logging of request and response bodies:
         o.LogBody = true;
 
-        // We also need to specify the content types that we want to log: 
+        // We also need to specify the content types that we want to log:
         o.ResponseBodyContentTypes.Add("application/json");
     });
 
