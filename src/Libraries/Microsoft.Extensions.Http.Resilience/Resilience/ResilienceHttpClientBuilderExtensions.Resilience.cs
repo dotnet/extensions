@@ -122,7 +122,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
         return new(pipelineName, builder.Services);
     }
 
-    private static void ConfigureHttpServices(IServiceCollection services)
+    internal static void ConfigureHttpServices(IServiceCollection services)
     {
         // don't add any new service if this method is called multiple times
         if (services.Contains(Marker.ServiceDescriptor))
