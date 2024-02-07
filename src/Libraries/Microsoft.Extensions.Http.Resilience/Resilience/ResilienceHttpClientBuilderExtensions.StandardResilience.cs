@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
@@ -86,9 +85,6 @@ public static partial class ResilienceHttpClientBuilderExtensions
                 .AddCircuitBreaker(options.CircuitBreaker)
                 .AddTimeout(options.AttemptTimeout);
         });
-
-        // Disable the HttpClient timeout to allow the timeout strategies to control the timeout.
-        _ = builder.ConfigureHttpClient(client => client.Timeout = Timeout.InfiniteTimeSpan);
 
         return new HttpStandardResiliencePipelineBuilder(optionsName, builder.Services);
     }
