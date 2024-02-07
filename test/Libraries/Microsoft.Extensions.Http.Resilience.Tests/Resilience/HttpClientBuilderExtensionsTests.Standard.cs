@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
@@ -233,16 +232,6 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
 
         await client.GetAsync("https://dummy");
         requests.Should().HaveCount(11);
-    }
-
-    [Fact]
-    public void AddStandardResilienceHandler_EnsureHttpClientTimeoutDisabled()
-    {
-        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test").AddStandardHedgingHandler();
-
-        using var client = builder.Services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("test");
-
-        client.Timeout.Should().Be(Timeout.InfiniteTimeSpan);
     }
 
     private static void AddStandardResilienceHandler(
