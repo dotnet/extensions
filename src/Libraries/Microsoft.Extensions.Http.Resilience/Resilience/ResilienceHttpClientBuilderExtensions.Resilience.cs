@@ -75,6 +75,29 @@ public static partial class ResilienceHttpClientBuilderExtensions
         return pipelineBuilder;
     }
 
+    internal static void ConfigureHttpServices(IServiceCollection services)
+    {
+        // don't add any new service if this method is called multiple times
+        if (services.Contains(Marker.ServiceDescriptor))
+        {
+            return;
+        }
+
+        services.Add(Marker.ServiceDescriptor);
+
+        // This code configure the multi-instance support of the registry
+        _ = services.Configure<ResiliencePipelineRegistryOptions<HttpKey>>(options =>
+        {
+            options.BuilderNameFormatter = key => key.Name;
+            options.InstanceNameFormatter = key => key.InstanceName;
+            options.BuilderComparer = HttpKey.BuilderComparer;
+        });
+
+        _ = services
+            .AddExceptionSummarizer(b => b.AddHttpProvider())
+            .Configure<TelemetryOptions>(options => options.MeteringEnrichers.Add(new HttpResilienceMetricsEnricher()));
+    }
+
     private static Func<HttpRequestMessage, ResiliencePipeline<HttpResponseMessage>> CreatePipelineSelector(IServiceProvider serviceProvider, string pipelineName)
     {
         var resilienceProvider = serviceProvider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
@@ -122,33 +145,10 @@ public static partial class ResilienceHttpClientBuilderExtensions
         return new(pipelineName, builder.Services);
     }
 
-    private static void ConfigureHttpServices(IServiceCollection services)
-    {
-        // don't add any new service if this method is called multiple times
-        if (services.Contains(Marker.ServiceDescriptor))
-        {
-            return;
-        }
-
-        services.Add(Marker.ServiceDescriptor);
-
-        // This code configure the multi-instance support of the registry
-        _ = services.Configure<ResiliencePipelineRegistryOptions<HttpKey>>(options =>
-        {
-            options.BuilderNameFormatter = key => key.Name;
-            options.InstanceNameFormatter = key => key.InstanceName;
-            options.BuilderComparer = HttpKey.BuilderComparer;
-        });
-
-        _ = services
-            .AddExceptionSummarizer(b => b.AddHttpProvider())
-            .Configure<TelemetryOptions>(options => options.MeteringEnrichers.Add(new HttpResilienceMetricsEnricher()));
-    }
-
     private sealed class Marker
     {
         public static readonly ServiceDescriptor ServiceDescriptor = ServiceDescriptor.Singleton<Marker, Marker>();
     }
 
-    private record HttpResiliencePipelineBuilder(string PipelineName, IServiceCollection Services) : IHttpResiliencePipelineBuilder;
+    private sealed record HttpResiliencePipelineBuilder(string PipelineName, IServiceCollection Services) : IHttpResiliencePipelineBuilder;
 }

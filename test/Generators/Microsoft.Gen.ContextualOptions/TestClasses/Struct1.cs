@@ -9,6 +9,6 @@ namespace TestClasses
     public partial struct Struct1
     {
 #pragma warning disable CA1822 // Mark members as static
-        public string Foo => "FooValue";
+        public readonly string Foo => "FooValue";
     }
 }

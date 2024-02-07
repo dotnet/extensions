@@ -80,7 +80,7 @@ public class TagProviderTests
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
         Assert.Null(latestRecord.Exception);
-        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.NotEqual(0, latestRecord.Id.Id);
         Assert.Equal(LogLevel.Debug, latestRecord.Level);
         Assert.Equal(string.Empty, latestRecord.Message);
 
@@ -103,7 +103,7 @@ public class TagProviderTests
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
         Assert.Null(latestRecord.Exception);
-        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.NotEqual(0, latestRecord.Id.Id);
         Assert.Equal(LogLevel.Trace, latestRecord.Level);
         Assert.Equal(string.Empty, latestRecord.Message);
 
@@ -124,7 +124,7 @@ public class TagProviderTests
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
         Assert.Null(latestRecord.Exception);
-        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.NotEqual(0, latestRecord.Id.Id);
         Assert.Equal(LogLevel.Trace, latestRecord.Level);
         Assert.Equal(string.Empty, latestRecord.Message);
         Assert.Empty(latestRecord.StructuredState!);
@@ -135,7 +135,7 @@ public class TagProviderTests
         Assert.Equal(1, _logger.Collector.Count);
         latestRecord = _logger.Collector.LatestRecord;
         Assert.Null(latestRecord.Exception);
-        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.NotEqual(0, latestRecord.Id.Id);
         Assert.Equal(LogLevel.Trace, latestRecord.Level);
         Assert.Equal(string.Empty, latestRecord.Message);
 
@@ -185,7 +185,7 @@ public class TagProviderTests
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
         Assert.Null(latestRecord.Exception);
-        Assert.Equal(0, latestRecord.Id.Id);
+        Assert.NotEqual(0, latestRecord.Id.Id);
         Assert.Equal(LogLevel.Error, latestRecord.Level);
         Assert.Equal(string.Empty, latestRecord.Message);
 
@@ -295,6 +295,26 @@ public class TagProviderTests
             ["param.MyIntProperty"] = interfaceToLog.MyIntProperty.ToInvariantString(),
             ["param.Custom_property_name"] = interfaceToLog.MyStringProperty,
             ["{OriginalFormat}"] = "Custom provided properties for interface."
+        };
+
+        latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+    }
+
+    [Fact]
+    public void LogsWhenEnumerable()
+    {
+        var a = new[] { "Zero", "One", "Two" };
+        TagProviderExtensions.Enumerable(_logger, LogLevel.Debug, a);
+
+        Assert.Equal(1, _logger.Collector.Count);
+        var latestRecord = _logger.Collector.LatestRecord;
+        Assert.Equal(LogLevel.Debug, latestRecord.Level);
+
+        var expectedState = new Dictionary<string, string?>
+        {
+            ["things.Foo0"] = a[0],
+            ["things.Foo1"] = a[1],
+            ["things.Foo2"] = a[2],
         };
 
         latestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);

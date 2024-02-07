@@ -9,6 +9,6 @@ namespace TestClasses
     internal partial struct NonPublicStruct
     {
 #pragma warning disable CA1822 // Mark members as static
-        public string Foo => "FooValue";
+        public readonly string Foo => "FooValue";
     }
 }

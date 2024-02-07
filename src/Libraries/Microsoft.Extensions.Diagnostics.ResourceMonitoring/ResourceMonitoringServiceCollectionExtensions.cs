@@ -110,7 +110,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
     }
 
 #if !NETFRAMEWORK
-    private static IResourceMonitorBuilder AddLinuxProvider(this IResourceMonitorBuilder builder)
+    private static ResourceMonitorBuilder AddLinuxProvider(this ResourceMonitorBuilder builder)
     {
         _ = Throw.IfNull(builder);
 
