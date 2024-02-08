@@ -81,18 +81,15 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     [Fact]
-    public void AddResilienceHandler_EnsureServicesNotAddedTwice()
+    public void ConfigureHttpServices_EnsureServicesNotAddedTwice()
     {
         var services = new ServiceCollection();
-        IHttpClientBuilder? builder = services.AddHttpClient("client");
 
-        builder.AddResilienceHandler("test", ConfigureBuilder);
-        var count = builder.Services.Count;
+        ResilienceHttpClientBuilderExtensions.ConfigureHttpServices(services);
+        var count = services.Count;
 
-        // add twice intentionally
-        builder.AddResilienceHandler("test", ConfigureBuilder);
-
-        builder.Services.Should().HaveCount(count + 2);
+        ResilienceHttpClientBuilderExtensions.ConfigureHttpServices(services);
+        services.Count.Should().Be(count);
     }
 
     [Fact]
