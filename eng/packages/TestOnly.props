@@ -30,6 +30,11 @@
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="7.0.8" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0-rtm.23476.22" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="8.0.0-rtm.23476.22" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' == '$(LatestTargetFramework)'">
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(MicrosoftAspNetCoreMvcTestingVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostVersion)" />
