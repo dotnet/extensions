@@ -30,4 +30,19 @@ public static class DataClassificationSetTests
         Assert.False(dc1.Equals(null));
 #pragma warning restore CA1508 // Avoid dead conditional code
     }
+
+    [Fact]
+    public static void TestHashCodes()
+    {
+        var dc1 = new DataClassificationSet(FakeTaxonomy.PublicData);
+        var dc2 = new DataClassificationSet(new[] { FakeTaxonomy.PublicData });
+        var dc3 = new DataClassificationSet(new List<DataClassification> { FakeTaxonomy.PublicData });
+        var dc4 = (DataClassificationSet)FakeTaxonomy.PublicData;
+        var dc5 = DataClassificationSet.FromDataClassification(FakeTaxonomy.PublicData);
+
+        Assert.Equal(dc1.GetHashCode(), dc2.GetHashCode());
+        Assert.Equal(dc1.GetHashCode(), dc3.GetHashCode());
+        Assert.Equal(dc1.GetHashCode(), dc4.GetHashCode());
+        Assert.Equal(dc1.GetHashCode(), dc5.GetHashCode());
+    }
 }
