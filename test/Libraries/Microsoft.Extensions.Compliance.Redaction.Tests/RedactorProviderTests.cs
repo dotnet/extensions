@@ -48,7 +48,7 @@ public class RedactorProviderTests
     }
 
     [Fact]
-    public void RedactorProvider_Returns_Redactor_For_Logically_Same_Data_Classification()
+    public void RedactorProvider_Returns_Same_Redactor_For_Logically_Same_Data_Classification()
     {
         var dc1 = new DataClassificationSet(new DataClassification("DummyTaxonomy", "Classification"));
         var dc2 = new DataClassificationSet(new DataClassification("DummyTaxonomy", "Classification2"));
