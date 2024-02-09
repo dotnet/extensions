@@ -83,7 +83,16 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
     /// Gets a hash code for the current object instance.
     /// </summary>
     /// <returns>The hash code value.</returns>
-    public override int GetHashCode() => _classifications.GetHashCode();
+    public override int GetHashCode()
+    {
+        int hash = 0;
+        foreach (var item in _classifications)
+        {
+            hash ^= item.GetHashCode();
+        }
+
+        return hash;
+    }
 
     /// <summary>
     /// Compares an object with the current instance to see if they contain the same classifications.
