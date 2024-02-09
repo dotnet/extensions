@@ -44,5 +44,8 @@ public static class DataClassificationSetTests
         Assert.Equal(dc1.GetHashCode(), dc3.GetHashCode());
         Assert.Equal(dc1.GetHashCode(), dc4.GetHashCode());
         Assert.Equal(dc1.GetHashCode(), dc5.GetHashCode());
+
+        var dc6 = dc1.Union(FakeTaxonomy.PrivateData);
+        Assert.NotEqual(dc1, dc6);
     }
 }
