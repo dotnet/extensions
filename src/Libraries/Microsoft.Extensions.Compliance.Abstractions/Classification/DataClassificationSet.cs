@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.Compliance.Classification;
 public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
 {
     private readonly HashSet<DataClassification> _classifications = [];
+    private readonly int _cachedHashCode;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataClassificationSet"/> class.
@@ -23,6 +24,7 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
     public DataClassificationSet(DataClassification classification)
     {
         _ = _classifications.Add(classification);
+        _cachedHashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -33,6 +35,7 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
     {
         _ = Throw.IfNull(classifications);
         _classifications.UnionWith(classifications);
+        _cachedHashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -43,6 +46,7 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
     {
         _ = Throw.IfNull(classifications);
         _classifications.UnionWith(classifications);
+        _cachedHashCode = ComputeHashCode();
     }
 
     /// <summary>
@@ -73,26 +77,17 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
     {
         _ = Throw.IfNull(other);
 
-        var result = new DataClassificationSet(other._classifications);
-        result._classifications.UnionWith(_classifications);
+        var combinedClassifications = new HashSet<DataClassification>(_classifications);
+        combinedClassifications.UnionWith(other._classifications);
 
-        return result;
+        return new DataClassificationSet(combinedClassifications);
     }
 
     /// <summary>
     /// Gets a hash code for the current object instance.
     /// </summary>
     /// <returns>The hash code value.</returns>
-    public override int GetHashCode()
-    {
-        int hash = 0;
-        foreach (var item in _classifications)
-        {
-            hash ^= item.GetHashCode();
-        }
-
-        return hash;
-    }
+    public override int GetHashCode() => _cachedHashCode;
 
     /// <summary>
     /// Compares an object with the current instance to see if they contain the same classifications.
@@ -139,5 +134,29 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
         PoolFactory.SharedStringBuilderPool.Return(sb);
 
         return result;
+    }
+
+    /// <summary>
+    /// Computes the hash code for the current object instance.
+    /// </summary>
+    /// <returns>The computed hash code.</returns>
+    private int ComputeHashCode()
+    {
+#if NETFRAMEWORK
+        int hash = 0;
+        foreach (var item in _classifications)
+        {
+            hash ^= item.GetHashCode();
+        }
+        return hash;
+#else
+        var hash = default(HashCode);
+        foreach (var item in _classifications)
+        {
+            hash.Add(item);
+        }
+
+        return hash.ToHashCode();
+#endif
     }
 }
