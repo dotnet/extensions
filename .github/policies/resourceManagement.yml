@@ -192,11 +192,8 @@ configuration:
       description: Remove closed issues from milestones
     - if:
       - payloadType: Pull_Request
-      - or:
-        - isAction:
-            action: Null
-        - isAction:
-            action: Closed
+      - isAction:
+          action: Closed
       then:
       - removeLabel:
           label: 'work in progress :construction:'
@@ -217,4 +214,4 @@ configuration:
           label: 'waiting-author-feedback :mailbox_with_no_mail:'
       description: Remove intermediate labels from closed issue
 onFailure: 
-onSuccess: 
+onSuccess:
