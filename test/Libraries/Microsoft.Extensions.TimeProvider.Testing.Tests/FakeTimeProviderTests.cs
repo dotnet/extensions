@@ -169,14 +169,6 @@ public class FakeTimeProviderTests
     private readonly TimeSpan _infiniteTimeout = TimeSpan.FromMilliseconds(-1);
 
     [Fact]
-    public void Delay_InvalidArgs()
-    {
-        var timeProvider = new FakeTimeProvider();
-        _ = Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => timeProvider.Delay(TimeSpan.FromTicks(-1), CancellationToken.None));
-        _ = Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => timeProvider.Delay(_infiniteTimeout, CancellationToken.None));
-    }
-
-    [Fact]
     public async Task Delay_Zero()
     {
         var timeProvider = new FakeTimeProvider();

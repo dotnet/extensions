@@ -1,0 +1,101 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#if !NETFRAMEWORK
+
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Grpc.Core;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http.Resilience.Test.Grpc;
+using Polly;
+using Xunit;
+
+namespace Microsoft.Extensions.Http.Resilience.Test.Resilience;
+
+public class GrpcResilienceTests
+{
+    private IWebHost _host;
+    private HttpMessageHandler _handler;
+
+    public GrpcResilienceTests()
+    {
+        _host = WebHost
+            .CreateDefaultBuilder()
+            .ConfigureServices(services => services.AddGrpc())
+            .Configure(builder =>
+            {
+                builder.UseRouting();
+                builder.UseEndpoints(endpoints => endpoints.MapGrpcService<GreeterService>());
+            })
+            .UseTestServer()
+            .Start();
+
+        _handler = _host.GetTestServer().CreateHandler();
+    }
+
+    [Fact]
+    public async Task SayHello_NoResilience_OK()
+    {
+        var response = await CreateClient().SayHelloAsync(new HelloRequest { Name = "dummy" });
+
+        response.Message.Should().Be("HI!");
+    }
+
+    [Fact]
+    public async Task SayHello_StandardResilience_OK()
+    {
+        var response = await CreateClient(builder => builder.AddStandardResilienceHandler()).SayHelloAsync(new HelloRequest { Name = "dummy" });
+
+        response.Message.Should().Be("HI!");
+    }
+
+    [Fact]
+    public async Task SayHello_StandardHedging_OK()
+    {
+        var response = await CreateClient(builder => builder.AddStandardHedgingHandler()).SayHelloAsync(new HelloRequest { Name = "dummy" });
+
+        response.Message.Should().Be("HI!");
+    }
+
+    [Fact]
+    public async Task SayHello_CustomResilience_OK()
+    {
+        var client = CreateClient(builder => builder.AddResilienceHandler("custom", builder => builder.AddTimeout(TimeSpan.FromSeconds(1))));
+
+        var response = await client.SayHelloAsync(new HelloRequest { Name = "dummy" });
+
+        response.Message.Should().Be("HI!");
+    }
+
+    private Greeter.GreeterClient CreateClient(Action<IHttpClientBuilder>? configure = null)
+    {
+        var services = new ServiceCollection();
+        var clientBuilder = services
+            .AddGrpcClient<Greeter.GreeterClient>(options =>
+            {
+                options.Address = _host.GetTestServer().BaseAddress;
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => _handler);
+
+        configure?.Invoke(clientBuilder);
+
+        return services.BuildServiceProvider().GetRequiredService<Greeter.GreeterClient>();
+
+    }
+
+    public class GreeterService : Greeter.GreeterBase
+    {
+        public override Task<HelloReply> SayHello(HelloRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(new HelloReply { Message = "HI!" });
+        }
+    }
+}
+#endif

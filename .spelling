@@ -143,6 +143,7 @@ getters
 github
 Golang-ci
 gRPC
+Grpc
 GuestUser
 hoc
 hotfix
@@ -355,7 +356,7 @@ versioned
 versioning
 Versioning
 Virtualization
-virtualization 
+virtualization
 VM
 WebAuth
 WebHost
