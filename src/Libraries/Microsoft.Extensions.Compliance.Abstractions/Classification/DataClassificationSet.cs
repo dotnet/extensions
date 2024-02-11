@@ -148,6 +148,7 @@ public sealed class DataClassificationSet : IEquatable<DataClassificationSet>
         {
             hash ^= item.GetHashCode();
         }
+
         return hash;
 #else
         var hash = default(HashCode);
