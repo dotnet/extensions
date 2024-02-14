@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup Condition="'$(ComplianceReportOutputPath)' == ''">
-    <ComplianceReportOutputPath>$(OutputPath)</ComplianceReportOutputPath>
+    <ComplianceReportOutputPath>$([System.IO.Path]::GetFullPath('$(OutputPath)'))</ComplianceReportOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MetricsReportOutputPath)' == ''">
-    <MetricsReportOutputPath>$(OutputPath)</MetricsReportOutputPath>
+    <MetricsReportOutputPath>$([System.IO.Path]::GetFullPath('$(OutputPath)'))</MetricsReportOutputPath>
   </PropertyGroup>
 </Project>
