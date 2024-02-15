@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,6 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Gen.Metrics.Model;
 using Microsoft.Gen.Shared;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Gen.MetricsReports;
 
@@ -52,13 +54,23 @@ public class MetricsReportsGenerator : ISourceGenerator
 
         var options = context.AnalyzerConfigOptions.GlobalOptions;
 
-        var path = (_reportOutputPath != null || options.TryGetValue(ReportOutputPath, out _reportOutputPath))
+        var path = TryRetrieveOptionsValue(options, ReportOutputPath, ref _reportOutputPath)
             ? _reportOutputPath
             : GetDefaultReportOutputPath(options);
 
         if (string.IsNullOrWhiteSpace(path))
         {
-            // Report diagnostic. Tell that it is either <MetricDefinitionReportOutputPath> missing or <CompilerVisibleProperty Include="OutputPath"/> visibility to compiler.
+            // Report diagnostic:
+            var diagnostic = new DiagnosticDescriptor(
+                DiagnosticIds.AuditReports.AUDREP000,
+                "Metrics report won't be generated.",
+                "Either <MetricDefinitionReportOutputPath> missing or it's not set. The report won't be generated.",
+                "MetricsReports",
+                DiagnosticSeverity.Info,
+                isEnabledByDefault: true);
+
+            context.ReportDiagnostic(Diagnostic.Create(diagnostic, location: null));
+
             return;
         }
 
@@ -90,18 +102,28 @@ public class MetricsReportsGenerator : ISourceGenerator
         return reportedMetrics.ToArray();
     }
 
+    private static bool TryRetrieveOptionsValue(AnalyzerConfigOptions options, string name, ref string? value)
+        => (value != null || options.TryGetValue(name, out value))
+            && !string.IsNullOrWhiteSpace(value);
+
     private string GetDefaultReportOutputPath(AnalyzerConfigOptions options)
     {
         if (_currentProjectPath != null && _compilationOutputPath != null)
         {
-            return _currentProjectPath + _compilationOutputPath;
+            return Path.Combine(_currentProjectPath, _compilationOutputPath);
         }
 
-        _ = options.TryGetValue(CompilationOutputPath, out _compilationOutputPath);
-        _ = options.TryGetValue(CurrentProjectPath, out _currentProjectPath);
+        var gotOutput = TryRetrieveOptionsValue(options, CompilationOutputPath, ref _compilationOutputPath);
+        if (gotOutput &&
+            !string.IsNullOrWhiteSpace(_compilationOutputPath) &&
+            Path.IsPathRooted(_compilationOutputPath))
+        {
+            return _compilationOutputPath!;
+        }
 
+        var gotProjectDir = TryRetrieveOptionsValue(options, CurrentProjectPath, ref _currentProjectPath);
         return string.IsNullOrWhiteSpace(_currentProjectPath) || string.IsNullOrWhiteSpace(_compilationOutputPath)
             ? string.Empty
-            : _currentProjectPath + _compilationOutputPath;
+            : Path.Combine(_currentProjectPath, _compilationOutputPath);
     }
 }

@@ -111,6 +111,12 @@ internal static class DiagnosticIds
         internal const string METGEN018 = nameof(METGEN018);
         internal const string METGEN019 = nameof(METGEN019);
     }
+
+    internal static class AuditReports
+    {
+        internal const string AUDREP000 = nameof(AUDREP000);
+        internal const string AUDREP001 = nameof(AUDREP001);
+    }
 }
 
 #pragma warning restore S1144
