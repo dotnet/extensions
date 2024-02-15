@@ -77,7 +77,7 @@ public static class StaticTimeTests
         var d = await RoslynTestUtils.RunAnalyzer(
             new CallAnalyzer(),
             _staticTimeReferences,
-            new[] { Source }).ConfigureAwait(false);
+            new[] { Source });
 
         Assert.Equal(17, d.Count);
         for (int i = 0; i < d.Count; i++)
