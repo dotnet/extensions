@@ -17,15 +17,8 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Gen.MetricsReports.Test;
 
-public class GeneratorTests
+public class GeneratorTests(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper _output;
-
-    public GeneratorTests(ITestOutputHelper output)
-    {
-        _output = output;
-    }
-
     [Fact]
     public void GeneratorShouldNotDoAnythingIfGeneralExecutionContextDoesNotHaveClassDeclarationSyntaxReceiver()
     {
@@ -35,79 +28,75 @@ public class GeneratorTests
         Assert.Null(defaultGeneralExecutionContext.SyntaxReceiver);
     }
 
-    [Fact]
-    public async Task TestAll()
+    [Theory]
+    [CombinatorialData]
+    public async Task TestAll(bool useExplicitReportPath)
     {
         foreach (var inputFile in Directory.GetFiles("TestClasses"))
         {
             var stem = Path.GetFileNameWithoutExtension(inputFile);
-            var goldenReportFile = $"GoldenReports/{stem}.json";
+            var goldenReportPath = Path.Combine("GoldenReports", Path.ChangeExtension(stem, ".json"));
 
-            var tmp = Path.Combine(Directory.GetCurrentDirectory(), "MetricsReport.json");
+            var generatedReportPath = Path.Combine(Directory.GetCurrentDirectory(), "MetricsReport.json");
 
-            if (File.Exists(goldenReportFile))
+            if (File.Exists(goldenReportPath))
             {
-                var d = await RunGenerator(File.ReadAllText(inputFile));
+                var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), useExplicitReportPath);
                 Assert.Empty(d);
 
-                var golden = File.ReadAllText(goldenReportFile);
-                var generated = File.ReadAllText(tmp);
+                var golden = await File.ReadAllTextAsync(goldenReportPath);
+                var generated = await File.ReadAllTextAsync(generatedReportPath);
 
                 if (golden != generated)
                 {
-                    _output.WriteLine($"MISMATCH: goldenReportFile {goldenReportFile}, tmp {tmp}");
-                    _output.WriteLine("----");
-                    _output.WriteLine("golden:");
-                    _output.WriteLine(golden);
-                    _output.WriteLine("----");
-                    _output.WriteLine("generated:");
-                    _output.WriteLine(generated);
-                    _output.WriteLine("----");
+                    output.WriteLine($"MISMATCH: goldenReportFile {goldenReportPath}, tmp {generatedReportPath}");
+                    output.WriteLine("----");
+                    output.WriteLine("golden:");
+                    output.WriteLine(golden);
+                    output.WriteLine("----");
+                    output.WriteLine("generated:");
+                    output.WriteLine(generated);
+                    output.WriteLine("----");
                 }
 
+                File.Delete(generatedReportPath);
                 Assert.Equal(golden, generated);
-                File.Delete(tmp);
             }
             else
             {
                 // generate the golden file if it doesn't already exist
-                _output.WriteLine($"Generating golden report: {goldenReportFile}");
-                _ = await RunGenerator(File.ReadAllText(inputFile));
-                File.Copy(tmp, goldenReportFile);
+                output.WriteLine($"Generating golden report: {goldenReportPath}");
+                _ = await RunGenerator(await File.ReadAllTextAsync(inputFile), useExplicitReportPath);
+                File.Copy(generatedReportPath, goldenReportPath);
             }
         }
     }
 
     private static async Task<IReadOnlyList<Diagnostic>> RunGenerator(
         string code,
-        bool includeBaseReferences = true,
-        bool includeMeterReferences = true,
+        bool setReportPath,
         CancellationToken cancellationToken = default)
     {
-        Assembly[]? refs = null;
-        if (includeMeterReferences)
-        {
-            refs = new[]
-            {
-                Assembly.GetAssembly(typeof(Meter))!,
-                Assembly.GetAssembly(typeof(CounterAttribute))!,
-                Assembly.GetAssembly(typeof(HistogramAttribute))!,
-                Assembly.GetAssembly(typeof(GaugeAttribute))!,
-            };
-        }
+        Assembly[] refs =
+        [
+            Assembly.GetAssembly(typeof(Meter))!,
+            Assembly.GetAssembly(typeof(CounterAttribute))!,
+            Assembly.GetAssembly(typeof(HistogramAttribute))!,
+            Assembly.GetAssembly(typeof(GaugeAttribute))!
+       ];
 
         var (d, _) = await RoslynTestUtils.RunGenerator(
             new MetricsReportsGenerator(),
             refs,
             new[] { code },
-            new OptionsProvider(),
-            includeBaseReferences: includeBaseReferences,
+            new OptionsProvider(returnReportPath: setReportPath),
+            includeBaseReferences: true,
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return d;
     }
 
-    private sealed class Options : AnalyzerConfigOptions
+    private sealed class Options(bool returnReportPath) : AnalyzerConfigOptions
     {
         public override bool TryGetValue(string key, out string value)
         {
@@ -117,7 +106,13 @@ public class GeneratorTests
                 return true;
             }
 
-            if (key == "build_property.MetricsReportOutputPath")
+            if (returnReportPath && key == "build_property.MetricsReportOutputPath")
+            {
+                value = Directory.GetCurrentDirectory();
+                return true;
+            }
+
+            if (key == "build_property.outputpath")
             {
                 value = Directory.GetCurrentDirectory();
                 return true;
@@ -128,9 +123,9 @@ public class GeneratorTests
         }
     }
 
-    private sealed class OptionsProvider : AnalyzerConfigOptionsProvider
+    private sealed class OptionsProvider(bool returnReportPath) : AnalyzerConfigOptionsProvider
     {
-        public override AnalyzerConfigOptions GlobalOptions => new Options();
+        public override AnalyzerConfigOptions GlobalOptions => new Options(returnReportPath);
 
         public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => throw new NotSupportedException();
         public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => throw new NotSupportedException();

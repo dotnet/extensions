@@ -95,7 +95,7 @@ public class GeneratorTests
                     {
                         Assembly.GetAssembly(typeof(ILogger))!,
                         Assembly.GetAssembly(typeof(LoggerMessageAttribute))!,
-                        Assembly.GetAssembly(typeof(Microsoft.Extensions.Compliance.Classification.DataClassification))!,
+                        Assembly.GetAssembly(typeof(Extensions.Compliance.Classification.DataClassification))!,
                     },
                     new[]
                     {
@@ -120,9 +120,10 @@ public class GeneratorTests
                 {
                     Source,
                 },
-                new OptionsProvider()).ConfigureAwait(false);
+                new OptionsProvider())
+            .ConfigureAwait(false);
 
-        Assert.Equal(0, d.Count);
+        Assert.Empty(d);
     }
 
     private sealed class Options : AnalyzerConfigOptions

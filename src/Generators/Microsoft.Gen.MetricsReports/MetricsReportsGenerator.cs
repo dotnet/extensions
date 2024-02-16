@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,10 +23,6 @@ public class MetricsReportsGenerator : ISourceGenerator
     private const string CurrentProjectPath = "build_property.projectdir";
     private const string FileName = "MetricsReport.json";
 
-    private string? _compilationOutputPath;
-    private string? _currentProjectPath;
-    private string? _reportOutputPath;
-
     public void Initialize(GeneratorInitializationContext context)
     {
         context.RegisterForSyntaxNotifications(ClassDeclarationSyntaxReceiver.Create);
@@ -37,8 +32,9 @@ public class MetricsReportsGenerator : ISourceGenerator
     {
         context.CancellationToken.ThrowIfCancellationRequested();
 
-        var receiver = context.SyntaxReceiver as ClassDeclarationSyntaxReceiver;
-        if (receiver == null || receiver.ClassDeclarations.Count == 0 || !GeneratorUtilities.ShouldGenerateReport(context, GenerateMetricDefinitionReport))
+        if (context.SyntaxReceiver is not ClassDeclarationSyntaxReceiver receiver ||
+            receiver.ClassDeclarations.Count == 0 ||
+            !GeneratorUtilities.ShouldGenerateReport(context, GenerateMetricDefinitionReport))
         {
             return;
         }
@@ -54,8 +50,8 @@ public class MetricsReportsGenerator : ISourceGenerator
 
         var options = context.AnalyzerConfigOptions.GlobalOptions;
 
-        var path = TryRetrieveOptionsValue(options, ReportOutputPath, ref _reportOutputPath)
-            ? _reportOutputPath
+        var path = TryRetrieveOptionsValue(options, ReportOutputPath, out var reportOutputPath)
+            ? reportOutputPath!
             : GetDefaultReportOutputPath(options);
 
         if (string.IsNullOrWhiteSpace(path))
@@ -64,7 +60,7 @@ public class MetricsReportsGenerator : ISourceGenerator
             var diagnostic = new DiagnosticDescriptor(
                 DiagnosticIds.AuditReports.AUDREP000,
                 "Metrics report won't be generated.",
-                "Either <MetricDefinitionReportOutputPath> missing or it's not set. The report won't be generated.",
+                "Both <MetricsReportOutputPath> and <OutputPath> are missing or not set. The report won't be generated.",
                 "MetricsReports",
                 DiagnosticSeverity.Info,
                 isEnabledByDefault: true);
@@ -102,28 +98,25 @@ public class MetricsReportsGenerator : ISourceGenerator
         return reportedMetrics.ToArray();
     }
 
-    private static bool TryRetrieveOptionsValue(AnalyzerConfigOptions options, string name, ref string? value)
-        => (value != null || options.TryGetValue(name, out value))
-            && !string.IsNullOrWhiteSpace(value);
+    private static bool TryRetrieveOptionsValue(AnalyzerConfigOptions options, string name, out string? value)
+        => options.TryGetValue(name, out value) && !string.IsNullOrWhiteSpace(value);
 
-    private string GetDefaultReportOutputPath(AnalyzerConfigOptions options)
+    private static string GetDefaultReportOutputPath(AnalyzerConfigOptions options)
     {
-        if (_currentProjectPath != null && _compilationOutputPath != null)
+        if (!TryRetrieveOptionsValue(options, CompilationOutputPath, out var compilationOutputPath))
         {
-            return Path.Combine(_currentProjectPath, _compilationOutputPath);
+            return string.Empty;
         }
 
-        var gotOutput = TryRetrieveOptionsValue(options, CompilationOutputPath, ref _compilationOutputPath);
-        if (gotOutput &&
-            !string.IsNullOrWhiteSpace(_compilationOutputPath) &&
-            Path.IsPathRooted(_compilationOutputPath))
+        // <OutputPath> is absolute - return it right away:
+        if (Path.IsPathRooted(compilationOutputPath))
         {
-            return _compilationOutputPath!;
+            return compilationOutputPath!;
         }
 
-        var gotProjectDir = TryRetrieveOptionsValue(options, CurrentProjectPath, ref _currentProjectPath);
-        return string.IsNullOrWhiteSpace(_currentProjectPath) || string.IsNullOrWhiteSpace(_compilationOutputPath)
-            ? string.Empty
-            : Path.Combine(_currentProjectPath, _compilationOutputPath);
+        // Get <ProjectDir> and combine it with <OutputPath> if the former isn't empty:
+        return TryRetrieveOptionsValue(options, CurrentProjectPath, out var currentProjectPath)
+            ? Path.Combine(currentProjectPath!, compilationOutputPath!)
+            : string.Empty;
     }
 }
