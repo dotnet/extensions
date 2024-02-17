@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -97,7 +98,7 @@ public static class HttpClientLoggingServiceCollectionExtensions
     /// <typeparam name="T">Type of enricher.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the instance of <typeparamref name="T"/> to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection AddHttpClientLogEnricher<T>(this IServiceCollection services)
+    public static IServiceCollection AddHttpClientLogEnricher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IServiceCollection services)
         where T : class, IHttpClientLogEnricher
         => Throw.IfNull(services).AddActivatedSingleton<IHttpClientLogEnricher, T>();
 }

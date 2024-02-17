@@ -38,7 +38,7 @@ internal static class Memoize
     /// Func is freed. If you're computing values for large numbers of inputs, bear this in mind: if
     /// the Func lives for a long time, memory usage can increase without bound.
     /// </remarks>
-    public static Func<TParameter, TResult> Function<TParameter, TResult>(Func<TParameter, TResult> f)
+    public static Func<TParameter, TResult> Function<TParameter, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TResult>(Func<TParameter, TResult> f)
         => new MemoizedFunction<TParameter, TResult>(f).Function;
 
     /// <summary>
@@ -54,7 +54,8 @@ internal static class Memoize
     /// Func is freed. If you're computing values for large numbers of inputs, bear this in mind: if
     /// the Func lives for a long time, memory usage can increase without bound.
     /// </remarks>
-    public static Func<TParameter1, TParameter2, TResult> Function<TParameter1, TParameter2, TResult>(Func<TParameter1, TParameter2, TResult> f)
+    public static Func<TParameter1, TParameter2, TResult> Function<TParameter1, TParameter2, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TResult>(
+        Func<TParameter1, TParameter2, TResult> f)
         => new MemoizedFunction<TParameter1, TParameter2, TResult>(f).Function;
 
     /// <summary>
@@ -75,6 +76,8 @@ internal static class Memoize
         "Major Code Smell",
         "S2436:Types and methods should not have too many generic parameters",
         Justification = "We're using many generic types for the same reason Func<>, Func<,>, Func<,,>, ... exist.")]
-    public static Func<TParameter1, TParameter2, TParameter3, TResult> Function<TParameter1, TParameter2, TParameter3, TResult>(Func<TParameter1, TParameter2, TParameter3, TResult> f)
+    public static Func<TParameter1, TParameter2, TParameter3, TResult>
+        Function<TParameter1, TParameter2, TParameter3, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TResult>(
+            Func<TParameter1, TParameter2, TParameter3, TResult> f)
         => new MemoizedFunction<TParameter1, TParameter2, TParameter3, TResult>(f).Function;
 }

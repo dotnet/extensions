@@ -28,7 +28,7 @@ namespace Microsoft.Shared.Memoization;
 #endif
 
 [DebuggerDisplay("{_values.Count} memoized values")]
-internal sealed class MemoizedFunction<TParameter, TResult>
+internal sealed class MemoizedFunction<TParameter, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TResult>
 {
     private const int Concurrency = 10;
     private const int Capacity = 100;
@@ -99,7 +99,7 @@ internal sealed class MemoizedFunction<TParameter, TResult>
         "S2436:Types and methods should not have too many generic parameters",
         Justification = "We're using many generic types for the same reason Func<>, Func<,>, Func<,,>, ... exist.")]
 [DebuggerDisplay("{_values.Count} memoized values")]
-internal sealed class MemoizedFunction<TParameter1, TParameter2, TResult>
+internal sealed class MemoizedFunction<TParameter1, TParameter2, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TResult>
 {
     private const int Concurrency = 10;
     private const int Capacity = 100;
@@ -173,7 +173,7 @@ internal sealed class MemoizedFunction<TParameter1, TParameter2, TResult>
     "S2436:Types and methods should not have too many generic parameters",
     Justification = "We're using many generic types for the same reason Func<>, Func<,>, Func<,,>, ... exist.")]
 [DebuggerDisplay("{_values.Count} memoized values")]
-internal sealed class MemoizedFunction<TParameter1, TParameter2, TParameter3, TResult>
+internal sealed class MemoizedFunction<TParameter1, TParameter2, TParameter3, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TResult>
 {
     private const int Concurrency = 10;
     private const int Capacity = 100;
