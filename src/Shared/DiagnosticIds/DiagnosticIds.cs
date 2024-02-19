@@ -114,8 +114,8 @@ internal static class DiagnosticIds
 
     internal static class AuditReports
     {
-        internal const string AUDREP000 = nameof(AUDREP000);
-        internal const string AUDREP001 = nameof(AUDREP001);
+        internal const string AUDREPGEN000 = nameof(AUDREPGEN000);
+        internal const string AUDREPGEN001 = nameof(AUDREPGEN001);
     }
 }
 

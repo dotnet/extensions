@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.IO;
 using Microsoft.CodeAnalysis;
 using Microsoft.Gen.Shared;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Gen.ComplianceReports;
 
@@ -55,7 +57,7 @@ public sealed class ComplianceReportsGenerator : ISourceGenerator
 
         if (!GeneratorUtilities.ShouldGenerateReport(context, GenerateComplianceReportsMSBuildProperty))
         {
-            // By default, compliance reports are only generated only during build time and not during design time to prevent the file being written on every keystroke in VS.
+            // By default, compliance reports are generated only during build time and not during design time to prevent the file being written on every keystroke in VS.
             return;
         }
 
@@ -80,10 +82,20 @@ public sealed class ComplianceReportsGenerator : ISourceGenerator
 
         if (_directory == null)
         {
-            _ = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(ComplianceReportOutputPathMSBuildProperty, out _directory);
-            if (string.IsNullOrWhiteSpace(_directory))
+            if (!context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(ComplianceReportOutputPathMSBuildProperty, out _directory) ||
+                string.IsNullOrWhiteSpace(_directory))
             {
-                // no valid output path
+                // Report diagnostic:
+                var diagnostic = new DiagnosticDescriptor(
+                    DiagnosticIds.AuditReports.AUDREPGEN001,
+                    "ComplianceReports generator couldn't resolve output path for the report. It won't be generated.",
+                    "MSBuild property <ComplianceReportOutputPath> is missing or not set. The report won't be generated.",
+                    nameof(DiagnosticIds.AuditReports),
+                    DiagnosticSeverity.Info,
+                    isEnabledByDefault: true,
+                    helpLinkUri: string.Format(CultureInfo.InvariantCulture, DiagnosticIds.UrlFormat, DiagnosticIds.AuditReports.AUDREPGEN001));
+
+                context.ReportDiagnostic(Diagnostic.Create(diagnostic, location: null));
                 return;
             }
         }

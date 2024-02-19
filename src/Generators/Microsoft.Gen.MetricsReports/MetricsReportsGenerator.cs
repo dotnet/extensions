@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -58,12 +59,13 @@ public class MetricsReportsGenerator : ISourceGenerator
         {
             // Report diagnostic:
             var diagnostic = new DiagnosticDescriptor(
-                DiagnosticIds.AuditReports.AUDREP000,
-                "Metrics report won't be generated.",
-                "Both <MetricsReportOutputPath> and <OutputPath> are missing or not set. The report won't be generated.",
-                "MetricsReports",
+                DiagnosticIds.AuditReports.AUDREPGEN000,
+                "MetricsReports generator couldn't resolve output path for the report. It won't be generated.",
+                "Both <MetricsReportOutputPath> and <OutputPath> MSBuild properties are not set. The report won't be generated.",
+                nameof(DiagnosticIds.AuditReports),
                 DiagnosticSeverity.Info,
-                isEnabledByDefault: true);
+                isEnabledByDefault: true,
+                helpLinkUri: string.Format(CultureInfo.InvariantCulture, DiagnosticIds.UrlFormat, DiagnosticIds.AuditReports.AUDREPGEN000));
 
             context.ReportDiagnostic(Diagnostic.Create(diagnostic, location: null));
 
@@ -108,7 +110,7 @@ public class MetricsReportsGenerator : ISourceGenerator
             return string.Empty;
         }
 
-        // <OutputPath> is absolute - return it right away:
+        // If <OutputPath> is absolute - return it right away:
         if (Path.IsPathRooted(compilationOutputPath))
         {
             return compilationOutputPath!;

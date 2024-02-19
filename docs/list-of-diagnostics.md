@@ -41,7 +41,6 @@ if desired.
 | `EXTEXP0016` | Hosting integration testing experiments |
 | `EXTEXP0017` | Contextual options experiments |
 
-
 # LoggerMessage
 
 | Diagnostic ID     | Description |
@@ -108,3 +107,10 @@ if desired.
 | `METGEN017` | Gauge is not supported yet |
 | `METGEN018` | Xml comment was not parsed correctly |
 | `METGEN019` | A metric class has cycles in its type hierarchy |
+
+## AuditReports
+
+| Diagnostic ID     | Description |
+| :---------------- | :---------- |
+| `AUDREPGEN000` | MetricsReports generator couldn't resolve output path for the report |
+| `AUDREPGEN001` | ComplianceReports generator couldn't resolve output path for the report |
