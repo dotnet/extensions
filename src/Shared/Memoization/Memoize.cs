@@ -9,7 +9,7 @@ namespace Microsoft.Shared.Memoization;
 #pragma warning restore CA1716
 
 /// <summary>
-/// Given a function of arity N (1 &lt;= N &lt;= 3), return a function that behaves identically, except that
+/// Given a function of arity N (1 &lt;= N &lt;= 2), return a function that behaves identically, except that
 /// repeated invocations with the same parameters return a cached value rather than redoing the computation.
 /// </summary>
 /// <remarks>
@@ -57,27 +57,4 @@ internal static class Memoize
     public static Func<TParameter1, TParameter2, TResult> Function<TParameter1, TParameter2, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TResult>(
         Func<TParameter1, TParameter2, TResult> f)
         => new MemoizedFunction<TParameter1, TParameter2, TResult>(f).Function;
-
-    /// <summary>
-    /// Returns a function that remembers the results of previous invocations of the given function.
-    /// </summary>
-    /// <typeparam name="TParameter1">The type of the function's first parameter.</typeparam>
-    /// <typeparam name="TParameter2">The type of the function's second parameter.</typeparam>
-    /// <typeparam name="TParameter3">The type of the function's third parameter.</typeparam>
-    /// <typeparam name="TResult">The function output type.</typeparam>
-    /// <param name="f">The function that needs to be memoized.</param>
-    /// <returns>A function that appears identical to the original function, but duplicate invocations are nearly instant.</returns>
-    /// <remarks>
-    /// Computed values consume memory. Garbage collection will free up that memory when the returned
-    /// Func is freed. If you're computing values for large numbers of inputs, bear this in mind: if
-    /// the Func lives for a long time, memory usage can increase without bound.
-    /// </remarks>
-    [SuppressMessage(
-        "Major Code Smell",
-        "S2436:Types and methods should not have too many generic parameters",
-        Justification = "We're using many generic types for the same reason Func<>, Func<,>, Func<,,>, ... exist.")]
-    public static Func<TParameter1, TParameter2, TParameter3, TResult>
-        Function<TParameter1, TParameter2, TParameter3, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TResult>(
-            Func<TParameter1, TParameter2, TParameter3, TResult> f)
-        => new MemoizedFunction<TParameter1, TParameter2, TParameter3, TResult>(f).Function;
 }
