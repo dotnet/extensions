@@ -22,7 +22,7 @@
     <NoWarn>$(NoWarn);TBD</NoWarn>
 
     <!-- TODO: to be re-enabled and all warnings fixed (https://github.com/dotnet/extensions/issues/4002) -->
-    <NoWarn>$(NoWarn);IL2026;IL2087;IL2067;IL2075;IL2091;IL2072;IL2090;CA1825;IL2070;IL2098;IL2057</NoWarn>
+    <NoWarn>$(NoWarn);IL2026;IL2087;IL2067;CA1825</NoWarn>
 
     <!-- Prevent analyzer crashes from stopping things -->
     <NoWarn>$(NoWarn);AD0001</NoWarn>

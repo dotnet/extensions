@@ -114,7 +114,7 @@ public static partial class AutoActivationExtensions
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
     /// <returns>The value of <paramref name="services" />.</returns>
-    public static IServiceCollection AddActivatedSingleton<TService, TImplementation>(this IServiceCollection services)
+    public static IServiceCollection AddActivatedSingleton<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(this IServiceCollection services)
         where TService : class
         where TImplementation : class, TService
     {
@@ -149,7 +149,7 @@ public static partial class AutoActivationExtensions
     /// <param name="services">The service collection to add the service to.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     /// <returns>The value of <paramref name="services" />.</returns>
-    public static IServiceCollection AddActivatedSingleton<TService>(this IServiceCollection services)
+    public static IServiceCollection AddActivatedSingleton<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(this IServiceCollection services)
         where TService : class
     {
         _ = Throw.IfNull(services);
@@ -260,7 +260,7 @@ public static partial class AutoActivationExtensions
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
-    public static void TryAddActivatedSingleton<TService>(this IServiceCollection services)
+    public static void TryAddActivatedSingleton<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(this IServiceCollection services)
         where TService : class
     {
         _ = Throw.IfNull(services);
@@ -274,7 +274,7 @@ public static partial class AutoActivationExtensions
     /// <param name="services">The service collection to add the service to.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
-    public static void TryAddActivatedSingleton<TService, TImplementation>(this IServiceCollection services)
+    public static void TryAddActivatedSingleton<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(this IServiceCollection services)
         where TService : class
         where TImplementation : class, TService
     {
