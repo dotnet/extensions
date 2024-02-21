@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -29,7 +30,7 @@ internal sealed class RedactionBuilder : IRedactionBuilder
         Services.TryAddEnumerable(ServiceDescriptor.Singleton<Redactor>(NullRedactor.Instance));
     }
 
-    public IRedactionBuilder SetRedactor<T>(params DataClassificationSet[] classifications)
+    public IRedactionBuilder SetRedactor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(params DataClassificationSet[] classifications)
         where T : Redactor
     {
         _ = Throw.IfNull(classifications);
@@ -44,7 +45,7 @@ internal sealed class RedactionBuilder : IRedactionBuilder
         return this;
     }
 
-    public IRedactionBuilder SetFallbackRedactor<T>()
+    public IRedactionBuilder SetFallbackRedactor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
         where T : Redactor
     {
         Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(Redactor), typeof(T)));

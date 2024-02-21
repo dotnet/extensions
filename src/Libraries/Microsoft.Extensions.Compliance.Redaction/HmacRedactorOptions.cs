@@ -39,6 +39,8 @@ public class HmacRedactorOptions
 #if NET8_0_OR_GREATER
     [System.ComponentModel.DataAnnotations.Base64String]
 #endif
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+        Justification = "Validating the Length attribute on a string does not require reflection, it is handled intrinsically.")]
     [Microsoft.Shared.Data.Validation.Length(44)]
     public string Key { get; set; } = string.Empty;
 }

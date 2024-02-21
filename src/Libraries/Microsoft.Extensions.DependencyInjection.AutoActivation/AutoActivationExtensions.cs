@@ -166,7 +166,9 @@ public static partial class AutoActivationExtensions
     /// <param name="services">The service collection to add the service to.</param>
     /// <param name="serviceType">The type of the service to register and the implementation to use.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    public static IServiceCollection AddActivatedSingleton(this IServiceCollection services, Type serviceType)
+    public static IServiceCollection AddActivatedSingleton(
+        this IServiceCollection services,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type serviceType)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(serviceType);
@@ -183,7 +185,10 @@ public static partial class AutoActivationExtensions
     /// <param name="serviceType">The type of the service to register.</param>
     /// <param name="implementationFactory">The factory that creates the service.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    public static IServiceCollection AddActivatedSingleton(this IServiceCollection services, Type serviceType, Func<IServiceProvider, object> implementationFactory)
+    public static IServiceCollection AddActivatedSingleton(
+        this IServiceCollection services,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type serviceType,
+        Func<IServiceProvider, object> implementationFactory)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(serviceType);
@@ -201,7 +206,10 @@ public static partial class AutoActivationExtensions
     /// <param name="serviceType">The type of the service to register.</param>
     /// <param name="implementationType">The implementation type of the service.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    public static IServiceCollection AddActivatedSingleton(this IServiceCollection services, Type serviceType, Type implementationType)
+    public static IServiceCollection AddActivatedSingleton(
+        this IServiceCollection services,
+        Type serviceType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(serviceType);
@@ -217,7 +225,9 @@ public static partial class AutoActivationExtensions
     /// </summary>
     /// <param name="services">The service collection to add the service to.</param>
     /// <param name="serviceType">The type of the service to register.</param>
-    public static void TryAddActivatedSingleton(this IServiceCollection services, Type serviceType)
+    public static void TryAddActivatedSingleton(
+        this IServiceCollection services,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type serviceType)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(serviceType);
@@ -231,7 +241,10 @@ public static partial class AutoActivationExtensions
     /// <param name="services">The service collection to add the service to.</param>
     /// <param name="serviceType">The type of the service to register.</param>
     /// <param name="implementationType">The implementation type of the service.</param>
-    public static void TryAddActivatedSingleton(this IServiceCollection services, Type serviceType, Type implementationType)
+    public static void TryAddActivatedSingleton(
+        this IServiceCollection services,
+        Type serviceType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(serviceType);
