@@ -18,12 +18,6 @@
     <!-- This is false for local development, but set to true in the CI system -->
     <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">false</TreatWarningsAsErrors>
 
-    <!-- See https://github.com/dotnet/extensions/issues/4395 -->
-    <NoWarn>$(NoWarn);TBD</NoWarn>
-
-    <!-- TODO: to be re-enabled and all warnings fixed (https://github.com/dotnet/extensions/issues/4002) -->
-    <NoWarn>$(NoWarn);IL2026;IL2087;IL2067;CA1825</NoWarn>
-
     <!-- Prevent analyzer crashes from stopping things -->
     <NoWarn>$(NoWarn);AD0001</NoWarn>
 
