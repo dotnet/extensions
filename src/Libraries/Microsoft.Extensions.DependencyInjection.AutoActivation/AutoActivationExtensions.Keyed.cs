@@ -178,7 +178,7 @@ public static partial class AutoActivationExtensions
     /// <returns>The value of <paramref name="services" />.</returns>
     public static IServiceCollection AddActivatedKeyedSingleton(
         this IServiceCollection services,
-        Type serviceType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type serviceType,
         object? serviceKey)
     {
         _ = Throw.IfNull(services);
@@ -224,7 +224,7 @@ public static partial class AutoActivationExtensions
         this IServiceCollection services,
         Type serviceType,
         object? serviceKey,
-        Type implementationType)
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(serviceType);
@@ -243,7 +243,7 @@ public static partial class AutoActivationExtensions
     /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     public static void TryAddActivatedKeyedSingleton(
         this IServiceCollection services,
-        Type serviceType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type serviceType,
         object? serviceKey)
     {
         _ = Throw.IfNull(services);
@@ -263,7 +263,7 @@ public static partial class AutoActivationExtensions
         this IServiceCollection services,
         Type serviceType,
         object? serviceKey,
-        Type implementationType)
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(serviceType);
