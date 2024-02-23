@@ -14,7 +14,7 @@ internal sealed class AsyncState : IAsyncState
 {
     private static readonly AsyncLocal<AsyncStateHolder> _asyncContextCurrent = new();
     private static readonly ObjectPool<List<object?>> _featuresPool = PoolFactory.CreatePool(new FeaturesPooledPolicy());
-    private int _contextCount;
+    private static int _contextCount;
 
     public void Initialize()
     {

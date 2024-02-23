@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.Extensions.AsyncState.Test;
@@ -228,5 +229,24 @@ public class AsyncStateTests
         var l = new List<object?>(new object?[5]);
         AsyncState.EnsureCount(l, 5);
         Assert.Equal(5, l.Count);
+    }
+
+    [Fact]
+    public async Task AsyncStateCanBeUsedInDifferentServiceProviders()
+    {
+        await using var spOne = PrepareAsyncState(new Tuple<double>(3.14));
+        await using var spTwo = PrepareAsyncState(new Tuple<int>(42));
+
+        _ = spOne.GetRequiredService<IAsyncContext<Tuple<double>>>().Get();
+        _ = spTwo.GetRequiredService<IAsyncContext<Tuple<double>>>().Get();
+
+        static ServiceProvider PrepareAsyncState<T>(T value)
+            where T : notnull
+        {
+            var services = new ServiceCollection().AddAsyncState().BuildServiceProvider();
+            services.GetRequiredService<IAsyncState>().Initialize();
+            services.GetRequiredService<IAsyncContext<T>>().Set(value);
+            return services;
+        }
     }
 }
