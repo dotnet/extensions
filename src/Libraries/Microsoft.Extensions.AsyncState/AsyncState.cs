@@ -104,7 +104,9 @@ internal sealed class AsyncState : IAsyncState
         }
     }
 
+#pragma warning disable CA1822
     internal int ContextCount => Volatile.Read(ref _contextCount);
+#pragma warning restore CA1822
 
     private sealed class AsyncStateHolder
     {
