@@ -196,15 +196,16 @@ public class AsyncStateTests
     public void RegisterContextCorrectly()
     {
         var asyncState = new AsyncState();
+        var initialContextCount = asyncState.ContextCount;
 
         var c1 = asyncState.RegisterAsyncContext();
-        Assert.Equal(0, c1.Index);
+        Assert.Equal(0, c1.Index - initialContextCount);
         var c2 = asyncState.RegisterAsyncContext();
-        Assert.Equal(1, c2.Index);
+        Assert.Equal(1, c2.Index - initialContextCount);
         var c3 = asyncState.RegisterAsyncContext();
-        Assert.Equal(2, c3.Index);
+        Assert.Equal(2, c3.Index - initialContextCount);
 
-        Assert.Equal(3, asyncState.ContextCount);
+        Assert.Equal(3, asyncState.ContextCount - initialContextCount);
     }
 
     [Fact]
