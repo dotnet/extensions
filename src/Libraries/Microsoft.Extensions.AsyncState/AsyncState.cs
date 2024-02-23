@@ -104,9 +104,9 @@ internal sealed class AsyncState : IAsyncState
         }
     }
 
-#pragma warning disable CA1822
+#pragma warning disable CA1822 // Member 'ContextCount' does not access instance data and can be marked as static.
     internal int ContextCount => Volatile.Read(ref _contextCount);
-#pragma warning restore CA1822
+#pragma warning restore CA1822 // Member 'ContextCount' does not access instance data and can be marked as static.
 
     private sealed class AsyncStateHolder
     {

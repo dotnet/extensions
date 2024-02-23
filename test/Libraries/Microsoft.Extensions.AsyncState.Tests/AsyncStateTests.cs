@@ -233,21 +233,26 @@ public class AsyncStateTests
     }
 
     [Fact]
-    public async Task AsyncStateCanBeUsedInDifferentServiceProviders()
+    public void AsyncStateCanBeUsedInDifferentServiceProviders()
     {
-        await using var spOne = PrepareAsyncState(new Tuple<double>(3.14));
-        await using var spTwo = PrepareAsyncState(new Tuple<int>(42));
+        var expectedValue1 = new Tuple<double>(3.14);
+        var expectedValue2 = new Tuple<int>(42);
+        var spOne = CreateAsyncState<Tuple<double>>();
+        var spTwo = CreateAsyncState<Tuple<int>>();
+        spOne.Set(expectedValue1);
+        spTwo.Set(expectedValue2);
+        var value1 = spOne.Get();
+        var value2 = spTwo.Get();
 
-        _ = spOne.GetRequiredService<IAsyncContext<Tuple<double>>>().Get();
-        _ = spTwo.GetRequiredService<IAsyncContext<Tuple<double>>>().Get();
+        Assert.Equal(expectedValue1, value1);
+        Assert.Equal(expectedValue2, value2);
 
-        static ServiceProvider PrepareAsyncState<T>(T value)
+        static IAsyncContext<T> CreateAsyncState<T>()
             where T : notnull
         {
             var services = new ServiceCollection().AddAsyncState().BuildServiceProvider();
             services.GetRequiredService<IAsyncState>().Initialize();
-            services.GetRequiredService<IAsyncContext<T>>().Set(value);
-            return services;
+            return services.GetRequiredService<IAsyncContext<T>>();
         }
     }
 }
