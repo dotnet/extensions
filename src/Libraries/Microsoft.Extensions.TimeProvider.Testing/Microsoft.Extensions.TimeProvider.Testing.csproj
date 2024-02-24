@@ -1,10 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.TimeProvider.Testing</RootNamespace>
-    <Description>Hand-crafted fakes to make time-related testing easier.</Description>
+    <Description>Hand-crafted fakes to make time-related testing easier.
+
+    FakeTimeProvider implements the abstract TimeProvider class and is 
+    specifically designed to be used for testing.
+    </Description>
     <Workstream>Fundamentals</Workstream>
     <Category>Testing</Category>
-    <PackageTags>$(PackageTags);Testing</PackageTags>
+    <PackageTags>$(PackageTags);Testing;TimeProvider;FakeTimeProvider</PackageTags>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
   </PropertyGroup>
 
