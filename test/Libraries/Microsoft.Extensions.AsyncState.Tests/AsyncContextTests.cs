@@ -13,12 +13,13 @@ public class AsyncContextTests
     public async Task CreateAsyncContext_BeforeInitialize()
     {
         var state = new AsyncState();
+        var initialContextCount = state.ContextCount;
         var context1 = new AsyncContext<IThing>(state);
         var context2 = new AsyncContext<IThing>(state);
         var obj1 = new Thing();
         var obj2 = new Thing();
 
-        Assert.Equal(2, state.ContextCount);
+        Assert.Equal(2, state.ContextCount - initialContextCount);
         state.Initialize();
 
         await Task.Run(() => context1.Set(obj1));
@@ -36,11 +37,12 @@ public class AsyncContextTests
     {
         var state = new AsyncState();
         state.Initialize();
+        var initialContextCount = state.ContextCount;
 
         var context1 = new AsyncContext<IThing>(state);
         var context2 = new AsyncContext<IThing>(state);
 
-        Assert.Equal(2, state.ContextCount);
+        Assert.Equal(2, state.ContextCount - initialContextCount);
 
         var obj1 = new Thing();
 
@@ -58,14 +60,14 @@ public class AsyncContextTests
     public async Task CreateAsyncContext_BeforeAndAfterInitialize()
     {
         var state = new AsyncState();
-
+        var initialContextCount = state.ContextCount;
         var context1 = new AsyncContext<IThing>(state);
         state.Initialize();
         var context2 = new AsyncContext<IThing>(state);
         var obj1 = new Thing();
         var obj2 = new Thing();
 
-        Assert.Equal(2, state.ContextCount);
+        Assert.Equal(2, state.ContextCount - initialContextCount);
 
         await Task.Run(() =>
         {
@@ -85,12 +87,13 @@ public class AsyncContextTests
     public async Task Tryget_BeforeAndAfterInitialize()
     {
         var state = new AsyncState();
+        var initialContextCount = state.ContextCount;
         var context1 = new AsyncContext<IThing>(state);
         Assert.False(context1.TryGet(out _));
         state.Initialize();
         var obj1 = new Thing();
 
-        Assert.Equal(1, state.ContextCount);
+        Assert.Equal(1, state.ContextCount - initialContextCount);
 
         await Task.Run(() =>
         {
@@ -110,12 +113,12 @@ public class AsyncContextTests
     public async Task CreateAsyncContextInAsync_AfterInitialize()
     {
         var state = new AsyncState();
-
+        var initialContextCount = state.ContextCount;
         var context1 = new AsyncContext<IThing>(state);
         var obj1 = new Thing();
 
         state.Initialize();
-        Assert.Equal(1, state.ContextCount);
+        Assert.Equal(1, state.ContextCount - initialContextCount);
 
         await Task.Run(async () =>
         {
@@ -181,6 +184,7 @@ public class AsyncContextTests
     public async Task TwoAsyncFlows_WithDiffrentAsyncStates()
     {
         var state = new AsyncState();
+        var initialContextCount = state.ContextCount;
 
         var task1 = Task.Run(async () =>
         {
@@ -215,13 +219,14 @@ public class AsyncContextTests
         });
 
         await Task.WhenAll(task1, task2);
-        Assert.Equal(2, state.ContextCount);
+        Assert.Equal(2, state.ContextCount - initialContextCount);
     }
 
     [Fact]
     public async Task IndependentAsyncFlows_WithSameAsyncState()
     {
         var state = new AsyncState();
+        var initialContextCount = state.ContextCount;
         var context = new AsyncContext<IThing>(state);
 
         Func<Task?> setAsyncState = async () =>
@@ -251,6 +256,6 @@ public class AsyncContextTests
 
         await Task.WhenAll(tasks);
 
-        Assert.Equal(1, state.ContextCount);
+        Assert.Equal(1, state.ContextCount - initialContextCount);
     }
 }
