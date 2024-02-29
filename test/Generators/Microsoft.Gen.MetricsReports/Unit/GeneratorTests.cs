@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,10 +20,12 @@ namespace Microsoft.Gen.MetricsReports.Test;
 
 public class GeneratorTests(ITestOutputHelper output)
 {
+    private const string ReportFilename = "MetricsReport.json";
+
     [Fact]
     public void GeneratorShouldNotDoAnythingIfGeneralExecutionContextDoesNotHaveClassDeclarationSyntaxReceiver()
     {
-        var defaultGeneralExecutionContext = default(GeneratorExecutionContext);
+        GeneratorExecutionContext defaultGeneralExecutionContext = default;
         new MetricsReportsGenerator().Execute(defaultGeneralExecutionContext);
 
         Assert.Null(defaultGeneralExecutionContext.SyntaxReceiver);
@@ -37,11 +40,15 @@ public class GeneratorTests(ITestOutputHelper output)
             var stem = Path.GetFileNameWithoutExtension(inputFile);
             var goldenReportPath = Path.Combine("GoldenReports", Path.ChangeExtension(stem, ".json"));
 
-            var generatedReportPath = Path.Combine(Directory.GetCurrentDirectory(), "MetricsReport.json");
+            var generatedReportPath = Path.Combine(Directory.GetCurrentDirectory(), ReportFilename);
+
+            Dictionary<string, string>? options = useExplicitReportPath
+                ? new() { ["build_property.MetricsReportOutputPath"] = Directory.GetCurrentDirectory() }
+                : null;
 
             if (File.Exists(goldenReportPath))
             {
-                var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), useExplicitReportPath);
+                var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
                 Assert.Empty(d);
 
                 var golden = await File.ReadAllTextAsync(goldenReportPath);
@@ -66,15 +73,78 @@ public class GeneratorTests(ITestOutputHelper output)
             {
                 // generate the golden file if it doesn't already exist
                 output.WriteLine($"Generating golden report: {goldenReportPath}");
-                _ = await RunGenerator(await File.ReadAllTextAsync(inputFile), useExplicitReportPath);
+                _ = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
                 File.Copy(generatedReportPath, goldenReportPath);
             }
         }
     }
 
+    [Fact]
+    public async Task ShouldNot_Generate_WhenDisabledViaConfig()
+    {
+        var inputFile = Directory.GetFiles("TestClasses").First();
+        var options = new Dictionary<string, string>
+        {
+            ["build_property.GenerateMetricsReport"] = bool.FalseString,
+            ["build_property.MetricsReportOutputPath"] = Path.GetTempPath()
+        };
+
+        var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
+        Assert.Empty(d);
+        Assert.False(File.Exists(Path.Combine(Path.GetTempPath(), ReportFilename)));
+    }
+
+    [Theory]
+    [CombinatorialData]
+    public async Task Should_EmitWarning_WhenPathUnavailable(bool isReportPathProvided)
+    {
+        var inputFile = Directory.GetFiles("TestClasses").First();
+        var options = new Dictionary<string, string>
+        {
+            ["build_property.outputpath"] = string.Empty
+        };
+
+        if (isReportPathProvided)
+        {
+            options.Add("build_property.MetricsReportOutputPath", string.Empty);
+        }
+
+        var diags = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
+        var diag = Assert.Single(diags);
+        Assert.Equal("AUDREPGEN000", diag.Id);
+        Assert.Equal(DiagnosticSeverity.Info, diag.Severity);
+    }
+
+    [Fact]
+    public async Task Should_UseProjectDir_WhenOutputPathIsRelative()
+    {
+        var projectDir = Path.GetTempPath();
+        var outputPath = Guid.NewGuid().ToString();
+        var fullReportPath = Path.Combine(projectDir, outputPath);
+        Directory.CreateDirectory(fullReportPath);
+
+        try
+        {
+            var inputFile = Directory.GetFiles("TestClasses").First();
+            var options = new Dictionary<string, string>
+            {
+                ["build_property.projectdir"] = projectDir,
+                ["build_property.outputpath"] = outputPath
+            };
+
+            var diags = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
+            Assert.Empty(diags);
+            Assert.True(File.Exists(Path.Combine(fullReportPath, ReportFilename)));
+        }
+        finally
+        {
+            Directory.Delete(fullReportPath, recursive: true);
+        }
+    }
+
     private static async Task<IReadOnlyList<Diagnostic>> RunGenerator(
         string code,
-        bool setReportPath,
+        Dictionary<string, string>? analyzerOptions = null,
         CancellationToken cancellationToken = default)
     {
         Assembly[] refs =
@@ -89,43 +159,31 @@ public class GeneratorTests(ITestOutputHelper output)
             new MetricsReportsGenerator(),
             refs,
             new[] { code },
-            new OptionsProvider(returnReportPath: setReportPath),
+            new OptionsProvider(analyzerOptions),
             includeBaseReferences: true,
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return d;
     }
 
-    private sealed class Options(bool returnReportPath) : AnalyzerConfigOptions
+    private sealed class Options : AnalyzerConfigOptions
     {
-        public override bool TryGetValue(string key, out string value)
+        private readonly Dictionary<string, string> _options;
+
+        public Options(Dictionary<string, string>? analyzerOptions)
         {
-            if (key == "build_property.GenerateMetricsReport")
-            {
-                value = bool.TrueString;
-                return true;
-            }
-
-            if (returnReportPath && key == "build_property.MetricsReportOutputPath")
-            {
-                value = Directory.GetCurrentDirectory();
-                return true;
-            }
-
-            if (key == "build_property.outputpath")
-            {
-                value = Directory.GetCurrentDirectory();
-                return true;
-            }
-
-            value = null!;
-            return false;
+            _options = analyzerOptions ?? [];
+            _options.TryAdd("build_property.GenerateMetricsReport", bool.TrueString);
+            _options.TryAdd("build_property.outputpath", Directory.GetCurrentDirectory());
         }
+
+        public override bool TryGetValue(string key, out string value)
+            => _options.TryGetValue(key, out value!);
     }
 
-    private sealed class OptionsProvider(bool returnReportPath) : AnalyzerConfigOptionsProvider
+    private sealed class OptionsProvider(Dictionary<string, string>? analyzerOptions) : AnalyzerConfigOptionsProvider
     {
-        public override AnalyzerConfigOptions GlobalOptions => new Options(returnReportPath);
+        public override AnalyzerConfigOptions GlobalOptions => new Options(analyzerOptions);
 
         public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => throw new NotSupportedException();
         public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => throw new NotSupportedException();
