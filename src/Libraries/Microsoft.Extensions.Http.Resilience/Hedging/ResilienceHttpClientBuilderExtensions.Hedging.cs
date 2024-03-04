@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -118,8 +119,8 @@ public static partial class ResilienceHttpClientBuilderExtensions
             var routingOptions = context.GetOptions<RequestRoutingOptions>(routingBuilder.Name);
 
             _ = builder
-                .AddStrategy(_ => new RoutingResilienceStrategy(routingOptions.RoutingStrategyProvider), new EmptyResilienceStrategyOptions())
-                .AddStrategy(_ => new RequestMessageSnapshotStrategy(), new EmptyResilienceStrategyOptions())
+                .AddStrategy(_ => new RoutingResilienceStrategy(routingOptions.RoutingStrategyProvider))
+                .AddStrategy(_ => new RequestMessageSnapshotStrategy())
                 .AddTimeout(options.TotalRequestTimeout)
                 .AddHedging(options.Hedging);
         });
@@ -141,6 +142,11 @@ public static partial class ResilienceHttpClientBuilderExtensions
 
         return new StandardHedgingHandlerBuilder(builder.Name, builder.Services, routingBuilder);
     }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+        Justification = "The EmptyResilienceStrategyOptions doesn't have any properties to validate.")]
+    private static ResiliencePipelineBuilder<HttpResponseMessage> AddStrategy(this ResiliencePipelineBuilder<HttpResponseMessage> builder, Func<StrategyBuilderContext, ResilienceStrategy> factory) =>
+        builder.AddStrategy(factory, new EmptyResilienceStrategyOptions());
 
     private sealed record StandardHedgingHandlerBuilder(
         string Name,
