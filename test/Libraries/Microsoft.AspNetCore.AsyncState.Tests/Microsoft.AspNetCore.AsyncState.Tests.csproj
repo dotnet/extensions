@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.AspNetCore.AsyncState.Test</RootNamespace>
     <Description>Unit tests for Microsoft.AspNetCore.AsyncState.</Description>
@@ -6,8 +6,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TestNetCoreTargetFrameworks)</TargetFrameworks>
-    <!-- Setting IsTrimmable to true so that the ILLink Analyzers are also used in this project. -->
-    <IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
