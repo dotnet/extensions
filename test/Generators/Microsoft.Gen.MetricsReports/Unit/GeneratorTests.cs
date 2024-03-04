@@ -35,16 +35,17 @@ public class GeneratorTests(ITestOutputHelper output)
     [CombinatorialData]
     public async Task TestAll(bool useExplicitReportPath)
     {
+        Dictionary<string, string>? options = useExplicitReportPath
+            ? new() { ["build_property.MetricsReportOutputPath"] = Directory.GetCurrentDirectory() }
+            : null;
+
         foreach (var inputFile in Directory.GetFiles("TestClasses"))
         {
             var stem = Path.GetFileNameWithoutExtension(inputFile);
-            var goldenReportPath = Path.Combine("GoldenReports", Path.ChangeExtension(stem, ".json"));
+            var goldenFileName = Path.ChangeExtension(stem, ".json");
+            var goldenReportPath = Path.Combine("GoldenReports", goldenFileName);
 
             var generatedReportPath = Path.Combine(Directory.GetCurrentDirectory(), ReportFilename);
-
-            Dictionary<string, string>? options = useExplicitReportPath
-                ? new() { ["build_property.MetricsReportOutputPath"] = Directory.GetCurrentDirectory() }
-                : null;
 
             if (File.Exists(goldenReportPath))
             {
@@ -56,7 +57,7 @@ public class GeneratorTests(ITestOutputHelper output)
 
                 if (golden != generated)
                 {
-                    output.WriteLine($"MISMATCH: goldenReportFile {goldenReportPath}, tmp {generatedReportPath}");
+                    output.WriteLine($"MISMATCH: golden report {goldenReportPath}, generated {generatedReportPath}");
                     output.WriteLine("----");
                     output.WriteLine("golden:");
                     output.WriteLine(golden);
@@ -73,8 +74,7 @@ public class GeneratorTests(ITestOutputHelper output)
             {
                 // generate the golden file if it doesn't already exist
                 output.WriteLine($"Generating golden report: {goldenReportPath}");
-                _ = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
-                File.Copy(generatedReportPath, goldenReportPath);
+                _ = await RunGenerator(await File.ReadAllTextAsync(inputFile), options, reportFileName: goldenFileName);
             }
         }
     }
@@ -145,7 +145,8 @@ public class GeneratorTests(ITestOutputHelper output)
     private static async Task<IReadOnlyList<Diagnostic>> RunGenerator(
         string code,
         Dictionary<string, string>? analyzerOptions = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? reportFileName = null)
     {
         Assembly[] refs =
         [
@@ -156,7 +157,7 @@ public class GeneratorTests(ITestOutputHelper output)
        ];
 
         var (d, _) = await RoslynTestUtils.RunGenerator(
-            new MetricsReportsGenerator(),
+            new MetricsReportsGenerator(reportFileName),
             refs,
             new[] { code },
             new OptionsProvider(analyzerOptions),

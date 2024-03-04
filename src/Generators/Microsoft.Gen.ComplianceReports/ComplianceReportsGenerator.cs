@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.IO;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.Gen.Shared;
 using Microsoft.Shared.DiagnosticIds;
@@ -20,8 +21,8 @@ public sealed class ComplianceReportsGenerator : ISourceGenerator
 
     private const string FallbackFileName = "ComplianceReport.json";
 
+    private readonly string _fileName;
     private string? _directory;
-    private string _fileName;
 
     public ComplianceReportsGenerator()
         : this(null)
@@ -80,29 +81,30 @@ public sealed class ComplianceReportsGenerator : ISourceGenerator
 
         context.CancellationToken.ThrowIfCancellationRequested();
 
-        if (_directory == null)
-        {
-            if (!context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(ComplianceReportOutputPathMSBuildProperty, out _directory) ||
-                string.IsNullOrWhiteSpace(_directory))
-            {
-                // Report diagnostic:
-                var diagnostic = new DiagnosticDescriptor(
-                    DiagnosticIds.AuditReports.AUDREPGEN001,
-                    "ComplianceReports generator couldn't resolve output path for the report. It won't be generated.",
-                    "MSBuild property <ComplianceReportOutputPath> is missing or not set. The report won't be generated.",
-                    nameof(DiagnosticIds.AuditReports),
-                    DiagnosticSeverity.Info,
-                    isEnabledByDefault: true,
-                    helpLinkUri: string.Format(CultureInfo.InvariantCulture, DiagnosticIds.UrlFormat, DiagnosticIds.AuditReports.AUDREPGEN001));
+        var options = context.AnalyzerConfigOptions.GlobalOptions;
+        _directory ??= GeneratorUtilities.TryRetrieveOptionsValue(options, ComplianceReportOutputPathMSBuildProperty, out var reportOutputPath)
+            ? reportOutputPath!
+            : GeneratorUtilities.GetDefaultReportOutputPath(options);
 
-                context.ReportDiagnostic(Diagnostic.Create(diagnostic, location: null));
-                return;
-            }
+        if (string.IsNullOrWhiteSpace(_directory))
+        {
+            // Report diagnostic:
+            var diagnostic = new DiagnosticDescriptor(
+                DiagnosticIds.AuditReports.AUDREPGEN001,
+                "ComplianceReports generator couldn't resolve output path for the report. It won't be generated.",
+                "Both <ComplianceReportOutputPath> and <OutputPath> MSBuild properties are not set. The report won't be generated.",
+                nameof(DiagnosticIds.AuditReports),
+                DiagnosticSeverity.Info,
+                isEnabledByDefault: true,
+                helpLinkUri: string.Format(CultureInfo.InvariantCulture, DiagnosticIds.UrlFormat, DiagnosticIds.AuditReports.AUDREPGEN001));
+
+            context.ReportDiagnostic(Diagnostic.Create(diagnostic, location: null));
+            return;
         }
 
         _ = Directory.CreateDirectory(_directory);
 
         // Write report as JSON file.
-        File.WriteAllText(Path.Combine(_directory, _fileName), report);
+        File.WriteAllText(Path.Combine(_directory, _fileName), report, Encoding.UTF8);
     }
 }

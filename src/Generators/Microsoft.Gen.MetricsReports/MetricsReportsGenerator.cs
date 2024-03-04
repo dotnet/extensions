@@ -20,9 +20,19 @@ public class MetricsReportsGenerator : ISourceGenerator
     private const string GenerateMetricDefinitionReport = "build_property.GenerateMetricsReport";
     private const string RootNamespace = "build_property.rootnamespace";
     private const string ReportOutputPath = "build_property.MetricsReportOutputPath";
-    private const string CompilationOutputPath = "build_property.outputpath";
-    private const string CurrentProjectPath = "build_property.projectdir";
     private const string FileName = "MetricsReport.json";
+
+    private readonly string _fileName;
+
+    public MetricsReportsGenerator()
+        : this(FileName)
+    {
+    }
+
+    internal MetricsReportsGenerator(string reportFileName)
+    {
+        _fileName = reportFileName;
+    }
 
     public void Initialize(GeneratorInitializationContext context)
     {
@@ -51,9 +61,9 @@ public class MetricsReportsGenerator : ISourceGenerator
 
         var options = context.AnalyzerConfigOptions.GlobalOptions;
 
-        var path = TryRetrieveOptionsValue(options, ReportOutputPath, out var reportOutputPath)
+        var path = GeneratorUtilities.TryRetrieveOptionsValue(options, ReportOutputPath, out var reportOutputPath)
             ? reportOutputPath!
-            : GetDefaultReportOutputPath(options);
+            : GeneratorUtilities.GetDefaultReportOutputPath(options);
 
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -78,7 +88,7 @@ public class MetricsReportsGenerator : ISourceGenerator
         var reportedMetrics = MapToCommonModel(meteringClasses, rootNamespace);
         var report = emitter.GenerateReport(reportedMetrics, context.CancellationToken);
 
-        File.WriteAllText(Path.Combine(path, FileName), report, Encoding.UTF8);
+        File.WriteAllText(Path.Combine(path, _fileName), report, Encoding.UTF8);
     }
 
     private static ReportedMetricClass[] MapToCommonModel(IReadOnlyList<MetricType> meteringClasses, string? rootNamespace)
@@ -98,27 +108,5 @@ public class MetricsReportsGenerator : ISourceGenerator
                 .ToArray()));
 
         return reportedMetrics.ToArray();
-    }
-
-    private static bool TryRetrieveOptionsValue(AnalyzerConfigOptions options, string name, out string? value)
-        => options.TryGetValue(name, out value) && !string.IsNullOrWhiteSpace(value);
-
-    private static string GetDefaultReportOutputPath(AnalyzerConfigOptions options)
-    {
-        if (!TryRetrieveOptionsValue(options, CompilationOutputPath, out var compilationOutputPath))
-        {
-            return string.Empty;
-        }
-
-        // If <OutputPath> is absolute - return it right away:
-        if (Path.IsPathRooted(compilationOutputPath))
-        {
-            return compilationOutputPath!;
-        }
-
-        // Get <ProjectDir> and combine it with <OutputPath> if the former isn't empty:
-        return TryRetrieveOptionsValue(options, CurrentProjectPath, out var currentProjectPath)
-            ? Path.Combine(currentProjectPath!, compilationOutputPath!)
-            : string.Empty;
     }
 }
