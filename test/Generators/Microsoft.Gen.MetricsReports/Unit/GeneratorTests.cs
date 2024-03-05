@@ -156,8 +156,12 @@ public class GeneratorTests(ITestOutputHelper output)
             Assembly.GetAssembly(typeof(GaugeAttribute))!
        ];
 
+        var generator = reportFileName is null
+            ? new MetricsReportsGenerator()
+            : new MetricsReportsGenerator(reportFileName);
+
         var (d, _) = await RoslynTestUtils.RunGenerator(
-            new MetricsReportsGenerator(reportFileName),
+            generator,
             refs,
             new[] { code },
             new OptionsProvider(analyzerOptions),
