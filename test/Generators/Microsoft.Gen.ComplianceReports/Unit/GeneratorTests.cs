@@ -162,7 +162,7 @@ public class GeneratorTests
     }
 
     private static async Task<IReadOnlyList<Diagnostic>> RunGenerator(string code, string? outputFile = null, Dictionary<string, string>? options = null)
-    {
+    {      
         var (d, _) = await RoslynTestUtils.RunGenerator(
             new ComplianceReportsGenerator(outputFile),
             new[]
