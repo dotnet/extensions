@@ -107,8 +107,7 @@ public class GeneratorTests
                 {
                     Source,
                 },
-                new OptionsProvider(null))
-            .ConfigureAwait(false);
+                new OptionsProvider(null));
 
         Assert.Empty(d);
     }
@@ -162,7 +161,7 @@ public class GeneratorTests
     }
 
     private static async Task<IReadOnlyList<Diagnostic>> RunGenerator(string code, string? outputFile = null, Dictionary<string, string>? options = null)
-    {      
+    {
         var (d, _) = await RoslynTestUtils.RunGenerator(
             new ComplianceReportsGenerator(outputFile),
             new[]
@@ -176,7 +175,7 @@ public class GeneratorTests
                     code,
                     TestTaxonomy,
             },
-            new OptionsProvider(analyzerOptions: options)).ConfigureAwait(false);
+            new OptionsProvider(analyzerOptions: options));
 
         return d;
     }
