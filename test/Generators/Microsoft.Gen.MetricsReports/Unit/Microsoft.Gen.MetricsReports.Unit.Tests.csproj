@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Gen.MetricsReports.Test</RootNamespace>
     <Description>Unit tests for Microsoft.Gen.MetricsReports.</Description>
@@ -16,7 +16,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
 
-    <Content Include="..\\GoldenReports\**\*.json">
+    <Content Include="..\GoldenReports\**\*.json">
       <Link>GoldenReports\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
