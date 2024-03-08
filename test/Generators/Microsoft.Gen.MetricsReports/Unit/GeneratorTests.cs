@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,91 +18,154 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Gen.MetricsReports.Test;
 
-public class GeneratorTests
+public class GeneratorTests(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper _output;
-
-    public GeneratorTests(ITestOutputHelper output)
-    {
-        _output = output;
-    }
+    private const string ReportFilename = "MetricsReport.json";
 
     [Fact]
     public void GeneratorShouldNotDoAnythingIfGeneralExecutionContextDoesNotHaveClassDeclarationSyntaxReceiver()
     {
-        var defaultGeneralExecutionContext = default(GeneratorExecutionContext);
+        GeneratorExecutionContext defaultGeneralExecutionContext = default;
         new MetricsReportsGenerator().Execute(defaultGeneralExecutionContext);
 
         Assert.Null(defaultGeneralExecutionContext.SyntaxReceiver);
     }
 
-    [Fact]
-    public async Task TestAll()
+    [Theory]
+    [CombinatorialData]
+    public async Task TestAll(bool useExplicitReportPath)
     {
+        Dictionary<string, string>? options = useExplicitReportPath
+            ? new() { ["build_property.MetricsReportOutputPath"] = Directory.GetCurrentDirectory() }
+            : null;
+
         foreach (var inputFile in Directory.GetFiles("TestClasses"))
         {
             var stem = Path.GetFileNameWithoutExtension(inputFile);
-            var goldenReportFile = $"GoldenReports/{stem}.json";
+            var goldenFileName = Path.ChangeExtension(stem, ".json");
+            var goldenReportPath = Path.Combine("GoldenReports", goldenFileName);
 
-            var tmp = Path.Combine(Directory.GetCurrentDirectory(), "MetricsReport.json");
+            var generatedReportPath = Path.Combine(Directory.GetCurrentDirectory(), ReportFilename);
 
-            if (File.Exists(goldenReportFile))
+            if (File.Exists(goldenReportPath))
             {
-                var d = await RunGenerator(File.ReadAllText(inputFile));
+                var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
                 Assert.Empty(d);
 
-                var golden = File.ReadAllText(goldenReportFile);
-                var generated = File.ReadAllText(tmp);
+                var golden = await File.ReadAllTextAsync(goldenReportPath);
+                var generated = await File.ReadAllTextAsync(generatedReportPath);
 
                 if (golden != generated)
                 {
-                    _output.WriteLine($"MISMATCH: goldenReportFile {goldenReportFile}, tmp {tmp}");
-                    _output.WriteLine("----");
-                    _output.WriteLine("golden:");
-                    _output.WriteLine(golden);
-                    _output.WriteLine("----");
-                    _output.WriteLine("generated:");
-                    _output.WriteLine(generated);
-                    _output.WriteLine("----");
+                    output.WriteLine($"MISMATCH: golden report {goldenReportPath}, generated {generatedReportPath}");
+                    output.WriteLine("----");
+                    output.WriteLine("golden:");
+                    output.WriteLine(golden);
+                    output.WriteLine("----");
+                    output.WriteLine("generated:");
+                    output.WriteLine(generated);
+                    output.WriteLine("----");
                 }
 
+                File.Delete(generatedReportPath);
                 Assert.Equal(golden, generated);
-                File.Delete(tmp);
             }
             else
             {
                 // generate the golden file if it doesn't already exist
-                _output.WriteLine($"Generating golden report: {goldenReportFile}");
-                _ = await RunGenerator(File.ReadAllText(inputFile));
-                File.Copy(tmp, goldenReportFile);
+                output.WriteLine($"Generating golden report: {goldenReportPath}");
+                _ = await RunGenerator(await File.ReadAllTextAsync(inputFile), options, reportFileName: goldenFileName);
             }
+        }
+    }
+
+    [Fact]
+    public async Task ShouldNot_Generate_WhenDisabledViaConfig()
+    {
+        var inputFile = Directory.GetFiles("TestClasses").First();
+        var options = new Dictionary<string, string>
+        {
+            ["build_property.GenerateMetricsReport"] = bool.FalseString,
+            ["build_property.MetricsReportOutputPath"] = Path.GetTempPath()
+        };
+
+        var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
+        Assert.Empty(d);
+        Assert.False(File.Exists(Path.Combine(Path.GetTempPath(), ReportFilename)));
+    }
+
+    [Theory]
+    [CombinatorialData]
+    public async Task Should_EmitWarning_WhenPathUnavailable(bool isReportPathProvided)
+    {
+        var inputFile = Directory.GetFiles("TestClasses").First();
+        var options = new Dictionary<string, string>
+        {
+            ["build_property.outputpath"] = string.Empty
+        };
+
+        if (isReportPathProvided)
+        {
+            options.Add("build_property.MetricsReportOutputPath", string.Empty);
+        }
+
+        var diags = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
+        var diag = Assert.Single(diags);
+        Assert.Equal("AUDREPGEN000", diag.Id);
+        Assert.Equal(DiagnosticSeverity.Info, diag.Severity);
+    }
+
+    [Fact]
+    public async Task Should_UseProjectDir_WhenOutputPathIsRelative()
+    {
+        var projectDir = Path.GetTempPath();
+        var outputPath = Guid.NewGuid().ToString();
+        var fullReportPath = Path.Combine(projectDir, outputPath);
+        Directory.CreateDirectory(fullReportPath);
+
+        try
+        {
+            var inputFile = Directory.GetFiles("TestClasses").First();
+            var options = new Dictionary<string, string>
+            {
+                ["build_property.projectdir"] = projectDir,
+                ["build_property.outputpath"] = outputPath
+            };
+
+            var diags = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
+            Assert.Empty(diags);
+            Assert.True(File.Exists(Path.Combine(fullReportPath, ReportFilename)));
+        }
+        finally
+        {
+            Directory.Delete(fullReportPath, recursive: true);
         }
     }
 
     private static async Task<IReadOnlyList<Diagnostic>> RunGenerator(
         string code,
-        bool includeBaseReferences = true,
-        bool includeMeterReferences = true,
-        CancellationToken cancellationToken = default)
+        Dictionary<string, string>? analyzerOptions = null,
+        CancellationToken cancellationToken = default,
+        string? reportFileName = null)
     {
-        Assembly[]? refs = null;
-        if (includeMeterReferences)
-        {
-            refs = new[]
-            {
-                Assembly.GetAssembly(typeof(Meter))!,
-                Assembly.GetAssembly(typeof(CounterAttribute))!,
-                Assembly.GetAssembly(typeof(HistogramAttribute))!,
-                Assembly.GetAssembly(typeof(GaugeAttribute))!,
-            };
-        }
+        Assembly[] refs =
+        [
+            Assembly.GetAssembly(typeof(Meter))!,
+            Assembly.GetAssembly(typeof(CounterAttribute))!,
+            Assembly.GetAssembly(typeof(HistogramAttribute))!,
+            Assembly.GetAssembly(typeof(GaugeAttribute))!
+       ];
+
+        var generator = reportFileName is null
+            ? new MetricsReportsGenerator()
+            : new MetricsReportsGenerator(reportFileName);
 
         var (d, _) = await RoslynTestUtils.RunGenerator(
-            new MetricsReportsGenerator(),
+            generator,
             refs,
             new[] { code },
-            new OptionsProvider(),
-            includeBaseReferences: includeBaseReferences,
+            new OptionsProvider(analyzerOptions),
+            includeBaseReferences: true,
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return d;
@@ -109,28 +173,22 @@ public class GeneratorTests
 
     private sealed class Options : AnalyzerConfigOptions
     {
-        public override bool TryGetValue(string key, out string value)
+        private readonly Dictionary<string, string> _options;
+
+        public Options(Dictionary<string, string>? analyzerOptions)
         {
-            if (key == "build_property.GenerateMetricsReport")
-            {
-                value = bool.TrueString;
-                return true;
-            }
-
-            if (key == "build_property.MetricsReportOutputPath")
-            {
-                value = Directory.GetCurrentDirectory();
-                return true;
-            }
-
-            value = null!;
-            return false;
+            _options = analyzerOptions ?? [];
+            _options.TryAdd("build_property.GenerateMetricsReport", bool.TrueString);
+            _options.TryAdd("build_property.outputpath", Directory.GetCurrentDirectory());
         }
+
+        public override bool TryGetValue(string key, out string value)
+            => _options.TryGetValue(key, out value!);
     }
 
-    private sealed class OptionsProvider : AnalyzerConfigOptionsProvider
+    private sealed class OptionsProvider(Dictionary<string, string>? analyzerOptions) : AnalyzerConfigOptionsProvider
     {
-        public override AnalyzerConfigOptions GlobalOptions => new Options();
+        public override AnalyzerConfigOptions GlobalOptions => new Options(analyzerOptions);
 
         public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => throw new NotSupportedException();
         public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => throw new NotSupportedException();

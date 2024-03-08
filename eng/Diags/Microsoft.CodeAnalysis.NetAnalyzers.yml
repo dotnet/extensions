@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.CodeAnalysis.NetAnalyzers
-  Version: 8.0.8.47201
+  Version: 8.0.9.2502
 Diagnostics:
   CA1000:
     Metadata:
@@ -265,6 +265,8 @@ Diagnostics:
     Attributes:
       general:
         Severity: None
+        Options:
+        - api_surface = all
   CA1030:
     Metadata:
       Category: Design
@@ -280,6 +282,8 @@ Diagnostics:
     Attributes:
       general:
         Severity: Warning
+        Options:
+        - api_surface = public
   CA1031:
     Metadata:
       Category: Design
@@ -344,6 +348,8 @@ Diagnostics:
         Severity: None
       api:
         Severity: Warning
+        Options:
+        - api_surface = all
   CA1040:
     Metadata:
       Category: Design
@@ -516,6 +522,8 @@ Diagnostics:
     Attributes:
       general:
         Severity: Warning
+        Options:
+        - api_surface = all
   CA1054:
     Metadata:
       Category: Design
@@ -533,6 +541,8 @@ Diagnostics:
         Severity: None
       api:
         Severity: Warning
+        Options:
+        - api_surface = public
   CA1055:
     Metadata:
       Category: Design
@@ -550,6 +560,8 @@ Diagnostics:
         Severity: None
       api:
         Severity: Warning
+        Options:
+        - api_surface = public
   CA1056:
     Metadata:
       Category: Design
@@ -567,6 +579,8 @@ Diagnostics:
         Severity: None
       api:
         Severity: Warning
+        Options:
+        - api_surface = public
   CA1058:
     Metadata:
       Category: Design
@@ -652,6 +666,8 @@ Diagnostics:
     Attributes:
       general:
         Severity: Warning
+        Options:
+        - api_surface = public
   CA1064:
     Metadata:
       Category: Design
@@ -1024,6 +1040,8 @@ Diagnostics:
       general:
         Severity: None
         Comment: StyleCop handles this
+        Options:
+        - api_surface = all
   CA1708:
     Metadata:
       Category: Naming
@@ -1127,6 +1145,9 @@ Diagnostics:
       general:
         Severity: None
         Redundant: IDE1006
+        Options:
+        - api_surface = all
+        - exclude_single_letter_type_parameters = false
   CA1716:
     Metadata:
       Category: Naming
@@ -1218,6 +1239,8 @@ Diagnostics:
     Attributes:
       general:
         Severity: Warning
+        Options:
+        - api_surface = public, protected
   CA1801:
     Metadata:
       Category: Usage
@@ -1233,6 +1256,8 @@ Diagnostics:
       general:
         Severity: None
         Redundant: IDE0060
+        Options:
+        - api_surface = all
   CA1802:
     Metadata:
       Category: Performance
@@ -1346,6 +1371,8 @@ Diagnostics:
         Severity: None
       performance:
         Severity: Warning
+        Options:
+        - api_surface = public
   CA1816:
     Metadata:
       Category: Usage
@@ -1378,6 +1405,8 @@ Diagnostics:
         Severity: None
       performance:
         Severity: Warning
+        Options:
+        - api_surface = public
   CA1820:
     Metadata:
       Category: Performance
@@ -1427,6 +1456,8 @@ Diagnostics:
     Attributes:
       general:
         Severity: Warning
+        Options:
+        - api_surface = all
   CA1823:
     Metadata:
       Category: Performance
@@ -1698,6 +1729,9 @@ Diagnostics:
         Severity: None
       performance:
         Severity: Warning
+        Options:
+        - output_kinds = all
+        - exclude_async_void_methods = false
   CA2008:
     Metadata:
       Category: Reliability
@@ -1923,6 +1957,8 @@ Diagnostics:
     Attributes:
       general:
         Severity: Warning
+        Options:
+        - api_surface = all
   CA2211:
     Metadata:
       Category: Usage
@@ -2068,6 +2104,8 @@ Diagnostics:
       general:
         Severity: None
         Redundant: CS0216
+        Options:
+        - api_surface = all
   CA2227:
     Metadata:
       Category: Usage
@@ -2116,6 +2154,8 @@ Diagnostics:
     Attributes:
       general:
         Severity: Error
+        Options:
+        - api_surface = public
   CA2235:
     Metadata:
       Category: Usage
@@ -2163,6 +2203,8 @@ Diagnostics:
     Attributes:
       general:
         Severity: Warning
+        Options:
+        - try_determine_additional_string_formatting_methods_automatically = false
   CA2242:
     Metadata:
       Category: Usage
@@ -3906,7 +3948,7 @@ Diagnostics:
     Attributes:
       general:
         Severity: None
-        Comment: Use the code generated model instead.
+        Comment: Use R9 logging model instead
   CA2253:
     Metadata:
       Category: Usage
@@ -4223,7 +4265,9 @@ Diagnostics:
       general:
         Severity: None
       performance:
-        Redundant: Warning
+        Severity: Warning
+        Options:
+        - ignore_internalsvisibleto = true
   CA2259:
     Metadata:
       Category: Usage
@@ -4326,6 +4370,20 @@ Diagnostics:
     Attributes:
       general:
         Severity: Warning
+  CA2261:
+    Metadata:
+      Category: Usage
+      Title: Do not use ConfigureAwaitOptions.SuppressThrowing with Task<TResult>
+      Description: The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task<TResult>.  To use it with a Task<TResult>, first cast to the base Task.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Warning
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Warning
   CA1861:
     Metadata:
       Category: Performance
@@ -4417,6 +4475,48 @@ Diagnostics:
     Attributes:
       general:
         Severity: Suggestion
+  CA1869:
+    Metadata:
+      Category: Performance
+      Title: Cache and reuse 'JsonSerializerOptions' instances
+      Description: Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1869
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1868:
+    Metadata:
+      Category: Performance
+      Title: Unnecessary call to 'Contains(item)'
+      Description: Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1868
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1864:
+    Metadata:
+      Category: Performance
+      Title: Prefer the 'IDictionary.TryAdd(TKey, TValue)' method
+      Description: Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
   CA1860:
     Metadata:
       Category: Performance
@@ -4430,9 +4530,35 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
+        Severity: Suggestion
+  CA1862:
+    Metadata:
+      Category: Performance
+      Title: Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
+      Description: Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
+  CA1863:
+    Metadata:
+      Category: Performance
+      Title: Use 'CompositeFormat'
+      Description: Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1863
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: None
+    Tier: 1
+    Attributes:
+      general:
         Severity: None
-      performance:
-        Severity: Warning
   CA1859:
     Metadata:
       Category: Performance
@@ -4462,87 +4588,7 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: None
-      performance:
-        Severity: Warning
-  CA2261:
-    Metadata:
-      Category: Usage
-      Title: Do not use ConfigureAwaitOptions.SuppressThrowing with Task<TResult>
-      Description: The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task<TResult>.  To use it with a Task<TResult>, first cast to the base Task.
-      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261
-      CustomTags:
-      - Telemetry
-      - EnabledRuleInAggressiveMode
-      DefaultSeverity: Warning
-    Tier: 1
-    Attributes:
-      general:
-        Severity: Warning
-  CA1868:
-    Metadata:
-      Category: Performance
-      Title: Unnecessary call to 'Contains(item)'
-      Description: Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.
-      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1868
-      CustomTags:
-      - Telemetry
-      - EnabledRuleInAggressiveMode
-      DefaultSeverity: Suggestion
-    Tier: 1
-    Attributes:
-      general:
         Severity: Suggestion
-      performance:
-        Severity: Warning
-  CA1864:
-    Metadata:
-      Category: Performance
-      Title: Prefer the 'IDictionary.TryAdd(TKey, TValue)' method
-      Description: Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.
-      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864
-      CustomTags:
-      - Telemetry
-      - EnabledRuleInAggressiveMode
-      DefaultSeverity: Suggestion
-    Tier: 1
-    Attributes:
-      general:
-        Severity: Suggestion
-      performance:
-        Severity: Warning
-  CA1862:
-    Metadata:
-      Category: Performance
-      Title: Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
-      Description: Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.
-      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862
-      CustomTags:
-      - Telemetry
-      - EnabledRuleInAggressiveMode
-      DefaultSeverity: Suggestion
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
-  CA1863:
-    Metadata:
-      Category: Performance
-      Title: Use 'CompositeFormat'
-      Description: Cache and use a 'CompositeFormat' instance as the argument to this formatting operation, rather than passing in the original format string. This reduces the cost of the formatting operation.
-      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1863
-      CustomTags:
-      - Telemetry
-      - EnabledRuleInAggressiveMode
-      DefaultSeverity: None
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
-        Severity: Warning
   CA1001:
     Metadata:
       Category: Design
@@ -4554,23 +4600,7 @@ Diagnostics:
       - Telemetry
       - EnabledRuleInAggressiveMode
       DefaultSeverity: None
-    Tier: 2
-    Attributes:
-      general:
-        Severity: Warning
-  CA1869:
-    Metadata:
-      Category: Performance
-      Title: Cache and reuse 'JsonSerializerOptions' instances
-      Description: Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.
-      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1869
-      CustomTags:
-      - Telemetry
-      - EnabledRuleInAggressiveMode
-      DefaultSeverity: Suggestion
     Tier: 1
     Attributes:
       general:
         Severity: None
-      performance:
-        Severity: Warning

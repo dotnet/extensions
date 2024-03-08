@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.CodeAnalysis.CodeStyle
-  Version: 4.8.9.404
+  Version: 4.8.9.2411
 Diagnostics:
   IDE0033:
     Metadata:

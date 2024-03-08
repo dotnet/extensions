@@ -14,5 +14,6 @@
     <CompilerVisibleProperty Include="ComplianceReportOutputPath" />
     <CompilerVisibleProperty Include="GenerateMetricsReport" />
     <CompilerVisibleProperty Include="MetricsReportOutputPath" />
+    <CompilerVisibleProperty Include="OutputPath" />
   </ItemGroup>
 </Project>

@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.IO;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.Gen.Shared;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Gen.ComplianceReports;
 
@@ -18,8 +21,8 @@ public sealed class ComplianceReportsGenerator : ISourceGenerator
 
     private const string FallbackFileName = "ComplianceReport.json";
 
+    private readonly string _fileName;
     private string? _directory;
-    private string _fileName;
 
     public ComplianceReportsGenerator()
         : this(null)
@@ -55,7 +58,7 @@ public sealed class ComplianceReportsGenerator : ISourceGenerator
 
         if (!GeneratorUtilities.ShouldGenerateReport(context, GenerateComplianceReportsMSBuildProperty))
         {
-            // By default, compliance reports are only generated only during build time and not during design time to prevent the file being written on every keystroke in VS.
+            // By default, compliance reports are generated only during build time and not during design time to prevent the file being written on every keystroke in VS.
             return;
         }
 
@@ -78,19 +81,30 @@ public sealed class ComplianceReportsGenerator : ISourceGenerator
 
         context.CancellationToken.ThrowIfCancellationRequested();
 
-        if (_directory == null)
+        var options = context.AnalyzerConfigOptions.GlobalOptions;
+        _directory ??= GeneratorUtilities.TryRetrieveOptionsValue(options, ComplianceReportOutputPathMSBuildProperty, out var reportOutputPath)
+            ? reportOutputPath!
+            : GeneratorUtilities.GetDefaultReportOutputPath(options);
+
+        if (string.IsNullOrWhiteSpace(_directory))
         {
-            _ = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(ComplianceReportOutputPathMSBuildProperty, out _directory);
-            if (string.IsNullOrWhiteSpace(_directory))
-            {
-                // no valid output path
-                return;
-            }
+            // Report diagnostic:
+            var diagnostic = new DiagnosticDescriptor(
+                DiagnosticIds.AuditReports.AUDREPGEN001,
+                "ComplianceReports generator couldn't resolve output path for the report. It won't be generated.",
+                "Both <ComplianceReportOutputPath> and <OutputPath> MSBuild properties are not set. The report won't be generated.",
+                nameof(DiagnosticIds.AuditReports),
+                DiagnosticSeverity.Info,
+                isEnabledByDefault: true,
+                helpLinkUri: string.Format(CultureInfo.InvariantCulture, DiagnosticIds.UrlFormat, DiagnosticIds.AuditReports.AUDREPGEN001));
+
+            context.ReportDiagnostic(Diagnostic.Create(diagnostic, location: null));
+            return;
         }
 
         _ = Directory.CreateDirectory(_directory);
 
         // Write report as JSON file.
-        File.WriteAllText(Path.Combine(_directory, _fileName), report);
+        File.WriteAllText(Path.Combine(_directory, _fileName), report, Encoding.UTF8);
     }
 }

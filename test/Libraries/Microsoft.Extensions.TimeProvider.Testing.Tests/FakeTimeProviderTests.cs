@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Time.Testing;
@@ -166,14 +167,6 @@ public class FakeTimeProviderTests
     }
 
     private readonly TimeSpan _infiniteTimeout = TimeSpan.FromMilliseconds(-1);
-
-    [Fact]
-    public void Delay_InvalidArgs()
-    {
-        var timeProvider = new FakeTimeProvider();
-        _ = Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => timeProvider.Delay(TimeSpan.FromTicks(-1), CancellationToken.None));
-        _ = Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => timeProvider.Delay(_infiniteTimeout, CancellationToken.None));
-    }
 
     [Fact]
     public async Task Delay_Zero()
@@ -360,5 +353,32 @@ public class FakeTimeProviderTests
         }, null, TimeSpan.Zero, oneSecond);
 
         Assert.True(true, "Yay, we didn't enter an infinite loop!");
+    }
+
+    [Fact]
+    public void ShouldResetGateUnderLock_PreventingContextSwitching_AffectionOnTimerCallback()
+    {
+        // Arrange
+        var provider = new FakeTimeProvider { AutoAdvanceAmount = TimeSpan.FromSeconds(2) };
+        var calls = new List<object?>();
+        using var timer = provider.CreateTimer(calls.Add, "timer-1", TimeSpan.FromSeconds(3), TimeSpan.Zero);
+        var th = new Thread(() => provider.GetUtcNow());
+        provider.GateOpening += (_, _) =>
+        {
+            if (!th.IsAlive)
+            {
+                th.Start();
+            }
+
+            // use a timeout to prevent deadlock
+            th.Join(TimeSpan.FromMilliseconds(200));
+        };
+
+        // Act
+        provider.GetUtcNow();
+        th.Join();
+
+        // Assert
+        Assert.Single(calls);
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.Shared.Pools;
 /// to get the buffer.
 /// </remarks>
 /// <example>
-/// <code>
+/// <code language="csharp">
 /// using var rental = new RentedSpan&lt;char&gt;(length);
 /// var span = rental.Rented ? rental.Span : stackalloc char[length];
 /// </code>

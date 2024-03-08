@@ -38,7 +38,7 @@ public partial class ResourceMonitoringOptions
     /// The default value is 1 second.
     /// </value>
     /// <remarks>
-    /// This value must be &lt;= to <see cref="CollectionWindow"/>.
+    /// This value must be less than or equal to <see cref="CollectionWindow"/>.
     /// </remarks>
     [TimeSpan(MinimumSamplingPeriod, MaximumSamplingPeriod)]
     public TimeSpan SamplingInterval { get; set; } = DefaultSamplingInterval;
@@ -50,7 +50,7 @@ public partial class ResourceMonitoringOptions
     /// The default value is 5 seconds.
     /// </value>
     /// <remarks>
-    /// The value needs to be &lt;= to <see cref="CollectionWindow"/>.
+    /// The value needs to be less than or equal to <see cref="CollectionWindow"/>.
     /// </remarks>
     [TimeSpan(MinimumSamplingWindow, MaximumSamplingWindow)]
     public TimeSpan PublishingWindow { get; set; } = DefaultCollectionWindow;

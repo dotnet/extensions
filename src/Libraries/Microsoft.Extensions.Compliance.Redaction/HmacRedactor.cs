@@ -17,7 +17,10 @@ using System.Text;
 
 namespace Microsoft.Extensions.Compliance.Redaction;
 
-internal sealed class HmacRedactor : Redactor
+/// <summary>
+/// A redactor using HMACSHA256 to encode data being redacted.
+/// </summary>
+public sealed class HmacRedactor : Redactor
 {
 #if NET6_0_OR_GREATER
     private const int SHA256HashSizeInBytes = 32;
@@ -33,18 +36,23 @@ internal sealed class HmacRedactor : Redactor
     private readonly byte[] _hashKey;
     private readonly string _keyId;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HmacRedactor"/> class.
+    /// </summary>
+    /// <param name="options">Controls the behavior of the redactor.</param>
     public HmacRedactor(IOptions<HmacRedactorOptions> options)
     {
-        var value = Throw.IfMemberNull(options, options.Value);
+        var value = Throw.IfMemberNull(options, options?.Value);
 
         _hashKey = Convert.FromBase64String(value.Key);
         _keyId = value.KeyId.HasValue ? value.KeyId.Value.ToInvariantString() + ':' : string.Empty;
         _redactedLength = Base64HashLength + _keyId.Length;
     }
 
-    public override int GetRedactedLength(ReadOnlySpan<char> source)
+    /// <inheritdoc />
+    public override int GetRedactedLength(ReadOnlySpan<char> input)
     {
-        if (source.IsEmpty)
+        if (input.IsEmpty)
         {
             return 0;
         }
@@ -53,6 +61,7 @@ internal sealed class HmacRedactor : Redactor
     }
 
 #if NET6_0_OR_GREATER
+    /// <inheritdoc />
     public override int Redact(ReadOnlySpan<char> source, Span<char> destination)
     {
         var length = GetRedactedLength(source);
@@ -82,6 +91,7 @@ internal sealed class HmacRedactor : Redactor
 
 #else
 
+    /// <inheritdoc />
     public override int Redact(ReadOnlySpan<char> source, Span<char> destination)
     {
         const int RemainingBytesToPadForBase64Hash = BytesOfHashWeUse % 3;

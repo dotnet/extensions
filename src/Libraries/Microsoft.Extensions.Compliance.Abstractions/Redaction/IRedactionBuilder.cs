@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,7 +25,7 @@ public interface IRedactionBuilder
     /// <param name="classifications">The data classifications for which the redactor type should be used.</param>
     /// <returns>The value of this instance.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="classifications" /> is <see langword="null" />.</exception>
-    IRedactionBuilder SetRedactor<T>(params DataClassificationSet[] classifications)
+    IRedactionBuilder SetRedactor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(params DataClassificationSet[] classifications)
         where T : Redactor;
 
     /// <summary>
@@ -32,6 +33,6 @@ public interface IRedactionBuilder
     /// </summary>
     /// <typeparam name="T">Redactor type.</typeparam>
     /// <returns>The value of this instance.</returns>
-    IRedactionBuilder SetFallbackRedactor<T>()
+    IRedactionBuilder SetFallbackRedactor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
         where T : Redactor;
 }

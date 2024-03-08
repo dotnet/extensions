@@ -51,6 +51,8 @@ public static class ResourceMonitoringServiceCollectionExtensions
         return services.AddResourceMonitoringInternal(configure);
     }
 
+    // can't easily test the exception throwing case
+    [ExcludeFromCodeCoverage]
     private static IServiceCollection AddResourceMonitoringInternal(
         this IServiceCollection services,
         Action<IResourceMonitorBuilder> configure)
@@ -62,13 +64,17 @@ public static class ResourceMonitoringServiceCollectionExtensions
 #if NETFRAMEWORK
         _ = builder.AddWindowsProvider();
 #else
-        if (GetPlatform() == PlatformID.Win32NT)
+        if (OperatingSystem.IsWindows())
         {
             _ = builder.AddWindowsProvider();
         }
-        else
+        else if (OperatingSystem.IsLinux())
         {
             _ = builder.AddLinuxProvider();
+        }
+        else
+        {
+            throw new PlatformNotSupportedException();
         }
 #endif
 
@@ -76,20 +82,6 @@ public static class ResourceMonitoringServiceCollectionExtensions
 
         return services;
     }
-
-#if !NETFRAMEWORK
-    [ExcludeFromCodeCoverage]
-    private static PlatformID GetPlatform()
-    {
-        var os = Environment.OSVersion;
-        if (os.Platform != PlatformID.Win32NT && os.Platform != PlatformID.Unix)
-        {
-            throw new NotSupportedException("Resource monitoring is not supported on this operating system.");
-        }
-
-        return os.Platform;
-    }
-#endif
 
     private static ResourceMonitorBuilder AddWindowsProvider(this ResourceMonitorBuilder builder)
     {
@@ -118,7 +110,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
     }
 
 #if !NETFRAMEWORK
-    private static IResourceMonitorBuilder AddLinuxProvider(this IResourceMonitorBuilder builder)
+    private static ResourceMonitorBuilder AddLinuxProvider(this ResourceMonitorBuilder builder)
     {
         _ = Throw.IfNull(builder);
 

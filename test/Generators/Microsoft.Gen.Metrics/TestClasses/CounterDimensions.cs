@@ -8,6 +8,11 @@ namespace TestClasses
 #pragma warning disable SA1402 // File may only contain a single type
     public class CounterDimensions : CounterParentDimensions
     {
+        // The generator should ignore these statics:
+        public const string Const = "Constant Value";
+
+        public static string Static = "Static Value";
+
         public string? Dim1;
 
         public CounterOperations OperationsEnum { get; set; }

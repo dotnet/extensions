@@ -64,6 +64,7 @@ public class LogParserUtilitiesTests
             null!,
             null!,
             null!,
+            null!,
             null!);
 
         var diagMock = new Mock<Action<Diagnostic>>();
@@ -110,6 +111,7 @@ public class LogParserUtilitiesTests
             null!,
             null!,
             null!,
+            null!,
             Mock.Of<INamedTypeSymbol>());
 
         var diagMock = new Mock<Action<Diagnostic>>();
@@ -125,6 +127,7 @@ public class LogParserUtilitiesTests
     public void ProcessLogPropertiesForParameter_ShouldNotThrow_WhenNoMembersOnType(bool isNull)
     {
         var symbolHolder = new SymbolHolder(
+            null!,
             null!,
             null!,
             null!,

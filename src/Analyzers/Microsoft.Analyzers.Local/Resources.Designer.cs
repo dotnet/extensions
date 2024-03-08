@@ -115,6 +115,33 @@ namespace Microsoft.Extensions.LocalAnalyzers {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Externally visible XML documentation references an internal member, this will perplex the readers..
+        /// </summary>
+        internal static string InternalReferencedInPublicDocDescription {
+            get {
+                return ResourceManager.GetString("InternalReferencedInPublicDocDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove the reference or make &apos;{0}&apos; externally visible; also consider making the referencing member private or internal.
+        /// </summary>
+        internal static string InternalReferencedInPublicDocMessage {
+            get {
+                return ResourceManager.GetString("InternalReferencedInPublicDocMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Externally visible documentation references internals.
+        /// </summary>
+        internal static string InternalReferencedInPublicDocTitle {
+            get {
+                return ResourceManager.GetString("InternalReferencedInPublicDocTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Symbols being added to the public API of an assembly must be marked as experimental until they have been appoved.
         /// </summary>
         internal static string NewSymbolsMustBeMarkedExperimentalDescription {

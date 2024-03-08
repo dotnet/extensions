@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Shared.Diagnostics;
 
@@ -19,7 +20,7 @@ public static class EnrichmentServiceCollectionExtensions
     /// <typeparam name="T">Enricher type.</typeparam>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
-    public static IServiceCollection AddLogEnricher<T>(this IServiceCollection services)
+    public static IServiceCollection AddLogEnricher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IServiceCollection services)
         where T : class, ILogEnricher
         => Throw.IfNull(services).AddSingleton<ILogEnricher, T>();
 
@@ -40,7 +41,7 @@ public static class EnrichmentServiceCollectionExtensions
     /// <typeparam name="T">Enricher type.</typeparam>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
-    public static IServiceCollection AddStaticLogEnricher<T>(this IServiceCollection services)
+    public static IServiceCollection AddStaticLogEnricher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IServiceCollection services)
         where T : class, IStaticLogEnricher
         => Throw.IfNull(services).AddSingleton<IStaticLogEnricher, T>();
 

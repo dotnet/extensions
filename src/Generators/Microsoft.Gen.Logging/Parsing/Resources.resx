@@ -207,17 +207,17 @@
   <data name="ShouldntMentionLoggerInMessageTitle" xml:space="preserve">
     <value>Don't include logger parameters as templates</value>
   </data>
-  <data name="MissingLoggerFieldMessage" xml:space="preserve">
-    <value>Couldn't find a field of type "Microsoft.Extensions.Logging.ILogger" in type "{0}"</value>
+  <data name="MissingLoggerMemberMessage" xml:space="preserve">
+    <value>Couldn't find a field or property of type "Microsoft.Extensions.Logging.ILogger" in type "{0}"</value>
   </data>
-  <data name="MissingLoggerFieldTitle" xml:space="preserve">
-    <value>Couldn't find a field of type "Microsoft.Extensions.Logging.ILogger"</value>
+  <data name="MissingLoggerMemberTitle" xml:space="preserve">
+    <value>Couldn't find a field or property of type "Microsoft.Extensions.Logging.ILogger"</value>
   </data>
-  <data name="MultipleLoggerFieldsMessage" xml:space="preserve">
-    <value>Found multiple fields of type "Microsoft.Extensions.Logging.ILogger" in type "{0}"</value>
+  <data name="MultipleLoggerMembersMessage" xml:space="preserve">
+    <value>Found multiple fields or properties of type "Microsoft.Extensions.Logging.ILogger" in type "{0}"</value>
   </data>
-  <data name="MultipleLoggerFieldsTitle" xml:space="preserve">
-    <value>Multiple fields of type "Microsoft.Extensions.Logging.ILogger" were found</value>
+  <data name="MultipleLoggerMembersTitle" xml:space="preserve">
+    <value>Multiple fields or properties of type "Microsoft.Extensions.Logging.ILogger" were found</value>
   </data>
   <data name="InvalidTypeToLogPropertiesMessage" xml:space="preserve">
     <value>Can't log properties of items of type "{0}"</value>
@@ -256,7 +256,7 @@
     <value>Tag provider method not found</value>
   </data>
   <data name="TagProviderMethodInvalidSignatureTitle" xml:space="preserve">
-    <value>Property provider method has an invalid signature</value>
+    <value>Tag provider method has an invalid signature</value>
   </data>
   <data name="LoggingMethodParameterRefKindMessage" xml:space="preserve">
     <value>Logging method "{0}" has parameter "{1}" with either "ref" or "out" modifier</value>
@@ -282,11 +282,11 @@
   <data name="LogPropertiesHiddenPropertyDetectedTitle" xml:space="preserve">
     <value>Logging method parameter's type has a hidden property</value>
   </data>
-  <data name="LogPropertiesNameCollisionMessage" xml:space="preserve">
-    <value>Parameter "{0}" causes name conflict with name "{1}" within logging method "{2}"</value>
+  <data name="TagNameCollisionMessage" xml:space="preserve">
+    <value>Parameter "{0}" causes a tag name conflict with name "{1}" within logging method "{2}"</value>
   </data>
-  <data name="LogPropertiesNameCollisionTitle" xml:space="preserve">
-    <value>A logging method parameter causes name conflicts</value>
+  <data name="TagNameCollisionTitle" xml:space="preserve">
+    <value>A logging method parameter causes a tag name conflicts</value>
   </data>
   <data name="EmptyLoggingMethodTitle" xml:space="preserve">
     <value>Logging method doesn't log anything</value>
@@ -295,7 +295,7 @@
     <value>Logging method "{0}" doesn't have anything to be logged</value>
   </data>
   <data name="TagProviderMethodInvalidSignatureMessage" xml:space="preserve">
-    <value>Property provider method "{0}" in type "{1}" doesn't have a signature compatible with "{2}"</value>
+    <value>Tag provider method "{0}" in type "{1}" doesn't have a signature compatible with "{2}"</value>
   </data>
   <data name="TemplateStartsWithAtSymbolMessage" xml:space="preserve">
     <value>Logging method "{0}" has template(s) that start with "@": {1}</value>
@@ -332,5 +332,11 @@
   </data>
   <data name="RecordTypeSensitiveArgumentIsInTemplateTitle" xml:space="preserve">
     <value>The logging method parameter leaks sensitive data</value>
+  </data>
+  <data name="DefaultToStringMessage" xml:space="preserve">
+    <value>The type "{0}" doesn't implement ToString(), IConvertible, or IFormattable (did you forget to apply [LogProperties] or [TagProvider] to "{1}"?)</value>
+  </data>
+  <data name="DefaultToStringTitle" xml:space="preserve">
+    <value>A value being logged doesn't have an effective way to be converted into a string</value>
   </data>
 </root>

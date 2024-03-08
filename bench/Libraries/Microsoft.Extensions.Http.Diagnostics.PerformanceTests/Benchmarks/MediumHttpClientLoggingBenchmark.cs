@@ -16,28 +16,28 @@ public class MediumHttpClientLoggingBenchmark
     private const int ReadSizeLimit = 16384;
     private static HttpRequestMessage Request => new(HttpMethod.Post, "https://www.microsoft.com");
 
-    private static readonly System.Net.Http.HttpClient _mediumNoLog
+    private static readonly HttpClient _mediumNoLog
         = HttpClientFactory.CreateWithoutLogging(DataFileName);
 
-    private static readonly System.Net.Http.HttpClient _mediumLogAll
+    private static readonly HttpClient _mediumLogAll
         = HttpClientFactory.CreateWithLoggingLogAll(DataFileName, ReadSizeLimit);
 
-    private static readonly System.Net.Http.HttpClient _mediumLogRequest
+    private static readonly HttpClient _mediumLogRequest
         = HttpClientFactory.CreateWithLoggingLogRequest(DataFileName, ReadSizeLimit);
 
-    private static readonly System.Net.Http.HttpClient _mediumLogResponse
+    private static readonly HttpClient _mediumLogResponse
         = HttpClientFactory.CreateWithLoggingLogResponse(DataFileName, ReadSizeLimit);
 
-    private static readonly System.Net.Http.HttpClient _mediumNoLogChunked
+    private static readonly HttpClient _mediumNoLogChunked
         = HttpClientFactory.CreateWithoutLogging_ChunkedEncoding(DataFileName);
 
-    private static readonly System.Net.Http.HttpClient _mediumLogAllChunked
+    private static readonly HttpClient _mediumLogAllChunked
         = HttpClientFactory.CreateWithLoggingLogAll_ChunkedEncoding(DataFileName, ReadSizeLimit);
 
-    private static readonly System.Net.Http.HttpClient _mediumLogRequestChunked
+    private static readonly HttpClient _mediumLogRequestChunked
         = HttpClientFactory.CreateWithLoggingLogRequest_ChunkedEncoding(DataFileName, ReadSizeLimit);
 
-    private static readonly System.Net.Http.HttpClient _mediumLogResponseChunked
+    private static readonly HttpClient _mediumLogResponseChunked
         = HttpClientFactory.CreateWithLoggingLogResponse_ChunkedEncoding(DataFileName, ReadSizeLimit);
 
     [Benchmark(Baseline = true)]

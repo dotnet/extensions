@@ -75,7 +75,7 @@ public class FakeLoggerProvider : ILoggerProvider, ISupportExternalScope
     }
 
     /// <summary>
-    /// Clean up resources held by this object.
+    /// Cleans up resources held by this object.
     /// </summary>
     public void Dispose()
     {
@@ -89,7 +89,7 @@ public class FakeLoggerProvider : ILoggerProvider, ISupportExternalScope
     public FakeLogCollector Collector { get; }
 
     /// <summary>
-    /// Clean up resources held by this object.
+    /// Cleans up resources held by this object.
     /// </summary>
     /// <param name="disposing"><see langword="true"/> when called from the <see cref="Dispose()"/> method, <see langword="false"/> when called from a finalizer.</param>
     protected virtual void Dispose(bool disposing)

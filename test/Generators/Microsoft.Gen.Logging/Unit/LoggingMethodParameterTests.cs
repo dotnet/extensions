@@ -14,7 +14,7 @@ public class LoggingMethodParameterTests
     public void Fields_Should_BeInitialized()
     {
         var instance = new LoggingMethodParameter();
-        Assert.Empty(instance.Name);
+        Assert.Empty(instance.ParameterName);
         Assert.Empty(instance.Type);
     }
 
@@ -57,13 +57,13 @@ public class LoggingMethodParameterTests
     {
         var lp = new LoggingMethodParameter
         {
-            Name = "Foo",
+            ParameterName = "Foo",
             NeedsAtSign = false,
         };
 
-        Assert.Equal(lp.Name, lp.NameWithAt);
+        Assert.Equal(lp.ParameterName, lp.ParameterNameWithAtIfNeeded);
         lp.NeedsAtSign = true;
-        Assert.Equal("@" + lp.Name, lp.NameWithAt);
+        Assert.Equal("@" + lp.ParameterName, lp.ParameterNameWithAtIfNeeded);
 
         lp.Type = "Foo";
         lp.IsReference = false;

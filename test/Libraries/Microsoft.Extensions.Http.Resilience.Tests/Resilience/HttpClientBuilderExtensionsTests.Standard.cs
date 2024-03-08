@@ -116,7 +116,7 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
     {
         var builder = new ServiceCollection().AddHttpClient("test");
 
-        Assert.Throws<ArgumentNullException>(() => AddStandardResilienceHandler(mode, builder, _emptyConfigurationSection, options => { }));
+        Assert.Throws<ArgumentException>(() => AddStandardResilienceHandler(mode, builder, _emptyConfigurationSection, options => { }));
     }
 
     [InlineData(MethodArgs.Configuration)]

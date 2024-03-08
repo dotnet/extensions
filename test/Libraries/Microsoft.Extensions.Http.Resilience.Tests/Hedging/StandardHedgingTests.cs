@@ -147,7 +147,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
             { "dummy", "" }
         }).GetSection("dummy");
 
-        Assert.Throws<ArgumentNullException>(() =>
+        Assert.Throws<ArgumentException>(() =>
             Builder.Configure(section));
     }
 
@@ -156,7 +156,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     {
         var section = ConfigurationStubFactory.CreateEmpty().GetSection(string.Empty);
 
-        Assert.Throws<ArgumentNullException>(() =>
+        Assert.Throws<ArgumentException>(() =>
             Builder.Configure(section));
     }
 

@@ -122,7 +122,7 @@ public static class ArraysTests
                 Assembly.GetAssembly(typeof(ImmutableDictionary<,>))!,
                 Assembly.GetAssembly(typeof(FrozenDictionary<,>))!,
             },
-            new[] { Source }).ConfigureAwait(false);
+            new[] { Source });
 
         Assert.Equal(54, d.Count);
         for (int i = 0; i < d.Count; i++)

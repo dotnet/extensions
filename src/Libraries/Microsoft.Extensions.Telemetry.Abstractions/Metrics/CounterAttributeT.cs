@@ -9,14 +9,14 @@ namespace Microsoft.Extensions.Diagnostics.Metrics;
 #pragma warning disable SA1649 // File name should match first type name
 
 /// <summary>
-/// Provides information to guide the production of a strongly-typed 64 bit integer counter metric factory method and associated type.
+/// Provides information to guide the production of a strongly typed 64 bit integer counter metric factory method and associated type.
 /// </summary>
 /// <typeparam name="T">
 /// The type of value the counter will hold, which is limited to <see cref="byte"/>, <see cref="short"/>, <see cref="int"/>, <see cref="long"/>,
 /// <see cref="float"/>, <see cref="double"/>, or <see cref="decimal"/>.
 /// </typeparam>
 /// <remarks>
-/// This attribute is applied to a method which has the following constraints:
+/// This attribute is applied to a method that has the following constraints:
 /// <list type="bullet">
 /// <item><description>Must be a partial method.</description></item>
 /// <item><description>Must return <c>metricName</c> as the type. A class with that name will be generated.</description></item>
@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Diagnostics.Metrics;
 /// </list>
 /// </remarks>
 /// <example>
-/// <code>
+/// <code language="csharp">
 /// static partial class Metric
 /// {
 ///     [Counter&lt;int&gt;("RequestName", "RequestStatusCode")]
@@ -61,7 +61,9 @@ public sealed class CounterAttribute<T> : Attribute
     /// Gets or sets the name of the metric.
     /// </summary>
     /// <example>
-    /// <code>
+    /// In this example, the metric name is <c>SampleMetric</c>. When <c>Name</c> is not provided, the return type of the method is used as the metric name. In this example,
+    /// the metric name would be <c>RequestCounter</c> if <c>Name</c> wasn't provided.
+    /// <code language="csharp">
     /// static partial class Metric
     /// {
     ///     [Counter&lt;int&gt;("RequestName", "RequestStatusCode", Name="SampleMetric")]
@@ -69,11 +71,6 @@ public sealed class CounterAttribute<T> : Attribute
     /// }
     /// </code>
     /// </example>
-    /// <remarks>
-    /// In this example, the metric name is <c>SampleMetric</c>. When <c>Name</c> is not provided
-    /// the return type of the method is used as metric name. In this example, this would
-    /// be <c>RequestCounter</c> if <c>Name</c> wasn't provided.
-    /// </remarks>
     public string? Name { get; set; }
 
     /// <summary>

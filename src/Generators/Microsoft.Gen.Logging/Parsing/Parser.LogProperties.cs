@@ -47,13 +47,13 @@ internal partial class Parser
             paramTypeSymbol = ((INamedTypeSymbol)paramTypeSymbol).TypeArguments[0];
         }
 
-        (lp.SkipNullProperties, lp.OmitReferenceName) = AttributeProcessors.ExtractLogPropertiesAttributeValues(logPropertiesAttribute);
+        (lp.SkipNullProperties, lp.OmitReferenceName, bool transitive) = AttributeProcessors.ExtractLogPropertiesAttributeValues(logPropertiesAttribute);
 
         var typesChain = new HashSet<ITypeSymbol>(SymbolEqualityComparer.Default);
 
         _ = typesChain.Add(paramTypeSymbol); // Add itself
 
-        var props = GetTypePropertiesToLog(paramTypeSymbol, typesChain, symbols, ref foundDataClassificationAttributes);
+        var props = GetTypePropertiesToLog(paramTypeSymbol, typesChain, symbols, transitive, ref foundDataClassificationAttributes);
         if (props == null)
         {
             return false;
@@ -86,6 +86,7 @@ internal partial class Parser
             ITypeSymbol type,
             ISet<ITypeSymbol> typesChain,
             SymbolHolder symbols,
+            bool transitive,
             ref bool foundDataClassificationAttributes)
         {
             var result = new List<LoggingProperty>();
@@ -182,9 +183,15 @@ internal partial class Parser
                         extractedType = ((INamedTypeSymbol)extractedType).TypeArguments[0];
                     }
 
+                    var tagNameAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.TagNameAttribute, property);
+                    var tagName = tagNameAttribute != null
+                        ? AttributeProcessors.ExtractTagNameAttributeValues(tagNameAttribute)
+                        : property.Name;
+
                     var lp = new LoggingProperty
                     {
-                        Name = property.Name,
+                        PropertyName = property.Name,
+                        TagName = tagName,
                         Type = property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                         ClassificationAttributeTypes = classification,
                         IsReference = property.Type.IsReferenceType,
@@ -193,6 +200,7 @@ internal partial class Parser
                         ImplementsIConvertible = property.Type.ImplementsIConvertible(symbols),
                         ImplementsIFormattable = property.Type.ImplementsIFormattable(symbols),
                         ImplementsISpanFormattable = property.Type.ImplementsISpanFormattable(symbols),
+                        HasCustomToString = property.Type.HasCustomToString(),
                     };
 
                     if (!property.DeclaringSyntaxReferences.IsDefaultOrEmpty)
@@ -233,14 +241,16 @@ internal partial class Parser
                         return null;
                     }
 
-                    if (logPropertiesAttribute != null)
+                    if (logPropertiesAttribute != null || (transitive && tagProviderAttribute == null && logPropertyIgnoreAttribute == null))
                     {
-                        _ = CanLogProperties(property, property.Type, symbols);
-
                         if ((property.DeclaredAccessibility != Accessibility.Public || property.IsStatic)
                             || (property.GetMethod == null || property.GetMethod.DeclaredAccessibility != Accessibility.Public))
                         {
-                            Diag(DiagDescriptors.InvalidAttributeUsage, logPropertiesAttribute.ApplicationSyntaxReference?.GetSyntax(_cancellationToken).GetLocation(), "LogProperties");
+                            if (logPropertiesAttribute != null)
+                            {
+                                Diag(DiagDescriptors.InvalidAttributeUsage, logPropertiesAttribute.ApplicationSyntaxReference?.GetSyntax(_cancellationToken).GetLocation(), "LogProperties");
+                            }
+
                             continue;
                         }
 
@@ -260,13 +270,16 @@ internal partial class Parser
                             extractedType = ((INamedTypeSymbol)extractedType).TypeArguments[0];
                         }
 
-                        _ = typesChain.Add(namedType);
-                        var props = GetTypePropertiesToLog(extractedType, typesChain, symbols, ref foundDataClassificationAttributes);
-                        _ = typesChain.Remove(namedType);
-
-                        if (props != null)
+                        if (CanLogProperties(property, property.Type, symbols, silent: logPropertiesAttribute == null))
                         {
-                            lp.Properties.AddRange(props);
+                            _ = typesChain.Add(namedType);
+                            var props = GetTypePropertiesToLog(extractedType, typesChain, symbols, transitive, ref foundDataClassificationAttributes);
+                            _ = typesChain.Remove(namedType);
+
+                            if (props != null)
+                            {
+                                lp.Properties.AddRange(props);
+                            }
                         }
                     }
 
@@ -284,7 +297,7 @@ internal partial class Parser
                         }
                     }
 
-                    if (tagProviderAttribute == null && logPropertiesAttribute == null)
+                    if (tagProviderAttribute == null && logPropertiesAttribute == null && !transitive)
                     {
                         if ((property.DeclaredAccessibility != Accessibility.Public || property.IsStatic)
                             || (property.GetMethod == null || property.GetMethod.DeclaredAccessibility != Accessibility.Public)
@@ -301,6 +314,15 @@ internal partial class Parser
                         lp.ClassificationAttributeTypes.Clear();
                     }
 
+                    if ((logPropertiesAttribute is null)
+                        && (tagProviderAttribute is null)
+                        && !lp.IsStringifiable
+                        && property.Type.Kind != SymbolKind.TypeParameter
+                        && !transitive)
+                    {
+                        Diag(DiagDescriptors.DefaultToString, property.GetLocation(), property.Type, property.Name);
+                    }
+
                     result.Add(lp);
                 }
 
@@ -311,7 +333,7 @@ internal partial class Parser
             return result;
         }
 
-        bool CanLogProperties(ISymbol sym, ITypeSymbol symType, SymbolHolder symbols)
+        bool CanLogProperties(ISymbol sym, ITypeSymbol symType, SymbolHolder symbols, bool silent = false)
         {
             var isRegularType =
                 symType.Kind == SymbolKind.NamedType &&
@@ -326,7 +348,11 @@ internal partial class Parser
 
             if (!isRegularType || symType.IsSpecialType(symbols))
             {
-                Diag(DiagDescriptors.InvalidTypeToLogProperties, sym.GetLocation(), symType.ToDisplayString());
+                if (!silent)
+                {
+                    Diag(DiagDescriptors.InvalidTypeToLogProperties, sym.GetLocation(), symType.ToDisplayString());
+                }
+
                 return false;
             }
 

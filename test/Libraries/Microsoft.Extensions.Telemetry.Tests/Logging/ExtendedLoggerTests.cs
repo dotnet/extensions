@@ -16,8 +16,9 @@ namespace Microsoft.Extensions.Logging.Test;
 
 public static class ExtendedLoggerTests
 {
-    [Fact]
-    public static void Basic()
+    [Theory]
+    [CombinatorialData]
+    public static void FeatureEnablement(bool enableRedaction, bool enableEnrichment)
     {
         const string Category = "C1";
 
@@ -39,11 +40,14 @@ public static class ExtendedLoggerTests
             RedactionFormat = "REDACTED<{0}>",
         });
 
+        var enrichmentOptions = enableEnrichment ? new StaticOptionsMonitor<LoggerEnrichmentOptions>(new()) : null;
+        var redactionOptions = enableRedaction ? new StaticOptionsMonitor<LoggerRedactionOptions>(new() { ApplyDiscriminator = false }) : null;
+
         using var lf = new ExtendedLoggerFactory(
             providers: new[] { provider },
             filterOptions: new StaticOptionsMonitor<LoggerFilterOptions>(new()),
-            enrichmentOptions: new StaticOptionsMonitor<LoggerEnrichmentOptions>(new()),
-            redactionOptions: new StaticOptionsMonitor<LoggerRedactionOptions>(new() { ApplyDiscriminator = false }),
+            enrichmentOptions: enrichmentOptions,
+            redactionOptions: redactionOptions,
             enrichers: new[] { enricher },
             staticEnrichers: new[] { staticEnricher },
             redactorProvider: redactorProvider,
@@ -74,18 +78,45 @@ public static class ExtendedLoggerTests
         Assert.Null(snap[0].Exception);
         Assert.Equal(new EventId(0), snap[0].Id);
         Assert.Equal("MSG0", snap[0].Message);
-        Assert.Equal("EV1", snap[0].StructuredState!.GetValue("EK1"));
-        Assert.Equal("SEV1", snap[0].StructuredState!.GetValue("SEK1"));
+
+        if (enableEnrichment)
+        {
+            Assert.Equal("SEV1", snap[0].GetStructuredStateValue("SEK1"));
+            Assert.Equal("EV1", snap[0].GetStructuredStateValue("EK1"));
+        }
+        else
+        {
+            Assert.Null(snap[0].GetStructuredStateValue("SEK1"));
+            Assert.Null(snap[0].GetStructuredStateValue("EK1"));
+        }
 
         Assert.Equal(Category, snap[1].Category);
         Assert.Null(snap[1].Exception);
         Assert.Equal(new EventId(2, "ID2"), snap[1].Id);
         Assert.Equal("MSG2", snap[1].Message);
-        Assert.Equal("PV2", snap[1].StructuredState!.GetValue("PK2"));
-        Assert.Equal("REDACTED<PV3>", snap[1].StructuredState!.GetValue("PK3"));
-        Assert.Null(snap[1].StructuredState!.GetValue("PK4"));
-        Assert.Equal("EV1", snap[1].StructuredState!.GetValue("EK1"));
-        Assert.Equal("SEV1", snap[1].StructuredState!.GetValue("SEK1"));
+        Assert.Equal("PV2", snap[1].GetStructuredStateValue("PK2"));
+
+        if (enableRedaction)
+        {
+            Assert.Equal("REDACTED<PV3>", snap[1].GetStructuredStateValue("PK3"));
+        }
+        else
+        {
+            Assert.Equal("PV3", snap[1].GetStructuredStateValue("PK3"));
+        }
+
+        Assert.Null(snap[1].GetStructuredStateValue("PK4"));
+
+        if (enableEnrichment)
+        {
+            Assert.Equal("SEV1", snap[1].GetStructuredStateValue("SEK1"));
+            Assert.Equal("EV1", snap[1].GetStructuredStateValue("EK1"));
+        }
+        else
+        {
+            Assert.Null(snap[1].GetStructuredStateValue("SEK1"));
+            Assert.Null(snap[1].GetStructuredStateValue("EK1"));
+        }
     }
 
     [Theory]
@@ -132,16 +163,16 @@ public static class ExtendedLoggerTests
         Assert.Null(snap[0].Exception);
         Assert.Equal(new EventId(0), snap[0].Id);
         Assert.Equal("MSG0", snap[0].Message);
-        Assert.Equal("EV1", snap[0].StructuredState!.GetValue("EK1"));
-        Assert.Equal("EV2", snap[0].StructuredState!.GetValue("EK2"));
+        Assert.Equal("EV1", snap[0].GetStructuredStateValue("EK1"));
+        Assert.Equal("EV2", snap[0].GetStructuredStateValue("EK2"));
 
         Assert.Equal(Category, snap[1].Category);
         Assert.Null(snap[1].Exception);
         Assert.Equal(new EventId(2, "ID2"), snap[1].Id);
         Assert.Equal("MSG2", snap[1].Message);
-        Assert.Equal("PV2", snap[1].StructuredState!.GetValue("PK2"));
-        Assert.Equal("EV1", snap[1].StructuredState!.GetValue("EK1"));
-        Assert.Equal("EV2", snap[1].StructuredState!.GetValue("EK2"));
+        Assert.Equal("PV2", snap[1].GetStructuredStateValue("PK2"));
+        Assert.Equal("EV1", snap[1].GetStructuredStateValue("EK1"));
+        Assert.Equal("EV2", snap[1].GetStructuredStateValue("EK2"));
     }
 
     [Fact]
@@ -197,29 +228,29 @@ public static class ExtendedLoggerTests
         Assert.Null(snap[0].Exception);
         Assert.Equal(new EventId(0, "ID0"), snap[0].Id);
         Assert.Equal("MSG0", snap[0].Message);
-        Assert.Equal("EV1", snap[0].StructuredState!.GetValue("EK1"));
-        Assert.Equal("SEV1", snap[0].StructuredState!.GetValue("SEK1"));
+        Assert.Equal("EV1", snap[0].GetStructuredStateValue("EK1"));
+        Assert.Equal("SEV1", snap[0].GetStructuredStateValue("SEK1"));
 
         Assert.Equal(Category, snap[1].Category);
         Assert.Null(snap[1].Exception);
         Assert.Equal(new EventId(0, "ID0b"), snap[1].Id);
         Assert.Equal("MSG0b", snap[1].Message);
-        Assert.Equal("EV1", snap[1].StructuredState!.GetValue("EK1"));
-        Assert.Equal("SEV1", snap[1].StructuredState!.GetValue("SEK1"));
+        Assert.Equal("EV1", snap[1].GetStructuredStateValue("EK1"));
+        Assert.Equal("SEV1", snap[1].GetStructuredStateValue("SEK1"));
 
         Assert.Equal(Category, snap[2].Category);
         Assert.Null(snap[2].Exception);
         Assert.Equal(new EventId(2, "ID2"), snap[2].Id);
         Assert.Equal("MSG2", snap[2].Message);
-        Assert.Equal("EV1", snap[2].StructuredState!.GetValue("EK1"));
-        Assert.Equal("SEV1", snap[2].StructuredState!.GetValue("SEK1"));
+        Assert.Equal("EV1", snap[2].GetStructuredStateValue("EK1"));
+        Assert.Equal("SEV1", snap[2].GetStructuredStateValue("SEK1"));
 
         Assert.Equal(Category, snap[3].Category);
         Assert.Null(snap[3].Exception);
         Assert.Equal(new EventId(2, "ID2b"), snap[3].Id);
         Assert.Equal("MSG2b", snap[3].Message);
-        Assert.Equal("EV1", snap[3].StructuredState!.GetValue("EK1"));
-        Assert.Equal("SEV1", snap[3].StructuredState!.GetValue("SEK1"));
+        Assert.Equal("EV1", snap[3].GetStructuredStateValue("EK1"));
+        Assert.Equal("SEV1", snap[3].GetStructuredStateValue("SEK1"));
     }
 
     [Fact]
@@ -257,7 +288,7 @@ public static class ExtendedLoggerTests
         Assert.Null(snap[0].Exception);
         Assert.Equal(new EventId(0, "ID0"), snap[0].Id);
         Assert.Equal("MSG0", snap[0].Message);
-        Assert.Equal("V1", snap[0].StructuredState!.GetValue("K1"));
+        Assert.Equal("V1", snap[0].GetStructuredStateValue("K1"));
     }
 
     [Fact]
@@ -326,7 +357,29 @@ public static class ExtendedLoggerTests
         Assert.Null(snap[0].Exception);
         Assert.Equal(new EventId(0, "ID0"), snap[0].Id);
         Assert.Equal("MSG0", snap[0].Message);
-        Assert.Equal("PAYLOAD", snap[0].StructuredState!.GetValue("{OriginalFormat}"));
+        Assert.Equal("PAYLOAD", snap[0].GetStructuredStateValue("{OriginalFormat}"));
+    }
+
+    [Fact]
+    public static void StateToStringWorks()
+    {
+        using var provider = new CapturingProvider();
+        using var lf = new ExtendedLoggerFactory(
+            providers: new[] { provider },
+            filterOptions: new StaticOptionsMonitor<LoggerFilterOptions>(new()),
+            enrichmentOptions: new StaticOptionsMonitor<LoggerEnrichmentOptions>(new()),
+            redactionOptions: new StaticOptionsMonitor<LoggerRedactionOptions>(new()),
+            enrichers: Array.Empty<ILogEnricher>(),
+            staticEnrichers: Array.Empty<IStaticLogEnricher>(),
+            redactorProvider: null,
+            scopeProvider: null,
+            factoryOptions: null);
+
+        var logger = lf.CreateLogger("FOO");
+
+        logger.Log(LogLevel.Information, new EventId(0, "ID0"), "PAYLOAD", null, (_, _) => "MSG0");
+
+        Assert.Equal("PAYLOAD", provider.State!);
     }
 
     [Theory]
@@ -429,12 +482,10 @@ public static class ExtendedLoggerTests
         Assert.Equal(new EventId(2, "ID2b"), snap[3].Id);
         Assert.Equal("MSG2b", snap[3].Message);
 
-        var state = snap[3].StructuredState;
-
-        var exceptionType = state!.GetValue("exception.type")!;
+        var exceptionType = snap[3].GetStructuredStateValue("exception.type")!;
         Assert.Equal("System.AggregateException", exceptionType);
 
-        var stackTrace = state!.GetValue("exception.stacktrace")!;
+        var stackTrace = snap[3].GetStructuredStateValue("exception.stacktrace")!;
         Assert.Contains("AggregateException", stackTrace);
         Assert.Contains("ArgumentNullException", stackTrace);
         Assert.Contains("ArgumentOutOfRangeException", stackTrace);
@@ -442,7 +493,7 @@ public static class ExtendedLoggerTests
 
         if (includeExceptionMessage)
         {
-            var exceptionMessage = state!.GetValue("exception.message");
+            var exceptionMessage = snap[3].GetStructuredStateValue("exception.message");
             Assert.Equal("EM4 (EM1) (EM2) (EM3)", exceptionMessage);
 
             Assert.Contains("EM1", stackTrace);
@@ -452,6 +503,7 @@ public static class ExtendedLoggerTests
         }
         else
         {
+            var state = snap[3].StructuredState;
             Assert.DoesNotContain(state!, x => x.Key == "exception.message");
 
             Assert.DoesNotContain("EM1", stackTrace);
@@ -795,19 +847,6 @@ public static class ExtendedLoggerTests
         IsEnabled
     }
 
-    private static string? GetValue(this IReadOnlyList<KeyValuePair<string, string>> state, string name)
-    {
-        foreach (var kvp in state)
-        {
-            if (kvp.Key == name)
-            {
-                return kvp.Value;
-            }
-        }
-
-        return null;
-    }
-
     private sealed class Provider : ILoggerProvider
     {
         public FakeLogger? Logger { get; private set; }
@@ -821,6 +860,33 @@ public static class ExtendedLoggerTests
         public void Dispose()
         {
             // nothing to do
+        }
+    }
+
+    private sealed class CapturingProvider : ILoggerProvider
+    {
+        public object? State { get; private set; }
+        public ILogger CreateLogger(string categoryName) => new Logger(this);
+
+        public void Dispose()
+        {
+            // nothing to do
+        }
+
+        private sealed class Logger : ILogger
+        {
+            private readonly CapturingProvider _provider;
+
+            public Logger(CapturingProvider provider)
+            {
+                _provider = provider;
+            }
+
+            public IDisposable? BeginScope<TState>(TState state)
+                where TState : notnull => throw new NotSupportedException();
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) => _provider.State = state?.ToString();
         }
     }
 

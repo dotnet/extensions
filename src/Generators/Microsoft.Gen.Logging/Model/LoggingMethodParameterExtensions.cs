@@ -16,7 +16,8 @@ internal static class LoggingMethodParameterExtensions
 
         var firstProperty = new LoggingProperty
         {
-            Name = parameter.Name,
+            PropertyName = parameter.ParameterName,
+            TagName = parameter.TagName,
             NeedsAtSign = parameter.NeedsAtSign,
             Type = parameter.Type,
             IsNullable = parameter.IsNullable,

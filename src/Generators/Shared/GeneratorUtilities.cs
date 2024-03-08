@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 [assembly: System.Resources.NeutralResourcesLanguage("en-us")]
 
@@ -21,6 +23,9 @@ namespace Microsoft.Gen.Shared;
 #endif
 internal static class GeneratorUtilities
 {
+    private const string CompilationOutputPath = "build_property.outputpath";
+    private const string CurrentProjectPath = "build_property.projectdir";
+
     public static string GeneratedCodeAttribute { get; } = $"global::System.CodeDom.Compiler.GeneratedCodeAttribute(" +
                        $"\"{typeof(GeneratorUtilities).Assembly.GetName().Name}\", " +
                        $"\"{typeof(GeneratorUtilities).Assembly.GetName().Version}\")";
@@ -135,5 +140,27 @@ internal static class GeneratorUtilities
         _ = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(msBuildProperty, out var generateFiles);
 
         return string.Equals(generateFiles, bool.TrueString, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool TryRetrieveOptionsValue(AnalyzerConfigOptions options, string name, out string? value)
+        => options.TryGetValue(name, out value) && !string.IsNullOrWhiteSpace(value);
+
+    public static string GetDefaultReportOutputPath(AnalyzerConfigOptions options)
+    {
+        if (!TryRetrieveOptionsValue(options, CompilationOutputPath, out var compilationOutputPath))
+        {
+            return string.Empty;
+        }
+
+        // If <OutputPath> is absolute - return it right away:
+        if (Path.IsPathRooted(compilationOutputPath))
+        {
+            return compilationOutputPath!;
+        }
+
+        // Get <ProjectDir> and combine it with <OutputPath> if the former isn't empty:
+        return TryRetrieveOptionsValue(options, CurrentProjectPath, out var currentProjectPath)
+            ? Path.Combine(currentProjectPath!, compilationOutputPath!)
+            : string.Empty;
     }
 }

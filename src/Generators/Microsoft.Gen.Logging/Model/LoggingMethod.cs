@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Microsoft.Gen.Logging.Model;
 
@@ -14,7 +15,7 @@ namespace Microsoft.Gen.Logging.Model;
 internal sealed class LoggingMethod
 {
     public readonly List<LoggingMethodParameter> Parameters = [];
-    public readonly Dictionary<string, string> TemplateToParameterName = new(StringComparer.OrdinalIgnoreCase);
+    public readonly List<string> Templates = [];
     public string Name = string.Empty;
     public string Message = string.Empty;
     public int? Level;
@@ -24,12 +25,47 @@ internal sealed class LoggingMethod
     public bool IsExtensionMethod;
     public bool IsStatic;
     public string Modifiers = string.Empty;
-    public string LoggerField = "_logger";
-    public bool LoggerFieldNullable;
+    public string LoggerMember = "_logger";
+    public bool LoggerMemberNullable;
     public bool HasXmlDocumentation;
 
-    public string GetParameterNameInTemplate(LoggingMethodParameter parameter)
-        => TemplateToParameterName.TryGetValue(parameter.Name, out var value)
-            ? value
-            : parameter.Name;
+    public LoggingMethodParameter? GetParameterForTemplate(string templateName)
+    {
+        foreach (var p in Parameters)
+        {
+            if (templateName.Equals(p.TagName, StringComparison.OrdinalIgnoreCase))
+            {
+                return p;
+            }
+        }
+
+        return null;
+    }
+
+    public List<string> GetTemplatesForParameter(LoggingMethodParameter lp)
+    {
+        HashSet<string> templates = [];
+        foreach (var t in Templates)
+        {
+            if (lp.TagName.Equals(t, StringComparison.OrdinalIgnoreCase))
+            {
+                _ = templates.Add(t);
+            }
+        }
+
+        return templates.ToList();
+    }
+
+    public List<string> GetTemplatesForParameter(string parameterName)
+    {
+        foreach (var p in Parameters)
+        {
+            if (parameterName == p.ParameterName)
+            {
+                return GetTemplatesForParameter(p);
+            }
+        }
+
+        return [];
+    }
 }

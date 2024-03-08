@@ -7,7 +7,7 @@ using System.Diagnostics.Metrics;
 
 namespace Microsoft.Extensions.Resilience.Bench;
 
-internal class MetricsUtil
+internal sealed class MetricsUtil
 {
     public static MeterListener ListenPollyMetrics()
     {
