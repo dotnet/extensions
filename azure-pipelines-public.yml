@@ -1,0 +1,257 @@
+# Setting batch to true, triggers one build at a time.
+# if there is a push while a build in progress, it will wait,
+# until the running build finishes, and produce a build with all the changes
+# that happened during the last build.
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+      - dev
+      - release/*
+  paths:
+    include:
+      - '*'
+    exclude:
+      - eng/Version.Details.xml
+      - .github/*
+      - docs/*
+      - CODE_OF_CONDUCT.md
+      - CONTRIBUTING.md
+      - README.md
+      - SECURITY.md
+      - LICENSE.TXT
+      - PATENTS.TXT
+      - THIRD-PARTY-NOTICES.TXT
+
+pr:
+  branches:
+    include:
+      - main
+      - dev
+      - release/*
+  paths:
+    include:
+      - '*'
+    exclude:
+      - eng/Version.Details.xml
+      - .github/*
+      - docs/*
+      - CODE_OF_CONDUCT.md
+      - CONTRIBUTING.md
+      - README.md
+      - SECURITY.md
+      - LICENSE.TXT
+      - PATENTS.TXT
+      - THIRD-PARTY-NOTICES.TXT
+
+variables:
+  - name: Build.Arcade.ArtifactsPath
+    value: $(Build.SourcesDirectory)/artifacts/
+  - name: Build.Arcade.LogsPath
+    value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
+  - name: Build.Arcade.TestResultsPath
+    value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
+
+  - name: SkipQualityGates
+    value: false
+  - name: _TeamName
+    value: dotnet-r9
+  - name: NativeToolsOnMachine
+    value: true
+  - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
+    value: true
+  - name: _BuildConfig
+    value: Release
+  - name: PostBuildSign
+    value: false
+  # needed for darc (dependency flow) publishing
+  - name: _PublishArgs
+    value: ''
+  - name: _OfficialBuildIdArgs
+    value: ''
+  # needed for signing
+  - name: _SignType
+    value: test
+  - name: _SignArgs
+    value: ''
+  - name: _Sign
+    value: false
+
+stages:
+- stage: build
+  displayName: Build
+  variables:
+  - template: /eng/common/templates/variables/pool-providers.yml
+  jobs:
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enableMicrobuild: true
+      enableTelemetry: true
+      enableSourceIndex: false
+      runAsPublic: true
+      # Publish build logs
+      enablePublishBuildArtifacts: true
+      # Publish test logs
+      enablePublishTestResults: true
+      # Publish NuGet packages using v3
+      # https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Publishing.md#basic-onboarding-scenario-for-new-repositories-to-the-current-publishing-version-v3
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: true
+      workspace:
+        clean: all
+
+      jobs:
+
+      # ----------------------------------------------------------------
+      # This job build and run tests on Windows
+      # ----------------------------------------------------------------
+      - job: Windows
+        timeoutInMinutes: 180
+        testResultsFormat: VSTest
+
+        pool:
+          name: $(DncEngPublicBuildPool)
+          demands: ImageOverride -equals windows.vs2022preview.amd64.open
+
+        variables:
+          - _buildScript: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
+
+        preSteps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            fetchDepth: 1
+
+        steps:
+          - template: /eng/pipelines/templates/BuildAndTest.yml
+            parameters:
+              buildScript: $(_buildScript)
+              buildConfig: $(_BuildConfig)
+              repoLogPath: $(Build.Arcade.LogsPath)
+              repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+              skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
+              isWindows: true
+              warnAsError: 0
+
+      # ----------------------------------------------------------------
+      # This job build and run tests on Ubuntu
+      # ----------------------------------------------------------------
+      - job: Ubuntu
+        timeoutInMinutes: 180
+        testResultsFormat: VSTest
+
+        pool:
+          name: $(DncEngPublicBuildPool)
+          demands: ImageOverride -equals build.ubuntu.2004.amd64.open
+
+        variables:
+          - _buildScript: $(Build.SourcesDirectory)/build.sh --ci
+
+        preSteps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            fetchDepth: 1
+
+        steps:
+          - template: /eng/pipelines/templates/BuildAndTest.yml
+            parameters:
+              buildScript: $(_buildScript)
+              buildConfig: $(_BuildConfig)
+              repoLogPath: $(Build.Arcade.LogsPath)
+              repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+              skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
+              isWindows: false
+              warnAsError: 0
+
+
+# ----------------------------------------------------------------
+# This stage performs quality gates enforcements
+# ----------------------------------------------------------------
+- stage: codecoverage
+  displayName: CodeCoverage
+  dependsOn: 
+    - build
+  condition: and(succeeded('build'), ne(variables['SkipQualityGates'], 'true'))
+  variables:
+  - template: /eng/common/templates/variables/pool-providers.yml
+  jobs:
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enableMicrobuild: true
+      enableTelemetry: true
+      runAsPublic: true
+      workspace:
+        clean: all
+
+      # ----------------------------------------------------------------
+      # This stage downloads the code coverage reports from the build jobs,
+      # merges those and validates the combined test coverage.
+      # ----------------------------------------------------------------
+      jobs:
+      - job: CodeCoverageReport
+        timeoutInMinutes: 180
+
+        pool:
+          name: $(DncEngPublicBuildPool)
+          demands: ImageOverride -equals build.ubuntu.2004.amd64.open
+
+        preSteps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            fetchDepth: 1
+
+        steps:
+        - script: $(Build.SourcesDirectory)/build.sh --ci --restore
+          displayName: Init toolset
+
+        - template: /eng/pipelines/templates/VerifyCoverageReport.yml
+
+
+# ----------------------------------------------------------------
+# This stage only performs a build treating warnings as errors
+# to detect any kind of code style violations
+# ----------------------------------------------------------------
+- stage: correctness
+  displayName: Correctness
+  dependsOn: []
+  variables:
+  - template: /eng/common/templates/variables/pool-providers.yml
+  jobs:
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enableMicrobuild: true
+      enableTelemetry: true
+      runAsPublic: true
+      workspace:
+        clean: all
+
+      jobs:
+      - job: WarningsCheck
+        timeoutInMinutes: 180
+
+        pool:
+          name: $(DncEngPublicBuildPool)
+          demands: ImageOverride -equals build.ubuntu.2004.amd64.open
+
+        variables:
+          - _buildScript: $(Build.SourcesDirectory)/build.sh --ci
+
+        preSteps:
+          - checkout: self
+            clean: true
+            persistCredentials: true
+            fetchDepth: 1
+
+        steps:
+          - template: /eng/pipelines/templates/BuildAndTest.yml
+            parameters:
+              buildScript: $(_buildScript)
+              buildConfig: $(_BuildConfig)
+              repoLogPath: $(Build.Arcade.LogsPath)
+              repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+              skipTests: true
+              skipQualityGates: true
+              isWindows: false
