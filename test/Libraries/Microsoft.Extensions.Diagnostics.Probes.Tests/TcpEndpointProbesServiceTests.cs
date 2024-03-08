@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Diagnostics.Probes.Test;
 [CollectionDefinition(nameof(TcpEndpointProbesServiceTests), DisableParallelization = true)]
 public class TcpEndpointProbesServiceTests
 {
-    [Fact]
+    [Fact(Skip = "Flaky test, see https://github.com/dotnet/extensions/issues/5006")]
     public async Task ExecuteAsync_CheckListenerOpenAndCloseAfterHealthStatusEvents()
     {
         var port = GetFreeTcpPort();
