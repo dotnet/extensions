@@ -1,18 +1,34 @@
 steps:
-  - task: DownloadBuildArtifacts@0
-    displayName: Download code coverage reports
-    inputs:
-      artifactName: CodeCoverageResults
-      downloadPath: $(System.DefaultWorkingDirectory)
 
+  # This downloads Windows_cobertura.xml from Windows_CodeCoverageResults artifact to the root of the repo
+  - task: DownloadPipelineArtifact@2
+    displayName: Download Windows code coverage reports
+    inputs:
+      buildType: 'current'
+      artifactName: Windows_CodeCoverageResults
+      itemPattern: '*_cobertura.xml'
+      targetPath: $(Build.SourcesDirectory)
+
+  # This downloads Ubuntu_cobertura.xml from Ubuntu_CodeCoverageResults artifact to the root of the repo
+  - task: DownloadPipelineArtifact@2
+    displayName: Download Ubuntu code coverage reports
+    inputs:
+      buildType: 'current'
+      artifactName: Ubuntu_CodeCoverageResults
+      itemPattern: '*_cobertura.xml'
+      targetPath: $(Build.SourcesDirectory)
+
+  - script: tree $(Build.SourcesDirectory)
+
+  # Merge the downloaded files (Windows_cobertura.xml and Ubuntu_cobertura.xml) as one (merged.cobertura.xml)
   - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage merge
-            $(System.DefaultWorkingDirectory)/CodeCoverageResults/*.cobertura.xml
+            $(Build.SourcesDirectory)/*_cobertura.xml
             --output-format cobertura
-            --output ./merged.cobertura.xml
+            --output $(Build.SourcesDirectory)/merged.cobertura.xml
     displayName: Merge code coverage reports
 
   - script: $(Build.SourcesDirectory)/.dotnet/dotnet reportgenerator
-            -reports:./merged.cobertura.xml
+            -reports:$(Build.SourcesDirectory)/merged.cobertura.xml
             -targetdir:./CoverageResultsHtml
             -reporttypes:HtmlInline_AzurePipelines
     displayName: Generate code coverage report
@@ -23,12 +39,12 @@ steps:
       DISABLE_COVERAGE_AUTOGENERATE: 'true'
     inputs:
       codeCoverageTool: cobertura
-      summaryFileLocation: ./merged.cobertura.xml
+      summaryFileLocation: $(Build.SourcesDirectory)/merged.cobertura.xml
       pathToSources: $(Build.SourcesDirectory)
       reportDirectory: ./CoverageResultsHtml
 
   - pwsh: |
-        $(Build.SourcesDirectory)/eng/scripts/ValidateProjectCoverage.ps1 -CoberturaReportXml ./merged.cobertura.xml
+        $(Build.SourcesDirectory)/eng/scripts/ValidateProjectCoverage.ps1 -CoberturaReportXml $(Build.SourcesDirectory)/merged.cobertura.xml
     displayName: Check per-project coverage
 
   - ${{ if and(eq(variables['System.TeamProject'], 'public'), eq(variables['Build.Reason'], 'PullRequest')) }}:
@@ -39,3 +55,4 @@ steps:
         repositoryName: '$(Build.Repository.Name)'
         id: $(System.PullRequest.PullRequestNumber)
       displayName: Report coverage to GitHub
+      continueOnError: 'true' # Avoid failing the build if the GitHub comment posting failed
