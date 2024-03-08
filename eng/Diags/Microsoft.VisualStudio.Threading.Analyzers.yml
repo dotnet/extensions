@@ -80,4 +80,4 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: Warning
+        Severity: Error
