@@ -45,7 +45,7 @@ steps:
   - ${{ if ne(parameters.skipTests, 'true') }}:
     - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage collect
               --settings $(Build.SourcesDirectory)/eng/CodeCoverage.config
-              --output ${{ parameters.repoTestResultsPath }}/$(Agent.Os)_$(Agent.JobName).cobertura.xml
+              --output ${{ parameters.repoTestResultsPath }}/$(Agent.JobName)_CodeCoverageResults/$(Agent.JobName)_cobertura.xml
               "${{ parameters.buildScript }} -test -configuration ${{ parameters.buildConfig }} /bl:${{ parameters.repoLogPath }}/tests.binlog $(_OfficialBuildIdArgs)"
       displayName: Run tests
 
@@ -66,12 +66,11 @@ steps:
       continueOnError: true
 
     - ${{ if ne(parameters.skipQualityGates, 'true') }}:
-      - task: PublishBuildArtifacts@1
+      - task: 1ES.PublishPipelineArtifact@1
         displayName: Publish coverage results (cobertura.xml)
         inputs:
-          PathtoPublish: '${{ parameters.repoTestResultsPath }}/$(Agent.Os)_$(Agent.JobName).cobertura.xml'
-          PublishLocation: Container
-          ArtifactName: CodeCoverageResults
+          targetPath: '${{ parameters.repoTestResultsPath }}/$(Agent.JobName)_CodeCoverageResults'
+          artifactName: "$(Agent.JobName)_CodeCoverageResults"
 
   - ${{ if eq(parameters.isWindows, 'true') }}:
     - script: ${{ parameters.buildScript }}
