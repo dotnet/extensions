@@ -208,7 +208,7 @@ public class TimerTests
         Assert.False(t.Change(TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(1)));
     }
 
-    [Fact]
+    [Fact(Skip = "Flaky test, see https://github.com/dotnet/extensions/issues/5005")]
     public void WaiterRemovedAfterDispose()
     {
         var timer1Counter = 0;
