@@ -1,5 +1,5 @@
 # Created by DiagConfig, the diagnostic config generator
-# Generated : 2024-01-25 20:57:45Z
+# Generated : 2024-03-07 23:40:38Z
 # Max Tier  : 2147483647
 # Attributes: general, performance
 # Analyzers : ILLink.RoslynAnalyzer, Microsoft.Analyzers.Extra, Microsoft.Analyzers.Local, Microsoft.AspNetCore.App.Analyzers, Microsoft.AspNetCore.Components.Analyzers, Microsoft.CodeAnalysis.CodeStyle, Microsoft.CodeAnalysis.CSharp.CodeStyle, Microsoft.CodeAnalysis.CSharp.NetAnalyzers, Microsoft.CodeAnalysis.NetAnalyzers, Microsoft.VisualStudio.Threading.Analyzers, Microsoft.VisualStudio.Threading.Analyzers.CSharp, SonarAnalyzer.CSharp, StyleCop.Analyzers
@@ -6361,7 +6361,7 @@ dotnet_diagnostic.VSTHRD113.severity = suggestion
 # Title    : Avoid returning a null Task
 # Category : Usage
 # Help Link: https://github.com/Microsoft/vs-threading/blob/main/doc/analyzers/VSTHRD114.md
-dotnet_diagnostic.VSTHRD114.severity = warning
+dotnet_diagnostic.VSTHRD114.severity = error
 
 # Title    : Avoid returning a null Task
 # Category : Usage
