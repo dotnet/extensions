@@ -80,26 +80,4 @@ public class ContextualOptionsServiceCollectionExtensionsTests
         Assert.Equal(configureOptions, postConfigure.Action);
         Assert.Equal("Foo", postConfigure.Name);
     }
-
-    [Fact]
-    public void ValidateDefaultTest()
-    {
-        Func<string, bool> validate = _ => true;
-        using var provider = new ServiceCollection().ValidateContextualOptions(validate, "epic fail").BuildServiceProvider();
-        var validateOptions = (ValidateContextualOptions<string>)provider.GetRequiredService<IValidateContextualOptions<string>>();
-
-        Assert.Equal(validate, validateOptions.Validation);
-        Assert.Equal(string.Empty, validateOptions.Name);
-    }
-
-    [Fact]
-    public void ValidateNamedTest()
-    {
-        Func<string, bool> validate = _ => true;
-        using var provider = new ServiceCollection().ValidateContextualOptions("Foo", validate, "epic fail").BuildServiceProvider();
-        var validateOptions = (ValidateContextualOptions<string>)provider.GetRequiredService<IValidateContextualOptions<string>>();
-
-        Assert.Equal(validate, validateOptions.Validation);
-        Assert.Equal("Foo", validateOptions.Name);
-    }
 }

@@ -160,32 +160,4 @@ public static class ContextualOptionsServiceCollectionExtensions
             .AddContextualOptions()
             .AddSingleton<IPostConfigureContextualOptions<TOptions>>(
                 new PostConfigureContextualOptions<TOptions>(name, Throw.IfNull(configure)));
-
-    /// <summary>
-    /// Register a validation action for an options type.
-    /// </summary>
-    /// <typeparam name="TOptions">The options type to be validated.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="validate">The validation function.</param>
-    /// <param name="failureMessage">The failure message to use when validation fails.</param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection ValidateContextualOptions<TOptions>(this IServiceCollection services, Func<TOptions, bool> validate, string failureMessage)
-        where TOptions : class
-        => services.ValidateContextualOptions(Options.Options.DefaultName, Throw.IfNull(validate), Throw.IfNull(failureMessage));
-
-    /// <summary>
-    /// Register a validation action for an options type.
-    /// </summary>
-    /// <typeparam name="TOptions">The options type to be validated.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="name">The name of the options instance.</param>
-    /// <param name="validate">The validation function.</param>
-    /// <param name="failureMessage">The failure message to use when validation fails.</param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection ValidateContextualOptions<TOptions>(this IServiceCollection services, string name, Func<TOptions, bool> validate, string failureMessage)
-        where TOptions : class
-        => services
-            .AddContextualOptions()
-            .AddSingleton<IValidateContextualOptions<TOptions>>(
-                new ValidateContextualOptions<TOptions>(Throw.IfNull(name), Throw.IfNull(validate), Throw.IfNull(failureMessage)));
 }

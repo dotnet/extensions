@@ -24,7 +24,7 @@ public class ContextualOptionsFactoryTests
             new OptionsFactory<List<string>>(Enumerable.Empty<IConfigureOptions<List<string>>>(), Enumerable.Empty<IPostConfigureOptions<List<string>>>()),
             Enumerable.Empty<ILoadContextualOptions<List<string>>>(),
             Enumerable.Empty<IPostConfigureContextualOptions<List<string>>>(),
-            Enumerable.Empty<IValidateContextualOptions<List<string>>>());
+            Enumerable.Empty<IValidateOptions<List<string>>>());
 
         var result = await new ContextualOptions<List<string>, IOptionsContext>(sut).GetAsync(Mock.Of<IOptionsContext>(), default);
 
@@ -38,7 +38,7 @@ public class ContextualOptionsFactoryTests
             new OptionsFactory<List<string>>(Enumerable.Empty<IConfigureOptions<List<string>>>(), Enumerable.Empty<IPostConfigureOptions<List<string>>>()),
             Enumerable.Empty<ILoadContextualOptions<List<string>>>(),
             Enumerable.Empty<IPostConfigureContextualOptions<List<string>>>(),
-            new[] { new ValidateContextualOptions<List<string>>(null, _ => false, "epic fail") });
+            new[] { new ValidateOptions<List<string>>(null, _ => false, "epic fail") });
 
         await Assert.ThrowsAsync<OptionsValidationException>(async () => await sut.CreateAsync(string.Empty, Mock.Of<IOptionsContext>(), default));
         await Assert.ThrowsAsync<OptionsValidationException>(async () => await sut.CreateAsync("A Name", Mock.Of<IOptionsContext>(), default));
@@ -51,7 +51,7 @@ public class ContextualOptionsFactoryTests
             new OptionsFactory<List<string>>(Enumerable.Empty<IConfigureOptions<List<string>>>(), Enumerable.Empty<IPostConfigureOptions<List<string>>>()),
             Enumerable.Empty<ILoadContextualOptions<List<string>>>(),
             Enumerable.Empty<IPostConfigureContextualOptions<List<string>>>(),
-            new[] { new ValidateContextualOptions<List<string>>("Foo", _ => false, "epic fail") });
+            new[] { new ValidateOptions<List<string>>("Foo", _ => false, "epic fail") });
 
         await Assert.ThrowsAsync<OptionsValidationException>(async () => await sut.CreateAsync("Foo", Mock.Of<IOptionsContext>(), default));
         Assert.Empty(await sut.CreateAsync("Bar", Mock.Of<IOptionsContext>(), default));
@@ -71,7 +71,7 @@ public class ContextualOptionsFactoryTests
             new OptionsFactory<List<string>>(Enumerable.Empty<IConfigureOptions<List<string>>>(), Enumerable.Empty<IPostConfigureOptions<List<string>>>()),
             loaders,
             new[] { new PostConfigureContextualOptions<List<string>>(string.Empty, (_, list) => list.Add("post configure")) },
-            Enumerable.Empty<IValidateContextualOptions<List<string>>>());
+            Enumerable.Empty<IValidateOptions<List<string>>>());
 
         var result = await sut.CreateAsync(string.Empty, Mock.Of<IOptionsContext>(), default);
 
@@ -92,7 +92,7 @@ public class ContextualOptionsFactoryTests
             new OptionsFactory<List<string>>(Enumerable.Empty<IConfigureOptions<List<string>>>(), Enumerable.Empty<IPostConfigureOptions<List<string>>>()),
             loaders,
             Enumerable.Empty<IPostConfigureContextualOptions<List<string>>>(),
-            Enumerable.Empty<IValidateContextualOptions<List<string>>>()));
+            Enumerable.Empty<IValidateOptions<List<string>>>()));
 
         Assert.Equal(new[] { "configure" }, await sut.GetAsync("Foo", Mock.Of<IOptionsContext>(), default));
         Assert.Empty(await sut.GetAsync("Bar", Mock.Of<IOptionsContext>(), default));
@@ -112,7 +112,7 @@ public class ContextualOptionsFactoryTests
             new OptionsFactory<List<string>>(Enumerable.Empty<IConfigureOptions<List<string>>>(), Enumerable.Empty<IPostConfigureOptions<List<string>>>()),
             loaders,
             Enumerable.Empty<IPostConfigureContextualOptions<List<string>>>(),
-            Enumerable.Empty<IValidateContextualOptions<List<string>>>());
+            Enumerable.Empty<IValidateOptions<List<string>>>());
 
         Assert.Equal(new[] { "configure" }, await sut.CreateAsync("Foo", Mock.Of<IOptionsContext>(), default));
         Assert.Equal(new[] { "configure" }, await sut.CreateAsync("Bar", Mock.Of<IOptionsContext>(), default));
@@ -125,7 +125,7 @@ public class ContextualOptionsFactoryTests
             new OptionsFactory<List<string>>(Enumerable.Empty<IConfigureOptions<List<string>>>(), Enumerable.Empty<IPostConfigureOptions<List<string>>>()),
             Enumerable.Empty<ILoadContextualOptions<List<string>>>(),
             new[] { new PostConfigureContextualOptions<List<string>>(null, (_, list) => list.Add("post configure")) },
-            Enumerable.Empty<IValidateContextualOptions<List<string>>>());
+            Enumerable.Empty<IValidateOptions<List<string>>>());
 
         Assert.Equal(new[] { "post configure" }, await sut.CreateAsync("Foo", Mock.Of<IOptionsContext>(), default));
         Assert.Equal(new[] { "post configure" }, await sut.CreateAsync("Bar", Mock.Of<IOptionsContext>(), default));
@@ -138,7 +138,7 @@ public class ContextualOptionsFactoryTests
             new OptionsFactory<List<string>>(Enumerable.Empty<IConfigureOptions<List<string>>>(), Enumerable.Empty<IPostConfigureOptions<List<string>>>()),
             Enumerable.Empty<ILoadContextualOptions<List<string>>>(),
             new[] { new PostConfigureContextualOptions<List<string>>("Foo", (_, list) => list.Add("post configure")) },
-            Enumerable.Empty<IValidateContextualOptions<List<string>>>());
+            Enumerable.Empty<IValidateOptions<List<string>>>());
 
         Assert.Equal(new[] { "post configure" }, await sut.CreateAsync("Foo", Mock.Of<IOptionsContext>(), default));
         Assert.Empty(await sut.CreateAsync("Bar", Mock.Of<IOptionsContext>(), default));
@@ -181,7 +181,7 @@ public class ContextualOptionsFactoryTests
             new OptionsFactory<List<string>>(Enumerable.Empty<IConfigureOptions<List<string>>>(), Enumerable.Empty<IPostConfigureOptions<List<string>>>()),
             loaders,
             Enumerable.Empty<IPostConfigureContextualOptions<List<string>>>(),
-            Enumerable.Empty<IValidateContextualOptions<List<string>>>());
+            Enumerable.Empty<IValidateOptions<List<string>>>());
 
         Assert.Equal(new[] { "1", "2", "3", "4" }, await sut.CreateAsync(string.Empty, Mock.Of<IOptionsContext>(), default));
     }
@@ -203,7 +203,7 @@ public class ContextualOptionsFactoryTests
             new OptionsFactory<List<string>>(Enumerable.Empty<IConfigureOptions<List<string>>>(), Enumerable.Empty<IPostConfigureOptions<List<string>>>()),
             loaders,
             Enumerable.Empty<IPostConfigureContextualOptions<List<string>>>(),
-            Enumerable.Empty<IValidateContextualOptions<List<string>>>());
+            Enumerable.Empty<IValidateOptions<List<string>>>());
 
         var exception = await Assert.ThrowsAsync<AggregateException>(async () => await sut.CreateAsync(string.Empty, Mock.Of<IOptionsContext>(), default));
         Assert.Equal(2, exception.InnerExceptions.Count);
@@ -228,7 +228,7 @@ public class ContextualOptionsFactoryTests
             new OptionsFactory<List<string>>(Enumerable.Empty<IConfigureOptions<List<string>>>(), Enumerable.Empty<IPostConfigureOptions<List<string>>>()),
             loaders,
             Enumerable.Empty<IPostConfigureContextualOptions<List<string>>>(),
-            Enumerable.Empty<IValidateContextualOptions<List<string>>>());
+            Enumerable.Empty<IValidateOptions<List<string>>>());
 
         var exception = await Assert.ThrowsAsync<AggregateException>(async () => await sut.CreateAsync(string.Empty, Mock.Of<IOptionsContext>(), default));
         Assert.Equal(2, exception.InnerExceptions.Count);

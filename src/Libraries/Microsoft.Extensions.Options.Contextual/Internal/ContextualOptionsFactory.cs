@@ -24,7 +24,7 @@ internal sealed class ContextualOptionsFactory<[DynamicallyAccessedMembers(Dynam
     private readonly IOptionsFactory<TOptions> _baseFactory;
     private readonly ILoadContextualOptions<TOptions>[] _loaders;
     private readonly IPostConfigureContextualOptions<TOptions>[] _postConfigures;
-    private readonly IValidateContextualOptions<TOptions>[] _validations;
+    private readonly IValidateOptions<TOptions>[] _validations;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ContextualOptionsFactory{TOptions}"/> class.
@@ -37,12 +37,12 @@ internal sealed class ContextualOptionsFactory<[DynamicallyAccessedMembers(Dynam
         IOptionsFactory<TOptions> baseFactory,
         IEnumerable<ILoadContextualOptions<TOptions>> loaders,
         IEnumerable<IPostConfigureContextualOptions<TOptions>> postConfigures,
-        IEnumerable<IValidateContextualOptions<TOptions>> validations)
+        IEnumerable<IValidateOptions<TOptions>> validations)
     {
         _baseFactory = baseFactory;
         _loaders = loaders.ToArray();
         _postConfigures = postConfigures.ToArray();
-        _validations = validations.ToArray();
+        _validations = validations as IValidateOptions<TOptions>[] ?? new List<IValidateOptions<TOptions>>(validations).ToArray();
     }
 
     /// <inheritdoc/>
@@ -114,20 +114,22 @@ internal sealed class ContextualOptionsFactory<[DynamicallyAccessedMembers(Dynam
                 post.PostConfigure(name, context, options);
             }
 
-            List<string>? failures = default;
-            foreach (var validate in _validations)
+            if (_validations.Length > 0)
             {
-                var result = validate.Validate(name, options);
-                if (result.Failed)
+                var failures = new List<string>();
+                foreach (IValidateOptions<TOptions> validate in _validations)
                 {
-                    failures ??= [];
-                    failures.AddRange(result.Failures);
+                    ValidateOptionsResult result = validate.Validate(name, options);
+                    if (result is not null && result.Failed)
+                    {
+                        failures.AddRange(result.Failures);
+                    }
                 }
-            }
 
-            if (failures is not null)
-            {
-                throw new OptionsValidationException(name, typeof(TOptions), failures);
+                if (failures.Count > 0)
+                {
+                    throw new OptionsValidationException(name, typeof(TOptions), failures);
+                }
             }
 
             return options;
