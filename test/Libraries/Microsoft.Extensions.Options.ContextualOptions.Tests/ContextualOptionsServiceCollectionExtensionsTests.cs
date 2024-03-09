@@ -5,6 +5,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options.Contextual.Internal;
+using Microsoft.Extensions.Options.Contextual.Provider;
 using Moq;
 using Xunit;
 
@@ -19,8 +21,8 @@ public class ContextualOptionsServiceCollectionExtensionsTests
 
         using var provider = new ServiceCollection().AddContextualOptions().BuildServiceProvider();
 
-        Assert.IsType<ContextualOptions<object>>(provider.GetRequiredService<IContextualOptions<object>>());
-        Assert.IsType<ContextualOptions<object>>(provider.GetRequiredService<INamedContextualOptions<object>>());
+        Assert.IsType<ContextualOptions<object, WeatherForecastContext>>(provider.GetRequiredService<IContextualOptions<object, WeatherForecastContext>>());
+        Assert.IsType<ContextualOptions<object, WeatherForecastContext>>(provider.GetRequiredService<INamedContextualOptions<object, WeatherForecastContext>>());
         Assert.IsType<ContextualOptionsFactory<object>>(provider.GetRequiredService<IContextualOptionsFactory<object>>());
     }
 

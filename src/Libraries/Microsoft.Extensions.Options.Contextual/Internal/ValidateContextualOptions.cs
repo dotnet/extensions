@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.Options.Contextual;
+namespace Microsoft.Extensions.Options.Contextual.Internal;
 
 /// <summary>
 /// Implementation of <see cref="IValidateContextualOptions{TOptions}"/>.

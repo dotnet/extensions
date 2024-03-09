@@ -8,6 +8,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Contextual.Internal;
+using Microsoft.Extensions.Options.Contextual.Provider;
 using Moq;
 using Xunit;
 
@@ -24,7 +26,7 @@ public class ContextualOptionsFactoryTests
             Enumerable.Empty<IPostConfigureContextualOptions<List<string>>>(),
             Enumerable.Empty<IValidateContextualOptions<List<string>>>());
 
-        var result = await new ContextualOptions<List<string>>(sut).GetAsync(Mock.Of<IOptionsContext>(), default);
+        var result = await new ContextualOptions<List<string>, IOptionsContext>(sut).GetAsync(Mock.Of<IOptionsContext>(), default);
 
         Assert.Empty(result);
     }
@@ -86,7 +88,7 @@ public class ContextualOptionsFactoryTests
                 (context, _) => new ValueTask<IConfigureContextualOptions<List<string>>>(new ConfigureContextualOptions<List<string>>((_, list) => list.Add("configure"), context)))
             };
 
-        var sut = new ContextualOptions<List<string>>(new ContextualOptionsFactory<List<string>>(
+        var sut = new ContextualOptions<List<string>, IOptionsContext>(new ContextualOptionsFactory<List<string>>(
             new OptionsFactory<List<string>>(Enumerable.Empty<IConfigureOptions<List<string>>>(), Enumerable.Empty<IPostConfigureOptions<List<string>>>()),
             loaders,
             Enumerable.Empty<IPostConfigureContextualOptions<List<string>>>(),

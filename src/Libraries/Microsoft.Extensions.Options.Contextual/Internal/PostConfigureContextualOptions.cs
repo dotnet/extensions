@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Options.Contextual;
+namespace Microsoft.Extensions.Options.Contextual.Internal;
 
 /// <summary>
 /// Implementation of <see cref="IPostConfigureContextualOptions{TOptions}"/>.
