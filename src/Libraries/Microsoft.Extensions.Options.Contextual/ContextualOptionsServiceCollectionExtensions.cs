@@ -123,41 +123,4 @@ public static class ContextualOptionsServiceCollectionExtensions
     public static IServiceCollection ConfigureAll<TOptions>(this IServiceCollection services, Action<IOptionsContext, TOptions> configure)
         where TOptions : class
         => services.Configure(name: null, Throw.IfNull(configure));
-
-    /// <summary>
-    /// Registers an action used to initialize all instances of a particular type of options.
-    /// </summary>
-    /// <typeparam name="TOptions">The options type to be configured.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="configure">The action used to configure the options.</param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection PostConfigureAll<TOptions>(this IServiceCollection services, Action<IOptionsContext, TOptions> configure)
-        where TOptions : class
-        => services.PostConfigure(null, Throw.IfNull(configure));
-
-    /// <summary>
-    /// Registers an action used to initialize a particular type of options.
-    /// </summary>
-    /// <typeparam name="TOptions">The options type to be configured.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="configure">The action used to configure the options.</param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection PostConfigure<TOptions>(this IServiceCollection services, Action<IOptionsContext, TOptions> configure)
-        where TOptions : class
-        => services.PostConfigure(Options.Options.DefaultName, Throw.IfNull(configure));
-
-    /// <summary>
-    /// Registers an action used to initialize a particular type of options.
-    /// </summary>
-    /// <typeparam name="TOptions">The options type to be configured.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-    /// <param name="name">The name of the options instance.</param>
-    /// <param name="configure">The action used to configure the options.</param>
-    /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection PostConfigure<TOptions>(this IServiceCollection services, string? name, Action<IOptionsContext, TOptions> configure)
-        where TOptions : class
-        => services
-            .AddContextualOptions()
-            .AddSingleton<IPostConfigureContextualOptions<TOptions>>(
-                new PostConfigureContextualOptions<TOptions>(name, Throw.IfNull(configure)));
 }

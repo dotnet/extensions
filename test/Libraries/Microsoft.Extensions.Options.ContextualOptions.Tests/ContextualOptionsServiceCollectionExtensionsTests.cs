@@ -47,37 +47,4 @@ public class ContextualOptionsServiceCollectionExtensionsTests
         Assert.Equal(configureOptions, ((ConfigureContextualOptions<string>)await loader.LoadAction(Mock.Of<IOptionsContext>(), default)).ConfigureOptions);
         Assert.Equal(string.Empty, loader.Name);
     }
-
-    [Fact]
-    public void PostConfigureAllTest()
-    {
-        Action<IOptionsContext, string> configureOptions = (_, _) => { };
-        using var provider = new ServiceCollection().PostConfigureAll(configureOptions).BuildServiceProvider();
-        var postConfigure = (PostConfigureContextualOptions<string>)provider.GetRequiredService<IPostConfigureContextualOptions<string>>();
-
-        Assert.Equal(configureOptions, postConfigure.Action);
-        Assert.Null(postConfigure.Name);
-    }
-
-    [Fact]
-    public void PostConfigureDefaultTest()
-    {
-        Action<IOptionsContext, string> configureOptions = (_, _) => { };
-        using var provider = new ServiceCollection().PostConfigure(configureOptions).BuildServiceProvider();
-        var postConfigure = (PostConfigureContextualOptions<string>)provider.GetRequiredService<IPostConfigureContextualOptions<string>>();
-
-        Assert.Equal(configureOptions, postConfigure.Action);
-        Assert.Equal(string.Empty, postConfigure.Name);
-    }
-
-    [Fact]
-    public void PostConfigureNamedTest()
-    {
-        Action<IOptionsContext, string> configureOptions = (_, _) => { };
-        using var provider = new ServiceCollection().PostConfigure("Foo", configureOptions).BuildServiceProvider();
-        var postConfigure = (PostConfigureContextualOptions<string>)provider.GetRequiredService<IPostConfigureContextualOptions<string>>();
-
-        Assert.Equal(configureOptions, postConfigure.Action);
-        Assert.Equal("Foo", postConfigure.Name);
-    }
 }
