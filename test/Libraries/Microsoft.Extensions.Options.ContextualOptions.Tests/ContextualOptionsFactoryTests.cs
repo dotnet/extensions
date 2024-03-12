@@ -145,6 +145,20 @@ public class ContextualOptionsFactoryTests
     }
 
     [Fact]
+    public async Task ConfigureConfiguresOnlyOptions()
+    {
+        var sut = new ContextualOptionsFactory<List<string>>(
+            Enumerable.Empty<ILoadContextualOptions<List<string>>>(),
+            new[] { new ConfigureOptions<List<string>>((list) => list.Add("pre configure")) },
+            Enumerable.Empty<IPostConfigureOptions<List<string>>>(),
+            Enumerable.Empty<IValidateOptions<List<string>>>());
+
+        Assert.Empty(await sut.CreateAsync("Foo", Mock.Of<IOptionsContext>(), default));
+        Assert.Equal(new[] { "pre configure" }, await sut.CreateAsync(Options.DefaultName, Mock.Of<IOptionsContext>(), default));
+        Assert.Empty(await sut.CreateAsync("Bar", Mock.Of<IOptionsContext>(), default));
+    }
+
+    [Fact]
     [SuppressMessage(
         "Minor Code Smell",
         "S3257:Declarations and initializations should be as concise as possible",
