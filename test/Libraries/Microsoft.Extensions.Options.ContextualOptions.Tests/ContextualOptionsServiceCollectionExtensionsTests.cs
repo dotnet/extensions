@@ -47,4 +47,26 @@ public class ContextualOptionsServiceCollectionExtensionsTests
         Assert.Equal(configureOptions, ((ConfigureContextualOptions<string>)await loader.LoadAction(Mock.Of<IOptionsContext>(), default)).ConfigureOptions);
         Assert.Equal(string.Empty, loader.Name);
     }
+
+    [Fact]
+    public void ConfigureAllWithLoadTest()
+    {
+        Func<IOptionsContext, CancellationToken, ValueTask<IConfigureContextualOptions<string>>> loadOptions =
+            (_, _) => new ValueTask<IConfigureContextualOptions<string>>(NullConfigureContextualOptions.GetInstance<string>());
+
+        using var provider = new ServiceCollection().ConfigureAll(loadOptions).BuildServiceProvider();
+        var loader = (LoadContextualOptions<string>)provider.GetRequiredService<ILoadContextualOptions<string>>();
+        Assert.Equal(loadOptions, loader.LoadAction);
+        Assert.Null(loader.Name);
+    }
+
+    [Fact]
+    public async Task ConfigureAllDirectTest()
+    {
+        Action<IOptionsContext, string> configureOptions = (_, _) => { };
+        using var provider = new ServiceCollection().ConfigureAll(configureOptions).BuildServiceProvider();
+        var loader = (LoadContextualOptions<string>)provider.GetRequiredService<ILoadContextualOptions<string>>();
+        Assert.Equal(configureOptions, ((ConfigureContextualOptions<string>)await loader.LoadAction(Mock.Of<IOptionsContext>(), default)).ConfigureOptions);
+        Assert.Null(loader.Name);
+    }
 }

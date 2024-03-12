@@ -94,7 +94,7 @@ public static class ContextualOptionsServiceCollectionExtensions
     {
         return services.AddContextualOptions().AddSingleton<ILoadContextualOptions<TOptions>>(
             new LoadContextualOptions<TOptions>(
-                Throw.IfNull(name),
+                name,
                 (context, _) =>
                     new ValueTask<IConfigureContextualOptions<TOptions>>(
                         new ConfigureContextualOptions<TOptions>(Throw.IfNull(configure), Throw.IfNull(context)))));
