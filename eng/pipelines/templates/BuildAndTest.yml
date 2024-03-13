@@ -77,7 +77,7 @@ steps:
             artifactName: "$(Agent.JobName)_CodeCoverageResults"
             publishLocation: 'pipeline'
 
-      - ${{ if eq(parameters.runAsPublic, 'false') }}:
+      - ${{ if ne(parameters.runAsPublic, 'true') }}:
         - task: 1ES.PublishPipelineArtifact@1
           displayName: Publish coverage results (cobertura.xml)
           inputs:
