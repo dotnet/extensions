@@ -18,8 +18,6 @@ steps:
       itemPattern: '*_cobertura.xml'
       targetPath: $(Build.SourcesDirectory)
 
-  - script: tree $(Build.SourcesDirectory)
-
   # Merge the downloaded files (Windows_cobertura.xml and Ubuntu_cobertura.xml) as one (merged.cobertura.xml)
   - script: $(Build.SourcesDirectory)/.dotnet/dotnet dotnet-coverage merge
             $(Build.SourcesDirectory)/*_cobertura.xml
