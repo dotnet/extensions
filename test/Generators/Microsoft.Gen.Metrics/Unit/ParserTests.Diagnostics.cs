@@ -97,27 +97,6 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task StrongTypeCounter_CyclicReference_Guid()
-    {
-        var d = await RunGenerator(@"
-            public class TypeA
-            {
-                public System.Guid TestA { get; set; }
-            }
-
-            public static partial class MetricClass
-            {
-                [Counter(typeof(TypeA), Name=""CyclicTest"")]
-                public static partial CyclicTest CreateCyclicTestCounter(Meter meter);
-            }");
-
-        Assert.NotNull(d);
-        var diag = Assert.Single(d);
-        Assert.Equal(DiagDescriptors.ErrorTagTypeCycleDetected.Id, diag.Id);
-        Assert.Contains("System.Guid ⇆ System.Guid", diag.GetMessage());
-    }
-
-    [Fact]
     public async Task StructTypeGauge()
     {
         var d = await RunGenerator(@"

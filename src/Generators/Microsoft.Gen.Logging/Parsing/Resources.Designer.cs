@@ -97,6 +97,24 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The type &quot;{0}&quot; doesn&apos;t implement ToString(), IConvertible, or IFormattable (did you forget to apply [LogProperties] or [TagProvider] to &quot;{1}&quot;?).
+        /// </summary>
+        internal static string DefaultToStringMessage {
+            get {
+                return ResourceManager.GetString("DefaultToStringMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A value being logged doesn&apos;t have an effective way to be converted into a string.
+        /// </summary>
+        internal static string DefaultToStringTitle {
+            get {
+                return ResourceManager.GetString("DefaultToStringTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Logging method &quot;{0}&quot; doesn&apos;t have anything to be logged.
         /// </summary>
         internal static string EmptyLoggingMethodMessage {
@@ -313,24 +331,6 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; causes name conflict with name &quot;{1}&quot; within logging method &quot;{2}&quot;.
-        /// </summary>
-        internal static string LogPropertiesNameCollisionMessage {
-            get {
-                return ResourceManager.GetString("LogPropertiesNameCollisionMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A logging method parameter causes name conflicts.
-        /// </summary>
-        internal static string LogPropertiesNameCollisionTitle {
-            get {
-                return ResourceManager.GetString("LogPropertiesNameCollisionTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Type &quot;{0}&quot; used with parameter &quot;{1}&quot; doesn&apos;t have any public properties to log.
         /// </summary>
         internal static string LogPropertiesParameterSkippedMessage {
@@ -349,20 +349,20 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Couldn&apos;t find a field of type &quot;Microsoft.Extensions.Logging.ILogger&quot; in type &quot;{0}&quot;.
+        ///   Looks up a localized string similar to Couldn&apos;t find a field or property of type &quot;Microsoft.Extensions.Logging.ILogger&quot; in type &quot;{0}&quot;.
         /// </summary>
-        internal static string MissingLoggerFieldMessage {
+        internal static string MissingLoggerMemberMessage {
             get {
-                return ResourceManager.GetString("MissingLoggerFieldMessage", resourceCulture);
+                return ResourceManager.GetString("MissingLoggerMemberMessage", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Couldn&apos;t find a field of type &quot;Microsoft.Extensions.Logging.ILogger&quot;.
+        ///   Looks up a localized string similar to Couldn&apos;t find a field or property of type &quot;Microsoft.Extensions.Logging.ILogger&quot;.
         /// </summary>
-        internal static string MissingLoggerFieldTitle {
+        internal static string MissingLoggerMemberTitle {
             get {
-                return ResourceManager.GetString("MissingLoggerFieldTitle", resourceCulture);
+                return ResourceManager.GetString("MissingLoggerMemberTitle", resourceCulture);
             }
         }
         
@@ -421,20 +421,20 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Found multiple fields of type &quot;Microsoft.Extensions.Logging.ILogger&quot; in type &quot;{0}&quot;.
+        ///   Looks up a localized string similar to Found multiple fields or properties of type &quot;Microsoft.Extensions.Logging.ILogger&quot; in type &quot;{0}&quot;.
         /// </summary>
-        internal static string MultipleLoggerFieldsMessage {
+        internal static string MultipleLoggerMembersMessage {
             get {
-                return ResourceManager.GetString("MultipleLoggerFieldsMessage", resourceCulture);
+                return ResourceManager.GetString("MultipleLoggerMembersMessage", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple fields of type &quot;Microsoft.Extensions.Logging.ILogger&quot; were found.
+        ///   Looks up a localized string similar to Multiple fields or properties of type &quot;Microsoft.Extensions.Logging.ILogger&quot; were found.
         /// </summary>
-        internal static string MultipleLoggerFieldsTitle {
+        internal static string MultipleLoggerMembersTitle {
             get {
-                return ResourceManager.GetString("MultipleLoggerFieldsTitle", resourceCulture);
+                return ResourceManager.GetString("MultipleLoggerMembersTitle", resourceCulture);
             }
         }
         
@@ -457,7 +457,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; of logging method &quot;{1}&quot; has sensitive field/property in its type.
+        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; of logging method &quot;{1}&quot; has a sensitive field/property in its type.
         /// </summary>
         internal static string RecordTypeSensitiveArgumentIsInTemplateMessage {
             get {
@@ -583,6 +583,24 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parameter &quot;{0}&quot; causes a tag name conflict with name &quot;{1}&quot; within logging method &quot;{2}&quot;.
+        /// </summary>
+        internal static string TagNameCollisionMessage {
+            get {
+                return ResourceManager.GetString("TagNameCollisionMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A logging method parameter causes a tag name conflicts.
+        /// </summary>
+        internal static string TagNameCollisionTitle {
+            get {
+                return ResourceManager.GetString("TagNameCollisionTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parameter &quot;{0}&quot; is annotated to use a tag provider but it has special semantics (ILogger, LogLevel, Exception, etc.).
         /// </summary>
         internal static string TagProviderInvalidUsageMessage {
@@ -619,7 +637,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Property provider method &quot;{0}&quot; in type &quot;{1}&quot; doesn&apos;t have a signature compatible with &quot;{2}&quot;.
+        ///   Looks up a localized string similar to Tag provider method &quot;{0}&quot; in type &quot;{1}&quot; doesn&apos;t have a signature compatible with &quot;{2}&quot;.
         /// </summary>
         internal static string TagProviderMethodInvalidSignatureMessage {
             get {
@@ -628,7 +646,7 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Property provider method has an invalid signature.
+        ///   Looks up a localized string similar to Tag provider method has an invalid signature.
         /// </summary>
         internal static string TagProviderMethodInvalidSignatureTitle {
             get {

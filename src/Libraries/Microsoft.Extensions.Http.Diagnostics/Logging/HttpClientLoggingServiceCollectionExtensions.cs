@@ -58,10 +58,6 @@ public static class HttpClientLoggingServiceCollectionExtensions
     /// All other loggers are removed - including the default one, registered via <see cref="HttpClientBuilderExtensions.AddDefaultLogger(IHttpClientBuilder)"/>.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Any of the arguments is <see langword="null"/>.</exception>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(LoggingOptions))]
-    [UnconditionalSuppressMessage("Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed with [DynamicDependency]")]
     public static IServiceCollection AddExtendedHttpClientLogging(this IServiceCollection services, IConfigurationSection section)
     {
         _ = Throw.IfNull(services);
@@ -102,7 +98,7 @@ public static class HttpClientLoggingServiceCollectionExtensions
     /// <typeparam name="T">Type of enricher.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the instance of <typeparamref name="T"/> to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    public static IServiceCollection AddHttpClientLogEnricher<T>(this IServiceCollection services)
+    public static IServiceCollection AddHttpClientLogEnricher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IServiceCollection services)
         where T : class, IHttpClientLogEnricher
         => Throw.IfNull(services).AddActivatedSingleton<IHttpClientLogEnricher, T>();
 }

@@ -59,7 +59,7 @@ internal static class Throw
     /// <param name="memberName">The name of the member.</param>
     /// <returns>The original value of <paramref name="member"/>.</returns>
     /// <example>
-    /// <code>
+    /// <code language="csharp">
     /// Throws.IfNullOrMemberNull(myObject, myObject?.MyProperty)
     /// </code>
     /// </example>
@@ -95,7 +95,7 @@ internal static class Throw
     /// <param name="memberName">The name of the member.</param>
     /// <returns>The original value of <paramref name="member"/>.</returns>
     /// <example>
-    /// <code>
+    /// <code language="csharp">
     /// Throws.IfMemberNull(myObject, myObject.MyProperty)
     /// </code>
     /// </example>

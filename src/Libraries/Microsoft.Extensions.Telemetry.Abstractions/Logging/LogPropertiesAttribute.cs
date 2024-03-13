@@ -3,12 +3,14 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Logging;
 
 /// <summary>
-/// Marks a logging method parameter whose public tags need to be logged.
+/// Marks a logging method parameter whose public properties need to be logged as log tags.
 /// </summary>
 /// <seealso cref="LoggerMessageAttribute"/>
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
@@ -16,7 +18,7 @@ namespace Microsoft.Extensions.Logging;
 public sealed class LogPropertiesAttribute : Attribute
 {
     /// <summary>
-    /// Gets or sets a value indicating whether <see langword="null"/> tags are logged.
+    /// Gets or sets a value indicating whether <see langword="null"/> properties are logged.
     /// </summary>
     /// <value>
     /// Defaults to <see langword="false"/>.
@@ -30,4 +32,19 @@ public sealed class LogPropertiesAttribute : Attribute
     /// Defaults to <see langword="false"/>.
     /// </value>
     public bool OmitReferenceName { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to transitively visit properties which are complex objects.
+    /// </summary>
+    /// <remarks>
+    /// When logging the properties of an object, this property controls the behavior for each encountered property.
+    /// When this property is <see langword="false"/>, then each property is serialized by calling <see cref="object.ToString" /> to
+    /// generate a string for the property. When this property is <see langword="true"/>, then each property of any complex objects are
+    /// expanded individually.
+    /// </remarks>
+    /// <value>
+    /// Defaults to <see langword="false"/>.
+    /// </value>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
+    public bool Transitive { get; set; }
 }

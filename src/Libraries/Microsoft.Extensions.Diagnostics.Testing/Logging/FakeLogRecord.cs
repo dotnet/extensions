@@ -17,7 +17,7 @@ public class FakeLogRecord
     /// Initializes a new instance of the <see cref="FakeLogRecord"/> class.
     /// </summary>
     /// <param name="level">The level used when producing the log record.</param>
-    /// <param name="id">The id representing the specific log statement.</param>
+    /// <param name="id">The ID representing the specific log statement.</param>
     /// <param name="state">The opaque state supplied by the caller when creating the log record.</param>
     /// <param name="exception">An optional exception associated with the log record.</param>
     /// <param name="message">The formatted message text for the record.</param>
@@ -46,7 +46,7 @@ public class FakeLogRecord
     public LogLevel Level { get; }
 
     /// <summary>
-    /// Gets the id representing the specific log statement.
+    /// Gets the ID representing the specific log statement.
     /// </summary>
     public EventId Id { get; }
 
@@ -66,6 +66,30 @@ public class FakeLogRecord
     /// </remarks>
     /// <exception cref="InvalidCastException">The state object is not compatible with supported logging model and is not a read-only list.</exception>
     public IReadOnlyList<KeyValuePair<string, string?>>? StructuredState => (IReadOnlyList<KeyValuePair<string, string?>>?)State;
+
+    /// <summary>
+    /// Gets the value of a particular key value pair in the record's structured state.
+    /// </summary>
+    /// <param name="key">The key to search for in the record's structured state.</param>
+    /// <returns>
+    /// The value associated with the key, or <see langword="null"/> if the key was not found. If the structured
+    /// state contains multiple entries with the same key, the value associated with the first matching key encountered is returned.
+    /// </returns>
+    public string? GetStructuredStateValue(string key)
+    {
+        if (StructuredState is not null)
+        {
+            foreach (var kvp in StructuredState)
+            {
+                if (kvp.Key == key)
+                {
+                    return kvp.Value;
+                }
+            }
+        }
+
+        return null;
+    }
 
     /// <summary>
     /// Gets an optional exception associated with the log record.

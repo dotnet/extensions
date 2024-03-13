@@ -14,7 +14,7 @@ internal sealed class AsyncState : IAsyncState
 {
     private static readonly AsyncLocal<AsyncStateHolder> _asyncContextCurrent = new();
     private static readonly ObjectPool<List<object?>> _featuresPool = PoolFactory.CreatePool(new FeaturesPooledPolicy());
-    private int _contextCount;
+    private static int _contextCount;
 
     public void Initialize()
     {
@@ -104,7 +104,9 @@ internal sealed class AsyncState : IAsyncState
         }
     }
 
+#pragma warning disable CA1822 // Member 'ContextCount' does not access instance data and can be marked as static.
     internal int ContextCount => Volatile.Read(ref _contextCount);
+#pragma warning restore CA1822 // Member 'ContextCount' does not access instance data and can be marked as static.
 
     private sealed class AsyncStateHolder
     {

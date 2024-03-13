@@ -60,7 +60,7 @@ public static class HttpLoggingServiceCollectionExtensions
     {
         _ = Throw.IfNull(section);
 
-        return services.AddHttpLoggingRedaction(section.Bind);
+        return services.AddHttpLoggingRedaction(o => section.Bind(o));
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public static class HttpLoggingServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the instance of <typeparamref name="T"/> to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null" />.</exception>
-    public static IServiceCollection AddHttpLogEnricher<T>(this IServiceCollection services)
+    public static IServiceCollection AddHttpLogEnricher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this IServiceCollection services)
         where T : class, IHttpLogEnricher
     {
         _ = Throw.IfNull(services);

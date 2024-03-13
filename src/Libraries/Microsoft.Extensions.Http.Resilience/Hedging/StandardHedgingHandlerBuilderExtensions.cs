@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,13 +25,16 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// <param name="builder">The pipeline builder.</param>
     /// <param name="section">The section that the options will bind against.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(HttpStandardHedgingResilienceOptions))]
     public static IStandardHedgingHandlerBuilder Configure(this IStandardHedgingHandlerBuilder builder, IConfigurationSection section)
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(section);
 
-        var options = Throw.IfNull(section.Get<HttpStandardHedgingResilienceOptions>());
+        if (!section.GetChildren().Any())
+        {
+            Throw.ArgumentException(nameof(section), "Configuration section cannot be empty.");
+        }
+
         _ = builder.Services.Configure<HttpStandardHedgingResilienceOptions>(builder.Name, section, o => o.ErrorOnUnknownConfiguration = true);
 
         return builder;
@@ -89,7 +92,7 @@ public static class StandardHedgingHandlerBuilderExtensions
     /// <param name="builder">The builder instance.</param>
     /// <param name="selectorFactory">The factory that returns key selector.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
-    /// <remarks>The pipeline key is used in metrics and logs, do not return any sensitive value.</remarks>
+    /// <remarks>The pipeline key is used in metrics and logs, so don't return any sensitive values.</remarks>
     public static IStandardHedgingHandlerBuilder SelectPipelineBy(this IStandardHedgingHandlerBuilder builder, Func<IServiceProvider, Func<HttpRequestMessage, string>> selectorFactory)
     {
         _ = Throw.IfNull(builder);

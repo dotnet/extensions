@@ -55,13 +55,9 @@ public static partial class AutoActivationExtensions
     /// <param name="serviceType">The type of the service to activate.</param>
     /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <returns>The value of <paramref name="services" />.</returns>
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed with [DynamicallyAccessedMembers]")]
     public static IServiceCollection ActivateKeyedSingleton(
         this IServiceCollection services,
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type serviceType,
+        Type serviceType,
         object? serviceKey)
     {
         _ = Throw.IfNull(services);
@@ -72,7 +68,7 @@ public static partial class AutoActivationExtensions
             .AddOptions<AutoActivatorOptions>()
             .Configure(ao =>
             {
-                var constructed = typeof(IEnumerable<>).MakeGenericType(serviceType);
+                var constructed = GetEnumerableServiceType(serviceType);
                 if (ao.KeyedAutoActivators.Contains((constructed, serviceKey)))
                 {
                     return;
@@ -85,6 +81,10 @@ public static partial class AutoActivationExtensions
                 }
 
                 _ = ao.KeyedAutoActivators.Add((serviceType, serviceKey));
+
+                [UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode",
+                    Justification = "When IsDynamicCodeSupported is not supported, DependencyInjection ensures IEnumerable service types are not a ValueType.")]
+                static Type GetEnumerableServiceType(Type serviceType) => typeof(IEnumerable<>).MakeGenericType(serviceType);
             });
 
         return services;
@@ -122,7 +122,7 @@ public static partial class AutoActivationExtensions
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
     /// <returns>The value of <paramref name="services" />.</returns>
-    public static IServiceCollection AddActivatedKeyedSingleton<TService, TImplementation>(
+    public static IServiceCollection AddActivatedKeyedSingleton<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
         this IServiceCollection services,
         object? serviceKey)
         where TService : class
@@ -159,7 +159,7 @@ public static partial class AutoActivationExtensions
     /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     /// <returns>The value of <paramref name="services" />.</returns>
-    public static IServiceCollection AddActivatedKeyedSingleton<TService>(
+    public static IServiceCollection AddActivatedKeyedSingleton<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(
         this IServiceCollection services,
         object? serviceKey)
         where TService : class
@@ -178,7 +178,7 @@ public static partial class AutoActivationExtensions
     /// <returns>The value of <paramref name="services" />.</returns>
     public static IServiceCollection AddActivatedKeyedSingleton(
         this IServiceCollection services,
-        Type serviceType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type serviceType,
         object? serviceKey)
     {
         _ = Throw.IfNull(services);
@@ -224,7 +224,7 @@ public static partial class AutoActivationExtensions
         this IServiceCollection services,
         Type serviceType,
         object? serviceKey,
-        Type implementationType)
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(serviceType);
@@ -243,7 +243,7 @@ public static partial class AutoActivationExtensions
     /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     public static void TryAddActivatedKeyedSingleton(
         this IServiceCollection services,
-        Type serviceType,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type serviceType,
         object? serviceKey)
     {
         _ = Throw.IfNull(services);
@@ -263,7 +263,7 @@ public static partial class AutoActivationExtensions
         this IServiceCollection services,
         Type serviceType,
         object? serviceKey,
-        Type implementationType)
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type implementationType)
     {
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(serviceType);
@@ -298,7 +298,7 @@ public static partial class AutoActivationExtensions
     /// <param name="services">The service collection to add the service to.</param>
     /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
-    public static void TryAddActivatedKeyedSingleton<TService>(
+    public static void TryAddActivatedKeyedSingleton<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(
         this IServiceCollection services,
         object? serviceKey)
         where TService : class
@@ -315,7 +315,7 @@ public static partial class AutoActivationExtensions
     /// <param name="serviceKey">An object used to uniquely identify the specific service.</param>
     /// <typeparam name="TService">The type of the service to add.</typeparam>
     /// <typeparam name="TImplementation">The type of the implementation to use.</typeparam>
-    public static void TryAddActivatedKeyedSingleton<TService, TImplementation>(
+    public static void TryAddActivatedKeyedSingleton<TService, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(
         this IServiceCollection services,
         object? serviceKey)
         where TService : class

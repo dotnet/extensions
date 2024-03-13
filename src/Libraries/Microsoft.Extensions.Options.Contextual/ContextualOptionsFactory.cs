@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Options.Contextual;
 /// Implementation of <see cref="IContextualOptionsFactory{TOptions}"/>.
 /// </summary>
 /// <typeparam name="TOptions">The type of options being requested.</typeparam>
-internal sealed class ContextualOptionsFactory<TOptions> : IContextualOptionsFactory<TOptions>
+internal sealed class ContextualOptionsFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TOptions> : IContextualOptionsFactory<TOptions>
     where TOptions : class
 {
     private readonly IOptionsFactory<TOptions> _baseFactory;

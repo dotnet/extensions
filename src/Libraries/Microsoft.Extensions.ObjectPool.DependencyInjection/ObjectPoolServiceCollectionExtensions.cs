@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class ObjectPoolServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds an <see cref="ObjectPool{TService}"/> and lets DI return scoped instances of TService.
+    /// Adds an <see cref="ObjectPool{TService}"/> and lets DI return scoped instances of <typeparamref name="TService"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
     /// <param name="configure">The action used to configure the options of the pool.</param>
@@ -38,7 +38,7 @@ public static class ObjectPoolServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Adds an <see cref="ObjectPool{TService}"/> and let DI return scoped instances of TService.
+    /// Adds an <see cref="ObjectPool{TService}"/> and lets DI return scoped instances of <typeparamref name="TService"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
     /// <param name="configure">Configuration of the pool.</param>
@@ -78,11 +78,6 @@ public static class ObjectPoolServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add to.</param>
     /// <param name="section">The configuration section to bind.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(DependencyInjectionPoolOptions))]
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = "Addressed by [DynamicDependency]")]
     public static IServiceCollection ConfigurePools(this IServiceCollection services, IConfigurationSection section)
     {
         foreach (var child in Throw.IfNull(section).GetChildren())

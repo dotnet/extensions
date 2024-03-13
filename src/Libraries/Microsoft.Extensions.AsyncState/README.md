@@ -1,6 +1,13 @@
 # Microsoft.Extensions.AsyncState
 
-This provides the ability to store and retrieve state objects that flow with the current asynchronous context.
+This provides the ability to store and retrieve objects that flow with the current asynchronous context.
+It has a few advantages over using the [`AsyncLocal<T>`](https://learn.microsoft.com/dotnet/api/system.threading.asynclocal-1) class directly:
+- By abstracting the way the ambient data is stored we can use more optimized implementations, for instance when using ASP.NET Core, without exposing these components.
+- Improves the performance by minimizing the number of `AsyncLocal<T>` instances required when multiple objects are shared.
+- Provides a way to manage the lifetime of the ambient data objects.
+
+> [!NOTE]
+> Please note, the implementations of `IAsyncState` and `IAsyncContext<T>` are not thread-safe.
 
 ## Install the package
 

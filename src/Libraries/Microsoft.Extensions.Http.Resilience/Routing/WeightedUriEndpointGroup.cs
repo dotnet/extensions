@@ -17,9 +17,9 @@ public class WeightedUriEndpointGroup : UriEndpointGroup
     /// <summary>
     /// Gets or sets the weight of the group.
     /// </summary>
-    /// <remarks>
-    /// Default value is 32000.
-    /// </remarks>
+    /// <value>
+    /// The default is 32000.
+    /// </value>
     [Range(MinWeight, MaxWeight)]
     public int Weight { get; set; } = DefaultWeight;
 }

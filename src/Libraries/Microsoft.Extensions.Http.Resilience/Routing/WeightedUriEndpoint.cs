@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Represents an URI based endpoint with a weight assigned.
+/// Represents a URI-based endpoint with a weight assigned.
 /// </summary>
 public class WeightedUriEndpoint
 {
@@ -19,7 +19,7 @@ public class WeightedUriEndpoint
     /// Gets or sets the URL of the endpoint.
     /// </summary>
     /// <remarks>
-    /// Only schema, domain name and, port is used, rest of the URL is constructed from request URL.
+    /// Only schema, domain name, and port are used. The rest of the URL is constructed from the request URL.
     /// </remarks>
     [Required]
     public Uri? Uri { get; set; }
@@ -27,9 +27,9 @@ public class WeightedUriEndpoint
     /// <summary>
     /// Gets or sets the weight of the endpoint.
     /// </summary>
-    /// <remarks>
-    /// Default value is 32000.
-    /// </remarks>
+    /// <value>
+    /// The default is 32000.
+    /// </value>
     [Range(MinWeight, MaxWeight)]
     public int Weight { get; set; } = DefaultWeight;
 }

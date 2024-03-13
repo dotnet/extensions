@@ -1,6 +1,6 @@
 Origin:
   AssemblyName: Microsoft.CodeAnalysis.CSharp.NetAnalyzers
-  Version: 8.0.8.47201
+  Version: 8.0.9.2502
 Diagnostics:
   CA1001:
     Metadata:
@@ -127,6 +127,8 @@ Diagnostics:
         Severity: None
         Comment: S1144 finds more cases and has no false positives
         Redundant: S1144
+        Options:
+        - ignore_internalsvisibleto = true
   CA1824:
     Metadata:
       Category: Performance
@@ -206,6 +208,8 @@ Diagnostics:
         Severity: None
       production:
         Severity: Warning
+        Options:
+        - api_surface = all
   CA3076:
     Metadata:
       Category: Security
@@ -439,6 +443,8 @@ Diagnostics:
         Severity: None
       performance:
         Severity: Warning
+        Options:
+        - required_modifiers = static
   CA2260:
     Metadata:
       Category: Usage
@@ -540,6 +546,20 @@ Diagnostics:
     Attributes:
       general:
         Severity: Warning
+  CA1870:
+    Metadata:
+      Category: Performance
+      Title: Use a cached 'SearchValues' instance
+      Description: Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.
+      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1870
+      CustomTags:
+      - Telemetry
+      - EnabledRuleInAggressiveMode
+      DefaultSeverity: Suggestion
+    Tier: 1
+    Attributes:
+      general:
+        Severity: Suggestion
   CA1865:
     Metadata:
       Category: Performance
@@ -596,20 +616,4 @@ Diagnostics:
     Tier: 1
     Attributes:
       general:
-        Severity: Warning
-  CA1870:
-    Metadata:
-      Category: Performance
-      Title: Use a cached 'SearchValues' instance
-      Description: Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.
-      HelpLinkUri: https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1870
-      CustomTags:
-      - Telemetry
-      - EnabledRuleInAggressiveMode
-      DefaultSeverity: Suggestion
-    Tier: 1
-    Attributes:
-      general:
-        Severity: None
-      performance:
         Severity: Warning

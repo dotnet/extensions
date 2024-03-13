@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -19,8 +18,6 @@ internal sealed class NoRemoteCallHandler : DelegatingHandler
         _data = data;
     }
 
-    [SuppressMessage("Performance Analysis", "CPR120:File.ReadAllXXX should be replaced by using a StreamReader to avoid adding objects to the large object heap (LOH).",
-        Justification = "We can live with it here")]
     public static NoRemoteCallHandler Create(string fileName)
     {
         var assemblyFileLocation = Path.GetDirectoryName(typeof(NoRemoteCallHandler).Assembly.Location)!;
@@ -41,7 +38,7 @@ internal sealed class NoRemoteCallHandler : DelegatingHandler
         {
             StatusCode = System.Net.HttpStatusCode.OK,
             RequestMessage = request,
-            Content = new StreamContent(new MemoryStream(_data))
+            Content = new StreamContent(new MemoryStream(_data, writable: false))
         };
 
         response.Content.Headers.ContentType = new("application/json");

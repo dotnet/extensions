@@ -8,33 +8,33 @@ using Microsoft.Extensions.Diagnostics.Metrics;
 namespace TestClasses
 {
     [SuppressMessage("Usage", "CA1801:Review unused parameters",
-    Justification = "For testing emitter for classes with description for metrics.")]
-    Justification = "Metrics generator tests")]
+        Justification = "For testing emitter for classes with description for metrics.")]
+        Justification = "Metrics generator tests")]
     internal static partial class MeterDimensionsAttributedWithXmlDescriptions
     {
         public const string Dim1 = "Dim1";
 
-        [Counter(DescripedDimensions.Dimension1, Dim1)]
+        [Counter(DescriptedDimensions.Dimension1, Dim1)]
         public static partial DescribedDimensionCounter CreatePublicCounter(Meter meter);
 
         /// <summary>
-        /// DimenisonDefinedInMetricClass description.
+        /// DimensionDefinedInMetricClass description.
         /// </summary>
-        public const string DimenisonDefinedInMetricClass = "DimenisonDefinedInMetricClass";
+        public const string DimensionDefinedInMetricClass = "DimensionDefinedInMetricClass";
 
-        [Histogram(DescripedDimensions.Dimension2, DimenisonDefinedInMetricClass)]
+        [Histogram(DescriptedDimensions.Dimension2, DimensionDefinedInMetricClass)]
         public static partial DescribedDimensionHistogram CreatePublicHistogram(Meter meter);
 
         [Counter(typeof(DimensionForStrongTypes), Name = "MyStrongTypeMetricWithDescription")]
-        public static partial StrongTypeCounterWithDescripedDimension CreateStrongTypeCounterWithDescibedDimensions(Meter meter);
+        public static partial StrongTypeCounterWithDescriptedDimension CreateStrongTypeCounterWithDescribedDimensions(Meter meter);
     }
 
 #pragma warning disable SA1402 // File may only contain a single type
 
     /// <summary>
-    /// DescripedDimensions class description.
+    /// DescriptedDimensions class description.
     /// </summary>
-    internal static class DescripedDimensions
+    internal static class DescriptedDimensions
     {
         /// <summary>
         /// Dimension1 description.
@@ -67,7 +67,7 @@ namespace TestClasses
         /// <summary>
         /// Gets or sets MetricEnum2.
         /// </summary>
-        [Dimension("Enum2")]
+        [TagName("Enum2")]
         public MetricOperations MetricEnum2 { get; set; }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace TestClasses
         /// <summary>
         /// Gets or sets SomeDim.
         /// </summary>
-        [Dimension("dim2FromAttribute")]
+        [TagName("dim2FromAttribute")]
         public string? SomeDim;
     }
 
@@ -111,7 +111,7 @@ namespace TestClasses
         /// <summary>
         /// Gets or sets Dim5Struct.
         /// </summary>
-        [Dimension("Dim5FromAttribute")]
+        [TagName("Dim5FromAttribute")]
         public string Dim5Struct { get; set; }
     }
 #pragma warning restore SA1402 // File may only contain a single type

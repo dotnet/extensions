@@ -2,29 +2,58 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Http.Diagnostics;
+using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Shared.DiagnosticIds;
+using Microsoft.Shared.Diagnostics;
 using Polly;
 
-namespace Microsoft.Extensions.Http.Resilience.Internal;
+namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Base class for resilience handler, i.e. handlers that use resilience strategies  to send the requests.
+/// Base class for resilience handler, i.e. handlers that use resilience strategies to send the requests.
 /// </summary>
-internal sealed class ResilienceHandler : DelegatingHandler
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
+public class ResilienceHandler : DelegatingHandler
 {
     private readonly Func<HttpRequestMessage, ResiliencePipeline<HttpResponseMessage>> _pipelineProvider;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ResilienceHandler"/> class.
+    /// </summary>
+    /// <param name="pipelineProvider">The pipeline provider that supplies pipelines in response to an http message.</param>
+    /// <exception cref="ArgumentNullException">If <paramref name="pipelineProvider"/> is <see langword="null"/>.</exception>
     public ResilienceHandler(Func<HttpRequestMessage, ResiliencePipeline<HttpResponseMessage>> pipelineProvider)
     {
-        _pipelineProvider = pipelineProvider;
+        _pipelineProvider = Throw.IfNull(pipelineProvider);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ResilienceHandler"/> class.
+    /// </summary>
+    /// <param name="pipeline">The pipeline to use for the message.</param>
+    /// <exception cref="ArgumentNullException">If <paramref name="pipeline"/> is <see langword="null"/>.</exception>
+    public ResilienceHandler(ResiliencePipeline<HttpResponseMessage> pipeline)
+    {
+        _ = Throw.IfNull(pipeline);
+        _pipelineProvider = _ => pipeline;
+    }
+
+    /// <summary>
+    /// Sends an HTTP request to the inner handler to send to the server as an asynchronous operation.
+    /// </summary>
+    /// <param name="request">The HTTP request message to send to the server.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel operation.</param>
+    /// <returns>The task object representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">If <paramref name="request"/> is <see langword="null"/>.</exception>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        _ = Throw.IfNull(request);
+
         var pipeline = _pipelineProvider(request);
         var created = false;
         if (request.GetResilienceContext() is not ResilienceContext context)

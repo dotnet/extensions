@@ -89,7 +89,7 @@ public class FakeTimeProvider : TimeProvider
     /// Sets the date and time in the UTC time zone.
     /// </summary>
     /// <param name="value">The date and time in the UTC time zone.</param>
-    /// <exception cref="ArgumentOutOfRangeException">if the supplied time value is before the curent time.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">if the supplied time value is before the current time.</exception>
     public void SetUtcNow(DateTimeOffset value)
     {
         lock (Waiters)
@@ -194,6 +194,8 @@ public class FakeTimeProvider : TimeProvider
         WakeWaiters();
     }
 
+    internal event EventHandler? GateOpening;
+
     private void WakeWaiters()
     {
         if (Interlocked.CompareExchange(ref _wakeWaitersGate, 1, 0) == 1)
@@ -234,13 +236,14 @@ public class FakeTimeProvider : TimeProvider
                         candidate = waiter;
                     }
                 }
-            }
 
-            if (candidate == null)
-            {
-                // didn't find a candidate to wake, we're done
-                _wakeWaitersGate = 0;
-                return;
+                if (candidate == null)
+                {
+                    // didn't find a candidate to wake, we're done
+                    GateOpening?.Invoke(this, EventArgs.Empty);
+                    _wakeWaitersGate = 0;
+                    return;
+                }
             }
 
             var oldTicks = _now.Ticks;

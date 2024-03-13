@@ -16,6 +16,7 @@ public static class AsyncStateHttpContextExtensions
     /// <summary>
     /// Adds default implementations for <see cref="IAsyncState"/>, <see cref="IAsyncContext{T}"/>, and <see cref="IAsyncLocalContext{T}"/> services,
     /// scoped to the lifetime of <see cref="AspNetCore.Http.HttpContext"/> instances.
+    /// Please note that implementations of these interfaces are not thread safe.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the service to.</param>
     /// <returns>The value of <paramref name="services"/>.</returns>

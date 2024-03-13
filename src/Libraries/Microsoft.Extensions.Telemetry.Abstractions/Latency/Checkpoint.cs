@@ -47,14 +47,14 @@ public readonly struct Checkpoint : IEquatable<Checkpoint>
     /// Determines whether this and a specified object are identical.
     /// </summary>
     /// <param name="obj">The object to compare.</param>
-    /// <returns><see langword="true"/> if identical;<see langword="false"/> otherwise.</returns>
+    /// <returns><see langword="true"/> if identical; <see langword="false"/> otherwise.</returns>
     public override bool Equals(object? obj) => obj is Checkpoint m && Equals(m);
 
     /// <summary>
     /// Determines whether this and a specified checkpoint are identical.
     /// </summary>
     /// <param name="other">The other checkpoint.</param>
-    /// <returns><see langword="true"/> if identical;<see langword="false"/> otherwise.</returns>
+    /// <returns><see langword="true"/> if identical; <see langword="false"/> otherwise.</returns>
     public bool Equals(Checkpoint other)
         => Elapsed == other.Elapsed && Frequency == other.Frequency && Name.Equals(other.Name, StringComparison.Ordinal);
 

@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <Stage>normal</Stage>
     <MinCodeCoverage>100</MinCodeCoverage>
     <MinMutationScore>100</MinMutationScore>
@@ -15,6 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
   </ItemGroup>
 
   <ItemGroup>

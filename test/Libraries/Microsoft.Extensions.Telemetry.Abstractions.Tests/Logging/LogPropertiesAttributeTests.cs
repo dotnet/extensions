@@ -26,4 +26,14 @@ public class LogPropertiesAttributeTests
         lpa.OmitReferenceName = true;
         Assert.True(lpa.OmitReferenceName);
     }
+
+    [Fact]
+    public void Transitive()
+    {
+        var lpa = new LogPropertiesAttribute();
+        Assert.False(lpa.Transitive);
+
+        lpa.Transitive = true;
+        Assert.True(lpa.Transitive);
+    }
 }

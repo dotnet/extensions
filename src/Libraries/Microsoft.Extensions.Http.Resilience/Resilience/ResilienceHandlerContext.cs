@@ -61,7 +61,7 @@ public sealed class ResilienceHandlerContext
     /// If <paramref name="name"/> is <see langword="null"/> then the global options are returned.
     /// By default, the <paramref name="name"/> parameter is <see langword="null"/>.
     /// </remarks>
-    public TOptions GetOptions<TOptions>(string? name = null) => _context.GetOptions<TOptions>(name);
+    public TOptions GetOptions<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TOptions>(string? name = null) => _context.GetOptions<TOptions>(name);
 
     /// <summary>
     /// Registers a callback that is called when the pipeline instance being configured is disposed.

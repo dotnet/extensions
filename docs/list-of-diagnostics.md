@@ -8,56 +8,6 @@
 | `CTXOPTGEN002` | The options context type does not have usable properties |
 | `CTXOPTGEN003` | The options context cannot be a ref-like type |
 
-
-# Design
-
-| Diagnostic ID     | Description |
-| :---------------- | :---------- |
-| `AUTOCLIENTGEN001` | API client interfaces must not be nested types |
-| `AUTOCLIENTGEN002` | REST API client does not have methods defined |
-| `AUTOCLIENTGEN003` | An API method must not contain more than one REST method attribute |
-| `AUTOCLIENTGEN004` | Invalid API method return type |
-| `AUTOCLIENTGEN005` | API methods can't be generic |
-| `AUTOCLIENTGEN006` | The current HTTP method does not support the body tag |
-| `AUTOCLIENTGEN007` | API methods must not be static |
-| `AUTOCLIENTGEN008` | HTTP method missing |
-| `AUTOCLIENTGEN009` | The API interface cannot be generic |
-| `AUTOCLIENTGEN010` | Invalid API interface name |
-| `AUTOCLIENTGEN011` | Duplicate body attribute |
-| `AUTOCLIENTGEN012` | URL parameter missing from path |
-| `AUTOCLIENTGEN013` | REST API method has more than one cancellation token |
-| `AUTOCLIENTGEN014` | Missing CancellationToken from REST API method |
-| `AUTOCLIENTGEN015` | API method path should not contain query |
-| `AUTOCLIENTGEN016` | A REST API method's request name must be unique |
-| `AUTOCLIENTGEN017` | Invalid HttpClient name |
-| `AUTOCLIENTGEN018` | Invalid dependency name |
-| `AUTOCLIENTGEN019` | Invalid header name |
-| `AUTOCLIENTGEN020` | Invalid header value |
-| `AUTOCLIENTGEN021` | Invalid REST method path |
-| `AUTOCLIENTGEN022` | Invalid request name |
-
-
-# ExtraAnalyzers
-
-| Diagnostic ID     | Category | Description |
-| :---------------- | :---------- | :---------- |
-| `EA0000` | Performance  | Use source generated logging methods for improved performance |
-| `EA0001` | Performance  | Perform message formatting in the body of the logging method |
-| `EA0002` | Reliability  | Use 'System.TimeProvider' to make the code easier to test |
-| `EA0003` | Performance  | Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith' |
-| `EA0004` | Performance  | Make types declared in an executable internal |
-| `EA0005` | Performance  | Consider using an array instead of a collection |
-| `EA0006` | Performance  | Replace uses of 'Enum.GetName' and 'Enum.ToString' for improved performance |
-| `EA0007` | Performance  | Use 'System.ValueTuple' instead of 'System.Tuple' for improved performance |
-| `EA0008` | Performance  | Use generic collections instead of legacy collections for improved performance |
-| `EA0009` | Performance  | Use 'System.MemoryExtensions.Split' for improved performance |
-| `EA0010` | Correctness  | Fire-and-forget async call inside a 'using' block |
-| `EA0011` | Performance  | Consider removing unnecessary conditional access operator (?) |
-| `EA0012` | Performance  | Consider removing unnecessary null coalescing assignment (??=) |
-| `EA0013` | Performance  | Consider removing unnecessary null coalescing operator (??) |
-| `EA0014` | Resilience  | The async method doesn't support cancellation |
-
-
 # Experiments
 
 As new functionality is introduced to this repo, new in-development APIs are marked as being experimental. Experimental APIs offer no
@@ -72,14 +22,12 @@ If you use experimental APIs, you will get one of the diagnostic shown below. Th
 using such an API so that you can avoid accidentally depending on experimental features. You may suppress these diagnostics
 if desired.
 
-
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
 | `EXTEXP0001` | Resilience experiments |
 | `EXTEXP0002` | Compliance experiments  |
 | `EXTEXP0003` | Telemetry experiments |
 | `EXTEXP0004` | TimeProvider experiments |
-| `EXTEXP0005` | AutoClient experiments |
 | `EXTEXP0006` | AsyncState experiments |
 | `EXTEXP0007` | Health check experiments |
 | `EXTEXP0008` | Resource monitoring experiments |
@@ -92,7 +40,6 @@ if desired.
 | `EXTEXP0015` | Environmental probes experiments |
 | `EXTEXP0016` | Hosting integration testing experiments |
 | `EXTEXP0017` | Contextual options experiments |
-
 
 # LoggerMessage
 
@@ -134,7 +81,7 @@ if desired.
 | `LOGGEN033` | Method parameter can't be used with a tag provider |
 | `LOGGEN034` | Attribute can't be used in this context |
 | `LOGGEN035` | The logging method parameter leaks sensitive data |
-
+| `LOGGEN036` | A value being logged doesn't have an effective way to be converted into a string |
 
 # Metrics
 
@@ -160,3 +107,10 @@ if desired.
 | `METGEN017` | Gauge is not supported yet |
 | `METGEN018` | Xml comment was not parsed correctly |
 | `METGEN019` | A metric class has cycles in its type hierarchy |
+
+## AuditReports
+
+| Diagnostic ID     | Description |
+| :---------------- | :---------- |
+| `AUDREPGEN000` | MetricsReports generator couldn't resolve output path for the report |
+| `AUDREPGEN001` | ComplianceReports generator couldn't resolve output path for the report |

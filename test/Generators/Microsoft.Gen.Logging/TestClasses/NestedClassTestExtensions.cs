@@ -26,7 +26,7 @@ namespace TestClasses
         public static T Foo(T x) => x;
     }
 
-    internal partial class NonStaticNestedClassTestExtensions<T>
+    internal sealed partial class NonStaticNestedClassTestExtensions<T>
         where T : Abc
     {
         internal partial class NonStaticNestedMiddleParentClass

@@ -74,10 +74,10 @@ internal sealed partial class Emitter : EmitterBase
             OutLn();
         }
 
-        var stateName = PickUniqueName("state", lm.Parameters.Select(p => p.Name));
+        var stateName = PickUniqueName("state", lm.Parameters.Select(p => p.ParameterName));
 
         OutLn($"var {stateName} = {LoggerMessageHelperType}.ThreadLocalState;");
-        GenPropertyLoads(lm, stateName, out int numReservedUnclassifiedTags, out int numReservedClassifiedTags);
+        GenTagWrites(lm, stateName, out int numReservedUnclassifiedTags, out int numReservedClassifiedTags);
 
         OutLn();
         OutLn($"{logger}.Log(");
@@ -91,22 +91,32 @@ internal sealed partial class Emitter : EmitterBase
         }
         else
         {
-            OutLn($"new(0, {eventName}),");
+            OutLn($"new({GetNonRandomizedHashCode(eventName)}, {eventName}),");
         }
 
         OutLn($"{stateName},");
         OutLn($"{exceptionArg},");
 
-        var lambdaStateName = PickUniqueName("s", lm.TemplateToParameterName.Select(kvp => kvp.Key));
+        var lambdaStateName = PickUniqueName("s", lm.Templates);
 
-        OutLn($"static ({lambdaStateName}, {exceptionLambdaName}) =>");
+        OutLn($"[{GeneratorUtilities.GeneratedCodeAttribute}] static string ({lambdaStateName}, {exceptionLambdaName}) =>");
         OutOpenBrace();
 
         if (GenVariableAssignments(lm, lambdaStateName, numReservedUnclassifiedTags, numReservedClassifiedTags))
         {
-            var template = EscapeMessageString(lm.Message);
-            template = AddAtSymbolsToTemplates(template, lm.Parameters);
-            OutLn($@"return global::System.FormattableString.Invariant(${template});");
+            var mapped = Parsing.TemplateProcessor.MapTemplates(lm.Message, t =>
+            {
+                var p = lm.GetParameterForTemplate(t);
+                if (p != null)
+                {
+                    return p.ParameterNameWithAtIfNeeded;
+                }
+
+                return t;
+            });
+
+            var s = EscapeMessageString(mapped!);
+            OutLn($@"return global::System.FormattableString.Invariant(${s});");
         }
         else if (string.IsNullOrEmpty(lm.Message))
         {
@@ -123,6 +133,26 @@ internal sealed partial class Emitter : EmitterBase
         OutLn();
         OutLn($"{stateName}.Clear();");
         OutCloseBrace();
+
+        /// <summary>
+        /// Returns a non-randomized hash code for the given string.
+        /// </summary>
+        /// <remarks>
+        /// We always return a positive value.
+        /// This code is cloned from the logging generator in dotnet/runtime in
+        /// order to retain the same event ids when upgrading to this generator.
+        /// </remarks>
+        static int GetNonRandomizedHashCode(string s)
+        {
+            const int Mult = 16_777_619;
+            uint result = 2_166_136_261u;
+            foreach (char c in s)
+            {
+                result = (c ^ result) * Mult;
+            }
+
+            return Math.Abs((int)result);
+        }
 
         static bool ShouldStringifyParameter(LoggingMethodParameter p)
         {
@@ -158,7 +188,7 @@ internal sealed partial class Emitter : EmitterBase
 
             if (p.ImplementsISpanFormattable)
             {
-                // pass object as it, it will be formatted directly into the output buffer
+                // pass object as is, it will be formatted directly into the output buffer
                 return false;
             }
 
@@ -211,11 +241,11 @@ internal sealed partial class Emitter : EmitterBase
             {
                 if (p.IsException)
                 {
-                    exceptionArg = p.Name;
+                    exceptionArg = p.ParameterName;
 
                     if (p.UsedAsTemplate)
                     {
-                        exceptionLambdaArg = lm.GetParameterNameInTemplate(p);
+                        exceptionLambdaArg = lm.GetTemplatesForParameter(p)[0];
                     }
 
                     break;
@@ -235,11 +265,11 @@ internal sealed partial class Emitter : EmitterBase
             return p.IsNormalParameter && !p.HasTagProvider && !p.HasProperties;
         }
 
-        void GenPropertyLoads(LoggingMethod lm, string stateName, out int numReservedUnclassifiedTags, out int numReservedClassifiedTags)
+        void GenTagWrites(LoggingMethod lm, string stateName, out int numReservedUnclassifiedTags, out int numReservedClassifiedTags)
         {
             int numUnclassifiedTags = 0;
             int numClassifiedTags = 0;
-            var tmpVarName = PickUniqueName("tmp", lm.Parameters.Select(p => p.Name));
+            var tmpVarName = PickUniqueName("tmp", lm.Parameters.Select(p => p.ParameterName));
 
             foreach (var p in lm.Parameters)
             {
@@ -288,20 +318,20 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     if (NeedsASlot(p) && !p.HasDataClassification)
                     {
-                        var key = $"\"{lm.GetParameterNameInTemplate(p)}\"";
+                        var key = $"\"{p.TagName}\"";
                         string value;
 
                         if (p.IsEnumerable)
                         {
                             value = p.PotentiallyNull
-                                ? $"{p.NameWithAt} != null ? {LoggerMessageHelperType}.Stringify({p.NameWithAt}) : null"
-                                : $"{LoggerMessageHelperType}.Stringify({p.NameWithAt})";
+                                ? $"{p.ParameterNameWithAtIfNeeded} != null ? {LoggerMessageHelperType}.Stringify({p.ParameterNameWithAtIfNeeded}) : null"
+                                : $"{LoggerMessageHelperType}.Stringify({p.ParameterNameWithAtIfNeeded})";
                         }
                         else
                         {
                             value = ShouldStringifyParameter(p)
-                                ? ConvertParameterToString(p, p.NameWithAt)
-                                : p.NameWithAt;
+                                ? ConvertParameterToString(p, p.ParameterNameWithAtIfNeeded)
+                                : p.ParameterNameWithAtIfNeeded;
                         }
 
                         OutLn($"{stateName}.TagArray[{--count}] = new({key}, {value});");
@@ -348,12 +378,12 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     if (NeedsASlot(p) && p.HasDataClassification)
                     {
-                        var key = $"\"{lm.GetParameterNameInTemplate(p)}\"";
+                        var key = $"\"{p.TagName}\"";
                         var classification = MakeClassificationValue(p.ClassificationAttributeTypes);
 
                         var value = ShouldStringifyParameter(p)
-                            ? ConvertParameterToString(p, p.NameWithAt)
-                            : p.NameWithAt;
+                            ? ConvertParameterToString(p, p.ParameterNameWithAtIfNeeded)
+                            : p.ParameterNameWithAtIfNeeded;
 
                         OutLn($"{stateName}.ClassifiedTagArray[{--count}] = new({key}, {value}, {classification});");
                     }
@@ -385,7 +415,7 @@ internal sealed partial class Emitter : EmitterBase
 
             foreach (var p in lm.Parameters)
             {
-                if (p.HasProperties && p.SkipNullProperties)
+                if (p.HasProperties && p.SkipNullProperties && !p.HasTagProvider)
                 {
                     p.TraverseParameterPropertiesTransitively((propertyChain, member) =>
                     {
@@ -469,10 +499,10 @@ internal sealed partial class Emitter : EmitterBase
                     }
                     else
                     {
-                        OutLn($"{stateName}.TagNamePrefix = nameof({p.NameWithAt});");
+                        OutLn($"{stateName}.TagNamePrefix = nameof({p.ParameterNameWithAtIfNeeded});");
                     }
 
-                    OutLn($"{p.TagProvider!.ContainingType}.{p.TagProvider.MethodName}({stateName}, {p.NameWithAt});");
+                    OutLn($"{p.TagProvider!.ContainingType}.{p.TagProvider.MethodName}({stateName}, {p.ParameterNameWithAtIfNeeded});");
                 }
             }
         }
@@ -488,20 +518,22 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     if (p.UsedAsTemplate)
                     {
-                        var key = lm.GetParameterNameInTemplate(p);
-
-                        var atSign = p.NeedsAtSign ? "@" : string.Empty;
-                        if (p.PotentiallyNull)
+                        var templates = lm.GetTemplatesForParameter(p);
+                        foreach (var t in templates)
                         {
-                            const string Null = "\"(null)\"";
-                            OutLn($"var {atSign}{key} = {lambdaStateName}.TagArray[{index}].Value ?? {Null};");
-                        }
-                        else
-                        {
-                            OutLn($"var {atSign}{key} = {lambdaStateName}.TagArray[{index}].Value;");
-                        }
+                            var atSign = p.NeedsAtSign ? "@" : string.Empty;
+                            if (p.PotentiallyNull)
+                            {
+                                const string Null = "\"(null)\"";
+                                OutLn($"var {atSign}{p.ParameterName} = {lambdaStateName}.TagArray[{index}].Value ?? {Null};");
+                            }
+                            else
+                            {
+                                OutLn($"var {atSign}{p.ParameterName} = {lambdaStateName}.TagArray[{index}].Value;");
+                            }
 
-                        generatedAssignments = true;
+                            generatedAssignments = true;
+                        }
                     }
 
                     index--;
@@ -515,20 +547,22 @@ internal sealed partial class Emitter : EmitterBase
                 {
                     if (p.UsedAsTemplate)
                     {
-                        var key = lm.GetParameterNameInTemplate(p);
-
-                        var atSign = p.NeedsAtSign ? "@" : string.Empty;
-                        if (p.PotentiallyNull)
+                        var templates = lm.GetTemplatesForParameter(p);
+                        foreach (var t in templates)
                         {
-                            const string Null = "\"(null)\"";
-                            OutLn($"var {atSign}{key} = {lambdaStateName}.RedactedTagArray[{index}].Value ?? {Null};");
-                        }
-                        else
-                        {
-                            OutLn($"var {atSign}{key} = {lambdaStateName}.RedactedTagArray[{index}].Value;");
-                        }
+                            var atSign = p.NeedsAtSign ? "@" : string.Empty;
+                            if (p.PotentiallyNull)
+                            {
+                                const string Null = "\"(null)\"";
+                                OutLn($"var {atSign}{p.ParameterName} = {lambdaStateName}.RedactedTagArray[{index}].Value ?? {Null};");
+                            }
+                            else
+                            {
+                                OutLn($"var {atSign}{p.ParameterName} = {lambdaStateName}.RedactedTagArray[{index}].Value;");
+                            }
 
-                        generatedAssignments = true;
+                            generatedAssignments = true;
+                        }
                     }
 
                     index--;
@@ -540,14 +574,14 @@ internal sealed partial class Emitter : EmitterBase
 
         static (string name, bool isNullable) GetLogger(LoggingMethod lm)
         {
-            string logger = lm.LoggerField;
-            bool isNullable = lm.LoggerFieldNullable;
+            string logger = lm.LoggerMember;
+            bool isNullable = lm.LoggerMemberNullable;
 
             foreach (var p in lm.Parameters)
             {
                 if (p.IsLogger)
                 {
-                    logger = p.Name;
+                    logger = p.ParameterName;
                     isNullable = p.IsNullable;
                     break;
                 }
@@ -581,47 +615,16 @@ internal sealed partial class Emitter : EmitterBase
         return sb.ToString();
     }
 
-    private string AddAtSymbolsToTemplates(string template, IEnumerable<LoggingMethodParameter> parameters)
-    {
-        StringBuilder? stringBuilder = null;
-        foreach (var item in parameters.Where(p => p.UsedAsTemplate))
-        {
-            if (!item.NeedsAtSign)
-            {
-                continue;
-            }
-
-            if (stringBuilder is null)
-            {
-                stringBuilder = _sbPool.GetStringBuilder();
-                _ = stringBuilder.Append(template);
-            }
-
-            _ = stringBuilder.Replace(item.Name, item.NameWithAt);
-        }
-
-        var result = stringBuilder is null
-            ? template
-            : stringBuilder.ToString();
-
-        if (stringBuilder != null)
-        {
-            _sbPool.ReturnStringBuilder(stringBuilder);
-        }
-
-        return result;
-    }
-
     private void GenParameters(LoggingMethod lm)
     {
         OutEnumeration(lm.Parameters.Select(static p =>
         {
             if (p.Qualifier != null)
             {
-                return $"{p.Qualifier} {p.Type} {p.NameWithAt}";
+                return $"{p.Qualifier} {p.Type} {p.ParameterNameWithAtIfNeeded}";
             }
 
-            return $"{p.Type} {p.NameWithAt}";
+            return $"{p.Type} {p.ParameterNameWithAtIfNeeded}";
         }));
     }
 
@@ -647,12 +650,12 @@ internal sealed partial class Emitter : EmitterBase
                 }
 
                 _ = localStringBuilder
-                    .Append(needAts ? property.NameWithAt : property.Name)
+                    .Append(needAts ? property.PropertyNameWithAt : property.PropertyName)
                     .Append(property.PotentiallyNull ? separator : adjustedNonNullSeparator);
             }
 
             // Last item:
-            _ = localStringBuilder.Append(needAts ? leafProperty.NameWithAt : leafProperty.Name);
+            _ = localStringBuilder.Append(needAts ? leafProperty.PropertyNameWithAt : leafProperty.PropertyName);
 
             return localStringBuilder.ToString();
         }

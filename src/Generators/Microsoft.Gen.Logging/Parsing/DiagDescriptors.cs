@@ -108,16 +108,16 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         category: Category,
         DiagnosticSeverity.Warning);
 
-    public static DiagnosticDescriptor MissingLoggerField { get; } = Make(
+    public static DiagnosticDescriptor MissingLoggerMember { get; } = Make(
         id: DiagnosticIds.LoggerMessage.LOGGEN015,
-        title: Resources.MissingLoggerFieldTitle,
-        messageFormat: Resources.MissingLoggerFieldMessage,
+        title: Resources.MissingLoggerMemberTitle,
+        messageFormat: Resources.MissingLoggerMemberMessage,
         category: Category);
 
-    public static DiagnosticDescriptor MultipleLoggerFields { get; } = Make(
+    public static DiagnosticDescriptor MultipleLoggerMembers { get; } = Make(
         id: DiagnosticIds.LoggerMessage.LOGGEN016,
-        title: Resources.MultipleLoggerFieldsTitle,
-        messageFormat: Resources.MultipleLoggerFieldsMessage,
+        title: Resources.MultipleLoggerMembersTitle,
+        messageFormat: Resources.MultipleLoggerMembersMessage,
         category: Category);
 
     public static DiagnosticDescriptor CantUseDataClassificationWithLogPropertiesOrTagProvider { get; } = Make(
@@ -176,7 +176,7 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.LoggingMethodParameterRefKindMessage,
         category: Category);
 
-    public static DiagnosticDescriptor LogPropertiesProviderWithRedaction { get; } = Make(
+    public static DiagnosticDescriptor TagProviderWithRedaction { get; } = Make(
         id: DiagnosticIds.LoggerMessage.LOGGEN026,
         title: Resources.TagProviderWithRedactionTitle,
         messageFormat: Resources.TagProviderWithRedactionMessage,
@@ -196,10 +196,10 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.LogPropertiesHiddenPropertyDetectedMessage,
         category: Category);
 
-    public static DiagnosticDescriptor LogPropertiesNameCollision { get; } = Make(
+    public static DiagnosticDescriptor TagNameCollision { get; } = Make(
         id: DiagnosticIds.LoggerMessage.LOGGEN029,
-        title: Resources.LogPropertiesNameCollisionTitle,
-        messageFormat: Resources.LogPropertiesNameCollisionMessage,
+        title: Resources.TagNameCollisionTitle,
+        messageFormat: Resources.TagNameCollisionMessage,
         category: Category);
 
     public static DiagnosticDescriptor EmptyLoggingMethod { get; } = Make(
@@ -237,4 +237,11 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         title: Resources.RecordTypeSensitiveArgumentIsInTemplateTitle,
         messageFormat: Resources.RecordTypeSensitiveArgumentIsInTemplateMessage,
         category: Category);
+
+    public static DiagnosticDescriptor DefaultToString { get; } = Make(
+        id: DiagnosticIds.LoggerMessage.LOGGEN036,
+        title: Resources.DefaultToStringTitle,
+        messageFormat: Resources.DefaultToStringMessage,
+        category: Category,
+        DiagnosticSeverity.Warning);
 }

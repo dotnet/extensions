@@ -76,5 +76,7 @@ internal sealed partial class ExtendedLogger
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public override string? ToString() => State?.ToString();
     }
 }

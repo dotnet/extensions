@@ -91,6 +91,10 @@ public class FakeLoggerTests
         Assert.Null(ss["K2"]);
         Assert.Equal("[\"0\",\"1\",\"2\"]", ss["K3"]);
 
+        Assert.Equal("V0", logger.LatestRecord.GetStructuredStateValue("K0"));
+        Assert.Equal("V1", logger.LatestRecord.GetStructuredStateValue("K1"));
+        Assert.Equal("[\"0\",\"1\",\"2\"]", logger.LatestRecord.GetStructuredStateValue("K3"));
+
         logger = new FakeLogger();
         logger.Log<object?>(LogLevel.Error, new EventId(0), null, null, (_, _) => "MESSAGE");
         Assert.Null(logger.LatestRecord.State);
@@ -100,6 +104,15 @@ public class FakeLoggerTests
         ss = logger.LatestRecord.StructuredState!.ToDictionary(x => x.Key, x => x.Value);
         Assert.Equal("Bob", ss["name"]);
         Assert.Equal("Hello {name}", ss["{OriginalFormat}"]);
+    }
+
+    [Fact]
+    public void NullState()
+    {
+        var logger = new FakeLogger();
+        logger.Log<object?>(LogLevel.Error, new EventId(0), null, null, (_, _) => "MESSAGE");
+
+        Assert.Null(logger.LatestRecord.GetStructuredStateValue("K0"));
     }
 
     [Fact]

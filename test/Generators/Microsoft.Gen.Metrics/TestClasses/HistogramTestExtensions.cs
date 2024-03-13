@@ -107,7 +107,13 @@ namespace TestClasses
 #pragma warning disable SA1402 // File may only contain a single type
     public class HistogramDimensionsTest : HistogramParentDimensions
     {
+        // The generator should ignore these statics:
+        public const string Const = "Constant Value";
+
+        public static string Static = "Static Value";
+
         public string? Dim1;
+
         public HistogramOperations OperationsEnum { get; set; }
 
         [TagName("Enum2")]
@@ -156,6 +162,11 @@ namespace TestClasses
 
     public struct HistogramStruct
     {
+        // The generator should ignore these statics:
+        public const string Const = "Constant Value";
+
+        public static string Static = "Static Value";
+
         public string? Dim1 { get; set; }
 
         [TagName("DimInField")]

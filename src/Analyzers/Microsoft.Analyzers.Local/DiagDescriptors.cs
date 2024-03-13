@@ -104,6 +104,14 @@ internal static class DiagDescriptors
         description: Resources.PublishedSymbolsCantChangeDescription,
         defaultSeverity: DiagnosticSeverity.Warning);
 
+    public static DiagnosticDescriptor InternalReferencedInPublicDoc { get; } = Make(
+        id: "LA0008",
+        messageFormat: Resources.InternalReferencedInPublicDocMessage,
+        title: Resources.InternalReferencedInPublicDocTitle,
+        category: Correctness,
+        description: Resources.InternalReferencedInPublicDocDescription,
+        defaultSeverity: DiagnosticSeverity.Warning);
+
     private static DiagnosticDescriptor Make(string id, string title, string description, string messageFormat, string category, DiagnosticSeverity defaultSeverity)
         => new(id, title, messageFormat, category, defaultSeverity, true, description);
 }

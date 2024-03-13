@@ -28,32 +28,6 @@ internal static class DiagnosticIds
         internal const string CTXOPTGEN003 = nameof(CTXOPTGEN003);
     }
 
-    internal static class Design
-    {
-        internal const string AUTOCLIENTGEN001 = nameof(AUTOCLIENTGEN001);
-        internal const string AUTOCLIENTGEN002 = nameof(AUTOCLIENTGEN002);
-        internal const string AUTOCLIENTGEN003 = nameof(AUTOCLIENTGEN003);
-        internal const string AUTOCLIENTGEN004 = nameof(AUTOCLIENTGEN004);
-        internal const string AUTOCLIENTGEN005 = nameof(AUTOCLIENTGEN005);
-        internal const string AUTOCLIENTGEN006 = nameof(AUTOCLIENTGEN006);
-        internal const string AUTOCLIENTGEN007 = nameof(AUTOCLIENTGEN007);
-        internal const string AUTOCLIENTGEN008 = nameof(AUTOCLIENTGEN008);
-        internal const string AUTOCLIENTGEN009 = nameof(AUTOCLIENTGEN009);
-        internal const string AUTOCLIENTGEN010 = nameof(AUTOCLIENTGEN010);
-        internal const string AUTOCLIENTGEN011 = nameof(AUTOCLIENTGEN011);
-        internal const string AUTOCLIENTGEN012 = nameof(AUTOCLIENTGEN012);
-        internal const string AUTOCLIENTGEN013 = nameof(AUTOCLIENTGEN013);
-        internal const string AUTOCLIENTGEN014 = nameof(AUTOCLIENTGEN014);
-        internal const string AUTOCLIENTGEN015 = nameof(AUTOCLIENTGEN015);
-        internal const string AUTOCLIENTGEN016 = nameof(AUTOCLIENTGEN016);
-        internal const string AUTOCLIENTGEN017 = nameof(AUTOCLIENTGEN017);
-        internal const string AUTOCLIENTGEN018 = nameof(AUTOCLIENTGEN018);
-        internal const string AUTOCLIENTGEN019 = nameof(AUTOCLIENTGEN019);
-        internal const string AUTOCLIENTGEN020 = nameof(AUTOCLIENTGEN020);
-        internal const string AUTOCLIENTGEN021 = nameof(AUTOCLIENTGEN021);
-        internal const string AUTOCLIENTGEN022 = nameof(AUTOCLIENTGEN022);
-    }
-
     /// <summary>
     ///  Experiments supported by this repo.
     /// </summary>
@@ -63,7 +37,6 @@ internal static class DiagnosticIds
         internal const string Compliance = "EXTEXP0002";
         internal const string Telemetry = "EXTEXP0003";
         internal const string TimeProvider = "EXTEXP0004";
-        internal const string AutoClient = "EXTEXP0005";
         internal const string AsyncState = "EXTEXP0006";
         internal const string HealthChecks = "EXTEXP0007";
         internal const string ResourceMonitoring = "EXTEXP0008";
@@ -112,6 +85,7 @@ internal static class DiagnosticIds
         internal const string LOGGEN033 = nameof(LOGGEN033);
         internal const string LOGGEN034 = nameof(LOGGEN034);
         internal const string LOGGEN035 = nameof(LOGGEN035);
+        internal const string LOGGEN036 = nameof(LOGGEN036);
     }
 
     internal static class Metrics
@@ -136,6 +110,12 @@ internal static class DiagnosticIds
         internal const string METGEN017 = nameof(METGEN017);
         internal const string METGEN018 = nameof(METGEN018);
         internal const string METGEN019 = nameof(METGEN019);
+    }
+
+    internal static class AuditReports
+    {
+        internal const string AUDREPGEN000 = nameof(AUDREPGEN000);
+        internal const string AUDREPGEN001 = nameof(AUDREPGEN001);
     }
 }
 

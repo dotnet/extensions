@@ -55,7 +55,7 @@ internal sealed partial class Emitter : EmitterBase
             {
                 if (p.IsLogLevel)
                 {
-                    level = p.Name;
+                    level = p.ParameterName;
                     break;
                 }
             }
