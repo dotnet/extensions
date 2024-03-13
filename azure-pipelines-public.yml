@@ -133,6 +133,7 @@ stages:
               skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
               isWindows: true
               warnAsError: 0
+              runAsPublic: true
 
       # ----------------------------------------------------------------
       # This job build and run tests on Ubuntu
@@ -164,6 +165,7 @@ stages:
               skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
               isWindows: false
               warnAsError: 0
+              runAsPublic: true
 
 
 # ----------------------------------------------------------------
