@@ -66,11 +66,20 @@ steps:
       continueOnError: true
 
     - ${{ if ne(parameters.skipQualityGates, 'true') }}:
-      - task: 1ES.PublishPipelineArtifact@1
-        displayName: Publish coverage results (cobertura.xml)
-        inputs:
-          targetPath: '${{ parameters.repoTestResultsPath }}/$(Agent.JobName)_CodeCoverageResults'
-          artifactName: "$(Agent.JobName)_CodeCoverageResults"
+      - ${{ if eq(variables['runAsPublic'], 'true') }}:
+        - task: PublishPipelineArtifact@1
+          displayName: Publish coverage results (cobertura.xml)
+          inputs:
+            targetPath: '${{ parameters.repoTestResultsPath }}/$(Agent.JobName)_CodeCoverageResults'
+            artifactName: "$(Agent.JobName)_CodeCoverageResults"
+            publishLocation: 'pipeline'
+
+      - ${{ if eq(variables['runAsPublic'], 'false') }}:
+        - task: 1ES.PublishPipelineArtifact@1
+          displayName: Publish coverage results (cobertura.xml)
+          inputs:
+            targetPath: '${{ parameters.repoTestResultsPath }}/$(Agent.JobName)_CodeCoverageResults'
+            artifactName: "$(Agent.JobName)_CodeCoverageResults"
 
   - ${{ if eq(parameters.isWindows, 'true') }}:
     - script: ${{ parameters.buildScript }}
