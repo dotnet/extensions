@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -220,7 +220,9 @@ public class RedactionFakesAcceptanceTests
 
         Assert.Equal(1, collector.LastRedactorRequested.SequenceNumber);
         Assert.Equal(dc, collector.LastRedactorRequested.DataClassifications);
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
         Assert.Equal(1, collector.AllRedactorRequests.Count);
+#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
     }
 
     [Fact]
