@@ -9,9 +9,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options.Contextual.Provider;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Options.Contextual;
+namespace Microsoft.Extensions.Options.Contextual.Internal;
 
 /// <summary>
 /// Implementation of <see cref="IContextualOptionsFactory{TOptions}"/>.
@@ -20,28 +21,29 @@ namespace Microsoft.Extensions.Options.Contextual;
 internal sealed class ContextualOptionsFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TOptions> : IContextualOptionsFactory<TOptions>
     where TOptions : class
 {
-    private readonly IOptionsFactory<TOptions> _baseFactory;
     private readonly ILoadContextualOptions<TOptions>[] _loaders;
-    private readonly IPostConfigureContextualOptions<TOptions>[] _postConfigures;
-    private readonly IValidateContextualOptions<TOptions>[] _validations;
+
+    private readonly IConfigureOptions<TOptions>[] _setups;
+    private readonly IPostConfigureOptions<TOptions>[] _postConfigures;
+    private readonly IValidateOptions<TOptions>[] _validations;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ContextualOptionsFactory{TOptions}"/> class.
     /// </summary>
-    /// <param name="baseFactory">The factory to create instances of <typeparamref name="TOptions"/> with.</param>
     /// <param name="loaders">The configuration loaders to run.</param>
+    /// <param name="setups">The configuration actions to run.</param>
     /// <param name="postConfigures">The initialization actions to run.</param>
     /// <param name="validations">The validations to run.</param>
     public ContextualOptionsFactory(
-        IOptionsFactory<TOptions> baseFactory,
         IEnumerable<ILoadContextualOptions<TOptions>> loaders,
-        IEnumerable<IPostConfigureContextualOptions<TOptions>> postConfigures,
-        IEnumerable<IValidateContextualOptions<TOptions>> validations)
+        IEnumerable<IConfigureOptions<TOptions>> setups,
+        IEnumerable<IPostConfigureOptions<TOptions>> postConfigures,
+        IEnumerable<IValidateOptions<TOptions>> validations)
     {
-        _baseFactory = baseFactory;
         _loaders = loaders.ToArray();
-        _postConfigures = postConfigures.ToArray();
-        _validations = validations.ToArray();
+        _setups = setups as IConfigureOptions<TOptions>[] ?? setups.ToArray();
+        _postConfigures = postConfigures as IPostConfigureOptions<TOptions>[] ?? postConfigures.ToArray();
+        _validations = validations as IValidateOptions<TOptions>[] ?? validations.ToArray();
     }
 
     /// <inheritdoc/>
@@ -54,7 +56,21 @@ internal sealed class ContextualOptionsFactory<[DynamicallyAccessedMembers(Dynam
         _ = Throw.IfNull(context);
 
         cancellationToken.ThrowIfCancellationRequested();
-        var options = _baseFactory.Create(name);
+        TOptions options = Activator.CreateInstance<TOptions>();
+
+        // Set the default setup.
+        foreach (IConfigureOptions<TOptions> setup in _setups)
+        {
+            if (setup is IConfigureNamedOptions<TOptions> namedSetup)
+            {
+                namedSetup.Configure(name, options);
+            }
+            else if (name == Options.DefaultName)
+            {
+                setup.Configure(options);
+            }
+        }
+
         return ConfigureOptions(context);
 
         async ValueTask<TOptions> ConfigureOptions(TContext context)
@@ -108,25 +124,27 @@ internal sealed class ContextualOptionsFactory<[DynamicallyAccessedMembers(Dynam
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            foreach (var post in _postConfigures)
+            foreach (IPostConfigureOptions<TOptions> post in _postConfigures)
             {
-                post.PostConfigure(name, context, options);
+                post.PostConfigure(name, options);
             }
 
-            List<string>? failures = default;
-            foreach (var validate in _validations)
+            if (_validations.Length > 0)
             {
-                var result = validate.Validate(name, options);
-                if (result.Failed)
+                var failures = new List<string>();
+                foreach (IValidateOptions<TOptions> validate in _validations)
                 {
-                    failures ??= [];
-                    failures.AddRange(result.Failures);
+                    ValidateOptionsResult result = validate.Validate(name, options);
+                    if (result is not null && result.Failed)
+                    {
+                        failures.AddRange(result.Failures);
+                    }
                 }
-            }
 
-            if (failures is not null)
-            {
-                throw new OptionsValidationException(name, typeof(TOptions), failures);
+                if (failures.Count > 0)
+                {
+                    throw new OptionsValidationException(name, typeof(TOptions), failures);
+                }
             }
 
             return options;
