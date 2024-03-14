@@ -108,229 +108,229 @@ variables:
     - name: _Sign
       value: true
 
-stages:
-- stage: build
-  displayName: Build
-  variables:
-  - template: /eng/common/templates/variables/pool-providers.yml
-  jobs:
-  - template: /eng/common/templates/jobs/jobs.yml
-    parameters:
-      enableMicrobuild: true
-      enableTelemetry: true
-      enableSourceIndex: false
-      runAsPublic: ${{ variables['runAsPublic'] }}
-      # Publish build logs
-      enablePublishBuildArtifacts: true
-      # Publish test logs
-      enablePublishTestResults: true
-      # Publish NuGet packages using v3
-      # https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Publishing.md#basic-onboarding-scenario-for-new-repositories-to-the-current-publishing-version-v3
-      enablePublishUsingPipelines: true
-      enablePublishBuildAssets: true
-      workspace:
-        clean: all
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
 
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    sdl:
+      sourceAnalysisPool:
+        name: NetCore1ESPool-Internal
+        image: windows.vs2022preview.amd64
+        os: windows
+    customBuildTags:
+    - ES365AIMigrationTooling
+
+    stages:
+    - stage: build
+      displayName: Build
+      variables:
+      - template: /eng/common/templates-official/variables/pool-providers.yml@self
       jobs:
+      - template: /eng/common/templates-official/jobs/jobs.yml@self
+        parameters:
+          enableMicrobuild: true
+          enableTelemetry: true
+          enableSourceIndex: false
+          runAsPublic: ${{ variables['runAsPublic'] }}
+          # Publish build logs
+          enablePublishBuildArtifacts: true
+          # Publish test logs
+          enablePublishTestResults: true
+          # Publish NuGet packages using v3
+          # https://github.com/dotnet/arcade/blob/main/Documentation/CorePackages/Publishing.md#basic-onboarding-scenario-for-new-repositories-to-the-current-publishing-version-v3
+          enablePublishUsingPipelines: true
+          enablePublishBuildAssets: true
+          workspace:
+            clean: all
 
-      # ----------------------------------------------------------------
-      # This job build and run tests on Windows
-      # ----------------------------------------------------------------
-      - job: Windows
-        timeoutInMinutes: 180
-        testResultsFormat: VSTest
+          jobs:
 
-        pool:
-          ${{ if eq(variables['runAsPublic'], 'true') }}:
-            name: $(DncEngPublicBuildPool)
-            demands: ImageOverride -equals windows.vs2022preview.amd64.open
-          # Non-public (i.e., official builds)
-          ${{ else }}:
-            name: $(DncEngInternalBuildPool)
-            demands: ImageOverride -equals windows.vs2022preview.amd64
+          # ----------------------------------------------------------------
+          # This job build and run tests on Windows
+          # ----------------------------------------------------------------
+          - job: Windows
+            timeoutInMinutes: 180
+            testResultsFormat: VSTest
+            pool:
+              name: NetCore1ESPool-Internal
+              image: windows.vs2022preview.amd64
+              os: windows
 
-        variables:
-          - _buildScript: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
+            variables:
+            - _buildScript: $(Build.SourcesDirectory)/build.cmd -ci -NativeToolsOnMachine
 
-        preSteps:
-          - checkout: self
-            clean: true
-            persistCredentials: true
-            fetchDepth: 1
+            preSteps:
+            - checkout: self
+              clean: true
+              persistCredentials: true
+              fetchDepth: 1
 
-        steps:
-          - template: /eng/pipelines/templates/BuildAndTest.yml
-            parameters:
-              buildScript: $(_buildScript)
-              buildConfig: $(_BuildConfig)
-              repoLogPath: $(Build.Arcade.LogsPath)
-              repoTestResultsPath: $(Build.Arcade.TestResultsPath)
-              skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
-              isWindows: true
-              warnAsError: 0
+            steps:
+            - template: /eng/pipelines/templates/BuildAndTest.yml
+              parameters:
+                buildScript: $(_buildScript)
+                buildConfig: $(_BuildConfig)
+                repoLogPath: $(Build.Arcade.LogsPath)
+                repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+                skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
+                isWindows: true
+                warnAsError: 0
 
-      # ----------------------------------------------------------------
-      # This job build and run tests on Ubuntu
-      # ----------------------------------------------------------------
-      - job: Ubuntu
-        timeoutInMinutes: 180
-        testResultsFormat: VSTest
+          # ----------------------------------------------------------------
+          # This job build and run tests on Ubuntu
+          # ----------------------------------------------------------------
+          - job: Ubuntu
+            timeoutInMinutes: 180
+            testResultsFormat: VSTest
+            pool:
+              name: NetCore1ESPool-Internal
+              image: 1es-mariner-2-pt
+              os: linux
 
-        pool:
-          ${{ if eq(variables['runAsPublic'], 'true') }}:
-            name: $(DncEngPublicBuildPool)
-            demands: ImageOverride -equals build.ubuntu.2004.amd64.open
-          # Non-public (i.e., official builds)
-          ${{ else }}:
-            name: $(DncEngInternalBuildPool)
-            demands: ImageOverride -equals build.ubuntu.2004.amd64
+            variables:
+            - _buildScript: $(Build.SourcesDirectory)/build.sh --ci
 
-        variables:
-          - _buildScript: $(Build.SourcesDirectory)/build.sh --ci
+            preSteps:
+            - checkout: self
+              clean: true
+              persistCredentials: true
+              fetchDepth: 1
 
-        preSteps:
-          - checkout: self
-            clean: true
-            persistCredentials: true
-            fetchDepth: 1
+            steps:
+            - template: /eng/pipelines/templates/BuildAndTest.yml
+              parameters:
+                buildScript: $(_buildScript)
+                buildConfig: $(_BuildConfig)
+                repoLogPath: $(Build.Arcade.LogsPath)
+                repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+                skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
+                isWindows: false
+                warnAsError: 0
 
-        steps:
-          - template: /eng/pipelines/templates/BuildAndTest.yml
-            parameters:
-              buildScript: $(_buildScript)
-              buildConfig: $(_BuildConfig)
-              repoLogPath: $(Build.Arcade.LogsPath)
-              repoTestResultsPath: $(Build.Arcade.TestResultsPath)
-              skipQualityGates: ${{ eq(variables['SkipQualityGates'], 'true') }}
-              isWindows: false
-              warnAsError: 0
-
-
-# ----------------------------------------------------------------
-# This stage performs quality gates enforcements
-# ----------------------------------------------------------------
-- stage: codecoverage
-  displayName: CodeCoverage
-  dependsOn: 
-    - build
-  condition: and(succeeded('build'), ne(variables['SkipQualityGates'], 'true'))
-  variables:
-  - template: /eng/common/templates/variables/pool-providers.yml
-  jobs:
-  - template: /eng/common/templates/jobs/jobs.yml
-    parameters:
-      enableMicrobuild: true
-      enableTelemetry: true
-      runAsPublic: ${{ variables['runAsPublic'] }}
-      workspace:
-        clean: all
-
-      # ----------------------------------------------------------------
-      # This stage downloads the code coverage reports from the build jobs,
-      # merges those and validates the combined test coverage.
-      # ----------------------------------------------------------------
+    # ----------------------------------------------------------------
+    # This stage performs quality gates enforcements
+    # ----------------------------------------------------------------
+    - stage: codecoverage
+      displayName: CodeCoverage
+      dependsOn:
+      - build
+      condition: and(succeeded('build'), ne(variables['SkipQualityGates'], 'true'))
+      variables:
+      - template: /eng/common/templates-official/variables/pool-providers.yml@self
       jobs:
-      - job: CodeCoverageReport
-        timeoutInMinutes: 180
+      - template: /eng/common/templates-official/jobs/jobs.yml@self
+        parameters:
+          enableMicrobuild: true
+          enableTelemetry: true
+          runAsPublic: ${{ variables['runAsPublic'] }}
+          workspace:
+            clean: all
 
-        pool:
-          ${{ if eq(variables['runAsPublic'], 'true') }}:
-            name: $(DncEngPublicBuildPool)
-            demands: ImageOverride -equals build.ubuntu.2004.amd64.open
-          # Non-public (i.e., official builds)
-          ${{ else }}:
-            name: $(DncEngInternalBuildPool)
-            demands: ImageOverride -equals build.ubuntu.2004.amd64
+          # ----------------------------------------------------------------
+          # This stage downloads the code coverage reports from the build jobs,
+          # merges those and validates the combined test coverage.
+          # ----------------------------------------------------------------
+          jobs:
+          - job: CodeCoverageReport
+            timeoutInMinutes: 180
 
-        preSteps:
-          - checkout: self
-            clean: true
-            persistCredentials: true
-            fetchDepth: 1
+            pool:
+              name: NetCore1ESPool-Internal
+              image: 1es-mariner-2-pt
+              os: linux
 
-        steps:
-        - script: $(Build.SourcesDirectory)/build.sh --ci --restore
-          displayName: Init toolset
+            preSteps:
+            - checkout: self
+              clean: true
+              persistCredentials: true
+              fetchDepth: 1
 
-        - template: /eng/pipelines/templates/VerifyCoverageReport.yml
+            steps:
+            - script: $(Build.SourcesDirectory)/build.sh --ci --restore
+              displayName: Init toolset
+
+            - template: /eng/pipelines/templates/VerifyCoverageReport.yml
 
 
-# ----------------------------------------------------------------
-# This stage only performs a build treating warnings as errors
-# to detect any kind of code style violations
-# ----------------------------------------------------------------
-- stage: correctness
-  displayName: Correctness
-  dependsOn: []
-  variables:
-  - template: /eng/common/templates/variables/pool-providers.yml
-  jobs:
-  - template: /eng/common/templates/jobs/jobs.yml
-    parameters:
-      enableMicrobuild: true
-      enableTelemetry: true
-      runAsPublic: ${{ variables['runAsPublic'] }}
-      workspace:
-        clean: all
-
+    # ----------------------------------------------------------------
+    # This stage only performs a build treating warnings as errors
+    # to detect any kind of code style violations
+    # ----------------------------------------------------------------
+    - stage: correctness
+      displayName: Correctness
+      dependsOn: []
+      variables:
+      - template: /eng/common/templates-official/variables/pool-providers.yml@self
       jobs:
-      - job: WarningsCheck
-        timeoutInMinutes: 180
+      - template: /eng/common/templates-official/jobs/jobs.yml@self
+        parameters:
+          enableMicrobuild: true
+          enableTelemetry: true
+          runAsPublic: ${{ variables['runAsPublic'] }}
+          workspace:
+            clean: all
 
-        pool:
-          ${{ if eq(variables['runAsPublic'], 'true') }}:
-            name: $(DncEngPublicBuildPool)
-            demands: ImageOverride -equals build.ubuntu.2004.amd64.open
-          # Non-public (i.e., official builds)
-          ${{ else }}:
-            name: $(DncEngInternalBuildPool)
-            demands: ImageOverride -equals build.ubuntu.2004.amd64
+          jobs:
+          - job: WarningsCheck
+            timeoutInMinutes: 180
 
-        variables:
-          - _buildScript: $(Build.SourcesDirectory)/build.sh --ci
+            pool:
+              ${{ if eq(variables['runAsPublic'], 'true') }}:
+              name: NetCore1ESPool-Internal
+              image: 1es-mariner-2-pt
+              os: linux
 
-        preSteps:
-          - checkout: self
-            clean: true
-            persistCredentials: true
-            fetchDepth: 1
+            variables:
+            - _buildScript: $(Build.SourcesDirectory)/build.sh --ci
 
-        steps:
-          - template: \eng\pipelines\templates\BuildAndTest.yml
-            parameters:
-              buildScript: $(_buildScript)
-              buildConfig: $(_BuildConfig)
-              repoLogPath: $(Build.Arcade.LogsPath)
-              repoTestResultsPath: $(Build.Arcade.TestResultsPath)
-              skipTests: true
-              skipQualityGates: true
-              isWindows: false
+            preSteps:
+            - checkout: self
+              clean: true
+              persistCredentials: true
+              fetchDepth: 1
+
+            steps:
+            - template: '\eng\pipelines\templates\BuildAndTest.yml'
+              parameters:
+                buildScript: $(_buildScript)
+                buildConfig: $(_BuildConfig)
+                repoLogPath: $(Build.Arcade.LogsPath)
+                repoTestResultsPath: $(Build.Arcade.TestResultsPath)
+                skipTests: true
+                skipQualityGates: true
+                isWindows: false
 
 
-# Publish and validation steps. Only run in official builds
-- ${{ if and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-  - template: /eng/common/templates/post-build/post-build.yml
-    parameters:
-      validateDependsOn:
-        - build
-        - codecoverage
-        - correctness
-      publishingInfraVersion: 3
-      enableSymbolValidation: false
-      enableSigningValidation: false
-      enableNugetValidation: false
-      enableSourceLinkValidation: false
-      # these param values come from the DotNet-Winforms-SDLValidation-Params azdo variable group
-      SDLValidationParameters:
-        enable: false
-        params: ' -SourceToolsList $(_TsaSourceToolsList)
-          -TsaInstanceURL $(_TsaInstanceURL)
-          -TsaProjectName $(_TsaProjectName)
-          -TsaNotificationEmail $(_TsaNotificationEmail)
-          -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-          -TsaBugAreaPath $(_TsaBugAreaPath)
-          -TsaIterationPath $(_TsaIterationPath)
-          -TsaRepositoryName $(_TsaRepositoryName)
-          -TsaCodebaseName $(_TsaCodebaseName)
-          -TsaOnboard $(_TsaOnboard)
-          -TsaPublish $(_TsaPublish)'
+    # Publish and validation steps. Only run in official builds
+    - ${{ if and(ne(variables['runAsPublic'], 'true'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      - template: /eng/common/templates-official/post-build/post-build.yml@self
+        parameters:
+          validateDependsOn:
+          - build
+          - codecoverage
+          - correctness
+          publishingInfraVersion: 3
+          enableSymbolValidation: false
+          enableSigningValidation: false
+          enableNugetValidation: false
+          enableSourceLinkValidation: false
+          # these param values come from the DotNet-Winforms-SDLValidation-Params azdo variable group
+          SDLValidationParameters:
+            enable: false
+            params: ' -SourceToolsList $(_TsaSourceToolsList)
+              -TsaInstanceURL $(_TsaInstanceURL)
+              -TsaProjectName $(_TsaProjectName)
+              -TsaNotificationEmail $(_TsaNotificationEmail)
+              -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+              -TsaBugAreaPath $(_TsaBugAreaPath)
+              -TsaIterationPath $(_TsaIterationPath)
+              -TsaRepositoryName $(_TsaRepositoryName)
+              -TsaCodebaseName $(_TsaCodebaseName)
+              -TsaOnboard $(_TsaOnboard)
+              -TsaPublish $(_TsaPublish)'
