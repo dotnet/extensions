@@ -4,13 +4,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Extensions.Options.Contextual;
+namespace Microsoft.Extensions.Options.Contextual.Internal;
 
 /// <summary>
 /// A factory to create instances of <typeparamref name="TOptions"/>.
 /// </summary>
 /// <typeparam name="TOptions">The type of options being created.</typeparam>
-public interface IContextualOptionsFactory<TOptions>
+internal interface IContextualOptionsFactory<TOptions>
     where TOptions : class
 {
     /// <summary>
