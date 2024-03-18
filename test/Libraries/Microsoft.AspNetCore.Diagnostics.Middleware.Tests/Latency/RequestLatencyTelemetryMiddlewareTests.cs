@@ -42,7 +42,7 @@ public class RequestLatencyTelemetryMiddlewareTests
         await fakeHttpResponseFeature.StartAsync();
         lc.Verify(c => c.Freeze());
         var header = httpContextMock.Response.Headers[TelemetryConstants.ServerApplicationNameHeader];
-        Assert.NotEmpty(header);
+        Assert.NotEqual(0, header.Count);
         Assert.Equal(serverName, header[0]);
         Assert.True(nextInvoked);
         Assert.True(ex1.Invoked == 1);
@@ -100,7 +100,7 @@ public class RequestLatencyTelemetryMiddlewareTests
         await fakeHttpResponseFeature.StartAsync();
         lc.Verify(c => c.Freeze());
         var header = httpContextMock.Response.Headers[TelemetryConstants.ServerApplicationNameHeader];
-        Assert.NotEmpty(header);
+        Assert.NotEqual(0, header.Count);
         Assert.Equal(serverName, header[0]);
         Assert.True(nextInvoked);
         Assert.True(ex1.Invoked == 1);

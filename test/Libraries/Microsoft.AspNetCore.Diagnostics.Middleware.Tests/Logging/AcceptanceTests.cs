@@ -170,7 +170,7 @@ public partial class AcceptanceTests
                 const string Content = "Client: hello!";
 
                 using var content = new StringContent(Content);
-                using var response = await client.PostAsync("/", content).ConfigureAwait(false);
+                using var response = await client.PostAsync("/", content);
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
@@ -230,7 +230,7 @@ public partial class AcceptanceTests
                 const string Content = "Client: hello!";
 
                 using var content = new StringContent(Content, null, requestContentType);
-                using var response = await client.PostAsync("/", content).ConfigureAwait(false);
+                using var response = await client.PostAsync("/", content);
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
@@ -295,7 +295,7 @@ public partial class AcceptanceTests
                 };
 
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
-                using var response = await client.SendAsync(request).ConfigureAwait(false);
+                using var response = await client.SendAsync(request);
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout, expectedRecords: 2);
@@ -356,7 +356,7 @@ public partial class AcceptanceTests
                 using var httpMessage = new HttpRequestMessage(HttpMethod.Get, "/");
                 httpMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(MediaTypeNames.Application.Json));
 
-                using var response = await client.SendAsync(httpMessage).ConfigureAwait(false);
+                using var response = await client.SendAsync(httpMessage);
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
@@ -404,7 +404,7 @@ public partial class AcceptanceTests
             },
             async static (logCollector, client) =>
             {
-                using var response = await client.DeleteAsync("/").ConfigureAwait(false);
+                using var response = await client.DeleteAsync("/");
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
@@ -446,7 +446,7 @@ public partial class AcceptanceTests
             async static (logCollector, client) =>
             {
                 const string RequestPath = "/api/users/123/add-task/345";
-                using var response = await client.GetAsync(RequestPath).ConfigureAwait(false);
+                using var response = await client.GetAsync(RequestPath);
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
@@ -476,7 +476,7 @@ public partial class AcceptanceTests
             },
             async static (logCollector, client) =>
             {
-                using var response = await client.DeleteAsync("/").ConfigureAwait(false);
+                using var response = await client.DeleteAsync("/");
                 Assert.True(response.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout, expectedRecords: 2);
@@ -509,12 +509,12 @@ public partial class AcceptanceTests
             static x => x.AddHttpLoggingRedaction().AddHttpLogging(x => x.CombineLogs = false),
             async static (logCollector, client) =>
             {
-                using var firstResponse = await client.DeleteAsync("/").ConfigureAwait(false);
+                using var firstResponse = await client.DeleteAsync("/");
                 Assert.True(firstResponse.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout, expectedRecords: 2);
 
-                using var secondResponse = await client.DeleteAsync("/").ConfigureAwait(false);
+                using var secondResponse = await client.DeleteAsync("/");
                 Assert.True(secondResponse.IsSuccessStatusCode);
 
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout, expectedRecords: 4);
@@ -534,20 +534,18 @@ public partial class AcceptanceTests
                 var sixthRecord = logRecords[5].StructuredState;
 
                 Assert.Equal(5, firstRecord!.Count);
-                Assert.Equal(1, secondRecord!.Count);
+                Assert.Single(secondRecord!);
                 Assert.Equal(5, fourthRecord!.Count);
-                Assert.Equal(1, fithRecord!.Count);
+                Assert.Single(fithRecord!);
                 Assert.DoesNotContain(firstRecord, x => x.Key == HttpLoggingTagNames.StatusCode);
                 Assert.DoesNotContain(firstRecord, x => x.Key == HttpLoggingTagNames.Duration);
-                Assert.DoesNotContain(secondRecord, x => x.Key == HttpLoggingTagNames.Duration);
+                Assert.DoesNotContain(secondRecord!, x => x.Key == HttpLoggingTagNames.Duration);
                 Assert.DoesNotContain(fourthRecord, x => x.Key == HttpLoggingTagNames.StatusCode);
                 Assert.DoesNotContain(fourthRecord, x => x.Key == HttpLoggingTagNames.Duration);
-                Assert.DoesNotContain(fithRecord, x => x.Key == HttpLoggingTagNames.Duration);
+                Assert.DoesNotContain(fithRecord!, x => x.Key == HttpLoggingTagNames.Duration);
 
-                Assert.Equal(1, secondRecord!.Count);
-                Assert.Equal(1, fithRecord!.Count);
-                Assert.Single(secondRecord, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
-                Assert.Single(fithRecord, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+                Assert.Single(secondRecord!, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+                Assert.Single(fithRecord!, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
 
                 Assert.Equal(2, thirdRecord!.Count);
                 Assert.Equal(2, sixthRecord!.Count);
@@ -667,7 +665,7 @@ public partial class AcceptanceTests
             async static (logCollector, client) =>
             {
                 using var content = new StringContent("Client: hello!");
-                using var response = await client.PostAsync("/", content).ConfigureAwait(false);
+                using var response = await client.PostAsync("/", content);
 
                 Assert.True(response.IsSuccessStatusCode);
 
@@ -697,7 +695,7 @@ public partial class AcceptanceTests
             }),
             async (logCollector, client) =>
             {
-                using var response = await client.GetAsync(httpPath).ConfigureAwait(false);
+                using var response = await client.GetAsync(httpPath);
 
                 Assert.True(response.IsSuccessStatusCode);
 
@@ -727,7 +725,7 @@ public partial class AcceptanceTests
             }),
             async (logCollector, client) =>
             {
-                using var response = await client.GetAsync("").ConfigureAwait(false);
+                using var response = await client.GetAsync("");
 
                 Assert.True(response.IsSuccessStatusCode);
                 Assert.Equal(0, logCollector.Count);
@@ -743,7 +741,7 @@ public partial class AcceptanceTests
             .AddHttpLogEnricher<ThrowingEnricher>(),
             async (logCollector, client) =>
             {
-                using var response = await client.GetAsync("").ConfigureAwait(false);
+                using var response = await client.GetAsync("");
 
                 Assert.True(response.IsSuccessStatusCode);
                 await WaitForLogRecordsAsync(logCollector, _defaultLogTimeout);
