@@ -1,0 +1,31 @@
+#
+# See https://docs.microsoft.com/azure/devops/pipelines/yaml-schema for details
+#
+
+# Only run CI builds for these branches
+trigger:
+  branches:
+    include:
+    - 'master'
+    - 'release/*'
+    - 'internal/release/*'
+# Run PR validation on all branches
+pr:
+  branches:
+    include:
+    - '*'
+
+name: $(Date:yyyyMMdd).$(Rev:rr)
+
+jobs:
+- template: eng/templates/default-build.yml
+  parameters:
+    agentOs: Windows
+    configuration: Release
+    codeSign: true
+    buildArgs: |
+      '/p:PublishBlobFeedKey=$(PB_PublishBlobFeedKey)'
+    artifacts:
+      publish: true
+      name: artifacts
+      path: artifacts/

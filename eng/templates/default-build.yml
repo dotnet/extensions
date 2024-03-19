@@ -44,16 +44,13 @@ jobs:
   pool:
     ${{ if ne(parameters.poolName, '') }}:
       name: ${{ parameters.poolName }}
-    ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'macOS')) }}:
-      vmImage: macOS-10.15
-    ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Linux')) }}:
-      vmImage: ubuntu-18.04
     ${{ if and(eq(parameters.poolName, ''), eq(parameters.agentOs, 'Windows')) }}:
-      vmImage: windows-2019
+      ${{ if eq(variables['System.TeamProject'], 'public') }}:
+        vmImage: windows-2019
       ${{ if ne(variables['System.TeamProject'], 'public') }}:
-        # This override makes the specified vmImage irrelevant.
         name: NetCore1ESPool-Svc-Internal
-        demands: ImageOverride -equals 1es-windows-2019
+        image: 1es-windows-2019-pt
+        os: windows
   variables:
     AgentOsName: ${{ parameters.agentOs }}
     ASPNETCORE_TEST_LOG_MAXPATH: "200" # Keep test log file name length low enough for artifact zipping
@@ -123,21 +120,18 @@ jobs:
       testResultsFiles: 'artifacts/logs/**/*.trx'
       mergeTestResults: true
   - ${{ if eq(parameters.artifacts.publish, 'true') }}:
-    - task: PublishBuildArtifacts@1
+    - task: 1ES.PublishPipelineArtifact@1
       displayName: Upload artifacts
-      condition: eq(variables['system.pullrequest.isfork'], false)
+      condition: always()
+      continueOnError: true
       inputs:
-        pathtoPublish: ${{ parameters.artifacts.path }}
+        path: ${{ parameters.artifacts.path }}
         ${{ if eq(parameters.artifacts.name, '') }}:
           artifactName: artifacts-$(AgentOsName)-$(BuildConfiguration)
         ${{ if ne(parameters.artifacts.name, '') }}:
           artifactName: ${{ parameters.artifacts.name }}
-        artifactType: Container
-        parallel: true
   - ${{ if and(eq(variables['System.TeamProject'], 'internal'), eq(parameters.agentOs, 'Windows')) }}:
     - task: MicroBuildCleanup@1
       displayName: Cleanup MicroBuild tasks
       condition: always()
-  - ${{ if and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-      - task: ComponentGovernanceComponentDetection@0
-        continueOnError: true
+      continueOnError: true
