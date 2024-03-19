@@ -1,15 +1,6 @@
 #
-# See https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/?view=azure-pipelines for details
+# See https://docs.microsoft.com/azure/devops/pipelines/yaml-schema for details
 #
-
-# Keep compliance tooling e.g. CodeQL3000 up to date.
-schedules:
-- cron: 0 9 1,15 * *
-  displayName: "Run a build on the 1st and 15th of each month at 2:00 AM PDT"
-  branches:
-    include:
-    - release/2.1
-  always: true
 
 # Only run CI builds for these branches
 trigger:
@@ -18,7 +9,6 @@ trigger:
     - 'master'
     - 'release/*'
     - 'internal/release/*'
-
 # Run PR validation on all branches
 pr:
   branches:
@@ -27,15 +17,34 @@ pr:
 
 name: $(Date:yyyyMMdd).$(Rev:rr)
 
-jobs:
-- template: eng/templates/default-build.yml
+resources:
+  repositories:
+  # Repo: 1ESPipelineTemplates/1ESPipelineTemplates
+  - repository: 1esPipelines
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
-    agentOs: Windows
-    configuration: Release
-    codeSign: true
-    buildArgs: |
-      '/p:PublishBlobFeedKey=$(PB_PublishBlobFeedKey)'
-    artifacts:
-      publish: true
-      name: artifacts
-      path: artifacts/
+    sdl:
+      sourceAnalysisPool:
+        name: NetCore1ESPool-Svc-Internal
+        image: 1es-windows-2022-pt
+        os: windows
+    stages:
+    - stage: build
+      displayName: Build
+      jobs:
+      - template: eng/templates/default-build.yml@self
+        parameters:
+          agentOs: Windows
+          configuration: Release
+          codeSign: true
+          buildArgs: |
+            '/p:PublishBlobFeedKey=$(PB_PublishBlobFeedKey)'
+          artifacts:
+            publish: true
+            name: artifacts
+            path: artifacts/
