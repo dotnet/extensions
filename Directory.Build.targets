@@ -29,6 +29,9 @@
 
     <!-- Legacy targets do not support attributes for a nullable context thus suppressing null check warnings -->
     <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>
+
+    <!-- Stop complaining about enabling /doc for improve analysis trimming info -->
+    <NoWarn>$(NoWarn);RT0000</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition="('$(Stage)' == 'normal' OR '$(Stage)' == 'obsolete') AND '$(OutputType)' != 'Exe' AND '$(IsPackable)' == 'true' AND '$(Api)' != 'false'">

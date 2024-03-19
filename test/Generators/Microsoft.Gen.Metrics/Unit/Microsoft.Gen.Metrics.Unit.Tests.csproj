@@ -16,7 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Generators\Microsoft.Gen.Metrics\Microsoft.Gen.Metrics.csproj" />
     <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
-    <ProjectReference Include="..\Generated\Microsoft.Gen.Metrics.Generated.Tests.csproj" />
+    <ProjectReference Include="..\Generated\Microsoft.Gen.Metrics.Generated.Tests.csproj" NoWarn="RT0002" />
   </ItemGroup>
 
   <ItemGroup>

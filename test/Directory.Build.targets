@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsUnitTestProject)' == 'true'">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\TestUtilities\TestUtilities.csproj" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\TestUtilities\TestUtilities.csproj" NoWarn="RT0002" />
   </ItemGroup>
 
 </Project>
