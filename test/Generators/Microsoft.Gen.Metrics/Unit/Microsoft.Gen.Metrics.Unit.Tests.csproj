@@ -16,6 +16,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Generators\Microsoft.Gen.Metrics\Microsoft.Gen.Metrics.csproj" />
     <ProjectReference Include="..\..\..\..\src\Libraries\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" />
+
+    <!-- This reference is used to force the build order, so suppress RT0002 and leave this reference present -->
     <ProjectReference Include="..\Generated\Microsoft.Gen.Metrics.Generated.Tests.csproj" NoWarn="RT0002" />
   </ItemGroup>
 

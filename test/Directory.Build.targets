@@ -13,8 +13,8 @@
     <Content Include="$(MSBuildThisFileDirectory)\..\eng\xunit.runner.json" CopyToOutputDirectory="PreserveNewest" Visible="false" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IsUnitTestProject)' == 'true'">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\TestUtilities\TestUtilities.csproj" NoWarn="RT0002" />
-  </ItemGroup>
-
+  <PropertyGroup>
+    <!-- Stop complaining about enabling /doc for tests -->
+    <NoWarn>$(NoWarn);RT0000</NoWarn>
+  </PropertyGroup>
 </Project>
