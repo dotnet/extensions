@@ -28,4 +28,4 @@
       <Analyzer Remove="@(_Microsoft_Extensions_Logging_AbstractionsAnalyzerWPF)" />
     </ItemGroup>
   </Target>
-</oject>
+</Project>
