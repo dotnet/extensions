@@ -29,6 +29,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Microsoft.Bcl.TimeProvider" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 
   <ItemGroup>
