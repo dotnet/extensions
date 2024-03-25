@@ -31,7 +31,7 @@ steps:
             -reporttypes:HtmlInline_AzurePipelines
     displayName: Generate code coverage report
 
-  - task: PublishCodeCoverageResults@1
+  - task: PublishCodeCoverageResults@2
     displayName: Publish coverage report
     env:
       DISABLE_COVERAGE_AUTOGENERATE: 'true'
