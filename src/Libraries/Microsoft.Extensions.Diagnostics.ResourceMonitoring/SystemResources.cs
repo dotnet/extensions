@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
@@ -33,6 +34,16 @@ public readonly struct SystemResources
     public double MaximumCpuUnits { get; }
 
     /// <summary>
+    /// Gets CPU request value in millicores in Kubernetes terminology.
+    /// </summary>
+    /// <remarks>
+    /// This value calculates CPU pod request in millicores based on the weight, using the formula.
+    /// y = (1 + ((x - 2) * 9999) / 262142), where y is the CPU weight and x is the CPU share (cgroup v1).
+    /// https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2.
+    /// </remarks>
+    public double GuaranteedPodCpuUnits { get; }
+
+    /// <summary>
     /// Gets the memory allocated to the system in bytes.
     /// </summary>
     public ulong GuaranteedMemoryInBytes { get; }
@@ -55,5 +66,20 @@ public readonly struct SystemResources
         MaximumCpuUnits = Throw.IfLessThanOrEqual(maximumCpuUnits, 0.0);
         GuaranteedMemoryInBytes = Throw.IfLessThan(guaranteedMemoryInBytes, 1UL);
         MaximumMemoryInBytes = Throw.IfLessThan(maximumMemoryInBytes, 1UL);
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SystemResources"/> struct.
+    /// Metric guaranteedPodCpuUnits is calculated for CPU request in millicores only for Linux.
+    /// </summary>
+    /// <param name="guaranteedCpuUnits">The CPU units available in the system.</param>
+    /// <param name="maximumCpuUnits">The maximum CPU units available in the system.</param>
+    /// <param name="guaranteedMemoryInBytes">The memory allocated to the system in bytes.</param>
+    /// <param name="maximumMemoryInBytes">The maximum memory allocated to the system in bytes.</param>
+    /// <param name="guaranteedPodCpuUnits">The CPU request value in millicores.</param>
+    public SystemResources(double guaranteedCpuUnits, double maximumCpuUnits, double guaranteedPodCpuUnits, ulong guaranteedMemoryInBytes, ulong maximumMemoryInBytes)
+        : this(guaranteedCpuUnits, maximumCpuUnits, guaranteedMemoryInBytes, maximumMemoryInBytes)
+    {
+        GuaranteedPodCpuUnits = Throw.IfLessThanOrEqual(guaranteedPodCpuUnits, 0.00);
     }
 }

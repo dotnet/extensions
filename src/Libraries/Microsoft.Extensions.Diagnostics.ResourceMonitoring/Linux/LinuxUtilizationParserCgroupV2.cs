@@ -14,19 +14,17 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 /// This class is not thread safe.
 /// When the same instance is called by multiple threads it may return corrupted data.
 /// </remarks>
-internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
+internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 {
-    private const float CpuShares = 1024;
+    private const int Thousand = 1000;
+    private const int CpuShares = 1024;
 
     /// <remarks>
     /// File contains the amount of CPU time (in microseconds) available to the group during each accounting period.
+    /// and the length of the accounting period in microseconds.
+    /// In Cgroup V1 : /sys/fs/cgroup/cpu/cpu.cfs_quota_us and /sys/fs/cgroup/cpu/cpu.cfs_period_us.
     /// </remarks>
-    private static readonly FileInfo _cpuCfsQuotaUs = new("/sys/fs/cgroup/cpu/cpu.cfs_quota_us");
-
-    /// <remarks>
-    /// File contains the length of the accounting period in microseconds.
-    /// </remarks>
-    private static readonly FileInfo _cpuCfsPeriodUs = new("/sys/fs/cgroup/cpu/cpu.cfs_period_us");
+    private static readonly FileInfo _cpuCfsQuaotaPeriodUs = new("/sys/fs/cgroup/cpu.max");
 
     /// <remarks>
     /// Stat file contains information about all CPUs and their time.
@@ -44,13 +42,14 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
 
     /// <remarks>
     /// List of available CPUs for host.
+    /// In Cgroup v1 : /sys/fs/cgroup/cpuset/cpuset.cpus.
     /// </remarks>
-    private static readonly FileInfo _cpuSetCpus = new("/sys/fs/cgroup/cpuset/cpuset.cpus");
+    private static readonly FileInfo _cpuSetCpus = new("/sys/fs/cgroup/cpuset.cpus.effective");
 
     /// <remarks>
     /// Cgroup memory limit.
     /// </remarks>
-    private static readonly FileInfo _memoryLimitInBytes = new("/sys/fs/cgroup/memory/memory.limit_in_bytes");
+    private static readonly FileInfo _memoryLimitInBytes = new("/sys/fs/cgroup/memory.max");
 
     /// <summary>
     /// Cgroup memory stats.
@@ -58,7 +57,7 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
     /// <remarks>
     /// Single line representing used memory by cgroup in bytes.
     /// </remarks>
-    private static readonly FileInfo _memoryUsageInBytes = new("/sys/fs/cgroup/memory/memory.usage_in_bytes");
+    private static readonly FileInfo _memoryUsageInBytes = new("/sys/fs/cgroup/memory.current");
 
     /// <summary>
     /// Cgroup memory stats.
@@ -67,7 +66,7 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
     /// This file contains the details about memory usage.
     /// The format is (type of memory spent) (value) (unit of measure).
     /// </remarks>
-    private static readonly FileInfo _memoryStat = new("/sys/fs/cgroup/memory/memory.stat");
+    private static readonly FileInfo _memoryStat = new("/sys/fs/cgroup/memory.stat");
 
     /// <summary>
     /// File containing usage in nanoseconds.
@@ -76,18 +75,18 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
     /// This value refers to the container/cgroup utilization.
     /// The format is single line with one number value.
     /// </remarks>
-    private static readonly FileInfo _cpuacctUsage = new("/sys/fs/cgroup/cpuacct/cpuacct.usage");
+    private static readonly FileInfo _cpuacctUsage = new("/sys/fs/cgroup/cpu.stat");
 
     /// <summary>
-    /// CPU weights, also known as shares incgroup v1, is used for resource allocation.
+    /// CPU weights, also known as shares in cgroup v1, is used for resource allocation.
     /// </summary>
-    private static readonly FileInfo _cpuPodWeight = new("/sys/fs/cgroup/cpuacct/cpu.shares");
+    private static readonly FileInfo _cpuPodWeight = new("/sys/fs/cgroup/cpu.weight");
 
     private readonly IFileSystem _fileSystem;
     private readonly long _userHz;
     private readonly BufferWriter<char> _buffer = new();
 
-    public LinuxUtilizationParser(IFileSystem fileSystem, IUserHz userHz)
+    public LinuxUtilizationParserCgroupV2(IFileSystem fileSystem, IUserHz userHz)
     {
         _fileSystem = fileSystem;
         _userHz = userHz.Value;
@@ -95,20 +94,37 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
 
     public long GetCgroupCpuUsageInNanoseconds()
     {
-        _fileSystem.ReadAll(_cpuacctUsage, _buffer);
+        // The value we are interested in starts with this. We just want to make sure it is true.
+        const string Usage_usec = "usage_usec";
 
+        // If the file doesn't exist, we assume that the system is a Host and we read the CPU usage from /proc/stat.
+        if (!_cpuacctUsage.Exists)
+        {
+            return GetHostCpuUsageInNanoseconds();
+        }
+
+        _fileSystem.ReadAll(_cpuacctUsage, _buffer);
         var usage = _buffer.WrittenSpan;
 
-        _ = GetNextNumber(usage, out var nanoseconds);
+        if (!usage.StartsWith(Usage_usec))
+        {
+            Throw.InvalidOperationException($"Could not parse '{_cpuacctUsage}'. We expected first line of the file to start with '{Usage_usec}' but it was '{new string(usage)}' instead.");
+        }
 
-        if (nanoseconds == -1)
+        var cpuUsage = usage.Slice(Usage_usec.Length, usage.Length - Usage_usec.Length);
+
+        var next = GetNextNumber(cpuUsage, out var microseconds);
+
+        if (microseconds == -1)
         {
             Throw.InvalidOperationException($"Could not get cpu usage from '{_cpuacctUsage}'. Expected positive number, but got '{new string(usage)}'.");
         }
 
         _buffer.Reset();
 
-        return nanoseconds;
+        // In cgroup v2, the Units are microseconds for usage_usec.
+        // We multiply by 1000 to convert to nanoseconds to keep the common calculation logic.
+        return microseconds * Thousand;
     }
 
     public long GetHostCpuUsageInNanoseconds()
@@ -157,31 +173,40 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
     /// It should be 99% of the cases when app is hosted in the container environment.
     /// Otherwise, we assume that all host's CPUs are available, which we read from proc/stat file.
     /// </remarks>
-
     public float GetCgroupLimitedCpus()
     {
         if (TryGetCpuUnitsFromCgroups(_fileSystem, out var cpus))
         {
             return cpus;
         }
-
         return GetHostCpuCount();
     }
 
+    /// <remarks>
+    /// If we are able to read the CPU share, we calculate the CPU request based on the weight by dividing it by 1024.
+    /// If we can't read the CPU weight, we assume that the pod/vm cpu request is 1 core by default.
+    /// </remarks>
     public float GetCgroupRequestCpu()
     {
-        if (TryGetCgroupRequestCpu(_fileSystem, out var cpuUnits))
+        if (TryGetCgroupRequestCpu(_fileSystem, out var cpuPodRequest))
         {
-            return cpuUnits;
+            return cpuPodRequest / CpuShares;
         }
 
-        // If we can't read the CPU weight, we assume that the pod request is 1 core.
-        return 1;
+        return cpuPodRequest;
     }
 
+    /// <remarks>
+    /// If the file doesn't exist, we assume that the system is a Host and we read the memory from /proc/meminfo.
+    /// </remarks>
     public ulong GetAvailableMemoryInBytes()
     {
         const long UnsetCgroupMemoryLimit = 9_223_372_036_854_771_712;
+
+        if (!_memoryLimitInBytes.Exists)
+        {
+            return GetHostAvailableMemory();
+        }
 
         _fileSystem.ReadAll(_memoryLimitInBytes, _buffer);
 
@@ -200,52 +225,90 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
             : (ulong)maybeMemory;
     }
 
+    public long GetMemoryUsageInBytesFromSlices()
+    {
+        string[] memoryUsageInBytesSlicesPath = Directory.GetDirectories(@"/sys/fs/cgroup", "*.slice", SearchOption.TopDirectoryOnly);
+        long memoryUsageInBytesTotal = 0;
+
+        foreach (string path in memoryUsageInBytesSlicesPath)
+        {
+            var memoryUsageInBytesFile = new FileInfo(path + "/memory.current");
+            if (!memoryUsageInBytesFile.Exists)
+            {
+                continue;
+            }
+
+            _fileSystem.ReadAll(memoryUsageInBytesFile, _buffer);
+
+            var memoryUsageFile = _buffer.WrittenSpan;
+            var next = GetNextNumber(memoryUsageFile, out var containerMemoryUsage);
+
+            // this file format doesn't expect to contain anything after the number.
+            if (containerMemoryUsage == -1)
+            {
+                Throw.InvalidOperationException(
+                    $"We tried to read '{memoryUsageInBytesFile}', and we expected to get a positive number but instead it was: '{containerMemoryUsage}'.");
+            }
+
+            memoryUsageInBytesTotal += containerMemoryUsage;
+
+            _buffer.Reset();
+        }
+
+        return memoryUsageInBytesTotal;
+    }
+
+    /// <remarks>
+    /// If the file doesn't exist, we assume that the system is a Host and we read the memory from /proc/meminfo.
+    /// </remarks>
     public ulong GetMemoryUsageInBytes()
     {
-        const string TotalInactiveFile = "total_inactive_file";
+        const string InactiveFile = "inactive_file";
+
+        if (!_memoryStat.Exists)
+        {
+            return GetHostAvailableMemory();
+        }
 
         _fileSystem.ReadAll(_memoryStat, _buffer);
         var memoryFile = _buffer.WrittenSpan;
 
-        var index = memoryFile.IndexOf(TotalInactiveFile.AsSpan());
+        var index = memoryFile.IndexOf(InactiveFile.AsSpan());
 
         if (index == -1)
         {
-            Throw.InvalidOperationException($"Unable to find total_inactive_file from '{_memoryStat}'.");
+            Throw.InvalidOperationException($"Unable to find inactive_file from '{_memoryStat}'.");
         }
 
-        var inactiveMemorySlice = memoryFile.Slice(index + TotalInactiveFile.Length, memoryFile.Length - index - TotalInactiveFile.Length);
+        var inactiveMemorySlice = memoryFile.Slice(index + InactiveFile.Length, memoryFile.Length - index - InactiveFile.Length);
+
         _ = GetNextNumber(inactiveMemorySlice, out var inactiveMemory);
 
         if (inactiveMemory == -1)
         {
-            Throw.InvalidOperationException($"The value of total_inactive_file found in '{_memoryStat}' is not a positive number: '{new string(inactiveMemorySlice)}'.");
+            Throw.InvalidOperationException($"The value of inactive_file found in '{_memoryStat}' is not a positive number: '{new string(inactiveMemorySlice)}'.");
         }
 
         _buffer.Reset();
 
-        _fileSystem.ReadAll(_memoryUsageInBytes, _buffer);
-
-        var containerMemoryUsageFile = _buffer.WrittenSpan;
-        var next = GetNextNumber(containerMemoryUsageFile, out var containerMemoryUsage);
-
-        // this file format doesn't expect to contain anything after the number.
-        if (containerMemoryUsage == -1)
+        long memoryUsage = 0;
+        if (!_memoryUsageInBytes.Exists)
         {
-            Throw.InvalidOperationException(
-                $"We tried to read '{_memoryUsageInBytes}', and we expected to get a positive number but instead it was: '{new string(containerMemoryUsageFile)}'.");
+            memoryUsage = GetMemoryUsageInBytesFromSlices();
         }
-
-        _buffer.Reset();
-
-        var memoryUsage = containerMemoryUsage - inactiveMemory;
+        else
+        {
+            memoryUsage = GetMemoryUsageInBytesPod();
+        }
 
         if (memoryUsage < 0)
         {
             Throw.InvalidOperationException($"The total memory usage read from '{_memoryUsageInBytes}' is lesser than inactive memory usage read from '{_memoryStat}'.");
         }
 
-        return (ulong)memoryUsage;
+        var memoryUsageTotal = memoryUsage - inactiveMemory;
+
+        return (ulong)memoryUsageTotal;
     }
 
     [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used",
@@ -299,7 +362,6 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
     /// Comma-separated list of integers, with dashes ("-") to represent ranges. For example "0-1,5", or "0", or "1,2,3".
     /// Each value represents the zero-based index of a CPU.
     /// </remarks>
-
     public float GetHostCpuCount()
     {
         _fileSystem.ReadFirstLine(_cpuSetCpus, _buffer);
@@ -401,9 +463,18 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
         return numberEnd < buffer.Length ? numberEnd : -1;
     }
 
+    /// <remarks>
+    /// If the file doesn't exist, we assume that the system is a Host and we read the CPU usage from /proc/stat.
+    /// </remarks>
     private bool TryGetCpuUnitsFromCgroups(IFileSystem fileSystem, out float cpuUnits)
     {
-        fileSystem.ReadFirstLine(_cpuCfsQuotaUs, _buffer);
+        if (!_cpuCfsQuaotaPeriodUs.Exists)
+        {
+            cpuUnits = 0;
+            return false;
+        }
+
+        fileSystem.ReadFirstLine(_cpuCfsQuaotaPeriodUs, _buffer);
 
         var quotaBuffer = _buffer.WrittenSpan;
 
@@ -416,46 +487,29 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
 
         var nextQuota = GetNextNumber(quotaBuffer, out var quota);
 
-        if (quota == -1 || nextQuota != -1)
+        if (quota == -1)
         {
-            Throw.InvalidOperationException($"Could not parse '{_cpuCfsQuotaUs}'. Expected an integer but got: '{new string(quotaBuffer)}'.");
+            Throw.InvalidOperationException($"Could not parse '{_cpuCfsQuaotaPeriodUs}'. Expected an integer but got: '{new string(quotaBuffer)}'.");
+        }
+
+        var index = quotaBuffer.IndexOf(quota.ToString().AsSpan());
+        var cpuPeriodSlice = quotaBuffer.Slice(index + quota.ToString().Length, quotaBuffer.Length - index - quota.ToString().Length);
+        _ = GetNextNumber(cpuPeriodSlice, out var period);
+
+        if (period == -1)
+        {
+            Throw.InvalidOperationException($"Could not parse '{_cpuCfsQuaotaPeriodUs}'. Expected to get an integer but got: '{new string(cpuPeriodSlice)}'.");
         }
 
         _buffer.Reset();
-
-        fileSystem.ReadFirstLine(_cpuCfsPeriodUs, _buffer);
-        var periodBuffer = _buffer.WrittenSpan;
-
-        if (periodBuffer.IsEmpty || (periodBuffer.Length == 2 && periodBuffer[0] == '-' && periodBuffer[1] == '1'))
-        {
-            _buffer.Reset();
-            cpuUnits = -1;
-            return false;
-        }
-
-        var nextPeriod = GetNextNumber(periodBuffer, out var period);
-
-        if (period == -1 || nextPeriod != -1)
-        {
-            Throw.InvalidOperationException($"Could not parse '{_cpuCfsPeriodUs}'. Expected to get an integer but got: '{new string(periodBuffer)}'.");
-        }
-
-        _buffer.Reset();
-
         cpuUnits = (float)quota / period;
+
         return true;
     }
 
-    /// <summary>
-    /// In cgroup v1 the CPU shares is used to determine the CPU allocation.
-    /// in cgroup v2 the CPU weight is used to determine the CPU allocation.
-    /// To calculete CPU request in cgroup v2 we need to read the CPU weight and convert it to CPU shares.
-    /// But for cgroup v1 we can read the CPU shares directly from the file.
-    /// 1024 equals 1 CPU core.
-    /// In cgroup v1 on some systems the location of the CPU shares file is different.
-    /// </summary>
     private bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)
     {
+        // If the file doesn't exist, we assume that the system is a Host and we assign the default 1 CPU core.
         if (!_cpuPodWeight.Exists)
         {
             cpuUnits = 1;
@@ -474,9 +528,38 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
             return false;
         }
 
+        // Calculate CPU pod request in millicores based on the weight, using the formula:
+        // y = (1 + ((x - 2) * 9999) / 262142), where y is the CPU weight and x is the CPU share (cgroup v1)
+        // https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2
+        var cpuPodShare = ((cpuPodWeight * 262142) + 19997) / 9999;
+        if (cpuPodShare == -1)
+        {
+            _buffer.Reset();
+            Throw.InvalidOperationException($"Could not calculate CPU share from CPU weight '{cpuPodShare}'");
+            cpuUnits = -1;
+            return false;
+        }
+
         _buffer.Reset();
-        var result = cpuPodWeight / CpuShares;
-        cpuUnits = result;
+        cpuUnits = cpuPodShare;
         return true;
+    }
+
+    private long GetMemoryUsageInBytesPod()
+    {
+        _fileSystem.ReadAll(_memoryUsageInBytes, _buffer);
+
+        var memoryUsageFile = _buffer.WrittenSpan;
+        var next = GetNextNumber(memoryUsageFile, out long memoryUsage);
+
+        // this file format doesn't expect to contain anything after the number.
+        if (memoryUsage == -1)
+        {
+            Throw.InvalidOperationException(
+                $"We tried to read '{_memoryUsageInBytes}', and we expected to get a positive number but instead it was: '{memoryUsage}'.");
+        }
+
+        _buffer.Reset();
+        return memoryUsage;
     }
 }
