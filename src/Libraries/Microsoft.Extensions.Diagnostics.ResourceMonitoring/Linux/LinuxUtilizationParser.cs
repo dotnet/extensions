@@ -79,9 +79,9 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
     private static readonly FileInfo _cpuacctUsage = new("/sys/fs/cgroup/cpuacct/cpuacct.usage");
 
     /// <summary>
-    /// CPU weights, also known as shares incgroup v1, is used for resource allocation.
+    /// CPU weights, also known as shares in cgroup v1, is used for resource allocation.
     /// </summary>
-    private static readonly FileInfo _cpuPodWeight = new("/sys/fs/cgroup/cpuacct/cpu.shares");
+    private static readonly FileInfo _cpuPodWeight = new("/sys/fs/cgroup/cpu/cpu.shares");
 
     private readonly IFileSystem _fileSystem;
     private readonly long _userHz;
