@@ -14,7 +14,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
-    private readonly LinuxUtilizationParser _parser;
+    private readonly ILinuxUtilizationParser _parser;
     private readonly ulong _totalMemoryInBytes;
     private readonly TimeSpan _cpuRefreshInterval;
     private readonly TimeSpan _memoryRefreshInterval;
@@ -32,7 +32,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     public SystemResources Resources { get; }
 
-    public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, LinuxUtilizationParser parser,
+    public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, ILinuxUtilizationParser parser,
         IMeterFactory meterFactory, TimeProvider? timeProvider = null)
     {
         _parser = parser;
@@ -49,7 +49,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var hostMemory = _parser.GetHostAvailableMemory();
         var hostCpus = _parser.GetHostCpuCount();
         var availableCpus = _parser.GetCgroupLimitedCpus();
-
+        var cpuGuaranteedRequest = _parser.GetCgroupRequestCpu();
         _scale = hostCpus / availableCpus;
         _scaleForTrackerApi = hostCpus / availableCpus;
 
@@ -63,7 +63,13 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.CpuUtilization, observeValue: CpuUtilization, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.MemoryUtilization, observeValue: MemoryUtilization, unit: "1");
 
-        Resources = new SystemResources(1, hostCpus, _totalMemoryInBytes, hostMemory);
+        // 1 - Min available cpu for HOST
+        // hostCpus - Max available cpu for HOST
+        // _totalMemoryInBytes - guaranteedMemoryInBytes for POD
+        // hostMemory - Max available memory for HOST
+        // availableCpus is a Cpu limit for Pod or for a HOST.
+        // cpuGuaranteedRequest is a Cpu request for POD.
+        Resources = new SystemResources(1, availableCpus, cpuGuaranteedRequest, _totalMemoryInBytes, hostMemory);
     }
 
     public double CpuUtilization()
