@@ -75,9 +75,12 @@ public readonly struct SystemResources
     /// <param name="guaranteedMemoryInBytes">The memory allocated to the system in bytes.</param>
     /// <param name="maximumMemoryInBytes">The maximum memory allocated to the system in bytes.</param>
     /// <param name="guaranteedPodCpuUnits">The CPU request value in millicores.</param>
+    [Experimental("CS8058")]
     public SystemResources(double guaranteedCpuUnits, double maximumCpuUnits, double guaranteedPodCpuUnits, ulong guaranteedMemoryInBytes, ulong maximumMemoryInBytes)
         : this(guaranteedCpuUnits, maximumCpuUnits, guaranteedMemoryInBytes, maximumMemoryInBytes)
     {
+#pragma warning disable CS8058 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         GuaranteedPodCpuUnits = Throw.IfLessThanOrEqual(guaranteedPodCpuUnits, 0.00);
+#pragma warning restore CS8058 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 }

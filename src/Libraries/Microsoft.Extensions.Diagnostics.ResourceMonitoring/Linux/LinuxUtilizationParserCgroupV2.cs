@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Xml.Linq;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
