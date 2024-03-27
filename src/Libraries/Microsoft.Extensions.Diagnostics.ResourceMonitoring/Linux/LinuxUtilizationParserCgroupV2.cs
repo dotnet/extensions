@@ -3,7 +3,9 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
+using System.Xml.Linq;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
@@ -493,8 +495,9 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             Throw.InvalidOperationException($"Could not parse '{_cpuCfsQuaotaPeriodUs}'. Expected an integer but got: '{new string(quotaBuffer)}'.");
         }
 
-        var index = quotaBuffer.IndexOf(quota.ToString().AsSpan());
-        var cpuPeriodSlice = quotaBuffer.Slice(index + quota.ToString().Length, quotaBuffer.Length - index - quota.ToString().Length);
+        var quotaString = quota.ToString(CultureInfo.CurrentCulture);
+        var index = quotaBuffer.IndexOf(quotaString.AsSpan());
+        var cpuPeriodSlice = quotaBuffer.Slice(index + quotaString.Length, quotaBuffer.Length - index - quotaString.Length);
         _ = GetNextNumber(cpuPeriodSlice, out var period);
 
         if (period == -1)

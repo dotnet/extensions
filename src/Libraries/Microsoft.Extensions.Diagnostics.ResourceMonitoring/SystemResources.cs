@@ -1,4 +1,5 @@
-﻿using Microsoft.Shared.Diagnostics;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
@@ -37,6 +38,7 @@ public readonly struct SystemResources
     /// y = (1 + ((x - 2) * 9999) / 262142), where y is the CPU weight and x is the CPU share (cgroup v1).
     /// https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2.
     /// </remarks>
+    [Experimental("CS8058")]
     public double GuaranteedPodCpuUnits { get; }
 
     /// <summary>

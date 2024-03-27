@@ -298,7 +298,6 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
     /// Comma-separated list of integers, with dashes ("-") to represent ranges. For example "0-1,5", or "0", or "1,2,3".
     /// Each value represents the zero-based index of a CPU.
     /// </remarks>
-
     public float GetHostCpuCount()
     {
         _fileSystem.ReadFirstLine(_cpuSetCpus, _buffer);
