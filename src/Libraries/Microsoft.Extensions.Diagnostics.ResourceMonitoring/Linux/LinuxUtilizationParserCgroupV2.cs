@@ -179,6 +179,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         {
             return cpus;
         }
+
         return GetHostCpuCount();
     }
 

@@ -157,7 +157,6 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
     /// It should be 99% of the cases when app is hosted in the container environment.
     /// Otherwise, we assume that all host's CPUs are available, which we read from proc/stat file.
     /// </remarks>
-
     public float GetCgroupLimitedCpus()
     {
         if (TryGetCpuUnitsFromCgroups(_fileSystem, out var cpus))
