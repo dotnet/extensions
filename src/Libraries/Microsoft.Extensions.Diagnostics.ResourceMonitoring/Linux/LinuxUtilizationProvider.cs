@@ -63,13 +63,11 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.CpuUtilization, observeValue: CpuUtilization, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.MemoryUtilization, observeValue: MemoryUtilization, unit: "1");
 
-        // 1 - Min available cpu for HOST
-        // hostCpus - Max available cpu for HOST
-        // _totalMemoryInBytes - guaranteedMemoryInBytes for POD
-        // hostMemory - Max available memory for HOST
+        // cpuGuaranteedRequest is a Cpu request for POD, for HOST its 1 Core
         // availableCpus is a Cpu limit for Pod or for a HOST.
-        // cpuGuaranteedRequest is a Cpu request for POD.
-        Resources = new SystemResources(1, availableCpus, cpuGuaranteedRequest, _totalMemoryInBytes, hostMemory);
+        // 1 - Currently value in /sys/fs/cgroup/memory.min per container is 0
+        // _totalMemoryInBytes - Resource Memory Limit (in k8s terms)
+        Resources = new SystemResources(cpuGuaranteedRequest, availableCpus, _totalMemoryInBytes, _totalMemoryInBytes);
     }
 
     public double CpuUtilization()
