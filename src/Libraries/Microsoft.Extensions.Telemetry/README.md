@@ -83,7 +83,7 @@ Offers additional logging capabilities like stack trace capturing, exception mes
 
 ```csharp
 // Enable log enrichment.
-builder.EnableEnrichment(options =>
+builder.Logging.EnableEnrichment(options =>
 {
     options.CaptureStackTraces = true;
     options.IncludeExceptionMessage = true;
@@ -94,7 +94,7 @@ builder.EnableEnrichment(options =>
 builder.Services.AddServiceLogEnricher(); // <- This call is required in order for the enricher to be added into the service collection.
 
 // Enable log redaction
-builder.EnableRedaction(options =>
+builder.Logging.EnableRedaction(options =>
 {
     options.ApplyDiscriminator = true;
 });
