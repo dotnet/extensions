@@ -8,12 +8,10 @@ using System.Diagnostics.Metrics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
-using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Linux.Resources;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Options;
@@ -23,7 +21,6 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
-//[CollectionDefinition("Get cgroup version")]
 public sealed class AcceptanceTest
 {
     [ConditionalFact]
