@@ -8,8 +8,12 @@ using System.Diagnostics.Metrics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Linux.Resources;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
 using Microsoft.Extensions.Options;
@@ -19,6 +23,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
+//[CollectionDefinition("Get cgroup version")]
 public sealed class AcceptanceTest
 {
     [ConditionalFact]
@@ -90,7 +95,7 @@ public sealed class AcceptanceTest
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific package.")]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
-    public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider()
+    public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider_Cgroupv1()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
@@ -117,17 +122,68 @@ public sealed class AcceptanceTest
                 { new FileInfo("/sys/fs/cgroup/cpuset/cpuset.cpus"), "0-19"},
                 { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "12"},
                 { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_period_us"), "6"},
+                { new FileInfo("/sys/fs/cgroup/cpu/cpu.shares"), "1024"}
             }))
             .AddResourceMonitoring(x => x.ConfigureMonitor(section))
+
+            // Ingesting LinuxUtilizationParser which tests cgroup v1.
+            .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParser>())
             .BuildServiceProvider();
 
         var provider = services.GetService<ISnapshotProvider>();
-
         Assert.NotNull(provider);
         Assert.Equal(1, provider.Resources.GuaranteedCpuUnits); // hack to make hardcoded calculation in resource utilization main package work.
-        Assert.Equal(20.0d, provider.Resources.MaximumCpuUnits); // read from cpuset.cpus
+        Assert.Equal(2.0d, provider.Resources.MaximumCpuUnits); // read from cpuset.cpus
         Assert.Equal(100_000UL, provider.Resources.GuaranteedMemoryInBytes); // read from memory.limit_in_bytes
-        Assert.Equal(104_767_488UL, provider.Resources.MaximumMemoryInBytes); // meminfo * 1024
+
+        // The main usage of this library is containers.
+        // To not break the contaract with the main package, we need to set the maximum memory to the same value as the guaranteed memory.
+        Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
+    }
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific package.")]
+    [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
+    public void Adding_Linux_Resource_Utilization_With_Section_Registers_SnapshotProvider_Cgroupv2()
+    {
+        var cpuRefresh = TimeSpan.FromMinutes(13);
+        var memoryRefresh = TimeSpan.FromMinutes(14);
+
+        var config = new KeyValuePair<string, string?>[]
+            {
+                new($"{nameof(ResourceMonitoringOptions)}:{nameof(ResourceMonitoringOptions.CpuConsumptionRefreshInterval)}", cpuRefresh.ToString()),
+                new($"{nameof(ResourceMonitoringOptions)}:{nameof(ResourceMonitoringOptions.MemoryConsumptionRefreshInterval)}", memoryRefresh.ToString()),
+            };
+
+        var section = new ConfigurationBuilder()
+            .AddInMemoryCollection(config)
+            .Build()
+            .GetSection(nameof(ResourceMonitoringOptions));
+
+        using var services = new ServiceCollection()
+            .AddSingleton<IUserHz>(new FakeUserHz(100))
+            .AddSingleton<IFileSystem>(new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+            {
+                { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
+                { new FileInfo("/sys/fs/cgroup/cpu.stat"), "102312"},
+                { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
+                { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-1"},
+                { new FileInfo("/sys/fs/cgroup/cpu.max"), "0.2"},
+                { new FileInfo("/sys/fs/cgroup/cpu/cpu.weight"), "4"},
+                { new FileInfo("/sys/fs/cgroup/memory.max"), "100000" }
+            }))
+            .AddResourceMonitoring(x => x.ConfigureMonitor(section))
+            .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>()) // Ingesting LinuxUtilizationParser which tests cgroup v1.
+            .BuildServiceProvider();
+
+        var provider = services.GetService<ISnapshotProvider>();
+        Assert.NotNull(provider);
+        Assert.Equal(1, provider.Resources.GuaranteedCpuUnits); // hack to make hardcoded calculation in resource utilization main package work.
+        Assert.Equal(2.0d, provider.Resources.MaximumCpuUnits); // read from cpuset.cpus
+        Assert.Equal(100_000UL, provider.Resources.GuaranteedMemoryInBytes); // read from memory.max
+
+        // The main usage of this library is containers.
+        // To not break the contaract with the main package, we need to set the maximum memory to the same value as the guaranteed memory.
+        Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
 
     [ConditionalFact(Skip = "Flaky test, see https://github.com/dotnet/extensions/issues/3997")]
