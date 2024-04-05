@@ -454,7 +454,7 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
     /// </summary>
     private bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)
     {
-        if (!_cpuPodWeight.Exists)
+        if (!_fileSystem.Exists(_cpuPodWeight))
         {
             cpuUnits = 1;
             return false;

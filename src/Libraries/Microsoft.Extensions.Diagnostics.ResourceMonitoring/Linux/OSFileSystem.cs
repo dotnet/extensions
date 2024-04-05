@@ -16,6 +16,11 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 /// </remarks>
 internal sealed class OSFileSystem : IFileSystem
 {
+    public bool Exists(FileInfo fileInfo)
+    {
+        return fileInfo.Exists;
+    }
+
     public int Read(FileInfo file, int length, Span<char> destination)
     {
         using var stream = file.OpenRead();

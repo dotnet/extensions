@@ -27,6 +27,11 @@ internal sealed class HardcodedValueFileSystem : IFileSystem
         _fallback = fallback;
     }
 
+    public bool Exists(FileInfo fileInfo)
+    {
+        return _fileContent.ContainsKey(fileInfo.FullName);
+    }
+
     public void ReadFirstLine(FileInfo file, BufferWriter<char> destination)
     {
         if (_fileContent.Count == 0 || !_fileContent.TryGetValue(file.FullName, out var content))

@@ -123,7 +123,7 @@ public sealed class AcceptanceTest
             }))
             .AddResourceMonitoring(x => x.ConfigureMonitor(section))
 
-            // Ingesting LinuxUtilizationParser which tests cgroup v1.
+            // Ingesting LinuxUtilizationParser with cgroup v1 support.
             .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParser>())
             .BuildServiceProvider();
 
@@ -137,6 +137,7 @@ public sealed class AcceptanceTest
         // To not break the contaract with the main package, we need to set the maximum memory to the same value as the guaranteed memory.
         Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
+
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific package.")]
     [SuppressMessage("Minor Code Smell", "S3257:Declarations and initializations should be as concise as possible", Justification = "Broken analyzer.")]
@@ -161,25 +162,27 @@ public sealed class AcceptanceTest
             .AddSingleton<IFileSystem>(new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
             {
                 { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
-                { new FileInfo("/sys/fs/cgroup/cpu.stat"), "102312"},
+                { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312"},
                 { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
                 { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-1"},
-                { new FileInfo("/sys/fs/cgroup/cpu.max"), "0.2"},
+                { new FileInfo("/sys/fs/cgroup/cpu.max"), "20000 100000"},
                 { new FileInfo("/sys/fs/cgroup/cpu/cpu.weight"), "4"},
                 { new FileInfo("/sys/fs/cgroup/memory.max"), "100000" }
             }))
             .AddResourceMonitoring(x => x.ConfigureMonitor(section))
-            .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>()) // Ingesting LinuxUtilizationParser which tests cgroup v1.
+
+            // Ingesting LinuxUtilizationParser with cgroup v2 support.
+            .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>())
             .BuildServiceProvider();
 
         var provider = services.GetService<ISnapshotProvider>();
         Assert.NotNull(provider);
         Assert.Equal(1, provider.Resources.GuaranteedCpuUnits); // hack to make hardcoded calculation in resource utilization main package work.
-        Assert.Equal(2.0d, provider.Resources.MaximumCpuUnits); // read from cpuset.cpus
+        Assert.Equal(0.2d, Math.Round(provider.Resources.MaximumCpuUnits, 1)); // read from cpuset.cpus
         Assert.Equal(100_000UL, provider.Resources.GuaranteedMemoryInBytes); // read from memory.max
 
         // The main usage of this library is containers.
-        // To not break the contaract with the main package, we need to set the maximum memory to the same value as the guaranteed memory.
+        // To not break the contaract with the main package, we need to set the maximum memory value to the guaranteed memory.
         Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
 

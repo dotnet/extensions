@@ -99,7 +99,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         const string Usage_usec = "usage_usec";
 
         // If the file doesn't exist, we assume that the system is a Host and we read the CPU usage from /proc/stat.
-        if (!_cpuacctUsage.Exists)
+        if (!_fileSystem.Exists(_cpuacctUsage))
         {
             return GetHostCpuUsageInNanoseconds();
         }
@@ -205,7 +205,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     {
         const long UnsetCgroupMemoryLimit = 9_223_372_036_854_771_712;
 
-        if (!_memoryLimitInBytes.Exists)
+        if (!_fileSystem.Exists(_memoryLimitInBytes))
         {
             return GetHostAvailableMemory();
         }
@@ -235,7 +235,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         foreach (string path in memoryUsageInBytesSlicesPath)
         {
             var memoryUsageInBytesFile = new FileInfo(path + "/memory.current");
-            if (!memoryUsageInBytesFile.Exists)
+            if (!_fileSystem.Exists(memoryUsageInBytesFile))
             {
                 continue;
             }
@@ -267,7 +267,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     {
         const string InactiveFile = "inactive_file";
 
-        if (!_memoryStat.Exists)
+        if (!_fileSystem.Exists(_memoryStat))
         {
             return GetHostAvailableMemory();
         }
@@ -294,7 +294,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         _buffer.Reset();
 
         long memoryUsage = 0;
-        if (!_memoryUsageInBytes.Exists)
+        if (!_fileSystem.Exists(_memoryUsageInBytes))
         {
             memoryUsage = GetMemoryUsageInBytesFromSlices();
         }
@@ -470,7 +470,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// </remarks>
     private bool TryGetCpuUnitsFromCgroups(IFileSystem fileSystem, out float cpuUnits)
     {
-        if (!_cpuCfsQuaotaPeriodUs.Exists)
+        if (!_fileSystem.Exists(_cpuCfsQuaotaPeriodUs))
         {
             cpuUnits = 0;
             return false;
@@ -513,7 +513,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     private bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)
     {
         // If the file doesn't exist, we assume that the system is a Host and we assign the default 1 CPU core.
-        if (!_cpuPodWeight.Exists)
+        if (!_fileSystem.Exists(_cpuPodWeight))
         {
             cpuUnits = 1;
             return false;

@@ -85,11 +85,11 @@ public sealed class LinuxCountersTests
         {
             { new FileInfo("/sys/fs/cgroup/memory.max"), "9223372036854771712" },
             { new FileInfo("/proc/stat"), "cpu 10 10 10 10 10 10 10 10 10 10"},
-            { new FileInfo("/sys/fs/cgroup/cpu.stat"), "50"},
+            { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102312"},
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
-            { new FileInfo("/sys/fs/cgroup/cpu/cpu.max"), "60"},
-            { new FileInfo("/sys/fs/cgroup/memory.stat"), "total_inactive_file 0"},
+            { new FileInfo("/sys/fs/cgroup/cpu/cpu.max"), "20000 100000"},
+            { new FileInfo("/sys/fs/cgroup/memory.stat"), "inactive_file 0"},
             { new FileInfo("/sys/fs/cgroup/memory.current"), "524288"},
             { new FileInfo("/sys/fs/cgroup/cpu/cpu.weight"), "4"},
         });
@@ -124,6 +124,6 @@ public sealed class LinuxCountersTests
         Assert.Equal(ResourceUtilizationInstruments.CpuUtilization, samples[0].instrument.Name);
         Assert.Equal(double.NaN, samples[0].value);
         Assert.Equal(ResourceUtilizationInstruments.MemoryUtilization, samples[1].instrument.Name);
-        Assert.Equal(1, samples[1].value);
+        Assert.Equal(0.5, samples[1].value);
     }
 }
