@@ -133,7 +133,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
 
         return builder;
     }
-
+#endif
     private static bool GetCgroupType()
     {
         DriveInfo[] allDrives = DriveInfo.GetDrives();
@@ -163,5 +163,4 @@ public static class ResourceMonitoringServiceCollectionExtensions
 
         return injectParserV2;
     }
-#endif
 }
