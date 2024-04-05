@@ -1,17 +1,19 @@
 ﻿using System.IO;
+
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-/// <remarks>
+/// <summary>
 /// Detects cgroup version on Linux OS.
-/// </remarks>
+/// </summary>
 public static class ResourceMonitoringLinuxCgroupVersion
 {
-    /// <remarks>
+    /// <summary>
     /// Get drive metadata for each drive in the system and detects the cgroup version.
-    /// </remarks>
+    /// </summary>
+    /// <returns>True/False.</returns>
     public static bool GetCgroupType()
     {
         DriveInfo[] allDrives = DriveInfo.GetDrives();
