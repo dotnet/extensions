@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Detects cgroup version on Linux OS.
 /// </summary>
-public static class ResourceMonitoringLinuxCgroupVersion
+internal static class ResourceMonitoringLinuxCgroupVersion
 {
     /// <summary>
     /// Get drive metadata for each drive in the system and detects the cgroup version.
