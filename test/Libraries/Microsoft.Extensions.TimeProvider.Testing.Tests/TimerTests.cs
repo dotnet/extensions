@@ -138,7 +138,7 @@ public class TimerTests
         var fakeTimeProvider = new FakeTimeProvider();
         using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(1000));
 
-        var task = fakeTimeProvider.Delay(TimeSpan.FromMilliseconds(10000), cancellationTokenSource.Token).ConfigureAwait(false);
+        var task = fakeTimeProvider.Delay(TimeSpan.FromMilliseconds(10000), cancellationTokenSource.Token);
 
         fakeTimeProvider.Advance(TimeSpan.FromMilliseconds(10000));
 
@@ -158,7 +158,7 @@ public class TimerTests
             await fakeTimeProvider.Delay(
                 TimeSpan.FromMilliseconds(10000),
                 cancellationTokenSource.Token)
-            .ConfigureAwait(false);
+;
         });
     }
 

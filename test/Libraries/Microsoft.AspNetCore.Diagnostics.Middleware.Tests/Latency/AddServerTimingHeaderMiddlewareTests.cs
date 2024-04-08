@@ -43,7 +43,7 @@ public class AddServerTimingHeaderMiddlewareTests
         await fakeHttpResponseFeature.StartAsync();
 
         var header = context.Response.Headers[AddServerTimingHeaderMiddleware.ServerTimingHeaderName];
-        Assert.NotEmpty(header);
+        Assert.NotEqual(0, header.Count);
         Assert.Equal($"reqlatency;dur={TimeAdvanceMs}", header[0]);
     }
 
