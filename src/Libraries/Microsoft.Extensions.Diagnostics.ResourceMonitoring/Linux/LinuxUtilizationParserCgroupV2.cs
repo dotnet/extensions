@@ -516,19 +516,26 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         if (!_fileSystem.Exists(_cpuPodWeight))
         {
             cpuUnits = 1;
+            Throw.InvalidOperationException($"'{_cpuPodWeight}' file does not exist!");
             return false;
         }
 
         fileSystem.ReadFirstLine(_cpuPodWeight, _buffer);
         var cpuPodWeightBuffer = _buffer.WrittenSpan;
-        _ = GetNextNumber(cpuPodWeightBuffer, out var cpuPodWeight);
 
         if (cpuPodWeightBuffer.IsEmpty || (cpuPodWeightBuffer.Length == 2 && cpuPodWeightBuffer[0] == '-' && cpuPodWeightBuffer[1] == '1'))
         {
-            _buffer.Reset();
             Throw.InvalidOperationException($"Could not parse '{_cpuPodWeight}' content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
+            _buffer.Reset();
             cpuUnits = -1;
             return false;
+        }
+
+        _ = GetNextNumber(cpuPodWeightBuffer, out var cpuPodWeight);
+
+        if (cpuPodWeight == -1)
+        {
+            Throw.InvalidOperationException($"Could not parse '{_cpuPodWeight}'. Expected to get an integer but got: '{cpuPodWeight}'.");
         }
 
         // Calculate CPU pod request in millicores based on the weight, using the formula:
@@ -537,8 +544,8 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         var cpuPodShare = ((cpuPodWeight * 262142) + 19997) / 9999;
         if (cpuPodShare == -1)
         {
-            _buffer.Reset();
             Throw.InvalidOperationException($"Could not calculate CPU share from CPU weight '{cpuPodShare}'");
+            _buffer.Reset();
             cpuUnits = -1;
             return false;
         }

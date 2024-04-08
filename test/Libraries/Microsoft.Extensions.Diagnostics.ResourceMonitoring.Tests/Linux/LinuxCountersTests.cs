@@ -91,7 +91,7 @@ public sealed class LinuxCountersTests
             { new FileInfo("/sys/fs/cgroup/cpu/cpu.max"), "20000 100000"},
             { new FileInfo("/sys/fs/cgroup/memory.stat"), "inactive_file 0"},
             { new FileInfo("/sys/fs/cgroup/memory.current"), "524288"},
-            { new FileInfo("/sys/fs/cgroup/cpu/cpu.weight"), "4"},
+            { new FileInfo("/sys/fs/cgroup/cpu.weight"), "4"},
         });
 
         var parser = new LinuxUtilizationParserCgroupV2(fileSystem: fileSystem, new FakeUserHz(100));

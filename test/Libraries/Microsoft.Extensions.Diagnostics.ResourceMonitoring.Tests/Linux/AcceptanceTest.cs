@@ -166,7 +166,7 @@ public sealed class AcceptanceTest
                 { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
                 { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-1"},
                 { new FileInfo("/sys/fs/cgroup/cpu.max"), "20000 100000"},
-                { new FileInfo("/sys/fs/cgroup/cpu/cpu.weight"), "4"},
+                { new FileInfo("/sys/fs/cgroup/cpu.weight"), "4"},
                 { new FileInfo("/sys/fs/cgroup/memory.max"), "100000" }
             }))
             .AddResourceMonitoring(x => x.ConfigureMonitor(section))
@@ -177,7 +177,7 @@ public sealed class AcceptanceTest
 
         var provider = services.GetService<ISnapshotProvider>();
         Assert.NotNull(provider);
-        Assert.Equal(1, provider.Resources.GuaranteedCpuUnits); // hack to make hardcoded calculation in resource utilization main package work.
+        Assert.Equal(0.1, Math.Round(provider.Resources.GuaranteedCpuUnits, 1)); // hack to make hardcoded calculation in resource utilization main package work.
         Assert.Equal(0.2d, Math.Round(provider.Resources.MaximumCpuUnits, 1)); // read from cpuset.cpus
         Assert.Equal(100_000UL, provider.Resources.GuaranteedMemoryInBytes); // read from memory.max
 
