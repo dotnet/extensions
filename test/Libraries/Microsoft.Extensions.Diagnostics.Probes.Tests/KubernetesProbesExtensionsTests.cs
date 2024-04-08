@@ -49,16 +49,19 @@ public class KubernetesProbesExtensionsTests
         Assert.True(livenessConfig.FilterChecks!(livenessRegistration));
         Assert.False(livenessConfig.FilterChecks(startupRegistration));
         Assert.False(livenessConfig.FilterChecks(readinessRegistration));
+        Assert.Equal(2305, livenessConfig.TcpPort);
 
         var startupConfig = config.Get(ProbeTags.Startup);
         Assert.False(startupConfig.FilterChecks!(livenessRegistration));
         Assert.True(startupConfig.FilterChecks(startupRegistration));
         Assert.False(startupConfig.FilterChecks(readinessRegistration));
+        Assert.Equal(2306, startupConfig.TcpPort);
 
         var readinessConfig = config.Get(ProbeTags.Readiness);
         Assert.False(readinessConfig.FilterChecks!(livenessRegistration));
         Assert.False(readinessConfig.FilterChecks(startupRegistration));
         Assert.True(readinessConfig.FilterChecks(readinessRegistration));
+        Assert.Equal(2307, readinessConfig.TcpPort);
     }
 
     [Fact]
