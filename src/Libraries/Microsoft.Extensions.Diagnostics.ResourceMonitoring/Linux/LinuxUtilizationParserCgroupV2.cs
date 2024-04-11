@@ -229,7 +229,8 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
     public long GetMemoryUsageInBytesFromSlices()
     {
-        string[] memoryUsageInBytesSlicesPath = _fileSystem.GetDirectoryName("/sys/fs/cgroup/", @"\w+.slice");
+        // In cgroup v2, we need to read memory usage from all slices, which are directories in /sys/fs/cgroup/*.slice.
+        string[] memoryUsageInBytesSlicesPath = _fileSystem.GetDirectoryNames(new DirectoryInfo("/sys/fs/cgroup/"), @"\w+.slice");
 
         long memoryUsageInBytesTotal = 0;
 
@@ -513,14 +514,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
     private bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)
     {
-        // If the file doesn't exist, we assume that the system is a Host and we assign the default 1 CPU core.
-        if (!_fileSystem.Exists(_cpuPodWeight))
-        {
-            cpuUnits = 1;
-            Throw.InvalidOperationException($"'{_cpuPodWeight}' file does not exist!");
-            return false;
-        }
-
         fileSystem.ReadFirstLine(_cpuPodWeight, _buffer);
         var cpuPodWeightBuffer = _buffer.WrittenSpan;
 
