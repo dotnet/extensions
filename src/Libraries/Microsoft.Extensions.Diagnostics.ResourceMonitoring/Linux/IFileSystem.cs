@@ -22,7 +22,7 @@ internal interface IFileSystem
     /// Get directory name on the filesystem.
     /// </summary>
     /// <returns>string.</returns>
-    string[] GetDirectoryNames(DirectoryInfo directory, string pattern);
+    string[] GetDirectoryNames(string directory, string pattern);
 
     /// <summary>
     /// Reads content from the file.

@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
@@ -23,12 +22,9 @@ internal sealed class OSFileSystem : IFileSystem
         return fileInfo.Exists;
     }
 
-    public string[] GetDirectoryNames(DirectoryInfo directory, string pattern)
+    public string[] GetDirectoryNames(string directory, string pattern)
     {
-        var match = Regex.Match(directory.ToString(), pattern, RegexOptions.IgnoreCase);
-
-        return directory.GetDirectories(match.ToString())
-                .Select(x => x.FullName)
+        return Directory.GetDirectories(directory, pattern)
                 .ToArray();
     }
 

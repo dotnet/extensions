@@ -33,12 +33,12 @@ internal sealed class HardcodedValueFileSystem : IFileSystem
         return _fileContent.ContainsKey(fileInfo.FullName);
     }
 
-    public string[] GetDirectoryNames(DirectoryInfo directory, string pattern)
+    public string[] GetDirectoryNames(string directory, string pattern)
     {
         return _fileContent.Keys
-                .Where(x => x.StartsWith(directory.ToString(), StringComparison.OrdinalIgnoreCase))
+                .Where(x => x.StartsWith(directory, StringComparison.OrdinalIgnoreCase))
                 .Select(x => Regex.Match(x, pattern, RegexOptions.IgnoreCase))
-                .Select(x => Path.Combine(directory.ToString(), x.Value))
+                .Select(x => Path.Combine(directory, x.Value))
                 .ToArray();
     }
 

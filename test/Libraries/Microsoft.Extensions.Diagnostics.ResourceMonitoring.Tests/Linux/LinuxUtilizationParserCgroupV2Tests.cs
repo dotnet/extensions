@@ -118,13 +118,14 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     [ConditionalFact]
     public void When_Calling_GetMemoryUsageInBytesFromSlices_Parser_Throws_When_UsageInBytes_Doesnt_Contain_A_Number()
     {
+        var regexPatternforSlices = @"\w+.slice";
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
             { new FileInfo("/sys/fs/cgroup/system.slice/memory.current"), "dasda"},
         });
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
-        var r = Record.Exception(() => p.GetMemoryUsageInBytesFromSlices());
+        var r = Record.Exception(() => p.GetMemoryUsageInBytesFromSlices(regexPatternforSlices));
 
         Assert.IsAssignableFrom<InvalidOperationException>(r);
         Assert.Contains("/sys/fs/cgroup/system.slice/memory.current", r.Message);
@@ -359,12 +360,12 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
 
     [ConditionalTheory]
     [InlineData("-1")]
-    [InlineData("")]
+    [InlineData("dasrz3424")]
     public void Parser_Throws_When_Cgroup_Cpu_Weight_Files_Contain_Invalid_Data(string content)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
-            { new FileInfo("/sys/fs/cgroup/cpu/cpu.weight"), content },
+            { new FileInfo("/sys/fs/cgroup/cpu.weight"), content },
         });
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));

@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Xml.Schema;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
@@ -195,7 +196,8 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             return cpuPodRequest / CpuShares;
         }
 
-        return cpuPodRequest;
+        // If we can't read the CPU weight, we assume that the pod request is 1 core.
+        return GetHostCpuCount();
     }
 
     /// <remarks>
@@ -227,10 +229,10 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             : (ulong)maybeMemory;
     }
 
-    public long GetMemoryUsageInBytesFromSlices()
+    public long GetMemoryUsageInBytesFromSlices(string pattern)
     {
         // In cgroup v2, we need to read memory usage from all slices, which are directories in /sys/fs/cgroup/*.slice.
-        string[] memoryUsageInBytesSlicesPath = _fileSystem.GetDirectoryNames(new DirectoryInfo("/sys/fs/cgroup/"), @"\w+.slice");
+        string[] memoryUsageInBytesSlicesPath = _fileSystem.GetDirectoryNames("/sys/fs/cgroup/", pattern);
 
         long memoryUsageInBytesTotal = 0;
 
@@ -267,6 +269,8 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     public ulong GetMemoryUsageInBytes()
     {
         const string InactiveFile = "inactive_file";
+        // Regex pattern for slice directory path in real file system
+        string? pattern = "*.slice";
 
         if (!_fileSystem.Exists(_memoryStat))
         {
@@ -298,7 +302,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
         if (!_fileSystem.Exists(_memoryUsageInBytes))
         {
-            memoryUsage = GetMemoryUsageInBytesFromSlices();
+            memoryUsage = GetMemoryUsageInBytesFromSlices(pattern);
         }
         else
         {
@@ -514,15 +518,18 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
     private bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)
     {
+        if (!_fileSystem.Exists(_cpuPodWeight))
+        {
+            cpuUnits = 0;
+            return false;
+        }
+
         fileSystem.ReadFirstLine(_cpuPodWeight, _buffer);
         var cpuPodWeightBuffer = _buffer.WrittenSpan;
 
         if (cpuPodWeightBuffer.IsEmpty || (cpuPodWeightBuffer.Length == 2 && cpuPodWeightBuffer[0] == '-' && cpuPodWeightBuffer[1] == '1'))
         {
             Throw.InvalidOperationException($"Could not parse '{_cpuPodWeight}' content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
-            _buffer.Reset();
-            cpuUnits = -1;
-            return false;
         }
 
         _ = GetNextNumber(cpuPodWeightBuffer, out var cpuPodWeight);

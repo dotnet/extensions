@@ -17,9 +17,9 @@ internal sealed class FileNamesOnlyFileSystem : IFileSystem
         return fileInfo.Exists;
     }
 
-    public string[] GetDirectoryNames(DirectoryInfo directory, string pattern)
+    public string[] GetDirectoryNames(string directory, string pattern)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException();
     }
 
     public FileNamesOnlyFileSystem(string directory)
