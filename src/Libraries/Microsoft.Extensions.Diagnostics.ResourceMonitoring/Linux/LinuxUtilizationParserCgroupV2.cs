@@ -229,7 +229,8 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
     public long GetMemoryUsageInBytesFromSlices()
     {
-        string[] memoryUsageInBytesSlicesPath = Directory.GetDirectories(@"/sys/fs/cgroup", "*.slice", SearchOption.TopDirectoryOnly);
+        string[] memoryUsageInBytesSlicesPath = _fileSystem.GetDirectoryName("/sys/fs/cgroup/", @"\w+.slice");
+
         long memoryUsageInBytesTotal = 0;
 
         foreach (string path in memoryUsageInBytesSlicesPath)
@@ -245,8 +246,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             var memoryUsageFile = _buffer.WrittenSpan;
             var next = GetNextNumber(memoryUsageFile, out var containerMemoryUsage);
 
-            // this file format doesn't expect to contain anything after the number.
-            if (containerMemoryUsage == -1)
+            if (containerMemoryUsage == 0 || containerMemoryUsage == -1)
             {
                 Throw.InvalidOperationException(
                     $"We tried to read '{memoryUsageInBytesFile}', and we expected to get a positive number but instead it was: '{containerMemoryUsage}'.");
@@ -294,6 +294,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         _buffer.Reset();
 
         long memoryUsage = 0;
+
         if (!_fileSystem.Exists(_memoryUsageInBytes))
         {
             memoryUsage = GetMemoryUsageInBytesFromSlices();
@@ -303,12 +304,12 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             memoryUsage = GetMemoryUsageInBytesPod();
         }
 
-        if (memoryUsage < 0)
-        {
-            Throw.InvalidOperationException($"The total memory usage read from '{_memoryUsageInBytes}' is lesser than inactive memory usage read from '{_memoryStat}'.");
-        }
-
         var memoryUsageTotal = memoryUsage - inactiveMemory;
+
+        if (memoryUsageTotal < 0)
+        {
+            Throw.InvalidOperationException($"The total memory usage read from '{_memoryUsageInBytes}' is lesser than inactive memory read from '{_memoryStat}'.");
+        }
 
         return (ulong)memoryUsageTotal;
     }

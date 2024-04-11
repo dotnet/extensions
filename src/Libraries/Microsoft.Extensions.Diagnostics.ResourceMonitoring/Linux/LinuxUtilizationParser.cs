@@ -457,6 +457,7 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
         if (!_fileSystem.Exists(_cpuPodWeight))
         {
             cpuUnits = 1;
+            Throw.InvalidOperationException($"'{_cpuPodWeight}' file does not exist!");
             return false;
         }
 

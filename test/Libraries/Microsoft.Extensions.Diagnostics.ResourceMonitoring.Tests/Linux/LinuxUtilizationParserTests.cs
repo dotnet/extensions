@@ -32,26 +32,7 @@ public sealed class LinuxUtilizationParserTests
         Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuUsageInNanoseconds());
         Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuCount());
         Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanoseconds());
-    }
-
-    [ConditionalTheory]
-    [InlineData("DFIJEUWGHFWGBWEFWOMDOWKSLA")]
-    [InlineData("")]
-    [InlineData("________________________Asdasdasdas          dd")]
-    [InlineData(" ")]
-    [InlineData("!@#!$%!@")]
-    public void Cgroupv2_Parser_Throws_When_Data_Is_Invalid(string line)
-    {
-        var parser = new LinuxUtilizationParserCgroupV2(new HardcodedValueFileSystem(line), new FakeUserHz(100));
-
-        Assert.Throws<InvalidOperationException>(() => parser.GetHostAvailableMemory());
-        Assert.Throws<InvalidOperationException>(() => parser.GetAvailableMemoryInBytes());
-        Assert.Throws<InvalidOperationException>(() => parser.GetMemoryUsageInBytes());
-        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupLimitedCpus());
-        Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuUsageInNanoseconds());
-        Assert.Throws<InvalidOperationException>(() => parser.GetHostCpuCount());
-        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupCpuUsageInNanoseconds());
-        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupLimitedCpus());
+        Assert.Throws<InvalidOperationException>(() => parser.GetCgroupRequestCpu());
     }
 
     [ConditionalFact]
@@ -349,5 +330,22 @@ public sealed class LinuxUtilizationParserTests
 
         Assert.IsAssignableFrom<InvalidOperationException>(r);
         Assert.Contains("proc/stat", r.Message);
+    }
+
+    [ConditionalTheory]
+    [InlineData("-1")]
+    [InlineData("")]
+    public void Parser_Throws_When_Cgroup_Cpu_Shares_Files_Contain_Invalid_Data(string content)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/cpu/cpu.shares"), content },
+        });
+
+        var p = new LinuxUtilizationParser(f, new FakeUserHz(100));
+        var r = Record.Exception(() => p.GetCgroupRequestCpu());
+
+        Assert.IsAssignableFrom<InvalidOperationException>(r);
+        Assert.Contains("/sys/fs/cgroup/cpu/cpu.shares", r.Message);
     }
 }

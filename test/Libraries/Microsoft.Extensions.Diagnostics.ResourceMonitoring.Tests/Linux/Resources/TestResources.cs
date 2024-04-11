@@ -22,7 +22,8 @@ internal sealed class TestResources : IDisposable
         { "/sys/fs/cgroup/cpu.max", "1"},
         { "/proc/meminfo", "MemTotal:       1 kB\r\n"},
         { "/sys/fs/cgroup/cpuset.cpus.effective", "0-3"},
-        { "/sys/fs/cgroup/cpu/cpu.wight", "512"}
+        { "/sys/fs/cgroup/cpu/cpu.wight", "512"},
+        { "/sys/fs/cgroup/system.slice/memory.current", "dasda!@#"}
     };
 
     private static readonly string[] _namesOfDirectories =
@@ -30,6 +31,7 @@ internal sealed class TestResources : IDisposable
         "/sys/fs/cgroup",
         "/sys/fs/cgroup/memory",
         "/sys/fs/cgroup/cpu",
+        "/sys/fs/cgroup/system.slice",
         "/proc"
     };
 

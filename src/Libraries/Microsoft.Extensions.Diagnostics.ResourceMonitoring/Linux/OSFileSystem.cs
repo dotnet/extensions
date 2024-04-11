@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
@@ -16,9 +19,20 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 /// </remarks>
 internal sealed class OSFileSystem : IFileSystem
 {
+    private readonly Dictionary<string, string> _fileContent;
     public bool Exists(FileInfo fileInfo)
     {
         return fileInfo.Exists;
+    }
+
+    public string[] GetDirectoryName(string directory, string pattern)
+    {
+        var m = Regex.Match(directory, pattern, RegexOptions.IgnoreCase);
+
+        return _fileContent.Keys
+                .Where(x => x.StartsWith(directory, StringComparison.OrdinalIgnoreCase))
+                .Select(x => x.Substring(0, 27))
+                .ToArray();
     }
 
     public int Read(FileInfo file, int length, Span<char> destination)

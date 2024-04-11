@@ -19,6 +19,12 @@ internal interface IFileSystem
     bool Exists(FileInfo fileInfo);
 
     /// <summary>
+    /// Get directory name on the filesystem.
+    /// </summary>
+    /// <returns>string.</returns>
+    string[] GetDirectoryName(string directory, string pattern);
+
+    /// <summary>
     /// Reads content from the file.
     /// </summary>
     /// <returns>
