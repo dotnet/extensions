@@ -11,10 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="fixtures\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="fixtures\testing.slice\test.file">
+    <None Update="fixtures\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
