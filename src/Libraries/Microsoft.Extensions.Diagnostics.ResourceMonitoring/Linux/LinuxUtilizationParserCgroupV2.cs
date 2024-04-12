@@ -270,7 +270,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         const string InactiveFile = "inactive_file";
 
         // Regex pattern for slice directory path in real file system
-        const string pattern = "*.slice";
+        const string Pattern = "*.slice";
 
         if (!_fileSystem.Exists(_memoryStat))
         {
@@ -302,7 +302,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
         if (!_fileSystem.Exists(_memoryUsageInBytes))
         {
-            memoryUsage = GetMemoryUsageInBytesFromSlices(pattern);
+            memoryUsage = GetMemoryUsageInBytesFromSlices(Pattern);
         }
         else
         {
