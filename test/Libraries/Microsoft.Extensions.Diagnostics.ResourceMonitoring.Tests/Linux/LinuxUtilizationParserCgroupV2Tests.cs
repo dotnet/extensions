@@ -115,6 +115,24 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Contains("/sys/fs/cgroup/memory.current", r.Message);
     }
 
+    [ConditionalTheory]
+    [InlineData("Suspicious12312312")]
+    [InlineData("string@")]
+    [InlineData("string12312")]
+    public void When_Calling_GetAvailableMemoryInBytes_Parser_Throws_When_AvailableMemoryInBytes_Doesnt_Contain_Just_A_Number(string content)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/memory.max"), content },
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var r = Record.Exception(() => p.GetAvailableMemoryInBytes());
+
+        Assert.IsAssignableFrom<InvalidOperationException>(r);
+        Assert.Contains("/sys/fs/cgroup/memory.max", r.Message);
+    }
+
     [ConditionalFact]
     public void When_Calling_GetMemoryUsageInBytesFromSlices_Parser_Throws_When_UsageInBytes_Doesnt_Contain_A_Number()
     {
@@ -359,11 +377,29 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     [InlineData("usage_", 12222)]
     [InlineData("dasd", -1)]
     [InlineData("@#dddada", 342322)]
-    public void Parser_Throws_When_CpuAcctUsage_Has_Invalid_Content(string content, int value)
+    public void Parser_Throws_When_CpuAcctUsage_Has_Invalid_Content_Both_Parts(string content, int value)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
             { new FileInfo("/sys/fs/cgroup/cpu.stat"), $"{content} {value}"},
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var r = Record.Exception(() => p.GetCgroupCpuUsageInNanoseconds());
+
+        Assert.IsAssignableFrom<InvalidOperationException>(r);
+        Assert.Contains("/sys/fs/cgroup/cpu.stat", r.Message);
+    }
+
+    [ConditionalTheory]
+    [InlineData(-32131)]
+    [InlineData(-1)]
+    [InlineData(-15.323)]
+    public void Parser_Throws_When_Usage_Usec_Has_Negative_Valuet(int value)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/cpu.stat"), $"usage_usec {value}"},
         });
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
