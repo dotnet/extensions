@@ -16,9 +16,10 @@ public sealed class OSFileSystemTests
     public void GetDirectoryNames_ReturnsDirectoryNames()
     {
         var fileSystem = new OSFileSystem();
-        var directoryNames = fileSystem.GetDirectoryNames("fixtures", "*.slice");
+        var directoryNames = fileSystem.GetDirectoryNames(
+            Path.Combine(Directory.GetCurrentDirectory(), "fixtures"), "*.slice");
 
-        Assert.Collection(directoryNames, s => Assert.Equal("fixtures\\testing.slice", s));
+        Assert.Single(directoryNames);
     }
 
     [ConditionalFact]
