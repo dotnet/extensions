@@ -12,6 +12,15 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
 public sealed class OSFileSystemTests
 {
+    [Fact]
+    public void GetDirectoryNames_ReturnsDirectoryNames()
+    {
+        var fileSystem = new OSFileSystem();
+        var directoryNames = fileSystem.GetDirectoryNames("fixtures", "*.slice");
+
+        Assert.Collection(directoryNames, s => Assert.Equal("fixtures\\testing.slice", s));
+    }
+
     [ConditionalFact]
     public void Reading_First_File_Line_Works()
     {
