@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
 public sealed class OSFileSystemTests
 {
-    [Fact]
+    [ConditionalFact]
     public void GetDirectoryNames_ReturnsDirectoryNames()
     {
         var fileSystem = new OSFileSystem();
