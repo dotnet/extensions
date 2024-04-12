@@ -174,7 +174,6 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
             return cpuUnits;
         }
 
-        // If we can't read the CPU weight, we assume that the pod request is 1 core.
         return GetHostCpuCount();
     }
 
@@ -456,8 +455,7 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
     {
         if (!_fileSystem.Exists(_cpuPodWeight))
         {
-            cpuUnits = 1;
-            Throw.InvalidOperationException($"'{_cpuPodWeight}' file does not exist!");
+            cpuUnits = 0;
             return false;
         }
 
@@ -467,10 +465,7 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
 
         if (cpuPodWeightBuffer.IsEmpty || (cpuPodWeightBuffer.Length == 2 && cpuPodWeightBuffer[0] == '-' && cpuPodWeightBuffer[1] == '1'))
         {
-            _buffer.Reset();
             Throw.InvalidOperationException($"Could not parse '{_cpuPodWeight}' content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
-            cpuUnits = -1;
-            return false;
         }
 
         _buffer.Reset();

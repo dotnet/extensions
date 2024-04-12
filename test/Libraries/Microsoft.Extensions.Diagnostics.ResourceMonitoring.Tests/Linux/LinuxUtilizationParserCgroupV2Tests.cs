@@ -131,6 +131,21 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Contains("/sys/fs/cgroup/system.slice/memory.current", r.Message);
     }
 
+    [ConditionalFact]
+    public void When_Calling_GetMemoryUsageInBytesFromSlices_Parser_Does_Not_Throw()
+    {
+        var regexPatternforSlices = @"\w+.slice";
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/system.slice/memory.current"), "5342342"},
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var r = Record.Exception(() => p.GetMemoryUsageInBytesFromSlices(regexPatternforSlices));
+
+        Assert.Null(r);
+    }
+
     [ConditionalTheory]
     [InlineData(104343, 1)]
     [InlineData(23423, 22)]

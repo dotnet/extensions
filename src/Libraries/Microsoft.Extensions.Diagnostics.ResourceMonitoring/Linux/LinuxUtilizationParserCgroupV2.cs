@@ -195,7 +195,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             return cpuPodRequest / CpuShares;
         }
 
-        // If we can't read the CPU weight, we assume that the pod request is 1 core.
         return GetHostCpuCount();
     }
 
@@ -250,6 +249,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
             if (containerMemoryUsage == 0 || containerMemoryUsage == -1)
             {
+                memoryUsageInBytesTotal = 0;
                 Throw.InvalidOperationException(
                     $"We tried to read '{memoryUsageInBytesFile}', and we expected to get a positive number but instead it was: '{containerMemoryUsage}'.");
             }
