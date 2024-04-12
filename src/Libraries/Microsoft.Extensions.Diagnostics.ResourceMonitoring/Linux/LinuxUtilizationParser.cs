@@ -175,7 +175,7 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
         }
 
         // If we can't read the CPU weight, we assume that the pod request is 1 core.
-        return 1;
+        return GetHostCpuCount();
     }
 
     public ulong GetAvailableMemoryInBytes()

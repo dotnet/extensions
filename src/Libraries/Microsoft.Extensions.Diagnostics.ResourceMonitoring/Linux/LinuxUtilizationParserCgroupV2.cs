@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Xml.Schema;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
@@ -269,8 +268,9 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     public ulong GetMemoryUsageInBytes()
     {
         const string InactiveFile = "inactive_file";
+
         // Regex pattern for slice directory path in real file system
-        string? pattern = "*.slice";
+        const string pattern = "*.slice";
 
         if (!_fileSystem.Exists(_memoryStat))
         {
@@ -546,9 +546,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         if (cpuPodShare == -1)
         {
             Throw.InvalidOperationException($"Could not calculate CPU share from CPU weight '{cpuPodShare}'");
-            _buffer.Reset();
-            cpuUnits = -1;
-            return false;
         }
 
         _buffer.Reset();
