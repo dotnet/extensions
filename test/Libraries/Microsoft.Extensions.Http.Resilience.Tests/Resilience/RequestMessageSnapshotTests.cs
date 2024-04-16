@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Extensions.ObjectPool;
 using Xunit;
 
 namespace Microsoft.Extensions.Http.Resilience.Test.Resilience;
@@ -106,6 +107,18 @@ public class RequestMessageSnapshotTests : IDisposable
 #else
         cloned.Properties.Should().NotContainKey("Some.New.Request.Property");
 #endif
+    }
+
+    [Fact]
+    public async Task CreateRequestMessageAsync_SnapshotIsReset_ThrowsException()
+    {
+        _requestMessage!.Method = HttpMethod.Get;
+        Assert.Null(_requestMessage.Content);
+        AddRequestHeaders(_requestMessage);
+        AddRequestOptions(_requestMessage);
+        using RequestMessageSnapshot snapshot = await RequestMessageSnapshot.CreateAsync(_requestMessage).ConfigureAwait(false);
+        ((IResettable)snapshot).TryReset();
+        _ = await Assert.ThrowsAsync<InvalidOperationException>(snapshot.CreateRequestMessageAsync);
     }
 
     public void Dispose()
