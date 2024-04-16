@@ -118,9 +118,23 @@ public static class ResourceMonitoringServiceCollectionExtensions
 
         builder.Services.TryAddSingleton<IFileSystem, OSFileSystem>();
         builder.Services.TryAddSingleton<IUserHz, UserHz>();
-        builder.Services.TryAddSingleton<LinuxUtilizationParser>();
+        builder.PickLinuxParser();
 
         return builder;
+    }
+
+    [ExcludeFromCodeCoverage]
+    private static void PickLinuxParser(this ResourceMonitorBuilder builder)
+    {
+        var injectParserV2 = ResourceMonitoringLinuxCgroupVersion.GetCgroupType();
+        if (injectParserV2)
+        {
+            builder.Services.TryAddSingleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>();
+        }
+        else
+        {
+            builder.Services.TryAddSingleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV1>();
+        }
     }
 #endif
 }

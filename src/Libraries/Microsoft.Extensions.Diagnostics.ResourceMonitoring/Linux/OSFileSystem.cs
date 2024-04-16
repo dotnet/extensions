@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.Shared.Pools;
@@ -16,6 +18,17 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 /// </remarks>
 internal sealed class OSFileSystem : IFileSystem
 {
+    public bool Exists(FileInfo fileInfo)
+    {
+        return fileInfo.Exists;
+    }
+
+    public IReadOnlyCollection<string> GetDirectoryNames(string directory, string pattern)
+    {
+        return Directory.GetDirectories(directory, pattern)
+                .ToArray();
+    }
+
     public int Read(FileInfo file, int length, Span<char> destination)
     {
         using var stream = file.OpenRead();

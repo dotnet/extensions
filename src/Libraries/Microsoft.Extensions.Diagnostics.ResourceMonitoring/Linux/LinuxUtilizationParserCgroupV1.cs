@@ -10,12 +10,14 @@ using Microsoft.Shared.Pools;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 
 /// <remarks>
-/// Parses Linux files to retrieve resource utilization data.
+/// Parses Linux cgroup v1 files to retrieve resource utilization data.
 /// This class is not thread safe.
 /// When the same instance is called by multiple threads it may return corrupted data.
 /// </remarks>
-internal sealed class LinuxUtilizationParser
+internal sealed class LinuxUtilizationParserCgroupV1 : ILinuxUtilizationParser
 {
+    private const float CpuShares = 1024;
+
     /// <remarks>
     /// File contains the amount of CPU time (in microseconds) available to the group during each accounting period.
     /// </remarks>
@@ -76,11 +78,16 @@ internal sealed class LinuxUtilizationParser
     /// </remarks>
     private static readonly FileInfo _cpuacctUsage = new("/sys/fs/cgroup/cpuacct/cpuacct.usage");
 
+    /// <summary>
+    /// CPU weights, also known as shares in cgroup v1, is used for resource allocation.
+    /// </summary>
+    private static readonly FileInfo _cpuPodWeight = new("/sys/fs/cgroup/cpu/cpu.shares");
+
     private readonly IFileSystem _fileSystem;
     private readonly long _userHz;
     private readonly BufferWriter<char> _buffer = new();
 
-    public LinuxUtilizationParser(IFileSystem fileSystem, IUserHz userHz)
+    public LinuxUtilizationParserCgroupV1(IFileSystem fileSystem, IUserHz userHz)
     {
         _fileSystem = fileSystem;
         _userHz = userHz.Value;
@@ -155,6 +162,16 @@ internal sealed class LinuxUtilizationParser
         if (TryGetCpuUnitsFromCgroups(_fileSystem, out var cpus))
         {
             return cpus;
+        }
+
+        return GetHostCpuCount();
+    }
+
+    public float GetCgroupRequestCpu()
+    {
+        if (TryGetCgroupRequestCpu(_fileSystem, out var cpuUnits))
+        {
+            return cpuUnits;
         }
 
         return GetHostCpuCount();
@@ -423,6 +440,37 @@ internal sealed class LinuxUtilizationParser
         _buffer.Reset();
 
         cpuUnits = (float)quota / period;
+        return true;
+    }
+
+    /// <summary>
+    /// In cgroup v1 the CPU shares is used to determine the CPU allocation.
+    /// in cgroup v2 the CPU weight is used to determine the CPU allocation.
+    /// To calculete CPU request in cgroup v2 we need to read the CPU weight and convert it to CPU shares.
+    /// But for cgroup v1 we can read the CPU shares directly from the file.
+    /// 1024 equals 1 CPU core.
+    /// In cgroup v1 on some systems the location of the CPU shares file is different.
+    /// </summary>
+    private bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)
+    {
+        if (!_fileSystem.Exists(_cpuPodWeight))
+        {
+            cpuUnits = 0;
+            return false;
+        }
+
+        fileSystem.ReadFirstLine(_cpuPodWeight, _buffer);
+        var cpuPodWeightBuffer = _buffer.WrittenSpan;
+        _ = GetNextNumber(cpuPodWeightBuffer, out var cpuPodWeight);
+
+        if (cpuPodWeightBuffer.IsEmpty || (cpuPodWeightBuffer.Length == 2 && cpuPodWeightBuffer[0] == '-' && cpuPodWeightBuffer[1] == '1'))
+        {
+            Throw.InvalidOperationException($"Could not parse '{_cpuPodWeight}' content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
+        }
+
+        _buffer.Reset();
+        var result = cpuPodWeight / CpuShares;
+        cpuUnits = result;
         return true;
     }
 }

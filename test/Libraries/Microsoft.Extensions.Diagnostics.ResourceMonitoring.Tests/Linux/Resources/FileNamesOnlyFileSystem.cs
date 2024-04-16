@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Shared.Pools;
@@ -12,6 +13,15 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 internal sealed class FileNamesOnlyFileSystem : IFileSystem
 {
     private readonly string _directory;
+    public bool Exists(FileInfo fileInfo)
+    {
+        return fileInfo.Exists;
+    }
+
+    public IReadOnlyCollection<string> GetDirectoryNames(string directory, string pattern)
+    {
+        throw new NotSupportedException();
+    }
 
     public FileNamesOnlyFileSystem(string directory)
     {
