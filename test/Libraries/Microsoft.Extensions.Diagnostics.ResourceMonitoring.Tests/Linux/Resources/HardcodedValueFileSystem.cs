@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
@@ -25,6 +26,20 @@ internal sealed class HardcodedValueFileSystem : IFileSystem
     {
         _fileContent = fileContent.ToDictionary(static x => x.Key.FullName, static y => y.Value, StringComparer.OrdinalIgnoreCase);
         _fallback = fallback;
+    }
+
+    public bool Exists(FileInfo fileInfo)
+    {
+        return _fileContent.ContainsKey(fileInfo.FullName);
+    }
+
+    public string[] GetDirectoryNames(string directory, string pattern)
+    {
+        return _fileContent.Keys
+                .Where(x => x.StartsWith(directory, StringComparison.OrdinalIgnoreCase))
+                .Select(x => Regex.Match(x, pattern, RegexOptions.IgnoreCase))
+                .Select(x => Path.Combine(directory, x.Value))
+                .ToArray();
     }
 
     public void ReadFirstLine(FileInfo file, BufferWriter<char> destination)

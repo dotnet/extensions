@@ -1,7 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using Microsoft.Shared.Diagnostics;
+﻿using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
@@ -19,6 +16,9 @@ public readonly struct SystemResources
     /// This value corresponds to the number of the guaranteed CPUs as described by Kubernetes CPU request parameter, each 1000 CPU units
     /// represent 1 CPU or 1 Core. For example, if the POD is configured with 1500m units as the CPU request, this property will be assigned
     /// to 1.5 which means one and a half CPU will be dedicated for the POD.
+    /// For POD this value is calculated based on the cgroupv2 weight, using the formula.
+    /// y = (1 + ((x - 2) * 9999) / 262142), where y is the CPU weight and x is the CPU share (cgroup v1).
+    /// https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2.
     /// </remarks>
     public double GuaranteedCpuUnits { get; }
 
@@ -38,7 +38,7 @@ public readonly struct SystemResources
     public ulong GuaranteedMemoryInBytes { get; }
 
     /// <summary>
-    /// Gets the maximum memory allocated to the system in bytes.
+    /// Gets the Container's Request Memory Limit or the Maximum allocated for the VM.
     /// </summary>
     public ulong MaximumMemoryInBytes { get; }
 

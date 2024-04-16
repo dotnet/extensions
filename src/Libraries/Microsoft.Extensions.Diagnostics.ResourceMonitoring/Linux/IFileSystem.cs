@@ -13,6 +13,18 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 internal interface IFileSystem
 {
     /// <summary>
+    /// Checks for file existence.
+    /// </summary>
+    /// <returns> True/False.</returns>
+    bool Exists(FileInfo fileInfo);
+
+    /// <summary>
+    /// Get directory names on the filesystem based on the provided pattern.
+    /// </summary>
+    /// <returns>string.</returns>
+    string[] GetDirectoryNames(string directory, string pattern);
+
+    /// <summary>
     /// Reads content from the file.
     /// </summary>
     /// <returns>

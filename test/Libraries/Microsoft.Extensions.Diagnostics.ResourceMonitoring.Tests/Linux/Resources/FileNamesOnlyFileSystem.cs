@@ -12,6 +12,15 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 internal sealed class FileNamesOnlyFileSystem : IFileSystem
 {
     private readonly string _directory;
+    public bool Exists(FileInfo fileInfo)
+    {
+        return fileInfo.Exists;
+    }
+
+    public string[] GetDirectoryNames(string directory, string pattern)
+    {
+        throw new NotSupportedException();
+    }
 
     public FileNamesOnlyFileSystem(string directory)
     {
