@@ -10,11 +10,11 @@ using Microsoft.Shared.Pools;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 
 /// <remarks>
-/// Parses Linux files to retrieve resource utilization data.
+/// Parses Linux cgroup v1 files to retrieve resource utilization data.
 /// This class is not thread safe.
 /// When the same instance is called by multiple threads it may return corrupted data.
 /// </remarks>
-internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
+internal sealed class LinuxUtilizationParserCgroupV1 : ILinuxUtilizationParser
 {
     private const float CpuShares = 1024;
 
@@ -87,7 +87,7 @@ internal sealed class LinuxUtilizationParser : ILinuxUtilizationParser
     private readonly long _userHz;
     private readonly BufferWriter<char> _buffer = new();
 
-    public LinuxUtilizationParser(IFileSystem fileSystem, IUserHz userHz)
+    public LinuxUtilizationParserCgroupV1(IFileSystem fileSystem, IUserHz userHz)
     {
         _fileSystem = fileSystem;
         _userHz = userHz.Value;

@@ -124,7 +124,7 @@ public sealed class AcceptanceTest
             .AddResourceMonitoring(x => x.ConfigureMonitor(section))
 
             // Ingesting LinuxUtilizationParser with cgroup v1 support.
-            .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParser>())
+            .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV1>())
             .BuildServiceProvider();
 
         var provider = services.GetService<ISnapshotProvider>();

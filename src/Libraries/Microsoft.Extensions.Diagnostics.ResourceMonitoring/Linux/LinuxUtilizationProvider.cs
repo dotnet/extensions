@@ -65,8 +65,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         // cpuGuaranteedRequest is a CPU request for pod, for host its 1 core
         // available CPUs is a CPU limit for a pod or for a host.
-        // 1 - Currently value in /sys/fs/cgroup/memory.min per container is 0
         // _totalMemoryInBytes - Resource Memory Limit (in k8s terms)
+        // _totalMemoryInBytes - To keep the contract, this parameter will get the Host available memory
         Resources = new SystemResources(cpuGuaranteedRequest, availableCpus, _totalMemoryInBytes, _totalMemoryInBytes);
     }
 

@@ -133,7 +133,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         }
         else
         {
-            builder.Services.TryAddSingleton<ILinuxUtilizationParser, LinuxUtilizationParser>();
+            builder.Services.TryAddSingleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV1>();
         }
     }
 #endif

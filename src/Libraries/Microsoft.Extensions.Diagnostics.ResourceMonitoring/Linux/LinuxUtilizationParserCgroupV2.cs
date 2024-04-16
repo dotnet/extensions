@@ -11,7 +11,7 @@ using Microsoft.Shared.Pools;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
 
 /// <remarks>
-/// Parses Linux files to retrieve resource utilization data.
+/// Parses Linux cgroups v2 files to retrieve resource utilization data.
 /// This class is not thread safe.
 /// When the same instance is called by multiple threads it may return corrupted data.
 /// </remarks>

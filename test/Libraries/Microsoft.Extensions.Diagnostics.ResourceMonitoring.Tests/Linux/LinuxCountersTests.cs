@@ -38,7 +38,7 @@ public sealed class LinuxCountersTests
             { new FileInfo("/sys/fs/cgroup/cpu/cpu.shares"), "1024"},
         });
 
-        var parser = new LinuxUtilizationParser(fileSystem: fileSystem, new FakeUserHz(100));
+        var parser = new LinuxUtilizationParserCgroupV1(fileSystem: fileSystem, new FakeUserHz(100));
         var provider = new LinuxUtilizationProvider(options, parser, meterFactoryMock.Object, TimeProvider.System);
 
         using var listener = new MeterListener
