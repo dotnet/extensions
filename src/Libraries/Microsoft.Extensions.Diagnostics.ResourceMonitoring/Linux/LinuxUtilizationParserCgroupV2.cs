@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -230,7 +231,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     public long GetMemoryUsageInBytesFromSlices(string pattern)
     {
         // In cgroup v2, we need to read memory usage from all slices, which are directories in /sys/fs/cgroup/*.slice.
-        string[] memoryUsageInBytesSlicesPath = _fileSystem.GetDirectoryNames("/sys/fs/cgroup/", pattern);
+        IReadOnlyCollection<string> memoryUsageInBytesSlicesPath = _fileSystem.GetDirectoryNames("/sys/fs/cgroup/", pattern);
 
         long memoryUsageInBytesTotal = 0;
 

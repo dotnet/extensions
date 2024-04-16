@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -22,7 +23,7 @@ internal sealed class OSFileSystem : IFileSystem
         return fileInfo.Exists;
     }
 
-    public string[] GetDirectoryNames(string directory, string pattern)
+    public IReadOnlyCollection<string> GetDirectoryNames(string directory, string pattern)
     {
         return Directory.GetDirectories(directory, pattern)
                 .ToArray();

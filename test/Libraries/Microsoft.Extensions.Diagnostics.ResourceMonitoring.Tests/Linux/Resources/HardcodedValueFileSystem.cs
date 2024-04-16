@@ -33,7 +33,7 @@ internal sealed class HardcodedValueFileSystem : IFileSystem
         return _fileContent.ContainsKey(fileInfo.FullName);
     }
 
-    public string[] GetDirectoryNames(string directory, string pattern)
+    public IReadOnlyCollection<string> GetDirectoryNames(string directory, string pattern)
     {
         return _fileContent.Keys
                 .Where(x => x.StartsWith(directory, StringComparison.OrdinalIgnoreCase))
