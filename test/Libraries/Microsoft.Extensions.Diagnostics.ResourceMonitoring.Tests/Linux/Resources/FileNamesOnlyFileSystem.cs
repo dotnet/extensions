@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Shared.Pools;
@@ -17,7 +18,7 @@ internal sealed class FileNamesOnlyFileSystem : IFileSystem
         return fileInfo.Exists;
     }
 
-    public string[] GetDirectoryNames(string directory, string pattern)
+    public IReadOnlyCollection<string> GetDirectoryNames(string directory, string pattern)
     {
         throw new NotSupportedException();
     }

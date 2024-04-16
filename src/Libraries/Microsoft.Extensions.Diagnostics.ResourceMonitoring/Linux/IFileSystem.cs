@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.Shared.Pools;
 
@@ -22,7 +23,7 @@ internal interface IFileSystem
     /// Get directory names on the filesystem based on the provided pattern.
     /// </summary>
     /// <returns>string.</returns>
-    string[] GetDirectoryNames(string directory, string pattern);
+    IReadOnlyCollection<string> GetDirectoryNames(string directory, string pattern);
 
     /// <summary>
     /// Reads content from the file.
