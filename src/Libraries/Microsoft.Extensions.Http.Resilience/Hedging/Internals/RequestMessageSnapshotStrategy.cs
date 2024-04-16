@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -25,10 +26,15 @@ internal sealed class RequestMessageSnapshotStrategy : ResilienceStrategy
             Throw.InvalidOperationException("The HTTP request message was not found in the resilience context.");
         }
 
-        using var snapshot = RequestMessageSnapshot.Create(request);
-
-        context.Properties.Set(ResilienceKeys.RequestSnapshot, snapshot);
-
-        return await callback(context, state).ConfigureAwait(context.ContinueOnCapturedContext);
+        try
+        {
+            using var snapshot = await RequestMessageSnapshot.CreateAsync(request).ConfigureAwait(context.ContinueOnCapturedContext);
+            context.Properties.Set(ResilienceKeys.RequestSnapshot, snapshot);
+            return await callback(context, state).ConfigureAwait(context.ContinueOnCapturedContext);
+        }
+        catch (IOException e)
+        {
+            return Outcome.FromException<TResult>(e);
+        }
     }
 }

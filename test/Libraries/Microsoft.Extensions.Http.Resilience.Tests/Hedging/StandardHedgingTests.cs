@@ -103,7 +103,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     }
 
     [Fact]
-    public void ActionGenerator_Ok()
+    public async Task ActionGenerator_Ok()
     {
         var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
         var generator = options.Hedging.ActionGenerator;
@@ -115,7 +115,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         generator.Invoking(g => g(args)).Should().Throw<InvalidOperationException>().WithMessage("Request message snapshot is not attached to the resilience context.");
 
         using var request = new HttpRequestMessage();
-        using var snapshot = RequestMessageSnapshot.Create(request);
+        using var snapshot = await RequestMessageSnapshot.CreateAsync(request).ConfigureAwait(false);
         primary.Properties.Set(ResilienceKeys.RequestSnapshot, snapshot);
         generator.Invoking(g => g(args)).Should().NotThrow();
     }

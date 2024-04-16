@@ -3,7 +3,9 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
@@ -88,26 +90,48 @@ public static partial class ResilienceHttpClientBuilderExtensions
                     Throw.InvalidOperationException("Request message snapshot is not attached to the resilience context.");
                 }
 
-                var requestMessage = snapshot.CreateRequestMessage();
-
-                // The secondary request message should use the action resilience context
-                requestMessage.SetResilienceContext(args.ActionContext);
-
-                // replace the request message
-                args.ActionContext.Properties.Set(ResilienceKeys.RequestMessage, requestMessage);
-
+                // if a routing strategy has been configured but it does not return the next route, then no more routes
+                // are availabe, stop hedging
+                Uri? route;
                 if (args.PrimaryContext.Properties.TryGetValue(ResilienceKeys.RoutingStrategy, out var routingPipeline))
                 {
-                    if (!routingPipeline.TryGetNextRoute(out var route))
+                    if (!routingPipeline.TryGetNextRoute(out route))
                     {
-                        // no routes left, stop hedging
                         return null;
                     }
-
-                    requestMessage.RequestUri = requestMessage.RequestUri!.ReplaceHost(route);
+                }
+                else
+                {
+                    route = null;
                 }
 
-                return () => args.Callback(args.ActionContext);
+                return async () =>
+                {
+                    Outcome<HttpResponseMessage>? actionResult = null;
+
+                    try
+                    {
+                        var requestMessage = await snapshot.CreateRequestMessageAsync().ConfigureAwait(false);
+
+                        // The secondary request message should use the action resilience context
+                        requestMessage.SetResilienceContext(args.ActionContext);
+
+                        // replace the request message
+                        args.ActionContext.Properties.Set(ResilienceKeys.RequestMessage, requestMessage);
+
+                        if (route != null)
+                        {
+                            // replace the RequestUri of the request per the routing strategy
+                            requestMessage.RequestUri = requestMessage.RequestUri!.ReplaceHost(route);
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        actionResult = Outcome.FromException<HttpResponseMessage>(e);
+                    }
+
+                    return actionResult ?? await args.Callback(args.ActionContext).ConfigureAwait(args.ActionContext.ContinueOnCapturedContext);
+                };
             };
         });
 
