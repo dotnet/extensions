@@ -111,7 +111,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
 
                     try
                     {
-                        var requestMessage = await snapshot.CreateRequestMessageAsync().ConfigureAwait(false);
+                        var requestMessage = await snapshot.CreateRequestMessageAsync().ConfigureAwait(args.ActionContext.ContinueOnCapturedContext);
 
                         // The secondary request message should use the action resilience context
                         requestMessage.SetResilienceContext(args.ActionContext);
