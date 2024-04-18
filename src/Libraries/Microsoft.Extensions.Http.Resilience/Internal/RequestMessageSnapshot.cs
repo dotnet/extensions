@@ -37,12 +37,12 @@ internal sealed class RequestMessageSnapshot : IResettable, IDisposable
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Past the point of no cancellation.")]
     public async Task<HttpRequestMessage> CreateRequestMessageAsync()
     {
-        if (IsReset())
+        if (!IsInitialized())
         {
-            throw new InvalidOperationException($"{nameof(CreateRequestMessageAsync)}() cannot be called on a snapshot object that has been reset and has not been initialized");
+            throw new InvalidOperationException($"{nameof(CreateRequestMessageAsync)}() cannot be called on a snapshot object that has been reset and/or has not been initialized");
         }
 
-        var clone = new HttpRequestMessage(_method!, _requestUri)
+        var clone = new HttpRequestMessage(_method!, _requestUri?.OriginalString)
         {
             Version = _version!
         };
@@ -135,9 +135,9 @@ internal sealed class RequestMessageSnapshot : IResettable, IDisposable
         return (content, clonedContent);
     }
 
-    private bool IsReset()
+    private bool IsInitialized()
     {
-        return _method == null;
+        return _method != null;
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Past the point of no cancellation.")]

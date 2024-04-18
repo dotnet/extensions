@@ -32,7 +32,7 @@ public class RequestMessageSnapshotStrategyTests
     }
 
     [Fact]
-    public void ExecuteAsync_requestMessageNotFound_Throws()
+    public void ExecuteAsync_RequestMessageNotFound_Throws()
     {
         var strategy = Create();
 

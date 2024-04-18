@@ -90,11 +90,12 @@ public static partial class ResilienceHttpClientBuilderExtensions
                     Throw.InvalidOperationException("Request message snapshot is not attached to the resilience context.");
                 }
 
-                // if a routing strategy has been configured but it does not return the next route, then no more routes
-                // are availabe, stop hedging
+                // if a routing strategy has been configured, get the next route from the routing strategy
                 Uri? route;
                 if (args.PrimaryContext.Properties.TryGetValue(ResilienceKeys.RoutingStrategy, out var routingPipeline))
                 {
+                    // if a routing strategy has been configured but it does not return the next route, then no more routes
+                    // are availabe, stop hedging
                     if (!routingPipeline.TryGetNextRoute(out route))
                     {
                         return null;
@@ -121,7 +122,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
 
                         if (route != null)
                         {
-                            // replace the RequestUri of the request per the routing strategy
+                            // replace the Host on the RequestUri of the request per the routing strategy
                             requestMessage.RequestUri = requestMessage.RequestUri!.ReplaceHost(route);
                         }
                     }

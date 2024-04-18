@@ -112,10 +112,15 @@ public class RequestMessageSnapshotTests : IDisposable
     [Fact]
     public async Task CreateRequestMessageAsync_SnapshotIsReset_ThrowsException()
     {
-        _requestMessage!.Method = HttpMethod.Get;
-        Assert.Null(_requestMessage.Content);
+        using var stream = new MemoryStream();
+        using var streamWriter = new StreamWriter(stream);
+        await streamWriter.WriteAsync("some stream content").ConfigureAwait(false);
+        await streamWriter.FlushAsync().ConfigureAwait(false);
+        stream.Position = 0;
+        _requestMessage!.Content = new StreamContent(stream);
         AddRequestHeaders(_requestMessage);
         AddRequestOptions(_requestMessage);
+        AddContentHeaders(_requestMessage!.Content);
         using RequestMessageSnapshot snapshot = await RequestMessageSnapshot.CreateAsync(_requestMessage).ConfigureAwait(false);
         ((IResettable)snapshot).TryReset();
         _ = await Assert.ThrowsAsync<InvalidOperationException>(snapshot.CreateRequestMessageAsync);
