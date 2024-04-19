@@ -17,7 +17,6 @@
     - [Building from Visual Studio Code](#building-from-visual-studio-code-1)
   - [Build outputs](#build-outputs)
   - [Troubleshooting build errors](#troubleshooting-build-errors)
-  - [\`\`\`](#)
 
 ## Introduction
 
@@ -157,10 +156,12 @@ This sets up necessary environmental variables and opens the repository in VS Co
   * you can do this in VS under Tools->Options->Environment->Preview Features->Use previews of the .Net Core SDK (Requires restart)
 * When restoring packages, if you get the following message: "The SSL connection could not be established, see inner exception. Unable to read data from the transport connection", try disabling IPv6 on your network adapter.
 * When the public API surface is updated, you need to update the API baselines manifest files for the impacted assemblies. [Here is an example](https://github.com/dotnet/extensions/blob/3e6ac0735cb62d4c8b63e131d956397a87ea26f7/src/Libraries/Microsoft.Extensions.AsyncState/Microsoft.Extensions.AsyncState.json) for the `Microsoft.Extensions.AsyncState` project. To update the manifest of all the local assemblies, invoke the script `./scripts/MakeApiBaselines.ps1`.
-```
+
+
 ---
 
 1. **"Solution"** means the collections of projects specified in `eng/build.proj` or an actual "sln" file at the root of the repository that represents the generated "filtered" solution (e.g., `SDK.sln`).
+
 
 [comment]: <> (URI Links)
 
