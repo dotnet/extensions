@@ -120,7 +120,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
                         // replace the request message
                         args.ActionContext.Properties.Set(ResilienceKeys.RequestMessage, requestMessage);
 
-                        if (route != null)
+                        if (route is not null)
                         {
                             // replace the Host on the RequestUri of the request per the routing strategy
                             requestMessage.RequestUri = requestMessage.RequestUri!.ReplaceHost(route);

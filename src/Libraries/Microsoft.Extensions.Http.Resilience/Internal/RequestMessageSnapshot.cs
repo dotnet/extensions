@@ -104,7 +104,7 @@ internal sealed class RequestMessageSnapshot : IResettable, IDisposable
     private static async Task<(HttpContent? content, HttpContent? clonedContent)> CloneContentAsync(HttpContent? content)
     {
         HttpContent? clonedContent = null;
-        if (content != null)
+        if (content is not null)
         {
             HttpContent originalContent = content;
             Stream originalRequestBody = await content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -137,7 +137,7 @@ internal sealed class RequestMessageSnapshot : IResettable, IDisposable
 
     private bool IsInitialized()
     {
-        return _method != null;
+        return _method is not null;
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Past the point of no cancellation.")]
