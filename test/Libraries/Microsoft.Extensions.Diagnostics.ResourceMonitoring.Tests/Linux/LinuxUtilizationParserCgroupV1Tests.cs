@@ -12,8 +12,8 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
-[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
-public sealed class LinuxUtilizationParserTests
+[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+public sealed class LinuxUtilizationParserCgroupV1Tests
 {
     [ConditionalTheory]
     [InlineData("DFIJEUWGHFWGBWEFWOMDOWKSLA")]
