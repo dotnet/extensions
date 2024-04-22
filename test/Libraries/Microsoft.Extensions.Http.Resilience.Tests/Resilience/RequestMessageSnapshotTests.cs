@@ -123,7 +123,7 @@ public class RequestMessageSnapshotTests : IDisposable
         AddContentHeaders(_requestMessage!.Content);
         using RequestMessageSnapshot snapshot = await RequestMessageSnapshot.CreateAsync(_requestMessage).ConfigureAwait(false);
         ((IResettable)snapshot).TryReset();
-        _ = await Assert.ThrowsAsync<InvalidOperationException>(snapshot.CreateRequestMessageAsync);
+        _ = await Assert.ThrowsAsync<InvalidOperationException>(async () => await snapshot.CreateRequestMessageAsync().ConfigureAwait(false));
     }
 
     public void Dispose()

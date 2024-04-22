@@ -25,7 +25,7 @@ internal sealed class RequestMessageSnapshot : IResettable, IDisposable
     private HttpContent? _content;
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Past the point of no cancellation.")]
-    public static async Task<RequestMessageSnapshot> CreateAsync(HttpRequestMessage request)
+    public static async ValueTask<RequestMessageSnapshot> CreateAsync(HttpRequestMessage request)
     {
         _ = Throw.IfNull(request);
 
@@ -35,7 +35,7 @@ internal sealed class RequestMessageSnapshot : IResettable, IDisposable
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Past the point of no cancellation.")]
-    public async Task<HttpRequestMessage> CreateRequestMessageAsync()
+    public async ValueTask<HttpRequestMessage> CreateRequestMessageAsync()
     {
         if (!IsInitialized())
         {
@@ -101,7 +101,7 @@ internal sealed class RequestMessageSnapshot : IResettable, IDisposable
     void IDisposable.Dispose() => _snapshots.Return(this);
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "Past the point of no cancellation.")]
-    private static async Task<(HttpContent? content, HttpContent? clonedContent)> CloneContentAsync(HttpContent? content)
+    private static async ValueTask<(HttpContent? content, HttpContent? clonedContent)> CloneContentAsync(HttpContent? content)
     {
         HttpContent? clonedContent = null;
         if (content is not null)
