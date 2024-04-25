@@ -144,45 +144,45 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>5111fdc0dc464f01647d6b6078342f451bf3a499</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="9.0.0-preview.5.24224.1">
+    <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="9.0.0-preview.5.24224.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>8333a5b3ed07e73eb9342d994988bd9527039f11</Sha>
+      <Sha>dc8119cc42e5c2c08a11824c559311bd24e83280</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="9.0.0-preview.5.24224.1">
+    <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="9.0.0-preview.5.24224.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>8333a5b3ed07e73eb9342d994988bd9527039f11</Sha>
+      <Sha>dc8119cc42e5c2c08a11824c559311bd24e83280</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0-preview.5.24224.1">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0-preview.5.24224.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>8333a5b3ed07e73eb9342d994988bd9527039f11</Sha>
+      <Sha>dc8119cc42e5c2c08a11824c559311bd24e83280</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="9.0.0-preview.5.24224.1">
+    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="9.0.0-preview.5.24224.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>8333a5b3ed07e73eb9342d994988bd9527039f11</Sha>
+      <Sha>dc8119cc42e5c2c08a11824c559311bd24e83280</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0-preview.5.24224.1">
+    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0-preview.5.24224.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>8333a5b3ed07e73eb9342d994988bd9527039f11</Sha>
+      <Sha>dc8119cc42e5c2c08a11824c559311bd24e83280</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="9.0.0-preview.5.24224.1">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="9.0.0-preview.5.24224.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>8333a5b3ed07e73eb9342d994988bd9527039f11</Sha>
+      <Sha>dc8119cc42e5c2c08a11824c559311bd24e83280</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.0-preview.5.24224.1">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.0-preview.5.24224.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>8333a5b3ed07e73eb9342d994988bd9527039f11</Sha>
+      <Sha>dc8119cc42e5c2c08a11824c559311bd24e83280</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Features" Version="9.0.0-preview.5.24224.1">
+    <Dependency Name="Microsoft.Extensions.Features" Version="9.0.0-preview.5.24224.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>8333a5b3ed07e73eb9342d994988bd9527039f11</Sha>
+      <Sha>dc8119cc42e5c2c08a11824c559311bd24e83280</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Http.Polly" Version="9.0.0-preview.5.24224.1">
+    <Dependency Name="Microsoft.Extensions.Http.Polly" Version="9.0.0-preview.5.24224.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>8333a5b3ed07e73eb9342d994988bd9527039f11</Sha>
+      <Sha>dc8119cc42e5c2c08a11824c559311bd24e83280</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="9.0.0-preview.5.24224.1">
+    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="9.0.0-preview.5.24224.7">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>8333a5b3ed07e73eb9342d994988bd9527039f11</Sha>
+      <Sha>dc8119cc42e5c2c08a11824c559311bd24e83280</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
