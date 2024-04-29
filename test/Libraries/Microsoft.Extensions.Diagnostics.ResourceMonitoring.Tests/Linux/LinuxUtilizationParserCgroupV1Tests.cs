@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
+using System.Threading.Tasks;
+using Microsoft.Shared.Pools;
 using Microsoft.TestUtilities;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
@@ -347,5 +349,47 @@ public sealed class LinuxUtilizationParserCgroupV1Tests
 
         Assert.IsAssignableFrom<InvalidOperationException>(r);
         Assert.Contains("/sys/fs/cgroup/cpu/cpu.shares", r.Message);
+    }
+
+    [ConditionalFact]
+    public async Task ThreadSafetyAsync()
+    {
+        var f1 = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/stat"), "cpu  6163 0 3853 4222848 614 0 1155 0 0 0\r\ncpu0 240 0 279 210987 59 0 927 0 0 0" },
+        });
+        var f2 = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/stat"), "cpu  9137 0 9296 13972503 1148 0 2786 0 0 0\r\ncpu0 297 0 431 698663 59 0 2513 0 0 0" },
+        });
+
+        int callCount = 0;
+        Mock<IFileSystem> fs = new();
+        fs.Setup(x => x.ReadFirstLine(It.IsAny<FileInfo>(), It.IsAny<BufferWriter<char>>()))
+             .Callback<FileInfo, BufferWriter<char>>((fileInfo, buffer) =>
+             {
+                 callCount++;
+                 if (callCount % 2 == 0)
+                 {
+                     f1.ReadFirstLine(fileInfo, buffer);
+                 }
+                 else
+                 {
+                     f2.ReadFirstLine(fileInfo, buffer);
+                 }
+             })
+             .Verifiable();
+
+        var p = new LinuxUtilizationParserCgroupV1(fs.Object, new FakeUserHz(100));
+
+        Task[] tasks = new Task[1_000];
+        for (int i = 0; i < tasks.Length; i++)
+        {
+            tasks[i] = Task.Run(p.GetHostCpuUsageInNanoseconds);
+        }
+
+        await Task.WhenAll(tasks);
+
+        Assert.True(true);
     }
 }
