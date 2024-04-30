@@ -252,6 +252,64 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         Assert.Equal("https://enpoint-3:80/some-path?query", Requests[2]);
     }
 
+    [Fact]
+    public async Task SendAsync_FailedConnect_ShouldReturnResponseFromHedging()
+    {
+        const string ClientName = "HedgingClient";
+
+        // TODO: use mocked request destinations
+
+        var services = new ServiceCollection();
+        var clientBuilder = services
+            .AddHttpClient(ClientName)
+            .ConfigurePrimaryHttpMessageHandler(() =>
+#if NETFRAMEWORK
+		new WinHttpHandler
+		{
+			SendTimeout = TimeSpan.FromSeconds(1),
+#else
+                new SocketsHttpHandler
+                {
+                    ConnectTimeout = TimeSpan.FromSeconds(1),
+                    SslOptions = new System.Net.Security.SslClientAuthenticationOptions
+                    {
+                        ClientCertificates = [],
+                        RemoteCertificateValidationCallback = (_, _, _, _) => true
+                    },
+#endif
+                })
+            .AddStandardHedgingHandler(routing =>
+                routing.ConfigureOrderedGroups(g =>
+                {
+                    g.Groups.Add(new UriEndpointGroup
+                    {
+                        Endpoints = [new WeightedUriEndpoint { Uri = new Uri("https://localhost:3000") }]
+                    });
+
+                    g.Groups.Add(new UriEndpointGroup
+                    {
+                        Endpoints = [new WeightedUriEndpoint { Uri = new Uri("https://microsoft.com") }]
+                    });
+                }))
+            .Configure(opt =>
+            {
+                opt.Hedging.MaxHedgedAttempts = 10;
+                opt.Hedging.Delay = TimeSpan.FromSeconds(11);
+                opt.Endpoint.CircuitBreaker.FailureRatio = 0.99;
+                opt.Endpoint.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(900);
+                opt.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(200);
+                opt.Endpoint.Timeout.Timeout = TimeSpan.FromSeconds(200);
+            });
+
+        using var provider = services.BuildServiceProvider();
+        var clientFactory = provider.GetRequiredService<IHttpClientFactory>();
+        using var client = clientFactory.CreateClient(ClientName);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+
+        var ex = await Record.ExceptionAsync(() => client.GetAsync("https://localhost:3000", cts.Token));
+        Assert.Null(ex);
+    }
+
     protected void AssertNoResponse() => Assert.Empty(_responses);
 
     protected void AddResponse(HttpStatusCode statusCode) => AddResponse(statusCode, 1);

@@ -6,6 +6,7 @@ using System.Net.Http;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 using Polly.CircuitBreaker;
+using Polly.Hedging;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
@@ -18,12 +19,22 @@ public static class HttpClientHedgingResiliencePredicates
     /// Determines whether an outcome should be treated by hedging as a transient failure.
     /// </summary>
     /// <returns><see langword="true"/> if outcome is transient, <see langword="false"/> if not.</returns>
-    public static bool IsTransient(Outcome<HttpResponseMessage> outcome) => outcome switch
-    {
-        { Result: { } response } when HttpClientResiliencePredicates.IsTransientHttpFailure(response) => true,
-        { Exception: { } exception } when IsTransientHttpException(exception) => true,
-        _ => false,
-    };
+    public static bool IsTransient(Outcome<HttpResponseMessage> outcome)
+        => outcome switch
+        {
+            { Result: { } response } when HttpClientResiliencePredicates.IsTransientHttpFailure(response) => true,
+            { Exception: { } exception } when IsTransientHttpException(exception) => true,
+            _ => false,
+        };
+
+    internal static bool IsTransient(HedgingPredicateArguments<HttpResponseMessage> args)
+        => IsConnectionTimeout(args)
+        || IsTransient(args.Outcome);
+
+    internal static bool IsConnectionTimeout(HedgingPredicateArguments<HttpResponseMessage> args)
+        => !args.Context.CancellationToken.IsCancellationRequested
+        && args.Outcome.Exception is OperationCanceledException { Source: "System.Private.CoreLib" }
+        && args.Outcome.Exception.InnerException is TimeoutException;
 
     /// <summary>
     /// Determines whether an exception should be treated by hedging as a transient failure.
@@ -35,8 +46,7 @@ public static class HttpClientHedgingResiliencePredicates
         return exception switch
         {
             BrokenCircuitException => true,
-            _ when HttpClientResiliencePredicates.IsTransientHttpException(exception) => true,
-            _ => false,
+            _ => HttpClientResiliencePredicates.IsTransientHttpException(exception),
         };
     }
 }
