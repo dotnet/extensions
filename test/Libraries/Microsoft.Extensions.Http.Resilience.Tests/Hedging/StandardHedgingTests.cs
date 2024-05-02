@@ -62,7 +62,8 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     {
         Builder.Configure(o => o.Hedging.MaxHedgedAttempts = 8);
 
-        var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
+        using var serviceProvider = Builder.Services.BuildServiceProvider();
+        var options = serviceProvider.GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
 
         Assert.Equal(8, options.Hedging.MaxHedgedAttempts);
     }
@@ -76,7 +77,8 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
             o.Hedging.MaxHedgedAttempts = 8;
         });
 
-        var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
+        using var serviceProvider = Builder.Services.BuildServiceProvider();
+        var options = serviceProvider.GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
 
         Assert.Equal(8, options.Hedging.MaxHedgedAttempts);
     }
@@ -97,7 +99,8 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
 
         Builder.Configure(section);
 
-        var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
+        using var serviceProvider = Builder.Services.BuildServiceProvider();
+        var options = serviceProvider.GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
 
         Assert.Equal(8, options.Hedging.MaxHedgedAttempts);
     }
@@ -105,7 +108,8 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     [Fact]
     public void ActionGenerator_Ok()
     {
-        var options = Builder.Services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
+        using var serviceProvider = Builder.Services.BuildServiceProvider();
+        var options = serviceProvider.GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>().Get(Builder.Name);
         var generator = options.Hedging.ActionGenerator;
         var primary = ResilienceContextPool.Shared.Get();
         var secondary = ResilienceContextPool.Shared.Get();
@@ -133,9 +137,12 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         Builder.Configure(section);
 
         Assert.Throws<InvalidOperationException>(() =>
-            Builder.Services.BuildServiceProvider()
-            .GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>()
-            .Get(Builder.Name));
+        {
+            using var serviceProvider = Builder.Services.BuildServiceProvider();
+            return serviceProvider
+                    .GetRequiredService<IOptionsMonitor<HttpStandardHedgingResilienceOptions>>()
+                    .Get(Builder.Name);
+        });
     }
 #endif
 
@@ -163,7 +170,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     [Fact]
     public void VerifyPipeline()
     {
-        var serviceProvider = Builder.Services.BuildServiceProvider();
+        using var serviceProvider = Builder.Services.BuildServiceProvider();
         var pipelineProvider = serviceProvider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
 
         // primary handler
@@ -209,7 +216,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://key:80/discarded");
         AddResponse(HttpStatusCode.OK);
 
-        var response = await client.SendAsync(request, CancellationToken.None);
+        using var response = await client.SendAsync(request, CancellationToken.None);
 
         provider.VerifyAll();
     }
@@ -235,14 +242,14 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         // act && assert
         AddResponse(HttpStatusCode.InternalServerError, 3);
         using var firstRequest = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
-        await client.SendAsync(firstRequest);
+        using var _ = await client.SendAsync(firstRequest);
         AssertNoResponse();
 
         reloadAction(new() { { "standard:Hedging:MaxHedgedAttempts", "6" } });
 
         AddResponse(HttpStatusCode.InternalServerError, 7);
         using var secondRequest = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
-        await client.SendAsync(secondRequest);
+        using var __ = await client.SendAsync(secondRequest);
         AssertNoResponse();
     }
 
@@ -257,11 +264,77 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         // act && assert
         AddResponse(HttpStatusCode.InternalServerError, 3);
         using var firstRequest = new HttpRequestMessage(HttpMethod.Get, "https://some-endpoint:1234/some-path?query");
-        await client.SendAsync(firstRequest);
+        using var _ = await client.SendAsync(firstRequest);
         AssertNoResponse();
 
         Requests.Should().AllSatisfy(r => r.Should().Be("https://some-endpoint:1234/some-path?query"));
     }
 
+    [Fact]
+    public async Task SendAsync_FailedConnect_ShouldReturnResponseFromHedging()
+    {
+        const string FailingEndpoint = "www.failing-host.com";
+
+        var services = new ServiceCollection();
+        var clientBuilder = services
+            .AddHttpClient(ClientId)
+            .ConfigurePrimaryHttpMessageHandler(() => new MockHttpMessageHandler(FailingEndpoint))
+            .AddStandardHedgingHandler(routing =>
+                routing.ConfigureOrderedGroups(g =>
+                {
+                    g.Groups.Add(new UriEndpointGroup
+                    {
+                        Endpoints = [new WeightedUriEndpoint { Uri = new Uri($"https://{FailingEndpoint}:3000") }]
+                    });
+
+                    g.Groups.Add(new UriEndpointGroup
+                    {
+                        Endpoints = [new WeightedUriEndpoint { Uri = new Uri("https://microsoft.com") }]
+                    });
+                }))
+            .Configure(opt =>
+            {
+                opt.Hedging.MaxHedgedAttempts = 10;
+                opt.Hedging.Delay = TimeSpan.FromSeconds(11);
+                opt.Endpoint.CircuitBreaker.FailureRatio = 0.99;
+                opt.Endpoint.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(900);
+                opt.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(200);
+                opt.Endpoint.Timeout.Timeout = TimeSpan.FromSeconds(200);
+            });
+
+        using var provider = services.BuildServiceProvider();
+        var clientFactory = provider.GetRequiredService<IHttpClientFactory>();
+        using var client = clientFactory.CreateClient(ClientId);
+
+        var ex = await Record.ExceptionAsync(async () =>
+        {
+            using var _ = await client.GetAsync($"https://{FailingEndpoint}:3000");
+        });
+
+        Assert.Null(ex);
+    }
+
     protected override void ConfigureHedgingOptions(Action<HttpHedgingStrategyOptions> configure) => Builder.Configure(options => configure(options.Hedging));
+
+    private class MockHttpMessageHandler : HttpMessageHandler
+    {
+        private readonly string _failingEndpoint;
+
+        public MockHttpMessageHandler(string failingEndpoint)
+        {
+            _failingEndpoint = failingEndpoint;
+        }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (request.RequestUri?.Host == _failingEndpoint)
+            {
+                await Task.Delay(100, cancellationToken);
+                throw new OperationCanceledExceptionMock(new TimeoutException());
+            }
+
+            await Task.Delay(1000, cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+    }
 }

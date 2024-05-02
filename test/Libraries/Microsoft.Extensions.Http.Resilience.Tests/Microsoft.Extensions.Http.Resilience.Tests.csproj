@@ -4,11 +4,6 @@
     <Description>Unit tests for Microsoft.Extensions.Http.Resilience.</Description>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net462' ">
-    <!-- See https://github.com/dotnet/extensions/issues/4531 -->
-    <SkipTests>true</SkipTests>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Update="configs\appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
