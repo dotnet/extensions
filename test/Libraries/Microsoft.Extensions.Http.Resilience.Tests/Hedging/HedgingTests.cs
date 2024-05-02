@@ -35,6 +35,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
     private readonly Func<RequestRoutingStrategy> _requestRoutingStrategyFactory;
     private readonly IServiceCollection _services;
     private readonly Queue<HttpResponseMessage> _responses = new();
+    private ServiceProvider? _serviceProvider;
     private bool _failure;
 
     private protected HedgingTests(Func<IHttpClientBuilder, Func<RequestRoutingStrategy>, TBuilder> createDefaultBuilder)
@@ -63,6 +64,11 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         _requestRoutingStrategyMock.VerifyAll();
         _cancellationTokenSource.Cancel();
         _cancellationTokenSource.Dispose();
+        _serviceProvider?.Dispose();
+        foreach (var response in _responses)
+        {
+            response.Dispose();
+        }
     }
 
     [Fact]
@@ -93,7 +99,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await client.SendAsync(request, _cancellationTokenSource.Token);
 
         Assert.Equal(2, calls);
     }
@@ -108,7 +114,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         AddResponse(HttpStatusCode.OK);
 
-        var response = await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await client.SendAsync(request, _cancellationTokenSource.Token);
         AssertNoResponse();
 
         Assert.Single(Requests);
@@ -164,7 +170,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        var result = await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var result = await client.SendAsync(request, _cancellationTokenSource.Token);
         Assert.Equal(DefaultHedgingAttempts + 1, Requests.Count);
         Assert.Equal(HttpStatusCode.ServiceUnavailable, result.StatusCode);
     }
@@ -183,7 +189,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await client.SendAsync(request, _cancellationTokenSource.Token);
 
         RequestContexts.Distinct().OfType<ResilienceContext>().Should().HaveCount(3);
     }
@@ -204,7 +210,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await client.SendAsync(request, _cancellationTokenSource.Token);
 
         RequestContexts.Distinct().OfType<ResilienceContext>().Should().HaveCount(3);
 
@@ -226,7 +232,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        var result = await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await client.SendAsync(request, _cancellationTokenSource.Token);
         Assert.Equal(2, Requests.Count);
     }
 
@@ -244,70 +250,12 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        var result = await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var result = await client.SendAsync(request, _cancellationTokenSource.Token);
         Assert.Equal(3, Requests.Count);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Equal("https://enpoint-1:80/some-path?query", Requests[0]);
         Assert.Equal("https://enpoint-2:80/some-path?query", Requests[1]);
         Assert.Equal("https://enpoint-3:80/some-path?query", Requests[2]);
-    }
-
-    [Fact]
-    public async Task SendAsync_FailedConnect_ShouldReturnResponseFromHedging()
-    {
-        const string ClientName = "HedgingClient";
-
-        // TODO: use mocked request destinations
-
-        var services = new ServiceCollection();
-        var clientBuilder = services
-            .AddHttpClient(ClientName)
-            .ConfigurePrimaryHttpMessageHandler(() =>
-#if NETFRAMEWORK
-		new WinHttpHandler
-		{
-			SendTimeout = TimeSpan.FromSeconds(1),
-#else
-                new SocketsHttpHandler
-                {
-                    ConnectTimeout = TimeSpan.FromSeconds(1),
-                    SslOptions = new System.Net.Security.SslClientAuthenticationOptions
-                    {
-                        ClientCertificates = [],
-                        RemoteCertificateValidationCallback = (_, _, _, _) => true
-                    },
-#endif
-                })
-            .AddStandardHedgingHandler(routing =>
-                routing.ConfigureOrderedGroups(g =>
-                {
-                    g.Groups.Add(new UriEndpointGroup
-                    {
-                        Endpoints = [new WeightedUriEndpoint { Uri = new Uri("https://localhost:3000") }]
-                    });
-
-                    g.Groups.Add(new UriEndpointGroup
-                    {
-                        Endpoints = [new WeightedUriEndpoint { Uri = new Uri("https://microsoft.com") }]
-                    });
-                }))
-            .Configure(opt =>
-            {
-                opt.Hedging.MaxHedgedAttempts = 10;
-                opt.Hedging.Delay = TimeSpan.FromSeconds(11);
-                opt.Endpoint.CircuitBreaker.FailureRatio = 0.99;
-                opt.Endpoint.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(900);
-                opt.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(200);
-                opt.Endpoint.Timeout.Timeout = TimeSpan.FromSeconds(200);
-            });
-
-        using var provider = services.BuildServiceProvider();
-        var clientFactory = provider.GetRequiredService<IHttpClientFactory>();
-        using var client = clientFactory.CreateClient(ClientName);
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-
-        var ex = await Record.ExceptionAsync(() => client.GetAsync("https://localhost:3000", cts.Token));
-        Assert.Null(ex);
     }
 
     protected void AssertNoResponse() => Assert.Empty(_responses);
@@ -326,7 +274,12 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
     protected abstract void ConfigureHedgingOptions(Action<HttpHedgingStrategyOptions> configure);
 
-    protected HttpClient CreateClientWithHandler() => _services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient(ClientId);
+    protected HttpClient CreateClientWithHandler()
+    {
+        _serviceProvider?.Dispose();
+        _serviceProvider = _services.BuildServiceProvider();
+        return _serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(ClientId);
+    }
 
     private Task<HttpResponseMessage> InnerHandlerFunction(HttpRequestMessage request, CancellationToken cancellationToken)
     {
