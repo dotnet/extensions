@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 using Polly.CircuitBreaker;
@@ -27,7 +29,13 @@ public static class HttpClientHedgingResiliencePredicates
             _ => false,
         };
 
-    internal static bool IsTransient(HedgingPredicateArguments<HttpResponseMessage> args)
+    /// <summary>
+    /// Determines whether an <see cref="HttpResponseMessage"/> should be treated by hedging as a transient failure.
+    /// </summary>
+    /// <param name="args">A <see cref="HedgingPredicateArguments{T}"/>.</param>
+    /// <returns><see langword="true"/> if outcome is transient, <see langword="false"/> if not.</returns>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static bool IsTransient(HedgingPredicateArguments<HttpResponseMessage> args)
         => IsConnectionTimeout(args)
         || IsTransient(args.Outcome);
 
