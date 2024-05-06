@@ -46,7 +46,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     {
         Builder.Configure(options => options.Hedging.MaxHedgedAttempts = -1);
 
-        Assert.Throws<OptionsValidationException>(() => CreateClientWithHandler());
+        Assert.Throws<OptionsValidationException>(CreateClientWithHandler);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
     {
         Builder.Configure(options => options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(1));
 
-        Assert.Throws<OptionsValidationException>(() => CreateClientWithHandler());
+        Assert.Throws<OptionsValidationException>(CreateClientWithHandler);
     }
 
     [Fact]
@@ -276,7 +276,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         const string FailingEndpoint = "www.failing-host.com";
 
         var services = new ServiceCollection();
-        var clientBuilder = services
+        _ = services
             .AddHttpClient(ClientId)
             .ConfigurePrimaryHttpMessageHandler(() => new MockHttpMessageHandler(FailingEndpoint))
             .AddStandardHedgingHandler(routing =>
@@ -302,7 +302,7 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
                 opt.Endpoint.Timeout.Timeout = TimeSpan.FromSeconds(200);
             });
 
-        using var provider = services.BuildServiceProvider();
+        await using var provider = services.BuildServiceProvider();
         var clientFactory = provider.GetRequiredService<IHttpClientFactory>();
         using var client = clientFactory.CreateClient(ClientId);
 
@@ -316,18 +316,11 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
 
     protected override void ConfigureHedgingOptions(Action<HttpHedgingStrategyOptions> configure) => Builder.Configure(options => configure(options.Hedging));
 
-    private class MockHttpMessageHandler : HttpMessageHandler
+    private class MockHttpMessageHandler(string failingEndpoint) : HttpMessageHandler
     {
-        private readonly string _failingEndpoint;
-
-        public MockHttpMessageHandler(string failingEndpoint)
-        {
-            _failingEndpoint = failingEndpoint;
-        }
-
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (request.RequestUri?.Host == _failingEndpoint)
+            if (request.RequestUri?.Host == failingEndpoint)
             {
                 await Task.Delay(100, cancellationToken);
                 throw new OperationCanceledExceptionMock(new TimeoutException());
