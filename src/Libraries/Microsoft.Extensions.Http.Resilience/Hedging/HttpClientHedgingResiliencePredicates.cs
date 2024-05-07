@@ -4,11 +4,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Threading;
 using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 using Polly.CircuitBreaker;
-using Polly.Hedging;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
@@ -20,6 +20,7 @@ public static class HttpClientHedgingResiliencePredicates
     /// <summary>
     /// Determines whether an outcome should be treated by hedging as a transient failure.
     /// </summary>
+    /// <param name="outcome">The outcome of the user-specified callback.</param>
     /// <returns><see langword="true"/> if outcome is transient, <see langword="false"/> if not.</returns>
     public static bool IsTransient(Outcome<HttpResponseMessage> outcome)
         => outcome switch
@@ -32,17 +33,18 @@ public static class HttpClientHedgingResiliencePredicates
     /// <summary>
     /// Determines whether an <see cref="HttpResponseMessage"/> should be treated by hedging as a transient failure.
     /// </summary>
-    /// <param name="args">A <see cref="HedgingPredicateArguments{T}"/>.</param>
+    /// <param name="outcome">The outcome of the user-specified callback.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> associated with the execution.</param>
     /// <returns><see langword="true"/> if outcome is transient, <see langword="false"/> if not.</returns>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
-    public static bool IsTransient(HedgingPredicateArguments<HttpResponseMessage> args)
-        => IsConnectionTimeout(args)
-        || IsTransient(args.Outcome);
+    public static bool IsTransient(Outcome<HttpResponseMessage> outcome, CancellationToken cancellationToken)
+        => IsConnectionTimeout(outcome, cancellationToken)
+        || IsTransient(outcome);
 
-    internal static bool IsConnectionTimeout(HedgingPredicateArguments<HttpResponseMessage> args)
-        => !args.Context.CancellationToken.IsCancellationRequested
-        && args.Outcome.Exception is OperationCanceledException { Source: "System.Private.CoreLib" }
-        && args.Outcome.Exception.InnerException is TimeoutException;
+    internal static bool IsConnectionTimeout(in Outcome<HttpResponseMessage> outcome, in CancellationToken cancellationToken)
+        => !cancellationToken.IsCancellationRequested
+        && outcome.Exception is OperationCanceledException { Source: "System.Private.CoreLib" }
+        && outcome.Exception.InnerException is TimeoutException;
 
     /// <summary>
     /// Determines whether an exception should be treated by hedging as a transient failure.
