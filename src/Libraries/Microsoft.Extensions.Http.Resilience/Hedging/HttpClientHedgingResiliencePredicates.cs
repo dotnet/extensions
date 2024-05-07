@@ -38,13 +38,8 @@ public static class HttpClientHedgingResiliencePredicates
     /// <returns><see langword="true"/> if outcome is transient, <see langword="false"/> if not.</returns>
     [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
     public static bool IsTransient(Outcome<HttpResponseMessage> outcome, CancellationToken cancellationToken)
-        => IsConnectionTimeout(outcome, cancellationToken)
-        || IsTransient(outcome);
-
-    internal static bool IsConnectionTimeout(in Outcome<HttpResponseMessage> outcome, in CancellationToken cancellationToken)
-        => !cancellationToken.IsCancellationRequested
-        && outcome.Exception is OperationCanceledException { Source: "System.Private.CoreLib" }
-        && outcome.Exception.InnerException is TimeoutException;
+        => HttpClientResiliencePredicates.IsHttpConnectionTimeout(outcome, cancellationToken)
+           || IsTransient(outcome);
 
     /// <summary>
     /// Determines whether an exception should be treated by hedging as a transient failure.
