@@ -128,7 +128,7 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
 
         AddStandardResilienceHandler(mode, builder, _invalidConfigurationSection, options => { });
 
-        Assert.Throws<InvalidOperationException>(() => HttpClientBuilderExtensionsTests.GetPipeline(builder.Services, $"test-standard"));
+        Assert.Throws<InvalidOperationException>(() => HttpClientBuilderExtensionsTests.GetPipeline(builder.Services, "test-standard"));
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
             }
         });
 
-        Assert.Throws<OptionsValidationException>(() => GetPipeline(builder.Services, $"test-standard"));
+        Assert.Throws<OptionsValidationException>(() => GetPipeline(builder.Services, "test-standard"));
     }
 
     [InlineData(MethodArgs.None)]
@@ -193,7 +193,7 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
 
         AddStandardResilienceHandler(mode, builder, _validConfigurationSection, options => { });
 
-        var pipeline = GetPipeline(builder.Services, $"test-standard");
+        var pipeline = GetPipeline(builder.Services, "test-standard");
         Assert.NotNull(pipeline);
     }
 
