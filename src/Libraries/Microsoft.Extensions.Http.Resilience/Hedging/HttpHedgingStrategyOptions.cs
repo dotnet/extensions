@@ -16,11 +16,11 @@ public class HttpHedgingStrategyOptions : HedgingStrategyOptions<HttpResponseMes
     /// Initializes a new instance of the <see cref="HttpHedgingStrategyOptions"/> class.
     /// </summary>
     /// <remarks>
-    /// By default the options is set to handle only transient failures,
+    /// By default, the options is set to handle only transient failures,
     /// i.e. timeouts, 5xx responses and <see cref="HttpRequestException"/> exceptions.
     /// </remarks>
     public HttpHedgingStrategyOptions()
     {
-        ShouldHandle = args => new ValueTask<bool>(HttpClientHedgingResiliencePredicates.IsTransient(args.Outcome));
+        ShouldHandle = args => new ValueTask<bool>(HttpClientHedgingResiliencePredicates.IsTransient(args.Outcome, args.Context.CancellationToken));
     }
 }
