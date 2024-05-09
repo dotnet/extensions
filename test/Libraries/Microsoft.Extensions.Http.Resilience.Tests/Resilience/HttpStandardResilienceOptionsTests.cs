@@ -9,12 +9,7 @@ namespace Microsoft.Extensions.Http.Resilience.Test.Resilience;
 
 public class HttpStandardResilienceOptionsTests
 {
-    private readonly HttpStandardResilienceOptions _options;
-
-    public HttpStandardResilienceOptionsTests()
-    {
-        _options = new HttpStandardResilienceOptions();
-    }
+    private readonly HttpStandardResilienceOptions _options = new();
 
     [Fact]
     public void Ctor_EnsureDefaults()
