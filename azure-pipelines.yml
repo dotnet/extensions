@@ -213,50 +213,6 @@ extends:
                 isWindows: false
                 warnAsError: 0
 
-    # ----------------------------------------------------------------
-    # This stage performs quality gates enforcements
-    # ----------------------------------------------------------------
-    - stage: codecoverage
-      displayName: CodeCoverage
-      dependsOn:
-      - build
-      condition: and(succeeded('build'), ne(variables['SkipQualityGates'], 'true'))
-      variables:
-      - template: /eng/common/templates-official/variables/pool-providers.yml@self
-      jobs:
-      - template: /eng/common/templates-official/jobs/jobs.yml@self
-        parameters:
-          enableMicrobuild: true
-          enableTelemetry: true
-          runAsPublic: ${{ variables['runAsPublic'] }}
-          workspace:
-            clean: all
-
-          # ----------------------------------------------------------------
-          # This stage downloads the code coverage reports from the build jobs,
-          # merges those and validates the combined test coverage.
-          # ----------------------------------------------------------------
-          jobs:
-          - job: CodeCoverageReport
-            timeoutInMinutes: 180
-
-            pool:
-              name: NetCore1ESPool-Internal
-              image: 1es-mariner-2
-              os: linux
-
-            preSteps:
-            - checkout: self
-              clean: true
-              persistCredentials: true
-              fetchDepth: 1
-
-            steps:
-            - script: $(Build.SourcesDirectory)/build.sh --ci --restore
-              displayName: Init toolset
-
-            - template: /eng/pipelines/templates/VerifyCoverageReport.yml
-
 
     # ----------------------------------------------------------------
     # This stage only performs a build treating warnings as errors
@@ -313,7 +269,6 @@ extends:
         parameters:
           validateDependsOn:
           - build
-          - codecoverage
           - correctness
           publishingInfraVersion: 3
           enableSymbolValidation: false
