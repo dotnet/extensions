@@ -37,10 +37,10 @@
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="$(MicrosoftExtensionsPrimitivesVersion)" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageVersion Include="Polly" Version="8.3.0" />
-    <PackageVersion Include="Polly.Core" Version="8.3.0" />
-    <PackageVersion Include="Polly.Extensions" Version="8.3.0" />
-    <PackageVersion Include="Polly.RateLimiting" Version="8.3.0" />
+    <PackageVersion Include="Polly" Version="8.4.0" />
+    <PackageVersion Include="Polly.Core" Version="8.4.0" />
+    <PackageVersion Include="Polly.Extensions" Version="8.4.0" />
+    <PackageVersion Include="Polly.RateLimiting" Version="8.4.0" />
     <PackageVersion Include="System.Buffers" Version="4.5.1" />
     <PackageVersion Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
     <PackageVersion Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
