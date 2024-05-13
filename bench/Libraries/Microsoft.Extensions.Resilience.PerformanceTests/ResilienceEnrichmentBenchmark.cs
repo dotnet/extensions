@@ -40,7 +40,7 @@ public class ResilienceEnrichmentBenchmark
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddExceptionSummarizer();
-        services.AddResiliencePipeline("my-pipeline", builder => builder.AddStrategy(context => new DummyStrategy(context.Telemetry), new DummyOptions()));
+        services.AddResiliencePipeline("my-pipeline", builder => builder.AddStrategy(context => new DummyStrategy(context.Telemetry)));
         services.AddLogging();
         configure(services);
 
@@ -65,9 +65,5 @@ public class ResilienceEnrichmentBenchmark
 
             return callback(context, state);
         }
-    }
-
-    private sealed class DummyOptions : ResilienceStrategyOptions
-    {
     }
 }
