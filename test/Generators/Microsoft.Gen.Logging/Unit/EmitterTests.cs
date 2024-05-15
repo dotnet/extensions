@@ -49,7 +49,7 @@ public class EmitterTests
             },
             sources,
             symbols)
-            .ConfigureAwait(false);
+;
 
         // we need this "Where()" hack because Roslyn 4.0 doesn't recognize #pragma warning disable for generator-produced warnings
 #pragma warning disable S1067 // Expressions should not be too complex

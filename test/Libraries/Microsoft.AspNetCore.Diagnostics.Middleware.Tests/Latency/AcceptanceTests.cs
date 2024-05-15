@@ -56,7 +56,7 @@ public class AcceptanceTests
                         latencyContext.SetTag(tokenIssuer.GetTagToken(tagName), tagValue);
                         latencyContext.RecordMeasure(tokenIssuer.GetMeasureToken(measureName), measureValue);
                         await Task.Delay(taskTimeMs + 10); // Adding 10 ms buffer
-                        await next.Invoke().ConfigureAwait(false);
+                        await next.Invoke();
 
                         var ld = latencyContext!.LatencyData;
                         Assert.True(IsMatchByName(ld.Checkpoints, (c) => c.Name == checkpointName));
@@ -73,9 +73,9 @@ public class AcceptanceTests
                         });
                     });
                 }))
-            .StartAsync().ConfigureAwait(false);
+            .StartAsync();
 
-        _ = await host.GetTestClient().GetAsync("/").ConfigureAwait(false);
+        _ = await host.GetTestClient().GetAsync("/");
         await host.StopAsync();
 
         Assert.True(isInLambda);
