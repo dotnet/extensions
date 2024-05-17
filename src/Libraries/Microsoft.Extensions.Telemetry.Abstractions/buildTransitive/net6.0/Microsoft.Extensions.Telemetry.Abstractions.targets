@@ -2,30 +2,15 @@
   <!-- This package should replace the Microsoft.Extensions.Logging.Abstractions source generator. -->
   <Target Name="_Microsoft_Extensions_Logging_AbstractionsRemoveAnalyzers"
           Condition="'$(DisableMicrosoftExtensionsLoggingSourceGenerator)' == 'true'"
-          AfterTargets="ResolveReferences">
+          BeforeTargets="CoreCompile">
     <ItemGroup>
-      <_Microsoft_Extensions_Logging_AbstractionsAnalyzer Include="@(Analyzer)" Condition="'%(Analyzer.AssemblyName)' == 'Microsoft.Extensions.Logging.Generators' Or
-                                                                                           '%(Analyzer.NuGetPackageId)' == 'Microsoft.Extensions.Logging.Abstractions'" />
+      <_Microsoft_Extensions_Logging_AbstractionsAnalyzer Include="@(Analyzer)" Condition="'%(Analyzer.Filename)' == 'Microsoft.Extensions.Logging.Generators' Or
+                                                                                           '%(Analyzer.Filename)' == 'Microsoft.Extensions.Logging.Abstractions'" />
     </ItemGroup>
 
     <!-- Remove Microsoft.Extensions.Logging.Abstractions Analyzer -->
     <ItemGroup>
       <Analyzer Remove="@(_Microsoft_Extensions_Logging_AbstractionsAnalyzer)" />
-    </ItemGroup>
-  </Target>
-  <Target Name="_Microsoft_Extensions_Logging_AbstractionsRemoveAnalyzersWPF"
-          Condition="'$(DisableMicrosoftExtensionsLoggingSourceGenerator)' == 'true'"
-          BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <_Microsoft_Extensions_Logging_AbstractionsAnalyzerWPF
-        Include="@(Analyzer)"
-        <_Microsoft_Extensions_Logging_AbstractionsAnalyzer Include="@(Analyzer)" Condition="'%(Analyzer.Filename)' == 'Microsoft.Extensions.Logging.Generators' Or
-                   '%(Analyzer.Filename)' == 'Microsoft.Extensions.Logging.Abstractions'" />
-    </ItemGroup>
-
-    <!-- Remove Microsoft.Extensions.Logging.Abstractions Analyzer for WPF projects -->
-    <ItemGroup>
-      <Analyzer Remove="@(_Microsoft_Extensions_Logging_AbstractionsAnalyzerWPF)" />
     </ItemGroup>
   </Target>
 </Project>
