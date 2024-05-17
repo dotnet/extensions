@@ -15,12 +15,12 @@
   </Target>
   <Target Name="_Microsoft_Extensions_Logging_AbstractionsRemoveAnalyzersWPF"
           Condition="'$(DisableMicrosoftExtensionsLoggingSourceGenerator)' == 'true'"
-          AfterTargets="RemoveDuplicateAnalyzers">
+          BeforeTargets="CoreCompile">
     <ItemGroup>
       <_Microsoft_Extensions_Logging_AbstractionsAnalyzerWPF
         Include="@(Analyzer)"
-        Condition="'%(Analyzer.NuGetPackageId)' == 'Microsoft.Extensions.Logging.Abstractions' Or
-                   '%(Analyzer.AssemblyName)' == 'Microsoft.Extensions.Logging.Generators'" />
+        <_Microsoft_Extensions_Logging_AbstractionsAnalyzer Include="@(Analyzer)" Condition="'%(Analyzer.Filename)' == 'Microsoft.Extensions.Logging.Generators' Or
+                   '%(Analyzer.Filename)' == 'Microsoft.Extensions.Logging.Abstractions'" />
     </ItemGroup>
 
     <!-- Remove Microsoft.Extensions.Logging.Abstractions Analyzer for WPF projects -->
