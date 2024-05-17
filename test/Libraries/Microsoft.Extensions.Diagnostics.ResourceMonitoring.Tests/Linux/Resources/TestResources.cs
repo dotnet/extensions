@@ -15,17 +15,23 @@ internal sealed class TestResources : IDisposable
     private static readonly Dictionary<string, string> _files = new(StringComparer.OrdinalIgnoreCase)
     {
         { "/sys/fs/cgroup/cpu/cpu.shares", ""},
-        { "/sys/fs/cgroup/cpuset/cpuset.cpus", "0-1"},
         { "/sys/fs/cgroup/memory/memory.limit_in_bytes", "1024"},
+        { "/sys/fs/cgroup/memory/memory.max", "1024"},
         { "/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "1"},
         { "/sys/fs/cgroup/cpu/cpu.cfs_period_us", "1" },
+        { "/sys/fs/cgroup/cpu.max", "1"},
         { "/proc/meminfo", "MemTotal:       1 kB\r\n"},
+        { "/sys/fs/cgroup/cpuset.cpus.effective", "0-3"},
+        { "/sys/fs/cgroup/cpu/cpu.wight", "512"},
+        { "/sys/fs/cgroup/system.slice/memory.current", "dasda!@#"}
     };
 
     private static readonly string[] _namesOfDirectories =
     {
+        "/sys/fs/cgroup",
         "/sys/fs/cgroup/memory",
         "/sys/fs/cgroup/cpu",
+        "/sys/fs/cgroup/system.slice",
         "/proc"
     };
 

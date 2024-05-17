@@ -2,9 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.Options.Contextual.Provider;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Options.Contextual;
+namespace Microsoft.Extensions.Options.Contextual.Internal;
 
 /// <summary>
 /// Configures the <typeparamref name="TOptions"/> type.

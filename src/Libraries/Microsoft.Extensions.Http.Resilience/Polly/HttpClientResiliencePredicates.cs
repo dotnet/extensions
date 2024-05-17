@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 using Polly.Timeout;
@@ -27,15 +30,30 @@ public static class HttpClientResiliencePredicates
     };
 
     /// <summary>
+    /// Determines whether an <see cref="HttpResponseMessage"/> should be treated by resilience strategies as a transient failure.
+    /// </summary>
+    /// <param name="outcome">The outcome of the user-specified callback.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> associated with the execution.</param>
+    /// <returns><see langword="true"/> if outcome is transient, <see langword="false"/> if not.</returns>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
+    public static bool IsTransient(Outcome<HttpResponseMessage> outcome, CancellationToken cancellationToken)
+        => IsHttpConnectionTimeout(outcome, cancellationToken)
+           || IsTransient(outcome);
+
+    /// <summary>
     /// Determines whether an exception should be treated by resilience strategies as a transient failure.
     /// </summary>
     internal static bool IsTransientHttpException(Exception exception)
     {
         _ = Throw.IfNull(exception);
 
-        return exception is HttpRequestException ||
-               exception is TimeoutRejectedException;
+        return exception is HttpRequestException or TimeoutRejectedException;
     }
+
+    internal static bool IsHttpConnectionTimeout(in Outcome<HttpResponseMessage> outcome, in CancellationToken cancellationToken)
+        => !cancellationToken.IsCancellationRequested
+           && outcome.Exception is OperationCanceledException { Source: "System.Private.CoreLib" }
+           && outcome.Exception.InnerException is TimeoutException;
 
     /// <summary>
     /// Determines whether a response contains a transient failure.
@@ -52,7 +70,6 @@ public static class HttpClientResiliencePredicates
         return statusCode >= InternalServerErrorCode ||
             response.StatusCode == HttpStatusCode.RequestTimeout ||
             statusCode == TooManyRequests;
-
     }
 
     private const int InternalServerErrorCode = (int)HttpStatusCode.InternalServerError;

@@ -13,6 +13,16 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 public sealed class OSFileSystemTests
 {
     [ConditionalFact]
+    public void GetDirectoryNames_ReturnsDirectoryNames()
+    {
+        var fileSystem = new OSFileSystem();
+        var directoryNames = fileSystem.GetDirectoryNames(
+            Path.Combine(Directory.GetCurrentDirectory(), "fixtures"), "*.slice");
+
+        Assert.Single(directoryNames);
+    }
+
+    [ConditionalFact]
     public void Reading_First_File_Line_Works()
     {
         const string Content = "Name:   cat";

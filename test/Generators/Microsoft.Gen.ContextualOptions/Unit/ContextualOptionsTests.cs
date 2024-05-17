@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Options.Contextual;
+using Microsoft.Extensions.Options.Contextual.Provider;
 using TestClasses;
 using Xunit;
 

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Testing;
+using Microsoft.Extensions.Options.Contextual.Provider;
 using Xunit;
 
 namespace Microsoft.Extensions.Options.Contextual.Test;
@@ -43,10 +44,10 @@ internal class CountryContextReceiver : IOptionsContextReceiver
 
 internal class WeatherForecastService : IWeatherForecastService
 {
-    private readonly IContextualOptions<WeatherForecastOptions> _contextualOptions;
+    private readonly IContextualOptions<WeatherForecastOptions, WeatherForecastContext> _contextualOptions;
     private readonly Random _rng = new(0);
 
-    public WeatherForecastService(IContextualOptions<WeatherForecastOptions> contextualOptions)
+    public WeatherForecastService(IContextualOptions<WeatherForecastOptions, WeatherForecastContext> contextualOptions)
     {
         _contextualOptions = contextualOptions;
     }

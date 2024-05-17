@@ -22,6 +22,7 @@
     <PackageReference Include="SonarAnalyzer.CSharp" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="StyleCop.Analyzers.Unstable" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <AdditionalFiles Include="$(RepositoryEngineeringDir)\Stylecop.json" Visible="false" />
+    <PackageReference Include="ReferenceTrimmer" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(SkipAnalyzers)' != 'true'">

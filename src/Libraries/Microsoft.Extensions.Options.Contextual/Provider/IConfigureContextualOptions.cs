@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Extensions.Options.Contextual;
+namespace Microsoft.Extensions.Options.Contextual.Provider;
 
 /// <summary>
 /// Represents something that configures the <typeparamref name="TOptions"/> type.

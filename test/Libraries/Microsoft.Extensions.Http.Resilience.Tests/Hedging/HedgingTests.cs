@@ -35,6 +35,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
     private readonly Func<RequestRoutingStrategy> _requestRoutingStrategyFactory;
     private readonly IServiceCollection _services;
     private readonly Queue<HttpResponseMessage> _responses = new();
+    private ServiceProvider? _serviceProvider;
     private bool _failure;
 
     private protected HedgingTests(Func<IHttpClientBuilder, Func<RequestRoutingStrategy>, TBuilder> createDefaultBuilder)
@@ -63,6 +64,11 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         _requestRoutingStrategyMock.VerifyAll();
         _cancellationTokenSource.Cancel();
         _cancellationTokenSource.Dispose();
+        _serviceProvider?.Dispose();
+        foreach (var response in _responses)
+        {
+            response.Dispose();
+        }
     }
 
     [Fact]
@@ -93,7 +99,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await client.SendAsync(request, _cancellationTokenSource.Token);
 
         Assert.Equal(2, calls);
     }
@@ -108,7 +114,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         AddResponse(HttpStatusCode.OK);
 
-        var response = await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await client.SendAsync(request, _cancellationTokenSource.Token);
         AssertNoResponse();
 
         Assert.Single(Requests);
@@ -164,7 +170,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        var result = await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var result = await client.SendAsync(request, _cancellationTokenSource.Token);
         Assert.Equal(DefaultHedgingAttempts + 1, Requests.Count);
         Assert.Equal(HttpStatusCode.ServiceUnavailable, result.StatusCode);
     }
@@ -183,7 +189,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await client.SendAsync(request, _cancellationTokenSource.Token);
 
         RequestContexts.Distinct().OfType<ResilienceContext>().Should().HaveCount(3);
     }
@@ -204,7 +210,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await client.SendAsync(request, _cancellationTokenSource.Token);
 
         RequestContexts.Distinct().OfType<ResilienceContext>().Should().HaveCount(3);
 
@@ -226,7 +232,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        var result = await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await client.SendAsync(request, _cancellationTokenSource.Token);
         Assert.Equal(2, Requests.Count);
     }
 
@@ -244,7 +250,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        var result = await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var result = await client.SendAsync(request, _cancellationTokenSource.Token);
         Assert.Equal(3, Requests.Count);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Equal("https://enpoint-1:80/some-path?query", Requests[0]);
@@ -268,7 +274,12 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
     protected abstract void ConfigureHedgingOptions(Action<HttpHedgingStrategyOptions> configure);
 
-    protected HttpClient CreateClientWithHandler() => _services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient(ClientId);
+    protected HttpClient CreateClientWithHandler()
+    {
+        _serviceProvider?.Dispose();
+        _serviceProvider = _services.BuildServiceProvider();
+        return _serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(ClientId);
+    }
 
     private Task<HttpResponseMessage> InnerHandlerFunction(HttpRequestMessage request, CancellationToken cancellationToken)
     {

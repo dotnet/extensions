@@ -98,7 +98,9 @@ public sealed partial class HttpClientBuilderExtensionsTests
         // - Configuration of HTTP client options
         // - Configuration of resilience pipeline
         // - Registration of keyed service for resilience pipeline
-        builder.Services.Should().HaveCount(count + 3);
+        // UPDATE NOTE: Starting from .NET 8.0.2, the count of additional services is 2 instead of 3. This is due to the fact that the registration of the resilience
+        // pipeline is now done in the `AddResilienceHandler` method.
+        builder.Services.Should().HaveCount(count + 2);
     }
 
     [Fact]

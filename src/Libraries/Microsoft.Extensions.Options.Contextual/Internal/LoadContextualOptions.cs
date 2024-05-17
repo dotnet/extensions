@@ -4,9 +4,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options.Contextual.Provider;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Options.Contextual;
+namespace Microsoft.Extensions.Options.Contextual.Internal;
 
 /// <summary>
 /// Used to retrieve named configuration data from a contextual options provider implementation.

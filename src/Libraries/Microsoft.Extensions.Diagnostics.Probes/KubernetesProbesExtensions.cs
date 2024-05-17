@@ -52,8 +52,11 @@ public static class KubernetesProbesExtensions
         return services
             .AddTcpEndpointProbe(ProbeTags.Liveness, options =>
             {
+                options.TcpPort = wrapperOptions.LivenessProbe.TcpPort;
                 wrapperOptions.LivenessProbe = options;
+
                 configure(wrapperOptions);
+
                 var originalPredicate = options.FilterChecks;
                 if (originalPredicate == null)
                 {
@@ -66,8 +69,11 @@ public static class KubernetesProbesExtensions
             })
             .AddTcpEndpointProbe(ProbeTags.Startup, options =>
             {
+                options.TcpPort = wrapperOptions.StartupProbe.TcpPort;
                 wrapperOptions.StartupProbe = options;
+
                 configure(wrapperOptions);
+
                 var originalPredicate = options.FilterChecks;
                 if (originalPredicate == null)
                 {
@@ -80,8 +86,11 @@ public static class KubernetesProbesExtensions
             })
             .AddTcpEndpointProbe(ProbeTags.Readiness, (options) =>
             {
+                options.TcpPort = wrapperOptions.ReadinessProbe.TcpPort;
                 wrapperOptions.ReadinessProbe = options;
+
                 configure(wrapperOptions);
+
                 var originalPredicate = options.FilterChecks;
                 if (originalPredicate == null)
                 {

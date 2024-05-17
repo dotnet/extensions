@@ -14,7 +14,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
-    private readonly LinuxUtilizationParser _parser;
+    private readonly ILinuxUtilizationParser _parser;
     private readonly ulong _totalMemoryInBytes;
     private readonly TimeSpan _cpuRefreshInterval;
     private readonly TimeSpan _memoryRefreshInterval;
@@ -32,7 +32,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     public SystemResources Resources { get; }
 
-    public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, LinuxUtilizationParser parser,
+    public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, ILinuxUtilizationParser parser,
         IMeterFactory meterFactory, TimeProvider? timeProvider = null)
     {
         _parser = parser;
@@ -49,7 +49,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var hostMemory = _parser.GetHostAvailableMemory();
         var hostCpus = _parser.GetHostCpuCount();
         var availableCpus = _parser.GetCgroupLimitedCpus();
-
+        var cpuGuaranteedRequest = _parser.GetCgroupRequestCpu();
         _scale = hostCpus / availableCpus;
         _scaleForTrackerApi = hostCpus / availableCpus;
 
@@ -63,7 +63,11 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.CpuUtilization, observeValue: CpuUtilization, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.MemoryUtilization, observeValue: MemoryUtilization, unit: "1");
 
-        Resources = new SystemResources(1, hostCpus, _totalMemoryInBytes, hostMemory);
+        // cpuGuaranteedRequest is a CPU request for pod, for host its 1 core
+        // available CPUs is a CPU limit for a pod or for a host.
+        // _totalMemoryInBytes - Resource Memory Limit (in k8s terms)
+        // _totalMemoryInBytes - To keep the contract, this parameter will get the Host available memory
+        Resources = new SystemResources(cpuGuaranteedRequest, availableCpus, _totalMemoryInBytes, _totalMemoryInBytes);
     }
 
     public double CpuUtilization()
