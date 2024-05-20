@@ -120,6 +120,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>1f08a3621e6b531b31e358b99b4c54ba556a61c0</Sha>
     </Dependency>
+    <Dependency Name="System.IO.Pipelines" Version="9.0.0-preview.5.24265.2" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1f08a3621e6b531b31e358b99b4c54ba556a61c0</Sha>
+    </Dependency>
     <Dependency Name="System.Net.Http.Json" Version="9.0.0-preview.5.24265.2" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>1f08a3621e6b531b31e358b99b4c54ba556a61c0</Sha>

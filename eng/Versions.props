@@ -57,6 +57,7 @@
     <SystemDiagnosticsDiagnosticSourceVersion>9.0.0-preview.5.24265.2</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsPerformanceCounterVersion>9.0.0-preview.5.24265.2</SystemDiagnosticsPerformanceCounterVersion>
     <SystemIOHashingVersion>9.0.0-preview.5.24265.2</SystemIOHashingVersion>
+    <SystemIOPipelinesVersion>9.0.0-preview.5.24265.2</SystemIOPipelinesVersion>
     <SystemNetHttpJsonVersion>9.0.0-preview.5.24265.2</SystemNetHttpJsonVersion>
     <SystemRuntimeCachingVersion>9.0.0-preview.5.24265.2</SystemRuntimeCachingVersion>
     <SystemSecurityCryptographyPkcsVersion>9.0.0-preview.5.24265.2</SystemSecurityCryptographyPkcsVersion>

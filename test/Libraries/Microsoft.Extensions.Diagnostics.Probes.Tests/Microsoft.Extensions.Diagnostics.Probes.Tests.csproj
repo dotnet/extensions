@@ -13,11 +13,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="System.IO.Pipelines" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'" >
     <!-- Direct dependencies as Microsoft.AspNetCore.Mvc.Testing references vulnerable versions. -->
     <PackageReference Include="Microsoft.AspNetCore.Http" />
-    <PackageReference Include="System.IO.Pipelines" />
   </ItemGroup>
 </Project>
