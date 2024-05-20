@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Time.Testing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Time.Testing.Test;
@@ -380,5 +381,55 @@ public class FakeTimeProviderTests
 
         // Assert
         Assert.Single(calls);
+    }
+
+    [Fact]
+    public void Retry_WhenTaskDelayLessThanCancellationAndAboveRetryDelay_ShouldHave2Tries()
+    {
+        // Arrange
+        var tries = 0;
+        var provider = new FakeTimeProvider();
+
+        async Task<int> retry(double taskDelay)
+        {
+            async Task callback()
+            {
+                tries++;
+                await provider.Delay(TimeSpan.FromSeconds(taskDelay));
+                if (tries < 2)
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+
+            for (int attempt = 0; attempt < 3; attempt++)
+            {
+                try
+                {
+                    await callback();
+                }
+                catch (InvalidOperationException)
+                {
+                    // Trigger retry and sleep before new attempt
+                    await provider.Delay(TimeSpan.FromSeconds(1));
+                }
+            }
+
+            return tries;
+        }
+
+        // Act
+        var result = retry(taskDelay: 1);
+
+        // Advancing the time more than one second should resolves the first execution delay.
+        provider.Advance(TimeSpan.FromSeconds(1));
+
+        // Advancing the time more than the retry delay time of 1s,
+        // and less then the task execution delay should start the second try
+        provider.Advance(TimeSpan.FromSeconds(1));
+
+        // Assert
+        Assert.False(result.IsCompleted);
+        Assert.Equal(2, tries);
     }
 }
