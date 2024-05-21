@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Time.Testing;
-using Moq;
 using Xunit;
 
 namespace Microsoft.Extensions.Time.Testing.Test;
