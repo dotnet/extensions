@@ -393,24 +393,28 @@ public class FakeTimeProviderTests
         {
             async Task callback()
             {
-                tries++;
                 await provider.Delay(TimeSpan.FromSeconds(taskDelay));
-                if (tries < 2)
+
+                if (tries >= 2)
                 {
-                    throw new InvalidOperationException();
+                    return;
                 }
+
+                throw new InvalidOperationException();
             }
 
-            for (int attempt = 0; attempt < 3; attempt++)
+            for (int attempt = 1; attempt <= 3; attempt++)
             {
                 try
                 {
-                    await callback();
+                    tries = attempt;
+                    await callback().ConfigureAwait(false);
+                    break;
                 }
                 catch (InvalidOperationException)
                 {
                     // Trigger retry and sleep before new attempt
-                    await provider.Delay(TimeSpan.FromSeconds(1));
+                    await provider.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                 }
             }
 
@@ -418,7 +422,7 @@ public class FakeTimeProviderTests
         }
 
         // Act
-        var result = retry(taskDelay: 1);
+        var result = retry(taskDelay: .5);
 
         // Advancing the time more than one second should resolves the first execution delay.
         provider.Advance(TimeSpan.FromSeconds(1));

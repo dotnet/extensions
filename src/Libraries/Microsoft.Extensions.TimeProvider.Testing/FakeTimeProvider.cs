@@ -126,6 +126,9 @@ public class FakeTimeProvider : TimeProvider
         }
 
         WakeWaiters();
+
+        // give other threads a chance to update their state
+        Thread.Sleep(1);
     }
 
     /// <inheritdoc />
