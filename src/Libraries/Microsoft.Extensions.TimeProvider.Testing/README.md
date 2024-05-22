@@ -44,9 +44,6 @@ myComponent.CheckState();
 
 ## Use ConfigureAwait(true) with FakeTimeProvider.Advance
 
-When testing asynchronous code with `FakeTimeProvider`, always use ConfigureAwait(true) when awaiting tasks.
-This ensures that your tests accurately simulate the passage of time.
-
 The Advance method is used to simulate the passage of time. This can be useful in tests where you need to control the timing of asynchronous operations.
 When awaiting a task in a test that uses `FakeTimeProvider`, it's important to use `ConfigureAwait(true)`.
 
