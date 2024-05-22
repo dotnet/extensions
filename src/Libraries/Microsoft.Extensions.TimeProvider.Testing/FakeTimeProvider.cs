@@ -126,15 +126,6 @@ public class FakeTimeProvider : TimeProvider
         }
 
         WakeWaiters();
-
-#pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
-
-        // Pause the current thread briefly to give any pending timers a chance to execute.
-        // This pause does not alter the time reported by the provider.
-        // While this may slightly increase the duration of tests, it ensures more predictable behavior.
-        Thread.Sleep(1);
-
-#pragma warning restore EA0002 // Use 'System.TimeProvider' to make the code easier to test
     }
 
     /// <inheritdoc />

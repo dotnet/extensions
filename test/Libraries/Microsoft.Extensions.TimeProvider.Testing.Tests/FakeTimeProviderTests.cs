@@ -383,7 +383,7 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
-    public void Retry_WhenTaskDelayLessThanCancellationAndAboveRetryDelay_ShouldHave2Tries()
+    public void SimulateRetryPolicy()
     {
         // Arrange
         var retries = 42;
@@ -412,8 +412,8 @@ public class FakeTimeProviderTests
                 }
                 catch (InvalidOperationException)
                 {
-                    // ConfigureAwait(false) reproduces issue found with other libraries, such as Polly
-                    await provider.Delay(TimeSpan.FromSeconds(delay)).ConfigureAwait(false);
+                    // ConfigureAwait(true) is required to ensure that tasks continue on the captured context
+                    await provider.Delay(TimeSpan.FromSeconds(delay)).ConfigureAwait(true);
                 }
             }
         }
