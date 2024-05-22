@@ -31,6 +31,7 @@
     <MicrosoftBclTimeProviderVersion>8.0.1</MicrosoftBclTimeProviderVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>8.0.0</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>8.0.0</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>8.0.0</MicrosoftExtensionsConfigurationAbstractionsVersion>
     <MicrosoftExtensionsConfigurationBinderVersion>8.0.1</MicrosoftExtensionsConfigurationBinderVersion>
     <MicrosoftExtensionsConfigurationJsonVersion>8.0.0</MicrosoftExtensionsConfigurationJsonVersion>
     <MicrosoftExtensionsConfigurationVersion>8.0.0</MicrosoftExtensionsConfigurationVersion>
@@ -51,10 +52,10 @@
     <SystemDiagnosticsDiagnosticSourceVersion>8.0.1</SystemDiagnosticsDiagnosticSourceVersion>
     <SystemDiagnosticsPerformanceCounterVersion>8.0.0</SystemDiagnosticsPerformanceCounterVersion>
     <SystemIOHashingVersion>8.0.0</SystemIOHashingVersion>
+    <SystemRuntimeCachingVersion>8.0.0</SystemRuntimeCachingVersion>
     <SystemSecurityCryptographyPkcsVersion>8.0.0</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>8.0.1</SystemSecurityCryptographyXmlVersion>
     <SystemTextEncodingsWebVersion>8.0.0</SystemTextEncodingsWebVersion>
-    <SystemRuntimeCachingVersion>8.0.0</SystemRuntimeCachingVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
     <MicrosoftAspNetCoreAppRuntimewinx64Version>8.0.5</MicrosoftAspNetCoreAppRuntimewinx64Version>
     <MicrosoftAspNetCoreMvcTestingVersion>8.0.5</MicrosoftAspNetCoreMvcTestingVersion>
