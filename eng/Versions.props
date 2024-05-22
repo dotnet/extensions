@@ -65,16 +65,16 @@
     <SystemTextEncodingsWebVersion>9.0.0-preview.5.24265.2</SystemTextEncodingsWebVersion>
     <SystemTextJsonVersion>9.0.0-preview.5.24265.2</SystemTextJsonVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefVersion>9.0.0-preview.5.24270.27</MicrosoftAspNetCoreAppRefVersion>
-    <MicrosoftAspNetCoreAppRuntimewinx64Version>9.0.0-preview.5.24270.27</MicrosoftAspNetCoreAppRuntimewinx64Version>
-    <MicrosoftAspNetCoreMvcTestingVersion>9.0.0-preview.5.24270.27</MicrosoftAspNetCoreMvcTestingVersion>
-    <MicrosoftAspNetCoreTestHostVersion>9.0.0-preview.5.24270.27</MicrosoftAspNetCoreTestHostVersion>
-    <MicrosoftExtensionsCachingStackExchangeRedisVersion>9.0.0-preview.5.24270.27</MicrosoftExtensionsCachingStackExchangeRedisVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>9.0.0-preview.5.24270.27</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>9.0.0-preview.5.24270.27</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
-    <MicrosoftExtensionsFeaturesVersion>9.0.0-preview.5.24270.27</MicrosoftExtensionsFeaturesVersion>
-    <MicrosoftExtensionsHttpPollyVersion>9.0.0-preview.5.24270.27</MicrosoftExtensionsHttpPollyVersion>
-    <MicrosoftExtensionsObjectPoolVersion>9.0.0-preview.5.24270.27</MicrosoftExtensionsObjectPoolVersion>
+    <MicrosoftAspNetCoreAppRefVersion>9.0.0-preview.5.24271.5</MicrosoftAspNetCoreAppRefVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>9.0.0-preview.5.24271.5</MicrosoftAspNetCoreAppRuntimewinx64Version>
+    <MicrosoftAspNetCoreMvcTestingVersion>9.0.0-preview.5.24271.5</MicrosoftAspNetCoreMvcTestingVersion>
+    <MicrosoftAspNetCoreTestHostVersion>9.0.0-preview.5.24271.5</MicrosoftAspNetCoreTestHostVersion>
+    <MicrosoftExtensionsCachingStackExchangeRedisVersion>9.0.0-preview.5.24271.5</MicrosoftExtensionsCachingStackExchangeRedisVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>9.0.0-preview.5.24271.5</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>9.0.0-preview.5.24271.5</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
+    <MicrosoftExtensionsFeaturesVersion>9.0.0-preview.5.24271.5</MicrosoftExtensionsFeaturesVersion>
+    <MicrosoftExtensionsHttpPollyVersion>9.0.0-preview.5.24271.5</MicrosoftExtensionsHttpPollyVersion>
+    <MicrosoftExtensionsObjectPoolVersion>9.0.0-preview.5.24271.5</MicrosoftExtensionsObjectPoolVersion>
   </PropertyGroup>
   <!--
 
