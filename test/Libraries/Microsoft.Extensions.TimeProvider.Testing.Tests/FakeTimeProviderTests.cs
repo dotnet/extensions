@@ -386,53 +386,52 @@ public class FakeTimeProviderTests
     public void Retry_WhenTaskDelayLessThanCancellationAndAboveRetryDelay_ShouldHave2Tries()
     {
         // Arrange
+        var retries = 42;
         var tries = 0;
+        var taskDelay = 0.5;
+        var delay = 1;
         var provider = new FakeTimeProvider();
 
-        async Task<int> retry(double taskDelay)
+        async Task<int> simulatedPollyRetry()
         {
-            async Task callback()
-            {
-                await provider.Delay(TimeSpan.FromSeconds(taskDelay));
-
-                if (tries >= 2)
-                {
-                    return;
-                }
-
-                throw new InvalidOperationException();
-            }
-
-            for (int attempt = 1; attempt <= 3; attempt++)
+            while (true)
             {
                 try
                 {
-                    tries = attempt;
-                    await callback().ConfigureAwait(false);
-                    break;
+                    // simulate task that takes some time to complete
+                    await provider.Delay(TimeSpan.FromSeconds(taskDelay));
+                    tries++;
+
+                    if (tries <= retries)
+                    {
+                        // the task failed, trigger retry
+                        throw new InvalidOperationException();
+                    }
+
+                    return tries;
                 }
                 catch (InvalidOperationException)
                 {
-                    // Trigger retry and sleep before new attempt
-                    await provider.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                    // ConfigureAwait(false) reproduces issue found with other libraries, such as Polly
+                    await provider.Delay(TimeSpan.FromSeconds(delay)).ConfigureAwait(false);
                 }
             }
-
-            return tries;
         }
 
         // Act
-        var result = retry(taskDelay: .5);
+        var result = simulatedPollyRetry();
 
-        // Advancing the time more than one second should resolves the first execution delay.
-        provider.Advance(TimeSpan.FromSeconds(1));
+        for (int i = 0; i < retries; i++)
+        {
+            // advance time for simulated task delay
+            provider.Advance(TimeSpan.FromSeconds(taskDelay));
 
-        // Advancing the time more than the retry delay time of 1s,
-        // and less then the task execution delay should start the second try
-        provider.Advance(TimeSpan.FromSeconds(1));
+            // advance time for retry delay
+            provider.Advance(TimeSpan.FromSeconds(delay));
+        }
 
         // Assert
         Assert.False(result.IsCompleted);
-        Assert.Equal(2, tries);
+        Assert.Equal(retries, tries);
     }
 }
