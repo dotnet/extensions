@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -81,26 +81,15 @@ public sealed partial class HttpClientBuilderExtensionsTests
     }
 
     [Fact]
-    public void AddResilienceHandler_EnsureServicesNotAddedTwice()
+    public void ConfigureHttpServices_EnsureServicesNotAddedTwice()
     {
         var services = new ServiceCollection();
-        IHttpClientBuilder? builder = services.AddHttpClient("client");
 
-        builder.AddResilienceHandler("test", ConfigureBuilder);
-        var count = builder.Services.Count;
+        ResilienceHttpClientBuilderExtensions.ConfigureHttpServices(services);
+        var count = services.Count;
 
-        // add twice intentionally
-        builder.AddResilienceHandler("test", ConfigureBuilder);
-
-        // We check that the count of existing services is not unnecessary increased.
-        //
-        // The additional 3 services that are registered are related to:
-        // - Configuration of HTTP client options
-        // - Configuration of resilience pipeline
-        // - Registration of keyed service for resilience pipeline
-        // UPDATE NOTE: Starting from .NET 8.0.2, the count of additional services is 2 instead of 3. This is due to the fact that the registration of the resilience
-        // pipeline is now done in the `AddResilienceHandler` method.
-        builder.Services.Should().HaveCount(count + 2);
+        ResilienceHttpClientBuilderExtensions.ConfigureHttpServices(services);
+        services.Count.Should().Be(count);
     }
 
     [Fact]

@@ -49,6 +49,7 @@
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourceVersion)" />
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="$(SystemDiagnosticsPerformanceCounterVersion)" />
     <PackageVersion Include="System.IO.Hashing" Version="$(SystemIOHashingVersion)" />
+    <PackageVersion Include="System.IO.Pipelines" Version="$(SystemIOPipelinesVersion)" />
     <PackageVersion Include="System.Memory" Version="4.5.5" />
     <PackageVersion Include="System.Net.Http.Json" Version="$(SystemNetHttpJsonVersion)" />
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
@@ -71,7 +72,6 @@
     <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Routing" Version="2.2.2" />
-    <PackageVersion Include="System.IO.Pipelines" Version="4.5.1" />
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="4.7.1" />
   </ItemGroup>
 

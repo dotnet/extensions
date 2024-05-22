@@ -56,7 +56,7 @@ public static class StartsEndsWithTests
         var d = await RoslynTestUtils.RunAnalyzer(
             new CallAnalyzer(),
             null,
-            new[] { Source }).ConfigureAwait(false);
+            new[] { Source });
 
         Assert.Equal(8, d.Count);
 
@@ -114,7 +114,7 @@ public static class StartsEndsWithTests
         var d = await RoslynTestUtils.RunAnalyzer(
             new CallAnalyzer(),
             null,
-            new[] { Source }).ConfigureAwait(false);
+            new[] { Source });
 
         Assert.Equal(8, d.Count);
 
