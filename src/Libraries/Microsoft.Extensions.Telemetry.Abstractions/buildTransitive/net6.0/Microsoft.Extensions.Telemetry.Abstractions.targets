@@ -1,16 +1,34 @@
 <Project>
-  <!-- This package should replace the Microsoft.Extensions.Logging.Abstractions source generator. -->
+  <!-- This package should replace the "Microsoft.Extensions.Logging.Abstractions" source generator. -->
   <Target Name="_Microsoft_Extensions_Logging_AbstractionsRemoveAnalyzers"
           Condition="'$(DisableMicrosoftExtensionsLoggingSourceGenerator)' == 'true'"
-          BeforeTargets="CoreCompile">
+          AfterTargets="ResolveReferences">
     <ItemGroup>
-      <_Microsoft_Extensions_Logging_AbstractionsAnalyzer Include="@(Analyzer)" Condition="'%(Analyzer.Filename)' == 'Microsoft.Extensions.Logging.Generators' Or
-                                                                                           '%(Analyzer.Filename)' == 'Microsoft.Extensions.Logging.Abstractions'" />
+      <_Microsoft_Extensions_Logging_AbstractionsAnalyzer
+        Include="@(Analyzer)"
+        Condition="'%(Analyzer.Filename)' == 'Microsoft.Extensions.Logging.Generators' Or
+                   '%(Analyzer.NuGetPackageId)' == 'Microsoft.Extensions.Logging.Abstractions'" />
     </ItemGroup>
 
     <!-- Remove Microsoft.Extensions.Logging.Abstractions Analyzer -->
     <ItemGroup>
       <Analyzer Remove="@(_Microsoft_Extensions_Logging_AbstractionsAnalyzer)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- We have a separate target for WPF projects because there's "GenerateTemporaryTargetAssembly" target for those -->
+  <Target Name="_Microsoft_Extensions_Logging_AbstractionsRemoveAnalyzersWPF"
+          Condition="'$(DisableMicrosoftExtensionsLoggingSourceGenerator)' == 'true'"
+          AfterTargets="RemoveDuplicateAnalyzers">
+    <ItemGroup>
+      <_Microsoft_Extensions_Logging_AbstractionsAnalyzerWPF
+        Include="@(Analyzer)"
+        Condition="'%(Analyzer.NuGetPackageId)' == 'Microsoft.Extensions.Logging.Abstractions' Or
+                   '%(Analyzer.AssemblyName)' == 'Microsoft.Extensions.Logging.Generators'" />
+    </ItemGroup>
+    <!-- Remove Microsoft.Extensions.Logging.Abstractions Analyzer for WPF projects -->
+    <ItemGroup>
+      <Analyzer Remove="@(_Microsoft_Extensions_Logging_AbstractionsAnalyzerWPF)" />
     </ItemGroup>
   </Target>
 </Project>
