@@ -381,4 +381,57 @@ public class FakeTimeProviderTests
         // Assert
         Assert.Single(calls);
     }
+
+    [Fact]
+    public void SimulateRetryPolicy()
+    {
+        // Arrange
+        var retries = 42;
+        var tries = 0;
+        var taskDelay = 0.5;
+        var delay = 1;
+        var provider = new FakeTimeProvider();
+
+        async Task<int> simulatedPollyRetry()
+        {
+            while (true)
+            {
+                try
+                {
+                    // simulate task that takes some time to complete
+                    await provider.Delay(TimeSpan.FromSeconds(taskDelay));
+                    tries++;
+
+                    if (tries <= retries)
+                    {
+                        // the task failed, trigger retry
+                        throw new InvalidOperationException();
+                    }
+
+                    return tries;
+                }
+                catch (InvalidOperationException)
+                {
+                    // ConfigureAwait(true) is required to ensure that tasks continue on the captured context
+                    await provider.Delay(TimeSpan.FromSeconds(delay)).ConfigureAwait(true);
+                }
+            }
+        }
+
+        // Act
+        var result = simulatedPollyRetry();
+
+        for (int i = 0; i < retries; i++)
+        {
+            // advance time for simulated task delay
+            provider.Advance(TimeSpan.FromSeconds(taskDelay));
+
+            // advance time for retry delay
+            provider.Advance(TimeSpan.FromSeconds(delay));
+        }
+
+        // Assert
+        Assert.False(result.IsCompleted);
+        Assert.Equal(retries, tries);
+    }
 }
