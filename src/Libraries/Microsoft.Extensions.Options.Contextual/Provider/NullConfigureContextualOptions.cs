@@ -4,7 +4,7 @@
 namespace Microsoft.Extensions.Options.Contextual.Provider;
 
 /// <summary>
-/// Helper class.
+/// Provides helper methods for a configuration context. This class can't be inherited.
 /// </summary>
 public static class NullConfigureContextualOptions
 {
