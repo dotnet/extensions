@@ -6,7 +6,7 @@ namespace Microsoft.Extensions.Options.Contextual.Provider;
 #pragma warning disable SA1649 // File name should match first type name
 
 /// <summary>
-/// A do-nothing implementation of <see cref="IConfigureContextualOptions{TOptions}"/>.
+/// Implements <see cref="IConfigureContextualOptions{TOptions}"/> but does nothing.
 /// </summary>
 /// <typeparam name="TOptions">The options type to configure.</typeparam>
 internal sealed class NullConfigureContextualOptions<TOptions> : IConfigureContextualOptions<TOptions>

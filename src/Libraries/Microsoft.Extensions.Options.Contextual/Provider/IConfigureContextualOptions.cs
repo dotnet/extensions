@@ -6,14 +6,14 @@ using System;
 namespace Microsoft.Extensions.Options.Contextual.Provider;
 
 /// <summary>
-/// Represents something that configures the <typeparamref name="TOptions"/> type.
+/// Provides functionality to configure the <typeparamref name="TOptions"/> type.
 /// </summary>
 /// <typeparam name="TOptions">The type of options configured.</typeparam>
 public interface IConfigureContextualOptions<in TOptions> : IDisposable
     where TOptions : class
 {
     /// <summary>
-    /// Invoked to configure a <typeparamref name="TOptions"/> instance.
+    /// Configures a <typeparamref name="TOptions"/> instance.
     /// </summary>
     /// <param name="options">The options instance to configure.</param>
     void Configure(TOptions options);
