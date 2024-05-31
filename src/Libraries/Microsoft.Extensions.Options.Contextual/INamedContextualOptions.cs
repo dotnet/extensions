@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Extensions.Options.Contextual;
 
 /// <summary>
-/// Used to retrieve named configured <typeparamref name="TOptions"/> instances.
+/// Provides functionality to retrieve named configured <typeparamref name="TOptions"/> instances.
 /// </summary>
 /// <typeparam name="TOptions">The type of options being requested.</typeparam>
 /// <typeparam name="TContext">A type defining the context for this request.</typeparam>
