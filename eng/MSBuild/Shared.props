@@ -32,7 +32,7 @@
 
   <ItemGroup Condition="'$(InjectSharedPools)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\Pools\*.cs" LinkBase="Shared\Pools" />
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" />
+    <PackageReference Condition="'$(SkipSharedPoolsReferences)' != 'true'" Include="Microsoft.Extensions.ObjectPool" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(InjectSharedBufferWriterPool)' == 'true'">
