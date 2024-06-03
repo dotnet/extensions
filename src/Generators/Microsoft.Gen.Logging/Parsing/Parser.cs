@@ -494,6 +494,7 @@ internal sealed partial class Parser
             .GetAttributes()
             .Select(static attribute => attribute.AttributeClass)
             .Where(x => x is not null && symbols.DataClassificationAttribute is not null && ParserUtilities.IsBaseOrIdentity(x, symbols.DataClassificationAttribute, symbols.Compilation))
+            .Where(x => !SymbolEqualityComparer.Default.Equals(x, symbols.NoDataClassificationAttribute))
             .Select(static x => x!)
             .ToList();
 
