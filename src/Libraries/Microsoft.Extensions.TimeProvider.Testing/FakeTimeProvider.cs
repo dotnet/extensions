@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Time.Testing;
@@ -59,7 +61,7 @@ public class FakeTimeProvider : TimeProvider
     /// <remarks>
     /// This defaults to <see cref="TimeSpan.Zero"/>.
     /// </remarks>
-    /// <exception cref="ArgumentOutOfRangeException">The time value is set to less than <see cref="TimeSpan.Zero"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">if the time value is set to less than <see cref="TimeSpan.Zero"/>.</exception>
     public TimeSpan AutoAdvanceAmount
     {
         get => _autoAdvanceAmount;
@@ -86,10 +88,16 @@ public class FakeTimeProvider : TimeProvider
     }
 
     /// <summary>
-    /// Sets the date and time in the UTC time zone.
+    /// Advances the date and time in the UTC time zone.
     /// </summary>
     /// <param name="value">The date and time in the UTC time zone.</param>
-    /// <exception cref="ArgumentOutOfRangeException">The supplied time value is before the current time.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">if the supplied time value is before the current time.</exception>
+    /// <remarks>
+    /// This method simply advances time. If the time is set forward beyond the
+    /// trigger point of any outstanding timers, those timers will immediately trigger.
+    /// This is unlike the <see cref="AdjustTime" /> method below, which has no impact
+    /// on timers.
+    /// </remarks>
     public void SetUtcNow(DateTimeOffset value)
     {
         lock (Waiters)
@@ -115,7 +123,7 @@ public class FakeTimeProvider : TimeProvider
     /// marches forward automatically in hardware, for the fake time provider the application is responsible for
     /// doing this explicitly by calling this method.
     /// </remarks>
-    /// <exception cref="ArgumentOutOfRangeException">The time value is less than <see cref="TimeSpan.Zero"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">if the time value is less than <see cref="TimeSpan.Zero"/>.</exception>
     public void Advance(TimeSpan delta)
     {
         _ = Throw.IfLessThan(delta.Ticks, 0);
@@ -126,6 +134,31 @@ public class FakeTimeProvider : TimeProvider
         }
 
         WakeWaiters();
+    }
+
+    /// <summary>
+    /// Advances the date and time in the UTC time zone.
+    /// </summary>
+    /// <param name="value">The date and time in the UTC time zone.</param>
+    /// <remarks>
+    /// This method updates the current time, and has no impact on outstanding
+    /// timers. This is similar to what happens in a real system when the system's
+    /// time is changed.
+    /// </remarks>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.TimeProvider, UrlFormat = DiagnosticIds.UrlFormat)]
+    public void AdjustTime(DateTimeOffset value)
+    {
+        lock (Waiters)
+        {
+            var delta = value - _now;
+            _now = value;
+
+            // adjust the wake times so they're relative to the new time value
+            foreach (var w in Waiters)
+            {
+                w.WakeupTime += delta.Ticks;
+            }
+        }
     }
 
     /// <inheritdoc />

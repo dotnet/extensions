@@ -158,6 +158,60 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
+    public void AdjustTimeForwardWorks()
+    {
+        var tp = new FakeTimeProvider();
+
+        var t1Tick = 0;
+        var t1 = tp.CreateTimer(_ =>
+        {
+            t1Tick++;
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.Zero);
+
+        tp.AdjustTime(tp.GetUtcNow() + TimeSpan.FromMilliseconds(999));
+        Assert.Equal(0, t1Tick);
+
+        tp.AdjustTime(tp.GetUtcNow() + TimeSpan.FromMilliseconds(1));
+        Assert.Equal(0, t1Tick);
+
+        tp.AdjustTime(tp.GetUtcNow() + TimeSpan.FromSeconds(10));
+        Assert.Equal(0, t1Tick);
+
+        tp.Advance(TimeSpan.FromMilliseconds(999));
+        Assert.Equal(0, t1Tick);
+
+        tp.Advance(TimeSpan.FromMilliseconds(1));
+        Assert.Equal(1, t1Tick);
+    }
+
+    [Fact]
+    public void AdjustTimeBackwardWorks()
+    {
+        var tp = new FakeTimeProvider();
+
+        var t1Tick = 0;
+        var t1 = tp.CreateTimer(_ =>
+        {
+            t1Tick++;
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.Zero);
+
+        tp.AdjustTime(tp.GetUtcNow() - TimeSpan.FromMilliseconds(999));
+        Assert.Equal(0, t1Tick);
+
+        tp.AdjustTime(tp.GetUtcNow() - TimeSpan.FromMilliseconds(1));
+        Assert.Equal(0, t1Tick);
+
+        tp.AdjustTime(tp.GetUtcNow() - TimeSpan.FromSeconds(10));
+        Assert.Equal(0, t1Tick);
+
+        tp.Advance(TimeSpan.FromMilliseconds(999));
+        Assert.Equal(0, t1Tick);
+
+        tp.Advance(TimeSpan.FromMilliseconds(1));
+        Assert.Equal(1, t1Tick);
+    }
+
+    [Fact]
     public void ToStr()
     {
         var dto = new DateTimeOffset(new DateTime(2022, 1, 2, 3, 4, 5, 6), TimeSpan.Zero);

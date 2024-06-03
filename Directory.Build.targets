@@ -81,7 +81,7 @@
   </Target>
 
   <!-- This target will make sure that projects targeting net462 will also have the Microsoft.Extensions.Logging.Abstractions analyzer removed. -->
-  <Target Name="_Microsoft_Extensions_Logging_AbstractionsRemoveAnalyzers" 
+  <Target Name="_Microsoft_Extensions_Logging_AbstractionsRemoveAnalyzers"
           Condition="'$(DisableMicrosoftExtensionsLoggingSourceGenerator)' == 'true'"
           AfterTargets="ResolveReferences">
     <ItemGroup>

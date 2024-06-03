@@ -19,6 +19,7 @@ internal static class SymbolLoader
     internal const string LogLevelType = "Microsoft.Extensions.Logging.LogLevel";
     internal const string ExceptionType = "System.Exception";
     internal const string DataClassificationAttribute = "Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute";
+    internal const string NoDataClassificationAttribute = "Microsoft.Extensions.Compliance.Classification.NoDataClassificationAttribute";
     internal const string IEnrichmentPropertyBag = "Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag";
     internal const string IFormatProviderType = "System.IFormatProvider";
     internal const string ISpanFormattableType = "System.ISpanFormattable";
@@ -60,6 +61,7 @@ internal static class SymbolLoader
         var tagCollectorSymbol = compilation.GetTypeByMetadataName(ITagCollectorType);
         var logPropertyIgnoreAttributeSymbol = compilation.GetTypeByMetadataName(LogPropertyIgnoreAttribute);
         var dataClassificationAttribute = compilation.GetTypeByMetadataName(DataClassificationAttribute);
+        var noDataClassificationAttribute = compilation.GetTypeByMetadataName(NoDataClassificationAttribute);
 
 #pragma warning disable S1067 // Expressions should not be too complex
         if (loggerSymbol == null
@@ -113,6 +115,7 @@ internal static class SymbolLoader
             enumerableSymbol,
             formatProviderSymbol,
             spanFormattableSymbol,
-            dataClassificationAttribute);
+            dataClassificationAttribute,
+            noDataClassificationAttribute);
     }
 }
