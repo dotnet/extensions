@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Diagnostics.Enrichment;
+using Microsoft.Extensions.Diagnostics.Logging.Sampling;
 
 namespace Microsoft.Extensions.Logging;
 
@@ -15,6 +16,7 @@ internal sealed class LoggerConfig
     public LoggerConfig(
         KeyValuePair<string, object?>[] staticTags,
         Action<IEnrichmentTagCollector>[] enrichers,
+        ILoggingSampler[] samplers,
         bool captureStackTraces,
         bool useFileInfoForStackTraces,
         bool includeExceptionMessage,
@@ -25,6 +27,7 @@ internal sealed class LoggerConfig
 #pragma warning restore S107 // Methods should not have too many parameters
         StaticTags = staticTags;
         Enrichers = enrichers;
+        Samplers = samplers;
         CaptureStackTraces = captureStackTraces;
         UseFileInfoForStackTraces = useFileInfoForStackTraces;
         MaxStackTraceLength = maxStackTraceLength;
@@ -35,6 +38,7 @@ internal sealed class LoggerConfig
 
     public KeyValuePair<string, object?>[] StaticTags { get; }
     public Action<IEnrichmentTagCollector>[] Enrichers { get; }
+    public ILoggingSampler[] Samplers { get; }
     public bool CaptureStackTraces { get; }
     public bool UseFileInfoForStackTraces { get; }
     public bool IncludeExceptionMessage { get; }

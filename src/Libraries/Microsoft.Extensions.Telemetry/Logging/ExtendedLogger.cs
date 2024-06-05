@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Extensions.Diagnostics.Logging.Sampling;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Pools;
 
@@ -39,6 +40,23 @@ internal sealed partial class ExtendedLogger : ILogger
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
+        var pattern = new LogRecordPattern
+        {
+            Category = // get category,
+            Tags = state,
+            EventId = eventId,
+            LogLevel = logLevel,
+            //and Timestamp is filled in automatically from DateTime.UtcNow
+        };
+
+        foreach (var sampler in _factory.Config.Samplers)
+        {
+            if (sampler.Sample(pattern))
+            {
+                return;
+            }
+        }
+
         if (typeof(TState) == typeof(LoggerMessageState))
         {
             var msgState = (LoggerMessageState?)(object?)state;
