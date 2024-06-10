@@ -37,4 +37,31 @@ public class TransitiveTests
 
         logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
     }
+
+    [Fact]
+    public void Indexers()
+    {
+        var logger = new FakeLogger();
+
+        TransitiveTestExtensions.M2(logger, new());
+
+        // Ensure that we don't enumerate indexers in transitive logging:
+        var expectedState = new Dictionary<string, string?>
+        {
+            ["p0.P3.Capacity"] = "0",
+            ["p0.P3.Count"] = "0",
+        };
+
+        logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+
+        TransitiveTestExtensions.M3(logger, new() { P4 = 42 });
+
+        // No indexers here as well:
+        expectedState = new Dictionary<string, string?>
+        {
+            ["p0.P4"] = "42",
+        };
+
+        logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+    }
 }
