@@ -41,7 +41,7 @@ public static class ApplicationEnricherServiceCollectionExtensions
 
         return services
             .AddStaticLogEnricher<ApplicationLogEnricher>()
-            .AddLogEnricherOptions(configure);
+            .Configure(configure);
     }
 
     /// <summary>
@@ -58,21 +58,6 @@ public static class ApplicationEnricherServiceCollectionExtensions
 
         return services
             .AddStaticLogEnricher<ApplicationLogEnricher>()
-            .AddLogEnricherOptions(_ => { }, section);
-    }
-
-    private static IServiceCollection AddLogEnricherOptions(
-        this IServiceCollection services,
-        Action<ApplicationLogEnricherOptions> configure,
-        IConfigurationSection? section = null)
-    {
-        _ = services.Configure(configure);
-
-        if (section is not null)
-        {
-            _ = services.Configure<ApplicationLogEnricherOptions>(section);
-        }
-
-        return services;
+            .Configure<ApplicationLogEnricherOptions>(section);
     }
 }
