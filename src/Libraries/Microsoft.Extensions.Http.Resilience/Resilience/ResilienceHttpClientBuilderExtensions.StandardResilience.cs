@@ -86,8 +86,8 @@ public static partial class ResilienceHttpClientBuilderExtensions
                 .AddTimeout(options.AttemptTimeout);
         });
 
-        return new HttpStandardResiliencePipelineBuilder(optionsName, builder.Services);
+        return new HttpStandardResiliencePipelineBuilder(optionsName, builder.Services, builder);
     }
 
-    private sealed record HttpStandardResiliencePipelineBuilder(string PipelineName, IServiceCollection Services) : IHttpStandardResiliencePipelineBuilder;
+    private sealed record HttpStandardResiliencePipelineBuilder(string PipelineName, IServiceCollection Services, IHttpClientBuilder HttpClientBuilder) : IHttpStandardResiliencePipelineBuilder;
 }
