@@ -2,10 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.DependencyInjection;
-#if NET6_0_OR_GREATER
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Shared.DiagnosticIds;
-#endif
 
 namespace Microsoft.Extensions.Http.Resilience;
 
@@ -28,7 +24,6 @@ public interface IHttpStandardResiliencePipelineBuilder
     /// <summary>
     /// Gets the HTTP client builder.
     /// </summary>
-    [Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
     IHttpClientBuilder HttpClientBuilder => null!;
 #endif
 }
