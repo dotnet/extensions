@@ -53,7 +53,7 @@
 
   <ItemGroup>
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.10.48" />
-    <PackageVersion Include="ReferenceTrimmer" Version="3.3.6" />
+    <PackageVersion Include="ReferenceTrimmer" Version="3.3.1" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="8.56.0.67649" />
     <PackageVersion Include="StyleCop.Analyzers.Unstable" Version="1.2.0.556" />
   </ItemGroup>
