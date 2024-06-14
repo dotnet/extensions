@@ -42,7 +42,7 @@ public static class ProcessEnricherServiceCollectionExtensions
         return services
             .AddLogEnricher<ProcessLogEnricher>()
             .AddStaticLogEnricher<StaticProcessLogEnricher>()
-            .AddLogEnricherOptions(configure);
+            .Configure(configure);
     }
 
     /// <summary>
@@ -60,21 +60,6 @@ public static class ProcessEnricherServiceCollectionExtensions
         return services
             .AddLogEnricher<ProcessLogEnricher>()
             .AddStaticLogEnricher<StaticProcessLogEnricher>()
-            .AddLogEnricherOptions(_ => { }, section);
-    }
-
-    private static IServiceCollection AddLogEnricherOptions(
-        this IServiceCollection services,
-        Action<ProcessLogEnricherOptions> configure,
-        IConfigurationSection? section = null)
-    {
-        _ = services.Configure(configure);
-
-        if (section is not null)
-        {
-            _ = services.Configure<ProcessLogEnricherOptions>(section);
-        }
-
-        return services;
+            .Configure<ProcessLogEnricherOptions>(section);
     }
 }
