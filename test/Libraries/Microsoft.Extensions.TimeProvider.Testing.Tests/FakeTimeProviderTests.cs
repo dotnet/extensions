@@ -282,7 +282,9 @@ public class FakeTimeProviderTests
 #if NET8_0_OR_GREATER
         await Assert.ThrowsAsync<TimeoutException>(() => source.Task.WaitAsync(TimeSpan.FromTicks(-1), timeProvider, CancellationToken.None));
 #else
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => source.Task.WaitAsync(TimeSpan.FromTicks(-1), timeProvider, CancellationToken.None));
+#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
 #endif
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => source.Task.WaitAsync(TimeSpan.FromMilliseconds(-2), timeProvider, CancellationToken.None));
 
