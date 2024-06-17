@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageVersion Include="ICSharpCode.Decompiler" Version="8.0.0.7345" />
+    <PackageVersion Include="ICSharpCode.Decompiler" Version="8.2.0.7535" />
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProviderVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
@@ -29,7 +29,7 @@
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(MicrosoftExtensionsOptionsConfigurationExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsVersion)" />
     <PackageVersion Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0" />
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Polly" Version="8.4.0" />
     <PackageVersion Include="Polly.Core" Version="8.4.0" />
     <PackageVersion Include="Polly.Extensions" Version="8.4.0" />
@@ -47,14 +47,14 @@
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageVersion Include="System.ValueTuple" Version="4.5.0" />
-    <PackageVersion Include="YamlDotNet" Version="12.0.0" />
+    <PackageVersion Include="YamlDotNet" Version="12.3.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.5.22" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.10.48" />
     <PackageVersion Include="ReferenceTrimmer" Version="3.3.1" />
-    <PackageVersion Include="SonarAnalyzer.CSharp" Version="8.52.0.60960" />
-    <PackageVersion Include="StyleCop.Analyzers.Unstable" Version="1.2.0.507" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="8.56.0.67649" />
+    <PackageVersion Include="StyleCop.Analyzers.Unstable" Version="1.2.0.556" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
@@ -62,7 +62,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.2.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Routing" Version="2.2.2" />
-    <PackageVersion Include="System.IO.Pipelines" Version="4.5.1" />
+    <PackageVersion Include="System.IO.Pipelines" Version="4.7.5" />
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="4.7.1" />
   </ItemGroup>
 

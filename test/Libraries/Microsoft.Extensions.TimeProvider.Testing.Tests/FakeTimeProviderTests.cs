@@ -273,6 +273,7 @@ public class FakeTimeProviderTests
         await Assert.ThrowsAsync<TaskCanceledException>(() => timeProvider.Delay(TimeSpan.FromTicks(1), cts.Token));
     }
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
     [Fact]
     public async Task WaitAsync()
     {
@@ -298,6 +299,7 @@ public class FakeTimeProviderTests
         Assert.False(t.IsFaulted);
         Assert.False(t.IsCanceled);
     }
+#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
 
     [Fact]
     public async Task WaitAsync_InfiniteTimeout()
