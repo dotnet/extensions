@@ -238,7 +238,9 @@ public sealed class MetricCollector<T> : IDisposable
             });
         }
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
         return w.TaskSource.Task;
+#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
     }
 
     /// <summary>
