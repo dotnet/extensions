@@ -212,7 +212,7 @@ public class HttpClientLoggingExtensionsTest
             })
             .Build();
 
-        var act = async () => await host.StartAsync();
+        var act = async () => await host.StartAsync().ConfigureAwait(false);
         await act.Should().ThrowAsync<OptionsValidationException>();
     }
 

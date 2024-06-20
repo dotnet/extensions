@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.Gen.Logging.Model;
 
-[DebuggerDisplay("{Name}")]
+[DebuggerDisplay("{PropertyName}")]
 internal sealed class LoggingProperty
 {
     public string PropertyName = string.Empty;

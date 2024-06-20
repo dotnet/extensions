@@ -39,9 +39,7 @@ public static class CoalesceAnalyzerTests
             null,
             new[] { Source });
 
-#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
-        Assert.Equal(0, d.Count);
-#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
+        Assert.Empty(d);
     }
 
     [Fact]

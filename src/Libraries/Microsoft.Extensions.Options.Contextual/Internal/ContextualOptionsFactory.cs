@@ -71,9 +71,9 @@ internal sealed class ContextualOptionsFactory<[DynamicallyAccessedMembers(Dynam
             }
         }
 
-        return ConfigureOptions(context);
+        return ConfigureOptionsAsync(context);
 
-        async ValueTask<TOptions> ConfigureOptions(TContext context)
+        async ValueTask<TOptions> ConfigureOptionsAsync(TContext context)
         {
             var loadTasks = ArrayPool<ValueTask<IConfigureContextualOptions<TOptions>>>.Shared.Rent(_loaders.Length);
             var tasksCreated = 0;

@@ -111,7 +111,7 @@ public class HttpRequestBodyReaderTest
         var token = new CancellationToken(true);
 
         var act = async () =>
-            await httpRequestBodyReader.ReadAsync(httpRequest, token);
+            await httpRequestBodyReader.ReadAsync(httpRequest, token).ConfigureAwait(false);
 
         await act.Should().ThrowAsync<TaskCanceledException>()
             .Where(e => e.CancellationToken.IsCancellationRequested);

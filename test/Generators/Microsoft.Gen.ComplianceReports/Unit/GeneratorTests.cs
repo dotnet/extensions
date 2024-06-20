@@ -107,7 +107,8 @@ public class GeneratorTests
                 {
                     Source,
                 },
-                new OptionsProvider(null));
+                new OptionsProvider(null))
+;
 
         Assert.Empty(d);
     }
@@ -175,7 +176,7 @@ public class GeneratorTests
                     code,
                     TestTaxonomy,
             },
-            new OptionsProvider(analyzerOptions: options));
+            new OptionsProvider(analyzerOptions: options)).ConfigureAwait(false);
 
         return d;
     }

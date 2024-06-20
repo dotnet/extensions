@@ -60,9 +60,7 @@ public class UsingToStringInLoggersTests
             References,
             new[] { Source });
 
-#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
-        Assert.Equal(0, generated.diagnostics.Count);
-#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
+        Assert.Empty(generated.diagnostics);
 
         var fullDiags = await RoslynTestUtils.RunAnalyzer(
             new UsingToStringInLoggersAnalyzer(),
@@ -117,8 +115,6 @@ public class UsingToStringInLoggersTests
             References,
             new[] { Source });
 
-#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
-        Assert.Equal(0, d.Count);
-#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
+        Assert.Empty(d);
     }
 }

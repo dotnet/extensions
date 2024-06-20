@@ -158,9 +158,7 @@ namespace Example
             new[] { Source },
             asExecutable: true);
 
-#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
-        Assert.Equal(1, d.Count);
-#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
+        Assert.Single(d);
         for (int i = 0; i < d.Count; i++)
         {
             Source.AssertDiagnostic(i, DiagDescriptors.MakeExeTypesInternal, d[i]);

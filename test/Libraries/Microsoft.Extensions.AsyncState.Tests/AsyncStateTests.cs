@@ -55,7 +55,9 @@ public class AsyncStateTests
 
             checkAsyncFlowTcs.SetResult(null!);
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
             await waitForNullTcs.Task;
+#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
 
             try
             {
@@ -103,7 +105,9 @@ public class AsyncStateTests
 
             checkAsyncFlowTcs.SetResult(null!);
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
             await waitForNullTcs.Task;
+#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
 
             try
             {

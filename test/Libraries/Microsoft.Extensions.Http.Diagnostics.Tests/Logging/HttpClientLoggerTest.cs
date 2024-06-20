@@ -70,7 +70,7 @@ public class HttpClientLoggerTest
         using var client = new HttpClient(handler);
 
         var act = async () =>
-            await client.SendAsync(null!, It.IsAny<CancellationToken>());
+            await client.SendAsync(null!, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         await Assert.ThrowsAsync<ArgumentNullException>(act);
     }
@@ -105,7 +105,7 @@ public class HttpClientLoggerTest
         using var client = new HttpClient(handler);
 
         var act = async () =>
-            await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
+            await client.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var actualException = await Assert.ThrowsAsync<HttpRequestException>(act);
         Assert.Same(exception, actualException);
@@ -148,7 +148,7 @@ public class HttpClientLoggerTest
         using var httpClient = new HttpClient(handler);
 
         var act = async () =>
-            await httpClient.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>());
+            await httpClient.SendAsync(httpRequestMessage, It.IsAny<CancellationToken>()).ConfigureAwait(false);
 
         var exception = await Record.ExceptionAsync(act);
         Assert.Null(exception);
@@ -550,7 +550,7 @@ public class HttpClientLoggerTest
         using var client = new HttpClient(handler);
         var act = async () => await client
             .SendAsync(httpRequestMessage, It.IsAny<CancellationToken>())
-;
+            .ConfigureAwait(false);
         await Assert.ThrowsAsync<InvalidOperationException>(act);
 
         var logRecords = fakeLogger.Collector.GetSnapshot();
