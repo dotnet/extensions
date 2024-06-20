@@ -6,8 +6,13 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <UseLoggingGenerator>true</UseLoggingGenerator>
+    <UseMetricsGenerator>true</UseMetricsGenerator>
+    <UseOptionsValidationGenerator>true</UseOptionsValidationGenerator>
+    <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
     <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
+    <InjectSharedDataValidation>true</InjectSharedDataValidation>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
   </PropertyGroup>
 
@@ -23,10 +28,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Polly.Core" />
     <PackageReference Include="Polly.Extensions" />
     <PackageReference Include="Polly.RateLimiting" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))" />
   </ItemGroup>
 
   <ItemGroup>

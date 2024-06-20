@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Threading;
 
 namespace Microsoft.Extensions.Http.Resilience.Internal;
 
@@ -10,15 +11,9 @@ namespace Microsoft.Extensions.Http.Resilience.Internal;
 
 internal class Randomizer
 {
-#if NET6_0_OR_GREATER
-    public virtual double NextDouble(double maxValue) => Random.Shared.NextDouble() * maxValue;
-
-    public virtual int NextInt(int maxValue) => Random.Shared.Next(maxValue);
-#else
-    private static readonly System.Threading.ThreadLocal<Random> _randomInstance = new(() => new Random());
+    private static readonly ThreadLocal<Random> _randomInstance = new(() => new Random());
 
     public virtual double NextDouble(double maxValue) => _randomInstance.Value!.NextDouble() * maxValue;
 
     public virtual int NextInt(int maxValue) => _randomInstance.Value!.Next(maxValue);
-#endif
 }

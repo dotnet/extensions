@@ -27,7 +27,7 @@ public sealed partial class LoggerMessageState
     public KeyValuePair<string, object?>[] TagArray => _tags;
 
     /// <summary>
-    /// Gets the array of redacted tags.
+    /// Gets the array of tags.
     /// </summary>
     public KeyValuePair<string, object?>[] RedactedTagArray => _redactedTags;
 
@@ -57,7 +57,7 @@ public sealed partial class LoggerMessageState
     }
 
     /// <summary>
-    /// Allocates some room to put some classified tags.
+    /// Allocates some room to put some tags.
     /// </summary>
     /// <param name="count">The amount of space to allocate.</param>
     /// <returns>The index in the <see cref="ClassifiedTagArray"/> where to store the classified tags.</returns>

@@ -52,7 +52,8 @@ public static class HttpClientResiliencePredicates
 
     internal static bool IsHttpConnectionTimeout(in Outcome<HttpResponseMessage> outcome, in CancellationToken cancellationToken)
         => !cancellationToken.IsCancellationRequested
-           && outcome.Exception is OperationCanceledException { Source: "System.Private.CoreLib", InnerException: TimeoutException };
+           && outcome.Exception is OperationCanceledException { Source: "System.Private.CoreLib" }
+           && outcome.Exception.InnerException is TimeoutException;
 
     /// <summary>
     /// Determines whether a response contains a transient failure.

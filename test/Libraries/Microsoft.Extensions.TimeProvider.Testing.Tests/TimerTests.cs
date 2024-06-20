@@ -158,7 +158,7 @@ public class TimerTests
             await fakeTimeProvider.Delay(
                 TimeSpan.FromMilliseconds(10000),
                 cancellationTokenSource.Token)
-;
+            .ConfigureAwait(false);
         });
     }
 
