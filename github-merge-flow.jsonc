@@ -1,11 +1,6 @@
 // IMPORTANT: This file is read by the merge flow from main branch only. 
 {
     "merge-flow-configurations": {
-        // Automate opening PRs to merge extensions release/8.0 branch back to main
-        "release/8.0":{
-            "MergeToBranch": "main",
-            "ExtraSwitches": "-QuietComments"
-        },
         // Automate opening PRs to merge extensions main branch back to dev
         "main":{
             "MergeToBranch": "dev",
