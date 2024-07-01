@@ -1,5 +1,5 @@
 {
-  "Name": "Microsoft.Extensions.Http.Resilience, Version=8.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
+  "Name": "Microsoft.Extensions.Http.Resilience, Version=8.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35",
   "Types": [
     {
       "Type": "class Microsoft.Extensions.Http.Resilience.HedgingEndpointOptions",
@@ -229,6 +229,10 @@
       "Type": "interface Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder",
       "Stage": "Stable",
       "Properties": [
+        {
+          "Member": "Microsoft.Extensions.DependencyInjection.IHttpClientBuilder Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder.HttpClientBuilder { get; }",
+          "Stage": "Stable"
+        },
         {
           "Member": "string Microsoft.Extensions.Http.Resilience.IHttpStandardResiliencePipelineBuilder.PipelineName { get; }",
           "Stage": "Stable"

@@ -19,4 +19,11 @@ public interface IHttpStandardResiliencePipelineBuilder
     /// Gets the application service collection.
     /// </summary>
     IServiceCollection Services { get; }
+
+#if NET6_0_OR_GREATER
+    /// <summary>
+    /// Gets the HTTP client builder.
+    /// </summary>
+    IHttpClientBuilder HttpClientBuilder => null!;
+#endif
 }
