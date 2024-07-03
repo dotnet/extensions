@@ -268,7 +268,6 @@ extends:
         parameters:
           validateDependsOn:
           - build
-          - codecoverage
           - correctness
           publishingInfraVersion: 3
           enableSymbolValidation: false
