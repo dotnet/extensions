@@ -5,12 +5,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
 
-internal sealed class LoggingSamplingBuilder : ILoggingSamplingBuilder
+/// <summary>
+/// An interface for configuring log sampling.
+/// </summary>
+public interface ILogSamplingBuilder
 {
-    public LoggingSamplingBuilder(IServiceCollection services)
-    {
-        Services = services;
-    }
-
+    /// <summary>
+    /// Gets the <see cref="IServiceCollection"/> where log sampling services are configured.
+    /// </summary>
     public IServiceCollection Services { get; }
 }

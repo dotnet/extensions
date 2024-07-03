@@ -42,7 +42,7 @@ internal sealed partial class ExtendedLogger : ILogger
     {
         var pattern = new LogRecordPattern
         {
-            Category = // get category,
+            Category = //TODO: get category somehow?
             Tags = state,
             EventId = eventId,
             LogLevel = logLevel,

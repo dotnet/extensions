@@ -2,18 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ComponentModel.DataAnnotations;
 
-namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
+namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
 
 /// <summary>
 /// Represents a circular log buffer configuration.
 /// </summary>
-public class LogBuffer
+public class LogBufferConfig
 {
     /// <summary>
     /// Gets or sets log buffer name.
     /// </summary>
-    public string Name { get; set; }
+    [Required]
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets duration to suspend buffering after the flush operation occurred.
@@ -23,10 +25,10 @@ public class LogBuffer
     /// <summary>
     /// Gets or sets a circular buffer duration.
     /// </summary>
-    public TimeSpan? BufferingDuration { get; set; }
+    public TimeSpan? Duration { get; set; }
 
     /// <summary>
     /// Gets or sets buffer size.
     /// </summary>
-    public long? BufferSize { get; set; }
+    public long? Size { get; set; }
 }

@@ -2,16 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using Microsoft.Extensions.Diagnostics.Logging.Buffering;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
 
-internal class SimpleSampler : ILoggingSampler
+internal class SimpleBufferingFilter : ILogSampler
 {
-    private readonly List<Matcher> _matchers;
-    private readonly BufferingTool _bufferingTool;
+    private readonly IList<BufferingMatcher> _matchers;
+    private readonly LogBuffer _bufferingTool;
 
-    public SimpleSampler(IOptions<LogSamplingOptions> options, BufferingTool bufferingTool)
+    public SimpleBufferingFilter(IOptions<BufferingFilterOptions> options, LogBuffer bufferingTool)
     {
         _matchers = options.Value.Matchers;
         _bufferingTool = bufferingTool;
@@ -25,18 +26,9 @@ internal class SimpleSampler : ILoggingSampler
             {
                 switch (matcher.ControlAction)
                 {
-                    case ControlAction.GlobalFilter:
-                        if (!matcher.Filter(logRecordPattern))
-                        {
-                            return true;
-                        }
-
-                        break;
                     case ControlAction.GlobalBuffer:
-                        matcher.Buffer(_bufferingTool, logRecordPattern);
+                        matcher!.Buffer(_bufferingTool, logRecordPattern);
                         return true;
-                    case ControlAction.RequestFilter:
-                        break;
                     case ControlAction.RequestBuffer:
                         break;
                 }
