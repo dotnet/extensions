@@ -119,8 +119,8 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     }
 
     [ConditionalTheory]
-    [InlineData("max", 134796910592ul)]
-    [InlineData("1000000", 1000000ul)]
+    [InlineData("max", 134_796_910_592ul)]
+    [InlineData("1000000", 1_000_000ul)]
     public void When_Calling_GetAvailableMemoryInBytes_Parser_Returns_Available_Memory(string content, ulong expectedResult)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
