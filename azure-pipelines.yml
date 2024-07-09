@@ -138,7 +138,7 @@ extends:
         parameters:
           enableMicrobuild: true
           enableTelemetry: true
-          enableSourceIndex: false
+          enableSourceIndex: true
           runAsPublic: ${{ variables['runAsPublic'] }}
           # Publish build logs
           enablePublishBuildArtifacts: true
