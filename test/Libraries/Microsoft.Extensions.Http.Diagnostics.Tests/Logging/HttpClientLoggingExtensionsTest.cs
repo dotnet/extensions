@@ -213,7 +213,7 @@ public class HttpClientLoggingExtensionsTest
             .Build();
 
         var act = async () => await host.StartAsync().ConfigureAwait(false);
-        await act.Should().ThrowAsync<OptionsValidationException>().ConfigureAwait(false);
+        await act.Should().ThrowAsync<OptionsValidationException>();
     }
 
     [Theory]
@@ -325,7 +325,7 @@ public class HttpClientLoggingExtensionsTest
             provider
                 .GetRequiredService<IHostedService>()
                 .StartAsync(CancellationToken.None);
-        await act.Should().ThrowAsync<OptionsValidationException>().ConfigureAwait(false);
+        await act.Should().ThrowAsync<OptionsValidationException>();
     }
 
     [Fact]
