@@ -52,4 +52,4 @@ General .NET OSS discussions: [.NET Foundation Discussions](https://github.com/d
 
 ## License
 
-.NET (including the runtime repo) is licensed under the [MIT](LICENSE.TXT) license.
+.NET (including the runtime repo) is licensed under the [MIT](LICENSE) license.
