@@ -14,7 +14,7 @@
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>63d80966a9f0d15e057d0d146702405b19c82533</Sha>
+      <Sha>2aade6beb02ea367fd97c4070a4198802fe61c03</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="8.0.0" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -98,7 +98,7 @@
     </Dependency>
     <Dependency Name="System.Security.Cryptography.Xml" Version="8.0.1" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>63d80966a9f0d15e057d0d146702405b19c82533</Sha>
+      <Sha>2aade6beb02ea367fd97c4070a4198802fe61c03</Sha>
     </Dependency>
     <Dependency Name="System.Text.Encodings.Web" Version="8.0.0" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
@@ -138,13 +138,13 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.24352.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.24359.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>8b879da4e449c48d99f3f642fc429379a64e8fe8</Sha>
+      <Sha>db87887481d4110c09a1004191002482fdd7e4f2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.24352.1">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.24359.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>8b879da4e449c48d99f3f642fc429379a64e8fe8</Sha>
+      <Sha>db87887481d4110c09a1004191002482fdd7e4f2</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
