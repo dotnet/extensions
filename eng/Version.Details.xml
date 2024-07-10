@@ -110,31 +110,31 @@
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="8.0.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>714a9761f995103a6cdf21a7c41041740293bae9</Sha>
+      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>714a9761f995103a6cdf21a7c41041740293bae9</Sha>
+      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.TestHost" Version="8.0.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>714a9761f995103a6cdf21a7c41041740293bae9</Sha>
+      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>714a9761f995103a6cdf21a7c41041740293bae9</Sha>
+      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>714a9761f995103a6cdf21a7c41041740293bae9</Sha>
+      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Http.Polly" Version="8.0.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>714a9761f995103a6cdf21a7c41041740293bae9</Sha>
+      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.ObjectPool" Version="8.0.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>714a9761f995103a6cdf21a7c41041740293bae9</Sha>
+      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
