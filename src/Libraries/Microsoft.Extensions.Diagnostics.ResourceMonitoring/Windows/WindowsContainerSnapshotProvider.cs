@@ -11,16 +11,10 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 
-/// <summary>
-/// A data source acquiring data from the kernel.
-/// </summary>
 internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 {
     private const double Hundred = 100.0d;
 
-    /// <summary>
-    /// The memory status.
-    /// </summary>
     private readonly Lazy<MEMORYSTATUSEX> _memoryStatus;
 
     /// <summary>
@@ -49,13 +43,12 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     /// <summary>
     /// Initializes a new instance of the <see cref="WindowsContainerSnapshotProvider"/> class.
     /// </summary>
-    [ExcludeFromCodeCoverage]
     public WindowsContainerSnapshotProvider(
         ILogger<WindowsContainerSnapshotProvider> logger,
         IMeterFactory meterFactory,
         IOptions<ResourceMonitoringOptions> options)
         : this(new MemoryInfo(), new SystemInfo(), new ProcessInfoWrapper(), logger, meterFactory,
-              [ExcludeFromCodeCoverage] static () => new JobHandleWrapper(), TimeProvider.System, options.Value)
+              static () => new JobHandleWrapper(), TimeProvider.System, options.Value)
     {
     }
 
@@ -110,7 +103,6 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.CpuUtilization, observeValue: CpuPercentage);
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.MemoryUtilization, observeValue: MemoryPercentage);
-
     }
 
     public Snapshot GetSnapshot()
