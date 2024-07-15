@@ -3,9 +3,11 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Threading;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 
@@ -14,7 +16,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 /// </summary>
 internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 {
-    internal TimeProvider TimeProvider = TimeProvider.System;
+    private const double Hundred = 100.0d;
 
     /// <summary>
     /// The memory status.
@@ -26,60 +28,89 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     /// </summary>
     private readonly Func<IJobHandle> _createJobHandleObject;
 
+    private readonly object _cpuLocker = new();
+    private readonly object _memoryLocker = new();
+    private readonly TimeProvider _timeProvider;
     private readonly IProcessInfo _processInfo;
+    private readonly double _totalMemory;
+    private readonly double _cpuUnits;
+    private readonly TimeSpan _cpuRefreshInterval;
+    private readonly TimeSpan _memoryRefreshInterval;
+
+    private long _oldCpuUsageTicks;
+    private long _oldCpuTimeTicks;
+    private DateTimeOffset _refreshAfterCpu;
+    private DateTimeOffset _refreshAfterMemory;
+    private double _cpuPercentage = double.NaN;
+    private double _memoryPercentage;
 
     public SystemResources Resources { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WindowsContainerSnapshotProvider"/> class.
     /// </summary>
-    public WindowsContainerSnapshotProvider(ILogger<WindowsContainerSnapshotProvider> logger)
+    [ExcludeFromCodeCoverage]
+    public WindowsContainerSnapshotProvider(
+        ILogger<WindowsContainerSnapshotProvider> logger,
+        IMeterFactory meterFactory,
+        IOptions<ResourceMonitoringOptions> options)
+        : this(new MemoryInfo(), new SystemInfo(), new ProcessInfoWrapper(), logger, meterFactory,
+              [ExcludeFromCodeCoverage] static () => new JobHandleWrapper(), TimeProvider.System, options.Value)
     {
-        Log.RunningInsideJobObject(logger);
-
-        _memoryStatus = new Lazy<MEMORYSTATUSEX>(
-            new MemoryInfo().GetMemoryStatus,
-            LazyThreadSafetyMode.ExecutionAndPublication);
-
-        var systemInfo = new Lazy<SYSTEM_INFO>(
-            new SystemInfo().GetSystemInfo,
-            LazyThreadSafetyMode.ExecutionAndPublication);
-
-        _createJobHandleObject = CreateJobHandle;
-
-        _processInfo = new ProcessInfoWrapper();
-
-        // initialize system resources information
-        using var jobHandle = _createJobHandleObject();
-
-        var cpuUnits = GetGuaranteedCpuUnits(jobHandle, systemInfo);
-        var memory = GetMemoryLimits(jobHandle);
-
-        Resources = new SystemResources(cpuUnits, cpuUnits, memory, memory);
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WindowsContainerSnapshotProvider"/> class.
     /// </summary>
-    /// <param name="memoryInfo">A wrapper for the memory information retrieval object.</param>
-    /// <param name="systemInfoObject">A wrapper for the system information retrieval object.</param>
-    /// <param name="processInfo">A wrapper for the process info retrieval object.</param>
-    /// <param name="createJobHandleObject">A factory method that creates <see cref="IJobHandle"/> object.</param>
-    /// <remarks>This constructor enables the mocking the <see cref="WindowsContainerSnapshotProvider"/> dependencies for the purpose of Unit Testing only.</remarks>
-    internal WindowsContainerSnapshotProvider(IMemoryInfo memoryInfo, ISystemInfo systemInfoObject, IProcessInfo processInfo, Func<IJobHandle> createJobHandleObject)
+    /// <remarks>This constructor enables the mocking of <see cref="WindowsContainerSnapshotProvider"/> dependencies for the purpose of Unit Testing only.</remarks>
+    [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Dependencies for testing")]
+    internal WindowsContainerSnapshotProvider(
+        IMemoryInfo memoryInfo,
+        ISystemInfo systemInfo,
+        IProcessInfo processInfo,
+        ILogger<WindowsContainerSnapshotProvider> logger,
+        IMeterFactory meterFactory,
+        Func<IJobHandle> createJobHandleObject,
+        TimeProvider timeProvider,
+        ResourceMonitoringOptions options)
     {
-        _memoryStatus = new Lazy<MEMORYSTATUSEX>(memoryInfo.GetMemoryStatus, LazyThreadSafetyMode.ExecutionAndPublication);
-        var systemInfo = new Lazy<SYSTEM_INFO>(systemInfoObject.GetSystemInfo, LazyThreadSafetyMode.ExecutionAndPublication);
-        _processInfo = processInfo;
+        Log.RunningInsideJobObject(logger);
+
+        _memoryStatus = new Lazy<MEMORYSTATUSEX>(
+            memoryInfo.GetMemoryStatus,
+            LazyThreadSafetyMode.ExecutionAndPublication);
         _createJobHandleObject = createJobHandleObject;
+        _processInfo = processInfo;
+
+        _timeProvider = timeProvider;
 
         // initialize system resources information
         using var jobHandle = _createJobHandleObject();
 
-        var cpuUnits = GetGuaranteedCpuUnits(jobHandle, systemInfo);
+        _cpuUnits = GetGuaranteedCpuUnits(jobHandle, systemInfo);
         var memory = GetMemoryLimits(jobHandle);
 
-        Resources = new SystemResources(cpuUnits, cpuUnits, memory, memory);
+        Resources = new SystemResources(_cpuUnits, _cpuUnits, memory, memory);
+
+        _totalMemory = memory;
+        var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
+        _oldCpuUsageTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
+        _oldCpuTimeTicks = _timeProvider.GetUtcNow().Ticks;
+        _cpuRefreshInterval = options.CpuConsumptionRefreshInterval;
+        _memoryRefreshInterval = options.MemoryConsumptionRefreshInterval;
+        _refreshAfterCpu = _timeProvider.GetUtcNow();
+        _refreshAfterMemory = _timeProvider.GetUtcNow();
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        // We don't dispose the meter because IMeterFactory handles that
+        // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
+        // Related documentation: https://github.com/dotnet/docs/pull/37170
+        var meter = meterFactory.Create("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.CpuUtilization, observeValue: CpuPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.MemoryUtilization, observeValue: MemoryPercentage);
+
     }
 
     public Snapshot GetSnapshot()
@@ -90,13 +121,13 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
 
         return new Snapshot(
-            TimeSpan.FromTicks(TimeProvider.GetUtcNow().Ticks),
+            TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
             TimeSpan.FromTicks(basicAccountingInfo.TotalKernelTime),
             TimeSpan.FromTicks(basicAccountingInfo.TotalUserTime),
             GetMemoryUsage());
     }
 
-    private static double GetGuaranteedCpuUnits(IJobHandle jobHandle, Lazy<SYSTEM_INFO> systemInfo)
+    private static double GetGuaranteedCpuUnits(IJobHandle jobHandle, ISystemInfo systemInfo)
     {
         // Note: This function convert the CpuRate from CPU cycles to CPU units, also it scales
         // the CPU units with the number of processors (cores) available in the system.
@@ -115,9 +146,11 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             cpuRatio = cpuLimit.CpuRate / CpuCycles;
         }
 
+        var systemInfoValue = systemInfo.GetSystemInfo();
+
         // Multiply the cpu ratio by the number of processors to get you the portion
         // of processors used from the system.
-        return cpuRatio * systemInfo.Value.NumberOfProcessors;
+        return cpuRatio * systemInfoValue.NumberOfProcessors;
     }
 
     /// <summary>
@@ -151,9 +184,63 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         return memoryInfo.TotalCommitUsage;
     }
 
-    [ExcludeFromCodeCoverage]
-    private JobHandleWrapper CreateJobHandle()
+    private double MemoryPercentage()
     {
-        return new JobHandleWrapper();
+        var now = _timeProvider.GetUtcNow();
+
+        lock (_memoryLocker)
+        {
+            if (now < _refreshAfterMemory)
+            {
+                return _memoryPercentage;
+            }
+        }
+
+        var currentMemoryUsage = GetMemoryUsage();
+        lock (_memoryLocker)
+        {
+            if (now >= _refreshAfterMemory)
+            {
+                _memoryPercentage = Math.Min(Hundred, currentMemoryUsage / _totalMemory * Hundred); // Don't change calculation order, otherwise we loose some precision
+                _refreshAfterMemory = now.Add(_memoryRefreshInterval);
+            }
+
+            return _memoryPercentage;
+        }
+    }
+
+    private double CpuPercentage()
+    {
+        var now = _timeProvider.GetUtcNow();
+
+        lock (_cpuLocker)
+        {
+            if (now < _refreshAfterCpu)
+            {
+                return _cpuPercentage;
+            }
+        }
+
+        using var jobHandle = _createJobHandleObject();
+        var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
+        var currentCpuTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
+
+        lock (_cpuLocker)
+        {
+            if (now >= _refreshAfterCpu)
+            {
+                var usageTickDelta = currentCpuTicks - _oldCpuUsageTicks;
+                var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuUnits;
+                if (usageTickDelta > 0 && timeTickDelta > 0)
+                {
+                    _oldCpuUsageTicks = currentCpuTicks;
+                    _oldCpuTimeTicks = now.Ticks;
+                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / timeTickDelta * Hundred); // Don't change calculation order, otherwise we loose some precision
+                    _refreshAfterCpu = now.Add(_cpuRefreshInterval);
+                }
+            }
+
+            return _cpuPercentage;
+        }
     }
 }
