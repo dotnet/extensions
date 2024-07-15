@@ -59,7 +59,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         _timeProvider = timeProvider;
         _getCpuTicksFunc = getCpuTicksFunc;
         _getMemoryUsageFunc = getMemoryUsageFunc;
-        _totalMemory = totalMemory; // This is "double" - to calculate percentage later
+        _totalMemory = totalMemory; // "long" totalMemory => "double" _totalMemory - to calculate percentage later
 
         _oldCpuUsageTicks = getCpuTicksFunc();
         _oldCpuTimeTicks = timeProvider.GetUtcNow().Ticks;
@@ -96,8 +96,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         return process.TotalProcessorTime.Ticks;
     }
 
-    internal static int GetCpuUnits()
-        => Environment.ProcessorCount;
+    internal static int GetCpuUnits() => Environment.ProcessorCount;
 
     internal static long GetMemoryUsageInBytes()
     {
