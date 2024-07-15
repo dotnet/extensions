@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.Metrics;
@@ -14,9 +15,10 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
 public sealed class WindowsContainerSnapshotProviderTests
 {
-    private readonly Mock<IMeterFactory> _meterFactory;
     private readonly FakeLogger<WindowsContainerSnapshotProvider> _logger;
     private readonly MEMORYSTATUSEX _memStatus;
+
+    private readonly Mock<IMeterFactory> _meterFactory;
     private readonly Mock<IMemoryInfo> _memoryInfoMock = new();
     private readonly Mock<ISystemInfo> _systemInfoMock = new();
     private readonly Mock<IJobHandle> _jobHandleMock = new();
@@ -205,10 +207,7 @@ public sealed class WindowsContainerSnapshotProviderTests
             .Returns(meter);
         using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.CpuUtilization, fakeClock);
 
-        var options = new ResourceMonitoringOptions
-        {
-            CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2)
-        };
+        var options = new ResourceMonitoringOptions { CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
 
         var snapshotProvider = new WindowsContainerSnapshotProvider(
             _memoryInfoMock.Object,
@@ -220,24 +219,25 @@ public sealed class WindowsContainerSnapshotProviderTests
             fakeClock,
             options);
 
+        // Step #0 - state in the beginning:
         metricCollector.RecordObservableInstruments();
-
         Assert.NotNull(metricCollector.LastMeasurement);
+        Assert.True(double.IsNaN(metricCollector.LastMeasurement.Value));
 
-        // Simulate 1 millisecond passing and collect metrics again:
+        // Step #1 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
 
         Assert.Equal(10, metricCollector.LastMeasurement.Value); // Consumed 10% of the CPU.
 
-        // Simulate 1 millisecond passing and collect metrics again:
+        // Step #2 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
 
         // CPU usage should be the same as before, as we didn't recalculate it:
         Assert.Equal(10, metricCollector.LastMeasurement.Value); // Still consuming 10% as gauge wasn't updated.
 
-        // Simulate 1 millisecond passing and collect metrics again:
+        // Step #3 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
 
@@ -264,10 +264,7 @@ public sealed class WindowsContainerSnapshotProviderTests
             .Returns(meter);
         using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.MemoryUtilization, fakeClock);
 
-        var options = new ResourceMonitoringOptions
-        {
-            MemoryConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2)
-        };
+        var options = new ResourceMonitoringOptions { MemoryConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
 
         var snapshotProvider = new WindowsContainerSnapshotProvider(
             _memoryInfoMock.Object,
@@ -279,24 +276,20 @@ public sealed class WindowsContainerSnapshotProviderTests
             fakeClock,
             options);
 
+        // Step #0 - state in the beginning:
         metricCollector.RecordObservableInstruments();
-        var memoryValues = metricCollector.LastMeasurement;
-
         Assert.NotNull(metricCollector.LastMeasurement?.Value);
         Assert.Equal(10, metricCollector.LastMeasurement.Value); // Consuming 10% of the memory initially.
 
-        // Simulate 1 millisecond passing and collect metrics again:
+        // Step #1 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(options.MemoryConsumptionRefreshInterval - TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
-
         Assert.Equal(10, metricCollector.LastMeasurement.Value); // Still consuming 10% as gauge wasn't updated.
 
-        // Simulate 2 milliseconds passing and collect metrics again:
+        // Step #2 - simulate 2 milliseconds passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
-
         Assert.Equal(30, metricCollector.LastMeasurement.Value); // Consuming 30% of the memory afterwards.
-
     }
 
     [Fact]

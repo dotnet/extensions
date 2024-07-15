@@ -30,7 +30,6 @@ public sealed class WindowsSnapshotProviderTests
             .Returns(meter);
 
         _fakeLogger = new FakeLogger<WindowsSnapshotProvider>();
-
     }
 
     [ConditionalFact]
@@ -67,30 +66,30 @@ public sealed class WindowsSnapshotProviderTests
     public void SnapshotProvider_EmitsCpuMetrics()
     {
         var fakeClock = new FakeTimeProvider();
-
         var cpuTicks = 500L;
         var options = new ResourceMonitoringOptions { CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
-
         using var meter = new Meter(nameof(SnapshotProvider_EmitsCpuMetrics));
         var meterFactoryMock = new Mock<IMeterFactory>();
-        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
-            .Returns(meter);
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>())).Returns(meter);
 
-        var snapshotProvider = new WindowsSnapshotProvider(_fakeLogger, meterFactoryMock.Object, options, fakeClock, static () => 2, () => cpuTicks, static () => 0L, static () => 1UL);
+        var snapshotProvider = new WindowsSnapshotProvider(_fakeLogger, meterFactoryMock.Object, options, fakeClock,
+            static () => 2, () => cpuTicks, static () => 0L, static () => 1UL);
 
         cpuTicks = 1_500L;
 
         using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.CpuUtilization, fakeClock);
 
-        Assert.Null(metricCollector.LastMeasurement);
+        // Step #0 - state in the beginning:
+        metricCollector.RecordObservableInstruments();
+        Assert.NotNull(metricCollector.LastMeasurement);
+        Assert.True(double.IsNaN(metricCollector.LastMeasurement.Value));
 
-        // Simulate 1 millisecond passing and collect metrics again:
+        // Step #1 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
-
         Assert.Equal(5, metricCollector.LastMeasurement?.Value); // Consuming 5% of the CPU (2 CPUs, 1000 ticks, 1ms).
 
-        // Simulate 1 millisecond passing and collect metrics again:
+        // Step #2 - simulate another 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
 
@@ -102,30 +101,31 @@ public sealed class WindowsSnapshotProviderTests
     public void SnapshotProvider_EmitsMemoryMetrics()
     {
         var fakeClock = new FakeTimeProvider();
-
         long memoryUsed = 300L;
         var options = new ResourceMonitoringOptions { MemoryConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
-        using var meter = new Meter(nameof(SnapshotProvider_EmitsCpuMetrics));
+        using var meter = new Meter(nameof(SnapshotProvider_EmitsMemoryMetrics));
         var meterFactoryMock = new Mock<IMeterFactory>();
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
+
         var snapshotProvider = new WindowsSnapshotProvider(_fakeLogger, meterFactoryMock.Object, options, fakeClock, static () => 1, static () => 0, () => memoryUsed, static () => 3000UL);
 
         using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.MemoryUtilization, fakeClock);
-        metricCollector.RecordObservableInstruments();
 
+        // Step #0 - state in the beginning:
+        metricCollector.RecordObservableInstruments();
         Assert.NotNull(metricCollector.LastMeasurement);
         Assert.Equal(10, metricCollector.LastMeasurement.Value); // Consuming 5% of the memory initially
 
         memoryUsed = 900L; // Simulate 30% memory usage.
 
-        // Simulate 1 millisecond passing and collect metrics again:
+        // Step #1 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
 
         Assert.Equal(10, metricCollector.LastMeasurement.Value); // Still consuming 10% as gauge wasn't updated.
 
-        // Simulate 1 millisecond passing and collect metrics again:
+        // Step #2 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
 
@@ -133,7 +133,7 @@ public sealed class WindowsSnapshotProviderTests
 
         memoryUsed = 3_100L; // Simulate more than 100% memory usage
 
-        // Simulate 1 millisecond passing and collect metrics again:
+        // Step #3 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(options.MemoryConsumptionRefreshInterval);
         metricCollector.RecordObservableInstruments();
 
