@@ -54,7 +54,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.Null(exception);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void SnapshotProvider_EmitsLogRecord()
     {
         var provider = new WindowsSnapshotProvider(_fakeLogger, _meterFactoryMock.Object, _options);
@@ -63,7 +63,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.StartsWith("Resource Monitoring is running outside of Job Object", logRecord.Message);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void SnapshotProvider_EmitsCpuMetrics()
     {
         var fakeClock = new FakeTimeProvider();
@@ -98,7 +98,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.Equal(5, metricCollector.LastMeasurement?.Value); // Still consuming 5% of the CPU
     }
 
-    [Fact]
+    [ConditionalFact]
     public void SnapshotProvider_EmitsMemoryMetrics()
     {
         var fakeClock = new FakeTimeProvider();
@@ -141,7 +141,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.Equal(100, metricCollector.LastMeasurement.Value); // Consuming 100% of the memory
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Provider_Returns_MemoryConsumption()
     {
         // This is a synthetic test to have full test coverage:
