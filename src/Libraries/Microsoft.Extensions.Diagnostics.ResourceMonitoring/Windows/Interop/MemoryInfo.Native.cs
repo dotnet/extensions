@@ -22,13 +22,12 @@ internal sealed partial class MemoryInfo
         /// <returns>Success or failure.</returns>
         [DllImportAttr("kernel32.dll", SetLastError = true)]
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static
+        public static unsafe
 #if NET8_0_OR_GREATER
             partial
 #else
             extern
 #endif
-            bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX memoryStatus);
+            BOOL GlobalMemoryStatusEx(MEMORYSTATUSEX* memoryStatus);
     }
 }

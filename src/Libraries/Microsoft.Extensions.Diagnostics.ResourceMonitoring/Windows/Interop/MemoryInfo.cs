@@ -16,11 +16,11 @@ internal sealed partial class MemoryInfo : IMemoryInfo
     /// Get the memory status of the host.
     /// </summary>
     /// <returns>Memory status information.</returns>
-    public MEMORYSTATUSEX GetMemoryStatus()
+    public unsafe MEMORYSTATUSEX GetMemoryStatus()
     {
         MEMORYSTATUSEX info = default;
-        info.Length = (uint)Marshal.SizeOf<MEMORYSTATUSEX>();
-        if (!SafeNativeMethods.GlobalMemoryStatusEx(ref info))
+        info.Length = (uint)sizeof(MEMORYSTATUSEX);
+        if (SafeNativeMethods.GlobalMemoryStatusEx(&info) != BOOL.TRUE)
         {
             Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
