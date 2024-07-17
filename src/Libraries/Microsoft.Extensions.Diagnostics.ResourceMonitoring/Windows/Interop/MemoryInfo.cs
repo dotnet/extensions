@@ -30,5 +30,6 @@ internal sealed partial class MemoryInfo : IMemoryInfo
 
     private static partial class SafeNativeMethods
     {
+        // the class is partial and empty for source gen to work correctly for GlobalMemoryStatusEx
     }
 }
