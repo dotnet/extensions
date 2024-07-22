@@ -47,7 +47,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         ILogger<WindowsContainerSnapshotProvider> logger,
         IMeterFactory meterFactory,
         IOptions<ResourceMonitoringOptions> options)
-        : this(new MemoryInfo(), new SystemInfo(), new ProcessInfoWrapper(), logger, meterFactory,
+        : this(new MemoryInfo(), new SystemInfo(), new ProcessInfo(), logger, meterFactory,
               static () => new JobHandleWrapper(), TimeProvider.System, options.Value)
     {
     }
@@ -169,12 +169,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     /// Gets memory usage within the system.
     /// </summary>
     /// <returns>Memory usage within the system in bytes.</returns>
-    private ulong GetMemoryUsage()
-    {
-        var memoryInfo = _processInfo.GetCurrentAppMemoryInfo();
-
-        return memoryInfo.TotalCommitUsage;
-    }
+    private ulong GetMemoryUsage() => _processInfo.GetMemoryUsage();
 
     private double MemoryPercentage()
     {

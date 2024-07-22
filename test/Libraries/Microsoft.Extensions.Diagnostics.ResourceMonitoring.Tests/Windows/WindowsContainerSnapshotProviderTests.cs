@@ -27,7 +27,7 @@ public sealed class WindowsContainerSnapshotProviderTests
     private SYSTEM_INFO _sysInfo;
     private JOBOBJECT_BASIC_ACCOUNTING_INFORMATION _accountingInfo;
     private JOBOBJECT_CPU_RATE_CONTROL_INFORMATION _cpuLimit;
-    private ProcessInfo.APP_MEMORY_INFORMATION _appMemoryInfo;
+    private ulong _appMemoryUsage;
     private JOBOBJECT_EXTENDED_LIMIT_INFORMATION _limitInfo;
 
     public WindowsContainerSnapshotProviderTests()
@@ -60,9 +60,9 @@ public sealed class WindowsContainerSnapshotProviderTests
         _jobHandleMock.Setup(j => j.GetExtendedLimitInfo())
             .Returns(() => _limitInfo);
 
-        _appMemoryInfo.TotalCommitUsage = 1000UL;
-        _processInfoMock.Setup(p => p.GetCurrentAppMemoryInfo())
-            .Returns(() => _appMemoryInfo);
+        _appMemoryUsage = 1000UL;
+        _processInfoMock.Setup(p => p.GetMemoryUsage())
+            .Returns(() => _appMemoryUsage);
     }
 
     [Theory]
@@ -120,7 +120,7 @@ public sealed class WindowsContainerSnapshotProviderTests
         Assert.Equal(_accountingInfo.TotalUserTime, data.UserTimeSinceStart.Ticks);
         Assert.Equal(_limitInfo.JobMemoryLimit.ToUInt64(), source.Resources.GuaranteedMemoryInBytes);
         Assert.Equal(_limitInfo.JobMemoryLimit.ToUInt64(), source.Resources.MaximumMemoryInBytes);
-        Assert.Equal(_appMemoryInfo.TotalCommitUsage, data.MemoryUsageInBytes);
+        Assert.Equal(_appMemoryUsage, data.MemoryUsageInBytes);
         Assert.True(data.MemoryUsageInBytes > 0);
     }
 
@@ -147,7 +147,7 @@ public sealed class WindowsContainerSnapshotProviderTests
         Assert.Equal(0.7, source.Resources.MaximumCpuUnits);
         Assert.Equal(_limitInfo.JobMemoryLimit.ToUInt64(), source.Resources.GuaranteedMemoryInBytes);
         Assert.Equal(_limitInfo.JobMemoryLimit.ToUInt64(), source.Resources.MaximumMemoryInBytes);
-        Assert.Equal(_appMemoryInfo.TotalCommitUsage, data.MemoryUsageInBytes);
+        Assert.Equal(_appMemoryUsage, data.MemoryUsageInBytes);
         Assert.True(data.MemoryUsageInBytes > 0);
     }
 
@@ -160,7 +160,7 @@ public sealed class WindowsContainerSnapshotProviderTests
 
         _limitInfo.JobMemoryLimit = new UIntPtr(0);
 
-        _appMemoryInfo.TotalCommitUsage = 3000UL;
+        _appMemoryUsage = 3000UL;
 
         var source = new WindowsContainerSnapshotProvider(
             _memoryInfoMock.Object,
@@ -179,7 +179,7 @@ public sealed class WindowsContainerSnapshotProviderTests
         Assert.Equal(1.0, source.Resources.MaximumCpuUnits);
         Assert.Equal(_memStatus.TotalPhys, source.Resources.GuaranteedMemoryInBytes);
         Assert.Equal(_memStatus.TotalPhys, source.Resources.MaximumMemoryInBytes);
-        Assert.Equal(_appMemoryInfo.TotalCommitUsage, data.MemoryUsageInBytes);
+        Assert.Equal(_appMemoryUsage, data.MemoryUsageInBytes);
         Assert.True(data.MemoryUsageInBytes > 0);
     }
 
@@ -248,13 +248,12 @@ public sealed class WindowsContainerSnapshotProviderTests
     [Fact]
     public void SnapshotProvider_EmitsMemoryMetrics()
     {
-        _appMemoryInfo.TotalCommitUsage = 200UL;
+        _appMemoryUsage = 200UL;
 
-        ProcessInfo.APP_MEMORY_INFORMATION updatedAppMemoryInfo = default;
-        updatedAppMemoryInfo.TotalCommitUsage = 600UL;
-        _processInfoMock.SetupSequence(p => p.GetCurrentAppMemoryInfo())
-            .Returns(() => _appMemoryInfo)
-            .Returns(updatedAppMemoryInfo)
+        ulong updatedAppMemoryUsage = 600UL;
+        _processInfoMock.SetupSequence(p => p.GetMemoryUsage())
+            .Returns(() => _appMemoryUsage)
+            .Returns(updatedAppMemoryUsage)
             .Throws(new InvalidOperationException("We shouldn't hit here..."));
 
         var fakeClock = new FakeTimeProvider();
