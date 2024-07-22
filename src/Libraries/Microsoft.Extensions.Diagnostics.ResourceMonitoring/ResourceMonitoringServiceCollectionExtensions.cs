@@ -129,11 +129,13 @@ public static class ResourceMonitoringServiceCollectionExtensions
         var injectParserV2 = ResourceMonitoringLinuxCgroupVersion.GetCgroupType();
         if (injectParserV2)
         {
+            Console.WriteLine("CGROUP V2");
             builder.Services.TryAddSingleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>();
         }
         else
         {
-            builder.Services.TryAddSingleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV1>();
+            Console.WriteLine("CGROUP V1");
+            builder.Services.TryAddSingleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>();
         }
     }
 #endif
