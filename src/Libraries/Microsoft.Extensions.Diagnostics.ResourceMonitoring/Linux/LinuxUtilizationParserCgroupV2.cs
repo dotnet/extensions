@@ -218,7 +218,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
             ReadOnlySpan<char> memoryBuffer = bufferWriter.Buffer.WrittenSpan;
 
-            if (memoryBuffer.Equals("max", StringComparison.InvariantCulture))
+            if (memoryBuffer.Equals("max\n", StringComparison.InvariantCulture))
             {
                 return GetHostAvailableMemory();
             }
@@ -503,7 +503,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             return false;
         }
 
-        if (quotaBuffer.Equals("max", StringComparison.InvariantCulture))
+        if (quotaBuffer.StartsWith("max", StringComparison.InvariantCulture))
         {
             cpuUnits = 0;
             return false;
