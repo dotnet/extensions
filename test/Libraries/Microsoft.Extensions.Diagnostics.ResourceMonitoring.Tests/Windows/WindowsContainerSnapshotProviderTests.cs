@@ -2,7 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
+using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Xunit;
 using static Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop.JobObjectInfo;
@@ -11,6 +15,56 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
 public sealed class WindowsContainerSnapshotProviderTests
 {
+    private readonly FakeLogger<WindowsContainerSnapshotProvider> _logger;
+    private readonly MEMORYSTATUSEX _memStatus;
+
+    private readonly Mock<IMeterFactory> _meterFactory;
+    private readonly Mock<IMemoryInfo> _memoryInfoMock = new();
+    private readonly Mock<ISystemInfo> _systemInfoMock = new();
+    private readonly Mock<IJobHandle> _jobHandleMock = new();
+    private readonly Mock<IProcessInfo> _processInfoMock = new();
+
+    private SYSTEM_INFO _sysInfo;
+    private JOBOBJECT_BASIC_ACCOUNTING_INFORMATION _accountingInfo;
+    private JOBOBJECT_CPU_RATE_CONTROL_INFORMATION _cpuLimit;
+    private ProcessInfo.APP_MEMORY_INFORMATION _appMemoryInfo;
+    private JOBOBJECT_EXTENDED_LIMIT_INFORMATION _limitInfo;
+
+    public WindowsContainerSnapshotProviderTests()
+    {
+        using var meter = new Meter(nameof(WindowsContainerSnapshotProvider));
+        _meterFactory = new Mock<IMeterFactory>();
+        _meterFactory.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+            .Returns(meter);
+
+        _logger = new FakeLogger<WindowsContainerSnapshotProvider>();
+
+        _memStatus.TotalPhys = 3000UL;
+        _memoryInfoMock.Setup(m => m.GetMemoryStatus())
+            .Returns(() => _memStatus);
+
+        _sysInfo.NumberOfProcessors = 1;
+        _systemInfoMock.Setup(s => s.GetSystemInfo())
+            .Returns(() => _sysInfo);
+
+        _accountingInfo.TotalKernelTime = 1000;
+        _accountingInfo.TotalUserTime = 1000;
+        _jobHandleMock.Setup(j => j.GetBasicAccountingInfo())
+            .Returns(() => _accountingInfo);
+
+        _cpuLimit.CpuRate = 7_000;
+        _jobHandleMock.Setup(j => j.GetJobCpuLimitInfo())
+            .Returns(() => _cpuLimit);
+
+        _limitInfo.JobMemoryLimit = new UIntPtr(2000);
+        _jobHandleMock.Setup(j => j.GetExtendedLimitInfo())
+            .Returns(() => _limitInfo);
+
+        _appMemoryInfo.TotalCommitUsage = 1000UL;
+        _processInfoMock.Setup(p => p.GetCurrentAppMemoryInfo())
+            .Returns(() => _appMemoryInfo);
+    }
+
     [Theory]
     [InlineData(7_000, 1U, 0.7)]
     [InlineData(10_000, 1U, 1.0)]
@@ -18,219 +72,250 @@ public sealed class WindowsContainerSnapshotProviderTests
     [InlineData(5_000, 2U, 1.0)]
     public void Resources_GetsCorrectSystemResourcesValues(uint cpuRate, uint numberOfProcessors, double expectedCpuUnits)
     {
-        MEMORYSTATUSEX memStatus = default;
-        memStatus.TotalPhys = 3000UL;
-
-        SYSTEM_INFO sysInfo = default;
-        sysInfo.NumberOfProcessors = numberOfProcessors;
-
-        JOBOBJECT_CPU_RATE_CONTROL_INFORMATION cpuLimit = default;
+        _sysInfo.NumberOfProcessors = numberOfProcessors;
 
         // This is customized to force the private method GetGuaranteedCpuUnits
-        // to use the value of  CpuRate and divide it by 10_000.
-        cpuLimit.ControlFlags = 5;
+        // to use the value of CpuRate and divide it by 10_000.
+        _cpuLimit.ControlFlags = 5;
 
         // The CpuRate is the Cpu percentage multiplied by 100, check this:
         // https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-jobobject_cpu_rate_control_information
-        cpuLimit.CpuRate = cpuRate;
-
-        JOBOBJECT_BASIC_ACCOUNTING_INFORMATION accountingInfo = default;
-        accountingInfo.TotalKernelTime = 1000;
-        accountingInfo.TotalUserTime = 1000;
-
-        JOBOBJECT_EXTENDED_LIMIT_INFORMATION limitInfo = default;
-        limitInfo.JobMemoryLimit = new UIntPtr(2000);
-
-        ProcessInfo.APP_MEMORY_INFORMATION appMemoryInfo = default;
-        appMemoryInfo.TotalCommitUsage = 1000UL;
-
-        var memoryInfoMock = new Mock<IMemoryInfo>();
-        memoryInfoMock.Setup(m => m.GetMemoryStatus()).Returns(memStatus);
-
-        var systemInfoMock = new Mock<ISystemInfo>();
-        systemInfoMock.Setup(s => s.GetSystemInfo()).Returns(sysInfo);
-
-        var processInfoMock = new Mock<IProcessInfo>();
-        processInfoMock.Setup(p => p.GetCurrentAppMemoryInfo()).Returns(appMemoryInfo);
-
-        var jobHandleMock = new Mock<IJobHandle>();
-        jobHandleMock.Setup(j => j.GetJobCpuLimitInfo()).Returns(cpuLimit);
-        jobHandleMock.Setup(j => j.GetBasicAccountingInfo()).Returns(accountingInfo);
-        jobHandleMock.Setup(j => j.GetExtendedLimitInfo()).Returns(limitInfo);
+        _cpuLimit.CpuRate = cpuRate;
 
         var provider = new WindowsContainerSnapshotProvider(
-            memoryInfoMock.Object,
-            systemInfoMock.Object,
-            processInfoMock.Object,
-            () => jobHandleMock.Object);
+            _memoryInfoMock.Object,
+            _systemInfoMock.Object,
+            _processInfoMock.Object,
+            _logger,
+            _meterFactory.Object,
+            () => _jobHandleMock.Object,
+            new FakeTimeProvider(),
+            new());
 
         Assert.Equal(expectedCpuUnits, provider.Resources.GuaranteedCpuUnits);
         Assert.Equal(expectedCpuUnits, provider.Resources.MaximumCpuUnits);
-        Assert.Equal(limitInfo.JobMemoryLimit.ToUInt64(), provider.Resources.GuaranteedMemoryInBytes);
-        Assert.Equal(limitInfo.JobMemoryLimit.ToUInt64(), provider.Resources.MaximumMemoryInBytes);
+        Assert.Equal(_limitInfo.JobMemoryLimit.ToUInt64(), provider.Resources.GuaranteedMemoryInBytes);
+        Assert.Equal(_limitInfo.JobMemoryLimit.ToUInt64(), provider.Resources.MaximumMemoryInBytes);
     }
 
     [Fact]
     public void GetSnapshot_ProducesCorrectSnapshot()
     {
-        MEMORYSTATUSEX memStatus = default;
-        memStatus.TotalPhys = 3000UL;
-
-        SYSTEM_INFO sysInfo = default;
-        sysInfo.NumberOfProcessors = 1;
-
-        JOBOBJECT_CPU_RATE_CONTROL_INFORMATION cpuLimit = default;
-
         // The ControlFlags is customized to force the private method GetGuaranteedCpuUnits
         // to not use the value of CpuRate in the calculation.
-        cpuLimit.ControlFlags = 1;
-        cpuLimit.CpuRate = 7_000;
-
-        JOBOBJECT_BASIC_ACCOUNTING_INFORMATION accountingInfo = default;
-        accountingInfo.TotalKernelTime = 1000;
-        accountingInfo.TotalUserTime = 1000;
-
-        JOBOBJECT_EXTENDED_LIMIT_INFORMATION limitInfo = default;
-        limitInfo.JobMemoryLimit = new UIntPtr(2000);
-
-        ProcessInfo.APP_MEMORY_INFORMATION appMemoryInfo = default;
-        appMemoryInfo.TotalCommitUsage = 1000UL;
-
-        var memoryInfoMock = new Mock<IMemoryInfo>();
-        memoryInfoMock.Setup(m => m.GetMemoryStatus()).Returns(memStatus);
-
-        var systemInfoMock = new Mock<ISystemInfo>();
-        systemInfoMock.Setup(s => s.GetSystemInfo()).Returns(sysInfo);
-
-        var processInfoMock = new Mock<IProcessInfo>();
-        processInfoMock.Setup(p => p.GetCurrentAppMemoryInfo()).Returns(appMemoryInfo);
-
-        var jobHandleMock = new Mock<IJobHandle>();
-        jobHandleMock.Setup(j => j.GetJobCpuLimitInfo()).Returns(cpuLimit);
-        jobHandleMock.Setup(j => j.GetBasicAccountingInfo()).Returns(accountingInfo);
-        jobHandleMock.Setup(j => j.GetExtendedLimitInfo()).Returns(limitInfo);
+        _cpuLimit.ControlFlags = 1;
 
         var source = new WindowsContainerSnapshotProvider(
-            memoryInfoMock.Object,
-            systemInfoMock.Object,
-            processInfoMock.Object,
-            () => jobHandleMock.Object);
+            _memoryInfoMock.Object,
+            _systemInfoMock.Object,
+            _processInfoMock.Object,
+            _logger,
+            _meterFactory.Object,
+            () => _jobHandleMock.Object,
+            new FakeTimeProvider(),
+            new());
+
         var data = source.GetSnapshot();
-        Assert.Equal(accountingInfo.TotalKernelTime, data.KernelTimeSinceStart.Ticks);
-        Assert.Equal(accountingInfo.TotalUserTime, data.UserTimeSinceStart.Ticks);
-        Assert.Equal(limitInfo.JobMemoryLimit.ToUInt64(), source.Resources.GuaranteedMemoryInBytes);
-        Assert.Equal(limitInfo.JobMemoryLimit.ToUInt64(), source.Resources.MaximumMemoryInBytes);
-        Assert.Equal(appMemoryInfo.TotalCommitUsage, data.MemoryUsageInBytes);
+        Assert.Equal(_accountingInfo.TotalKernelTime, data.KernelTimeSinceStart.Ticks);
+        Assert.Equal(_accountingInfo.TotalUserTime, data.UserTimeSinceStart.Ticks);
+        Assert.Equal(_limitInfo.JobMemoryLimit.ToUInt64(), source.Resources.GuaranteedMemoryInBytes);
+        Assert.Equal(_limitInfo.JobMemoryLimit.ToUInt64(), source.Resources.MaximumMemoryInBytes);
+        Assert.Equal(_appMemoryInfo.TotalCommitUsage, data.MemoryUsageInBytes);
         Assert.True(data.MemoryUsageInBytes > 0);
     }
 
     [Fact]
     public void GetSnapshot_ProducesCorrectSnapshotForDifferentCpuRate()
     {
-        MEMORYSTATUSEX memStatus = default;
-        memStatus.TotalPhys = 3000UL;
-
-        SYSTEM_INFO sysInfo = default;
-        sysInfo.NumberOfProcessors = 1;
-
-        JOBOBJECT_CPU_RATE_CONTROL_INFORMATION cpuLimit = default;
-        cpuLimit.ControlFlags = uint.MaxValue; // force all bits in ControlFlags to be 1.
-        cpuLimit.CpuRate = 7_000;
-
-        JOBOBJECT_BASIC_ACCOUNTING_INFORMATION accountingInfo = default;
-        accountingInfo.TotalKernelTime = 1000;
-        accountingInfo.TotalUserTime = 1000;
-
-        JOBOBJECT_EXTENDED_LIMIT_INFORMATION limitInfo = default;
-        limitInfo.JobMemoryLimit = new UIntPtr(2000);
-
-        ProcessInfo.APP_MEMORY_INFORMATION appMemoryInfo = default;
-        appMemoryInfo.TotalCommitUsage = 1000UL;
-
-        var memoryInfoMock = new Mock<IMemoryInfo>();
-        memoryInfoMock.Setup(m => m.GetMemoryStatus()).Returns(memStatus);
-
-        var systemInfoMock = new Mock<ISystemInfo>();
-        systemInfoMock.Setup(s => s.GetSystemInfo()).Returns(sysInfo);
-
-        var processInfoMock = new Mock<IProcessInfo>();
-        processInfoMock.Setup(p => p.GetCurrentAppMemoryInfo()).Returns(appMemoryInfo);
-
-        var jobHandleMock = new Mock<IJobHandle>();
-        jobHandleMock.Setup(j => j.GetJobCpuLimitInfo()).Returns(cpuLimit);
-        jobHandleMock.Setup(j => j.GetBasicAccountingInfo()).Returns(accountingInfo);
-        jobHandleMock.Setup(j => j.GetExtendedLimitInfo()).Returns(limitInfo);
+        _cpuLimit.ControlFlags = uint.MaxValue; // force all bits in ControlFlags to be 1.
 
         var source = new WindowsContainerSnapshotProvider(
-            memoryInfoMock.Object,
-            systemInfoMock.Object,
-            processInfoMock.Object,
-            () => jobHandleMock.Object);
+            _memoryInfoMock.Object,
+            _systemInfoMock.Object,
+            _processInfoMock.Object,
+            _logger,
+            _meterFactory.Object,
+            () => _jobHandleMock.Object,
+            new FakeTimeProvider(),
+            new());
+
         var data = source.GetSnapshot();
 
-        Assert.Equal(accountingInfo.TotalKernelTime, data.KernelTimeSinceStart.Ticks);
-        Assert.Equal(accountingInfo.TotalUserTime, data.UserTimeSinceStart.Ticks);
+        Assert.Equal(_accountingInfo.TotalKernelTime, data.KernelTimeSinceStart.Ticks);
+        Assert.Equal(_accountingInfo.TotalUserTime, data.UserTimeSinceStart.Ticks);
         Assert.Equal(0.7, source.Resources.GuaranteedCpuUnits);
         Assert.Equal(0.7, source.Resources.MaximumCpuUnits);
-        Assert.Equal(limitInfo.JobMemoryLimit.ToUInt64(), source.Resources.GuaranteedMemoryInBytes);
-        Assert.Equal(limitInfo.JobMemoryLimit.ToUInt64(), source.Resources.MaximumMemoryInBytes);
-        Assert.Equal(appMemoryInfo.TotalCommitUsage, data.MemoryUsageInBytes);
+        Assert.Equal(_limitInfo.JobMemoryLimit.ToUInt64(), source.Resources.GuaranteedMemoryInBytes);
+        Assert.Equal(_limitInfo.JobMemoryLimit.ToUInt64(), source.Resources.MaximumMemoryInBytes);
+        Assert.Equal(_appMemoryInfo.TotalCommitUsage, data.MemoryUsageInBytes);
         Assert.True(data.MemoryUsageInBytes > 0);
     }
 
     [Fact]
     public void GetSnapshot_With_JobMemoryLimit_Set_To_Zero_ProducesCorrectSnapshot()
     {
-        MEMORYSTATUSEX memStatus = default;
-        memStatus.TotalPhys = 3000UL;
-
-        SYSTEM_INFO sysInfo = default;
-        sysInfo.NumberOfProcessors = 1;
-
-        JOBOBJECT_CPU_RATE_CONTROL_INFORMATION cpuLimit = default;
-
         // This is customized to force the private method GetGuaranteedCpuUnits
         // to set the GuaranteedCpuUnits and MaximumCpuUnits to 1.0.
-        cpuLimit.ControlFlags = 4;
-        cpuLimit.CpuRate = 7_000;
+        _cpuLimit.ControlFlags = 4;
 
-        JOBOBJECT_BASIC_ACCOUNTING_INFORMATION accountingInfo = default;
-        accountingInfo.TotalKernelTime = 1000;
-        accountingInfo.TotalUserTime = 1000;
+        _limitInfo.JobMemoryLimit = new UIntPtr(0);
 
-        JOBOBJECT_EXTENDED_LIMIT_INFORMATION limitInfo = default;
-        limitInfo.JobMemoryLimit = new UIntPtr(0);
-
-        ProcessInfo.APP_MEMORY_INFORMATION appMemoryInfo = default;
-        appMemoryInfo.TotalCommitUsage = 3000UL;
-
-        var memoryInfoMock = new Mock<IMemoryInfo>();
-        memoryInfoMock.Setup(m => m.GetMemoryStatus()).Returns(memStatus);
-
-        var systemInfoMock = new Mock<ISystemInfo>();
-        systemInfoMock.Setup(s => s.GetSystemInfo()).Returns(sysInfo);
-
-        var processInfoMock = new Mock<IProcessInfo>();
-        processInfoMock.Setup(p => p.GetCurrentAppMemoryInfo()).Returns(appMemoryInfo);
-
-        var jobHandleMock = new Mock<IJobHandle>();
-        jobHandleMock.Setup(j => j.GetJobCpuLimitInfo()).Returns(cpuLimit);
-        jobHandleMock.Setup(j => j.GetBasicAccountingInfo()).Returns(accountingInfo);
-        jobHandleMock.Setup(j => j.GetExtendedLimitInfo()).Returns(limitInfo);
+        _appMemoryInfo.TotalCommitUsage = 3000UL;
 
         var source = new WindowsContainerSnapshotProvider(
-            memoryInfoMock.Object,
-            systemInfoMock.Object,
-            processInfoMock.Object,
-            () => jobHandleMock.Object);
+            _memoryInfoMock.Object,
+            _systemInfoMock.Object,
+            _processInfoMock.Object,
+            _logger,
+            _meterFactory.Object,
+            () => _jobHandleMock.Object,
+            new FakeTimeProvider(),
+            new());
+
         var data = source.GetSnapshot();
-        Assert.Equal(accountingInfo.TotalKernelTime, data.KernelTimeSinceStart.Ticks);
-        Assert.Equal(accountingInfo.TotalUserTime, data.UserTimeSinceStart.Ticks);
+        Assert.Equal(_accountingInfo.TotalKernelTime, data.KernelTimeSinceStart.Ticks);
+        Assert.Equal(_accountingInfo.TotalUserTime, data.UserTimeSinceStart.Ticks);
         Assert.Equal(1.0, source.Resources.GuaranteedCpuUnits);
         Assert.Equal(1.0, source.Resources.MaximumCpuUnits);
-        Assert.Equal(memStatus.TotalPhys, source.Resources.GuaranteedMemoryInBytes);
-        Assert.Equal(memStatus.TotalPhys, source.Resources.MaximumMemoryInBytes);
-        Assert.Equal(appMemoryInfo.TotalCommitUsage, data.MemoryUsageInBytes);
+        Assert.Equal(_memStatus.TotalPhys, source.Resources.GuaranteedMemoryInBytes);
+        Assert.Equal(_memStatus.TotalPhys, source.Resources.MaximumMemoryInBytes);
+        Assert.Equal(_appMemoryInfo.TotalCommitUsage, data.MemoryUsageInBytes);
         Assert.True(data.MemoryUsageInBytes > 0);
+    }
+
+    [Fact]
+    public void SnapshotProvider_EmitsCpuMetrics()
+    {
+        // Simulating 10% CPU usage (2 CPUs, 2000 ticks initially, 4000 ticks after 1 ms):
+        JOBOBJECT_BASIC_ACCOUNTING_INFORMATION updatedAccountingInfo = default;
+        updatedAccountingInfo.TotalKernelTime = 2500;
+        updatedAccountingInfo.TotalUserTime = 1500;
+
+        _jobHandleMock.SetupSequence(j => j.GetBasicAccountingInfo())
+            .Returns(() => _accountingInfo)
+            .Returns(updatedAccountingInfo)
+            .Returns(updatedAccountingInfo)
+            .Returns(updatedAccountingInfo)
+            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+
+        _sysInfo.NumberOfProcessors = 2;
+
+        var fakeClock = new FakeTimeProvider();
+        using var meter = new Meter(nameof(SnapshotProvider_EmitsCpuMetrics));
+        var meterFactoryMock = new Mock<IMeterFactory>();
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+            .Returns(meter);
+        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.CpuUtilization, fakeClock);
+
+        var options = new ResourceMonitoringOptions { CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
+
+        var snapshotProvider = new WindowsContainerSnapshotProvider(
+            _memoryInfoMock.Object,
+            _systemInfoMock.Object,
+            _processInfoMock.Object,
+            _logger,
+            meterFactoryMock.Object,
+            () => _jobHandleMock.Object,
+            fakeClock,
+            options);
+
+        // Step #0 - state in the beginning:
+        metricCollector.RecordObservableInstruments();
+        Assert.NotNull(metricCollector.LastMeasurement);
+        Assert.True(double.IsNaN(metricCollector.LastMeasurement.Value));
+
+        // Step #1 - simulate 1 millisecond passing and collect metrics again:
+        fakeClock.Advance(TimeSpan.FromMilliseconds(1));
+        metricCollector.RecordObservableInstruments();
+
+        Assert.Equal(10, metricCollector.LastMeasurement.Value); // Consumed 10% of the CPU.
+
+        // Step #2 - simulate 1 millisecond passing and collect metrics again:
+        fakeClock.Advance(TimeSpan.FromMilliseconds(1));
+        metricCollector.RecordObservableInstruments();
+
+        // CPU usage should be the same as before, as we didn't recalculate it:
+        Assert.Equal(10, metricCollector.LastMeasurement.Value); // Still consuming 10% as gauge wasn't updated.
+
+        // Step #3 - simulate 1 millisecond passing and collect metrics again:
+        fakeClock.Advance(TimeSpan.FromMilliseconds(1));
+        metricCollector.RecordObservableInstruments();
+
+        // CPU usage should be the same as before, as we're not simulating any CPU usage:
+        Assert.Equal(10, metricCollector.LastMeasurement.Value); // Consumed 10% of the CPU.
+    }
+
+    [Fact]
+    public void SnapshotProvider_EmitsMemoryMetrics()
+    {
+        _appMemoryInfo.TotalCommitUsage = 200UL;
+
+        ProcessInfo.APP_MEMORY_INFORMATION updatedAppMemoryInfo = default;
+        updatedAppMemoryInfo.TotalCommitUsage = 600UL;
+        _processInfoMock.SetupSequence(p => p.GetCurrentAppMemoryInfo())
+            .Returns(() => _appMemoryInfo)
+            .Returns(updatedAppMemoryInfo)
+            .Throws(new InvalidOperationException("We shouldn't hit here..."));
+
+        var fakeClock = new FakeTimeProvider();
+        using var meter = new Meter(nameof(SnapshotProvider_EmitsMemoryMetrics));
+        var meterFactoryMock = new Mock<IMeterFactory>();
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+            .Returns(meter);
+        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.MemoryUtilization, fakeClock);
+
+        var options = new ResourceMonitoringOptions { MemoryConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
+
+        var snapshotProvider = new WindowsContainerSnapshotProvider(
+            _memoryInfoMock.Object,
+            _systemInfoMock.Object,
+            _processInfoMock.Object,
+            _logger,
+            meterFactoryMock.Object,
+            () => _jobHandleMock.Object,
+            fakeClock,
+            options);
+
+        // Step #0 - state in the beginning:
+        metricCollector.RecordObservableInstruments();
+        Assert.NotNull(metricCollector.LastMeasurement?.Value);
+        Assert.Equal(10, metricCollector.LastMeasurement.Value); // Consuming 10% of the memory initially.
+
+        // Step #1 - simulate 1 millisecond passing and collect metrics again:
+        fakeClock.Advance(options.MemoryConsumptionRefreshInterval - TimeSpan.FromMilliseconds(1));
+        metricCollector.RecordObservableInstruments();
+        Assert.Equal(10, metricCollector.LastMeasurement.Value); // Still consuming 10% as gauge wasn't updated.
+
+        // Step #2 - simulate 2 milliseconds passing and collect metrics again:
+        fakeClock.Advance(TimeSpan.FromMilliseconds(1));
+        metricCollector.RecordObservableInstruments();
+        Assert.Equal(30, metricCollector.LastMeasurement.Value); // Consuming 30% of the memory afterwards.
+    }
+
+    [Fact]
+    public void SnapshotProvider_EmitsLogRecord()
+    {
+        var snapshotProvider = new WindowsContainerSnapshotProvider(
+            _memoryInfoMock.Object,
+            _systemInfoMock.Object,
+            _processInfoMock.Object,
+            _logger,
+            _meterFactory.Object,
+            () => _jobHandleMock.Object,
+            new FakeTimeProvider(),
+            new());
+
+        var logRecords = _logger.Collector.GetSnapshot();
+        var logRecord = Assert.Single(logRecords);
+        Assert.StartsWith("Resource Monitoring is running inside a Job Object", logRecord.Message);
+    }
+
+    [Fact]
+    public void Provider_Throws_WhenLoggerIsNull()
+    {
+        // This is a synthetic test to have full test coverage,
+        // using [ExcludeFromCodeCoverage] on a constructor doesn't cover ": this(...)" call.
+        Assert.Throws<NullReferenceException>(() =>
+            new WindowsContainerSnapshotProvider(null!, _meterFactory.Object, Microsoft.Extensions.Options.Options.Create<ResourceMonitoringOptions>(new())));
     }
 }
