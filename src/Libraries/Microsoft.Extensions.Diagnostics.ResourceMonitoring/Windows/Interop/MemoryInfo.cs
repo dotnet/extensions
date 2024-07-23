@@ -10,12 +10,8 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 /// Native memory interop methods.
 /// </summary>
 [ExcludeFromCodeCoverage]
-internal sealed class MemoryInfo : IMemoryInfo
+internal sealed partial class MemoryInfo : IMemoryInfo
 {
-    internal MemoryInfo()
-    {
-    }
-
     /// <summary>
     /// Get the memory status of the host.
     /// </summary>
@@ -24,7 +20,7 @@ internal sealed class MemoryInfo : IMemoryInfo
     {
         MEMORYSTATUSEX info = default;
         info.Length = (uint)sizeof(MEMORYSTATUSEX);
-        if (!SafeNativeMethods.GlobalMemoryStatusEx(ref info))
+        if (SafeNativeMethods.GlobalMemoryStatusEx(&info) != BOOL.TRUE)
         {
             Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
         }
@@ -32,16 +28,8 @@ internal sealed class MemoryInfo : IMemoryInfo
         return info;
     }
 
-    private static class SafeNativeMethods
+    private static partial class SafeNativeMethods
     {
-        /// <summary>
-        /// GlobalMemoryStatusEx.
-        /// </summary>
-        /// <param name="memoryStatus">Memory Status structure.</param>
-        /// <returns>Success or failure.</returns>
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX memoryStatus);
+        // the class is partial and empty for source gen to work correctly for GlobalMemoryStatusEx
     }
 }
