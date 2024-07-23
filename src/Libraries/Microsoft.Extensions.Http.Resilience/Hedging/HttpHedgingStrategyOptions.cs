@@ -8,7 +8,7 @@ using Polly.Hedging;
 namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Implementation of the <see cref="HedgingStrategyOptions{TResult}"/> for <see cref="HttpResponseMessage"/> results.
+/// Implementation of the <see cref="HedgingStrategyOptions{TResult}"/> class for <see cref="HttpResponseMessage"/> results.
 /// </summary>
 public class HttpHedgingStrategyOptions : HedgingStrategyOptions<HttpResponseMessage>
 {
@@ -16,11 +16,11 @@ public class HttpHedgingStrategyOptions : HedgingStrategyOptions<HttpResponseMes
     /// Initializes a new instance of the <see cref="HttpHedgingStrategyOptions"/> class.
     /// </summary>
     /// <remarks>
-    /// By default the options is set to handle only transient failures,
-    /// i.e. timeouts, 5xx responses and <see cref="HttpRequestException"/> exceptions.
+    /// By default, the options are set to handle only transient failures,
+    /// that is, timeouts, 5xx responses, and <see cref="HttpRequestException"/> exceptions.
     /// </remarks>
     public HttpHedgingStrategyOptions()
     {
-        ShouldHandle = args => new ValueTask<bool>(HttpClientHedgingResiliencePredicates.IsTransient(args.Outcome));
+        ShouldHandle = args => new ValueTask<bool>(HttpClientHedgingResiliencePredicates.IsTransient(args.Outcome, args.Context.CancellationToken));
     }
 }

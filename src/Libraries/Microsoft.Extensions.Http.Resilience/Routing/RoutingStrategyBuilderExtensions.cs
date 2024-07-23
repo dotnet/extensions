@@ -129,7 +129,7 @@ public static class RoutingStrategyBuilderExtensions
         {
             var optionsCache = new NamedOptionsCache<OrderedGroupsRoutingOptions>(builder.Name, serviceProvider.GetRequiredService<IOptionsMonitor<OrderedGroupsRoutingOptions>>());
             var factory = new OrderedGroupsRoutingStrategyFactory(serviceProvider.GetRequiredService<Randomizer>(), optionsCache);
-            return () => factory.Get();
+            return factory.Get;
         });
 
         return builder.Services.AddOptionsWithValidateOnStart<OrderedGroupsRoutingOptions, OrderedGroupsRoutingOptionsValidator>(builder.Name);
@@ -141,7 +141,7 @@ public static class RoutingStrategyBuilderExtensions
         {
             var optionsCache = new NamedOptionsCache<WeightedGroupsRoutingOptions>(builder.Name, serviceProvider.GetRequiredService<IOptionsMonitor<WeightedGroupsRoutingOptions>>());
             var factory = new WeightedGroupsRoutingStrategyFactory(serviceProvider.GetRequiredService<Randomizer>(), optionsCache);
-            return () => factory.Get();
+            return factory.Get;
         });
 
         return builder.Services.AddOptionsWithValidateOnStart<WeightedGroupsRoutingOptions, WeightedGroupsRoutingOptionsValidator>(builder.Name);

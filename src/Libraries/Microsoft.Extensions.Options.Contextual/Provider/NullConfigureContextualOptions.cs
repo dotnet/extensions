@@ -1,10 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.Options.Contextual;
+namespace Microsoft.Extensions.Options.Contextual.Provider;
 
 /// <summary>
-/// Helper class.
+/// Provides helper methods for a configuration context. This class can't be inherited.
 /// </summary>
 public static class NullConfigureContextualOptions
 {

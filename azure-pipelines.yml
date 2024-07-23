@@ -119,6 +119,9 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     sdl:
+      policheck:
+        enabled: true
+        exclusionsFile: $(Build.SourcesDirectory)\.config\PoliCheckExclusions.xml
       sourceAnalysisPool:
         name: NetCore1ESPool-Internal
         image: windows.vs2022preview.amd64
@@ -136,7 +139,7 @@ extends:
         parameters:
           enableMicrobuild: true
           enableTelemetry: true
-          enableSourceIndex: false
+          enableSourceIndex: true
           runAsPublic: ${{ variables['runAsPublic'] }}
           # Publish build logs
           enablePublishBuildArtifacts: true
@@ -190,7 +193,7 @@ extends:
             testResultsFormat: VSTest
             pool:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2-pt
+              image: 1es-mariner-2
               os: linux
 
             variables:
@@ -242,7 +245,7 @@ extends:
 
             pool:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2-pt
+              image: 1es-mariner-2
               os: linux
 
             preSteps:
@@ -283,7 +286,7 @@ extends:
             pool:
               ${{ if eq(variables['runAsPublic'], 'true') }}:
               name: NetCore1ESPool-Internal
-              image: 1es-mariner-2-pt
+              image: 1es-mariner-2
               os: linux
 
             variables:

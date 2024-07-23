@@ -4,11 +4,6 @@
     <Description>Unit tests for Microsoft.Extensions.Http.Resilience.</Description>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net462' ">
-    <!-- See https://github.com/dotnet/extensions/issues/4531 -->
-    <SkipTests>true</SkipTests>
-  </PropertyGroup>
-
   <ItemGroup>
     <None Update="configs\appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -29,14 +24,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Polly.Testing" />
-    <PackageReference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net462'" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))" />
     <PackageReference Include="System.ValueTuple" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))" />
-
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net462'">

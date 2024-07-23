@@ -123,6 +123,11 @@ internal partial class Parser
 
                 foreach (var property in members.Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>())
                 {
+                    if (property.IsIndexer)
+                    {
+                        continue;
+                    }
+
                     var logPropertiesAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogPropertiesAttribute, property);
                     var logPropertyIgnoreAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogPropertyIgnoreAttribute, property);
                     var tagProviderAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.TagProviderAttribute, property);

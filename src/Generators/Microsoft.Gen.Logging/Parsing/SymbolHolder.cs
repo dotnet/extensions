@@ -23,4 +23,5 @@ internal sealed record class SymbolHolder(
     INamedTypeSymbol EnumerableSymbol,
     INamedTypeSymbol FormatProviderSymbol,
     INamedTypeSymbol? SpanFormattableSymbol,
-    INamedTypeSymbol? DataClassificationAttribute);
+    INamedTypeSymbol? DataClassificationAttribute,
+    INamedTypeSymbol? NoDataClassificationAttribute);

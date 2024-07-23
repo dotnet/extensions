@@ -5,6 +5,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options.Contextual.Internal;
+using Microsoft.Extensions.Options.Contextual.Provider;
 using Moq;
 using Xunit;
 
@@ -19,8 +21,8 @@ public class ContextualOptionsServiceCollectionExtensionsTests
 
         using var provider = new ServiceCollection().AddContextualOptions().BuildServiceProvider();
 
-        Assert.IsType<ContextualOptions<object>>(provider.GetRequiredService<IContextualOptions<object>>());
-        Assert.IsType<ContextualOptions<object>>(provider.GetRequiredService<INamedContextualOptions<object>>());
+        Assert.IsType<ContextualOptions<object, WeatherForecastContext>>(provider.GetRequiredService<IContextualOptions<object, WeatherForecastContext>>());
+        Assert.IsType<ContextualOptions<object, WeatherForecastContext>>(provider.GetRequiredService<INamedContextualOptions<object, WeatherForecastContext>>());
         Assert.IsType<ContextualOptionsFactory<object>>(provider.GetRequiredService<IContextualOptionsFactory<object>>());
     }
 
@@ -47,57 +49,24 @@ public class ContextualOptionsServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void PostConfigureAllTest()
+    public void ConfigureAllWithLoadTest()
+    {
+        Func<IOptionsContext, CancellationToken, ValueTask<IConfigureContextualOptions<string>>> loadOptions =
+            (_, _) => new ValueTask<IConfigureContextualOptions<string>>(NullConfigureContextualOptions.GetInstance<string>());
+
+        using var provider = new ServiceCollection().ConfigureAll(loadOptions).BuildServiceProvider();
+        var loader = (LoadContextualOptions<string>)provider.GetRequiredService<ILoadContextualOptions<string>>();
+        Assert.Equal(loadOptions, loader.LoadAction);
+        Assert.Null(loader.Name);
+    }
+
+    [Fact]
+    public async Task ConfigureAllDirectTest()
     {
         Action<IOptionsContext, string> configureOptions = (_, _) => { };
-        using var provider = new ServiceCollection().PostConfigureAll(configureOptions).BuildServiceProvider();
-        var postConfigure = (PostConfigureContextualOptions<string>)provider.GetRequiredService<IPostConfigureContextualOptions<string>>();
-
-        Assert.Equal(configureOptions, postConfigure.Action);
-        Assert.Null(postConfigure.Name);
-    }
-
-    [Fact]
-    public void PostConfigureDefaultTest()
-    {
-        Action<IOptionsContext, string> configureOptions = (_, _) => { };
-        using var provider = new ServiceCollection().PostConfigure(configureOptions).BuildServiceProvider();
-        var postConfigure = (PostConfigureContextualOptions<string>)provider.GetRequiredService<IPostConfigureContextualOptions<string>>();
-
-        Assert.Equal(configureOptions, postConfigure.Action);
-        Assert.Equal(string.Empty, postConfigure.Name);
-    }
-
-    [Fact]
-    public void PostConfigureNamedTest()
-    {
-        Action<IOptionsContext, string> configureOptions = (_, _) => { };
-        using var provider = new ServiceCollection().PostConfigure("Foo", configureOptions).BuildServiceProvider();
-        var postConfigure = (PostConfigureContextualOptions<string>)provider.GetRequiredService<IPostConfigureContextualOptions<string>>();
-
-        Assert.Equal(configureOptions, postConfigure.Action);
-        Assert.Equal("Foo", postConfigure.Name);
-    }
-
-    [Fact]
-    public void ValidateDefaultTest()
-    {
-        Func<string, bool> validate = _ => true;
-        using var provider = new ServiceCollection().ValidateContextualOptions(validate, "epic fail").BuildServiceProvider();
-        var validateOptions = (ValidateContextualOptions<string>)provider.GetRequiredService<IValidateContextualOptions<string>>();
-
-        Assert.Equal(validate, validateOptions.Validation);
-        Assert.Equal(string.Empty, validateOptions.Name);
-    }
-
-    [Fact]
-    public void ValidateNamedTest()
-    {
-        Func<string, bool> validate = _ => true;
-        using var provider = new ServiceCollection().ValidateContextualOptions("Foo", validate, "epic fail").BuildServiceProvider();
-        var validateOptions = (ValidateContextualOptions<string>)provider.GetRequiredService<IValidateContextualOptions<string>>();
-
-        Assert.Equal(validate, validateOptions.Validation);
-        Assert.Equal("Foo", validateOptions.Name);
+        using var provider = new ServiceCollection().ConfigureAll(configureOptions).BuildServiceProvider();
+        var loader = (LoadContextualOptions<string>)provider.GetRequiredService<ILoadContextualOptions<string>>();
+        Assert.Equal(configureOptions, ((ConfigureContextualOptions<string>)await loader.LoadAction(Mock.Of<IOptionsContext>(), default)).ConfigureOptions);
+        Assert.Null(loader.Name);
     }
 }

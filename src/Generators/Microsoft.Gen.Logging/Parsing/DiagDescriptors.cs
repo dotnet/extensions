@@ -236,7 +236,8 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         id: DiagnosticIds.LoggerMessage.LOGGEN035,
         title: Resources.RecordTypeSensitiveArgumentIsInTemplateTitle,
         messageFormat: Resources.RecordTypeSensitiveArgumentIsInTemplateMessage,
-        category: Category);
+        category: Category,
+        DiagnosticSeverity.Warning);
 
     public static DiagnosticDescriptor DefaultToString { get; } = Make(
         id: DiagnosticIds.LoggerMessage.LOGGEN036,

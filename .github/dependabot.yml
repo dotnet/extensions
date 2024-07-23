@@ -23,7 +23,6 @@ updates:
       AspNetCore:
         patterns:
           - "Microsoft.AspNetCore.*"
-          - "Microsoft.Extensions.Features"
       MicrosoftCodeAnalysis:
         patterns:
           - "Microsoft.CodeAnalysis.*"
