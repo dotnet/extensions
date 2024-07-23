@@ -217,6 +217,12 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             _fileSystem.ReadAll(_memoryLimitInBytes, bufferWriter.Buffer);
 
             ReadOnlySpan<char> memoryBuffer = bufferWriter.Buffer.WrittenSpan;
+
+            if (memoryBuffer.Equals("max\n", StringComparison.InvariantCulture))
+            {
+                return GetHostAvailableMemory();
+            }
+
             _ = GetNextNumber(memoryBuffer, out maybeMemory);
 
             if (maybeMemory == -1)
@@ -497,7 +503,13 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             return false;
         }
 
-        int nextQuota = GetNextNumber(quotaBuffer, out long quota);
+        if (quotaBuffer.StartsWith("max", StringComparison.InvariantCulture))
+        {
+            cpuUnits = 0;
+            return false;
+        }
+
+        _ = GetNextNumber(quotaBuffer, out long quota);
 
         if (quota == -1)
         {

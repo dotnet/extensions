@@ -119,6 +119,23 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     }
 
     [ConditionalTheory]
+    [InlineData("max\n", 134_796_910_592ul)]
+    [InlineData("1000000\n", 1_000_000ul)]
+    public void When_Calling_GetAvailableMemoryInBytes_Parser_Returns_Available_Memory(string content, ulong expectedResult)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/memory.max"), content },
+            { new FileInfo("/proc/meminfo"), "MemTotal:       131637608 kB" }
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var result = p.GetAvailableMemoryInBytes();
+
+        Assert.Equal(expectedResult, result);
+    }
+
+    [ConditionalTheory]
     [InlineData("Suspicious12312312")]
     [InlineData("string@")]
     [InlineData("string12312")]
@@ -255,6 +272,21 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var cpus = p.GetCgroupLimitedCpus();
 
         Assert.Equal(result, cpus);
+    }
+
+    [ConditionalFact]
+    public void When_Cpu_Max_Is_Set_To_Max_We_Get_Available_Cpus_From_CpuSetCpus()
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0,1,2" },
+            { new FileInfo("/sys/fs/cgroup/cpu.max"), "max 100000" },
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var cpus = p.GetCgroupLimitedCpus();
+
+        Assert.Equal(3, cpus);
     }
 
     [ConditionalTheory]
