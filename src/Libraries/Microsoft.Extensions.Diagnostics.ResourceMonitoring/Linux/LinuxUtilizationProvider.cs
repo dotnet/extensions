@@ -60,8 +60,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var meter = meterFactory.Create("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.CpuUtilization, observeValue: CpuUtilization, unit: "1");
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.MemoryUtilization, observeValue: MemoryUtilization, unit: "1");
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuUtilization, observeValue: CpuUtilization, unit: "1");
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryUtilization, observeValue: MemoryUtilization, unit: "1");
 
         // cpuGuaranteedRequest is a CPU request for pod, for host its 1 core
         // available CPUs is a CPU limit for a pod or for a host.

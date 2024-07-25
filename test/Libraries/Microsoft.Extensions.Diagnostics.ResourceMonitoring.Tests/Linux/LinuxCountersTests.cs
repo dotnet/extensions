@@ -65,9 +65,9 @@ public sealed class LinuxCountersTests
         listener.RecordObservableInstruments();
 
         Assert.Equal(2, samples.Count);
-        Assert.Equal(ResourceUtilizationInstruments.CpuUtilization, samples[0].instrument.Name);
+        Assert.Equal(ResourceUtilizationInstruments.ContainerCpuUtilization, samples[0].instrument.Name);
         Assert.Equal(double.NaN, samples[0].value);
-        Assert.Equal(ResourceUtilizationInstruments.MemoryUtilization, samples[1].instrument.Name);
+        Assert.Equal(ResourceUtilizationInstruments.ContainerMemoryUtilization, samples[1].instrument.Name);
         Assert.Equal(0.5, samples[1].value);
     }
 
@@ -121,9 +121,9 @@ public sealed class LinuxCountersTests
         listener.RecordObservableInstruments();
 
         Assert.Equal(2, samples.Count);
-        Assert.Equal(ResourceUtilizationInstruments.CpuUtilization, samples[0].instrument.Name);
+        Assert.Equal(ResourceUtilizationInstruments.ContainerCpuUtilization, samples[0].instrument.Name);
         Assert.Equal(double.NaN, samples[0].value);
-        Assert.Equal(ResourceUtilizationInstruments.MemoryUtilization, samples[1].instrument.Name);
+        Assert.Equal(ResourceUtilizationInstruments.ContainerMemoryUtilization, samples[1].instrument.Name);
         Assert.Equal(1, samples[1].value);
     }
 }

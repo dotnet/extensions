@@ -101,8 +101,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         var meter = meterFactory.Create("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.CpuUtilization, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.MemoryUtilization, observeValue: MemoryPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuUtilization, observeValue: CpuPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryUtilization, observeValue: MemoryPercentage);
     }
 
     public Snapshot GetSnapshot()

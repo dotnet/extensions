@@ -219,8 +219,8 @@ public sealed class AcceptanceTest
                 return;
             }
 
-            if (instrument.Name == ResourceUtilizationInstruments.CpuUtilization ||
-                instrument.Name == ResourceUtilizationInstruments.MemoryUtilization)
+            if (instrument.Name == ResourceUtilizationInstruments.ContainerCpuUtilization ||
+                instrument.Name == ResourceUtilizationInstruments.ContainerMemoryUtilization)
             {
                 meterListener.EnableMeasurementEvents(instrument);
             }
@@ -228,11 +228,11 @@ public sealed class AcceptanceTest
 
         listener.SetMeasurementEventCallback<double>((m, f, _, _) =>
         {
-            if (m.Name == ResourceUtilizationInstruments.CpuUtilization)
+            if (m.Name == ResourceUtilizationInstruments.ContainerCpuUtilization)
             {
                 cpuFromGauge = f;
             }
-            else if (m.Name == ResourceUtilizationInstruments.MemoryUtilization)
+            else if (m.Name == ResourceUtilizationInstruments.ContainerMemoryUtilization)
             {
                 memoryFromGauge = f;
             }
