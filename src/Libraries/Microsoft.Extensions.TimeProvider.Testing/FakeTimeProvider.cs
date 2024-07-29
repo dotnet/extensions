@@ -172,7 +172,9 @@ public class FakeTimeProvider : TimeProvider
         // The same issue could occur converting back, in GetElapsedTime(). Unfortunately
         // that isn't virtual so we can't do the same trick. However, if tests advance
         // the clock in multiples of 1ms or so this loss of precision will not be visible.
+#pragma warning disable S3236 // Caller information arguments should not be provided explicitly
         Debug.Assert(TimestampFrequency == TimeSpan.TicksPerSecond, "Assuming frequency equals ticks per second");
+#pragma warning restore S3236 // Caller information arguments should not be provided explicitly
         return _now.Ticks;
     }
 
