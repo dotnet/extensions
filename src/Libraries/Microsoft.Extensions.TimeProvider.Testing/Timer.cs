@@ -89,9 +89,10 @@ internal sealed class Timer : ITimer
 
     private void Dispose(bool _)
     {
-        if (_waiter != null)
+        var waiter = _waiter;
+        if (waiter is not null)
         {
-            _timeProvider!.RemoveWaiter(_waiter);
+            _timeProvider?.RemoveWaiter(waiter);
             _waiter = null;
         }
 
