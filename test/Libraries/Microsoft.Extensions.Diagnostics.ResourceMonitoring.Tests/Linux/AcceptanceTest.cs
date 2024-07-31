@@ -186,7 +186,7 @@ public sealed class AcceptanceTest
         Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
 
-    [ConditionalFact(Skip = "Flaky test, see https://github.com/dotnet/extensions/issues/3997")]
+    [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
     public Task ResourceUtilizationTracker_Reports_The_Same_Values_As_One_Can_Observe_From_Gauges()
     {
@@ -202,6 +202,7 @@ public sealed class AcceptanceTest
                 { new FileInfo("/sys/fs/cgroup/cpuset/cpuset.cpus"), "0-19"},
                 { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "12"},
                 { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_period_us"), "6"},
+                { new FileInfo("/sys/fs/cgroup/cpu/cpu.shares"), "1024"},
                 { new FileInfo("/sys/fs/cgroup/memory/memory.stat"), "total_inactive_file 100"},
             });
 
@@ -260,10 +261,12 @@ public sealed class AcceptanceTest
 
         var utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
 
-        Assert.Equal(double.NaN, utilization.CpuUsedPercentage);
+        Assert.Equal(0, utilization.CpuUsedPercentage);
         Assert.Equal(100, utilization.MemoryUsedPercentage);
-        Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge);
-        Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge);
+        Assert.True(double.IsNaN(cpuFromGauge));
+
+        // gauge multiplied by 100 because gauges are in range [0, 1], and utilization is in range [0, 100]
+        Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
 
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory/memory.usage_in_bytes"), "50100");
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
@@ -277,9 +280,9 @@ public sealed class AcceptanceTest
         utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
 
         Assert.Equal(1, utilization.CpuUsedPercentage);
-        Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge);
+        Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge * 100);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
-        Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge);
+        Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
 
         return Task.CompletedTask;
     }
