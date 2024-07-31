@@ -461,6 +461,37 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         Assert.Contains("/sys/fs/cgroup/cpu.weight", r.Message);
     }
 
+    [ConditionalTheory]
+    [InlineData("0")]
+    [InlineData("10001")]
+    public void Parser_Throws_When_Cgroup_Cpu_Weight_Files_Contains_Out_Of_Range_Values(string content)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/cpu.weight"), content },
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => p.GetCgroupRequestCpu());
+    }
+
+    [ConditionalTheory]
+    [InlineData("2500", 64.0)]
+    [InlineData("10000", 256.0)]
+    public void Parser_Calculates_Cpu_Request_From_Cpu_Weight(string content, float result)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/cpu.weight"), content },
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var r = Math.Round(p.GetCgroupRequestCpu());
+
+        Assert.Equal(result, r);
+    }
+
     [ConditionalFact]
     public async Task ThreadSafetyAsync()
     {

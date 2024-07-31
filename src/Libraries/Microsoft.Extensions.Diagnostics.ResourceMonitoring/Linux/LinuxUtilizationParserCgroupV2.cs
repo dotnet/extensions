@@ -533,6 +533,9 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
     private static bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)
     {
+        const long CpuPodWeightPossibleMax = 10000;
+        const long CpuPodWeightPossibleMin = 1;
+
         if (!fileSystem.Exists(_cpuPodWeight))
         {
             cpuUnits = 0;
@@ -555,16 +558,18 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             Throw.InvalidOperationException($"Could not parse '{_cpuPodWeight}'. Expected to get an integer but got: '{cpuPodWeight}'.");
         }
 
+        if (cpuPodWeight < CpuPodWeightPossibleMin || cpuPodWeight > CpuPodWeightPossibleMax)
+        {
+            Throw.ArgumentOutOfRangeException($"Expected to see cpuPodWeight='{cpuPodWeight}' in range [{CpuPodWeightPossibleMin}-{CpuPodWeightPossibleMax}]");
+        }
+
         // Calculate CPU pod request in millicores based on the weight, using the formula:
         // y = (1 + ((x - 2) * 9999) / 262142), where y is the CPU weight and x is the CPU share (cgroup v1)
         // https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2
-        long cpuPodShare = ((cpuPodWeight * 262142) + 19997) / 9999;
-        if (cpuPodShare == -1)
-        {
-            Throw.InvalidOperationException($"Could not calculate CPU share from CPU weight '{cpuPodShare}'");
-        }
+#pragma warning disable S109 // Magic numbers should not be used - using the formula, forgive.
+        cpuUnits = ((cpuPodWeight - 1) * 262142 / 9999) + 2;
+#pragma warning restore S109 // Magic numbers should not be used
 
-        cpuUnits = cpuPodShare;
         return true;
     }
 
