@@ -29,6 +29,9 @@
 
     <NoWarn Condition="'$(GenerateDocumentationFile)' != 'true'">$(NoWarn);SA1600;SA0001</NoWarn>
 
+    <!-- Conflicts with SA1405: Debug.Assert should provide message text -->
+    <NoWarn>$(NoWarn);S3236</NoWarn>
+
     <!-- Legacy targets do not support attributes for a nullable context thus suppressing null check warnings -->
     <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>
   </PropertyGroup>
