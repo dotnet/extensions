@@ -157,6 +157,15 @@ This sets up necessary environmental variables and opens the repository in VS Co
 * When restoring packages, if you get the following message: "The SSL connection could not be established, see inner exception. Unable to read data from the transport connection", try disabling IPv6 on your network adapter.
 * When the public API surface is updated, you need to update the API baselines manifest files for the impacted assemblies. [Here is an example](https://github.com/dotnet/extensions/blob/3e6ac0735cb62d4c8b63e131d956397a87ea26f7/src/Libraries/Microsoft.Extensions.AsyncState/Microsoft.Extensions.AsyncState.json) for the `Microsoft.Extensions.AsyncState` project. To update the manifest of all the local assemblies, invoke the script `./scripts/MakeApiBaselines.ps1`.
 
+#### How to fix "Workload manifest microsoft.net.sdk.aspire not installed"?
+
+At times, during restore you may receive the following error:
+```
+error MSB4242: SDK Resolver Failure: "The SDK resolver "Microsoft.DotNet.MSBuildWorkloadSdkResolver" failed while attempting to resolve the SDK "Microsoft.DotNet.Arcade.Sdk".
+Exception: "System.IO.FileNotFoundException: Workload manifest microsoft.net.sdk.aspire: 8.0.1/8.0.100 from workload version <x.y.z> was not installed. Running "dotnet workload repair" may resolve this.
+```
+
+This error is, generally, caused by multiple SDK installations under \<root\>/.dotnet folder. To resolve the issue, run `git clean -xdf` and then run restore again.
 
 ---
 
