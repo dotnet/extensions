@@ -62,6 +62,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuUtilization, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryUtilization, unit: "1");
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: CpuUtilization, unit: "1");
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryRequestUtilization, observeValue: MemoryUtilization, unit: "1");
 
         // Obsolete metrics, kept for backward compatibility:
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuUtilization, unit: "1");
@@ -77,37 +79,33 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     public double CpuUtilization()
     {
         var now = _timeProvider.GetUtcNow();
-        bool needUpdate = false;
+
+        lock (_cpuLocker)
+        {
+            if (now < _refreshAfterCpu)
+            {
+                return _cpuPercentage;
+            }
+        }
+
+        var hostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
+        var cgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
 
         lock (_cpuLocker)
         {
             if (now >= _refreshAfterCpu)
             {
-                needUpdate = true;
-            }
-        }
+                var deltaHost = hostCpuTime - _previousHostCpuTime;
+                var deltaCgroup = cgroupCpuTime - _previousCgroupCpuTime;
 
-        if (needUpdate)
-        {
-            var hostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
-            var cgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
-
-            lock (_cpuLocker)
-            {
-                if (now >= _refreshAfterCpu)
+                if (deltaHost > 0 && deltaCgroup > 0)
                 {
-                    var deltaHost = hostCpuTime - _previousHostCpuTime;
-                    var deltaCgroup = cgroupCpuTime - _previousCgroupCpuTime;
+                    var percentage = Math.Min(One, deltaCgroup / deltaHost * _scale);
 
-                    if (deltaHost > 0 && deltaCgroup > 0)
-                    {
-                        var percentage = Math.Min(One, deltaCgroup / deltaHost * _scale);
-
-                        _cpuPercentage = percentage;
-                        _refreshAfterCpu = now.Add(_cpuRefreshInterval);
-                        _previousCgroupCpuTime = cgroupCpuTime;
-                        _previousHostCpuTime = hostCpuTime;
-                    }
+                    _cpuPercentage = percentage;
+                    _refreshAfterCpu = now.Add(_cpuRefreshInterval);
+                    _previousCgroupCpuTime = cgroupCpuTime;
+                    _previousHostCpuTime = hostCpuTime;
                 }
             }
         }
@@ -118,29 +116,25 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     public double MemoryUtilization()
     {
         var now = _timeProvider.GetUtcNow();
-        bool needUpdate = false;
+
+        lock (_memoryLocker)
+        {
+            if (now < _refreshAfterMemory)
+            {
+                return _memoryPercentage;
+            }
+        }
+
+        var memoryUsed = _parser.GetMemoryUsageInBytes();
 
         lock (_memoryLocker)
         {
             if (now >= _refreshAfterMemory)
             {
-                needUpdate = true;
-            }
-        }
+                var memoryPercentage = Math.Min(One, (double)memoryUsed / _totalMemoryInBytes);
 
-        if (needUpdate)
-        {
-            var memoryUsed = _parser.GetMemoryUsageInBytes();
-
-            lock (_memoryLocker)
-            {
-                if (now >= _refreshAfterMemory)
-                {
-                    var memoryPercentage = Math.Min(One, (double)memoryUsed / _totalMemoryInBytes);
-
-                    _memoryPercentage = memoryPercentage;
-                    _refreshAfterMemory = now.Add(_memoryRefreshInterval);
-                }
+                _memoryPercentage = memoryPercentage;
+                _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
         }
 
