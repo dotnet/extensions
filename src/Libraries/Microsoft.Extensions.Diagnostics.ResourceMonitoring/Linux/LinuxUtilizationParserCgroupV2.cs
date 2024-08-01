@@ -549,7 +549,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         if (cpuPodWeightBuffer.IsEmpty || (cpuPodWeightBuffer.Length == 2 && cpuPodWeightBuffer[0] == '-' && cpuPodWeightBuffer[1] == '1'))
         {
             Throw.InvalidOperationException(
-                $"Could not parse CPU weight content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
+                $"Could not parse '{_cpuPodWeight}' content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
         }
 
         _ = GetNextNumber(cpuPodWeightBuffer, out long cpuPodWeight);
@@ -557,13 +557,13 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         if (cpuPodWeight == -1)
         {
             Throw.InvalidOperationException(
-                $"Could not parse CPU weight content. Expected to get an integer but got: '{cpuPodWeight}'.");
+                $"Could not parse '{_cpuPodWeight}' content. Expected to get an integer but got: '{cpuPodWeight}'.");
         }
 
         if (cpuPodWeight < CpuPodWeightPossibleMin || cpuPodWeight > CpuPodWeightPossibleMax)
         {
             Throw.ArgumentOutOfRangeException(
-                $"Expected to parse CPU weight in range [{CpuPodWeightPossibleMin}-{CpuPodWeightPossibleMax}], but got '{cpuPodWeight}' instead.");
+                $"Expected to find CPU weight in range [{CpuPodWeightPossibleMin}-{CpuPodWeightPossibleMax}] in '{_cpuPodWeight}', but got '{cpuPodWeight}' instead.");
         }
 
         // The formula to calculate CPU pod weight (measured in millicores) from CPU share:
