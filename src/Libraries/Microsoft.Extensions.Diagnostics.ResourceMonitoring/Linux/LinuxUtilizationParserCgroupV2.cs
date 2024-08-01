@@ -533,7 +533,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
     private static bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)
     {
-        const long CpuPodWeightPossibleMax = 10000;
+        const long CpuPodWeightPossibleMax = 10_000;
         const long CpuPodWeightPossibleMin = 1;
 
         if (!fileSystem.Exists(_cpuPodWeight))
@@ -548,24 +548,29 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
         if (cpuPodWeightBuffer.IsEmpty || (cpuPodWeightBuffer.Length == 2 && cpuPodWeightBuffer[0] == '-' && cpuPodWeightBuffer[1] == '1'))
         {
-            Throw.InvalidOperationException($"Could not parse '{_cpuPodWeight}' content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
+            Throw.InvalidOperationException(
+                $"Could not parse CPU weight content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
         }
 
         _ = GetNextNumber(cpuPodWeightBuffer, out long cpuPodWeight);
 
         if (cpuPodWeight == -1)
         {
-            Throw.InvalidOperationException($"Could not parse '{_cpuPodWeight}'. Expected to get an integer but got: '{cpuPodWeight}'.");
+            Throw.InvalidOperationException(
+                $"Could not parse CPU weight content. Expected to get an integer but got: '{cpuPodWeight}'.");
         }
 
         if (cpuPodWeight < CpuPodWeightPossibleMin || cpuPodWeight > CpuPodWeightPossibleMax)
         {
-            Throw.ArgumentOutOfRangeException($"Expected to see cpuPodWeight='{cpuPodWeight}' in range [{CpuPodWeightPossibleMin}-{CpuPodWeightPossibleMax}]");
+            Throw.ArgumentOutOfRangeException(
+                $"Expected to parse CPU weight in range [{CpuPodWeightPossibleMin}-{CpuPodWeightPossibleMax}], but got '{cpuPodWeight}' instead.");
         }
 
-        // Calculate CPU pod request in millicores based on the weight, using the formula:
-        // y = (1 + ((x - 2) * 9999) / 262142), where y is the CPU weight and x is the CPU share (cgroup v1)
+        // The formula to calculate CPU pod weight (measured in millicores) from CPU share:
+        // y = (1 + ((x - 2) * 9999) / 262142),
+        // where y is the CPU pod weight (e.g. cpuPodWeight) and x is the CPU share of cgroup v1 (e.g. cpuUnits).
         // https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2
+        // We invert the formula to calculate CPU share from CPU pod weight:
 #pragma warning disable S109 // Magic numbers should not be used - using the formula, forgive.
         cpuUnits = ((cpuPodWeight - 1) * 262142 / 9999) + 2;
 #pragma warning restore S109 // Magic numbers should not be used
