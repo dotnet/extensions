@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
+using System.Linq;
 using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
@@ -64,11 +65,13 @@ public sealed class LinuxCountersTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(2, samples.Count);
-        Assert.Equal(ResourceUtilizationInstruments.ContainerCpuUtilization, samples[0].instrument.Name);
-        Assert.Equal(double.NaN, samples[0].value);
-        Assert.Equal(ResourceUtilizationInstruments.ContainerMemoryUtilization, samples[1].instrument.Name);
-        Assert.Equal(0.5, samples[1].value);
+        Assert.Equal(4, samples.Count);
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization);
+        Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization).value));
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
+        Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
     }
 
     [ConditionalFact]
@@ -120,10 +123,12 @@ public sealed class LinuxCountersTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(2, samples.Count);
-        Assert.Equal(ResourceUtilizationInstruments.ContainerCpuUtilization, samples[0].instrument.Name);
-        Assert.Equal(double.NaN, samples[0].value);
-        Assert.Equal(ResourceUtilizationInstruments.ContainerMemoryUtilization, samples[1].instrument.Name);
-        Assert.Equal(1, samples[1].value);
+        Assert.Equal(4, samples.Count);
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization);
+        Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization).value));
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
+        Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
     }
 }

@@ -205,7 +205,7 @@ public sealed class WindowsContainerSnapshotProviderTests
         var meterFactoryMock = new Mock<IMeterFactory>();
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
-        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ContainerCpuUtilization, fakeClock);
+        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ProcessCpuUtilization, fakeClock);
 
         var options = new ResourceMonitoringOptions { CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
 
@@ -261,7 +261,7 @@ public sealed class WindowsContainerSnapshotProviderTests
         var meterFactoryMock = new Mock<IMeterFactory>();
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
-        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ContainerMemoryUtilization, fakeClock);
+        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ProcessMemoryUtilization, fakeClock);
 
         var options = new ResourceMonitoringOptions { MemoryConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
 

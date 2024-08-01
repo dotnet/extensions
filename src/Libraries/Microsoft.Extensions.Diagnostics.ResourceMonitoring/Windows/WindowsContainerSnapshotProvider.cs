@@ -77,12 +77,13 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         _timeProvider = timeProvider;
 
-        // initialize system resources information
         using var jobHandle = _createJobHandleObject();
 
-        _cpuUnits = GetGuaranteedCpuUnits(jobHandle, systemInfo);
+        _cpuUnits = GetMaximumCpuUnits(jobHandle, systemInfo);
         var memory = GetMemoryLimits(jobHandle);
 
+        // CPU request is not supported on Windows, so we set it to the same value as CPU limit.
+        // Memory request is not supported on Windows, so we set it to the same value as memory limit.
         Resources = new SystemResources(_cpuUnits, _cpuUnits, memory, memory);
 
         _totalMemory = memory;
@@ -101,8 +102,12 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         var meter = meterFactory.Create(nameof(Microsoft.Extensions.Diagnostics.ResourceMonitoring));
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuUtilization, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryUtilization, observeValue: MemoryPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryPercentage);
+
+        // Obsolete metrics, kept for backward compatibility:
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryPercentage);
     }
 
     public Snapshot GetSnapshot()
@@ -119,7 +124,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             GetMemoryUsage());
     }
 
-    private static double GetGuaranteedCpuUnits(IJobHandle jobHandle, ISystemInfo systemInfo)
+    private static double GetMaximumCpuUnits(IJobHandle jobHandle, ISystemInfo systemInfo)
     {
         // Note: This function convert the CpuRate from CPU cycles to CPU units, also it scales
         // the CPU units with the number of processors (cores) available in the system.
