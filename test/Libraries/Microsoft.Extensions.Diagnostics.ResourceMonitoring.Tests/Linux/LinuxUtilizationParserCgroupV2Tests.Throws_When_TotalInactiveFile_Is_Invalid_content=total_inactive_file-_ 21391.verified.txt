@@ -1,0 +1,9 @@
+﻿{
+  Type: InvalidOperationException,
+  Message: The value of inactive_file found in '/sys/fs/cgroup/memory.stat' is not a positive number: ':_ 21391'.,
+  StackTrace:
+at Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(String message)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationParserCgroupV2.GetMemoryUsageInBytes()
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test.LinuxUtilizationParserCgroupV2Tests.<>c__DisplayClass3_0.<Throws_When_TotalInactiveFile_Is_Invalid>b__0()
+at Xunit.Record.Exception(Func`1 testCode)
+}

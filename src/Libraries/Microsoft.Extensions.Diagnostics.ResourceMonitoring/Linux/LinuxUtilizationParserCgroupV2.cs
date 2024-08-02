@@ -261,7 +261,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             {
                 memoryUsageInBytesTotal = 0;
                 Throw.InvalidOperationException(
-                    $"We tried to read '{memoryUsageInBytesFile}', and we expected to get a positive number but instead it was: '{containerMemoryUsage}'.");
+                    $"We tried to read '{memoryUsageInBytesFile}', and we expected to get a positive number but instead it was: '{memoryUsageFile}'.");
             }
 
             memoryUsageInBytesTotal += containerMemoryUsage;
@@ -557,12 +557,12 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         if (cpuPodWeight == -1)
         {
             Throw.InvalidOperationException(
-                $"Could not parse '{_cpuPodWeight}' content. Expected to get an integer but got: '{cpuPodWeight}'.");
+                $"Could not parse '{_cpuPodWeight}' content. Expected to get an integer but got: '{cpuPodWeightBuffer}'.");
         }
 
         if (cpuPodWeight < CpuPodWeightPossibleMin || cpuPodWeight > CpuPodWeightPossibleMax)
         {
-            Throw.ArgumentOutOfRangeException(
+            Throw.ArgumentOutOfRangeException("CPU weight",
                 $"Expected to find CPU weight in range [{CpuPodWeightPossibleMin}-{CpuPodWeightPossibleMax}] in '{_cpuPodWeight}', but got '{cpuPodWeight}' instead.");
         }
 
@@ -590,7 +590,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         if (memoryUsage == -1)
         {
             Throw.InvalidOperationException(
-                $"We tried to read '{_memoryUsageInBytes}', and we expected to get a positive number but instead it was: '{memoryUsage}'.");
+                $"We tried to read '{_memoryUsageInBytes}', and we expected to get a positive number but instead it was: '{memoryUsageFile}'.");
         }
 
         return memoryUsage;
