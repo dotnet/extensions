@@ -65,7 +65,7 @@ public sealed class LinuxCountersTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(4, samples.Count);
+        Assert.Equal(6, samples.Count);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization).value));
@@ -123,7 +123,7 @@ public sealed class LinuxCountersTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(4, samples.Count);
+        Assert.Equal(6, samples.Count);
 
         Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization);
         Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization).value));
