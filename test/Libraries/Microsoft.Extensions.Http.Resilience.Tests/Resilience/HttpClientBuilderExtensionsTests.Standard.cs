@@ -35,7 +35,7 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
     public void Dispose()
         => _serviceProvider?.Dispose();
 
-    private static Task SendRequest(HttpClient client, string url, bool asynchronous)
+    private static Task<HttpResponseMessage> SendRequest(HttpClient client, string url, bool asynchronous)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
 

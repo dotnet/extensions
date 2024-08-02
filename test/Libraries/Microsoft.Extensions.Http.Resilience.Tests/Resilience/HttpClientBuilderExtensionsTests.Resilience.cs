@@ -106,8 +106,13 @@ public sealed partial class HttpClientBuilderExtensionsTests
         builder.Services.Should().HaveCount(count + 2);
     }
 
-    [Fact]
-    public async Task AddResilienceHandler_EnsureErrorType()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task AddResilienceHandler_EnsureErrorType(bool asynchronous = true)
     {
         using var metricCollector = new MetricCollector<int>(null, "Polly", "resilience.polly.strategy.events");
         var enricher = new TestMetricsEnricher();
@@ -125,9 +130,8 @@ public sealed partial class HttpClientBuilderExtensionsTests
         clientBuilder.Services.Configure<TelemetryOptions>(o => o.MeteringEnrichers.Add(enricher));
 
         var client = clientBuilder.Services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("client");
-        using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
 
-        using var response = await client.SendAsync(request);
+        using var response = await SendRequest(client, "https://dummy", asynchronous);
 
         enricher.Tags["error.type"].Should().BeOfType<string>().Subject.Should().Be("500");
     }
