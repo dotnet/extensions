@@ -54,8 +54,13 @@ public sealed partial class HttpClientBuilderExtensionsTests
         Assert.Contains(services, s => s.ServiceType == typeof(ResiliencePipelineProvider<HttpKey>));
     }
 
-    [Fact]
-    public async Task AddResilienceHandler_OnPipelineDisposed_EnsureCalled()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task AddResilienceHandler_OnPipelineDisposed_EnsureCalled(bool asynchronous = true)
     {
         var onPipelineDisposedCalled = false;
         var services = new ServiceCollection();
@@ -72,9 +77,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         using (var serviceProvider = services.BuildServiceProvider())
         {
             var client = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
-            using var request = new HttpRequestMessage(HttpMethod.Get, "https://dummy");
-
-            await client.GetStringAsync("https://dummy");
+            await SendRequest(client, "https://dummy", asynchronous);
         }
 
         onPipelineDisposedCalled.Should().BeTrue();
@@ -129,8 +132,13 @@ public sealed partial class HttpClientBuilderExtensionsTests
         enricher.Tags["error.type"].Should().BeOfType<string>().Subject.Should().Be("500");
     }
 
-    [Fact]
-    public async Task AddResilienceHandler_EnsureResilienceHandlerContext()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task AddResilienceHandler_EnsureResilienceHandlerContext(bool asynchronous = true)
     {
         var verified = false;
         _builder
@@ -145,7 +153,9 @@ public sealed partial class HttpClientBuilderExtensionsTests
 
         _builder.AddHttpMessageHandler(() => new TestHandlerStub(HttpStatusCode.InternalServerError));
 
-        await CreateClient(BuilderName).GetAsync("https://dummy");
+        var client = CreateClient(BuilderName);
+        await SendRequest(client, "https://dummy", asynchronous);
+
         verified.Should().BeTrue();
     }
 
@@ -175,10 +185,14 @@ public sealed partial class HttpClientBuilderExtensionsTests
         CircuitBreaker,
     }
 
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
     [InlineData(true)]
     [InlineData(false)]
-    [Theory]
-    public async Task AddResilienceHandler_EnsureProperPipelineInstanceRetrieved(bool bySelector)
+#endif
+    public async Task AddResilienceHandler_EnsureProperPipelineInstanceRetrieved(bool bySelector, bool asynchronous = true)
     {
         // arrange
         var resilienceProvider = new Mock<ResiliencePipelineProvider<HttpKey>>(MockBehavior.Strict);
@@ -211,14 +225,19 @@ public sealed partial class HttpClientBuilderExtensionsTests
         var client = provider.GetRequiredService<IHttpClientFactory>().CreateClient("client");
 
         // act
-        await client.GetAsync("https://dummy1");
+        await SendRequest(client, "https://dummy1", asynchronous);
 
         // assert
         resilienceProvider.VerifyAll();
     }
 
-    [Fact]
-    public async Task AddResilienceHandlerBySelector_EnsureResiliencePipelineProviderCalled()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task AddResilienceHandlerBySelector_EnsureResiliencePipelineProviderCalled(bool asynchronous = true)
     {
         // arrange
         var services = new ServiceCollection().AddLogging().AddMetrics();
@@ -242,7 +261,7 @@ public sealed partial class HttpClientBuilderExtensionsTests
         var pipelineProvider = provider.GetRequiredService<ResiliencePipelineProvider<HttpKey>>();
 
         // act
-        await client.GetAsync("https://dummy1");
+        await SendRequest(client, "https://dummy1", asynchronous);
 
         // assert
         providerMock.VerifyAll();

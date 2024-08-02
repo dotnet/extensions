@@ -27,4 +27,13 @@ public class TestHandlerStub : DelegatingHandler
     {
         return _handlerFunc(request, cancellationToken);
     }
+
+#if NET6_0_OR_GREATER
+    protected override HttpResponseMessage Send(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+        return _handlerFunc(request, cancellationToken).GetAwaiter().GetResult();
+#pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
+    }
+#endif
 }
