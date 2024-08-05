@@ -82,8 +82,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         _cpuUnits = GetMaximumCpuUnits(jobHandle, systemInfo);
         var memory = GetMemoryLimits(jobHandle);
 
-        // CPU request is not supported on Windows, so we set it to the same value as CPU limit.
-        // Memory request is not supported on Windows, so we set it to the same value as memory limit.
+        // CPU request (aka guaranteed CPU units) is not supported on Windows, so we set it to the same value as CPU limit (aka maximum CPU units).
+        // Memory request (aka guaranteed memory) is not supported on Windows, so we set it to the same value as memory limit (aka maximum memory).
         Resources = new SystemResources(_cpuUnits, _cpuUnits, memory, memory);
 
         _totalMemory = memory;
@@ -105,7 +105,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuPercentage);
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryPercentage);
 
-        // Obsolete metrics, kept for backward compatibility:
+        // Obsolete metrics, keeping it for backward compatibility:
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuPercentage);
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryPercentage);
     }
