@@ -15,7 +15,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
     private readonly ILinuxUtilizationParser _parser;
-    private readonly ulong _totalMemoryInBytes;
+    private readonly ulong _memoryLimit;
     private readonly TimeSpan _cpuRefreshInterval;
     private readonly TimeSpan _memoryRefreshInterval;
     private readonly TimeProvider _timeProvider;
@@ -42,16 +42,16 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _memoryRefreshInterval = options.Value.MemoryConsumptionRefreshInterval;
         _refreshAfterCpu = now;
         _refreshAfterMemory = now;
-        _totalMemoryInBytes = _parser.GetAvailableMemoryInBytes();
+        _memoryLimit = _parser.GetAvailableMemoryInBytes();
         _previousHostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
         _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
 
         var hostMemory = _parser.GetHostAvailableMemory();
         var hostCpus = _parser.GetHostCpuCount();
-        var availableCpus = _parser.GetCgroupLimitedCpus();
-        var cpuGuaranteedRequest = _parser.GetCgroupRequestCpu();
-        _scale = hostCpus / availableCpus;
-        _scaleForTrackerApi = hostCpus / availableCpus;
+        var cpuLimit = _parser.GetCgroupLimitedCpus();
+        var cpuRequest = _parser.GetCgroupRequestCpu();
+        _scale = hostCpus / cpuLimit;
+        _scaleForTrackerApi = hostCpus / cpuLimit;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // We don't dispose the meter because IMeterFactory handles that
@@ -69,11 +69,11 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuUtilization, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryUtilization, unit: "1");
 
-        // cpuGuaranteedRequest is a CPU request for pod, for host its 1 core
-        // available CPUs is a CPU limit for a pod or for a host.
-        // _totalMemoryInBytes - Resource Memory Limit (in k8s terms)
-        // _totalMemoryInBytes - To keep the contract, this parameter will get the Host available memory
-        Resources = new SystemResources(cpuGuaranteedRequest, availableCpus, _totalMemoryInBytes, _totalMemoryInBytes);
+        // cpuRequest is a CPU request (aka guaranteed number of CPU units) for pod, for host its 1 core
+        // cpuLimit is a CPU limit (aka max CPU units available) for a pod or for a host.
+        // _memoryLimit - Resource Memory Limit (in k8s terms)
+        // _memoryLimit - To keep the contract, this parameter will get the Host available memory
+        Resources = new SystemResources(cpuRequest, cpuLimit, _memoryLimit, _memoryLimit);
     }
 
     public double CpuUtilization()
@@ -131,7 +131,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         {
             if (now >= _refreshAfterMemory)
             {
-                var memoryPercentage = Math.Min(One, (double)memoryUsed / _totalMemoryInBytes);
+                var memoryPercentage = Math.Min(One, (double)memoryUsed / _memoryLimit);
 
                 _memoryPercentage = memoryPercentage;
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
