@@ -61,17 +61,12 @@ public readonly struct ResourceUtilization
     /// Initializes a new instance of the <see cref="ResourceUtilization"/> struct.
     /// </summary>
     /// <param name="cpuUsedPercentage">CPU utilization.</param>
-    /// <param name="memoryUsedPercentage">Memory utilization.</param>
     /// <param name="memoryUsedInBytes">Memory used in bytes (instantaneous).</param>
     /// <param name="systemResources">CPU and memory limits.</param>
     /// <param name="snapShot">Latest ResourceUtilizationSnapshot.</param>
-    internal ResourceUtilization(double cpuUsedPercentage, double memoryUsedPercentage, ulong memoryUsedInBytes, SystemResources systemResources, Snapshot snapShot)
+    internal ResourceUtilization(double cpuUsedPercentage, ulong memoryUsedInBytes, SystemResources systemResources, Snapshot snapShot)
+        : this(cpuUsedPercentage, memoryUsedInBytes, systemResources)
     {
-        CpuUsedPercentage = Throw.IfLessThan(cpuUsedPercentage, 0.0);
-        MemoryUsedInBytes = Throw.IfLessThan(memoryUsedInBytes, 0);
-
-        MemoryUsedPercentage = memoryUsedPercentage;
-        SystemResources = systemResources;
         Snapshot = snapShot;
     }
 }
