@@ -39,10 +39,10 @@ internal static class Calculator
         long totalUsageTickDelta = newUsageTicks - oldUsageTicks;
 
         var utilization = Math.Max(0.0, totalUsageTickDelta / totalSystemTicks * Hundred);
-        var cpuUtilization = Math.Min(Hundred, utilization);
+        var cpuUsedPercentage = Math.Min(Hundred, utilization);
 
         var memoryUsedPercentage = Math.Min(Hundred, (double)second.MemoryUsageInBytes / systemResources.GuaranteedMemoryInBytes * Hundred);
 
-        return new ResourceUtilization(cpuUtilization, memoryUsedPercentage, second.MemoryUsageInBytes, systemResources, second);
+        return new ResourceUtilization(cpuUsedPercentage, memoryUsedPercentage, second.MemoryUsageInBytes, systemResources, second);
     }
 }
