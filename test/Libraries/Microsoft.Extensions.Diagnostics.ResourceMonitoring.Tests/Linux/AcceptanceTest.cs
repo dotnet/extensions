@@ -200,15 +200,17 @@ public sealed class AcceptanceTest
                 { new FileInfo("/sys/fs/cgroup/cpuacct/cpuacct.usage"), "102312"},
                 { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
                 { new FileInfo("/sys/fs/cgroup/cpuset/cpuset.cpus"), "0-19"},
-                { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "12"},
+                { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "24"},
                 { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_period_us"), "6"},
-                { new FileInfo("/sys/fs/cgroup/cpu/cpu.shares"), "1024"},
+                { new FileInfo("/sys/fs/cgroup/cpu/cpu.shares"), "2048"},
                 { new FileInfo("/sys/fs/cgroup/memory/memory.stat"), "total_inactive_file 100"},
             });
 
         using var listener = new MeterListener();
         var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
         var cpuFromGauge = 0.0d;
+        var cpuLimitFromGauge = 0.0d;
+        var cpuRequestFromGauge = 0.0d;
         var memoryFromGauge = 0.0d;
         using var e = new ManualResetEventSlim();
 
@@ -221,7 +223,9 @@ public sealed class AcceptanceTest
             }
 
             if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization ||
-                instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization)
+                instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization ||
+                instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization ||
+                instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization)
             {
                 meterListener.EnableMeasurementEvents(instrument);
             }
@@ -236,6 +240,14 @@ public sealed class AcceptanceTest
             else if (m.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization)
             {
                 memoryFromGauge = f;
+            }
+            else if (m.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization)
+            {
+                cpuLimitFromGauge = f;
+            }
+            else if (m.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization)
+            {
+                cpuRequestFromGauge = f;
             }
         });
 
@@ -281,6 +293,8 @@ public sealed class AcceptanceTest
 
         Assert.Equal(1, utilization.CpuUsedPercentage);
         Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge * 100);
+        Assert.Equal(0.5, cpuLimitFromGauge * 100);
+        Assert.Equal(utilization.CpuUsedPercentage, cpuRequestFromGauge * 100);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
         Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
 

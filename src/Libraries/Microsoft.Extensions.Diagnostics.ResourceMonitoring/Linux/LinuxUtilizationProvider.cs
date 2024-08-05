@@ -20,6 +20,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private readonly TimeSpan _memoryRefreshInterval;
     private readonly TimeProvider _timeProvider;
     private readonly double _scaleRelativeToCpuLimit;
+    private readonly double _scaleRelativeToCpuRequest;
+    private readonly double _scaleRelativeToCpuLimitForTrackerApi;
 
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
@@ -50,6 +52,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var cpuLimit = _parser.GetCgroupLimitedCpus();
         var cpuRequest = _parser.GetCgroupRequestCpu();
         _scaleRelativeToCpuLimit = hostCpus / cpuLimit;
+        _scaleRelativeToCpuRequest = hostCpus / cpuRequest;
+        _scaleRelativeToCpuLimitForTrackerApi = hostCpus;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // We don't dispose the meter because IMeterFactory handles that
@@ -58,13 +62,13 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var meter = meterFactory.Create(nameof(Microsoft.Extensions.Diagnostics.ResourceMonitoring));
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuUtilization, unit: "1");
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryUtilization, unit: "1");
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: CpuUtilization, unit: "1");
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryRequestUtilization, observeValue: MemoryUtilization, unit: "1");
 
         // Obsolete metrics, kept for backward compatibility:
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuUtilization, unit: "1");
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryUtilization, unit: "1");
 
         // cpuRequest is a CPU request (aka guaranteed number of CPU units) for pod, for host its 1 core
@@ -98,7 +102,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
                 if (deltaHost > 0 && deltaCgroup > 0)
                 {
-                    var percentage = Math.Min(One, deltaCgroup / deltaHost * _scaleRelativeToCpuLimit);
+                    var percentage = Math.Min(One, deltaCgroup / deltaHost);
 
                     _cpuPercentage = percentage;
                     _refreshAfterCpu = now.Add(_cpuRefreshInterval);
@@ -153,7 +157,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         return new Snapshot(
             totalTimeSinceStart: TimeSpan.FromTicks(hostTime / Hundred),
             kernelTimeSinceStart: TimeSpan.Zero,
-            userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / Hundred * _scaleRelativeToCpuLimit)),
+            userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / Hundred * _scaleRelativeToCpuLimitForTrackerApi)),
             memoryUsageInBytes: memoryUsed);
     }
 }

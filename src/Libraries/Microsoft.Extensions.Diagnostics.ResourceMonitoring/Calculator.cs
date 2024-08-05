@@ -25,7 +25,7 @@ internal static class Calculator
         long runtimeTickDelta = second.TotalTimeSinceStart.Ticks - first.TotalTimeSinceStart.Ticks;
 
         // Compute the total number of ticks available on the machine during that interval
-        double totalSystemTicks = runtimeTickDelta * systemResources.GuaranteedCpuUnits;
+        double totalSystemTicks = runtimeTickDelta;
 
         // fudge to avoid divide by zero
         if (totalSystemTicks <= 0)
@@ -39,7 +39,7 @@ internal static class Calculator
         long totalUsageTickDelta = newUsageTicks - oldUsageTicks;
 
         var utilization = Math.Max(0.0, totalUsageTickDelta / totalSystemTicks * Hundred);
-        var cpuUsedPercentage = Math.Min(Hundred, utilization);
+        var cpuUtilization = Math.Min(Hundred, utilization);
 
         return new ResourceUtilization(cpuUtilization, second.MemoryUsageInBytes, systemResources, second);
     }
