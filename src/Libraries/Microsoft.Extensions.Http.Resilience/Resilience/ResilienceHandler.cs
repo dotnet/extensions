@@ -54,18 +54,18 @@ public class ResilienceHandler : DelegatingHandler
     {
         _ = Throw.IfNull(request);
 
-        var pipeline = _pipelineProvider(request);
+        ResiliencePipeline<HttpResponseMessage> pipeline = _pipelineProvider(request);
 
-        var context = GetOrSetResilienceContext(request, cancellationToken, out var created);
+        ResilienceContext context = GetOrSetResilienceContext(request, cancellationToken, out bool created);
         TrySetRequestMetadata(context, request);
         SetRequestMessage(context, request);
 
         try
         {
-            var outcome = await pipeline.ExecuteOutcomeAsync(
+            Outcome<HttpResponseMessage> outcome = await pipeline.ExecuteOutcomeAsync(
                 static async (context, state) =>
                 {
-                    var request = GetRequestMessage(context, state.request);
+                    HttpRequestMessage request = GetRequestMessage(context, state.request);
 
                     // Always re-assign the context to this request message before execution.
                     // This is because for primary actions the context is also cloned and we need to re-assign it
@@ -74,7 +74,10 @@ public class ResilienceHandler : DelegatingHandler
 
                     try
                     {
-                        var response = await state.instance.SendCoreAsync(request, context.CancellationToken).ConfigureAwait(context.ContinueOnCapturedContext);
+                        HttpResponseMessage response = await state.instance
+                            .SendCoreAsync(request, context.CancellationToken)
+                            .ConfigureAwait(context.ContinueOnCapturedContext);
+
                         return Outcome.FromResult(response);
                     }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -110,9 +113,9 @@ public class ResilienceHandler : DelegatingHandler
     {
         _ = Throw.IfNull(request);
 
-        var pipeline = _pipelineProvider(request);
+        ResiliencePipeline<HttpResponseMessage> pipeline = _pipelineProvider(request);
 
-        var context = GetOrSetResilienceContext(request, cancellationToken, out var created);
+        ResilienceContext context = GetOrSetResilienceContext(request, cancellationToken, out bool created);
         TrySetRequestMetadata(context, request);
         SetRequestMessage(context, request);
 
@@ -121,7 +124,7 @@ public class ResilienceHandler : DelegatingHandler
             return pipeline.Execute(
                 static (context, state) =>
                 {
-                    var request = GetRequestMessage(context, state.request);
+                    HttpRequestMessage request = GetRequestMessage(context, state.request);
 
                     // Always re-assign the context to this request message before execution.
                     // This is because for primary actions the context is also cloned and we need to re-assign it
