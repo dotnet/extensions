@@ -1,0 +1,9 @@
+﻿{
+  Type: InvalidOperationException,
+  Message: '/proc/stat' should contain whitespace separated values according to POSIX. We've failed trying to get 2th value. File content: ' 245693'.,
+  StackTrace:
+at Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(String message)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationParserCgroupV2.GetHostCpuUsageInNanoseconds()
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test.LinuxUtilizationParserCgroupV2Tests.<>c__DisplayClass19_0.<Throws_When_CpuUsage_Invalid>b__0()
+at Xunit.Record.Exception(Func`1 testCode)
+}
