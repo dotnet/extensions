@@ -79,8 +79,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         using var jobHandle = _createJobHandleObject();
 
-        _cpuUnits = GetMaximumCpuUnits(jobHandle, systemInfo);
-        var memory = GetMemoryLimits(jobHandle);
+        _cpuUnits = GetCpuLimit(jobHandle, systemInfo);
+        var memory = GetMemoryLimit(jobHandle);
 
         // CPU request (aka guaranteed CPU units) is not supported on Windows, so we set it to the same value as CPU limit (aka maximum CPU units).
         // Memory request (aka guaranteed memory) is not supported on Windows, so we set it to the same value as memory limit (aka maximum memory).
@@ -124,7 +124,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             GetMemoryUsage());
     }
 
-    private static double GetMaximumCpuUnits(IJobHandle jobHandle, ISystemInfo systemInfo)
+    private static double GetCpuLimit(IJobHandle jobHandle, ISystemInfo systemInfo)
     {
         // Note: This function convert the CpuRate from CPU cycles to CPU units, also it scales
         // the CPU units with the number of processors (cores) available in the system.
@@ -154,7 +154,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     /// Gets memory limit of the system.
     /// </summary>
     /// <returns>Memory limit allocated to the system in bytes.</returns>
-    private ulong GetMemoryLimits(IJobHandle jobHandle)
+    private ulong GetMemoryLimit(IJobHandle jobHandle)
     {
         var memoryLimitInBytes = jobHandle.GetExtendedLimitInfo().JobMemoryLimit.ToUInt64();
 
