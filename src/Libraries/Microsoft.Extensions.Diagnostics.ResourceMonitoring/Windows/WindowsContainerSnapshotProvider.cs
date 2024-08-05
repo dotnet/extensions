@@ -26,8 +26,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private readonly object _memoryLocker = new();
     private readonly TimeProvider _timeProvider;
     private readonly IProcessInfo _processInfo;
-    private readonly double _totalMemory;
-    private readonly double _cpuUnits;
+    private readonly double _memoryLimit;
+    private readonly double _cpuLimit;
     private readonly TimeSpan _cpuRefreshInterval;
     private readonly TimeSpan _memoryRefreshInterval;
 
@@ -79,14 +79,14 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         using var jobHandle = _createJobHandleObject();
 
-        _cpuUnits = GetCpuLimit(jobHandle, systemInfo);
-        var memory = GetMemoryLimit(jobHandle);
+        var memoryLimitLong = GetMemoryLimit(jobHandle);
+        _memoryLimit = memoryLimitLong;
+        _cpuLimit = GetCpuLimit(jobHandle, systemInfo);
 
         // CPU request (aka guaranteed CPU units) is not supported on Windows, so we set it to the same value as CPU limit (aka maximum CPU units).
         // Memory request (aka guaranteed memory) is not supported on Windows, so we set it to the same value as memory limit (aka maximum memory).
-        Resources = new SystemResources(_cpuUnits, _cpuUnits, memory, memory);
+        Resources = new SystemResources(_cpuLimit, _cpuLimit, memoryLimitLong, memoryLimitLong);
 
-        _totalMemory = memory;
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
         _oldCpuUsageTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
         _oldCpuTimeTicks = _timeProvider.GetUtcNow().Ticks;
@@ -193,7 +193,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         {
             if (now >= _refreshAfterMemory)
             {
-                _memoryPercentage = Math.Min(Hundred, currentMemoryUsage / _totalMemory * Hundred); // Don't change calculation order, otherwise we loose some precision
+                _memoryPercentage = Math.Min(Hundred, currentMemoryUsage / _memoryLimit * Hundred); // Don't change calculation order, otherwise we loose some precision
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
@@ -222,7 +222,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             if (now >= _refreshAfterCpu)
             {
                 var usageTickDelta = currentCpuTicks - _oldCpuUsageTicks;
-                var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuUnits;
+                var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuLimit;
                 if (usageTickDelta > 0 && timeTickDelta > 0)
                 {
                     _oldCpuUsageTicks = currentCpuTicks;
