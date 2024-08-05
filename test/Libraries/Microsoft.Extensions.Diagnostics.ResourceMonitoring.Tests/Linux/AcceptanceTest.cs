@@ -200,7 +200,7 @@ public sealed class AcceptanceTest
                 { new FileInfo("/sys/fs/cgroup/cpuacct/cpuacct.usage"), "102312"},
                 { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
                 { new FileInfo("/sys/fs/cgroup/cpuset/cpuset.cpus"), "0-19"},
-                { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "24"},
+                { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "12"},
                 { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_period_us"), "6"},
                 { new FileInfo("/sys/fs/cgroup/cpu/cpu.shares"), "2048"},
                 { new FileInfo("/sys/fs/cgroup/memory/memory.stat"), "total_inactive_file 100"},
@@ -293,7 +293,7 @@ public sealed class AcceptanceTest
 
         Assert.Equal(1, utilization.CpuUsedPercentage);
         Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge * 100);
-        Assert.Equal(0.5, cpuLimitFromGauge * 100);
+        Assert.Equal(utilization.CpuUsedPercentage, cpuLimitFromGauge * 100);
         Assert.Equal(utilization.CpuUsedPercentage, cpuRequestFromGauge * 100);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
         Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);

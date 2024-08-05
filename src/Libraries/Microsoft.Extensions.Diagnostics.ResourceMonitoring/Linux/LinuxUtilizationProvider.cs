@@ -53,7 +53,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var cpuRequest = _parser.GetCgroupRequestCpu();
         _scaleRelativeToCpuLimit = hostCpus / cpuLimit;
         _scaleRelativeToCpuRequest = hostCpus / cpuRequest;
-        _scaleRelativeToCpuLimitForTrackerApi = hostCpus;
+        _scaleRelativeToCpuLimitForTrackerApi = hostCpus / cpuLimit * cpuRequest;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // We don't dispose the meter because IMeterFactory handles that
@@ -68,7 +68,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryRequestUtilization, observeValue: MemoryUtilization, unit: "1");
 
         // Obsolete metrics, kept for backward compatibility:
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryUtilization, unit: "1");
 
         // cpuRequest is a CPU request (aka guaranteed number of CPU units) for pod, for host its 1 core
