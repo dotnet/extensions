@@ -37,16 +37,18 @@ internal sealed class Timer : ITimer
         _ = Throw.IfOutOfRange(periodMs, -1, MaxSupportedTimeout, nameof(period));
 #pragma warning restore S3236 // Caller information arguments should not be provided explicitly
 
-        if (_timeProvider == null)
+        var timeProvider = _timeProvider;
+        if (timeProvider is null)
         {
             // timer has been disposed
             return false;
         }
 
-        if (_waiter != null)
+        var waiter = _waiter;
+        if (waiter is not null)
         {
             // remove any previous waiter
-            _timeProvider.RemoveWaiter(_waiter);
+            timeProvider.RemoveWaiter(waiter);
             _waiter = null;
         }
 
@@ -62,8 +64,8 @@ internal sealed class Timer : ITimer
             period = TimeSpan.Zero;
         }
 
-        _waiter = new Waiter(_callback!, _state, period.Ticks);
-        _timeProvider.AddWaiter(_waiter, dueTime.Ticks);
+        _waiter = waiter = new Waiter(_callback!, _state, period.Ticks);
+        timeProvider.AddWaiter(waiter, dueTime.Ticks);
         return true;
     }
 
@@ -89,9 +91,10 @@ internal sealed class Timer : ITimer
 
     private void Dispose(bool _)
     {
-        if (_waiter != null)
+        var waiter = _waiter;
+        if (waiter is not null)
         {
-            _timeProvider!.RemoveWaiter(_waiter);
+            _timeProvider?.RemoveWaiter(waiter);
             _waiter = null;
         }
 
