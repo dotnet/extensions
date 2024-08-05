@@ -55,8 +55,9 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         _cpuUnits = getCpuUnitsFunc();
         var totalMemory = getTotalMemoryInBytesFunc();
 
-        // We are not running in a job object (e.g. container), so we don't have any resource requests or limits,
-        // therefore using physical values such as number of CPUs and physical memory:
+        // We are not running in a job object (e.g. container), so we don't have
+        // any resource requests or resource limits, therefore using physical values
+        // such as number of CPUs and physical memory and using it for both requests and limits (aka 'guaranteed' and 'max'):
         Resources = new SystemResources(_cpuUnits, _cpuUnits, totalMemory, totalMemory);
 
         _timeProvider = timeProvider;
