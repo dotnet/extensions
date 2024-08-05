@@ -19,8 +19,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private readonly TimeSpan _cpuRefreshInterval;
     private readonly TimeSpan _memoryRefreshInterval;
     private readonly TimeProvider _timeProvider;
-    private readonly double _scale;
-    private readonly double _scaleForTrackerApi;
+    private readonly double _scaleRelativeToCpuLimit;
 
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
@@ -50,8 +49,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var hostCpus = _parser.GetHostCpuCount();
         var cpuLimit = _parser.GetCgroupLimitedCpus();
         var cpuRequest = _parser.GetCgroupRequestCpu();
-        _scale = hostCpus / cpuLimit;
-        _scaleForTrackerApi = hostCpus / cpuLimit;
+        _scaleRelativeToCpuLimit = hostCpus / cpuLimit;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // We don't dispose the meter because IMeterFactory handles that
@@ -100,7 +98,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
                 if (deltaHost > 0 && deltaCgroup > 0)
                 {
-                    var percentage = Math.Min(One, deltaCgroup / deltaHost * _scale);
+                    var percentage = Math.Min(One, deltaCgroup / deltaHost * _scaleRelativeToCpuLimit);
 
                     _cpuPercentage = percentage;
                     _refreshAfterCpu = now.Add(_cpuRefreshInterval);
@@ -155,7 +153,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         return new Snapshot(
             totalTimeSinceStart: TimeSpan.FromTicks(hostTime / Hundred),
             kernelTimeSinceStart: TimeSpan.Zero,
-            userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / Hundred * _scaleForTrackerApi)),
+            userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / Hundred * _scaleRelativeToCpuLimit)),
             memoryUsageInBytes: memoryUsed);
     }
 }
