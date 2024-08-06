@@ -137,12 +137,14 @@ configuration:
       then:
       - disableAutoMerge
       description: Automatically merge pull requests
+
     - if:
       - payloadType: Pull_Request
       then:
       - inPrLabel:
           label: 'work in progress :construction:'
       description: In-PR label
+
     - if:
       - payloadType: Issue_Comment
       then:
@@ -172,6 +174,7 @@ configuration:
       - removeLabel:
           label: 'no-recent-activity :zzz:'
       description: Remove no recent activity label when an issue is commented on
+
     - if:
       - payloadType: Issues
       - not:
@@ -183,6 +186,7 @@ configuration:
       - removeLabel:
           label: 'no-recent-activity :zzz:'
       description: Remove no recent activity label from issue
+
     - if:
       - payloadType: Issues
       - isAction:
@@ -190,6 +194,7 @@ configuration:
       then:
       - removeMilestone
       description: Remove closed issues from milestones
+
     - if:
       - payloadType: Pull_Request
       - isAction:
@@ -202,6 +207,7 @@ configuration:
       - removeLabel:
           label: 'waiting-on-team :wave:'
       description: Remove intermediate labels after PR is closed or merged
+
     - if:
       - payloadType: Issues
       - or:
@@ -211,7 +217,10 @@ configuration:
       - removeLabel:
           label: untriaged
       - removeLabel:
+          label: 'work in progress :construction:'
+      - removeLabel:
           label: 'waiting-author-feedback :mailbox_with_no_mail:'
       description: Remove intermediate labels from closed issue
+
 onFailure: 
 onSuccess:
