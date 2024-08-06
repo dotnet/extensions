@@ -51,7 +51,13 @@ public readonly struct ResourceUtilization
     /// <param name="systemResources">CPU and memory limits.</param>
     public ResourceUtilization(double cpuUsedPercentage, ulong memoryUsedInBytes, SystemResources systemResources)
     {
-        CpuUsedPercentage = Throw.IfLessThan(cpuUsedPercentage / systemResources.GuaranteedCpuUnits, 0.0);
+        var guaranteedCpuUnits = systemResources.GuaranteedCpuUnits;
+        if (guaranteedCpuUnits <= 0)
+        {
+            guaranteedCpuUnits = 1;
+        }
+
+        CpuUsedPercentage = Throw.IfLessThan(cpuUsedPercentage / guaranteedCpuUnits, 0.0);
         MemoryUsedInBytes = Throw.IfLessThan(memoryUsedInBytes, 0);
         SystemResources = systemResources;
         MemoryUsedPercentage = Math.Min(Hundred, (double)MemoryUsedInBytes / systemResources.GuaranteedMemoryInBytes * Hundred);
