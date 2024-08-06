@@ -212,45 +212,14 @@ public sealed class AcceptanceTest
         var cpuLimitFromGauge = 0.0d;
         var cpuRequestFromGauge = 0.0d;
         var memoryFromGauge = 0.0d;
+        var memoryLimitFromGauge = 0.0d;
         using var e = new ManualResetEventSlim();
 
         object? meterScope = null;
-        listener.InstrumentPublished = (instrument, meterListener) =>
-        {
-            if (!ReferenceEquals(instrument.Meter.Scope, meterScope))
-            {
-                return;
-            }
-
-            if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization ||
-                instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization ||
-                instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization ||
-                instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization)
-            {
-                meterListener.EnableMeasurementEvents(instrument);
-            }
-        };
-
-        listener.SetMeasurementEventCallback<double>((m, f, _, _) =>
-        {
-            if (m.Name == ResourceUtilizationInstruments.ProcessCpuUtilization)
-            {
-                cpuFromGauge = f;
-            }
-            else if (m.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization)
-            {
-                memoryFromGauge = f;
-            }
-            else if (m.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization)
-            {
-                cpuLimitFromGauge = f;
-            }
-            else if (m.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization)
-            {
-                cpuRequestFromGauge = f;
-            }
-        });
-
+        listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
+            => OnInstrumentPublished(instrument, meterListener, meterScope);
+        listener.SetMeasurementEventCallback<double>((m, f, _, _)
+            => OnMeasurementReceived(m, f, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
         listener.Start();
 
         using var host = FakeHost.CreateBuilder()
@@ -297,6 +266,7 @@ public sealed class AcceptanceTest
         Assert.Equal(1, cpuRequestFromGauge * 100);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
         Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
+        Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
 
         return Task.CompletedTask;
     }
@@ -324,45 +294,14 @@ public sealed class AcceptanceTest
         var cpuLimitFromGauge = 0.0d;
         var cpuRequestFromGauge = 0.0d;
         var memoryFromGauge = 0.0d;
+        var memoryLimitFromGauge = 0.0d;
         using var e = new ManualResetEventSlim();
 
         object? meterScope = null;
-        listener.InstrumentPublished = (instrument, meterListener) =>
-        {
-            if (!ReferenceEquals(instrument.Meter.Scope, meterScope))
-            {
-                return;
-            }
-
-            if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization ||
-                instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization ||
-                instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization ||
-                instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization)
-            {
-                meterListener.EnableMeasurementEvents(instrument);
-            }
-        };
-
-        listener.SetMeasurementEventCallback<double>((m, f, _, _) =>
-        {
-            if (m.Name == ResourceUtilizationInstruments.ProcessCpuUtilization)
-            {
-                cpuFromGauge = f;
-            }
-            else if (m.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization)
-            {
-                memoryFromGauge = f;
-            }
-            else if (m.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization)
-            {
-                cpuLimitFromGauge = f;
-            }
-            else if (m.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization)
-            {
-                cpuRequestFromGauge = f;
-            }
-        });
-
+        listener.InstrumentPublished = (Instrument instrument, MeterListener meterListener)
+            => OnInstrumentPublished(instrument, meterListener, meterScope);
+        listener.SetMeasurementEventCallback<double>((m, f, _, _)
+            => OnMeasurementReceived(m, f, ref cpuFromGauge, ref cpuLimitFromGauge, ref cpuRequestFromGauge, ref memoryFromGauge, ref memoryLimitFromGauge));
         listener.Start();
 
         using var host = FakeHost.CreateBuilder()
@@ -412,7 +351,54 @@ public sealed class AcceptanceTest
         Assert.Equal(1, Math.Round(cpuRequestFromGauge * 100));
         Assert.Equal(50, utilization.MemoryUsedPercentage);
         Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
+        Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
 
         return Task.CompletedTask;
+    }
+
+    private static void OnInstrumentPublished(Instrument instrument, MeterListener meterListener, object? meterScope)
+    {
+        if (!ReferenceEquals(instrument.Meter.Scope, meterScope))
+        {
+            return;
+        }
+
+#pragma warning disable S1067 // Expressions should not be too complex
+        if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization ||
+            instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization ||
+            instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization ||
+            instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization ||
+            instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization)
+        {
+            meterListener.EnableMeasurementEvents(instrument);
+        }
+#pragma warning restore S1067 // Expressions should not be too complex
+    }
+
+    private static void OnMeasurementReceived(
+        Instrument instrument, double value,
+        ref double cpuFromGauge, ref double cpuLimitFromGauge, ref double cpuRequestFromGauge,
+        ref double memoryFromGauge, ref double memoryLimitFromGauge)
+    {
+        if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization)
+        {
+            cpuFromGauge = value;
+        }
+        else if (instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization)
+        {
+            memoryFromGauge = value;
+        }
+        else if (instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization)
+        {
+            cpuLimitFromGauge = value;
+        }
+        else if (instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization)
+        {
+            cpuRequestFromGauge = value;
+        }
+        else if (instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization)
+        {
+            memoryLimitFromGauge = value;
+        }
     }
 }
