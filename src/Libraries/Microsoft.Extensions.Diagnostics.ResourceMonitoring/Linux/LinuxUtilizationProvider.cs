@@ -47,7 +47,6 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _previousHostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
         _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
 
-        var hostMemory = _parser.GetHostAvailableMemory();
         var hostCpus = _parser.GetHostCpuCount();
         var cpuLimit = _parser.GetCgroupLimitedCpus();
         var cpuRequest = _parser.GetCgroupRequestCpu();
@@ -65,9 +64,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryUtilization, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuRequestUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryRequestUtilization, observeValue: MemoryUtilization, unit: "1");
 
-        // Obsolete metrics, kept for backward compatibility:
+        // Old metrics, obsolete for this class, but used by WindowsSnapshotProvider. Keeping them for backward compatibility:
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryUtilization, unit: "1");
 

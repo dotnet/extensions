@@ -182,29 +182,29 @@ public sealed class AcceptanceTest
         Assert.Equal(100_000UL, provider.Resources.GuaranteedMemoryInBytes); // read from memory.max
 
         // The main usage of this library is containers.
-        // To not break the contaract with the main package, we need to set the maximum memory value to the guaranteed memory.
+        // To not break the contract with the main package, we need to set the maximum memory value to the guaranteed memory.
         Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
-    public Task ResourceUtilizationTracker_Reports_The_Same_Values_As_One_Can_Observe_From_Gauges()
+    public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv1()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
-            {
-                { new FileInfo("/sys/fs/cgroup/memory/memory.limit_in_bytes"), "100000" },
-                { new FileInfo("/sys/fs/cgroup/memory/memory.usage_in_bytes"), "450000" },
-                { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
-                { new FileInfo("/sys/fs/cgroup/cpuacct/cpuacct.usage"), "102312"},
-                { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
-                { new FileInfo("/sys/fs/cgroup/cpuset/cpuset.cpus"), "0-19"},
-                { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "12"},
-                { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_period_us"), "6"},
-                { new FileInfo("/sys/fs/cgroup/cpu/cpu.shares"), "2048"},
-                { new FileInfo("/sys/fs/cgroup/memory/memory.stat"), "total_inactive_file 100"},
-            });
+        {
+            { new FileInfo("/sys/fs/cgroup/memory/memory.limit_in_bytes"), "100000" },
+            { new FileInfo("/sys/fs/cgroup/memory/memory.usage_in_bytes"), "450000" },
+            { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
+            { new FileInfo("/sys/fs/cgroup/cpuacct/cpuacct.usage"), "102312"},
+            { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
+            { new FileInfo("/sys/fs/cgroup/cpuset/cpuset.cpus"), "0-19"},
+            { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "12"},
+            { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_period_us"), "6"},
+            { new FileInfo("/sys/fs/cgroup/cpu/cpu.shares"), "2048"},
+            { new FileInfo("/sys/fs/cgroup/memory/memory.stat"), "total_inactive_file 100"},
+        });
 
         using var listener = new MeterListener();
         var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
@@ -295,6 +295,121 @@ public sealed class AcceptanceTest
         Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge * 100);
         Assert.Equal(utilization.CpuUsedPercentage, cpuLimitFromGauge * 100);
         Assert.Equal(utilization.CpuUsedPercentage, cpuRequestFromGauge * 100);
+        Assert.Equal(50, utilization.MemoryUsedPercentage);
+        Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
+
+        return Task.CompletedTask;
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+    public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2()
+    {
+        var cpuRefresh = TimeSpan.FromMinutes(13);
+        var memoryRefresh = TimeSpan.FromMinutes(14);
+        var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/stat"), "cpu  10 10 10 10 10 10 10 10 10 10"},
+            { new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 102"},
+            { new FileInfo("/sys/fs/cgroup/memory.max"), "1048576" },
+            { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
+            { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
+            { new FileInfo("/sys/fs/cgroup/cpu.max"), "20000 10000"},
+            { new FileInfo("/sys/fs/cgroup/cpu.weight"), "79"}, // equals to 2046,9 CPU shares (cgroups v1) which is ~2 CPU units (2 * 1024), so have to use Math.Round() in Assertions down below.
+        });
+
+        using var listener = new MeterListener();
+        var clock = new FakeTimeProvider(DateTimeOffset.UtcNow);
+        var cpuFromGauge = 0.0d;
+        var cpuLimitFromGauge = 0.0d;
+        var cpuRequestFromGauge = 0.0d;
+        var memoryFromGauge = 0.0d;
+        using var e = new ManualResetEventSlim();
+
+        object? meterScope = null;
+        listener.InstrumentPublished = (instrument, meterListener) =>
+        {
+            if (!ReferenceEquals(instrument.Meter.Scope, meterScope))
+            {
+                return;
+            }
+
+            if (instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization ||
+                instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization ||
+                instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization ||
+                instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization)
+            {
+                meterListener.EnableMeasurementEvents(instrument);
+            }
+        };
+
+        listener.SetMeasurementEventCallback<double>((m, f, _, _) =>
+        {
+            if (m.Name == ResourceUtilizationInstruments.ProcessCpuUtilization)
+            {
+                cpuFromGauge = f;
+            }
+            else if (m.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization)
+            {
+                memoryFromGauge = f;
+            }
+            else if (m.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization)
+            {
+                cpuLimitFromGauge = f;
+            }
+            else if (m.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization)
+            {
+                cpuRequestFromGauge = f;
+            }
+        });
+
+        listener.Start();
+
+        using var host = FakeHost.CreateBuilder()
+            .ConfigureServices(x =>
+                x.AddLogging()
+                .AddSingleton<TimeProvider>(clock)
+                .AddSingleton<IUserHz>(new FakeUserHz(100))
+                .AddSingleton<IFileSystem>(fileSystem)
+                .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
+                .AddResourceMonitoring()
+                .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>()))
+            .Build();
+
+        meterScope = host.Services.GetRequiredService<IMeterFactory>();
+        var tracker = host.Services.GetService<IResourceMonitor>();
+        Assert.NotNull(tracker);
+
+        _ = host.RunAsync();
+
+        listener.RecordObservableInstruments();
+
+        var utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
+
+        Assert.Equal(0, utilization.CpuUsedPercentage);
+        Assert.Equal(100, utilization.MemoryUsedPercentage);
+        Assert.True(double.IsNaN(cpuFromGauge));
+
+        // gauge multiplied by 100 because gauges are in range [0, 1], and utilization is in range [0, 100]
+        Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
+
+        fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
+        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 112");
+        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.current"), "524298");
+        fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory.stat"), "inactive_file 10");
+
+        clock.Advance(TimeSpan.FromSeconds(6));
+        listener.RecordObservableInstruments();
+
+        e.Wait();
+
+        utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
+
+        var roundedCpuUsedPercentage = Math.Round(utilization.CpuUsedPercentage);
+        Assert.Equal(1, roundedCpuUsedPercentage);
+        Assert.Equal(roundedCpuUsedPercentage, cpuFromGauge * 100);
+        Assert.Equal(roundedCpuUsedPercentage, cpuLimitFromGauge * 100);
+        Assert.Equal(roundedCpuUsedPercentage, Math.Round(cpuRequestFromGauge * 100));
         Assert.Equal(50, utilization.MemoryUsedPercentage);
         Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
 

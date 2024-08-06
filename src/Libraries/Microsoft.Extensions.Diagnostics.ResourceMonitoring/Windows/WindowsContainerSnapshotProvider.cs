@@ -105,7 +105,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuPercentage);
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryPercentage);
 
-        // Obsolete metrics, keeping it for backward compatibility:
+        // Old metrics, obsolete for this class, but used by WindowsSnapshotProvider. Keeping them for backward compatibility:
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuPercentage);
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryPercentage);
     }
