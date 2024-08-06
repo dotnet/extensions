@@ -200,7 +200,7 @@ public sealed class AcceptanceTest
             { new FileInfo("/sys/fs/cgroup/cpuacct/cpuacct.usage"), "102312"},
             { new FileInfo("/proc/meminfo"), "MemTotal: 102312 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset/cpuset.cpus"), "0-19"},
-            { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "12"},
+            { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_quota_us"), "24"},
             { new FileInfo("/sys/fs/cgroup/cpu/cpu.cfs_period_us"), "6"},
             { new FileInfo("/sys/fs/cgroup/cpu/cpu.shares"), "2048"},
             { new FileInfo("/sys/fs/cgroup/memory/memory.stat"), "total_inactive_file 100"},
@@ -291,10 +291,10 @@ public sealed class AcceptanceTest
 
         utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
 
-        Assert.Equal(1, utilization.CpuUsedPercentage);
+        Assert.Equal(0.5, utilization.CpuUsedPercentage);
         Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge * 100);
         Assert.Equal(utilization.CpuUsedPercentage, cpuLimitFromGauge * 100);
-        Assert.Equal(utilization.CpuUsedPercentage, cpuRequestFromGauge * 100);
+        Assert.Equal(1, cpuRequestFromGauge * 100);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
         Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
 
@@ -314,7 +314,7 @@ public sealed class AcceptanceTest
             { new FileInfo("/sys/fs/cgroup/memory.max"), "1048576" },
             { new FileInfo("/proc/meminfo"), "MemTotal: 1024 kB"},
             { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0-19"},
-            { new FileInfo("/sys/fs/cgroup/cpu.max"), "20000 10000"},
+            { new FileInfo("/sys/fs/cgroup/cpu.max"), "40000 10000"},
             { new FileInfo("/sys/fs/cgroup/cpu.weight"), "79"}, // equals to 2046,9 CPU shares (cgroups v1) which is ~2 CPU units (2 * 1024), so have to use Math.Round() in Assertions down below.
         });
 
@@ -405,11 +405,11 @@ public sealed class AcceptanceTest
 
         utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
 
-        var roundedCpuUsedPercentage = Math.Round(utilization.CpuUsedPercentage);
-        Assert.Equal(1, roundedCpuUsedPercentage);
+        var roundedCpuUsedPercentage = Math.Round(utilization.CpuUsedPercentage, 1);
+        Assert.Equal(0.5, roundedCpuUsedPercentage);
         Assert.Equal(roundedCpuUsedPercentage, cpuFromGauge * 100);
         Assert.Equal(roundedCpuUsedPercentage, cpuLimitFromGauge * 100);
-        Assert.Equal(roundedCpuUsedPercentage, Math.Round(cpuRequestFromGauge * 100));
+        Assert.Equal(1, Math.Round(cpuRequestFromGauge * 100));
         Assert.Equal(50, utilization.MemoryUsedPercentage);
         Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
 
