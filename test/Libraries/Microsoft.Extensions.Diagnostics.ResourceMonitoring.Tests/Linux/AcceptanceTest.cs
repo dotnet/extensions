@@ -265,13 +265,13 @@ public sealed class AcceptanceTest
 
         utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
 
-        Assert.Equal(0.5, utilization.CpuUsedPercentage);
+        Assert.Equal(1, utilization.CpuUsedPercentage);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
 
         if (useContainerMetricNames)
         {
-            Assert.Equal(utilization.CpuUsedPercentage, cpuLimitFromGauge * 100);
-            Assert.Equal(1, cpuRequestFromGauge * 100);
+            Assert.Equal(0.5, cpuLimitFromGauge * 100);
+            Assert.Equal(utilization.CpuUsedPercentage, cpuRequestFromGauge * 100);
             Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
         }
         else
@@ -362,18 +362,18 @@ public sealed class AcceptanceTest
 
         var roundedCpuUsedPercentage = Math.Round(utilization.CpuUsedPercentage, 1);
 
-        Assert.Equal(0.5, roundedCpuUsedPercentage);
+        Assert.Equal(1, roundedCpuUsedPercentage);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
 
         if (useContainerMetricNames)
         {
-            Assert.Equal(roundedCpuUsedPercentage, cpuLimitFromGauge * 100);
-            Assert.Equal(1, Math.Round(cpuRequestFromGauge * 100));
+            Assert.Equal(0.5, cpuLimitFromGauge * 100);
+            Assert.Equal(roundedCpuUsedPercentage, Math.Round(cpuRequestFromGauge * 100));
             Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
         }
         else
         {
-            Assert.Equal(roundedCpuUsedPercentage, cpuFromGauge * 100);
+            Assert.Equal(roundedCpuUsedPercentage, Math.Round(cpuFromGauge * 100));
             Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
         }
 

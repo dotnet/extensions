@@ -21,7 +21,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     private readonly TimeProvider _timeProvider;
     private readonly double _scaleRelativeToCpuLimit;
     private readonly double _scaleRelativeToCpuRequest;
-    private readonly double _scaleRelativeToCpuLimitForTrackerApi;
+    private readonly double _scaleRelativeToCpuRequestForTrackerApi;
 
     private DateTimeOffset _refreshAfterCpu;
     private DateTimeOffset _refreshAfterMemory;
@@ -52,7 +52,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         var cpuRequest = _parser.GetCgroupRequestCpu();
         _scaleRelativeToCpuLimit = hostCpus / cpuLimit;
         _scaleRelativeToCpuRequest = hostCpus / cpuRequest;
-        _scaleRelativeToCpuLimitForTrackerApi = hostCpus / cpuLimit * cpuRequest;
+        _scaleRelativeToCpuRequestForTrackerApi = hostCpus; // the division by cpuRequest is performed later on in the ResourceUtilization class
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // We don't dispose the meter because IMeterFactory handles that
@@ -70,7 +70,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         else
         {
             // Old metrics, obsolete for this class, but used by WindowsSnapshotProvider. Keeping them for backward compatibility:
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");
+            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuRequest, unit: "1");
             _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryUtilization, unit: "1");
         }
 
@@ -160,7 +160,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         return new Snapshot(
             totalTimeSinceStart: TimeSpan.FromTicks(hostTime / Hundred),
             kernelTimeSinceStart: TimeSpan.Zero,
-            userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / Hundred * _scaleRelativeToCpuLimitForTrackerApi)),
+            userTimeSinceStart: TimeSpan.FromTicks((long)(cgroupTime / Hundred * _scaleRelativeToCpuRequestForTrackerApi)),
             memoryUsageInBytes: memoryUsed);
     }
 }

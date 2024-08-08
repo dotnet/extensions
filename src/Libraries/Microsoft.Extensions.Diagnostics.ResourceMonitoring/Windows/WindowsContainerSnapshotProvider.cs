@@ -85,7 +85,10 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         // CPU request (aka guaranteed CPU units) is not supported on Windows, so we set it to the same value as CPU limit (aka maximum CPU units).
         // Memory request (aka guaranteed memory) is not supported on Windows, so we set it to the same value as memory limit (aka maximum memory).
-        Resources = new SystemResources(_cpuLimit, _cpuLimit, memoryLimitLong, memoryLimitLong);
+        var cpuRequest = _cpuLimit;
+        var memoryRequest = memoryLimitLong;
+
+        Resources = new SystemResources(cpuRequest, _cpuLimit, memoryRequest, memoryLimitLong);
 
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
         _oldCpuUsageTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
