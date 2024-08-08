@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Shared.Data.Validation;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
@@ -54,4 +56,13 @@ public partial class ResourceMonitoringOptions
     /// </remarks>
     [TimeSpan(MinimumSamplingWindow, MaximumSamplingWindow)]
     public TimeSpan PublishingWindow { get; set; } = DefaultCollectionWindow;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to use container metric names "container.*" instead of process metric names "process.*.".
+    /// </summary>
+    /// <remarks>
+    /// Container metric names is the way forward and will be the default in the future.
+    /// </remarks>
+    [Experimental(DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
+    public bool UseContainerMetricNames { get; set; }
 }

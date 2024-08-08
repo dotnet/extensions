@@ -186,9 +186,10 @@ public sealed class AcceptanceTest
         Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
 
-    [ConditionalFact]
+    [ConditionalTheory]
+    [CombinatorialData]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
-    public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv1()
+    public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv1(bool useContainerMetricNames)
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
@@ -229,7 +230,7 @@ public sealed class AcceptanceTest
                 .AddSingleton<IUserHz>(new FakeUserHz(100))
                 .AddSingleton<IFileSystem>(fileSystem)
                 .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
-                .AddResourceMonitoring())
+                .AddResourceMonitoring(builder => builder.ConfigureMonitor(o => o.UseContainerMetricNames = useContainerMetricNames)))
             .Build();
 
         meterScope = host.Services.GetRequiredService<IMeterFactory>();
@@ -244,10 +245,14 @@ public sealed class AcceptanceTest
 
         Assert.Equal(0, utilization.CpuUsedPercentage);
         Assert.Equal(100, utilization.MemoryUsedPercentage);
-        Assert.True(double.IsNaN(cpuFromGauge));
 
-        // gauge multiplied by 100 because gauges are in range [0, 1], and utilization is in range [0, 100]
-        Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
+        if (!useContainerMetricNames)
+        {
+            Assert.True(double.IsNaN(cpuFromGauge));
+
+            // gauge multiplied by 100 because gauges are in range [0, 1], and utilization is in range [0, 100]
+            Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
+        }
 
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory/memory.usage_in_bytes"), "50100");
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
@@ -261,19 +266,27 @@ public sealed class AcceptanceTest
         utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
 
         Assert.Equal(0.5, utilization.CpuUsedPercentage);
-        Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge * 100);
-        Assert.Equal(utilization.CpuUsedPercentage, cpuLimitFromGauge * 100);
-        Assert.Equal(1, cpuRequestFromGauge * 100);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
-        Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
-        Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
+
+        if (useContainerMetricNames)
+        {
+            Assert.Equal(utilization.CpuUsedPercentage, cpuLimitFromGauge * 100);
+            Assert.Equal(1, cpuRequestFromGauge * 100);
+            Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
+        }
+        else
+        {
+            Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge * 100);
+            Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
+        }
 
         return Task.CompletedTask;
     }
 
-    [ConditionalFact]
+    [ConditionalTheory]
+    [CombinatorialData]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
-    public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2()
+    public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv2(bool useContainerMetricNames)
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
@@ -311,7 +324,7 @@ public sealed class AcceptanceTest
                 .AddSingleton<IUserHz>(new FakeUserHz(100))
                 .AddSingleton<IFileSystem>(fileSystem)
                 .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
-                .AddResourceMonitoring()
+                .AddResourceMonitoring(builder => builder.ConfigureMonitor(o => o.UseContainerMetricNames = useContainerMetricNames))
                 .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>()))
             .Build();
 
@@ -327,10 +340,13 @@ public sealed class AcceptanceTest
 
         Assert.Equal(0, utilization.CpuUsedPercentage);
         Assert.Equal(100, utilization.MemoryUsedPercentage);
-        Assert.True(double.IsNaN(cpuFromGauge));
+        if (!useContainerMetricNames)
+        {
+            Assert.True(double.IsNaN(cpuFromGauge));
 
-        // gauge multiplied by 100 because gauges are in range [0, 1], and utilization is in range [0, 100]
-        Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
+            // gauge multiplied by 100 because gauges are in range [0, 1], and utilization is in range [0, 100]
+            Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
+        }
 
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/cpu.stat"), "usage_usec 112");
@@ -345,13 +361,21 @@ public sealed class AcceptanceTest
         utilization = tracker.GetUtilization(TimeSpan.FromSeconds(5));
 
         var roundedCpuUsedPercentage = Math.Round(utilization.CpuUsedPercentage, 1);
+
         Assert.Equal(0.5, roundedCpuUsedPercentage);
-        Assert.Equal(roundedCpuUsedPercentage, cpuFromGauge * 100);
-        Assert.Equal(roundedCpuUsedPercentage, cpuLimitFromGauge * 100);
-        Assert.Equal(1, Math.Round(cpuRequestFromGauge * 100));
         Assert.Equal(50, utilization.MemoryUsedPercentage);
-        Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
-        Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
+
+        if (useContainerMetricNames)
+        {
+            Assert.Equal(roundedCpuUsedPercentage, cpuLimitFromGauge * 100);
+            Assert.Equal(1, Math.Round(cpuRequestFromGauge * 100));
+            Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
+        }
+        else
+        {
+            Assert.Equal(roundedCpuUsedPercentage, cpuFromGauge * 100);
+            Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
+        }
 
         return Task.CompletedTask;
     }

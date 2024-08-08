@@ -183,8 +183,10 @@ public sealed class WindowsContainerSnapshotProviderTests
         Assert.True(data.MemoryUsageInBytes > 0);
     }
 
-    [Fact]
-    public void SnapshotProvider_EmitsCpuMetrics()
+    [Theory]
+    [InlineData(ResourceUtilizationInstruments.ProcessCpuUtilization, false)]
+    [InlineData(ResourceUtilizationInstruments.ContainerCpuLimitUtilization, true)]
+    public void SnapshotProvider_EmitsCpuMetrics(string instrumentName, bool useContainerMetricNames)
     {
         // Simulating 10% CPU usage (2 CPUs, 2000 ticks initially, 4000 ticks after 1 ms):
         JOBOBJECT_BASIC_ACCOUNTING_INFORMATION updatedAccountingInfo = default;
@@ -203,11 +205,16 @@ public sealed class WindowsContainerSnapshotProviderTests
         var fakeClock = new FakeTimeProvider();
         using var meter = new Meter(nameof(SnapshotProvider_EmitsCpuMetrics));
         var meterFactoryMock = new Mock<IMeterFactory>();
-        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
+        meterFactoryMock
+            .Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
-        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ProcessCpuUtilization, fakeClock);
+        using var metricCollector = new MetricCollector<double>(meter, instrumentName, fakeClock);
 
-        var options = new ResourceMonitoringOptions { CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
+        var options = new ResourceMonitoringOptions
+        {
+            CpuConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2),
+            UseContainerMetricNames = useContainerMetricNames
+        };
 
         var snapshotProvider = new WindowsContainerSnapshotProvider(
             _memoryInfoMock.Object,
@@ -245,8 +252,10 @@ public sealed class WindowsContainerSnapshotProviderTests
         Assert.Equal(10, metricCollector.LastMeasurement.Value); // Consumed 10% of the CPU.
     }
 
-    [Fact]
-    public void SnapshotProvider_EmitsMemoryMetrics()
+    [Theory]
+    [InlineData(ResourceUtilizationInstruments.ProcessMemoryUtilization, false)]
+    [InlineData(ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, true)]
+    public void SnapshotProvider_EmitsMemoryMetrics(string instrumentName, bool useContainerMetricNames)
     {
         _appMemoryUsage = 200UL;
 
@@ -261,9 +270,13 @@ public sealed class WindowsContainerSnapshotProviderTests
         var meterFactoryMock = new Mock<IMeterFactory>();
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
-        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ProcessMemoryUtilization, fakeClock);
+        using var metricCollector = new MetricCollector<double>(meter, instrumentName, fakeClock);
 
-        var options = new ResourceMonitoringOptions { MemoryConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2) };
+        var options = new ResourceMonitoringOptions
+        {
+            MemoryConsumptionRefreshInterval = TimeSpan.FromMilliseconds(2),
+            UseContainerMetricNames = useContainerMetricNames
+        };
 
         var snapshotProvider = new WindowsContainerSnapshotProvider(
             _memoryInfoMock.Object,
