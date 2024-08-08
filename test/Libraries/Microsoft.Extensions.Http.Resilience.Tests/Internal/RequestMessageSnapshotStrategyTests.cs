@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Http.Resilience.Test.Internal;
 public class RequestMessageSnapshotStrategyTests
 {
     [Fact]
-    public async Task SendAsync_EnsureSnapshotAttached()
+    public async Task ExecuteAsync_EnsureSnapshotAttached()
     {
         var strategy = Create();
         var context = ResilienceContextPool.Shared.Get();
@@ -32,7 +32,7 @@ public class RequestMessageSnapshotStrategyTests
     }
 
     [Fact]
-    public void ExecuteAsync_requestMessageNotFound_Throws()
+    public void ExecuteAsync_RequestMessageNotFound_Throws()
     {
         var strategy = Create();
 

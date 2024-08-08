@@ -89,12 +89,24 @@ public sealed partial class HttpClientBuilderExtensionsTests
         Assert.NotSame(provider(request), provider(request));
     }
 
+    [Theory]
+#if NET6_0_OR_GREATER
+    [InlineData(true, "https://dummy:21/path", "https://dummy:21", true)]
+    [InlineData(true, "https://dummy123", "https://dummy123", true)]
+    [InlineData(false, "https://dummy:21/path", "https://dummy:21", true)]
+    [InlineData(false, "https://dummy123", "https://dummy123", true)]
+    [InlineData(true, "https://dummy:21/path", "https://dummy:21", false)]
+    [InlineData(true, "https://dummy123", "https://dummy123", false)]
+    [InlineData(false, "https://dummy:21/path", "https://dummy:21", false)]
+    [InlineData(false, "https://dummy123", "https://dummy123", false)]
+#else
     [InlineData(true, "https://dummy:21/path", "https://dummy:21")]
     [InlineData(true, "https://dummy123", "https://dummy123")]
     [InlineData(false, "https://dummy:21/path", "https://dummy:21")]
     [InlineData(false, "https://dummy123", "https://dummy123")]
-    [Theory]
-    public async Task SelectPipelineByAuthority_EnsureResiliencePipelineProviderCall(bool standardResilience, string url, string expectedPipelineKey)
+#endif
+    public async Task SelectPipelineByAuthority_EnsureResiliencePipelineProviderCall(
+        bool standardResilience, string url, string expectedPipelineKey, bool asynchronous = true)
     {
         var provider = new Mock<ResiliencePipelineProvider<HttpKey>>(MockBehavior.Strict);
 
@@ -120,7 +132,8 @@ public sealed partial class HttpClientBuilderExtensionsTests
             .Setup(p => p.GetPipeline<HttpResponseMessage>(new HttpKey(pipelineName, expectedPipelineKey)))
             .Returns(ResiliencePipeline<HttpResponseMessage>.Empty);
 
-        await CreateClient().GetAsync(url);
+        var client = CreateClient();
+        await SendRequest(client, url, asynchronous);
 
         provider.VerifyAll();
     }

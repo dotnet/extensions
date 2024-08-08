@@ -35,6 +35,24 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
     public void Dispose()
         => _serviceProvider?.Dispose();
 
+    private static Task<HttpResponseMessage> SendRequest(HttpClient client, string url, bool asynchronous)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+#if NET6_0_OR_GREATER
+        if (asynchronous)
+        {
+            return client.SendAsync(request, default);
+        }
+        else
+        {
+            return Task.FromResult(client.Send(request, default));
+        }
+#else
+        return client.SendAsync(request, default);
+#endif
+    }
+
     private HttpClient CreateClient(string name = BuilderName)
     {
         _serviceProvider ??= _builder.Services.BuildServiceProvider();
@@ -197,8 +215,13 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
         Assert.NotNull(pipeline);
     }
 
-    [Fact]
-    public async Task DynamicReloads_Ok()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task DynamicReloads_Ok(bool asynchronous = true)
     {
         // arrange
         var requests = new List<HttpRequestMessage>();
@@ -224,13 +247,13 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
         var client = CreateClient();
 
         // act && assert
-        await client.GetAsync("https://dummy");
+        await SendRequest(client, "https://dummy", asynchronous);
         requests.Should().HaveCount(7);
 
         requests.Clear();
         reloadAction(new() { { "standard:Retry:MaxRetryAttempts", "10" } });
 
-        await client.GetAsync("https://dummy");
+        await SendRequest(client, "https://dummy", asynchronous);
         requests.Should().HaveCount(11);
     }
 
