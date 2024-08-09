@@ -105,17 +105,13 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         var meter = meterFactory.Create(nameof(Microsoft.Extensions.Diagnostics.ResourceMonitoring));
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        if (options.UseContainerMetricNames)
-        {
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuPercentage);
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: MemoryPercentage);
-        }
-        else
-        {
-            // Old metrics, obsolete for this class, but used by WindowsSnapshotProvider. Keeping them for backward compatibility:
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuPercentage);
-            _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryPercentage);
-        }
+        // Container based metrics:
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetMemoryUsage()));
+
+        // Process based metrics:
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetCurrentProcessMemoryUsage()));
     }
 
     public Snapshot GetSnapshot()
@@ -129,7 +125,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
             TimeSpan.FromTicks(basicAccountingInfo.TotalKernelTime),
             TimeSpan.FromTicks(basicAccountingInfo.TotalUserTime),
-            GetMemoryUsage());
+            _processInfo.GetCurrentProcessMemoryUsage());
     }
 
     private static double GetCpuLimit(IJobHandle jobHandle, ISystemInfo systemInfo)
@@ -178,13 +174,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         return memoryLimitInBytes;
     }
 
-    /// <summary>
-    /// Gets memory usage within the system.
-    /// </summary>
-    /// <returns>Memory usage within the system in bytes.</returns>
-    private ulong GetMemoryUsage() => _processInfo.GetMemoryUsage();
-
-    private double MemoryPercentage()
+    private double MemoryPercentage(Func<ulong> getMemoryUsage)
     {
         var now = _timeProvider.GetUtcNow();
 
@@ -196,12 +186,13 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             }
         }
 
-        var currentMemoryUsage = GetMemoryUsage();
+        var memoryUsage = getMemoryUsage();
+
         lock (_memoryLocker)
         {
             if (now >= _refreshAfterMemory)
             {
-                _memoryPercentage = Math.Min(Hundred, currentMemoryUsage / _memoryLimit * Hundred); // Don't change calculation order, otherwise we loose some precision
+                _memoryPercentage = Math.Min(Hundred, memoryUsage / _memoryLimit * Hundred); // Don't change calculation order, otherwise we loose some precision
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 

@@ -186,10 +186,10 @@ public sealed class AcceptanceTest
         Assert.Equal(100_000UL, provider.Resources.MaximumMemoryInBytes);
     }
 
-    [ConditionalTheory]
+    [ConditionalFact]
     [CombinatorialData]
     [OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
-    public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv1(bool useContainerMetricNames)
+    public Task ResourceUtilizationTracker_And_Metrics_Report_Same_Values_With_Cgroupsv1()
     {
         var cpuRefresh = TimeSpan.FromMinutes(13);
         var memoryRefresh = TimeSpan.FromMinutes(14);
@@ -230,7 +230,7 @@ public sealed class AcceptanceTest
                 .AddSingleton<IUserHz>(new FakeUserHz(100))
                 .AddSingleton<IFileSystem>(fileSystem)
                 .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
-                .AddResourceMonitoring(builder => builder.ConfigureMonitor(o => o.UseContainerMetricNames = useContainerMetricNames)))
+                .AddResourceMonitoring())
             .Build();
 
         meterScope = host.Services.GetRequiredService<IMeterFactory>();
@@ -246,13 +246,10 @@ public sealed class AcceptanceTest
         Assert.Equal(0, utilization.CpuUsedPercentage);
         Assert.Equal(100, utilization.MemoryUsedPercentage);
 
-        if (!useContainerMetricNames)
-        {
-            Assert.True(double.IsNaN(cpuFromGauge));
+        Assert.True(double.IsNaN(cpuFromGauge));
 
-            // gauge multiplied by 100 because gauges are in range [0, 1], and utilization is in range [0, 100]
-            Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
-        }
+        // gauge multiplied by 100 because gauges are in range [0, 1], and utilization is in range [0, 100]
+        Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
 
         fileSystem.ReplaceFileContent(new FileInfo("/sys/fs/cgroup/memory/memory.usage_in_bytes"), "50100");
         fileSystem.ReplaceFileContent(new FileInfo("/proc/stat"), "cpu  11 10 10 10 10 10 10 10 10 10");
@@ -268,17 +265,11 @@ public sealed class AcceptanceTest
         Assert.Equal(1, utilization.CpuUsedPercentage);
         Assert.Equal(50, utilization.MemoryUsedPercentage);
 
-        if (useContainerMetricNames)
-        {
-            Assert.Equal(0.5, cpuLimitFromGauge * 100);
-            Assert.Equal(utilization.CpuUsedPercentage, cpuRequestFromGauge * 100);
-            Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
-        }
-        else
-        {
-            Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge * 100);
-            Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
-        }
+        Assert.Equal(0.5, cpuLimitFromGauge * 100);
+        Assert.Equal(utilization.CpuUsedPercentage, cpuRequestFromGauge * 100);
+        Assert.Equal(utilization.MemoryUsedPercentage, memoryLimitFromGauge * 100);
+        Assert.Equal(utilization.CpuUsedPercentage, cpuFromGauge * 100);
+        Assert.Equal(utilization.MemoryUsedPercentage, memoryFromGauge * 100);
 
         return Task.CompletedTask;
     }
@@ -324,7 +315,7 @@ public sealed class AcceptanceTest
                 .AddSingleton<IUserHz>(new FakeUserHz(100))
                 .AddSingleton<IFileSystem>(fileSystem)
                 .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
-                .AddResourceMonitoring(builder => builder.ConfigureMonitor(o => o.UseContainerMetricNames = useContainerMetricNames))
+                .AddResourceMonitoring()
                 .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>()))
             .Build();
 
