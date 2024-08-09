@@ -87,7 +87,6 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         // Memory request (aka guaranteed memory) is not supported on Windows, so we set it to the same value as memory limit (aka maximum memory).
         var cpuRequest = _cpuLimit;
         var memoryRequest = memoryLimitLong;
-
         Resources = new SystemResources(cpuRequest, _cpuLimit, memoryRequest, memoryLimitLong);
 
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();

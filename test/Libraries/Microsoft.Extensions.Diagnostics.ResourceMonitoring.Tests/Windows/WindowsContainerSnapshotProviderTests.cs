@@ -205,8 +205,7 @@ public sealed class WindowsContainerSnapshotProviderTests
         var fakeClock = new FakeTimeProvider();
         using var meter = new Meter(nameof(SnapshotProvider_EmitsCpuMetrics));
         var meterFactoryMock = new Mock<IMeterFactory>();
-        meterFactoryMock
-            .Setup(x => x.Create(It.IsAny<MeterOptions>()))
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
         using var metricCollector = new MetricCollector<double>(meter, instrumentName, fakeClock);
 
@@ -269,8 +268,7 @@ public sealed class WindowsContainerSnapshotProviderTests
         var fakeClock = new FakeTimeProvider();
         using var meter = new Meter(nameof(SnapshotProvider_EmitsMemoryMetrics));
         var meterFactoryMock = new Mock<IMeterFactory>();
-        meterFactoryMock
-            .Setup(x => x.Create(It.IsAny<MeterOptions>()))
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
         using var metricCollector = new MetricCollector<double>(meter, instrumentName, fakeClock);
 
