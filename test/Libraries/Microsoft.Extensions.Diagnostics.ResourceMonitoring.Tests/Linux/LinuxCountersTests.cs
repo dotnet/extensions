@@ -90,11 +90,10 @@ public sealed class LinuxCountersTests
     public void LinuxCounters_Registers_Instruments_CgroupV2()
     {
         var meterName = Guid.NewGuid().ToString();
-        var options = Options.Options.Create(new ResourceMonitoringOptions());
+        var options = Options.Options.Create<ResourceMonitoringOptions>(new());
         using var meter = new Meter(nameof(LinuxCounters_Registers_Instruments));
         var meterFactoryMock = new Mock<IMeterFactory>();
-        meterFactoryMock
-            .Setup(x => x.Create(It.IsAny<MeterOptions>()))
+        meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
 
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
