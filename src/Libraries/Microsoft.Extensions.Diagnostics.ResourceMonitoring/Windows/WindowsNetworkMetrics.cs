@@ -8,11 +8,11 @@ using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Network;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 
-internal sealed class WindowsCounters
+internal sealed class WindowsNetworkMetrics
 {
     private readonly TcpTableInfo _tcpTableInfo;
 
-    public WindowsCounters(IMeterFactory meterFactory, TcpTableInfo tcpTableInfo)
+    public WindowsNetworkMetrics(IMeterFactory meterFactory, TcpTableInfo tcpTableInfo)
     {
         _tcpTableInfo = tcpTableInfo;
 
@@ -20,7 +20,7 @@ internal sealed class WindowsCounters
         // We don't dispose the meter because IMeterFactory handles that
         // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
         // Related documentation: https://github.com/dotnet/docs/pull/37170
-        var meter = meterFactory.Create("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
+        var meter = meterFactory.Create(nameof(Microsoft.Extensions.Diagnostics.ResourceMonitoring));
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         var tcpTag = new KeyValuePair<string, object?>("network.transport", "tcp");

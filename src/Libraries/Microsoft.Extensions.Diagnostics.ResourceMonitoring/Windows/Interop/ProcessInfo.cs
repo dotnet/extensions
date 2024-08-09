@@ -38,4 +38,10 @@ internal sealed class ProcessInfo : IProcessInfo
 
         return memoryUsage;
     }
+
+    public ulong GetCurrentProcessMemoryUsage()
+    {
+        using var process = Process.GetCurrentProcess();
+        return (ulong)process.WorkingSet64;
+    }
 }
