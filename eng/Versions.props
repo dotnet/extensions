@@ -30,7 +30,6 @@
     <!-- Packages from dotnet/runtime -->
     <MicrosoftBclTimeProviderVersion>9.0.0-rc.1.24409.1</MicrosoftBclTimeProviderVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>9.0.0-rc.1.24409.1</MicrosoftExtensionsCachingAbstractionsVersion>
-    <MicrosoftExtensionsCachingMemoryVersion>9.0.0-preview.5.24265.2</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsConfigurationAbstractionsVersion>9.0.0-rc.1.24409.1</MicrosoftExtensionsConfigurationAbstractionsVersion>
     <MicrosoftExtensionsConfigurationBinderVersion>9.0.0-rc.1.24409.1</MicrosoftExtensionsConfigurationBinderVersion>
     <MicrosoftExtensionsConfigurationJsonVersion>9.0.0-rc.1.24409.1</MicrosoftExtensionsConfigurationJsonVersion>
