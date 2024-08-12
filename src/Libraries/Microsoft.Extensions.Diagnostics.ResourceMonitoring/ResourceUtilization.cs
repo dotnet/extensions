@@ -51,7 +51,7 @@ public readonly struct ResourceUtilization
     /// <param name="systemResources">CPU and memory limits.</param>
     public ResourceUtilization(double cpuUsedPercentage, ulong memoryUsedInBytes, SystemResources systemResources)
     {
-        var guaranteedCpuUnits = systemResources.GuaranteedCpuUnits;
+        double guaranteedCpuUnits = systemResources.GuaranteedCpuUnits;
         if (guaranteedCpuUnits <= 0)
         {
             guaranteedCpuUnits = 1;

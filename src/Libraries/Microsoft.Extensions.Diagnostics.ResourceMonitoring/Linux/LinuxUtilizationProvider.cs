@@ -38,7 +38,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     {
         _parser = parser;
         _timeProvider = timeProvider ?? TimeProvider.System;
-        var now = _timeProvider.GetUtcNow();
+        DateTimeOffset now = _timeProvider.GetUtcNow();
         _cpuRefreshInterval = options.Value.CpuConsumptionRefreshInterval;
         _memoryRefreshInterval = options.Value.MemoryConsumptionRefreshInterval;
         _refreshAfterCpu = now;
@@ -47,9 +47,9 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         _previousHostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
         _previousCgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
 
-        var hostCpus = _parser.GetHostCpuCount();
-        var cpuLimit = _parser.GetCgroupLimitedCpus();
-        var cpuRequest = _parser.GetCgroupRequestCpu();
+        float hostCpus = _parser.GetHostCpuCount();
+        float cpuLimit = _parser.GetCgroupLimitedCpus();
+        float cpuRequest = _parser.GetCgroupRequestCpu();
         _scaleRelativeToCpuLimit = hostCpus / cpuLimit;
         _scaleRelativeToCpuRequest = hostCpus / cpuRequest;
         _scaleRelativeToCpuRequestForTrackerApi = hostCpus; // the division by cpuRequest is performed later on in the ResourceUtilization class
@@ -77,7 +77,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     public double CpuUtilization()
     {
-        var now = _timeProvider.GetUtcNow();
+        DateTimeOffset now = _timeProvider.GetUtcNow();
 
         lock (_cpuLocker)
         {
@@ -87,19 +87,19 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             }
         }
 
-        var hostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
-        var cgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
+        long hostCpuTime = _parser.GetHostCpuUsageInNanoseconds();
+        long cgroupCpuTime = _parser.GetCgroupCpuUsageInNanoseconds();
 
         lock (_cpuLocker)
         {
             if (now >= _refreshAfterCpu)
             {
-                var deltaHost = hostCpuTime - _previousHostCpuTime;
-                var deltaCgroup = cgroupCpuTime - _previousCgroupCpuTime;
+                double deltaHost = hostCpuTime - _previousHostCpuTime;
+                double deltaCgroup = cgroupCpuTime - _previousCgroupCpuTime;
 
                 if (deltaHost > 0 && deltaCgroup > 0)
                 {
-                    var percentage = Math.Min(One, deltaCgroup / deltaHost);
+                    double percentage = Math.Min(One, deltaCgroup / deltaHost);
 
                     _cpuPercentage = percentage;
                     _refreshAfterCpu = now.Add(_cpuRefreshInterval);
@@ -114,7 +114,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     public double MemoryUtilization()
     {
-        var now = _timeProvider.GetUtcNow();
+        DateTimeOffset now = _timeProvider.GetUtcNow();
 
         lock (_memoryLocker)
         {
@@ -124,13 +124,13 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
             }
         }
 
-        var memoryUsed = _parser.GetMemoryUsageInBytes();
+        ulong memoryUsed = _parser.GetMemoryUsageInBytes();
 
         lock (_memoryLocker)
         {
             if (now >= _refreshAfterMemory)
             {
-                var memoryPercentage = Math.Min(One, (double)memoryUsed / _memoryLimit);
+                double memoryPercentage = Math.Min(One, (double)memoryUsed / _memoryLimit);
 
                 _memoryPercentage = memoryPercentage;
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
@@ -147,9 +147,9 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
     /// </remarks>
     public Snapshot GetSnapshot()
     {
-        var hostTime = _parser.GetHostCpuUsageInNanoseconds();
-        var cgroupTime = _parser.GetCgroupCpuUsageInNanoseconds();
-        var memoryUsed = _parser.GetMemoryUsageInBytes();
+        long hostTime = _parser.GetHostCpuUsageInNanoseconds();
+        long cgroupTime = _parser.GetCgroupCpuUsageInNanoseconds();
+        ulong memoryUsed = _parser.GetMemoryUsageInBytes();
 
         return new Snapshot(
             totalTimeSinceStart: TimeSpan.FromTicks(hostTime / Hundred),
