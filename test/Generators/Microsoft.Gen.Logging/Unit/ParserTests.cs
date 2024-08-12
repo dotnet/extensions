@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Numerics;
 using System.Reflection;
 using System.Threading;
@@ -964,6 +966,56 @@ public partial class ParserTests
                     int M5;
                 }
             ");
+    }
+
+    [Fact]
+    internal void MultipleTypeDefinitions()
+    {
+        // Adding a dependency to an assembly that has internal definitions of public types
+        // should not result in a collision and break generation.
+        // Verify usage of the extension GetBestTypeByMetadataName(this Compilation) instead of Compilation.GetTypeByMetadataName().
+        var referencedSource = @"
+                namespace Microsoft.Extensions.Logging
+                {
+                    internal class LoggerMessageAttribute { }
+                }
+                namespace Microsoft.Extensions.Logging
+                {
+                    internal interface ILogger { }
+                    internal enum LogLevel { }
+                }";
+
+        // Compile the referenced assembly first.
+        Compilation referencedCompilation = CompilationHelper.CreateCompilation(referencedSource);
+
+        // Obtain the image of the referenced assembly.
+        byte[] referencedImage = CompilationHelper.CreateAssemblyImage(referencedCompilation);
+
+        // Generate the code
+        string source = @"
+                namespace Test
+                {
+                    using Microsoft.Extensions.Logging;
+
+                    partial class C
+                    {
+                        [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = ""M1"")]
+                        static partial void M1(ILogger logger);
+                    }
+                }";
+
+        MetadataReference[] additionalReferences = { MetadataReference.CreateFromImage(referencedImage) };
+
+        Compilation compilation = CompilationHelper.CreateCompilation(source, additionalReferences);
+        LoggingGenerator generator = new LoggingGenerator();
+
+        (IReadOnlyList<Diagnostic> diagnostics, ImmutableArray<GeneratedSourceResult> generatedSources) =
+            RoslynTestUtils.RunGenerator(compilation, generator);
+
+        // Make sure compilation was successful.
+        Assert.Empty(diagnostics);
+        Assert.Single(generatedSources);
+        Assert.Equal(40, generatedSources[0].SourceText.Lines.Count);
     }
 
 #pragma warning disable S107 // Methods should not have too many parameters

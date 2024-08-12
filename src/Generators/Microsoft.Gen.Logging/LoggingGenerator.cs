@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -29,11 +28,19 @@ public class LoggingGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(compilationAndTypes, static (spc, source) => HandleAnnotatedTypes(source.Item1, source.Item2, spc));
     }
 
-    private static void HandleAnnotatedTypes(Compilation compilation, IEnumerable<TypeDeclarationSyntax> types, SourceProductionContext context)
+    private static void HandleAnnotatedTypes(Compilation compilation, ImmutableArray<TypeDeclarationSyntax> types, SourceProductionContext context)
     {
-        var p = new Parsing.Parser(compilation, context.ReportDiagnostic, context.CancellationToken);
+        if (types.IsDefaultOrEmpty)
+        {
+            // nothing to do yet
+            return;
+        }
 
-        var logTypes = p.GetLogTypes(types.Distinct());
+        ImmutableHashSet<TypeDeclarationSyntax> distinctTypes = types.ToImmutableHashSet();
+
+        var p = new Parser(compilation, context.ReportDiagnostic, context.CancellationToken);
+        IReadOnlyList<Model.LoggingType> logTypes = p.GetLogTypes(distinctTypes);
+
         if (logTypes.Count > 0)
         {
             var e = new Emission.Emitter();
