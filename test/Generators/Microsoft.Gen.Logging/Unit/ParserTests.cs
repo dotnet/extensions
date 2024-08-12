@@ -969,7 +969,7 @@ public partial class ParserTests
     }
 
     [Fact]
-    internal void MultipleTypeDefinitions()
+    public void MultipleTypeDefinitions()
     {
         // Adding a dependency to an assembly that has internal definitions of public types
         // should not result in a collision and break generation.
