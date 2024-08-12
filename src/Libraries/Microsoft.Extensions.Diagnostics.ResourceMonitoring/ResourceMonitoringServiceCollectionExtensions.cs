@@ -88,7 +88,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         builder.PickWindowsSnapshotProvider();
 
         _ = builder.Services
-            .AddActivatedSingleton<WindowsCounters>();
+            .AddActivatedSingleton<WindowsNetworkMetrics>();
 
         _ = builder.Services
             .AddActivatedSingleton<TcpTableInfo>();

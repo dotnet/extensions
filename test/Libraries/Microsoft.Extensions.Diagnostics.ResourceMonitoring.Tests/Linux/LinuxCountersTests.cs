@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.IO;
+using System.Linq;
 using Microsoft.TestUtilities;
 using Moq;
 using Xunit;
@@ -15,10 +16,11 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 public sealed class LinuxCountersTests
 {
     [ConditionalFact]
+    [CombinatorialData]
     public void LinuxCounters_Registers_Instruments()
     {
         var meterName = Guid.NewGuid().ToString();
-        var options = Options.Options.Create<ResourceMonitoringOptions>(new());
+        var options = Options.Options.Create(new ResourceMonitoringOptions());
         using var meter = new Meter(nameof(LinuxCounters_Registers_Instruments));
         var meterFactoryMock = new Mock<IMeterFactory>();
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
@@ -64,14 +66,27 @@ public sealed class LinuxCountersTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(2, samples.Count);
-        Assert.Equal(ResourceUtilizationInstruments.CpuUtilization, samples[0].instrument.Name);
-        Assert.Equal(double.NaN, samples[0].value);
-        Assert.Equal(ResourceUtilizationInstruments.MemoryUtilization, samples[1].instrument.Name);
-        Assert.Equal(0.5, samples[1].value);
+        Assert.Equal(5, samples.Count);
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization);
+        Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization).value));
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization);
+        Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization).value));
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
+        Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization);
+        Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization).value));
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
+        Assert.Equal(0.5, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
+
     }
 
     [ConditionalFact]
+    [CombinatorialData]
     public void LinuxCounters_Registers_Instruments_CgroupV2()
     {
         var meterName = Guid.NewGuid().ToString();
@@ -120,10 +135,21 @@ public sealed class LinuxCountersTests
         listener.Start();
         listener.RecordObservableInstruments();
 
-        Assert.Equal(2, samples.Count);
-        Assert.Equal(ResourceUtilizationInstruments.CpuUtilization, samples[0].instrument.Name);
-        Assert.Equal(double.NaN, samples[0].value);
-        Assert.Equal(ResourceUtilizationInstruments.MemoryUtilization, samples[1].instrument.Name);
-        Assert.Equal(1, samples[1].value);
+        Assert.Equal(5, samples.Count);
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization);
+        Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuLimitUtilization).value));
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization);
+        Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerCpuRequestUtilization).value));
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization);
+        Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ContainerMemoryLimitUtilization).value);
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization);
+        Assert.True(double.IsNaN(samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessCpuUtilization).value));
+
+        Assert.Contains(samples, x => x.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization);
+        Assert.Equal(1, samples.Single(i => i.instrument.Name == ResourceUtilizationInstruments.ProcessMemoryUtilization).value);
     }
 }

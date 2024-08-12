@@ -54,6 +54,10 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
 
         _cpuUnits = getCpuUnitsFunc();
         var totalMemory = getTotalMemoryInBytesFunc();
+
+        // We are not running in a job object (e.g. container), so we don't have
+        // any resource requests or resource limits, therefore using physical values
+        // such as number of CPUs and physical memory and using it for both requests and limits (aka 'guaranteed' and 'max'):
         Resources = new SystemResources(_cpuUnits, _cpuUnits, totalMemory, totalMemory);
 
         _timeProvider = timeProvider;
@@ -72,11 +76,11 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         // We don't dispose the meter because IMeterFactory handles that
         // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
         // Related documentation: https://github.com/dotnet/docs/pull/37170
-        var meter = meterFactory.Create("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
+        var meter = meterFactory.Create(nameof(Microsoft.Extensions.Diagnostics.ResourceMonitoring));
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.CpuUtilization, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.MemoryUtilization, observeValue: MemoryPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: MemoryPercentage);
     }
 
     public Snapshot GetSnapshot()
