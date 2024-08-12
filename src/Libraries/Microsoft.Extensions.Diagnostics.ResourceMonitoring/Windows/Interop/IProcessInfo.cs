@@ -9,8 +9,14 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 internal interface IProcessInfo
 {
     /// <summary>
-    /// Retrieve the memory usage of a system.
+    /// Retrieves the amount of memory, in bytes, used by the current process.
     /// </summary>
-    /// <returns>Memory usage amount in bytes.</returns>
+    /// <returns>The number of bytes allocated by the current process.</returns>
+    ulong GetCurrentProcessMemoryUsage();
+
+    /// <summary>
+    /// Retrieves the amount of memory, in bytes, used by the system.
+    /// </summary>
+    /// <returns>The number of bytes allocated by the system.</returns>
     ulong GetMemoryUsage();
 }

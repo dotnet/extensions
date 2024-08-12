@@ -77,7 +77,7 @@ public sealed class WindowsSnapshotProviderTests
 
         cpuTicks = 1_500L;
 
-        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.CpuUtilization, fakeClock);
+        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ProcessCpuUtilization, fakeClock);
 
         // Step #0 - state in the beginning:
         metricCollector.RecordObservableInstruments();
@@ -110,7 +110,7 @@ public sealed class WindowsSnapshotProviderTests
 
         var snapshotProvider = new WindowsSnapshotProvider(_fakeLogger, meterFactoryMock.Object, options, fakeClock, static () => 1, static () => 0, () => memoryUsed, static () => 3000UL);
 
-        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.MemoryUtilization, fakeClock);
+        using var metricCollector = new MetricCollector<double>(meter, ResourceUtilizationInstruments.ProcessMemoryUtilization, fakeClock);
 
         // Step #0 - state in the beginning:
         metricCollector.RecordObservableInstruments();
