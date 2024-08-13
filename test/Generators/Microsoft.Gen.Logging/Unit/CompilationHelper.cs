@@ -36,7 +36,7 @@ public static class CompilationHelper
         refs.Add(MetadataReference.CreateFromFile(typeof(PrivateDataAttribute).Assembly.Location));
         refs.Add(MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location));
 
-        if (additionalReferences != null)
+        if (additionalReferences is not null)
         {
             foreach (MetadataReference reference in additionalReferences)
             {
