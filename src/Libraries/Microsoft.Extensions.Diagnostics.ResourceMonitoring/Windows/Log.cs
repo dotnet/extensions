@@ -44,6 +44,6 @@ internal static partial class Log
         double cpuPercentage);
 
     [LoggerMessage(6, LogLevel.Debug,
-        "System resources information: CPU limit = {cpuLimit}, CPU request = {cpuRequest}, Memory limit = {memoryLimit}, Memory request = {memoryRequest}.")]
+        "System resources information: CpuLimit = {cpuLimit}, CpuRequest = {cpuRequest}, MemoryLimit = {memoryLimit}, MemoryRequest = {memoryRequest}.")]
     public static partial void SystemResourcesInfo(ILogger logger, double cpuLimit, double cpuRequest, ulong memoryLimit, ulong memoryRequest);
 }
