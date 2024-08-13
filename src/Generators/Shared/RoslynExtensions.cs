@@ -10,6 +10,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace Microsoft.Gen.Shared;
 #pragma warning restore CA1716
 
+#if !SHARED_PROJECT
+[System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+#endif
 internal static class RoslynExtensions
 {
     /// <summary>
