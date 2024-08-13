@@ -12,8 +12,6 @@ namespace Microsoft.Gen.Shared;
 
 internal static class RoslynExtensions
 {
-    // Copied from: https://github.com/dotnet/roslyn/blob/main/src/Workspaces/SharedUtilitiesAndExtensions/Compiler/Core/Extensions/CompilationExtensions.cs
-
     /// <summary>
     /// Gets a type by its metadata name to use for code analysis within a <see cref="Compilation"/>. This method
     /// attempts to find the "best" symbol to use for code analysis, which is the symbol matching the first of the
@@ -39,6 +37,7 @@ internal static class RoslynExtensions
     /// <param name="compilation">The <see cref="Compilation"/> to consider for analysis.</param>
     /// <param name="fullyQualifiedMetadataName">The fully-qualified metadata type name to find.</param>
     /// <returns>The symbol to use for code analysis; otherwise, <see langword="null"/>.</returns>
+    // Copied from: https://github.com/dotnet/roslyn/blob/af7b0ebe2b0ed5c335a928626c25620566372dd1/src/Workspaces/SharedUtilitiesAndExtensions/Compiler/Core/Extensions/CompilationExtensions.cs
     public static INamedTypeSymbol? GetBestTypeByMetadataName(this Compilation compilation, string fullyQualifiedMetadataName)
     {
         // Try to get the unique type with this name, ignoring accessibility
@@ -137,7 +136,7 @@ internal static class RoslynExtensions
             _ => throw new InvalidOperationException("Unreachable"),
         };
 
-    // copied from https://github.com/dotnet/roslyn/blob/main/src/Workspaces/SharedUtilitiesAndExtensions/Compiler/Core/Extensions/ISymbolExtensions.cs
+    // copied from https://github.com/dotnet/roslyn/blob/af7b0ebe2b0ed5c335a928626c25620566372dd1/src/Workspaces/SharedUtilitiesAndExtensions/Compiler/Core/Extensions/ISymbolExtensions.cs
     private static SymbolVisibility GetResultantVisibility(this ISymbol symbol)
     {
         // Start by assuming it's visible.
@@ -185,7 +184,7 @@ internal static class RoslynExtensions
         return visibility;
     }
 
-    // Copied from: https://github.com/dotnet/roslyn/blob/main/src/Workspaces/SharedUtilitiesAndExtensions/Compiler/Core/Utilities/SymbolVisibility.cs
+    // Copied from: https://github.com/dotnet/roslyn/blob/af7b0ebe2b0ed5c335a928626c25620566372dd1/src/Workspaces/SharedUtilitiesAndExtensions/Compiler/Core/Utilities/SymbolVisibility.cs
 #pragma warning disable CA1027 // Mark enums with FlagsAttribute
     private enum SymbolVisibility
 #pragma warning restore CA1027 // Mark enums with FlagsAttribute
