@@ -12,6 +12,7 @@
   <ItemGroup>
     <Compile Include="..\..\Shared\*.cs" LinkBase="Shared" />
     <Content Include="..\TestClasses\**\*.cs" Link="TestClasses\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Verified\*.verified.txt" Link="Verified\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
