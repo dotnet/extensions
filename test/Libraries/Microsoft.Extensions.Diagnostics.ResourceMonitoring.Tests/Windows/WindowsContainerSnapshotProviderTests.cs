@@ -320,6 +320,6 @@ public sealed class WindowsContainerSnapshotProviderTests
 
         var logRecords = _logger.Collector.GetSnapshot();
 
-        return Verifier.Verify(logRecords).UseDirectory(VerifiedDataDirectory);
+        return Verifier.Verify(logRecords).UniqueForRuntime().UseDirectory(VerifiedDataDirectory);
     }
 }
