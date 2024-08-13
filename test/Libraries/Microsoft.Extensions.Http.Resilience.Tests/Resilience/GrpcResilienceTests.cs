@@ -40,38 +40,57 @@ public class GrpcResilienceTests
         _handler = _host.GetTestServer().CreateHandler();
     }
 
-    [Fact]
-    public async Task SayHello_NoResilience_OK()
+    [Theory]
+    [CombinatorialData]
+    public async Task SayHello_NoResilience_OK(bool asynchronous)
     {
-        var response = await CreateClient().SayHelloAsync(new HelloRequest { Name = "dummy" });
+        var response = await SendRequest(CreateClient(), asynchronous);
 
         response.Message.Should().Be("HI!");
     }
 
-    [Fact]
-    public async Task SayHello_StandardResilience_OK()
+    [Theory]
+    [CombinatorialData]
+    public async Task SayHello_StandardResilience_OK(bool asynchronous)
     {
-        var response = await CreateClient(builder => builder.AddStandardResilienceHandler()).SayHelloAsync(new HelloRequest { Name = "dummy" });
+        var client = CreateClient(builder => builder.AddStandardResilienceHandler());
+        var response = await SendRequest(client, asynchronous);
 
         response.Message.Should().Be("HI!");
     }
 
-    [Fact]
-    public async Task SayHello_StandardHedging_OK()
+    [Theory]
+    [CombinatorialData]
+    public async Task SayHello_StandardHedging_OK(bool asynchronous)
     {
-        var response = await CreateClient(builder => builder.AddStandardHedgingHandler()).SayHelloAsync(new HelloRequest { Name = "dummy" });
+        var client = CreateClient(builder => builder.AddStandardHedgingHandler());
+        var response = await SendRequest(client, asynchronous);
 
         response.Message.Should().Be("HI!");
     }
 
-    [Fact]
-    public async Task SayHello_CustomResilience_OK()
+    [Theory]
+    [CombinatorialData]
+    public async Task SayHello_CustomResilience_OK(bool asynchronous)
     {
         var client = CreateClient(builder => builder.AddResilienceHandler("custom", builder => builder.AddTimeout(TimeSpan.FromSeconds(1))));
-
-        var response = await client.SayHelloAsync(new HelloRequest { Name = "dummy" });
+        var response = await SendRequest(client, asynchronous);
 
         response.Message.Should().Be("HI!");
+    }
+
+    private static Task<HelloReply> SendRequest(Greeter.GreeterClient client, bool asynchronous)
+    {
+        var request = new HelloRequest { Name = "dummy" };
+
+        if (asynchronous)
+        {
+            return client.SayHelloAsync(request).ResponseAsync;
+        }
+        else
+        {
+            return Task.FromResult(client.SayHello(request));
+        }
     }
 
     private Greeter.GreeterClient CreateClient(Action<IHttpClientBuilder>? configure = null)

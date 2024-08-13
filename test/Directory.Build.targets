@@ -8,6 +8,7 @@
     <PackageReference Include="Moq.AutoMock" />
     <PackageReference Include="Moq" />
     <PackageReference Include="StrongNamer" Condition="'$(SignArtifacts)' == 'true' " />
+    <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="Xunit.Combinatorial" />
 
     <Content Include="$(MSBuildThisFileDirectory)\..\eng\xunit.runner.json" CopyToOutputDirectory="PreserveNewest" Visible="false" />
