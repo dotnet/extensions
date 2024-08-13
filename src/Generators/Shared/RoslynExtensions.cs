@@ -136,7 +136,7 @@ internal static class RoslynExtensions
             _ => throw new InvalidOperationException("Unreachable"),
         };
 
-    // copied from https://github.com/dotnet/roslyn/blob/af7b0ebe2b0ed5c335a928626c25620566372dd1/src/Workspaces/SharedUtilitiesAndExtensions/Compiler/Core/Extensions/ISymbolExtensions.cs
+    // Copied from: https://github.com/dotnet/roslyn/blob/af7b0ebe2b0ed5c335a928626c25620566372dd1/src/Workspaces/SharedUtilitiesAndExtensions/Compiler/Core/Extensions/ISymbolExtensions.cs
     private static SymbolVisibility GetResultantVisibility(this ISymbol symbol)
     {
         // Start by assuming it's visible.
