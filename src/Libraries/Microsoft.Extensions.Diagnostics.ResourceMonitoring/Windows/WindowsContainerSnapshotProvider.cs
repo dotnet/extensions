@@ -26,8 +26,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private readonly object _memoryLocker = new();
     private readonly TimeProvider _timeProvider;
     private readonly IProcessInfo _processInfo;
-    private readonly double _totalMemory;
-    private readonly double _cpuUnits;
+    private readonly double _memoryLimit;
+    private readonly double _cpuLimit;
     private readonly TimeSpan _cpuRefreshInterval;
     private readonly TimeSpan _memoryRefreshInterval;
 
@@ -77,15 +77,18 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 
         _timeProvider = timeProvider;
 
-        // initialize system resources information
         using var jobHandle = _createJobHandleObject();
 
-        _cpuUnits = GetGuaranteedCpuUnits(jobHandle, systemInfo);
-        var memory = GetMemoryLimits(jobHandle);
+        var memoryLimitLong = GetMemoryLimit(jobHandle);
+        _memoryLimit = memoryLimitLong;
+        _cpuLimit = GetCpuLimit(jobHandle, systemInfo);
 
-        Resources = new SystemResources(_cpuUnits, _cpuUnits, memory, memory);
+        // CPU request (aka guaranteed CPU units) is not supported on Windows, so we set it to the same value as CPU limit (aka maximum CPU units).
+        // Memory request (aka guaranteed memory) is not supported on Windows, so we set it to the same value as memory limit (aka maximum memory).
+        var cpuRequest = _cpuLimit;
+        var memoryRequest = memoryLimitLong;
+        Resources = new SystemResources(cpuRequest, _cpuLimit, memoryRequest, memoryLimitLong);
 
-        _totalMemory = memory;
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
         _oldCpuUsageTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
         _oldCpuTimeTicks = _timeProvider.GetUtcNow().Ticks;
@@ -98,11 +101,16 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         // We don't dispose the meter because IMeterFactory handles that
         // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
         // Related documentation: https://github.com/dotnet/docs/pull/37170
-        var meter = meterFactory.Create("Microsoft.Extensions.Diagnostics.ResourceMonitoring");
+        var meter = meterFactory.Create(nameof(Microsoft.Extensions.Diagnostics.ResourceMonitoring));
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.CpuUtilization, observeValue: CpuPercentage);
-        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.MemoryUtilization, observeValue: MemoryPercentage);
+        // Container based metrics:
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: CpuPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerMemoryLimitUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetMemoryUsage()));
+
+        // Process based metrics:
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessCpuUtilization, observeValue: CpuPercentage);
+        _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ProcessMemoryUtilization, observeValue: () => MemoryPercentage(() => _processInfo.GetCurrentProcessMemoryUsage()));
     }
 
     public Snapshot GetSnapshot()
@@ -116,10 +124,10 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             TimeSpan.FromTicks(_timeProvider.GetUtcNow().Ticks),
             TimeSpan.FromTicks(basicAccountingInfo.TotalKernelTime),
             TimeSpan.FromTicks(basicAccountingInfo.TotalUserTime),
-            GetMemoryUsage());
+            _processInfo.GetCurrentProcessMemoryUsage());
     }
 
-    private static double GetGuaranteedCpuUnits(IJobHandle jobHandle, ISystemInfo systemInfo)
+    private static double GetCpuLimit(IJobHandle jobHandle, ISystemInfo systemInfo)
     {
         // Note: This function convert the CpuRate from CPU cycles to CPU units, also it scales
         // the CPU units with the number of processors (cores) available in the system.
@@ -149,7 +157,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     /// Gets memory limit of the system.
     /// </summary>
     /// <returns>Memory limit allocated to the system in bytes.</returns>
-    private ulong GetMemoryLimits(IJobHandle jobHandle)
+    private ulong GetMemoryLimit(IJobHandle jobHandle)
     {
         var memoryLimitInBytes = jobHandle.GetExtendedLimitInfo().JobMemoryLimit.ToUInt64();
 
@@ -165,13 +173,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         return memoryLimitInBytes;
     }
 
-    /// <summary>
-    /// Gets memory usage within the system.
-    /// </summary>
-    /// <returns>Memory usage within the system in bytes.</returns>
-    private ulong GetMemoryUsage() => _processInfo.GetMemoryUsage();
-
-    private double MemoryPercentage()
+    private double MemoryPercentage(Func<ulong> getMemoryUsage)
     {
         var now = _timeProvider.GetUtcNow();
 
@@ -183,12 +185,13 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             }
         }
 
-        var currentMemoryUsage = GetMemoryUsage();
+        var memoryUsage = getMemoryUsage();
+
         lock (_memoryLocker)
         {
             if (now >= _refreshAfterMemory)
             {
-                _memoryPercentage = Math.Min(Hundred, currentMemoryUsage / _totalMemory * Hundred); // Don't change calculation order, otherwise we loose some precision
+                _memoryPercentage = Math.Min(Hundred, memoryUsage / _memoryLimit * Hundred); // Don't change calculation order, otherwise we loose some precision
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
@@ -217,7 +220,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
             if (now >= _refreshAfterCpu)
             {
                 var usageTickDelta = currentCpuTicks - _oldCpuUsageTicks;
-                var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuUnits;
+                var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuLimit;
                 if (usageTickDelta > 0 && timeTickDelta > 0)
                 {
                     _oldCpuUsageTicks = currentCpuTicks;

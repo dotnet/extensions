@@ -444,7 +444,7 @@ internal sealed class LinuxUtilizationParserCgroupV1 : ILinuxUtilizationParser
     /// <summary>
     /// In cgroup v1 the CPU shares is used to determine the CPU allocation.
     /// in cgroup v2 the CPU weight is used to determine the CPU allocation.
-    /// To calculete CPU request in cgroup v2 we need to read the CPU weight and convert it to CPU shares.
+    /// To calculate CPU request in cgroup v2 we need to read the CPU weight and convert it to CPU shares.
     /// But for cgroup v1 we can read the CPU shares directly from the file.
     /// 1024 equals 1 CPU core.
     /// In cgroup v1 on some systems the location of the CPU shares file is different.
