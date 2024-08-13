@@ -92,7 +92,7 @@ internal sealed partial class Emitter : EmitterBase
 
     private void GenAttributeClassifications(LoggingType lt)
     {
-        // gather all the claassification attributes referenced by the logging type
+        // gather all the classification attributes referenced by the logging type
         var classificationAttrs = new HashSet<string>();
         foreach (var lm in lt.Methods)
         {
