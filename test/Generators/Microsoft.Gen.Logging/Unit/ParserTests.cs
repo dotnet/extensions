@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Numerics;
 using System.Reflection;
 using System.Threading;
@@ -975,7 +976,8 @@ public partial class ParserTests
     {
         // Adding a dependency to an assembly that has internal definitions of public types
         // should not result in a collision and break generation.
-        // Verify usage of the extension GetBestTypeByMetadataName(this Compilation) instead of Compilation.GetTypeByMetadataName().
+        // Verify usage of the extension GetBestTypeByMetadataName(this Compilation)
+        // instead of Compilation.GetTypeByMetadataName().
         var referencedSource = @"
                 namespace Microsoft.Extensions.Logging
                 {
@@ -1020,7 +1022,7 @@ public partial class ParserTests
 
         return Verifier.Verify(generatedSources[0].SourceText.ToString())
             .AddScrubber(_ => _.Replace(GeneratorUtilities.CurrentVersion, "VERSION"))
-            .UseDirectory("..\\Verified");
+            .UseDirectory(Path.Combine("..", "Verified"));
     }
 
 #pragma warning disable S107 // Methods should not have too many parameters
