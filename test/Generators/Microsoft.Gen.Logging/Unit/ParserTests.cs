@@ -15,10 +15,12 @@ using Microsoft.Extensions.Diagnostics.Enrichment;
 using Microsoft.Extensions.Logging;
 using Microsoft.Gen.Logging.Parsing;
 using Microsoft.Gen.Shared;
+using VerifyXunit;
 using Xunit;
 
 namespace Microsoft.Gen.Logging.Test;
 
+[UsesVerify]
 public partial class ParserTests
 {
     private const int TotalSensitiveCases = 21;
@@ -969,7 +971,7 @@ public partial class ParserTests
     }
 
     [Fact]
-    public void MultipleTypeDefinitions()
+    public Task MultipleTypeDefinitions()
     {
         // Adding a dependency to an assembly that has internal definitions of public types
         // should not result in a collision and break generation.
@@ -1015,7 +1017,10 @@ public partial class ParserTests
         // Make sure compilation was successful.
         Assert.Empty(diagnostics);
         Assert.Single(generatedSources);
-        Assert.Equal(40, generatedSources[0].SourceText.Lines.Count);
+
+        return Verifier.Verify(generatedSources[0].SourceText.ToString())
+            .AddScrubber(_ => _.Replace(GeneratorUtilities.CurrentVersion, "VERSION"))
+            .UseDirectory("..\\Verified");
     }
 
 #pragma warning disable S107 // Methods should not have too many parameters
