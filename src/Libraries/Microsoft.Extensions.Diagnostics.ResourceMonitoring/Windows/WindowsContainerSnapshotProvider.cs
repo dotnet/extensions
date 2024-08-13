@@ -7,6 +7,7 @@ using System.Diagnostics.Metrics;
 using System.Threading;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
@@ -26,6 +27,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     private readonly object _memoryLocker = new();
     private readonly TimeProvider _timeProvider;
     private readonly IProcessInfo _processInfo;
+    private readonly ILogger<WindowsContainerSnapshotProvider> _logger;
     private readonly double _memoryLimit;
     private readonly double _cpuLimit;
     private readonly TimeSpan _cpuRefreshInterval;
@@ -44,7 +46,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
     /// Initializes a new instance of the <see cref="WindowsContainerSnapshotProvider"/> class.
     /// </summary>
     public WindowsContainerSnapshotProvider(
-        ILogger<WindowsContainerSnapshotProvider> logger,
+        ILogger<WindowsContainerSnapshotProvider>? logger,
         IMeterFactory meterFactory,
         IOptions<ResourceMonitoringOptions> options)
         : this(new MemoryInfo(), new SystemInfo(), new ProcessInfo(), logger, meterFactory,
@@ -61,13 +63,14 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         IMemoryInfo memoryInfo,
         ISystemInfo systemInfo,
         IProcessInfo processInfo,
-        ILogger<WindowsContainerSnapshotProvider> logger,
+        ILogger<WindowsContainerSnapshotProvider>? logger,
         IMeterFactory meterFactory,
         Func<IJobHandle> createJobHandleObject,
         TimeProvider timeProvider,
         ResourceMonitoringOptions options)
     {
-        Log.RunningInsideJobObject(logger);
+        _logger = logger ?? NullLogger<WindowsContainerSnapshotProvider>.Instance;
+        Log.RunningInsideJobObject(_logger);
 
         _memoryStatus = new Lazy<MEMORYSTATUSEX>(
             memoryInfo.GetMemoryStatus,
@@ -88,6 +91,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         var cpuRequest = _cpuLimit;
         var memoryRequest = memoryLimitLong;
         Resources = new SystemResources(cpuRequest, _cpuLimit, memoryRequest, memoryLimitLong);
+        Log.SystemResourcesInfo(_logger, _cpuLimit, cpuRequest, memoryLimitLong, memoryRequest);
 
         var basicAccountingInfo = jobHandle.GetBasicAccountingInfo();
         _oldCpuUsageTicks = basicAccountingInfo.TotalKernelTime + basicAccountingInfo.TotalUserTime;
@@ -195,6 +199,8 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
+            Log.MemoryUsageData(_logger, memoryUsage, _memoryLimit, _memoryPercentage);
+
             return _memoryPercentage;
         }
     }
@@ -223,9 +229,13 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
                 var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuLimit;
                 if (usageTickDelta > 0 && timeTickDelta > 0)
                 {
+                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / timeTickDelta * Hundred); // Don't change calculation order, otherwise we loose some precision
+
+                    Log.CpuContainerUsageData(
+                        _logger, basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, _cpuLimit, _cpuPercentage);
+
                     _oldCpuUsageTicks = currentCpuTicks;
                     _oldCpuTimeTicks = now.Ticks;
-                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / timeTickDelta * Hundred); // Don't change calculation order, otherwise we loose some precision
                     _refreshAfterCpu = now.Add(_cpuRefreshInterval);
                 }
             }

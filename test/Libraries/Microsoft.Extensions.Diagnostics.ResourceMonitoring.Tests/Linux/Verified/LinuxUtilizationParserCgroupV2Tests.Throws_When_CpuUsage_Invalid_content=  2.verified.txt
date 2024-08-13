@@ -1,0 +1,9 @@
+﻿{
+  Type: InvalidOperationException,
+  Message: Expected proc/stat to start with 'cpu ' but it was '  2'.,
+  StackTrace:
+at Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(String message)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationParserCgroupV2.GetHostCpuUsageInNanoseconds()
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test.LinuxUtilizationParserCgroupV2Tests.<>c__DisplayClass20_0.<Throws_When_CpuUsage_Invalid>b__0()
+at Xunit.Record.Exception(Func`1 testCode)
+}

@@ -1,0 +1,68 @@
+﻿[
+  {
+    Level: Information,
+    Id: {
+      Id: 1,
+      Name: RunningInsideJobObject
+    },
+    State: [
+      {
+        {OriginalFormat}: Resource Monitoring is running inside a Job Object. For more information about Job Objects see https://aka.ms/job-objects
+      }
+    ],
+    StructuredState: [
+      {
+        {OriginalFormat}: Resource Monitoring is running inside a Job Object. For more information about Job Objects see https://aka.ms/job-objects
+      }
+    ],
+    Message: Resource Monitoring is running inside a Job Object. For more information about Job Objects see https://aka.ms/job-objects,
+    Category: Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.WindowsContainerSnapshotProvider,
+    LevelEnabled: true,
+    Timestamp: DateTimeOffset_1
+  },
+  {
+    Level: Debug,
+    Id: {
+      Id: 6,
+      Name: SystemResourcesInfo
+    },
+    State: [
+      {
+        {OriginalFormat}: System resources information: CPU limit = {cpuLimit}, CPU request = {cpuRequest}, Memory limit = {memoryLimit}, Memory request = {memoryRequest}.
+      },
+      {
+        memoryRequest: 2000
+      },
+      {
+        memoryLimit: 2000
+      },
+      {
+        cpuRequest: 1
+      },
+      {
+        cpuLimit: 1
+      }
+    ],
+    StructuredState: [
+      {
+        {OriginalFormat}: System resources information: CPU limit = {cpuLimit}, CPU request = {cpuRequest}, Memory limit = {memoryLimit}, Memory request = {memoryRequest}.
+      },
+      {
+        memoryRequest: 2000
+      },
+      {
+        memoryLimit: 2000
+      },
+      {
+        cpuRequest: 1
+      },
+      {
+        cpuLimit: 1
+      }
+    ],
+    Message: System resources information: CPU limit = 1, CPU request = 1, Memory limit = 2000, Memory request = 2000.,
+    Category: Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.WindowsContainerSnapshotProvider,
+    LevelEnabled: true,
+    Timestamp: DateTimeOffset_2
+  }
+]

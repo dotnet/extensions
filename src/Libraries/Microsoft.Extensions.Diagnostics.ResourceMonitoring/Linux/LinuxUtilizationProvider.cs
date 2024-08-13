@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
@@ -14,6 +16,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
+    private readonly ILogger<LinuxUtilizationProvider> _logger;
     private readonly ILinuxUtilizationParser _parser;
     private readonly ulong _memoryLimit;
     private readonly TimeSpan _cpuRefreshInterval;
@@ -28,15 +31,16 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
 
     private double _cpuPercentage = double.NaN;
     private double _memoryPercentage;
-    private double _previousCgroupCpuTime;
-    private double _previousHostCpuTime;
+    private long _previousCgroupCpuTime;
+    private long _previousHostCpuTime;
 
     public SystemResources Resources { get; }
 
     public LinuxUtilizationProvider(IOptions<ResourceMonitoringOptions> options, ILinuxUtilizationParser parser,
-        IMeterFactory meterFactory, TimeProvider? timeProvider = null)
+        IMeterFactory meterFactory, ILogger<LinuxUtilizationProvider>? logger = null, TimeProvider? timeProvider = null)
     {
         _parser = parser;
+        _logger = logger ?? NullLogger<LinuxUtilizationProvider>.Instance;
         _timeProvider = timeProvider ?? TimeProvider.System;
         DateTimeOffset now = _timeProvider.GetUtcNow();
         _cpuRefreshInterval = options.Value.CpuConsumptionRefreshInterval;
@@ -73,6 +77,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         // _memoryLimit - Resource Memory Limit (in k8s terms)
         // _memoryLimit - To keep the contract, this parameter will get the Host available memory
         Resources = new SystemResources(cpuRequest, cpuLimit, _memoryLimit, _memoryLimit);
+        Log.SystemResourcesInfo(_logger, cpuLimit, cpuRequest, _memoryLimit, _memoryLimit);
     }
 
     public double CpuUtilization()
@@ -94,12 +99,14 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         {
             if (now >= _refreshAfterCpu)
             {
-                double deltaHost = hostCpuTime - _previousHostCpuTime;
-                double deltaCgroup = cgroupCpuTime - _previousCgroupCpuTime;
+                long deltaHost = hostCpuTime - _previousHostCpuTime;
+                long deltaCgroup = cgroupCpuTime - _previousCgroupCpuTime;
 
                 if (deltaHost > 0 && deltaCgroup > 0)
                 {
-                    double percentage = Math.Min(One, deltaCgroup / deltaHost);
+                    double percentage = Math.Min(One, (double)deltaCgroup / deltaHost);
+
+                    Log.CpuUsageData(_logger, cgroupCpuTime, hostCpuTime, _previousCgroupCpuTime, _previousHostCpuTime, percentage);
 
                     _cpuPercentage = percentage;
                     _refreshAfterCpu = now.Add(_cpuRefreshInterval);
@@ -136,6 +143,8 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
         }
+
+        Log.MemoryUsageData(_logger, memoryUsed, _memoryLimit, _memoryPercentage);
 
         return _memoryPercentage;
     }
