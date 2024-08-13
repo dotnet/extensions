@@ -1,0 +1,11 @@
+﻿{
+  Type: ArgumentOutOfRangeException,
+  Message: Expected to find CPU weight in range [1-10000] in '/sys/fs/cgroup/cpu.weight', but got '10001' instead. (Parameter 'CPU weight'),
+  ParamName: CPU weight,
+  StackTrace:
+at Microsoft.Shared.Diagnostics.Throw.ArgumentOutOfRangeException(String paramName, String message)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationParserCgroupV2.TryGetCgroupRequestCpu(IFileSystem fileSystem, Single& cpuUnits)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationParserCgroupV2.GetCgroupRequestCpu()
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test.LinuxUtilizationParserCgroupV2Tests.<>c__DisplayClass23_0.<Throws_When_Cgroup_Cpu_Weight_Files_Contain_Invalid_Data>b__0()
+at Xunit.Record.Exception(Func`1 testCode)
+}

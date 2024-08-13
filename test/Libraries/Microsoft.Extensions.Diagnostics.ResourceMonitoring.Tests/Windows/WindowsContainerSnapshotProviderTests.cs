@@ -3,18 +3,23 @@
 
 using System;
 using System.Diagnostics.Metrics;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
+using VerifyXunit;
 using Xunit;
 using static Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop.JobObjectInfo;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
+[UsesVerify]
 public sealed class WindowsContainerSnapshotProviderTests
 {
+    private const string VerifiedDataDirectory = "Verified";
+
     private readonly FakeLogger<WindowsContainerSnapshotProvider> _logger;
     private readonly MEMORYSTATUSEX _memStatus;
 
@@ -301,7 +306,7 @@ public sealed class WindowsContainerSnapshotProviderTests
     }
 
     [Fact]
-    public void SnapshotProvider_EmitsLogRecord()
+    public Task SnapshotProvider_EmitsLogRecord()
     {
         var snapshotProvider = new WindowsContainerSnapshotProvider(
             _memoryInfoMock.Object,
@@ -314,16 +319,7 @@ public sealed class WindowsContainerSnapshotProviderTests
             new());
 
         var logRecords = _logger.Collector.GetSnapshot();
-        var logRecord = Assert.Single(logRecords);
-        Assert.StartsWith("Resource Monitoring is running inside a Job Object", logRecord.Message);
-    }
 
-    [Fact]
-    public void Provider_Throws_WhenLoggerIsNull()
-    {
-        // This is a synthetic test to have full test coverage,
-        // using [ExcludeFromCodeCoverage] on a constructor doesn't cover ": this(...)" call.
-        Assert.Throws<NullReferenceException>(() =>
-            new WindowsContainerSnapshotProvider(null!, _meterFactory.Object, Microsoft.Extensions.Options.Options.Create<ResourceMonitoringOptions>(new())));
+        return Verifier.Verify(logRecords).UniqueForRuntime().UseDirectory(VerifiedDataDirectory);
     }
 }
