@@ -63,6 +63,6 @@
     Message: System resources information: CPU limit = 1, CPU request = 1, Memory limit = 2000, Memory request = 2000.,
     Category: Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.WindowsContainerSnapshotProvider,
     LevelEnabled: true,
-    Timestamp: DateTimeOffset_2
+    Timestamp: DateTimeOffset_1
   }
 ]

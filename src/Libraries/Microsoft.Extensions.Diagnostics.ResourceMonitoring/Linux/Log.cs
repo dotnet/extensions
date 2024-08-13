@@ -11,8 +11,8 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 internal static partial class Log
 {
     [LoggerMessage(1, LogLevel.Debug,
-        "Computed CPU usage with CgroupCpuTime={cgroupCpuTime}, HostCpuTime={hostCpuTime}, PreviousCgroupCpuTime={previousCgroupCpuTime}, "
-        + "PreviousHostCpuTime={previousHostCpuTime}, CpuPercentage={cpuPercentage}.")]
+        "Computed CPU usage with CgroupCpuTime = {cgroupCpuTime}, HostCpuTime = {hostCpuTime}, PreviousCgroupCpuTime = {previousCgroupCpuTime}, "
+        + "PreviousHostCpuTime = {previousHostCpuTime}, CpuPercentage = {cpuPercentage}.")]
     public static partial void CpuUsageData(
         ILogger logger,
         long cgroupCpuTime,
@@ -22,11 +22,11 @@ internal static partial class Log
         double cpuPercentage);
 
     [LoggerMessage(2, LogLevel.Debug,
-        "Computed memory usage with CurrentMemoryUsage={currentMemoryUsage}, TotalMemory={totalMemory}, MemoryPercentage={memoryPercentage}.")]
+        "Computed memory usage with MemoryUsedInBytes = {memoryUsed}, MemoryLimit = {memoryLimit}, MemoryPercentage = {memoryPercentage}.")]
     public static partial void MemoryUsageData(
         ILogger logger,
-        ulong currentMemoryUsage,
-        double totalMemory,
+        ulong memoryUsed,
+        double memoryLimit,
         double memoryPercentage);
 
     [LoggerMessage(3, LogLevel.Debug,

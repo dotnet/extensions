@@ -17,7 +17,8 @@ internal static partial class Log
     public static partial void RunningOutsideJobObject(ILogger logger);
 
     [LoggerMessage(3, LogLevel.Debug,
-        "Computed CPU usage with CpuUsageTicks={cpuUsageTicks}, OldCpuUsageTicks={oldCpuUsageTicks}, TimeTickDelta={timeTickDelta}, CpuUnits={cpuUnits}, CpuPercentage={cpuPercentage}.")]
+        "Computed CPU usage with CpuUsageTicks = {cpuUsageTicks}, OldCpuUsageTicks = {oldCpuUsageTicks}, TimeTickDelta = {timeTickDelta}," +
+        " CpuUnits = {cpuUnits}, CpuPercentage = {cpuPercentage}.")]
     public static partial void CpuUsageData(ILogger logger,
         long cpuUsageTicks,
         long oldCpuUsageTicks,
@@ -26,14 +27,14 @@ internal static partial class Log
         double cpuPercentage);
 
     [LoggerMessage(4, LogLevel.Debug,
-        "Computed memory usage with CurrentMemoryUsage={currentMemoryUsage}, TotalMemory={totalMemory}, MemoryPercentage={memoryPercentage}.")]
+        "Computed memory usage with CurrentMemoryUsage = {currentMemoryUsage}, TotalMemory = {totalMemory}, MemoryPercentage = {memoryPercentage}.")]
     public static partial void MemoryUsageData(ILogger logger,
         ulong currentMemoryUsage,
         double totalMemory,
         double memoryPercentage);
 
-    [LoggerMessage(5, LogLevel.Debug, "Computed CPU usage with CpuUsageKernelTicks={cpuUsageKernelTicks}, CpuUsageUserTicks={cpuUsageUserTicks}," +
-        " OldCpuUsageTicks={oldCpuUsageTicks}, TimeTickDelta={timeTickDelta}, CpuUnits={cpuUnits}, CpuPercentage={cpuPercentage}.")]
+    [LoggerMessage(5, LogLevel.Debug, "Computed CPU usage with CpuUsageKernelTicks = {cpuUsageKernelTicks}, CpuUsageUserTicks = {cpuUsageUserTicks}," +
+        " OldCpuUsageTicks = {oldCpuUsageTicks}, TimeTickDelta = {timeTickDelta}, CpuUnits = {cpuUnits}, CpuPercentage = {cpuPercentage}.")]
     public static partial void CpuContainerUsageData(ILogger logger,
         long cpuUsageKernelTicks,
         long cpuUsageUserTicks,
