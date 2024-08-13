@@ -229,7 +229,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
                 var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuLimit;
                 if (usageTickDelta > 0 && timeTickDelta > 0)
                 {
-                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / timeTickDelta * Hundred); // Don't change calculation order, otherwise we loose some precision
+                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / timeTickDelta * Hundred); // Don't change calculation order, otherwise precision is lost.
 
                     Log.CpuContainerUsageData(
                         _logger, basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, _cpuLimit, _cpuPercentage);

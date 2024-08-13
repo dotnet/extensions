@@ -11,8 +11,9 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 internal static partial class Log
 {
     [LoggerMessage(1, LogLevel.Debug,
-        "Computed CPU usage with CgroupCpuTime = {cgroupCpuTime}, HostCpuTime = {hostCpuTime}, PreviousCgroupCpuTime = {previousCgroupCpuTime}, "
-        + "PreviousHostCpuTime = {previousHostCpuTime}, CpuPercentage = {cpuPercentage}.")]
+#pragma warning disable S103 // Lines should not be too long
+        "Computed CPU usage with CgroupCpuTime = {cgroupCpuTime}, HostCpuTime = {hostCpuTime}, PreviousCgroupCpuTime = {previousCgroupCpuTime}, PreviousHostCpuTime = {previousHostCpuTime}, CpuPercentage = {cpuPercentage}.")]
+#pragma warning restore S103 // Lines should not be too long
     public static partial void CpuUsageData(
         ILogger logger,
         long cgroupCpuTime,
