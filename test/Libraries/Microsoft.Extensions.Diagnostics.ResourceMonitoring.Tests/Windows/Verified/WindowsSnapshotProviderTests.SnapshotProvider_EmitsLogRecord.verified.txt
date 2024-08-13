@@ -1,0 +1,21 @@
+﻿{
+  Level: Information,
+  Id: {
+    Id: 2,
+    Name: RunningOutsideJobObject
+  },
+  State: [
+    {
+      {OriginalFormat}: Resource Monitoring is running outside of Job Object. For more information about Job Objects see https://aka.ms/job-objects
+    }
+  ],
+  StructuredState: [
+    {
+      {OriginalFormat}: Resource Monitoring is running outside of Job Object. For more information about Job Objects see https://aka.ms/job-objects
+    }
+  ],
+  Message: Resource Monitoring is running outside of Job Object. For more information about Job Objects see https://aka.ms/job-objects,
+  Category: Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.WindowsSnapshotProvider,
+  LevelEnabled: true,
+  Timestamp: DateTimeOffset_1
+}

@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
@@ -20,6 +21,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
     private readonly int _cpuUnits;
     private readonly object _cpuLocker = new();
     private readonly object _memoryLocker = new();
+    private readonly ILogger<WindowsSnapshotProvider> _logger;
     private readonly TimeProvider _timeProvider;
     private readonly Func<long> _getCpuTicksFunc;
     private readonly Func<long> _getMemoryUsageFunc;
@@ -34,14 +36,14 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
     private double _cpuPercentage = double.NaN;
     private double _memoryPercentage;
 
-    public WindowsSnapshotProvider(ILogger<WindowsSnapshotProvider> logger, IMeterFactory meterFactory, IOptions<ResourceMonitoringOptions> options)
+    public WindowsSnapshotProvider(ILogger<WindowsSnapshotProvider>? logger, IMeterFactory meterFactory, IOptions<ResourceMonitoringOptions> options)
     : this(logger, meterFactory, options.Value, TimeProvider.System, GetCpuUnits, GetCpuTicks, GetMemoryUsageInBytes, GetTotalMemoryInBytes)
     {
     }
 
     [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Dependencies for testing")]
     internal WindowsSnapshotProvider(
-        ILogger<WindowsSnapshotProvider> logger,
+        ILogger<WindowsSnapshotProvider>? logger,
         IMeterFactory meterFactory,
         ResourceMonitoringOptions options,
         TimeProvider timeProvider,
@@ -50,7 +52,9 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         Func<long> getMemoryUsageFunc,
         Func<ulong> getTotalMemoryInBytesFunc)
     {
-        Log.RunningOutsideJobObject(logger);
+        _logger = logger ?? NullLogger<WindowsSnapshotProvider>.Instance;
+
+        Log.RunningOutsideJobObject(_logger);
 
         _cpuUnits = getCpuUnitsFunc();
         var totalMemory = getTotalMemoryInBytesFunc();
@@ -59,6 +63,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         // any resource requests or resource limits, therefore using physical values
         // such as number of CPUs and physical memory and using it for both requests and limits (aka 'guaranteed' and 'max'):
         Resources = new SystemResources(_cpuUnits, _cpuUnits, totalMemory, totalMemory);
+        Log.SystemResourcesInfo(_logger, _cpuUnits, _cpuUnits, totalMemory, totalMemory);
 
         _timeProvider = timeProvider;
         _getCpuTicksFunc = getCpuTicksFunc;
@@ -135,6 +140,8 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
+            Log.MemoryUsageData(_logger, (ulong)currentMemoryUsage, _totalMemory, _memoryPercentage);
+
             return _memoryPercentage;
         }
     }
@@ -161,9 +168,12 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
                 var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuUnits;
                 if (usageTickDelta > 0 && timeTickDelta > 0)
                 {
+                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / (double)timeTickDelta * Hundred); // Don't change calculation order, otherwise we loose some precision
+
+                    Log.CpuUsageData(_logger, currentCpuTicks, _oldCpuUsageTicks, timeTickDelta, _cpuUnits, _cpuPercentage);
+
                     _oldCpuUsageTicks = currentCpuTicks;
                     _oldCpuTimeTicks = now.Ticks;
-                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / (double)timeTickDelta * Hundred); // Don't change calculation order, otherwise we loose some precision
                     _refreshAfterCpu = now.Add(_cpuRefreshInterval);
                 }
             }

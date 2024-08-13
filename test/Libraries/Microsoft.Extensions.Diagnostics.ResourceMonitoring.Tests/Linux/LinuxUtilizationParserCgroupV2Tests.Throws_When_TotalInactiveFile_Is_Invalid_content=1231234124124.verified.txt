@@ -1,9 +1,0 @@
-﻿{
-  Type: InvalidOperationException,
-  Message: Unable to find inactive_file from '/sys/fs/cgroup/memory.stat'.,
-  StackTrace:
-at Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(String message)
-at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationParserCgroupV2.GetMemoryUsageInBytes()
-at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test.LinuxUtilizationParserCgroupV2Tests.<>c__DisplayClass3_0.<Throws_When_TotalInactiveFile_Is_Invalid>b__0()
-at Xunit.Record.Exception(Func`1 testCode)
-}

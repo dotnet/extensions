@@ -1,0 +1,47 @@
+﻿[
+  {
+    Level: Debug,
+    Id: {
+      Id: 3,
+      Name: SystemResourcesInfo
+    },
+    State: [
+      {
+        {OriginalFormat}: System resources information: CpuLimit = {cpuLimit}, CpuRequest = {cpuRequest}, MemoryLimit = {memoryLimit}, MemoryRequest = {memoryRequest}.
+      },
+      {
+        memoryRequest: 1048576
+      },
+      {
+        memoryLimit: 1048576
+      },
+      {
+        cpuRequest: 0.078125
+      },
+      {
+        cpuLimit: 20
+      }
+    ],
+    StructuredState: [
+      {
+        {OriginalFormat}: System resources information: CpuLimit = {cpuLimit}, CpuRequest = {cpuRequest}, MemoryLimit = {memoryLimit}, MemoryRequest = {memoryRequest}.
+      },
+      {
+        memoryRequest: 1048576
+      },
+      {
+        memoryLimit: 1048576
+      },
+      {
+        cpuRequest: 0.078125
+      },
+      {
+        cpuLimit: 20
+      }
+    ],
+    Message: System resources information: CpuLimit = 20, CpuRequest = 0.078125, MemoryLimit = 1048576, MemoryRequest = 1048576.,
+    Category: Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationProvider,
+    LevelEnabled: true,
+    Timestamp: DateTimeOffset_1
+  }
+]

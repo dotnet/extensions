@@ -1,0 +1,9 @@
+﻿{
+  Type: InvalidOperationException,
+  Message: Could not get cpu usage from '/sys/fs/cgroup/cpu.stat'. Expected positive number, but got 'usage_usec -32131'.,
+  StackTrace:
+at Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(String message)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationParserCgroupV2.GetCgroupCpuUsageInNanoseconds()
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test.LinuxUtilizationParserCgroupV2Tests.<>c__DisplayClass22_0.<Throws_When_Usage_Usec_Has_Negative_Value>b__0()
+at Xunit.Record.Exception(Func`1 testCode)
+}

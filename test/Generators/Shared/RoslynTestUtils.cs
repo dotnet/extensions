@@ -220,6 +220,21 @@ internal static class RoslynTestUtils
     }
 
     /// <summary>
+    /// Runs a Roslyn generator given a Compilation.
+    /// </summary>
+    public static (IReadOnlyList<Diagnostic> diagnostics, ImmutableArray<GeneratedSourceResult> generatedSources) RunGenerator(
+        Compilation compilation,
+        IIncrementalGenerator generator,
+        CancellationToken cancellationToken = default)
+    {
+        CSharpGeneratorDriver cgd = CSharpGeneratorDriver.Create(new[] { generator });
+        GeneratorDriver gd = cgd.RunGenerators(compilation, cancellationToken);
+
+        GeneratorDriverRunResult r = gd.GetRunResult();
+        return (r.Results[0].Diagnostics, r.Results[0].GeneratedSources);
+    }
+
+    /// <summary>
     /// Runs a Roslyn generator over a set of source files.
     /// </summary>
     public static Task<(IReadOnlyList<Diagnostic> diagnostics, ImmutableArray<GeneratedSourceResult> generatedSources)> RunGenerator(

@@ -18,6 +18,8 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 [UsesVerify]
 public sealed class LinuxUtilizationParserCgroupV2Tests
 {
+    private const string VerifiedDataDirectory = "Verified";
+
     [ConditionalTheory]
     [InlineData("DFIJEUWGHFWGBWEFWOMDOWKSLA")]
     [InlineData("")]
@@ -87,7 +89,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytes());
 
-        return Verifier.Verify(r).UseParameters(content);
+        return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
@@ -112,7 +114,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytes());
 
-        return Verifier.Verify(r).UseParameters(content);
+        return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
@@ -146,7 +148,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetAvailableMemoryInBytes());
 
-        return Verifier.Verify(r).UseParameters(content);
+        return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalFact]
@@ -161,7 +163,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytesFromSlices(regexPatternforSlices));
 
-        return Verifier.Verify(r);
+        return Verifier.Verify(r).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalFact]
@@ -194,7 +196,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytes());
 
-        return Verifier.Verify(r).UseParameters(inactive, total);
+        return Verifier.Verify(r).UseParameters(inactive, total).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
@@ -219,7 +221,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetHostAvailableMemory());
 
-        return Verifier.Verify(r).UseParameters(totalMemory);
+        return Verifier.Verify(r).UseParameters(totalMemory).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
@@ -304,7 +306,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetHostCpuCount());
 
-        return Verifier.Verify(r).UseParameters(content);
+        return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalFact]
@@ -319,7 +321,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupLimitedCpus());
 
-        return Verifier.Verify(r);
+        return Verifier.Verify(r).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
@@ -344,7 +346,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupLimitedCpus());
 
-        return Verifier.Verify(r).UseParameters(quota, period);
+        return Verifier.Verify(r).UseParameters(quota, period).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalFact]
@@ -393,7 +395,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetHostCpuUsageInNanoseconds());
 
-        return Verifier.Verify(r).UseParameters(content);
+        return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
@@ -410,14 +412,14 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupCpuUsageInNanoseconds());
 
-        return Verifier.Verify(r).UseParameters(content, value);
+        return Verifier.Verify(r).UseParameters(content, value).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
     [InlineData(-32131)]
     [InlineData(-1)]
     [InlineData(-15.323)]
-    public Task Throws_When_Usage_Usec_Has_Negative_Valuet(int value)
+    public Task Throws_When_Usage_Usec_Has_Negative_Value(int value)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -427,7 +429,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupCpuUsageInNanoseconds());
 
-        return Verifier.Verify(r).UseParameters(value);
+        return Verifier.Verify(r).UseParameters(value).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
@@ -445,7 +447,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupRequestCpu());
 
-        return Verifier.Verify(r).UseParameters(content);
+        return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]

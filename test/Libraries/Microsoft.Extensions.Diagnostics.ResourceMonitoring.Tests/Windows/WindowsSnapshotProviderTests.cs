@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.Metrics;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging.Testing;
@@ -10,13 +11,17 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.TestUtilities;
 using Moq;
+using VerifyXunit;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Test;
 
 [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
+[UsesVerify]
 public sealed class WindowsSnapshotProviderTests
 {
+    private const string VerifiedDataDirectory = "Verified";
+
     private readonly Mock<IMeterFactory> _meterFactoryMock;
     private readonly FakeLogger<WindowsSnapshotProvider> _fakeLogger;
     private readonly IOptions<ResourceMonitoringOptions> _options;
@@ -54,12 +59,14 @@ public sealed class WindowsSnapshotProviderTests
     }
 
     [ConditionalFact]
-    public void SnapshotProvider_EmitsLogRecord()
+    public Task SnapshotProvider_EmitsLogRecord()
     {
         var provider = new WindowsSnapshotProvider(_fakeLogger, _meterFactoryMock.Object, _options);
         var logRecords = _fakeLogger.Collector.GetSnapshot();
-        var logRecord = Assert.Single(logRecords);
-        Assert.StartsWith("Resource Monitoring is running outside of Job Object", logRecord.Message);
+        Assert.Equal(2, logRecords.Count);
+        Assert.StartsWith("System resources information", logRecords[1].Message);
+
+        return Verifier.Verify(logRecords[0]).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalFact]

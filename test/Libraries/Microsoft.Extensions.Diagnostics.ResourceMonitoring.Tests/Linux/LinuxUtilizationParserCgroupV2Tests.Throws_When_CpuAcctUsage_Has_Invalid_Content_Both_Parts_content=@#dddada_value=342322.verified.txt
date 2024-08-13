@@ -1,9 +1,0 @@
-﻿{
-  Type: InvalidOperationException,
-  Message: Could not parse '/sys/fs/cgroup/cpu.stat'. We expected first line of the file to start with 'usage_usec' but it was '@#dddada 342322' instead.,
-  StackTrace:
-at Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(String message)
-at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationParserCgroupV2.GetCgroupCpuUsageInNanoseconds()
-at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test.LinuxUtilizationParserCgroupV2Tests.<>c__DisplayClass20_0.<Throws_When_CpuAcctUsage_Has_Invalid_Content_Both_Parts>b__0()
-at Xunit.Record.Exception(Func`1 testCode)
-}
