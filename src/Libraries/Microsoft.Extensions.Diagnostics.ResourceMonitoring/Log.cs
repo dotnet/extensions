@@ -16,4 +16,14 @@ internal static partial class Log
 
     [LoggerMessage(2, LogLevel.Error, "Publisher `{Publisher}` was unable to publish utilization statistics.")]
     public static partial void HandlePublishUtilizationException(ILogger logger, Exception e, string publisher);
+
+    [LoggerMessage(3, LogLevel.Debug,
+    "Snapshot received: TotalTimeSinceStart={totalTimeSinceStart}, KernelTimeSinceStart={kernelTimeSinceStart}, "
+    + "UserTimeSinceStart={userTimeSinceStart}, MemoryUsageInBytes={memoryUsageInBytes}.")]
+    public static partial void SnapshotReceived(
+        ILogger logger,
+        TimeSpan totalTimeSinceStart,
+        TimeSpan kernelTimeSinceStart,
+        TimeSpan userTimeSinceStart,
+        ulong memoryUsageInBytes);
 }
