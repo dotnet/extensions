@@ -229,7 +229,9 @@ public sealed class AcceptanceTest
                 .AddSingleton<TimeProvider>(clock)
                 .AddSingleton<IUserHz>(new FakeUserHz(100))
                 .AddSingleton<IFileSystem>(fileSystem)
+#pragma warning disable CS0618 // Type or member is obsolete
                 .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
+#pragma warning restore CS0618 // Type or member is obsolete
                 .AddResourceMonitoring())
             .Build();
 
@@ -312,7 +314,9 @@ public sealed class AcceptanceTest
                 .AddSingleton<TimeProvider>(clock)
                 .AddSingleton<IUserHz>(new FakeUserHz(100))
                 .AddSingleton<IFileSystem>(fileSystem)
+#pragma warning disable CS0618 // Type or member is obsolete
                 .AddSingleton<IResourceUtilizationPublisher>(new GenericPublisher(_ => e.Set()))
+#pragma warning restore CS0618 // Type or member is obsolete
                 .AddResourceMonitoring()
                 .Replace(ServiceDescriptor.Singleton<ILinuxUtilizationParser, LinuxUtilizationParserCgroupV2>()))
             .Build();

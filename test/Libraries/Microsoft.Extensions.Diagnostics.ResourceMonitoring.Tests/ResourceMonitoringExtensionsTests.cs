@@ -15,6 +15,7 @@ using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 
+#pragma warning disable CS0618 // Type or member is obsolete - IResourceUtilizationPublisher is obsolete, but we still need code coverage.
 public sealed class ResourceMonitoringExtensionsTests
 {
     [Fact]

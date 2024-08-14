@@ -1,14 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 
 /// <summary>
-/// A publisher that do nothing.
+/// A publisher that does nothing.
 /// </summary>
+[Obsolete("Testing the obsolete IResourceUtilizationPublisher interface.")]
 internal sealed class EmptyPublisher : IResourceUtilizationPublisher
 {
     /// <inheritdoc/>

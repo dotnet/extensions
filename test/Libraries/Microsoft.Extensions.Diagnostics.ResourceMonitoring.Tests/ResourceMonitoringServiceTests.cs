@@ -21,6 +21,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 /// <summary>
 /// Tests for the DataTracker class.
 /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete - IResourceUtilizationPublisher is obsolete, but we still need code coverage.
 public sealed class ResourceMonitoringServiceTests
 {
     private const string ProviderUnableToGatherData = "Unable to gather utilization statistics.";
@@ -32,7 +33,7 @@ public sealed class ResourceMonitoringServiceTests
     /// <summary>
     /// Simply construct the object.
     /// </summary>
-    /// <remarks>Tests that look into internals like this are evil.  Consider removing long term.</remarks>
+    /// <remarks>Tests that look into internals like this are evil. Consider removing long term.</remarks>
     [Fact]
     public void BasicConstructor()
     {
@@ -75,7 +76,7 @@ public sealed class ResourceMonitoringServiceTests
     /// <summary>
     /// Simply construct the object (publisher constructor).
     /// </summary>
-    /// <remarks>Tests that look into internals like this are evil.  Consider removing long term.</remarks>
+    /// <remarks>Tests that look into internals like this are evil. Consider removing long term.</remarks>
     [Fact]
     public void BasicConstructor_NullPublishers_Throws()
     {
@@ -293,7 +294,7 @@ public sealed class ResourceMonitoringServiceTests
     /// <summary>
     /// Validate that the tracker invokes the publisher's Publish method.
     /// </summary>
-    /// <remarks>Tests that look into internals like this are evil.  Consider removing long term.</remarks>
+    /// <remarks>Tests that look into internals like this are evil. Consider removing long term.</remarks>
     [Fact]
     public async Task ResourceUtilizationTracker_InitializedProperly_InvokesPublishers()
     {

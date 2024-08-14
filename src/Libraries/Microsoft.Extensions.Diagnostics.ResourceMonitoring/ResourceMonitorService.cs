@@ -29,10 +29,12 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
     /// </summary>
     private readonly ISnapshotProvider _provider;
 
+#pragma warning disable CS0618 // Type or member is obsolete
     /// <summary>
     /// The publishers to use with the data we are tracking.
     /// </summary>
     private readonly IResourceUtilizationPublisher[] _publishers;
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <summary>
     /// Logger to be used in this class.
@@ -55,7 +57,9 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
         ISnapshotProvider provider,
         ILogger<ResourceMonitorService> logger,
         IOptions<ResourceMonitoringOptions> options,
+#pragma warning disable CS0618 // Type or member is obsolete
         IEnumerable<IResourceUtilizationPublisher> publishers)
+#pragma warning restore CS0618 // Type or member is obsolete
         : this(provider, logger, options, publishers, TimeProvider.System)
     {
     }
@@ -64,7 +68,9 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
         ISnapshotProvider provider,
         ILogger<ResourceMonitorService> logger,
         IOptions<ResourceMonitoringOptions> options,
+#pragma warning disable CS0618 // Type or member is obsolete
         IEnumerable<IResourceUtilizationPublisher> publishers,
+#pragma warning restore CS0618 // Type or member is obsolete
         TimeProvider timeProvider)
     {
         _provider = provider;
