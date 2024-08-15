@@ -18,8 +18,7 @@ internal static partial class Log
     public static partial void HandlePublishUtilizationException(ILogger logger, Exception e, string publisher);
 
     [LoggerMessage(3, LogLevel.Debug,
-    "Snapshot received: TotalTimeSinceStart={totalTimeSinceStart}, KernelTimeSinceStart={kernelTimeSinceStart}, "
-    + "UserTimeSinceStart={userTimeSinceStart}, MemoryUsageInBytes={memoryUsageInBytes}.")]
+        "Snapshot received: TotalTimeSinceStart={totalTimeSinceStart}, KernelTimeSinceStart={kernelTimeSinceStart}, UserTimeSinceStart={userTimeSinceStart}, MemoryUsageInBytes={memoryUsageInBytes}.")]
     public static partial void SnapshotReceived(
         ILogger logger,
         TimeSpan totalTimeSinceStart,
