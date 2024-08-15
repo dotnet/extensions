@@ -91,4 +91,9 @@ internal sealed class HardcodedValueFileSystem : IFileSystem
     {
         _fileContent[file.FullName] = value;
     }
+
+    public IEnumerable<ReadOnlyMemory<char>> ReadAllByLines(FileInfo file, BufferWriter<char> destination)
+    {
+        return Enumerable.Empty<ReadOnlyMemory<char>>();
+    }
 }

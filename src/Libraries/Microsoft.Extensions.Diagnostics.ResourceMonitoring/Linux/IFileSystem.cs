@@ -16,20 +16,20 @@ internal interface IFileSystem
     /// <summary>
     /// Checks for file existence.
     /// </summary>
-    /// <returns> True/False.</returns>
+    /// <returns><see langword="true"/> or <see langword="false"/>.</returns>
     bool Exists(FileInfo fileInfo);
 
     /// <summary>
     /// Get directory names on the filesystem based on the provided pattern.
     /// </summary>
-    /// <returns>string.</returns>
+    /// <returns>IReadOnlyCollection.</returns>
     IReadOnlyCollection<string> GetDirectoryNames(string directory, string pattern);
 
     /// <summary>
     /// Reads content from the file.
     /// </summary>
     /// <returns>
-    /// Chars written.
+    /// Number of chars written.
     /// </returns>
     int Read(FileInfo file, int length, Span<char> destination);
 
@@ -42,4 +42,12 @@ internal interface IFileSystem
     /// Reads first line from the file.
     /// </summary>
     void ReadFirstLine(FileInfo file, BufferWriter<char> destination);
+
+    /// <summary>
+    /// Reads all content from a file by line.
+    /// </summary>
+    /// <returns>
+    /// IEnumerable.
+    /// </returns>
+    IEnumerable<ReadOnlyMemory<char>> ReadAllByLines(FileInfo file, BufferWriter<char> destination);
 }

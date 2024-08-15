@@ -234,11 +234,11 @@ public sealed class Tcp6TableInfoTests
             SourceIpAddresses = new HashSet<string> { "[::1]" },
             SamplingInterval = DefaultTimeSpan
         };
-        TcpTableInfo tcp6TableInfo = new TcpTableInfo(Options.Options.Create(options));
+        WindowsTcpTableInfo tcp6TableInfo = new WindowsTcpTableInfo(Options.Options.Create(options));
         tcp6TableInfo.SetGetTcp6TableDelegate(FakeGetTcp6TableWithUnsuccessfulStatusAllTheTime);
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var tcpStateInfo = tcp6TableInfo.GetIPv6CachingSnapshot();
+            var tcpStateInfo = tcp6TableInfo.GetIpV6CachingSnapshot();
         });
     }
 
@@ -250,11 +250,11 @@ public sealed class Tcp6TableInfoTests
             SourceIpAddresses = new HashSet<string> { "[::1]" },
             SamplingInterval = DefaultTimeSpan
         };
-        TcpTableInfo tcp6TableInfo = new TcpTableInfo(Options.Options.Create(options));
+        WindowsTcpTableInfo tcp6TableInfo = new WindowsTcpTableInfo(Options.Options.Create(options));
         tcp6TableInfo.SetGetTcp6TableDelegate(FakeGetTcp6TableWithInsufficientBufferAndInvalidParameter);
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var tcpStateInfo = tcp6TableInfo.GetIPv6CachingSnapshot();
+            var tcpStateInfo = tcp6TableInfo.GetIpV6CachingSnapshot();
         });
     }
 
@@ -268,9 +268,9 @@ public sealed class Tcp6TableInfoTests
             SourceIpAddresses = new HashSet<string> { "[::1]" },
             SamplingInterval = DefaultTimeSpan
         };
-        TcpTableInfo tcp6TableInfo = new TcpTableInfo(Options.Options.Create(options));
+        WindowsTcpTableInfo tcp6TableInfo = new WindowsTcpTableInfo(Options.Options.Create(options));
         tcp6TableInfo.SetGetTcp6TableDelegate(FakeGetTcp6TableWithFakeInformation);
-        var tcpStateInfo = tcp6TableInfo.GetIPv6CachingSnapshot();
+        var tcpStateInfo = tcp6TableInfo.GetIpV6CachingSnapshot();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(1, tcpStateInfo.ClosedCount);
         Assert.Equal(1, tcpStateInfo.ListenCount);
@@ -286,7 +286,7 @@ public sealed class Tcp6TableInfoTests
         Assert.Equal(1, tcpStateInfo.DeleteTcbCount);
 
         // Second calling in a small interval.
-        tcpStateInfo = tcp6TableInfo.GetIPv6CachingSnapshot();
+        tcpStateInfo = tcp6TableInfo.GetIpV6CachingSnapshot();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(1, tcpStateInfo.ClosedCount);
         Assert.Equal(1, tcpStateInfo.ListenCount);
@@ -303,7 +303,7 @@ public sealed class Tcp6TableInfoTests
 
         // Third calling in a long interval.
         Thread.Sleep(6000);
-        tcpStateInfo = tcp6TableInfo.GetIPv6CachingSnapshot();
+        tcpStateInfo = tcp6TableInfo.GetIpV6CachingSnapshot();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(2, tcpStateInfo.ClosedCount);
         Assert.Equal(2, tcpStateInfo.ListenCount);

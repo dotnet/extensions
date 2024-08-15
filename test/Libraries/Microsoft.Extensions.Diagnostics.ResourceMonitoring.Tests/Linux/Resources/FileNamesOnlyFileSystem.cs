@@ -55,4 +55,9 @@ internal sealed class FileNamesOnlyFileSystem : IFileSystem
 
         return min;
     }
+
+    public IEnumerable<ReadOnlyMemory<char>> ReadAllByLines(FileInfo file, BufferWriter<char> destination)
+    {
+        return Enumerable.Empty<ReadOnlyMemory<char>>();
+    }
 }

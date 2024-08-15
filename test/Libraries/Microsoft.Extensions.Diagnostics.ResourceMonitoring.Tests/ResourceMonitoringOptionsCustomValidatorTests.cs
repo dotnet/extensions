@@ -20,7 +20,7 @@ public sealed class ResourceMonitoringOptionsCustomValidatorTests
         {
             SourceIpAddresses = new HashSet<string> { "" }
         };
-        var tcpTableInfo = new TcpTableInfo(Options.Options.Create(options));
+        var tcpTableInfo = new WindowsTcpTableInfo(Options.Options.Create(options));
         var validator = new ResourceMonitoringOptionsCustomValidator();
         var result = validator.Validate("", options);
 

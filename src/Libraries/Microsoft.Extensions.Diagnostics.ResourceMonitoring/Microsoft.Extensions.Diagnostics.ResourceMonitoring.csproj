@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Diagnostics.ResourceMonitoring</RootNamespace>
     <Description>Measures processor and memory usage.</Description>
@@ -14,6 +14,7 @@
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <InjectStringSplitExtensions>true</InjectStringSplitExtensions>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -23,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <Compile Remove="Linux\*.cs" />
+    <Compile Remove="Linux\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

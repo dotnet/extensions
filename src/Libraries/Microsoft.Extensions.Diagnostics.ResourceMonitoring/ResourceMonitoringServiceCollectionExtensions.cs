@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 #if !NETFRAMEWORK
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
+
 #endif
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
@@ -91,7 +93,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
             .AddActivatedSingleton<WindowsNetworkMetrics>();
 
         _ = builder.Services
-            .AddActivatedSingleton<TcpTableInfo>();
+            .AddActivatedSingleton<ITcpTableInfo, WindowsTcpTableInfo>();
 
         return builder;
     }
@@ -119,6 +121,12 @@ public static class ResourceMonitoringServiceCollectionExtensions
         builder.Services.TryAddSingleton<IFileSystem, OSFileSystem>();
         builder.Services.TryAddSingleton<IUserHz, UserHz>();
         builder.PickLinuxParser();
+
+        _ = builder.Services
+            .AddActivatedSingleton<LinuxNetworkMetrics>();
+
+        _ = builder.Services
+            .AddActivatedSingleton<ITcpTableInfo, LinuxTcpTableInfo>();
 
         return builder;
     }

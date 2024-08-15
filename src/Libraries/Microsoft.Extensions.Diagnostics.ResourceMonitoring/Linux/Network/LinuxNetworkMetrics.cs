@@ -4,15 +4,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Network;
 
-namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
+namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 
-internal sealed class WindowsNetworkMetrics
+internal sealed class LinuxNetworkMetrics
 {
-    private readonly TcpTableInfo _tcpTableInfo;
+    private readonly ITcpTableInfo _tcpTableInfo;
 
-    public WindowsNetworkMetrics(IMeterFactory meterFactory, TcpTableInfo tcpTableInfo)
+    public LinuxNetworkMetrics(IMeterFactory meterFactory, ITcpTableInfo tcpTableInfo)
     {
         _tcpTableInfo = tcpTableInfo;
 
@@ -20,7 +19,7 @@ internal sealed class WindowsNetworkMetrics
         // We don't dispose the meter because IMeterFactory handles that
         // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
         // Related documentation: https://github.com/dotnet/docs/pull/37170
-        var meter = meterFactory.Create(nameof(Microsoft.Extensions.Diagnostics.ResourceMonitoring));
+        var meter = meterFactory.Create(nameof(ResourceMonitoring));
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         var tcpTag = new KeyValuePair<string, object?>("network.transport", "tcp");
@@ -31,9 +30,8 @@ internal sealed class WindowsNetworkMetrics
 
         // The metric is aligned with
         // https://github.com/open-telemetry/semantic-conventions/blob/main/docs/system/system-metrics.md#metric-systemnetworkconnections
-
         _ = meter.CreateObservableUpDownCounter(
-            "system.network.connections",
+            ResourceUtilizationInstruments.SystemNetworkConnections,
             GetMeasurements,
             unit: "{connection}",
             description: null,
@@ -51,7 +49,7 @@ internal sealed class WindowsNetworkMetrics
         var measurements = new List<Measurement<long>>(24);
 
         // IPv4:
-        var snapshotV4 = _tcpTableInfo.GetIPv4CachingSnapshot();
+        TcpStateInfo snapshotV4 = _tcpTableInfo.GetIpV4CachingSnapshot();
         measurements.Add(new Measurement<long>(snapshotV4.ClosedCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "close") }));
         measurements.Add(new Measurement<long>(snapshotV4.ListenCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "listen") }));
         measurements.Add(new Measurement<long>(snapshotV4.SynSentCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "syn_sent") }));
@@ -63,10 +61,9 @@ internal sealed class WindowsNetworkMetrics
         measurements.Add(new Measurement<long>(snapshotV4.ClosingCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "closing") }));
         measurements.Add(new Measurement<long>(snapshotV4.LastAckCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "last_ack") }));
         measurements.Add(new Measurement<long>(snapshotV4.TimeWaitCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "time_wait") }));
-        measurements.Add(new Measurement<long>(snapshotV4.DeleteTcbCount, new TagList { tcpVersionFourTag, new(NetworkStateKey, "delete") }));
 
         // IPv6:
-        var snapshotV6 = _tcpTableInfo.GetIPv6CachingSnapshot();
+        TcpStateInfo snapshotV6 = _tcpTableInfo.GetIpV6CachingSnapshot();
         measurements.Add(new Measurement<long>(snapshotV6.ClosedCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "close") }));
         measurements.Add(new Measurement<long>(snapshotV6.ListenCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "listen") }));
         measurements.Add(new Measurement<long>(snapshotV6.SynSentCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "syn_sent") }));
@@ -78,7 +75,6 @@ internal sealed class WindowsNetworkMetrics
         measurements.Add(new Measurement<long>(snapshotV6.ClosingCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "closing") }));
         measurements.Add(new Measurement<long>(snapshotV6.LastAckCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "last_ack") }));
         measurements.Add(new Measurement<long>(snapshotV6.TimeWaitCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "time_wait") }));
-        measurements.Add(new Measurement<long>(snapshotV6.DeleteTcbCount, new TagList { tcpVersionSixTag, new(NetworkStateKey, "delete") }));
 
         return measurements;
     }

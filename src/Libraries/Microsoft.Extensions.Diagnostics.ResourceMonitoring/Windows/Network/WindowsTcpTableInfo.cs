@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Network;
 
-internal sealed class TcpTableInfo
+internal sealed class WindowsTcpTableInfo : ITcpTableInfo
 {
     private readonly object _lock = new();
     private readonly FrozenSet<uint> _localIPAddresses;
@@ -25,7 +25,7 @@ internal sealed class TcpTableInfo
     private static TimeProvider TimeProvider => TimeProvider.System;
     private DateTimeOffset _refreshAfter;
 
-    public TcpTableInfo(IOptions<ResourceMonitoringOptions> options)
+    public WindowsTcpTableInfo(IOptions<ResourceMonitoringOptions> options)
     {
         var stringAddresses = options.Value.SourceIpAddresses;
         _localIPAddresses = stringAddresses
@@ -42,13 +42,13 @@ internal sealed class TcpTableInfo
         _refreshAfter = default;
     }
 
-    public TcpStateInfo GetIPv4CachingSnapshot()
+    public TcpStateInfo GetIpV4CachingSnapshot()
     {
         RefreshSnapshotIfNeeded();
         return _iPv4Snapshot;
     }
 
-    public TcpStateInfo GetIPv6CachingSnapshot()
+    public TcpStateInfo GetIpV6CachingSnapshot()
     {
         RefreshSnapshotIfNeeded();
         return _iPv6Snapshot;
