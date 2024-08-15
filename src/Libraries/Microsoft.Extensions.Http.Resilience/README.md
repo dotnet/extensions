@@ -4,6 +4,11 @@ Resilience mechanisms for `HttpClient` built on the [Polly framework](https://ww
 
 ## Install the package
 
+> [!IMPORTANT]
+> If you're using the `Grpc.Net.ClientFactory` package then update it to the version `>=2.64.0`
+> before installing the `Microsoft.Extensions.Http.Resilience` package. This will help you to
+> avoid issues like the [following](https://github.com/dotnet/extensions/issues/4924).
+
 From the command-line:
 
 ```console
