@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.Extensions.ObjectPool;
 #if !NET8_0_OR_GREATER
@@ -49,18 +48,26 @@ internal class LinuxNetworkUtilizationParser
     /// The method is used in the LinuxUtilizationParser class to read Span data and calculate the TCP state info.
     /// Refer <see href="https://www.kernel.org/doc/Documentation/networking/proc_net_tcp.txt">proc net tcp</see>.
     /// </remarks>
-    [SuppressMessage("Major Code Smell", "S109:Magic numbers should not be used",
-        Justification = "We are adding another digit, so we need to multiply by ten.")]
     private static void UpdateTcpStateInfo(ReadOnlySpan<char> buffer, TcpStateInfo tcpStateInfo)
     {
+        const int Base16 = 16;
         ReadOnlySpan<char> line = buffer.TrimStart();
-        const int Target = 4;
 
 #if NET8_0_OR_GREATER
+        const int Target = 5;
         Span<Range> range = stackalloc Range[Target];
-        int numRanges = line.Split(range, ' ');
+
+        // on .NET 8+, if capacity of destination range array is less than number of ranges found by ReadOnlySpan<T>.Split(),
+        // the last range in the array will get all the remaining elements of the ReadOnlySpan.
+        // therefore we request 5 ranges instead of 4, and then range[Target - 2] will have the range we need without the remaining elements.
+        int numRanges = line.Split(range, ' ', StringSplitOptions.RemoveEmptyEntries);
 #else
+        const int Target = 4;
         Span<StringRange> range = stackalloc StringRange[Target];
+
+        // in our StringRange API, if capacity of destination range array is less than number of ranges found by ReadOnlySpan<T>.TrySplit(),
+        // the last range in the array will get the last range as expected, and all remaining elements will be ignored.
+        // hence range[Target - 1] will have the last range as we need.
         _ = line.TrySplit(" ", range, out int numRanges, StringComparison.OrdinalIgnoreCase, StringSplitOptions.RemoveEmptyEntries);
 #endif
         if (numRanges < Target)
@@ -69,14 +76,14 @@ internal class LinuxNetworkUtilizationParser
         }
 
 #if NET8_0_OR_GREATER
-        ReadOnlySpan<char> tcpConnectionState = line.Slice(range[Target - 1].Start.Value, range[Target - 1].End.Value - range[Target - 1].Start.Value);
+        ReadOnlySpan<char> tcpConnectionState = line.Slice(range[Target - 2].Start.Value, range[Target - 2].End.Value - range[Target - 2].Start.Value);
 #else
         ReadOnlySpan<char> tcpConnectionState = line.Slice(range[Target - 1].Index, range[Target - 1].Count);
 #endif
 
         // until this API proposal is implemented https://github.com/dotnet/runtime/issues/61397
         // we have to allocate & throw away memory using ToString():
-        switch ((LinuxTcpState)Convert.ToInt32(tcpConnectionState.ToString(), 16))
+        switch ((LinuxTcpState)Convert.ToInt32(tcpConnectionState.ToString(), Base16))
         {
             case LinuxTcpState.ESTABLISHED:
                 tcpStateInfo.EstabCount++;

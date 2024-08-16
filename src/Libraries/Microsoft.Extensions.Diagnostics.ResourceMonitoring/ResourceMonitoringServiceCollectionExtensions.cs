@@ -120,6 +120,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
 
         builder.Services.TryAddSingleton<IFileSystem, OSFileSystem>();
         builder.Services.TryAddSingleton<IUserHz, UserHz>();
+        builder.Services.TryAddSingleton<LinuxNetworkUtilizationParser>();
         builder.PickLinuxParser();
 
         _ = builder.Services

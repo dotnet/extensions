@@ -11,17 +11,16 @@ internal class LinuxTcpTableInfo : ITcpTableInfo
     private readonly object _lock = new();
     private readonly TimeSpan _samplingInterval;
     private readonly LinuxNetworkUtilizationParser _parser;
-    private readonly TimeProvider _timeProvider;
+    private static TimeProvider TimeProvider => TimeProvider.System;
 
     private TcpStateInfo _iPv4Snapshot = new();
     private TcpStateInfo _iPv6Snapshot = new();
     private DateTimeOffset _refreshAfter;
 
-    public LinuxTcpTableInfo(IOptions<ResourceMonitoringOptions> options, LinuxNetworkUtilizationParser parser, TimeProvider timeProvider)
+    public LinuxTcpTableInfo(IOptions<ResourceMonitoringOptions> options, LinuxNetworkUtilizationParser parser)
     {
         _samplingInterval = options.Value.SamplingInterval;
         _parser = parser;
-        _timeProvider = timeProvider;
     }
 
     public TcpStateInfo GetIpV4CachingSnapshot()
@@ -40,11 +39,11 @@ internal class LinuxTcpTableInfo : ITcpTableInfo
     {
         lock (_lock)
         {
-            if (_refreshAfter < _timeProvider.GetUtcNow())
+            if (_refreshAfter < TimeProvider.GetUtcNow())
             {
                 _iPv4Snapshot = _parser.GetTcpIPv4StateInfo();
                 _iPv6Snapshot = _parser.GetTcpIPv6StateInfo();
-                _refreshAfter = _timeProvider.GetUtcNow().Add(_samplingInterval);
+                _refreshAfter = TimeProvider.GetUtcNow().Add(_samplingInterval);
             }
         }
     }

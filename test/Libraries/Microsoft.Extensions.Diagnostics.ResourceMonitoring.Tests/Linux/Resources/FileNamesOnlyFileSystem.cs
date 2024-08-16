@@ -58,6 +58,12 @@ internal sealed class FileNamesOnlyFileSystem : IFileSystem
 
     public IEnumerable<ReadOnlyMemory<char>> ReadAllByLines(FileInfo file, BufferWriter<char> destination)
     {
-        return Enumerable.Empty<ReadOnlyMemory<char>>();
+        var a = File.ReadAllLines($"{_directory}/{file.Name}");
+        foreach (var item in a)
+        {
+            destination.Reset();
+            destination.Write(item);
+            yield return destination.WrittenMemory;
+        }
     }
 }
