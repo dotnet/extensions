@@ -1,72 +1,74 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
+using VerifyXunit;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
+[UsesVerify]
 public sealed class LinuxNetworkUtilizationParserTests
 {
+    private const string VerifiedDataDirectory = "Verified";
+
     [Theory]
     [InlineData("DFIJEUWGHFWGBWEFWOMDOWKSLA")]
     [InlineData("")]
     [InlineData("________________________Asdasdasdas          dd")]
     [InlineData(" ")]
     [InlineData("!@#!$%!@")]
-    public void Parser_Throws_When_Data_Is_Invalid(string line)
+    public async Task Parser_Throws_When_Data_Is_Invalid(string line)
     {
         var parser = new LinuxNetworkUtilizationParser(new HardcodedValueFileSystem(line));
 
-        Assert.Throws<InvalidOperationException>(() => parser.GetTcpIPv4StateInfo());
-        Assert.Throws<InvalidOperationException>(() => parser.GetTcpIPv6StateInfo());
+        await Verifier.Verify(Record.Exception(parser.GetTcpIPv4StateInfo)).UseParameters(line).UseMethodName("ipv4").UseDirectory(VerifiedDataDirectory);
+        await Verifier.Verify(Record.Exception(parser.GetTcpIPv4StateInfo)).UseParameters(line).UseMethodName("ipv6").UseDirectory(VerifiedDataDirectory);
     }
 
     [Fact]
-    public void Parser_Tcp_State_Info_Exception()
+    public async Task Parser_Tcp_State_Info_Exception()
     {
         var fileSystem = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
-                {
-                    new FileInfo("/proc/net/tcp"), "  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode\r\n" +
-                                                 "   0: 030011AC:8AF2\r\n"
-    },
-                {
-                    new FileInfo("/proc/net/tcp6"),
-                    "  sl  local_address                         remote_address                        st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode\r\n" +
-                                                  "   0: 00000000000000000000000000000000:0BB8 00000000000000000000000000000000:0000\r\n"
-                },
+            {
+                new FileInfo("/proc/net/tcp"),
+                "  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode\r\n" +
+                "   0: 030011AC:8AF2\r\n"
+            },
+            {
+                new FileInfo("/proc/net/tcp6"),
+                "  sl  local_address                         remote_address                        st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode\r\n" +
+                "   0: 00000000000000000000000000000000:0BB8 00000000000000000000000000000000:0000\r\n"
+            },
         });
 
         var parser = new LinuxNetworkUtilizationParser(fileSystem);
 
-        // Exception Message: Could not split contents. We expected every line to contains more than 4 elements, but it has only 2 elements.
-        Assert.Throws<InvalidOperationException>(() => parser.GetTcpIPv4StateInfo());
+        // Expected every line to contain more than 4 elements, but it has only 2 elements.
+        await Verifier.Verify(Record.Exception(parser.GetTcpIPv4StateInfo)).UseMethodName("1").UseDirectory(VerifiedDataDirectory);
 
-        // Exception Message: Could not split contents. We expected every line to contains more than 4 elements, but it has only 3 elements.
-        Assert.Throws<InvalidOperationException>(() => parser.GetTcpIPv6StateInfo());
+        // Expected every line to contain more than 4 elements, but it has only 3 elements.
+        await Verifier.Verify(Record.Exception(parser.GetTcpIPv4StateInfo)).UseMethodName("2").UseDirectory(VerifiedDataDirectory);
 
         string tcpFile =
             "  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode\r\n" +
             "   0: 030011AC:8AF2 C1B17822:01BB 00 00000000:00000000 02:000000D1 00000000   472        0 2481276 2 00000000c62511cb 28 4 26 10 -1\r\n";
         string tcp6File =
             "  sl  local_address                         remote_address                        st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode\r\n" +
-            "   0: 00000000000000000000000000000000:0BBB 00000000000000000000000000000000:0003 " +
-            "12 00000000:00000000 00:00000000 00000000   " +
-            "472        0 2455375 1 00000000f4cb7621 100 0 0 10 0\r\n";
+            "   0: 00000000000000000000000000000000:0BBB 00000000000000000000000000000000:0003 12 00000000:00000000 00:00000000 00000000   472        0 2455375 1 00000000f4cb7621 100 0 0 10 0\r\n";
 
         fileSystem.ReplaceFileContent(new FileInfo("/proc/net/tcp"), tcpFile);
         fileSystem.ReplaceFileContent(new FileInfo("/proc/net/tcp6"), tcp6File);
 
         // Cannot find status: 00 in LINUX_TCP_STATE
-        Assert.Throws<InvalidEnumArgumentException>(() => parser.GetTcpIPv4StateInfo());
+        await Verifier.Verify(Record.Exception(parser.GetTcpIPv4StateInfo)).UseMethodName("3").UseDirectory(VerifiedDataDirectory);
 
         // Cannot find status: 12 in LINUX_TCP_STATE
-        Assert.Throws<InvalidEnumArgumentException>(() => parser.GetTcpIPv6StateInfo());
+        await Verifier.Verify(Record.Exception(parser.GetTcpIPv6StateInfo)).UseMethodName("4").UseDirectory(VerifiedDataDirectory);
 
         tcpFile = "";
         tcp6File = "";
@@ -75,17 +77,17 @@ public sealed class LinuxNetworkUtilizationParserTests
         fileSystem.ReplaceFileContent(new FileInfo("/proc/net/tcp6"), tcp6File);
 
         // Could not parse '/proc/net/tcp'. File was empty.
-        Assert.Throws<InvalidOperationException>(() => parser.GetTcpIPv4StateInfo());
+        await Verifier.Verify(Record.Exception(parser.GetTcpIPv4StateInfo)).UseMethodName("5").UseDirectory(VerifiedDataDirectory);
 
         // Could not parse '/proc/net/tcp6'. File was empty.
-        Assert.Throws<InvalidOperationException>(() => parser.GetTcpIPv6StateInfo());
+        await Verifier.Verify(Record.Exception(parser.GetTcpIPv6StateInfo)).UseMethodName("6").UseDirectory(VerifiedDataDirectory);
     }
 
     [Fact]
     public void Parser_Tcp_State_Info()
     {
         var parser = new LinuxNetworkUtilizationParser(new FileNamesOnlyFileSystem(TestResources.TestFilesLocation));
-        var tcp4StateInfo = parser.GetTcpIPv4StateInfo();
+        TcpStateInfo tcp4StateInfo = parser.GetTcpIPv4StateInfo();
 
         Assert.Equal(2, tcp4StateInfo.EstabCount);
         Assert.Equal(1, tcp4StateInfo.SynSentCount);
@@ -112,5 +114,4 @@ public sealed class LinuxNetworkUtilizationParserTests
         Assert.Equal(1, tcp6StateInfo.ListenCount);
         Assert.Equal(1, tcp6StateInfo.ClosingCount);
     }
-
 }

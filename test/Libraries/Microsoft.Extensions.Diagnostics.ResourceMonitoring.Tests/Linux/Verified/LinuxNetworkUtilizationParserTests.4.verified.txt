@@ -1,0 +1,9 @@
+﻿{
+  Type: InvalidEnumArgumentException,
+  Message: Cannot find status: 12 in LinuxTcpState,
+  StackTrace:
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network.LinuxNetworkUtilizationParser.UpdateTcpStateInfo(ReadOnlySpan`1 buffer, TcpStateInfo tcpStateInfo)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network.LinuxNetworkUtilizationParser.GetTcpStateInfo(FileInfo file)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network.LinuxNetworkUtilizationParser.GetTcpIPv6StateInfo()
+at Xunit.Record.Exception(Func`1 testCode)
+}

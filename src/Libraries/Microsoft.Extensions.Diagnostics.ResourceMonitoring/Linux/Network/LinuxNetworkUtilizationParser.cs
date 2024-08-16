@@ -45,7 +45,7 @@ internal class LinuxNetworkUtilizationParser
     }
 
     /// <remarks>
-    /// The method is used in the LinuxUtilizationParser class to read Span data and calculate the TCP state info.
+    /// The method is used to read Span data and calculate the TCP state info.
     /// Refer <see href="https://www.kernel.org/doc/Documentation/networking/proc_net_tcp.txt">proc net tcp</see>.
     /// </remarks>
     private static void UpdateTcpStateInfo(ReadOnlySpan<char> buffer, TcpStateInfo tcpStateInfo)
@@ -124,11 +124,11 @@ internal class LinuxNetworkUtilizationParser
     }
 
     /// <remarks>
-    /// Reads the contents of a file located at file and parses it to extract information about the TCP/IP state info on the system.
+    /// Reads the contents of a file and parses it to extract information about the TCP/IP state info on the system.
     /// </remarks>
     private TcpStateInfo GetTcpStateInfo(FileInfo file)
     {
-        // The value we are interested in starts with this. We just want to make sure it is true.
+        // The value we are interested in starts with this "sl".
         const string Sl = "sl";
         var tcpStateInfo = new TcpStateInfo();
         using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);

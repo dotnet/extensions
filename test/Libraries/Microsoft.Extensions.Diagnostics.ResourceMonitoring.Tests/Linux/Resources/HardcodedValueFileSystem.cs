@@ -94,7 +94,7 @@ internal sealed class HardcodedValueFileSystem : IFileSystem
 
     public IEnumerable<ReadOnlyMemory<char>> ReadAllByLines(FileInfo file, BufferWriter<char> destination)
     {
-        var flag = !_fileContent.TryGetValue(file.FullName, out var content);
+        bool flag = !_fileContent.TryGetValue(file.FullName, out var content);
         if (_fileContent.Count == 0 || flag)
         {
             destination.Reset();

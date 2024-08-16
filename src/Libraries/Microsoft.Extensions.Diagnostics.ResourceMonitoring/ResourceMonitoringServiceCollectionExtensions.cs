@@ -90,9 +90,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         builder.PickWindowsSnapshotProvider();
 
         _ = builder.Services
-            .AddActivatedSingleton<WindowsNetworkMetrics>();
-
-        _ = builder.Services
+            .AddActivatedSingleton<WindowsNetworkMetrics>()
             .AddActivatedSingleton<ITcpTableInfo, WindowsTcpTableInfo>();
 
         return builder;
@@ -120,13 +118,11 @@ public static class ResourceMonitoringServiceCollectionExtensions
 
         builder.Services.TryAddSingleton<IFileSystem, OSFileSystem>();
         builder.Services.TryAddSingleton<IUserHz, UserHz>();
-        builder.Services.TryAddSingleton<LinuxNetworkUtilizationParser>();
         builder.PickLinuxParser();
 
         _ = builder.Services
-            .AddActivatedSingleton<LinuxNetworkMetrics>();
-
-        _ = builder.Services
+            .AddActivatedSingleton<LinuxNetworkUtilizationParser>()
+            .AddActivatedSingleton<LinuxNetworkMetrics>()
             .AddActivatedSingleton<ITcpTableInfo, LinuxTcpTableInfo>();
 
         return builder;
