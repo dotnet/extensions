@@ -4,7 +4,9 @@
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable CA1716
 namespace Microsoft.Shared.Pools;
+#pragma warning restore CA1716
 
 /// <summary>
 /// An object pooling policy designed for <see cref="BufferWriter{T}"/>.

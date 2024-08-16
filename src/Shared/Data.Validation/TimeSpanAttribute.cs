@@ -7,7 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable CA1716
 namespace Microsoft.Shared.Data.Validation;
+#pragma warning restore CA1716
 
 /// <summary>
 /// Provides boundary validation for <see cref="TimeSpan"/>.
