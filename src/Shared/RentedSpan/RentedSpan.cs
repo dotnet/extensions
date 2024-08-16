@@ -5,7 +5,9 @@ using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
 
+#pragma warning disable CA1716
 namespace Microsoft.Shared.Pools;
+#pragma warning restore CA1716
 
 /// <summary>
 /// Represents a span that's potentially created over a rented array.

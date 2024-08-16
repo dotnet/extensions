@@ -6,7 +6,9 @@
 using System;
 using Microsoft.Shared.Diagnostics;
 
+#pragma warning disable CA1716
 namespace Microsoft.Shared.StringSplit;
+#pragma warning restore CA1716
 
 #if !SHARED_PROJECT
 [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

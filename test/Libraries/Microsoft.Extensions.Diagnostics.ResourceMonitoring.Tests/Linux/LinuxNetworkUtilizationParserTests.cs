@@ -49,10 +49,10 @@ public sealed class LinuxNetworkUtilizationParserTests
         var parser = new LinuxNetworkUtilizationParser(fileSystem);
 
         // Expected every line to contain more than 4 elements, but it has only 2 elements.
-        await Verifier.Verify(Record.Exception(parser.GetTcpIPv4StateInfo)).UseMethodName("1").UseDirectory(VerifiedDataDirectory);
+        await Verifier.Verify(Record.Exception(parser.GetTcpIPv4StateInfo)).UniqueForRuntimeAndVersion().UseMethodName("1").UseDirectory(VerifiedDataDirectory);
 
         // Expected every line to contain more than 4 elements, but it has only 3 elements.
-        await Verifier.Verify(Record.Exception(parser.GetTcpIPv4StateInfo)).UseMethodName("2").UseDirectory(VerifiedDataDirectory);
+        await Verifier.Verify(Record.Exception(parser.GetTcpIPv4StateInfo)).UniqueForRuntimeAndVersion().UseMethodName("2").UseDirectory(VerifiedDataDirectory);
 
         string tcpFile =
             "  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode\r\n" +

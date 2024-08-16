@@ -8,7 +8,9 @@ using Microsoft.Shared.Diagnostics;
 using System.Runtime.CompilerServices;
 #endif
 
+#pragma warning disable CA1716
 namespace Microsoft.Shared.Pools;
+#pragma warning restore CA1716
 
 /// <summary>
 /// Represents an output sink into which <typeparamref name="T"/> data can be written.
