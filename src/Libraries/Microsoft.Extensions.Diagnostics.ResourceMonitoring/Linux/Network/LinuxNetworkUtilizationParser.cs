@@ -13,7 +13,7 @@ using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 
-internal class LinuxNetworkUtilizationParser
+internal sealed class LinuxNetworkUtilizationParser
 {
     private static readonly ObjectPool<BufferWriter<char>> _sharedBufferWriterPool = BufferWriterPool.CreateBufferWriterPool<char>();
 

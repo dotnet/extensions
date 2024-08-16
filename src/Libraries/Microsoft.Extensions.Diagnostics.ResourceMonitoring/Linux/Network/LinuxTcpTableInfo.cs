@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 
-internal class LinuxTcpTableInfo : ITcpTableInfo
+internal sealed class LinuxTcpTableInfo : ITcpTableInfo
 {
     private readonly object _lock = new();
     private readonly TimeSpan _samplingInterval;
