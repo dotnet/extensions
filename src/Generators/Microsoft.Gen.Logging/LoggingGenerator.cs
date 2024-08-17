@@ -20,8 +20,7 @@ public class LoggingGenerator : IIncrementalGenerator
             .ForAttributeWithMetadataName(
                 Parsing.SymbolLoader.LoggerMessageAttribute,
                 (syntaxNode, _) => syntaxNode.Parent is TypeDeclarationSyntax,
-                (context, _) => (TypeDeclarationSyntax)context.TargetNode.Parent!)
-            .Where(static m => m is not null);
+                (context, _) => (TypeDeclarationSyntax)context.TargetNode.Parent!);
 
         IncrementalValueProvider<(Compilation, ImmutableArray<TypeDeclarationSyntax>)> compilationAndTypes =
             context.CompilationProvider.Combine(typeDeclarations.Collect());
