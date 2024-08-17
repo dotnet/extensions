@@ -43,7 +43,33 @@ namespace TestClasses
         public partial void M1(string p0);
     }
 
-    public partial class GenericLoggerInPropertyDerivedTestClass : LoggerInNullablePropertyTestClass
+    // The following classes are not used in any tests, but they validate that the generation is working correctly.
+
+    public partial class LoggerInProtectedFieldTestClass
+    {
+        protected readonly ILogger Logger = null!;
+
+        [LoggerMessage(1, LogLevel.Debug, "M0 {p0}")]
+        public partial void M0(string p0);
+    }
+
+    public partial class PrivateLoggerInPropertyDerivedTestClass : LoggerInPropertyTestClass
+    {
+#pragma warning disable IDE0051 // Remove unused private members. Used to test generation.
+        private readonly ILogger _logger = null!;
+#pragma warning restore IDE0051 // Remove unused private members
+
+        [LoggerMessage(1, LogLevel.Debug, "M1 {p0}")]
+        public partial void M1(string p0);
+    }
+
+    public partial class GenericLoggerInPropertyDerivedTestClass : GenericLoggerInPropertyTestClass
+    {
+        [LoggerMessage(1, LogLevel.Debug, "M1 {p0}")]
+        public partial void M1(string p0);
+    }
+
+    public partial class LoggerInProtectedFieldDerivedTestClass : LoggerInProtectedFieldTestClass
     {
         [LoggerMessage(1, LogLevel.Debug, "M1 {p0}")]
         public partial void M1(string p0);
