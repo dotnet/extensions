@@ -195,7 +195,7 @@ public partial class ParserTests
                 partial class C
                 {
                     [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    static partial void __M1(ILogger logger);
+                    static partial void /*0+*/__M1/*-0*/(ILogger logger);
                 }
             ";
 
@@ -300,7 +300,39 @@ public partial class ParserTests
                 static partial void M1(ILogger logger, int param);
             }}";
 
-        await RunGenerator(source, DiagDescriptors.TemplateStartsWithAtSymbol);
+        await RunGenerator(source);
+    }
+
+    [Theory]
+    [InlineData("{request}", "request")]
+    [InlineData("{request}", "@request")]
+    [InlineData("{@request}", "request")]
+    [InlineData("{@request}", "@request")]
+    public async Task AtSymbolArgument(string stringTemplate, string parameterName)
+    {
+        await RunGenerator(@$"
+                partial class C
+                {{
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = ""{stringTemplate}"")]
+                    static partial void M1(ILogger logger, string {parameterName});
+                }}
+            ");
+    }
+
+    [Theory]
+    [InlineData("{request}", "request")]
+    [InlineData("{request}", "@request")]
+    [InlineData("{@request}", "request")]
+    [InlineData("{@request}", "@request")]
+    public async Task AtSymbolArgumentOutOfOrder(string stringTemplate, string parameterName)
+    {
+        await RunGenerator(@$"
+                partial class C
+                {{
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = ""{stringTemplate} {{a1}}"")]
+                    static partial void M1(ILogger logger,string a1, string {parameterName});
+                }}
+            ");
     }
 
     [Fact]
@@ -380,7 +412,7 @@ public partial class ParserTests
         string source = @$"
                 partial class C
                 {{
-                    [LoggerMessage(0, LogLevel.Debug, ""M1 {{{template ?? name}}}"")]
+                    [LoggerMessage(0, LogLevel.Debug, /*0+*/""M1 {{{template ?? name}}}""/*-0*/)]
                     static partial void M1(ILogger logger, string {name});
                 }}
             ";
@@ -900,33 +932,84 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task Templates()
+    public async Task ValidTemplates()
     {
         await RunGenerator(@"
                 partial class C
                 {
-                    [LoggerMessage(1, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = """")]
                     static partial void M1(ILogger logger);
 
-                    [LoggerMessage(2, LogLevel.Debug, ""M2 {arg1} {arg2}"")]
-                    static partial void M2(ILogger logger, string arg1, string arg2);
+                    [LoggerMessage(EventId = 2, Level = LogLevel.Debug, Message = ""M2"")]
+                    static partial void M2(ILogger logger);
 
-                    [LoggerMessage(3, LogLevel.Debug, ""M3 {arg1"")]
-                    static partial void M3(ILogger logger);
+                    [LoggerMessage(EventId = 3, Level = LogLevel.Debug, Message = ""{arg1}"")]
+                    static partial void M3(ILogger logger, int arg1);
 
-                    [LoggerMessage(4, LogLevel.Debug, ""M4 arg1}"")]
-                    static partial void M4(ILogger logger);
+                    [LoggerMessage(EventId = 4, Level = LogLevel.Debug, Message = ""M4 {arg1}"")]
+                    static partial void M4(ILogger logger, int arg1);
 
-                    [LoggerMessage(5, LogLevel.Debug, ""M5 {"")]
-                    static partial void M5(ILogger logger);
+                    [LoggerMessage(EventId = 5, Level = LogLevel.Debug, Message = ""{arg1} M5"")]
+                    static partial void M5(ILogger logger, int arg1);
 
-                    [LoggerMessage(6, LogLevel.Debug, ""}M6 "")]
-                    static partial void M6(ILogger logger);
+                    [LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = ""M6{arg1}M6{arg2}M6"")]
+                    static partial void M6(ILogger logger, string arg1, string arg2);
 
-                    [LoggerMessage(7, LogLevel.Debug, ""M7 {{arg1}}"")]
+                    [LoggerMessage(EventId = 7, Level = LogLevel.Debug, Message = ""M7 {{const}}"")]
                     static partial void M7(ILogger logger);
+
+                    [LoggerMessage(EventId = 8, Level = LogLevel.Debug, Message = ""{{prefix{{{arg1}}}suffix}}"")]
+                    static partial void M8(ILogger logger, string arg1);
+
+                    [LoggerMessage(EventId = 9, Level = LogLevel.Debug, Message = ""prefix }}"")]
+                    static partial void M9(ILogger logger);
+
+                    [LoggerMessage(EventId = 10, Level = LogLevel.Debug, Message = ""}}suffix"")]
+                    static partial void M10(ILogger logger);
                 }
             ");
+    }
+
+    [Fact]
+    public async Task MalformedFormatString()
+    {
+        await RunGenerator(@"
+                partial class C
+                {
+                    [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = ""M1 {A} M1 { M1"")]
+                    static partial void /*0+*/M1/*-0*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 2, Level = LogLevel.Debug, Message = ""M2 {A} M2 } M2"")]
+                    static partial void /*1+*/M2/*-1*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 3, Level = LogLevel.Debug, Message = ""M3 {arg1"")]
+                    static partial void /*2+*/M3/*-2*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 4, Level = LogLevel.Debug, Message = ""M4 arg1}"")]
+                    static partial void /*3+*/M4/*-3*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 5, Level = LogLevel.Debug, Message = ""M5 {"")]
+                    static partial void /*4+*/M5/*-4*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = ""}M6 "")]
+                    static partial void /*5+*/M6/*-5*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 7, Level = LogLevel.Debug, Message = ""{M7{"")]
+                    static partial void /*6+*/M7/*-6*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 8, Level = LogLevel.Debug, Message = ""{{{arg1 M8"")]
+                    static partial void /*7+*/M8/*-7*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 9, Level = LogLevel.Debug, Message = ""arg1}}} M9"")]
+                    static partial void /*8+*/M9/*-8*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 10, Level = LogLevel.Debug, Message = ""{} M10"")]
+                    static partial void /*9+*/M10/*-9*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 11, Level = LogLevel.Debug, Message = ""{ } M11"")]
+                    static partial void /*10+*/M11/*-10*/(ILogger logger);
+                }
+            ", DiagDescriptors.MalformedFormatStrings);
     }
 
     [Fact]

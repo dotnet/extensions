@@ -245,4 +245,10 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         messageFormat: Resources.DefaultToStringMessage,
         category: Category,
         DiagnosticSeverity.Warning);
+
+    public static DiagnosticDescriptor MalformedFormatStrings { get; } = Make(
+        id: DiagnosticIds.LoggerMessage.LOGGEN037,
+        title: Resources.MalformedFormatStringsTitle,
+        messageFormat: Resources.MalformedFormatStringsMessage,
+        category: Category);
 }

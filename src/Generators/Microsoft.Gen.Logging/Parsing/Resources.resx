@@ -339,4 +339,10 @@
   <data name="DefaultToStringTitle" xml:space="preserve">
     <value>A value being logged doesn't have an effective way to be converted into a string</value>
   </data>
+  <data name="MalformedFormatStringsMessage" xml:space="preserve">
+    <value>Logging method '{0}' contains malformed format strings</value>
+  </data>
+  <data name="MalformedFormatStringsTitle" xml:space="preserve">
+    <value>Logging method contains malformed format strings</value>
+  </data>
 </root>

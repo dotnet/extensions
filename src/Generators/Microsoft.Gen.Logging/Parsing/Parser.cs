@@ -149,15 +149,9 @@ internal sealed partial class Parser
 
                         bool forceAsTemplateParam = false;
 
-                        bool parameterInTemplate = false;
-                        foreach (var t in lm.Templates)
-                        {
-                            if (lp.TagName.Equals(t, StringComparison.OrdinalIgnoreCase))
-                            {
-                                parameterInTemplate = true;
-                                break;
-                            }
-                        }
+                        bool parameterInTemplate = lm.Templates.Contains(lp.TagName, StringComparer.OrdinalIgnoreCase) ||
+                            lm.Templates.Contains(lp.ParameterNameWithAtIfNeeded, StringComparer.OrdinalIgnoreCase) ||
+                            lm.Templates.Contains($"@{lp.ParameterName}", StringComparer.OrdinalIgnoreCase);
 
                         var loggingProperties = logPropertiesAttribute != null || tagProviderAttribute != null;
                         if (lp.IsLogger && parameterInTemplate)
@@ -175,10 +169,7 @@ internal sealed partial class Parser
                             Diag(DiagDescriptors.ShouldntMentionLogLevelInMessage, attrLoc, lp.ParameterName);
                             forceAsTemplateParam = true;
                         }
-                        else if (lp.IsNormalParameter
-                            && !parameterInTemplate
-                            && !loggingProperties
-                            && !string.IsNullOrEmpty(lm.Message))
+                        else if (lp.IsNormalParameter && !parameterInTemplate && !loggingProperties && !string.IsNullOrEmpty(lm.Message))
                         {
                             Diag(DiagDescriptors.ParameterHasNoCorrespondingTemplate, paramSymbol.GetLocation(), lp.ParameterName);
                         }
@@ -271,9 +262,11 @@ internal sealed partial class Parser
                         foreach (var t in lm.Templates)
                         {
                             bool found = false;
-                            foreach (var p in lm.Parameters)
+                            foreach (LoggingMethodParameter p in lm.Parameters)
                             {
-                                if (t.Equals(p.TagName, StringComparison.OrdinalIgnoreCase))
+                                if (t.Equals(p.TagName, StringComparison.OrdinalIgnoreCase) ||
+                                    t.Equals(p.ParameterNameWithAtIfNeeded, StringComparison.OrdinalIgnoreCase) ||
+                                    (t[0] == '@' && t.Substring(1).Equals(p.ParameterNameWithAtIfNeeded, StringComparison.OrdinalIgnoreCase)))
                                 {
                                     found = true;
                                     p.TagName = t;
@@ -392,33 +385,18 @@ internal sealed partial class Parser
 
             var keepMethod = true;
 
+            if (!TemplateProcessor.ExtractTemplates(message, lm.Templates))
+            {
+                Diag(DiagDescriptors.MalformedFormatStrings, method.Identifier.GetLocation(), method.Identifier.ToString());
+                keepMethod = false;
+            }
+
             if (!methodSymbol.ReturnsVoid)
             {
                 // logging methods must return void
                 Diag(DiagDescriptors.LoggingMethodMustReturnVoid, method.ReturnType.GetLocation());
                 keepMethod = false;
             }
-
-            TemplateProcessor.ExtractTemplates(message, lm.Templates);
-
-#pragma warning disable EA0003 // Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
-            var templatesWithAtSymbol = lm.Templates.Where(x => x.StartsWith("@", StringComparison.Ordinal)).ToArray();
-            if (templatesWithAtSymbol.Length > 0)
-            {
-                // there is/are template(s) that start with @, which is not allowed
-                Diag(DiagDescriptors.TemplateStartsWithAtSymbol, attrLoc, method.Identifier.Text, string.Join("; ", templatesWithAtSymbol));
-                keepMethod = false;
-
-                for (int i = 0; i < lm.Templates.Count; i++)
-                {
-                    if (lm.Templates[i].StartsWith("@", StringComparison.Ordinal))
-                    {
-                        lm.Templates[i] = lm.Templates[i].Substring(1);
-                    }
-                }
-
-            }
-#pragma warning restore EA0003 // Use the character-based overloads of 'String.StartsWith' or 'String.EndsWith'
 
             if (method.Arity > 0)
             {

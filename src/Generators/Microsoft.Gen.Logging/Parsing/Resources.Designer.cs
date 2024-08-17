@@ -349,6 +349,24 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Logging method &apos;{0}&apos; contains malformed format strings.
+        /// </summary>
+        internal static string MalformedFormatStringsMessage {
+            get {
+                return ResourceManager.GetString("MalformedFormatStringsMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Logging method contains malformed format strings.
+        /// </summary>
+        internal static string MalformedFormatStringsTitle {
+            get {
+                return ResourceManager.GetString("MalformedFormatStringsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Couldn&apos;t find a field or property of type &quot;Microsoft.Extensions.Logging.ILogger&quot; in type &quot;{0}&quot;.
         /// </summary>
         internal static string MissingLoggerMemberMessage {
