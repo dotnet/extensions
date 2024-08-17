@@ -33,7 +33,7 @@ internal sealed partial class Parser
     /// Gets the set of logging types containing methods to output.
     /// </summary>
     [SuppressMessage("Maintainability", "CA1505:Avoid unmaintainable code", Justification = "Fix this in a follow-up")]
-    public IReadOnlyList<LoggingType> GetLogTypes(IEnumerable<TypeDeclarationSyntax> classes)
+    public IReadOnlyList<LoggingType> GetLogTypes(IEnumerable<TypeDeclarationSyntax> types)
     {
         Action<DiagnosticDescriptor, Location?, object?[]?> diagReport = Diag; // Keeping one instance of the delegate
         var symbols = SymbolLoader.LoadSymbols(_compilation, diagReport);
@@ -49,7 +49,7 @@ internal sealed partial class Parser
         var parameterSymbols = new Dictionary<LoggingMethodParameter, IParameterSymbol>();
 
         // we enumerate by syntax tree, to minimize the need to instantiate semantic models (since they're expensive)
-        foreach (var group in classes.GroupBy(x => x.SyntaxTree))
+        foreach (var group in types.GroupBy(x => x.SyntaxTree))
         {
             SyntaxTree syntaxTree = group.Key;
             SemanticModel? sm = _compilation.GetSemanticModel(syntaxTree);
