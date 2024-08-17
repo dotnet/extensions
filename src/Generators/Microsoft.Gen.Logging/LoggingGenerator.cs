@@ -16,14 +16,15 @@ public class LoggingGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValuesProvider<TypeDeclarationSyntax> typeDeclarations = context.SyntaxProvider
+        IncrementalValuesProvider<TypeDeclarationSyntax> classDeclarations = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 Parsing.SymbolLoader.LoggerMessageAttribute,
                 (syntaxNode, _) => syntaxNode.Parent is TypeDeclarationSyntax,
-                (context, _) => (TypeDeclarationSyntax)context.TargetNode.Parent!);
+                (context, _) => (TypeDeclarationSyntax)context.TargetNode.Parent!)
+            .Where(static m => m is not null);
 
         IncrementalValueProvider<(Compilation, ImmutableArray<TypeDeclarationSyntax>)> compilationAndTypes =
-            context.CompilationProvider.Combine(typeDeclarations.Collect());
+            context.CompilationProvider.Combine(classDeclarations.Collect());
 
         context.RegisterSourceOutput(compilationAndTypes, static (spc, source) => HandleAnnotatedTypes(source.Item1, source.Item2, spc));
     }

@@ -475,6 +475,24 @@ namespace Microsoft.Gen.Logging.Parsing {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Class &apos;{0}&apos; has a primary constructor parameter of type Microsoft.Extensions.Logging.ILogger that is hidden by a field in the class or a base class, preventing its use.
+        /// </summary>
+        internal static string PrimaryConstructorParameterLoggerHiddenMessage {
+            get {
+                return ResourceManager.GetString("PrimaryConstructorParameterLoggerHiddenMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Primary constructor parameter of type Microsoft.Extensions.Logging.ILogger is hidden by a field.
+        /// </summary>
+        internal static string PrimaryConstructorParameterLoggerHiddenTitle {
+            get {
+                return ResourceManager.GetString("PrimaryConstructorParameterLoggerHiddenTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Parameter &quot;{0}&quot; of logging method &quot;{1}&quot; has a sensitive field/property in its type.
         /// </summary>
         internal static string RecordTypeSensitiveArgumentIsInTemplateMessage {

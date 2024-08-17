@@ -251,4 +251,11 @@ internal sealed class DiagDescriptors : DiagDescriptorsBase
         title: Resources.MalformedFormatStringsTitle,
         messageFormat: Resources.MalformedFormatStringsMessage,
         category: Category);
+
+    public static DiagnosticDescriptor PrimaryConstructorParameterLoggerHidden { get; } = Make(
+        id: DiagnosticIds.LoggerMessage.LOGGEN038,
+        title: Resources.PrimaryConstructorParameterLoggerHiddenTitle,
+        messageFormat: Resources.PrimaryConstructorParameterLoggerHiddenMessage,
+        category: Category,
+        DiagnosticSeverity.Info);
 }

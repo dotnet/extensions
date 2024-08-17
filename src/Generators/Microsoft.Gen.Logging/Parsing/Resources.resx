@@ -345,4 +345,10 @@
   <data name="MalformedFormatStringsTitle" xml:space="preserve">
     <value>Logging method contains malformed format strings</value>
   </data>
+  <data name="PrimaryConstructorParameterLoggerHiddenTitle" xml:space="preserve">
+    <value>Primary constructor parameter of type Microsoft.Extensions.Logging.ILogger is hidden by a field</value>
+  </data>
+  <data name="PrimaryConstructorParameterLoggerHiddenMessage" xml:space="preserve">
+    <value>Class '{0}' has a primary constructor parameter of type Microsoft.Extensions.Logging.ILogger that is hidden by a field in the class or a base class, preventing its use</value>
+  </data>
 </root>

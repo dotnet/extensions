@@ -82,5 +82,19 @@
     Versions below this comment are not managed by automation and can be changed as needed.
   -->
   <PropertyGroup Label="Manual">
+    <!-- Compatibility with VS 17.4/.NET SDK 7.0.1xx -->
+    <MicrosoftCodeAnalysisVersion_4_4>4.4.0</MicrosoftCodeAnalysisVersion_4_4>
+    <!-- Compatibility with VS 17.8/.NET SDK 8.0.1xx -->
+    <MicrosoftCodeAnalysisVersion_4_8>4.8.0</MicrosoftCodeAnalysisVersion_4_8>
+    <!-- Compatibility with the latest Visual Studio Preview release -->
+    <!--
+      The exact version is always a moving target. This version should never go ahead of the version of Roslyn that is included in the most recent
+      public Visual Studio preview version. If it were to go ahead, then any components depending on this version would not work in Visual Studio
+      and would cause a major regression for any local development that depends on those components contributing to the build.
+      This version must also not go ahead of the most recently release .NET SDK version, as that would break the source-build build.
+      Source-build builds the product with the most recent previously source-built release. Thankfully, these two requirements line up nicely
+      such that any version that satisfies the VS version requirement will also satisfy the .NET SDK version requirement because of how we ship.
+    -->
+    <MicrosoftCodeAnalysisVersion_LatestVS>4.8.0</MicrosoftCodeAnalysisVersion_LatestVS>
   </PropertyGroup>
 </Project>
