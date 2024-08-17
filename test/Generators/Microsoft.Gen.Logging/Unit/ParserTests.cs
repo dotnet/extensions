@@ -181,7 +181,7 @@ public partial class ParserTests
                 partial class C
                 {
                     [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    static partial void /*0+*/__M1/*-0*/(ILogger logger);
+                    static partial void __M1(ILogger logger);
                 }
             ";
 
@@ -380,7 +380,7 @@ public partial class ParserTests
         string source = @$"
                 partial class C
                 {{
-                    [LoggerMessage(0, LogLevel.Debug, /*0+*/""M1 {{{template ?? name}}}""/*-0*/)]
+                    [LoggerMessage(0, LogLevel.Debug, ""M1 {{{template ?? name}}}"")]
                     static partial void M1(ILogger logger, string {name});
                 }}
             ";
