@@ -31,13 +31,15 @@ internal static class TemplateProcessor
             var openBraceIndex = FindBraceIndex(message, '{', scanIndex, endIndex);
 
 #pragma warning disable S109 // Magic numbers should not be used
-            if (openBraceIndex == -2) // found '}' instead of '{'
+            if (openBraceIndex == -2)
             {
+                // found '}' instead of '{'
                 success = false;
                 break;
             }
-            else if (openBraceIndex == -1) // scanned the string and didn't find any remaining '{' or '}'
+            else if (openBraceIndex == -1)
             {
+                // scanned the string and didn't find any remaining '{' or '}'
                 break;
             }
 #pragma warning restore S109 // Magic numbers should not be used
@@ -88,12 +90,14 @@ internal static class TemplateProcessor
             var openBraceIndex = FindBraceIndex(message, '{', scanIndex, endIndex);
 
 #pragma warning disable S109 // Magic numbers should not be used
-            if (openBraceIndex == -2) // found '}' instead of '{'
+            if (openBraceIndex == -2)
             {
+                // found '}' instead of '{'
                 break;
             }
-            else if (openBraceIndex == -1) // scanned the string and didn't find any remaining '{' or '}'
+            else if (openBraceIndex == -1)
             {
+                // scanned the string and didn't find any remaining '{' or '}'
                 break;
             }
 #pragma warning restore S109 // Magic numbers should not be used
@@ -157,22 +161,26 @@ internal static class TemplateProcessor
 
                 int bracesCount = scanIndex - scanIndexBeforeSkip;
 #pragma warning disable S109 // Magic numbers should not be used
-                if (bracesCount % 2 != 0) // if it is an even number of braces, just skip them, otherwise, we found an unescaped brace
+                // if it is an even number of braces, just skip them, otherwise, we found an unescaped brace
+                if (bracesCount % 2 != 0)
                 {
                     if (currentBrace == searchedBrace)
                     {
                         if (currentBrace == '{')
                         {
-                            braceIndex = scanIndex - 1; // For '{' pick the last occurrence.
+                            // For '{' pick the last occurrence.
+                            braceIndex = scanIndex - 1;
                         }
                         else
                         {
-                            braceIndex = scanIndexBeforeSkip; // For '}' pick the first occurrence.
+                            // For '}' pick the first occurrence.
+                            braceIndex = scanIndexBeforeSkip;
                         }
                     }
                     else
                     {
-                        braceIndex = -2; // wrong brace found
+                        // wrong brace found
+                        braceIndex = -2;
                     }
 #pragma warning restore S109 // Magic numbers should not be used
 
