@@ -11,7 +11,6 @@
     <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
     <InjectSharedNumericExtensions>true</InjectSharedNumericExtensions>
     <NoWarn>$(NoWarn);IDE0161;S1144</NoWarn>
-    <UseLoggingGenerator>true</UseLoggingGenerator>
   </PropertyGroup>
 
   <ItemGroup>
