@@ -59,7 +59,7 @@ public class ChecpointAcceptanceTests
             }))
             .StartAsync();
 
-        _ = await host.GetTestClient().GetAsync("/").ConfigureAwait(false);
+        _ = await host.GetTestClient().GetAsync("/");
 
         Assert.True(reachedLambda);
         Assert.InRange(exitPipelineValue, 0, 10_000);

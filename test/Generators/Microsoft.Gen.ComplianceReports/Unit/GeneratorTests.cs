@@ -108,7 +108,7 @@ public class GeneratorTests
                     Source,
                 },
                 new OptionsProvider(null))
-            .ConfigureAwait(false);
+;
 
         Assert.Empty(d);
     }
