@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network;
 
-internal sealed class LinuxTcpTableInfo : ITcpTableInfo
+internal sealed class LinuxTcpStateInfo : ITcpStateInfoProvider
 {
     private readonly object _lock = new();
     private readonly TimeSpan _samplingInterval;
@@ -17,19 +17,19 @@ internal sealed class LinuxTcpTableInfo : ITcpTableInfo
     private TcpStateInfo _iPv6Snapshot = new();
     private DateTimeOffset _refreshAfter;
 
-    public LinuxTcpTableInfo(IOptions<ResourceMonitoringOptions> options, LinuxNetworkUtilizationParser parser)
+    public LinuxTcpStateInfo(IOptions<ResourceMonitoringOptions> options, LinuxNetworkUtilizationParser parser)
     {
         _samplingInterval = options.Value.SamplingInterval;
         _parser = parser;
     }
 
-    public TcpStateInfo GetIpV4CachingSnapshot()
+    public TcpStateInfo GetpIpV4TcpStateInfo()
     {
         RefreshSnapshotIfNeeded();
         return _iPv4Snapshot;
     }
 
-    public TcpStateInfo GetIpV6CachingSnapshot()
+    public TcpStateInfo GetpIpV6TcpStateInfo()
     {
         RefreshSnapshotIfNeeded();
         return _iPv6Snapshot;

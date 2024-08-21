@@ -91,7 +91,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
 
         _ = builder.Services
             .AddActivatedSingleton<WindowsNetworkMetrics>()
-            .AddActivatedSingleton<ITcpTableInfo, WindowsTcpTableInfo>();
+            .AddActivatedSingleton<ITcpStateInfoProvider, WindowsTcpStateInfo>();
 
         return builder;
     }
@@ -123,7 +123,7 @@ public static class ResourceMonitoringServiceCollectionExtensions
         _ = builder.Services
             .AddActivatedSingleton<LinuxNetworkUtilizationParser>()
             .AddActivatedSingleton<LinuxNetworkMetrics>()
-            .AddActivatedSingleton<ITcpTableInfo, LinuxTcpTableInfo>();
+            .AddActivatedSingleton<ITcpStateInfoProvider, LinuxTcpStateInfo>();
 
         return builder;
     }

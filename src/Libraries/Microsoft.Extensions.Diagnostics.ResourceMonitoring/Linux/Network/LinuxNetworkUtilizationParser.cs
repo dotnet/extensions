@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.ComponentModel;
 using System.IO;
 using Microsoft.Extensions.ObjectPool;
 #if !NET8_0_OR_GREATER
@@ -45,8 +44,8 @@ internal sealed class LinuxNetworkUtilizationParser
     }
 
     /// <remarks>
-    /// The method is used to read Span data and calculate the TCP state info.
-    /// Refer <see href="https://www.kernel.org/doc/Documentation/networking/proc_net_tcp.txt">proc net tcp</see>.
+    /// Parses the contents of the <paramref name="buffer"/> and updates the <paramref name="tcpStateInfo"/> with the parsed information.
+    /// For the data format expected in the <paramref name="buffer"/>, refer <see href="https://www.kernel.org/doc/Documentation/networking/proc_net_tcp.txt">proc net tcp</see>.
     /// </remarks>
     private static void UpdateTcpStateInfo(ReadOnlySpan<char> buffer, TcpStateInfo tcpStateInfo)
     {
@@ -82,8 +81,9 @@ internal sealed class LinuxNetworkUtilizationParser
 #endif
 
         // until this API proposal is implemented https://github.com/dotnet/runtime/issues/61397
-        // we have to allocate & throw away memory using ToString():
-        switch ((LinuxTcpState)Convert.ToInt32(tcpConnectionState.ToString(), Base16))
+        // we have to allocate & throw away memory using .ToString():
+        var state = (LinuxTcpState)Convert.ToInt32(tcpConnectionState.ToString(), Base16);
+        switch (state)
         {
             case LinuxTcpState.ESTABLISHED:
                 tcpStateInfo.EstabCount++;
@@ -119,7 +119,8 @@ internal sealed class LinuxNetworkUtilizationParser
                 tcpStateInfo.ClosingCount++;
                 break;
             default:
-                throw new InvalidEnumArgumentException($"Cannot find status: {tcpConnectionState} in LinuxTcpState");
+                Throw.IfOutOfRange(state);
+                break;
         }
     }
 
@@ -130,7 +131,7 @@ internal sealed class LinuxNetworkUtilizationParser
     {
         // The value we are interested in starts with this "sl".
         const string Sl = "sl";
-        var tcpStateInfo = new TcpStateInfo();
+        TcpStateInfo tcpStateInfo = new();
         using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
         using var enumerableLines = _fileSystem.ReadAllByLines(file, bufferWriter.Buffer).GetEnumerator();
         if (!enumerableLines.MoveNext())
@@ -138,7 +139,7 @@ internal sealed class LinuxNetworkUtilizationParser
             Throw.InvalidOperationException($"Could not parse '{file}'. File was empty.");
         }
 
-        var firstLine = enumerableLines.Current.TrimStart().Span;
+        ReadOnlySpan<char> firstLine = enumerableLines.Current.TrimStart().Span;
         if (!firstLine.StartsWith(Sl, StringComparison.Ordinal))
         {
             Throw.InvalidOperationException($"Could not parse '{file}'. We expected first line of the file to start with '{Sl}' but it was '{firstLine.ToString()}' instead.");

@@ -59,7 +59,7 @@ public sealed class LinuxNetworkUtilizationParserTests
             "   0: 030011AC:8AF2 C1B17822:01BB 00 00000000:00000000 02:000000D1 00000000   472        0 2481276 2 00000000c62511cb 28 4 26 10 -1\r\n";
         string tcp6File =
             "  sl  local_address                         remote_address                        st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode\r\n" +
-            "   0: 00000000000000000000000000000000:0BBB 00000000000000000000000000000000:0003 12 00000000:00000000 00:00000000 00000000   472        0 2455375 1 00000000f4cb7621 100 0 0 10 0\r\n";
+            "   0: 00000000000000000000000000000000:0BBB 00000000000000000000000000000000:0003 0C 00000000:00000000 00:00000000 00000000   472        0 2455375 1 00000000f4cb7621 100 0 0 10 0\r\n";
 
         fileSystem.ReplaceFileContent(new FileInfo("/proc/net/tcp"), tcpFile);
         fileSystem.ReplaceFileContent(new FileInfo("/proc/net/tcp6"), tcp6File);

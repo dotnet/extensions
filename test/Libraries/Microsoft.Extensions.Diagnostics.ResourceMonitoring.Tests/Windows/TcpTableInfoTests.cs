@@ -177,11 +177,11 @@ public sealed class TcpTableInfoTests
             SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
             SamplingInterval = DefaultTimeSpan
         };
-        WindowsTcpTableInfo tcpTableInfo = new WindowsTcpTableInfo(Options.Options.Create(options));
+        WindowsTcpStateInfo tcpTableInfo = new WindowsTcpStateInfo(Options.Options.Create(options));
         tcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithUnsuccessfulStatusAllTheTime);
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var tcpStateInfo = tcpTableInfo.GetIpV4CachingSnapshot();
+            var tcpStateInfo = tcpTableInfo.GetpIpV4TcpStateInfo();
         });
     }
 
@@ -193,11 +193,11 @@ public sealed class TcpTableInfoTests
             SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
             SamplingInterval = DefaultTimeSpan
         };
-        WindowsTcpTableInfo tcpTableInfo = new WindowsTcpTableInfo(Options.Options.Create(options));
+        WindowsTcpStateInfo tcpTableInfo = new WindowsTcpStateInfo(Options.Options.Create(options));
         tcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithInsufficientBufferAndInvalidParameter);
         Assert.Throws<InvalidOperationException>(() =>
         {
-            var tcpStateInfo = tcpTableInfo.GetIpV4CachingSnapshot();
+            var tcpStateInfo = tcpTableInfo.GetpIpV4TcpStateInfo();
         });
     }
 
@@ -211,9 +211,9 @@ public sealed class TcpTableInfoTests
             SourceIpAddresses = new HashSet<string> { "127.0.0.1" },
             SamplingInterval = DefaultTimeSpan
         };
-        WindowsTcpTableInfo tcpTableInfo = new WindowsTcpTableInfo(Options.Options.Create(options));
+        WindowsTcpStateInfo tcpTableInfo = new WindowsTcpStateInfo(Options.Options.Create(options));
         tcpTableInfo.SetGetTcpTableDelegate(FakeGetTcpTableWithFakeInformation);
-        var tcpStateInfo = tcpTableInfo.GetIpV4CachingSnapshot();
+        var tcpStateInfo = tcpTableInfo.GetpIpV4TcpStateInfo();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(1, tcpStateInfo.ClosedCount);
         Assert.Equal(1, tcpStateInfo.ListenCount);
@@ -229,7 +229,7 @@ public sealed class TcpTableInfoTests
         Assert.Equal(1, tcpStateInfo.DeleteTcbCount);
 
         // Second calling in a small interval.
-        tcpStateInfo = tcpTableInfo.GetIpV4CachingSnapshot();
+        tcpStateInfo = tcpTableInfo.GetpIpV4TcpStateInfo();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(1, tcpStateInfo.ClosedCount);
         Assert.Equal(1, tcpStateInfo.ListenCount);
@@ -246,7 +246,7 @@ public sealed class TcpTableInfoTests
 
         // Third calling in a long interval.
         Thread.Sleep(6000);
-        tcpStateInfo = tcpTableInfo.GetIpV4CachingSnapshot();
+        tcpStateInfo = tcpTableInfo.GetpIpV4TcpStateInfo();
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(2, tcpStateInfo.ClosedCount);
         Assert.Equal(2, tcpStateInfo.ListenCount);
@@ -268,7 +268,7 @@ public sealed class TcpTableInfoTests
         TcpStateInfo tcpStateInfo = new();
 
         // Add this case to increase coverage, but 0 will not happen in actual case.
-        WindowsTcpTableInfo.CalculateCount(tcpStateInfo, 0);
+        WindowsTcpStateInfo.CalculateCount(tcpStateInfo, 0);
         Assert.NotNull(tcpStateInfo);
         Assert.Equal(0, tcpStateInfo.ClosedCount);
         Assert.Equal(0, tcpStateInfo.ListenCount);

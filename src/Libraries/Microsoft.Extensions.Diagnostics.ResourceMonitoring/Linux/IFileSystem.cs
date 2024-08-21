@@ -16,7 +16,7 @@ internal interface IFileSystem
     /// <summary>
     /// Checks for file existence.
     /// </summary>
-    /// <returns><see langword="true"/> or <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if file exists; otherwise, <see langword="false"/>.</returns>
     bool Exists(FileInfo fileInfo);
 
     /// <summary>

@@ -83,8 +83,8 @@ public class LinuxCountersTests
             .Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
 
-        var tcpTableInfo = new LinuxTcpTableInfo(options, parser);
-        var lnm = new LinuxNetworkMetrics(meterFactoryMock.Object, tcpTableInfo);
+        var tcpStateInfo = new LinuxTcpStateInfo(options, parser);
+        var lnm = new LinuxNetworkMetrics(meterFactoryMock.Object, tcpStateInfo);
 
         using var listener = new MeterListener
         {
