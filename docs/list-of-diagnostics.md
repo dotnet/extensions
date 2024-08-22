@@ -49,7 +49,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
-| `EXTOBS0001` | Resource monitoring obsoletions |
+| `EXTOBS0001` | IResourceUtilizationPublisher obsoletions |
 
 # LoggerMessage
 
