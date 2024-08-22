@@ -49,7 +49,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
-| `EXTOBS0001` | IResourceUtilizationPublisher obsoletions |
+| `EXTOBS0001` | IResourceUtilizationPublisher obsoletions. Please use observable instruments from [here](https://github.com/dotnet/extensions/blob/6e0195db97d66cdf082e32799858c34bf5fd0cdb/src/Libraries/Microsoft.Extensions.Diagnostics.ResourceMonitoring/ResourceUtilizationInstruments.cs). |
 
 # LoggerMessage
 
