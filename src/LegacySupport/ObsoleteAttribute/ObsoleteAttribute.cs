@@ -10,6 +10,13 @@ namespace System;
 /// <summary>
 /// Marks program elements that are no longer in use.
 /// </summary>
+/// <remarks>
+/// Source code imported from 
+/// <see href="https://github.com/dotnet/runtime/blob/5535e31a712343a63f5d7d796cd874e563e5ac14/src/libraries/System.Private.CoreLib/src/System/ObsoleteAttribute.cs">
+/// ObsoleteAttribute.cs</see> without any changes, all resulting warnings ignored accordingly.
+/// </remarks>
+#pragma warning disable CA1019 // Define accessors for attribute arguments
+#pragma warning disable S3996 // URI properties should not be strings
 [ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum |
     AttributeTargets.Interface | AttributeTargets.Constructor | AttributeTargets.Method |
