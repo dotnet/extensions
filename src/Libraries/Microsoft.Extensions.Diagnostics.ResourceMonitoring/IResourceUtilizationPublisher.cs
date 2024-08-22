@@ -4,13 +4,19 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 /// <summary>
 /// Defines the contract for a resource utilization publisher that gets invoked whenever resource utilization is computed.
 /// </summary>
-[Obsolete("This interface is obsolete. Instead, use observable instruments from Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilizationInstruments.")]
+#if !NET5_0_OR_GREATER
+#pragma warning disable CS0436 // Type conflicts with imported type
+#endif
+[Obsolete("This API is obsolete and will be removed in a future version. Consider using observable instruments.",
+    DiagnosticId = DiagnosticIds.Obsoletions.ResourceMonitoring,
+    UrlFormat = DiagnosticIds.UrlFormat)]
 public interface IResourceUtilizationPublisher
 {
     /// <summary>

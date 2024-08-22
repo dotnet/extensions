@@ -10,7 +10,6 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 /// <summary>
 /// A publisher that throws an error.
 /// </summary>
-[Obsolete("Testing the obsolete IResourceUtilizationPublisher interface.")]
 internal sealed class FaultPublisher : IResourceUtilizationPublisher
 {
     /// <inheritdoc/>

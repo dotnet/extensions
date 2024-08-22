@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
@@ -22,7 +23,12 @@ internal sealed class ResourceMonitorBuilder : IResourceMonitorBuilder
         Services = services;
     }
 
-    [Obsolete("This method is obsolete. Instead, use observable instruments from Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceUtilizationInstruments.")]
+#if !NET5_0_OR_GREATER
+#pragma warning disable CS0436 // Type conflicts with imported type
+#endif
+    [Obsolete("This API is obsolete and will be removed in a future version. Consider using observable instruments.",
+        DiagnosticId = DiagnosticIds.Obsoletions.ResourceMonitoring,
+        UrlFormat = DiagnosticIds.UrlFormat)]
     public IResourceMonitorBuilder AddPublisher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
         where T : class, IResourceUtilizationPublisher
     {

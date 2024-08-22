@@ -21,7 +21,6 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 /// <summary>
 /// Tests for the DataTracker class.
 /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete - IResourceUtilizationPublisher is obsolete, but we still need code coverage.
 public sealed class ResourceMonitoringServiceTests
 {
     private const string ProviderUnableToGatherData = "Unable to gather utilization statistics.";
