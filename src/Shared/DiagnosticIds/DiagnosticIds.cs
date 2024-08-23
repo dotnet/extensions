@@ -120,7 +120,8 @@ internal static class DiagnosticIds
 
     internal static class Obsoletions
     {
-        internal const string ResourceMonitoring = "EXTOBS0001";
+        internal const string IResourceUtilizationPublisherDiagId = "EXTOBS0001";
+        internal const string IResourceUtilizationPublisherMessage = "This API is obsolete and will be removed in a future version. Consider using Resource Monitoring observable instruments.";
     }
 }
 

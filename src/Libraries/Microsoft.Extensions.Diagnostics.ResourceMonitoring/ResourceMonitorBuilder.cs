@@ -26,8 +26,8 @@ internal sealed class ResourceMonitorBuilder : IResourceMonitorBuilder
 #if !NET5_0_OR_GREATER
 #pragma warning disable CS0436 // Type conflicts with imported type
 #endif
-    [Obsolete("This API is obsolete and will be removed in a future version. Consider using observable instruments.",
-        DiagnosticId = DiagnosticIds.Obsoletions.ResourceMonitoring,
+    [Obsolete(DiagnosticIds.Obsoletions.IResourceUtilizationPublisherMessage,
+        DiagnosticId = DiagnosticIds.Obsoletions.IResourceUtilizationPublisherDiagId,
         UrlFormat = DiagnosticIds.UrlFormat)]
     public IResourceMonitorBuilder AddPublisher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
         where T : class, IResourceUtilizationPublisher
