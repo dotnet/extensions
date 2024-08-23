@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
+using VerifyXunit;
 using Xunit;
 using static Microsoft.Extensions.Options.Options;
 
@@ -21,6 +22,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 /// <summary>
 /// Tests for the DataTracker class.
 /// </summary>
+[UsesVerify]
 public sealed class ResourceMonitoringServiceTests
 {
     private const string ProviderUnableToGatherData = "Unable to gather utilization statistics.";
@@ -344,6 +346,35 @@ public sealed class ResourceMonitoringServiceTests
         Assert.True(publisherCalled);
     }
 
+    [Fact]
+    public async Task ResourceUtilizationTracker_LogsSnapshotInformation()
+    {
+        const int TimerPeriod = 100;
+        var logger = new FakeLogger<ResourceMonitorService>();
+        var clock = new FakeTimeProvider();
+
+        using var tracker = new ResourceMonitorService(
+            new FakeProvider(),
+            logger,
+            Create(new ResourceMonitoringOptions
+            {
+                CollectionWindow = TimeSpan.FromMilliseconds(TimerPeriod),
+                PublishingWindow = TimeSpan.FromMilliseconds(TimerPeriod),
+                SamplingInterval = TimeSpan.FromMilliseconds(TimerPeriod)
+            }),
+            Array.Empty<IResourceUtilizationPublisher>(),
+            clock);
+
+        // Start running the tracker.
+        await tracker.StartAsync(CancellationToken.None);
+
+        clock.Advance(TimeSpan.FromMilliseconds(TimerPeriod));
+
+        await tracker.StopAsync(CancellationToken.None);
+
+        await Verifier.Verify(logger.Collector.LatestRecord).UseDirectory("Verified");
+    }
+
     [Fact(Skip = "Broken test, see https://github.com/dotnet/extensions/issues/4529")]
     public async Task ResourceUtilizationTracker_WhenInitializedWithZeroSnapshots_ReportsHighCpuSpikesThenConvergeInFewCycles()
     {
@@ -636,7 +667,7 @@ public sealed class ResourceMonitoringServiceTests
     }
 
     [Fact]
-    public void GetUtilization_ProvidedByWindowGreaterThanSamplingWindowButLesserThanCollectionWindow_Successes()
+    public void GetUtilization_ProvidedByWindowGreaterThanSamplingWindowButLesserThanCollectionWindow_Succeeds()
     {
         var providerMock = new Mock<ISnapshotProvider>(MockBehavior.Loose);
 
