@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.ObjectPool;
 #if !NET8_0_OR_GREATER
@@ -29,12 +30,12 @@ internal sealed class LinuxNetworkUtilizationParser
     private readonly IFileSystem _fileSystem;
 
     /// <remarks>
-    /// Reads the contents of a file located at _tcp4 and parses it to extract information about the TCP/IP state info on the system.
+    /// Reads the contents of a file located at <see cref="_tcp"/> and parses it to extract information about the TCP/IP state info of the system.
     /// </remarks>
     public TcpStateInfo GetTcpIPv4StateInfo() => GetTcpStateInfo(_tcp);
 
     /// <remarks>
-    /// Reads the contents of a file located at _tcp6 and parses it to extract information about the TCP/IP state info on the system.
+    /// Reads the contents of a file located at <see cref="_tcp6"/> and parses it to extract information about the TCP/IP state info of the system.
     /// </remarks>
     public TcpStateInfo GetTcpIPv6StateInfo() => GetTcpStateInfo(_tcp6);
 
@@ -125,7 +126,7 @@ internal sealed class LinuxNetworkUtilizationParser
     }
 
     /// <remarks>
-    /// Reads the contents of a file and parses it to extract information about the TCP/IP state info on the system.
+    /// Reads the contents of a file and parses it to extract information about the TCP/IP state info of the system.
     /// </remarks>
     private TcpStateInfo GetTcpStateInfo(FileInfo file)
     {
@@ -133,7 +134,7 @@ internal sealed class LinuxNetworkUtilizationParser
         const string Sl = "sl";
         TcpStateInfo tcpStateInfo = new();
         using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
-        using var enumerableLines = _fileSystem.ReadAllByLines(file, bufferWriter.Buffer).GetEnumerator();
+        using IEnumerator<ReadOnlyMemory<char>> enumerableLines = _fileSystem.ReadAllByLines(file, bufferWriter.Buffer).GetEnumerator();
         if (!enumerableLines.MoveNext())
         {
             Throw.InvalidOperationException($"Could not parse '{file}'. File was empty.");
