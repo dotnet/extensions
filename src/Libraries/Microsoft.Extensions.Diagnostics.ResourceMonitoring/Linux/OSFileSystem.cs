@@ -56,43 +56,48 @@ internal sealed class OSFileSystem : IFileSystem
             throw new FileNotFoundException();
         }
 
-        using FileStream stream = file.OpenRead();
-
         Memory<byte> buffer = ArrayPool<byte>.Shared.Rent(MaxStackalloc);
-        int read = stream.Read(buffer.Span);
-        while (read > 0)
+        try
         {
-            var start = 0;
-            var end = 0;
+            using FileStream stream = file.OpenRead();
 
-            for (end = 0; end < read; end++)
+            int read = stream.Read(buffer.Span);
+            while (read > 0)
             {
-                if (buffer.Span[end] == (byte)'\n')
+                var start = 0;
+                var end = 0;
+
+                for (end = 0; end < read; end++)
                 {
-                    var length = end - start;
+                    if (buffer.Span[end] == (byte)'\n')
+                    {
+                        var length = end - start;
+                        _ = Encoding.ASCII.GetChars(buffer.Span.Slice(start, length), destination.GetSpan(length));
+                        destination.Advance(length);
+                        start = end + 1;
+                        yield return destination.WrittenMemory;
+                        destination.Reset();
+                    }
+                }
+
+                // Set the comparison in the while loop to end when the file has not been completely read into the buffer.
+                // It will then advance the last character to the destination for the next time yield return is called.
+                if (start < read)
+                {
+                    var length = read - start;
                     _ = Encoding.ASCII.GetChars(buffer.Span.Slice(start, length), destination.GetSpan(length));
                     destination.Advance(length);
-                    start = end + 1;
-                    yield return destination.WrittenMemory;
-                    destination.Reset();
                 }
-            }
 
-            // Set the comparison in the while loop to end when the file has not been completely read into the buffer.
-            // It will then advance the last character to the destination for the next time yield return is called.
-            if (start < read)
-            {
-                var length = read - start;
-                _ = Encoding.ASCII.GetChars(buffer.Span.Slice(start, length), destination.GetSpan(length));
-                destination.Advance(length);
+                read = stream.Read(buffer.Span);
             }
-
-            read = stream.Read(buffer.Span);
         }
-
-        if (MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> arraySegment) && arraySegment.Array != null)
+        finally
         {
-            ArrayPool<byte>.Shared.Return(arraySegment.Array);
+            if (MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> arraySegment) && arraySegment.Array != null)
+            {
+                ArrayPool<byte>.Shared.Return(arraySegment.Array);
+            }
         }
     }
 
