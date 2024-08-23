@@ -51,6 +51,11 @@ internal sealed class LinuxNetworkUtilizationParser
     private static void UpdateTcpStateInfo(ReadOnlySpan<char> buffer, TcpStateInfo tcpStateInfo)
     {
         const int Base16 = 16;
+
+        // The buffer contains one line from /proc/net/tcp(6) file, e.g.:
+        //   0: 030011AC:8AF2 C1B17822:01BB 01 00000000:00000000 02:000000D1 00000000   472        0 2481276 2 00000000c62511cb 28 4 26 10 -1
+        // The line may contain leading spaces, so we have to trim those.
+        // tcpConnectionState is in the 4th column - i.e., "01".
         ReadOnlySpan<char> line = buffer.TrimStart();
 
 #if NET8_0_OR_GREATER
@@ -81,8 +86,10 @@ internal sealed class LinuxNetworkUtilizationParser
         ReadOnlySpan<char> tcpConnectionState = line.Slice(range[Target - 1].Index, range[Target - 1].Count);
 #endif
 
-        // until this API proposal is implemented https://github.com/dotnet/runtime/issues/61397
-        // we have to allocate & throw away memory using .ToString():
+        // at this point, tcpConnectionState contains one of TCP connection states in hexadecimal format, e.g., "01",
+        // which we now need to convert to the LinuxTcpState enum.
+        // note: until this API proposal is implemented https://github.com/dotnet/runtime/issues/61397
+        // we have to allocate & throw away memory using .ToString()
         var state = (LinuxTcpState)Convert.ToInt32(tcpConnectionState.ToString(), Base16);
         switch (state)
         {
