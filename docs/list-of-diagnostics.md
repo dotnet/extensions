@@ -49,7 +49,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
-| `EXTOBS0001` | This API is obsolete and will be removed in a future version. Consider using Resource Monitoring observable [instruments](https://learn.microsoft.com/dotnet/core/diagnostics/built-in-metrics-diagnostics#microsoftextensionsdiagnosticsresourcemonitoring). |
+| `EXTOBS0001` | This API is obsolete and will be removed in a future version. Consider using [Resource Monitoring observable instruments](https://learn.microsoft.com/dotnet/core/diagnostics/built-in-metrics-diagnostics#microsoftextensionsdiagnosticsresourcemonitoring). |
 
 # LoggerMessage
 
