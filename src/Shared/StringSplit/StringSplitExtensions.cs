@@ -21,7 +21,7 @@ internal static class StringSplitExtensions
     /// <param name="result">A span to receive the individual string segments.</param>
     /// <param name="numSegments">The number of string segments copied to the output.</param>
     /// <param name="options">A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.</param>
-    /// <returns><see langword="true" /> if there was enough space in the output array, otherwise <see langword="false" />.</returns>
+    /// <returns><see langword="true" /> if there was enough space in the output array; otherwise, <see langword="false" />.</returns>
     public static bool TrySplit(
         this ReadOnlySpan<char> input,
         char separator,
@@ -79,7 +79,7 @@ internal static class StringSplitExtensions
     /// <param name="result">A span to receive the individual string segments.</param>
     /// <param name="numSegments">The number of string segments copied to the output.</param>
     /// <param name="options">A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.</param>
-    /// <returns><see langword="true" /> if there was enough space in the output array, otherwise <see langword="false" />.</returns>
+    /// <returns><see langword="true" /> if there was enough space in the output array; otherwise, <see langword="false" />.</returns>
     public static bool TrySplit(
         this ReadOnlySpan<char> input,
         ReadOnlySpan<char> separators,
@@ -138,7 +138,7 @@ internal static class StringSplitExtensions
     /// <param name="numSegments">The number of string segments copied to the output.</param>
     /// <param name="comparison">The kind of string comparison to apply to the separator strings.</param>
     /// <param name="options">A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.</param>
-    /// <returns><see langword="true" /> if there was enough space in the output array, otherwise <see langword="false" />.</returns>
+    /// <returns><see langword="true" /> if there was enough space in the output array; otherwise, <see langword="false" />.</returns>
     public static bool TrySplit(
         this ReadOnlySpan<char> input,
         string[] separators,
@@ -211,7 +211,7 @@ internal static class StringSplitExtensions
     /// <param name="numSegments">The number of string segments copied to the output.</param>
     /// <param name="comparison">The kind of string comparison to apply to the separator strings.</param>
     /// <param name="options">A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.</param>
-    /// <returns><see langword="true" /> if there was enough space in the output array, otherwise <see langword="false" />.</returns>
+    /// <returns><see langword="true" /> if there was enough space in the output array; otherwise, <see langword="false" />.</returns>
     public static bool TrySplit(
         this ReadOnlySpan<char> input,
         string separator,
@@ -280,7 +280,7 @@ internal static class StringSplitExtensions
     /// <param name="result">A span to receive the individual string segments.</param>
     /// <param name="numSegments">The number of string segments copied to the output.</param>
     /// <param name="options">A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.</param>
-    /// <returns><see langword="true" /> if there was enough space in the output array, otherwise <see langword="false" />.</returns>
+    /// <returns><see langword="true" /> if there was enough space in the output array; otherwise, <see langword="false" />.</returns>
     /// <remarks>This uses whitespace as a separator of individual substrings.</remarks>
     public static bool TrySplit(
         this ReadOnlySpan<char> input,
@@ -347,7 +347,7 @@ internal static class StringSplitExtensions
     /// <param name="result">A span to receive the individual string segments.</param>
     /// <param name="numSegments">The number of string segments copied to the output.</param>
     /// <param name="options">A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.</param>
-    /// <returns><see langword="true" /> if there was enough space in the output array, otherwise <see langword="false" />.</returns>
+    /// <returns><see langword="true" /> if there was enough space in the output array; otherwise, <see langword="false" />.</returns>
     public static bool TrySplit(
         this string input,
         char separator,
@@ -364,7 +364,7 @@ internal static class StringSplitExtensions
     /// <param name="result">A span to receive the individual string segments.</param>
     /// <param name="numSegments">The number of string segments copied to the output.</param>
     /// <param name="options">A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.</param>
-    /// <returns><see langword="true" /> if there was enough space in the output array, otherwise <see langword="false" />.</returns>
+    /// <returns><see langword="true" /> if there was enough space in the output array; otherwise, <see langword="false" />.</returns>
     public static bool TrySplit(
         this string input,
         ReadOnlySpan<char> separators,
@@ -382,7 +382,7 @@ internal static class StringSplitExtensions
     /// <param name="numSegments">The number of string segments copied to the output.</param>
     /// <param name="comparison">The kind of string comparison to apply to the separator strings.</param>
     /// <param name="options">A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.</param>
-    /// <returns><see langword="true" /> if there was enough space in the output array, otherwise <see langword="false" />.</returns>
+    /// <returns><see langword="true" /> if there was enough space in the output array; otherwise, <see langword="false" />.</returns>
     public static bool TrySplit(
         this string input,
         string[] separators,
@@ -401,7 +401,7 @@ internal static class StringSplitExtensions
     /// <param name="numSegments">The number of string segments copied to the output.</param>
     /// <param name="comparison">The kind of string comparison to apply to the separator strings.</param>
     /// <param name="options">A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.</param>
-    /// <returns><see langword="true" /> if there was enough space in the output array, otherwise <see langword="false" />.</returns>
+    /// <returns><see langword="true" /> if there was enough space in the output array; otherwise, <see langword="false" />.</returns>
     public static bool TrySplit(
         this string input,
         string separator,
@@ -418,7 +418,7 @@ internal static class StringSplitExtensions
     /// <param name="result">A span to receive the individual string segments.</param>
     /// <param name="numSegments">The number of string segments copied to the output.</param>
     /// <param name="options">A bitwise combination of the enumeration values that specifies whether to trim substrings and include empty substrings.</param>
-    /// <returns><see langword="true" /> if there was enough space in the output array, otherwise <see langword="false" />.</returns>
+    /// <returns><see langword="true" /> if there was enough space in the output array; otherwise, <see langword="false" />.</returns>
     /// <remarks>This uses whitespace as a separator of individual substrings.</remarks>
     public static bool TrySplit(
         this string input,

@@ -68,7 +68,7 @@ internal readonly struct StringRange : IComparable, IComparable<StringRange>, IE
             return CompareTo(ss);
         }
 
-        if (obj != null)
+        if (obj is not null)
         {
             Throw.ArgumentException(nameof(obj), $"Provided value must be of type {typeof(StringRange)}, but was of type {obj.GetType()}.");
         }

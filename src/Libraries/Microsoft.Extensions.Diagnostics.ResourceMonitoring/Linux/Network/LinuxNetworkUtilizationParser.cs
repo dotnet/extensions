@@ -62,17 +62,17 @@ internal sealed class LinuxNetworkUtilizationParser
         const int Target = 5;
         Span<Range> range = stackalloc Range[Target];
 
-        // on .NET 8+, if capacity of destination range array is less than number of ranges found by ReadOnlySpan<T>.Split(),
+        // In .NET 8+, if capacity of destination range array is less than number of ranges found by ReadOnlySpan<T>.Split(),
         // the last range in the array will get all the remaining elements of the ReadOnlySpan.
-        // therefore we request 5 ranges instead of 4, and then range[Target - 2] will have the range we need without the remaining elements.
+        // Therefore, we request 5 ranges instead of 4, and then range[Target - 2] will have the range we need without the remaining elements.
         int numRanges = line.Split(range, ' ', StringSplitOptions.RemoveEmptyEntries);
 #else
         const int Target = 4;
         Span<StringRange> range = stackalloc StringRange[Target];
 
-        // in our StringRange API, if capacity of destination range array is less than number of ranges found by ReadOnlySpan<T>.TrySplit(),
+        // In our StringRange API, if capacity of destination range array is less than number of ranges found by ReadOnlySpan<T>.TrySplit(),
         // the last range in the array will get the last range as expected, and all remaining elements will be ignored.
-        // hence range[Target - 1] will have the last range as we need.
+        // Hence range[Target - 1] will have the last range as we need.
         _ = line.TrySplit(" ", range, out int numRanges, StringComparison.OrdinalIgnoreCase, StringSplitOptions.RemoveEmptyEntries);
 #endif
         if (numRanges < Target)
@@ -86,10 +86,10 @@ internal sealed class LinuxNetworkUtilizationParser
         ReadOnlySpan<char> tcpConnectionState = line.Slice(range[Target - 1].Index, range[Target - 1].Count);
 #endif
 
-        // at this point, tcpConnectionState contains one of TCP connection states in hexadecimal format, e.g., "01",
+        // At this point, tcpConnectionState contains one of TCP connection states in hexadecimal format, e.g., "01",
         // which we now need to convert to the LinuxTcpState enum.
-        // note: until this API proposal is implemented https://github.com/dotnet/runtime/issues/61397
-        // we have to allocate & throw away memory using .ToString()
+        // Note: until this API proposal is implemented https://github.com/dotnet/runtime/issues/61397
+        // we have to allocate and throw away memory using .ToString().
         var state = (LinuxTcpState)Convert.ToInt32(tcpConnectionState.ToString(), Base16);
         switch (state)
         {
