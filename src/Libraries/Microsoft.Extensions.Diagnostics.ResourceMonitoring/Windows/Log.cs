@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 
 #pragma warning disable S109
-#pragma warning disable IDE0060 // Remove unused parameters - Reason: used by source generator.
 
 internal static partial class Log
 {

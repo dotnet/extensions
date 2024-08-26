@@ -34,7 +34,7 @@ public sealed class ResourceMonitoringServiceTests
     /// <summary>
     /// Simply construct the object.
     /// </summary>
-    /// <remarks>Tests that look into internals like this are evil.  Consider removing long term.</remarks>
+    /// <remarks>Tests that look into internals like this are evil. Consider removing long term.</remarks>
     [Fact]
     public void BasicConstructor()
     {
@@ -77,7 +77,7 @@ public sealed class ResourceMonitoringServiceTests
     /// <summary>
     /// Simply construct the object (publisher constructor).
     /// </summary>
-    /// <remarks>Tests that look into internals like this are evil.  Consider removing long term.</remarks>
+    /// <remarks>Tests that look into internals like this are evil. Consider removing long term.</remarks>
     [Fact]
     public void BasicConstructor_NullPublishers_Throws()
     {
@@ -295,7 +295,7 @@ public sealed class ResourceMonitoringServiceTests
     /// <summary>
     /// Validate that the tracker invokes the publisher's Publish method.
     /// </summary>
-    /// <remarks>Tests that look into internals like this are evil.  Consider removing long term.</remarks>
+    /// <remarks>Tests that look into internals like this are evil. Consider removing long term.</remarks>
     [Fact]
     public async Task ResourceUtilizationTracker_InitializedProperly_InvokesPublishers()
     {
