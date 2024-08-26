@@ -8,9 +8,6 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// <summary>
 /// Represents the names of instruments published by this package.
 /// </summary>
-/// <remarks>
-/// These metrics are currently only published on Linux.
-/// </remarks>
 /// <seealso cref="System.Diagnostics.Metrics.Instrument"/>
 internal static class ResourceUtilizationInstruments
 {

@@ -1,8 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
@@ -21,6 +23,12 @@ public interface IResourceMonitorBuilder
     /// </summary>
     /// <typeparam name="T">The publisher's implementation type.</typeparam>
     /// <returns>The value of the object instance.</returns>
+#if !NET5_0_OR_GREATER
+#pragma warning disable CS0436 // Type conflicts with imported type
+#endif
+    [Obsolete(DiagnosticIds.Obsoletions.IResourceUtilizationPublisherMessage,
+        DiagnosticId = DiagnosticIds.Obsoletions.IResourceUtilizationPublisherDiagId,
+        UrlFormat = DiagnosticIds.UrlFormat)]
     IResourceMonitorBuilder AddPublisher<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
         where T : class, IResourceUtilizationPublisher;
 }
