@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup Label="Version settings">
     <MajorVersion>8</MajorVersion>
-    <MinorVersion>8</MinorVersion>
+    <MinorVersion>9</MinorVersion>
     <PatchVersion>0</PatchVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>
@@ -62,15 +62,15 @@
     <SystemTextJsonVersion>8.0.3</SystemTextJsonVersion>
     <SystemRuntimeCachingVersion>8.0.0</SystemRuntimeCachingVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRuntimewinx64Version>8.0.7</MicrosoftAspNetCoreAppRuntimewinx64Version>
-    <MicrosoftAspNetCoreMvcTestingVersion>8.0.7</MicrosoftAspNetCoreMvcTestingVersion>
-    <MicrosoftAspNetCoreTestHostVersion>8.0.7</MicrosoftAspNetCoreTestHostVersion>
-    <MicrosoftExtensionsCachingStackExchangeRedisVersion>8.0.7</MicrosoftExtensionsCachingStackExchangeRedisVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64Version>8.0.8</MicrosoftAspNetCoreAppRuntimewinx64Version>
+    <MicrosoftAspNetCoreMvcTestingVersion>8.0.8</MicrosoftAspNetCoreMvcTestingVersion>
+    <MicrosoftAspNetCoreTestHostVersion>8.0.8</MicrosoftAspNetCoreTestHostVersion>
+    <MicrosoftExtensionsCachingStackExchangeRedisVersion>8.0.8</MicrosoftExtensionsCachingStackExchangeRedisVersion>
     <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>8.0.5</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>8.0.7</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksVersion>8.0.8</MicrosoftExtensionsDiagnosticsHealthChecksVersion>
     <MicrosoftExtensionsFeaturesVersion>8.0.5</MicrosoftExtensionsFeaturesVersion>
-    <MicrosoftExtensionsHttpPollyVersion>8.0.7</MicrosoftExtensionsHttpPollyVersion>
-    <MicrosoftExtensionsObjectPoolVersion>8.0.7</MicrosoftExtensionsObjectPoolVersion>
+    <MicrosoftExtensionsHttpPollyVersion>8.0.8</MicrosoftExtensionsHttpPollyVersion>
+    <MicrosoftExtensionsObjectPoolVersion>8.0.8</MicrosoftExtensionsObjectPoolVersion>
   </PropertyGroup>
   <!--
 

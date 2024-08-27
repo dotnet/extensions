@@ -119,6 +119,12 @@ internal static class DiagnosticIds
         internal const string AUDREPGEN000 = nameof(AUDREPGEN000);
         internal const string AUDREPGEN001 = nameof(AUDREPGEN001);
     }
+
+    internal static class Obsoletions
+    {
+        internal const string IResourceUtilizationPublisherDiagId = "EXTOBS0001";
+        internal const string IResourceUtilizationPublisherMessage = "This API is obsolete and will be removed in a future version. Consider using Resource Monitoring observable instruments.";
+    }
 }
 
 #pragma warning restore S1144

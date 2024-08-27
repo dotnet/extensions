@@ -12,6 +12,7 @@
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectObsoleteAttributeOnLegacy>true</InjectObsoleteAttributeOnLegacy>
     <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
   </PropertyGroup>

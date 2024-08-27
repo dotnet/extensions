@@ -108,43 +108,43 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="8.0.7">
+    <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="8.0.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
+      <Sha>954f61dd38b33caa2b736c73530bd5a294174437</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.7">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
+      <Sha>954f61dd38b33caa2b736c73530bd5a294174437</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="8.0.7">
+    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="8.0.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
+      <Sha>954f61dd38b33caa2b736c73530bd5a294174437</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.7">
+    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
+      <Sha>954f61dd38b33caa2b736c73530bd5a294174437</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.7">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
+      <Sha>954f61dd38b33caa2b736c73530bd5a294174437</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Http.Polly" Version="8.0.7">
+    <Dependency Name="Microsoft.Extensions.Http.Polly" Version="8.0.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
+      <Sha>954f61dd38b33caa2b736c73530bd5a294174437</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="8.0.7">
+    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="8.0.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>2f1db20456007c9515068a35a65afdf99af70bc6</Sha>
+      <Sha>954f61dd38b33caa2b736c73530bd5a294174437</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.24376.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.24421.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>1e2be7464703499cf98e20536fb4da4218c8fce1</Sha>
+      <Sha>4460b755f3c7c89e9660d9580ff79afc4218dd85</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.24376.1">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.24421.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>1e2be7464703499cf98e20536fb4da4218c8fce1</Sha>
+      <Sha>4460b755f3c7c89e9660d9580ff79afc4218dd85</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>

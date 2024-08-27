@@ -1,0 +1,45 @@
+﻿{
+  Level: Debug,
+  Id: {
+    Id: 3,
+    Name: SnapshotReceived
+  },
+  State: [
+    {
+      {OriginalFormat}: Snapshot received: TotalTimeSinceStart={totalTimeSinceStart}, KernelTimeSinceStart={kernelTimeSinceStart}, UserTimeSinceStart={userTimeSinceStart}, MemoryUsageInBytes={memoryUsageInBytes}.
+    },
+    {
+      memoryUsageInBytes: 500
+    },
+    {
+      userTimeSinceStart: 00:00:01
+    },
+    {
+      kernelTimeSinceStart: 00:00:01
+    },
+    {
+      totalTimeSinceStart: 730119.00:00:00
+    }
+  ],
+  StructuredState: [
+    {
+      {OriginalFormat}: Snapshot received: TotalTimeSinceStart={totalTimeSinceStart}, KernelTimeSinceStart={kernelTimeSinceStart}, UserTimeSinceStart={userTimeSinceStart}, MemoryUsageInBytes={memoryUsageInBytes}.
+    },
+    {
+      memoryUsageInBytes: 500
+    },
+    {
+      userTimeSinceStart: 00:00:01
+    },
+    {
+      kernelTimeSinceStart: 00:00:01
+    },
+    {
+      totalTimeSinceStart: 730119.00:00:00
+    }
+  ],
+  Message: Snapshot received: TotalTimeSinceStart=730119.00:00:00, KernelTimeSinceStart=00:00:01, UserTimeSinceStart=00:00:01, MemoryUsageInBytes=500.,
+  Category: Microsoft.Extensions.Diagnostics.ResourceMonitoring.ResourceMonitorService,
+  LevelEnabled: true,
+  Timestamp: DateTimeOffset_1
+}
