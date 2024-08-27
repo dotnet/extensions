@@ -91,4 +91,29 @@ internal sealed class HardcodedValueFileSystem : IFileSystem
     {
         _fileContent[file.FullName] = value;
     }
+
+    public IEnumerable<ReadOnlyMemory<char>> ReadAllByLines(FileInfo file, BufferWriter<char> destination)
+    {
+        bool flag = !_fileContent.TryGetValue(file.FullName, out var content);
+        if (_fileContent.Count == 0 || flag)
+        {
+            destination.Reset();
+            destination.Write(_fallback);
+            yield return destination.WrittenMemory;
+        }
+        else
+        {
+            if (content != null)
+            {
+                var start = 0;
+                for (var newLineIndex = content.IndexOf('\n'); newLineIndex >= 0; newLineIndex = content.IndexOf('\n', newLineIndex + 1))
+                {
+                    destination.Reset();
+                    destination.Write(newLineIndex != -1 ? content.Substring(start, newLineIndex - start) : content);
+                    start = newLineIndex + 1;
+                    yield return destination.WrittenMemory;
+                }
+            }
+        }
+    }
 }
