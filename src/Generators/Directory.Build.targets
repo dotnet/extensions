@@ -9,5 +9,9 @@
   <PropertyGroup>
     <!-- Stop complaining about enabling /doc for tests -->
     <NoWarn>$(NoWarn);RT0000</NoWarn>
+
+    <!-- Stop warnings about banned symbols in generators -->
+    <!-- https://github.com/dotnet/roslyn/issues/63290 -->
+    <NoWarn>$(NoWarn);RS1035</NoWarn>
   </PropertyGroup>
 </Project>
