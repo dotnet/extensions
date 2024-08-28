@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -88,7 +89,12 @@ public class MetricsReportsGenerator : ISourceGenerator
         var reportedMetrics = MapToCommonModel(meteringClasses, rootNamespace);
         var report = emitter.GenerateReport(reportedMetrics, context.CancellationToken);
 
+        // File IO has been marked as banned for use in analyzers, and an alternate should be used instead
+        // Suppressing until this issue is addressed in https://github.com/dotnet/extensions/issues/5390
+
+#pragma warning disable RS1035 // Do not use APIs banned for analyzers
         File.WriteAllText(Path.Combine(path, _fileName), report, Encoding.UTF8);
+#pragma warning restore RS1035 // Do not use APIs banned for analyzers
     }
 
     private static ReportedMetricClass[] MapToCommonModel(IReadOnlyList<MetricType> meteringClasses, string? rootNamespace)
