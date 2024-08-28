@@ -12,6 +12,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 /// </summary>
 public sealed class CalculatorTests
 {
+    private const double hostCpus = 4;
     private const double CpuUnits = 1;
     private const ulong TotalMemoryInBytes = 1000;
 
@@ -191,5 +192,30 @@ public sealed class CalculatorTests
         Assert.Equal(100.0, record.MemoryUsedPercentage);
         Assert.Equal(1500UL, record.MemoryUsedInBytes);
         Assert.Equal(1000UL, record.SystemResources.GuaranteedMemoryInBytes);
+    }
+
+    /// <summary>
+    /// Ensure that CPU stats work appropriately.
+    /// </summary>
+    [Fact]
+    public void DoubleCpuUnits_WithFullyUtilizaed()
+    {
+        var limitedResources = new SystemResources(2, 2, TotalMemoryInBytes, TotalMemoryInBytes);
+
+        var secondSnapshotTimeSpan = _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5));
+
+        // The total number of available ticks should be double as we have 2 cores assigned to the container now.
+        var totalAvailableTicks = (secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks) * 2;
+
+        var second = new Snapshot(
+            totalTimeSinceStart: secondSnapshotTimeSpan,
+            kernelTimeSinceStart: TimeSpan.FromTicks(totalAvailableTicks / 2),
+            userTimeSinceStart: TimeSpan.FromTicks(totalAvailableTicks / 2),
+            memoryUsageInBytes: 500);
+
+        // Using the limited resources, CPU time is now double. So, when we run
+        // the calculator, the CPU utilization should be at 100%.
+        var record = Calculator.CalculateUtilization(_firstSnapshot, second, limitedResources);
+        Assert.Equal(100.0, record.CpuUsedPercentage);
     }
 }
