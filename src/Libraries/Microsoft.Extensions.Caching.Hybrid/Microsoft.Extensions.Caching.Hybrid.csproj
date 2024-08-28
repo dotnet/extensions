@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Multi-level caching implementation building on and extending IDistributedCache</Description>
+    <!--
+      relevant TFM feature summary (all "nice to have", with reasonable workarounds):
+        nca 2.0 / ns 2.1: RuntimeHelpers.IsReferenceOrContainsReferences; Task.IsCompletedSuccessfully; HashCode
+        nca 3.0 : IThreadPoolWorkItem
+        net 5.0 : [DynamicallyAccessedMembers], EncodingExtensions.GetString/GetBytes, IsExternalInit
+        net 7.0 : ArgumentNullException.ThrowIfNull
+    -->
+    <TargetFrameworks>$(NetCoreTargetFrameworks)$(ConditionalNet462);net8.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>cache;distributedcache;hybrid</PackageTags>
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
+    <InjectCallerAttributesOnLegacy>true</InjectCallerAttributesOnLegacy>
+    <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <InternalsVisibleToTest Include="Microsoft.Extensions.Caching.Hybrid.Tests" />
+
+    <!-- this provides the default L1 implementation; L2 is optional -->
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1'">
+    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" />
+  </ItemGroup>
+</Project>
