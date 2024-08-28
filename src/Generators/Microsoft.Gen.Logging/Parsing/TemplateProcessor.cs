@@ -10,6 +10,9 @@ namespace Microsoft.Gen.Logging.Parsing;
 
 internal static class TemplateProcessor
 {
+    private const int WrongBraceFound = -2;
+    private const int NoBracesFound = -1;
+
     private static readonly char[] _formatDelimiters = { ',', ':' };
 
     /// <summary>
@@ -30,23 +33,21 @@ internal static class TemplateProcessor
         {
             var openBraceIndex = FindBraceIndex(message, '{', scanIndex, endIndex);
 
-#pragma warning disable S109 // Magic numbers should not be used
-            if (openBraceIndex == -2)
+            if (openBraceIndex == WrongBraceFound)
             {
                 // found '}' instead of '{'
                 success = false;
                 break;
             }
-            else if (openBraceIndex == -1)
+            else if (openBraceIndex == NoBracesFound)
             {
                 // scanned the string and didn't find any remaining '{' or '}'
                 break;
             }
-#pragma warning restore S109 // Magic numbers should not be used
 
             int closeBraceIndex = FindBraceIndex(message, '}', openBraceIndex + 1, endIndex);
 
-            if (closeBraceIndex <= -1)
+            if (closeBraceIndex < 0)
             {
                 success = false;
                 break;
@@ -89,22 +90,20 @@ internal static class TemplateProcessor
         {
             var openBraceIndex = FindBraceIndex(message, '{', scanIndex, endIndex);
 
-#pragma warning disable S109 // Magic numbers should not be used
-            if (openBraceIndex == -2)
+            if (openBraceIndex == WrongBraceFound)
             {
                 // found '}' instead of '{'
                 break;
             }
-            else if (openBraceIndex == -1)
+            else if (openBraceIndex == NoBracesFound)
             {
                 // scanned the string and didn't find any remaining '{' or '}'
                 break;
             }
-#pragma warning restore S109 // Magic numbers should not be used
 
             var closeBraceIndex = FindBraceIndex(message, '}', openBraceIndex + 1, endIndex);
 
-            if (closeBraceIndex <= -1)
+            if (closeBraceIndex < 0)
             {
                 break;
             }
@@ -142,7 +141,7 @@ internal static class TemplateProcessor
     {
         Debug.Assert(searchedBrace is '{' or '}', "Searched brace must be { or }");
 
-        int braceIndex = -1;
+        int braceIndex = NoBracesFound;
         int scanIndex = startIndex;
 
         while (scanIndex < endIndex)
@@ -160,9 +159,11 @@ internal static class TemplateProcessor
                 }
 
                 int bracesCount = scanIndex - scanIndexBeforeSkip;
+
 #pragma warning disable S109 // Magic numbers should not be used
                 // if it is an even number of braces, just skip them, otherwise, we found an unescaped brace
                 if (bracesCount % 2 != 0)
+#pragma warning restore S109 // Magic numbers should not be used
                 {
                     if (currentBrace == searchedBrace)
                     {
@@ -180,9 +181,8 @@ internal static class TemplateProcessor
                     else
                     {
                         // wrong brace found
-                        braceIndex = -2;
+                        braceIndex = WrongBraceFound;
                     }
-#pragma warning restore S109 // Magic numbers should not be used
 
                     break;
                 }
