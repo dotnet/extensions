@@ -36,7 +36,7 @@ internal sealed partial class Parser
     {
         Action<DiagnosticDescriptor, Location?, object?[]?> diagReport = Diag; // Keeping one instance of the delegate
         var symbols = SymbolLoader.LoadSymbols(_compilation, diagReport);
-        if (symbols == null)
+        if (symbols is null)
         {
             // nothing to do if required symbols aren't available
             return Array.Empty<LoggingType>();
@@ -69,14 +69,14 @@ internal sealed partial class Parser
                 foreach (MemberDeclarationSyntax member in typeDec.Members)
                 {
                     var method = member as MethodDeclarationSyntax;
-                    if (method == null)
+                    if (method is null)
                     {
                         // we only care about methods
                         continue;
                     }
 
                     var attrLoc = GetLoggerMessageAttribute(method, sm, symbols);
-                    if (attrLoc == null)
+                    if (attrLoc is null)
                     {
                         // doesn't have the magic attribute we like, so ignore
                         continue;
@@ -93,7 +93,7 @@ internal sealed partial class Parser
                     foreach (var paramSymbol in methodSymbol.Parameters)
                     {
                         var lp = ProcessParameter(lm, paramSymbol, symbols, ref parsingState);
-                        if (lp == null)
+                        if (lp is null)
                         {
                             keepMethod = false;
                             continue;
@@ -219,7 +219,7 @@ internal sealed partial class Parser
                         }
                         else if (!lm.IsStatic && !parsingState.FoundLogger)
                         {
-                            if (loggerMember == null)
+                            if (loggerMember is null)
                             {
                                 (loggerMember, secondLoggerMember, loggerMemberNullable) = FindLoggerMember(sm, typeDec, symbols.ILoggerSymbol);
                             }
@@ -229,7 +229,7 @@ internal sealed partial class Parser
                                 Diag(DiagDescriptors.MultipleLoggerMembers, secondLoggerMember.GetLocation(), typeDec.Identifier.Text);
                                 keepMethod = false;
                             }
-                            else if (loggerMember == null)
+                            else if (loggerMember is null)
                             {
                                 Diag(DiagDescriptors.MissingLoggerMember, method.Identifier.GetLocation(), typeDec.Identifier.Text);
                                 keepMethod = false;
@@ -241,7 +241,7 @@ internal sealed partial class Parser
                             }
                         }
 
-                        if (lm.Level == null && !parsingState.FoundLogLevel)
+                        if (lm.Level is null && !parsingState.FoundLogLevel)
                         {
                             Diag(DiagDescriptors.MissingLogLevel, method.GetLocation());
 
@@ -283,7 +283,7 @@ internal sealed partial class Parser
                         CheckTagNamesAreUnique(lm, parameterSymbols);
                     }
 
-                    if (lt == null)
+                    if (lt is null)
                     {
                         // determine the namespace the class is declared in, if any
                         SyntaxNode? potentialNamespaceParent = typeDec.Parent;
@@ -301,7 +301,7 @@ internal sealed partial class Parser
                             while (true)
                             {
                                 namespaceParent = namespaceParent.Parent as NamespaceDeclarationSyntax;
-                                if (namespaceParent == null)
+                                if (namespaceParent is null)
                                 {
                                     break;
                                 }
@@ -313,7 +313,7 @@ internal sealed partial class Parser
 
                     if (keepMethod)
                     {
-                        if (lt == null)
+                        if (lt is null)
                         {
                             lt = new LoggingType
                             {
@@ -627,15 +627,17 @@ internal sealed partial class Parser
         bool onMostDerivedType = true;
 
 #pragma warning disable S125 // Sections of code should not be commented out
-        // We keep track of the names of all non-logger fields, since they prevent referring to logger
-        // primary constructor parameters with the same name. Example:
-        // partial class C(ILogger logger)
-        // {
-        //     private readonly object logger = logger;
-        //
-        //     [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = ""M1"")]
-        //     public partial void M1(); // The ILogger primary constructor parameter cannot be used here.
-        // }
+        /*
+         We keep track of the names of all non-logger fields, since they prevent referring to logger
+         primary constructor parameters with the same name. Example:
+         partial class C(ILogger logger)
+         {
+             private readonly object logger = logger;
+        
+             [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = ""M1"")]
+             public partial void M1(); // The ILogger primary constructor parameter cannot be used here.
+         }
+        */
 #pragma warning restore S125 // Sections of code should not be commented out
 
         HashSet<string> shadowedNames = new(StringComparer.Ordinal);
@@ -669,21 +671,22 @@ internal sealed partial class Parser
 
                 if (ParserUtilities.IsBaseOrIdentity(typeSymbol, loggerSymbol, _compilation))
                 {
-                    if (loggerMember == null)
+                    if (loggerMember is null)
                     {
                         loggerMember = ms.Name;
                         isNullable = typeSymbol.NullableAnnotation == NullableAnnotation.Annotated;
                     }
                     else if (!onMostDerivedType)
                     {
-                        // we found a public logger member on a base class, prefer the existing one
-                        // because it's more likely to be the one the user intended
-                        // the dotnet logging generator doesn't support ILogger properties so this matches that behavior
+                        // We found a public logger member on a base class when a logger member was already found in the derived class.
+                        // This prefers the existing one because it's more likely to be the one the user intended.
+                        // The .NET runtime logging generator doesn't support ILogger properties, so this matches that behavior.
                         continue;
                     }
                     else
                     {
-                        return (null, ms, isNullable);
+                        // This catches the case where there are multiple logger members on the same class.
+                        return (member: null, secondMember: ms, isNullable);
                     }
                 }
                 else
@@ -699,7 +702,7 @@ internal sealed partial class Parser
         // We prioritize fields over primary constructor parameters and avoid warnings if both exist.
         if (loggerMember is not null)
         {
-            return (loggerMember, null, isNullable);
+            return (member: loggerMember, secondMember: null, isNullable);
         }
 
         IEnumerable<IMethodSymbol> primaryConstructors = classType!.InstanceConstructors
@@ -722,20 +725,20 @@ internal sealed partial class Parser
                         continue;
                     }
 
-                    if (loggerMember == null)
+                    if (loggerMember is null)
                     {
                         loggerMember = parameter.Name;
                         isNullable = parameter.Type.NullableAnnotation == NullableAnnotation.Annotated;
                     }
                     else
                     {
-                        return (null, parameter.Type, isNullable);
+                        return (member: null, secondMember: parameter.Type, isNullable);
                     }
                 }
             }
         }
 
-        return (loggerMember, null, isNullable);
+        return (member: loggerMember, secondMember: null, isNullable);
     }
 
     private void Diag(DiagnosticDescriptor desc, Location? location, params object?[]? messageArgs)
