@@ -1,0 +1,11 @@
+﻿{
+  Type: ArgumentOutOfRangeException,
+  Message: 0 is an invalid value for enum type Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network.LinuxTcpState (Parameter 'state'),
+  ParamName: state,
+  StackTrace:
+at Microsoft.Shared.Diagnostics.Throw.ArgumentOutOfRangeException(String paramName, String message)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network.LinuxNetworkUtilizationParser.UpdateTcpStateInfo(ReadOnlySpan`1 buffer, TcpStateInfo tcpStateInfo)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network.LinuxNetworkUtilizationParser.GetTcpStateInfo(FileInfo file)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network.LinuxNetworkUtilizationParser.GetTcpIPv4StateInfo()
+at Xunit.Record.Exception(Func`1 testCode)
+}
