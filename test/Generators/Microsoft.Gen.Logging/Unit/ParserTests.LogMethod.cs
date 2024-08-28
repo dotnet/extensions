@@ -142,9 +142,32 @@ public partial class ParserTests
                     [LoggerMessage(0, LogLevel.Debug, ""M1"")]
                     public partial void M1();
                 }
+
+                partial class F(ILogger logger, ILogger /*3+*/logger2/*-3*/)
+                {
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
+                    public partial void M1();
+                }
             ";
 
         await RunGenerator(Source, DiagDescriptors.MultipleLoggerMembers);
+    }
+
+    [Fact]
+    public async Task PrimaryConstructorParameterLoggerHidden()
+    {
+        const string Source = @"
+                partial class C(ILogger /*0+*/logger/*-0*/)
+                {
+                    public object logger;
+
+                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
+                    public partial void M1();
+                }
+            ";
+
+        await RunGenerator(Source, DiagDescriptors.PrimaryConstructorParameterLoggerHidden,
+            ignoreDiag: DiagDescriptors.MissingLoggerMember);
     }
 
     [Fact]

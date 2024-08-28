@@ -732,7 +732,7 @@ internal sealed partial class Parser
                     }
                     else
                     {
-                        return (member: null, secondMember: parameter.Type, isNullable);
+                        return (member: null, secondMember: parameter, isNullable);
                     }
                 }
             }
