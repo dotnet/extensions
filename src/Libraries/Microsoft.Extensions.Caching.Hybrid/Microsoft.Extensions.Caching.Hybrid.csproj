@@ -19,6 +19,9 @@
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <IsPackable>true</IsPackable>
+
+    <!-- ignore "use [Experimental] for new API" -->
+    <NoWarn>$(NoWarn),LA0003</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
