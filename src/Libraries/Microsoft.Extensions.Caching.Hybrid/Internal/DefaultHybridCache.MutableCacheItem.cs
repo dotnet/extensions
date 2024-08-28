@@ -66,7 +66,10 @@ internal partial class DefaultHybridCache
 
         protected override void OnFinalRelease()
         {
+#pragma warning disable S3251 // intentional: Supply an implementation for the partial method, otherwise this call will be ignored.
             DebugOnlyDecrementOutstandingBuffers();
+#pragma warning restore S3251
+
             _buffer.RecycleIfAppropriate();
         }
     }
