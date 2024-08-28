@@ -3,7 +3,10 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+
+#if DEBUG
 using System.Threading;
+#endif
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -47,10 +50,16 @@ internal partial class DefaultHybridCache
         internal void DebugOnlyTrackBuffer(DefaultHybridCache cache) => DebugOnlyTrackBufferCore(cache);
 
         [SuppressMessage("Minor Code Smell", "S4136:Method overloads should be grouped together", Justification = "Conditional partial declaration/usage")]
+        [SuppressMessage("Minor Code Smell", "S3251:Implementations should be provided for \"partial\" methods", Justification = "Intentional debug-only API")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Uses instance state in debug build")]
         partial void DebugOnlyDecrementOutstandingBuffers();
 
         [SuppressMessage("Minor Code Smell", "S4136:Method overloads should be grouped together", Justification = "Conditional partial declaration/usage")]
+        [SuppressMessage("Minor Code Smell", "S3251:Implementations should be provided for \"partial\" methods", Justification = "Intentional debug-only API")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Uses instance state in debug build")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Uses parameter in debug build")]
         partial void DebugOnlyTrackBufferCore(DefaultHybridCache cache);
+
 #if DEBUG
         private DefaultHybridCache? _cache; // for buffer-tracking - only enabled in DEBUG
         partial void DebugOnlyDecrementOutstandingBuffers()
