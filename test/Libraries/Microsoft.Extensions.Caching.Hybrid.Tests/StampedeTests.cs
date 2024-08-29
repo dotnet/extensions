@@ -9,6 +9,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
+
 public class StampedeTests
 {
     private static ServiceProvider GetDefaultCache(out DefaultHybridCache cache)

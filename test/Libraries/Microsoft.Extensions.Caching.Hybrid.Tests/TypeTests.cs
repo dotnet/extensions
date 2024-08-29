@@ -19,8 +19,8 @@ public class TypeTests
     [InlineData(typeof(CustomNonBlittableStructAttribTrue))] // non-blittable, attrib says explicitly true
     public void ImmutableTypes(Type type)
     {
-        Assert.True((bool)typeof(DefaultHybridCache.ImmutableTypeCache<>).MakeGenericType(type)
-            .GetField(nameof(DefaultHybridCache.ImmutableTypeCache<string>.IsImmutable), BindingFlags.Static | BindingFlags.Public)!
+        Assert.True((bool)typeof(ImmutableTypeCache<>).MakeGenericType(type)
+            .GetField(nameof(ImmutableTypeCache<string>.IsImmutable), BindingFlags.Static | BindingFlags.Public)!
             .GetValue(null)!);
     }
 
@@ -35,8 +35,8 @@ public class TypeTests
     [InlineData(typeof(CustomNonBlittableStructAttribFalse))] // attrib says explicitly no
     public void MutableTypes(Type type)
     {
-        Assert.False((bool)typeof(DefaultHybridCache.ImmutableTypeCache<>).MakeGenericType(type)
-            .GetField(nameof(DefaultHybridCache.ImmutableTypeCache<string>.IsImmutable), BindingFlags.Static | BindingFlags.Public)!
+        Assert.False((bool)typeof(ImmutableTypeCache<>).MakeGenericType(type)
+            .GetField(nameof(ImmutableTypeCache<string>.IsImmutable), BindingFlags.Static | BindingFlags.Public)!
             .GetValue(null)!);
     }
 

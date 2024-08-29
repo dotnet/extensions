@@ -15,13 +15,3 @@ public interface IHybridCacheBuilder
     /// </summary>
     IServiceCollection Services { get; }
 }
-
-internal sealed class HybridCacheBuilder : IHybridCacheBuilder
-{
-    public HybridCacheBuilder(IServiceCollection services)
-    {
-        Services = services;
-    }
-
-    public IServiceCollection Services { get; }
-}

@@ -32,6 +32,7 @@ internal partial class DefaultHybridCache
                 }
 
                 return new(GetValidPayloadSegment(pendingLegacy.Result)); // already complete
+
             case CacheFeatures.BackendCache | CacheFeatures.BackendBuffers: // IBufferWriter<byte>-based
                 var writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes);
                 var cache = Unsafe.As<IBufferDistributedCache>(_backendCache!); // type-checked already

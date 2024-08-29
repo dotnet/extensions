@@ -19,8 +19,8 @@ internal partial class DefaultHybridCache
     {
         internal readonly CancellationToken SharedToken; // this might have a value even when _sharedCancellation is null
 
-        // because multiple callers can enlist, we need to track when the *last* caller cancels
-        // (and keep going until then); that means we need to run with custom cancellation
+        // Because multiple callers can enlist, we need to track when the *last* caller cancels
+        // (and keep going until then); that means we need to run with custom cancellation.
         private readonly CancellationTokenSource? _sharedCancellation;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0032:Use auto property", Justification = "Keep usage explicit")]
@@ -44,7 +44,7 @@ internal partial class DefaultHybridCache
             _cacheItem = cacheItem;
             if (canBeCanceled)
             {
-                // if the first (or any) caller can't be cancelled; we'll never get to zero; no point tracking
+                // If the first (or any) caller can't be cancelled;,we'll never get to zero: n point tracking.
                 // (in reality, all callers usually use the same path, so cancellation is usually "all" or "none")
                 _sharedCancellation = new();
                 SharedToken = _sharedCancellation.Token;

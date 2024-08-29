@@ -8,19 +8,21 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
-// used to convey buffer status; like ArraySegment<byte>, but Offset is always
-// zero, and we use the most significant bit (MSB, the sign flag) of the length
-// to track whether or not to recycle this value
+// Used to convey buffer status; like ArraySegment<byte>, but Offset is always
+// zero, and we use the most significant bit of the length (usually the sign flag,
+// but we do not need to support negative length) to track whether or not
+// to recycle this value.
 internal readonly struct BufferChunk
 {
-    private const int MSB = (1 << 31);
+    private const int FlagReturnToPool = (1 << 31);
 
     private readonly int _lengthAndPoolFlag;
+
     public byte[]? Array { get; } // null for default
 
-    public int Length => _lengthAndPoolFlag & ~MSB;
+    public int Length => _lengthAndPoolFlag & ~FlagReturnToPool;
 
-    public bool ReturnToPool => (_lengthAndPoolFlag & MSB) != 0;
+    public bool ReturnToPool => (_lengthAndPoolFlag & FlagReturnToPool) != 0;
 
     public byte[] ToArray()
     {
@@ -33,6 +35,13 @@ internal readonly struct BufferChunk
         var copy = new byte[length];
         Buffer.BlockCopy(Array!, 0, copy, 0, length);
         return copy;
+
+        // Note on nullability of Array; the usage here is that a non-null array
+        // is always provided during construction, so the only null scenario is for default(BufferChunk).
+        // Since the constructor explicitly accesses array.Length, any null array passed to the constructor
+        // will cause an exception, even in release (the Debug.Assert only covers debug) - although in
+        // reality we do not expect this to ever occur (internal type, usage checked, etc). In the case of
+        // default(BufferChunk), we know that Length will be zero, which means we will hit the [] case.
     }
 
     public BufferChunk(byte[] array)
@@ -55,7 +64,7 @@ internal readonly struct BufferChunk
         Debug.Assert(array is not null, "expected valid array input");
         Debug.Assert(length >= 0, "expected valid length");
         Array = array;
-        _lengthAndPoolFlag = length | (returnToPool ? MSB : 0);
+        _lengthAndPoolFlag = length | (returnToPool ? FlagReturnToPool : 0);
         Debug.Assert(ReturnToPool == returnToPool, "return-to-pool not respected");
         Debug.Assert(Length == length, "length not respected");
     }
@@ -71,12 +80,13 @@ internal readonly struct BufferChunk
         Debug.Assert(Array is null && !ReturnToPool, "expected clean slate after recycle");
     }
 
+    // get the data as a ROS; for note on null-logic of Array!, see comment in ToArray
     internal ReadOnlySequence<byte> AsSequence() => Length == 0 ? default : new ReadOnlySequence<byte>(Array!, 0, Length);
 
     internal BufferChunk DoNotReturnToPool()
     {
         var copy = this;
-        Unsafe.AsRef(in copy._lengthAndPoolFlag) &= ~MSB;
+        Unsafe.AsRef(in copy._lengthAndPoolFlag) &= ~FlagReturnToPool;
         Debug.Assert(copy.Length == Length, "same length expected");
         Debug.Assert(!copy.ReturnToPool, "do not return to pool");
         return copy;

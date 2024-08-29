@@ -3,23 +3,18 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 
-#if !(NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER)
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-#endif
-
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
+
 internal partial class DefaultHybridCache
 {
-    // per instance cache of typed serializers; each serializer is a
+    // Per instance cache of typed serializers; each serializer is a
     // IHybridCacheSerializer<T> for the corresponding Type, but we can't
     // know which here - and undesirable to add an artificial non-generic
-    // IHybridCacheSerializer base that serves no other purpose
+    // IHybridCacheSerializer base that serves no other purpose.
     private readonly ConcurrentDictionary<Type, object> _serializers = new();
 
     internal int MaximumPayloadBytes { get; }
@@ -31,8 +26,8 @@ internal partial class DefaultHybridCache
 
         static IHybridCacheSerializer<T> ResolveAndAddSerializer(DefaultHybridCache @this)
         {
-            // it isn't critical that we get only one serializer instance during start-up; what matters
-            // is that we don't get a new serializer instance *every time*
+            // It isn't critical that we get only one serializer instance during start-up; what matters
+            // is that we don't get a new serializer instance *every time*.
             var serializer = @this._services.GetService<IHybridCacheSerializer<T>>();
             if (serializer is null)
             {
@@ -55,67 +50,5 @@ internal partial class DefaultHybridCache
             @this._serializers[typeof(T)] = serializer;
             return serializer;
         }
-    }
-
-    internal static class ImmutableTypeCache<T> // lazy memoize; T doesn't change per cache instance
-    {
-        // note for blittable types: a pure struct will be a full copy every time - nothing shared to mutate
-        public static readonly bool IsImmutable = (typeof(T).IsValueType && IsBlittable<T>()) || IsTypeImmutable(typeof(T));
-    }
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catch-all failure")]
-    private static bool IsBlittable<T>() // minimize the generic portion
-    {
-#if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
-        return !RuntimeHelpers.IsReferenceOrContainsReferences<T>();
-#else
-        // down-level: only blittable types can be pinned
-        try
-        {
-            // get a typed, zeroed, non-null boxed instance of the appropriate type
-            // (can't use (object)default(T), as that would box to null for nullable types)
-            var obj = FormatterServices.GetUninitializedObject(Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T));
-            GCHandle.Alloc(obj, GCHandleType.Pinned).Free();
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-#endif
-    }
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Blocker Code Smell", "S2178:Short-circuit logic should be used in boolean contexts",
-        Justification = "Non-short-circuiting intentional to remove unnecessary branch")]
-    private static bool IsTypeImmutable(Type type)
-    {
-        // check for known types
-        if (type == typeof(string))
-        {
-            return true;
-        }
-
-        if (type.IsValueType)
-        {
-            // switch from Foo? to Foo if necessary
-            if (Nullable.GetUnderlyingType(type) is { } nullable)
-            {
-                type = nullable;
-            }
-        }
-
-        if (type.IsValueType || (type.IsClass & type.IsSealed))
-        {
-            // check for [ImmutableObject(true)]; note we're looking at this as a statement about
-            // the overall nullability; for example, a type could contain a private int[] field,
-            // where the field is mutable and the list is mutable; but if the type is annotated:
-            // we're trusting that the API and use-case is such that the type is immutable
-            return type.GetCustomAttribute<ImmutableObjectAttribute>() is { Immutable: true };
-        }
-
-        // don't trust interfaces and non-sealed types; we might have any concrete
-        // type that has different behaviour
-        return false;
-
     }
 }

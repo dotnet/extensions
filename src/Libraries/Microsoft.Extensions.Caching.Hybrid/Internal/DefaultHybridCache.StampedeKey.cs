@@ -36,8 +36,8 @@ internal partial class DefaultHybridCache
         public string Key => _key;
         public HybridCacheEntryFlags Flags => _flags;
 
-        // allow direct access to the pre-computed hash-code, semantically emphasizing that
-        // this is a constant-time operation against a known value
+        // Allow direct access to the pre-computed hash-code, semantically emphasizing that
+        // this is a constant-time operation against a known value.
         internal int HashCode => _hashCode;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Blocker Code Smell", "S2178:Short-circuit logic should be used in boolean contexts",

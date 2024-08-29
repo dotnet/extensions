@@ -17,16 +17,16 @@ internal partial class DefaultHybridCache
     {
         var stampedeKey = new StampedeKey(key, flags);
 
-        // double-checked locking to try to avoid unnecessary sessions in race conditions,
-        // while avoiding the lock completely whenever possible
+        // Double-checked locking to try to avoid unnecessary sessions in race conditions,
+        // while avoiding the lock completely whenever possible.
         if (TryJoinExistingSession(this, stampedeKey, out var existing))
         {
             stampedeState = existing;
             return false; // someone ELSE is running the work
         }
 
-        // most common scenario here, then, is that we're not fighting with anyone else
-        // go ahead and create a placeholder state object and *try* to add it
+        // Most common scenario here, then, is that we're not fighting with anyone else
+        // go ahead and create a placeholder state object and *try* to add it.
         stampedeState = new StampedeState<TState, T>(this, stampedeKey, canBeCanceled);
         if (_currentOperations.TryAdd(stampedeKey, stampedeState))
         {
@@ -34,9 +34,9 @@ internal partial class DefaultHybridCache
             return true; // the CURRENT caller is responsible for making the work happen
         }
 
-        // hmm; failed to add - there's concurrent activity on the same key; we're now
+        // Hmmm, failed to add - there's concurrent activity on the same key; we're now
         // in very rare race condition territory; go ahead and take a lock while we
-        // collect our thoughts
+        // collect our thoughts.
 
         // see notes in SyncLock.cs
         lock (GetPartitionedSyncLock(in stampedeKey))
@@ -49,13 +49,13 @@ internal partial class DefaultHybridCache
                 stampedeState = existing; // and replace with the one we found
                 return false; // someone ELSE is running the work
 
-                // note that in this case we allocated a StampedeState<TState, T> that got dropped on
-                // the floor; in the grand scheme of things, that's OK; this is a rare outcome
+                // Note that in this case we allocated a StampedeState<TState, T> that got dropped on
+                // the floor; in the grand scheme of things, that's OK; this is a rare outcome.
             }
 
-            // and check whether the value was L1-cached by an outgoing operation (for *us* to check needs local-cache-read,
+            // Check whether the value was L1-cached by an outgoing operation (for *us* to check needs local-cache-read,
             // and for *them* to have updated needs local-cache-write, but since the shared us/them key includes flags,
-            // we can skip this if *either* flag is set)
+            // we can skip this if *either* flag is set).
             if ((flags & HybridCacheEntryFlags.DisableLocalCache) == 0 && _localCache.TryGetValue(key, out var untyped)
                 && untyped is CacheItem<T> typed && typed.TryReserve())
             {
@@ -63,8 +63,8 @@ internal partial class DefaultHybridCache
                 return false; // the work has ALREADY been done
             }
 
-            // otherwise, either nothing existed - or the thing that already exists can't be joined
-            // in that case, go ahead and use the state that we invented a moment ago (outside of the lock)
+            // Otherwise, either nothing existed - or the thing that already exists can't be joined
+            // in that case, go ahead and use the state that we invented a moment ago (outside of the lock).
             _currentOperations[stampedeKey] = stampedeState;
             return true; // the CURRENT caller is responsible for making the work happen
         }

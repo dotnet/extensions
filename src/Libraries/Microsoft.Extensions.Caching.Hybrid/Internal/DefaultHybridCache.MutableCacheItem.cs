@@ -10,6 +10,10 @@ internal partial class DefaultHybridCache
         private IHybridCacheSerializer<T> _serializer = null!; // deferred until SetValue
         private BufferChunk _buffer;
 
+        public override bool NeedsEvictionCallback => _buffer.ReturnToPool;
+
+        public override bool DebugIsImmutable => false;
+
         public void SetValue(ref BufferChunk buffer, IHybridCacheSerializer<T> serializer)
         {
             _serializer = serializer;
@@ -26,8 +30,6 @@ internal partial class DefaultHybridCache
             _buffer = new(writer.DetachCommitted(out var length), length, returnToPool: true);
             writer.Dispose(); // no buffers left (we just detached them), but just in case of other logic
         }
-
-        public override bool NeedsEvictionCallback => _buffer.ReturnToPool;
 
         public override bool TryGetValue(out T value)
         {
@@ -62,14 +64,9 @@ internal partial class DefaultHybridCache
             return false;
         }
 
-        public override bool DebugIsImmutable => false;
-
         protected override void OnFinalRelease()
         {
-#pragma warning disable S3251 // intentional: Supply an implementation for the partial method, otherwise this call will be ignored.
             DebugOnlyDecrementOutstandingBuffers();
-#pragma warning restore S3251
-
             _buffer.RecycleIfAppropriate();
         }
     }

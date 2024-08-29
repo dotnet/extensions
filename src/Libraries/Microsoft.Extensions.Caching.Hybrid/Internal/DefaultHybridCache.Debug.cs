@@ -12,6 +12,9 @@ namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 internal partial class DefaultHybridCache
 {
+    /// <summary>
+    /// Auxiliary API for testing purposes, allowing confirmation of the internal state independent of the public API.
+    /// </summary>
     internal bool DebugTryGetCacheItem(string key, [NotNullWhen(true)] out CacheItem? value)
     {
         if (_localCache.TryGetValue(key, out var untyped) && untyped is CacheItem typed)
@@ -46,38 +49,33 @@ internal partial class DefaultHybridCache
 
     private partial class MutableCacheItem<T>
     {
-        [Conditional("DEBUG")]
-        internal void DebugOnlyTrackBuffer(DefaultHybridCache cache) => DebugOnlyTrackBufferCore(cache);
-
-        [SuppressMessage("Minor Code Smell", "S4136:Method overloads should be grouped together", Justification = "Conditional partial declaration/usage")]
-        [SuppressMessage("Minor Code Smell", "S3251:Implementations should be provided for \"partial\" methods", Justification = "Intentional debug-only API")]
-        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Uses instance state in debug build")]
-        partial void DebugOnlyDecrementOutstandingBuffers();
-
-        [SuppressMessage("Minor Code Smell", "S4136:Method overloads should be grouped together", Justification = "Conditional partial declaration/usage")]
-        [SuppressMessage("Minor Code Smell", "S3251:Implementations should be provided for \"partial\" methods", Justification = "Intentional debug-only API")]
-        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Uses instance state in debug build")]
-        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Uses parameter in debug build")]
-        partial void DebugOnlyTrackBufferCore(DefaultHybridCache cache);
-
 #if DEBUG
-        private DefaultHybridCache? _cache; // for buffer-tracking - only enabled in DEBUG
-        partial void DebugOnlyDecrementOutstandingBuffers()
-        {
-            if (_buffer.ReturnToPool)
-            {
-                _cache?.DebugOnlyDecrementOutstandingBuffers();
-            }
-        }
+        private DefaultHybridCache? _cache; // for buffer-tracking - only needed in DEBUG
+#endif
 
-        partial void DebugOnlyTrackBufferCore(DefaultHybridCache cache)
+        [Conditional("DEBUG")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Instance state used in debug")]
+        internal void DebugOnlyTrackBuffer(DefaultHybridCache cache)
         {
+#if DEBUG
             _cache = cache;
             if (_buffer.ReturnToPool)
             {
                 _cache?.DebugOnlyIncrementOutstandingBuffers();
             }
-        }
 #endif
+        }
+
+        [Conditional("DEBUG")]
+        [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Instance state used in debug")]
+        private void DebugOnlyDecrementOutstandingBuffers()
+        {
+#if DEBUG
+            if (_buffer.ReturnToPool)
+            {
+                _cache?.DebugOnlyDecrementOutstandingBuffers();
+            }
+#endif
+        }
     }
 }

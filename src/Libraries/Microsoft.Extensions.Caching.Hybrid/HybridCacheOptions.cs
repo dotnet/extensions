@@ -8,6 +8,8 @@ namespace Microsoft.Extensions.Caching.Hybrid;
 /// </summary>
 public class HybridCacheOptions
 {
+    private const int ShiftBytesToMibiBytes = 20;
+
     /// <summary>
     /// Gets or sets the default global options to be applied to <see cref="HybridCache"/> operations; if options are
     /// specified at the individual call level, the non-null values are merged (with the per-call
@@ -39,6 +41,4 @@ public class HybridCacheOptions
     /// tags do not contain data that should not be visible in metrics systems.
     /// </summary>
     public bool ReportTagMetrics { get; set; }
-
-    private const int ShiftBytesToMibiBytes = 20;
 }

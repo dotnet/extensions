@@ -14,13 +14,15 @@ internal partial class DefaultHybridCache
     {
         private int _refCount = 1; // the number of pending operations against this cache item
 
-        // note: the ref count is the number of callers anticipating this value at any given time; initially,
+        public abstract bool DebugIsImmutable { get; }
+
+        // Note: the ref count is the number of callers anticipating this value at any given time. Initially,
         // it is one for a simple "get the value" flow, but if another call joins with us, it'll be incremented.
-        // if either cancels, it will get decremented, with the entire flow being cancelled if it ever becomes
-        // zero
-        // this counter also drives cache lifetime, with the cache itself incrementing the count by one; in the
+        // If either cancels, it will get decremented, with the entire flow being cancelled if it ever becomes
+        // zero.
+        // This counter also drives cache lifetime, with the cache itself incrementing the count by one. In the
         // case of mutable data, cache eviction may reduce this to zero (in cooperation with any concurrent readers,
-        // who incr/decr around their fetch), allowing safe buffer recycling
+        // who incr/decr around their fetch), allowing safe buffer recycling.
 
         internal int RefCount => Volatile.Read(ref _refCount);
 
@@ -36,11 +38,13 @@ internal partial class DefaultHybridCache
 
         public abstract bool TryReserveBuffer(out BufferChunk buffer);
 
-        public abstract bool DebugIsImmutable { get; }
-
-        public bool Release() // returns true ONLY for the final release step
+        /// <summary>
+        /// Signal that the consumer is done with this item (ref-count decr).
+        /// </summary>
+        /// <returns>True if this is the final release.</returns>
+        public bool Release()
         {
-            var newCount = Interlocked.Decrement(ref _refCount);
+            int newCount = Interlocked.Decrement(ref _refCount);
             Debug.Assert(newCount >= 0, "over-release detected");
             if (newCount == 0)
             {
@@ -54,10 +58,10 @@ internal partial class DefaultHybridCache
 
         public bool TryReserve()
         {
-            // this is basically interlocked increment, but with a check against:
+            // This is basically interlocked increment, but with a check against:
             // a) incrementing upwards from zero
             // b) overflowing *back* to zero
-            var oldValue = Volatile.Read(ref _refCount);
+            int oldValue = Volatile.Read(ref _refCount);
             do
             {
                 if (oldValue is 0 or -1)

@@ -175,7 +175,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
             {
                 // Attempt to grow to ArrayMaxLength.
                 var needed = (uint)(currentLength - FreeCapacity + sizeHint);
-                Debug.Assert(needed > currentLength, "shoud need to grow");
+                Debug.Assert(needed > currentLength, "should need to grow");
 
                 if (needed > ArrayMaxLength)
                 {

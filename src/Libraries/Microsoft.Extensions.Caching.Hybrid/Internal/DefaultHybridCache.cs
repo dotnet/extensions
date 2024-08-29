@@ -18,7 +18,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 /// <summary>
-/// The inbuilt ASP.NET implementation of <see cref="HybridCache"/>.
+/// The inbuilt implementation of <see cref="HybridCache"/>, as registered via <see cref="HybridCacheServiceExtensions.AddHybridCache(IServiceCollection)"/>.
 /// </summary>
 internal sealed partial class DefaultHybridCache : HybridCache
 {

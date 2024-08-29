@@ -78,8 +78,8 @@ internal partial class DefaultHybridCache
         [SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Custom task management")]
         public ValueTask<T> JoinAsync(CancellationToken token)
         {
-            // if the underlying has already completed, and/or our local token can't cancel: we
-            // can simply wrap the shared task; otherwise, we need our own cancellation state
+            // If the underlying has already completed, and/or our local token can't cancel: we
+            // can simply wrap the shared task; otherwise, we need our own cancellation state.
             return token.CanBeCanceled && !Task.IsCompleted ? WithCancellationAsync(this, token) : UnwrapReservedAsync();
 
             static async ValueTask<T> WithCancellationAsync(StampedeState<TState, T> stampede, CancellationToken token)
