@@ -38,7 +38,7 @@ internal static class Calculator
         long newUsageTicks = second.KernelTimeSinceStart.Ticks + second.UserTimeSinceStart.Ticks;
         long totalUsageTickDelta = newUsageTicks - oldUsageTicks;
 
-        var cpuUtilization = Math.Max(0.0, totalUsageTickDelta / totalSystemTicks * Hundred);
+        double cpuUtilization = Math.Max(0.0, totalUsageTickDelta / totalSystemTicks * Hundred);
 
         return new ResourceUtilization(cpuUtilization, second.MemoryUsageInBytes, systemResources, second);
     }

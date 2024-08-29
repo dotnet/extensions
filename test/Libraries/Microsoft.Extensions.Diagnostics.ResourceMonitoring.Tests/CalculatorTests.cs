@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Security.AccessControl;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
@@ -12,7 +13,6 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test;
 /// </summary>
 public sealed class CalculatorTests
 {
-    private const double hostCpus = 4;
     private const double CpuUnits = 1;
     private const ulong TotalMemoryInBytes = 1000;
 
@@ -29,12 +29,12 @@ public sealed class CalculatorTests
     [Fact]
     public void BasicCalculation()
     {
-        var secondSnapshotTimeSpan = _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5));
+        TimeSpan secondSnapshotTimeSpan = _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5));
 
         // Now, what's the total number of available ticks between the two samples (for a single core)
-        var totalAvailableTicks = secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks;
+        long totalAvailableTicks = secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks;
 
-        var second = new Snapshot(
+        Snapshot second = new(
             totalTimeSinceStart: secondSnapshotTimeSpan,
 
             // assign 25% to kernel time
@@ -45,7 +45,7 @@ public sealed class CalculatorTests
             memoryUsageInBytes: 500);
 
         // Now, when we run the calculator, CPU should be at 50%.
-        var record = Calculator.CalculateUtilization(_firstSnapshot, second, _resources);
+        ResourceUtilization record = Calculator.CalculateUtilization(_firstSnapshot, second, _resources);
         Assert.Equal(50.0, record.CpuUsedPercentage);
 
         // Because we set it basically, memory should also clearly be at 50%.
@@ -62,14 +62,14 @@ public sealed class CalculatorTests
     [Fact]
     public void BasicCalculation_WithHalfCpuUnits()
     {
-        var limitedResources = new SystemResources(0.5, 0.5, TotalMemoryInBytes, TotalMemoryInBytes);
+        SystemResources limitedResources = new(guaranteedCpuUnits: 0.5, maximumCpuUnits: 0.5, TotalMemoryInBytes, TotalMemoryInBytes);
 
-        var secondSnapshotTimeSpan = _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5));
+        TimeSpan secondSnapshotTimeSpan = _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5));
 
         // Now, what's the total number of available ticks between the two samples (for a single core)
-        var totalAvailableTicks = secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks;
+        long totalAvailableTicks = secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks;
 
-        var second = new Snapshot(
+        Snapshot second = new(
             totalTimeSinceStart: secondSnapshotTimeSpan,
 
             // assign 25% to kernel time
@@ -81,7 +81,7 @@ public sealed class CalculatorTests
 
         // Using the limited resources, CPU time is now cut in half. So, when we run
         // the calculator, the CPU utilization should be at 100%.
-        var record = Calculator.CalculateUtilization(_firstSnapshot, second, limitedResources);
+        ResourceUtilization record = Calculator.CalculateUtilization(_firstSnapshot, second, limitedResources);
         Assert.Equal(100.0, record.CpuUsedPercentage);
     }
 
@@ -92,7 +92,7 @@ public sealed class CalculatorTests
     public void Zeroes()
     {
         // No changes in the second snapshot
-        var secondSnapshot = new Snapshot(
+        Snapshot secondSnapshot = new(
             totalTimeSinceStart: _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5)),
             memoryUsageInBytes: 0,
             kernelTimeSinceStart: _firstSnapshot.KernelTimeSinceStart,
@@ -101,7 +101,7 @@ public sealed class CalculatorTests
         // Now, let's set each of kernel and user time to no time elapsed.
 
         // Now, when we run the calculator, CPU should be at 0%.
-        var record = Calculator.CalculateUtilization(_firstSnapshot, secondSnapshot, _resources);
+        ResourceUtilization record = Calculator.CalculateUtilization(_firstSnapshot, secondSnapshot, _resources);
         Assert.Equal(0.0, record.CpuUsedPercentage);
 
         // Because we set it basically, memory should also clearly be at 0%.
@@ -119,19 +119,19 @@ public sealed class CalculatorTests
     [Fact]
     public void TimeGoesBackwards()
     {
-        var firstSnapshot = new Snapshot(
+        Snapshot firstSnapshot = new(
         totalTimeSinceStart: TimeSpan.FromTicks(new FakeTimeProvider().GetUtcNow().Ticks),
         kernelTimeSinceStart: TimeSpan.FromTicks(1000),
         userTimeSinceStart: TimeSpan.FromTicks(1000),
         memoryUsageInBytes: 0);
-        var secondSnapshot = new Snapshot(
+        Snapshot secondSnapshot = new(
             totalTimeSinceStart: firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5)),
             memoryUsageInBytes: 0,
             kernelTimeSinceStart: TimeSpan.FromTicks(firstSnapshot.KernelTimeSinceStart.Ticks - 1),
             userTimeSinceStart: TimeSpan.FromTicks(firstSnapshot.UserTimeSinceStart.Ticks - 1));
 
         // Now, when we run the calculator, CPU should be at 0%.
-        var record = Calculator.CalculateUtilization(firstSnapshot, secondSnapshot, _resources);
+        ResourceUtilization record = Calculator.CalculateUtilization(firstSnapshot, secondSnapshot, _resources);
         Assert.Equal(0.0, record.CpuUsedPercentage);
     }
 
@@ -142,19 +142,19 @@ public sealed class CalculatorTests
     [Fact]
     public void FullyUtilized()
     {
-        var secondSnapshotTimeSpan = _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5));
+        TimeSpan secondSnapshotTimeSpan = _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5));
 
         // Now, what's the total number of available ticks between the two samples.
-        var totalAvailableTicks = secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks;
+        long totalAvailableTicks = secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks;
 
-        var secondSnapshot = new Snapshot(
+        Snapshot secondSnapshot = new(
             totalTimeSinceStart: secondSnapshotTimeSpan,
             kernelTimeSinceStart: TimeSpan.FromTicks(totalAvailableTicks / 2),
             userTimeSinceStart: TimeSpan.FromTicks(totalAvailableTicks / 2),
             memoryUsageInBytes: 1000);
 
         // Now, when we run the calculator, CPU should 100%.
-        var record = Calculator.CalculateUtilization(_firstSnapshot, secondSnapshot, _resources);
+        ResourceUtilization record = Calculator.CalculateUtilization(_firstSnapshot, secondSnapshot, _resources);
         Assert.Equal(100.0, record.CpuUsedPercentage);
 
         // Assert that memory is at 100%.
@@ -172,13 +172,13 @@ public sealed class CalculatorTests
     [InlineData(2, 100.0)]
     public void OverUtilized(double cpuUnits, double expectedCpuUsage)
     {
-        var limitedResources = new SystemResources(cpuUnits, cpuUnits, TotalMemoryInBytes, TotalMemoryInBytes);
-        var secondSnapshotTimeSpan = _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5));
+        SystemResources limitedResources = new(cpuUnits, cpuUnits, TotalMemoryInBytes, TotalMemoryInBytes);
+        TimeSpan secondSnapshotTimeSpan = _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5));
 
         // Now, what's the total number of available ticks between the two samples.
-        var totalAvailableTicks = secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks;
+        long totalAvailableTicks = secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks;
 
-        var secondSnapshot = new Snapshot(
+        Snapshot secondSnapshot = new(
             totalTimeSinceStart: secondSnapshotTimeSpan,
 
             // Set each of kernel and uesr time to all the available ticks between
@@ -188,7 +188,7 @@ public sealed class CalculatorTests
             memoryUsageInBytes: 1500);
 
         // Now, when we run the calculator, CPU should be at 100%.
-        var record = Calculator.CalculateUtilization(_firstSnapshot, secondSnapshot, _resources);
+        ResourceUtilization record = Calculator.CalculateUtilization(_firstSnapshot, secondSnapshot, _resources);
         Assert.Equal(expectedCpuUsage, record.CpuUsedPercentage);
 
         // Assert that memory is at 100%
