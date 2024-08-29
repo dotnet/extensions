@@ -167,9 +167,12 @@ public sealed class CalculatorTests
     /// Ensure that stats work appropriately if the resources are overutilized.
     /// </summary>
     /// <remarks>The highest possible CPU and memory percentages should be 100%.</remarks>
-    [Fact]
-    public void OverUtilized()
+    [Theory]
+    [InlineData(1, 100.0)]
+    [InlineData(2, 100.0)]
+    public void OverUtilized(double cpuUnits, double expectedCpuUsage)
     {
+        var limitedResources = new SystemResources(cpuUnits, cpuUnits, TotalMemoryInBytes, TotalMemoryInBytes);
         var secondSnapshotTimeSpan = _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5));
 
         // Now, what's the total number of available ticks between the two samples.
@@ -186,36 +189,11 @@ public sealed class CalculatorTests
 
         // Now, when we run the calculator, CPU should be at 100%.
         var record = Calculator.CalculateUtilization(_firstSnapshot, secondSnapshot, _resources);
-        Assert.Equal(100.0, record.CpuUsedPercentage);
+        Assert.Equal(expectedCpuUsage, record.CpuUsedPercentage);
 
         // Assert that memory is at 100%
         Assert.Equal(100.0, record.MemoryUsedPercentage);
         Assert.Equal(1500UL, record.MemoryUsedInBytes);
         Assert.Equal(1000UL, record.SystemResources.GuaranteedMemoryInBytes);
-    }
-
-    /// <summary>
-    /// Ensure that CPU stats work appropriately.
-    /// </summary>
-    [Fact]
-    public void DoubleCpuUnits_WithFullyUtilizaed()
-    {
-        var limitedResources = new SystemResources(2, 2, TotalMemoryInBytes, TotalMemoryInBytes);
-
-        var secondSnapshotTimeSpan = _firstSnapshot.TotalTimeSinceStart.Add(TimeSpan.FromSeconds(5));
-
-        // The total number of available ticks should be double as we have 2 cores assigned to the container now.
-        var totalAvailableTicks = (secondSnapshotTimeSpan.Ticks - _firstSnapshot.TotalTimeSinceStart.Ticks) * 2;
-
-        var second = new Snapshot(
-            totalTimeSinceStart: secondSnapshotTimeSpan,
-            kernelTimeSinceStart: TimeSpan.FromTicks(totalAvailableTicks / 2),
-            userTimeSinceStart: TimeSpan.FromTicks(totalAvailableTicks / 2),
-            memoryUsageInBytes: 500);
-
-        // Using the limited resources, CPU time is now double. So, when we run
-        // the calculator, the CPU utilization should be at 100%.
-        var record = Calculator.CalculateUtilization(_firstSnapshot, second, limitedResources);
-        Assert.Equal(100.0, record.CpuUsedPercentage);
     }
 }
