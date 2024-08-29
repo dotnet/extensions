@@ -276,22 +276,6 @@ public partial class ParserTests
     [InlineData("{request}", "@request")]
     [InlineData("{@request}", "request")]
     [InlineData("{@request}", "@request")]
-    public async Task AtSymbolArgument(string stringTemplate, string parameterName)
-    {
-        await RunGenerator(@$"
-                partial class C
-                {{
-                    [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = ""{stringTemplate}"")]
-                    static partial void M1(ILogger logger, string {parameterName});
-                }}
-            ");
-    }
-
-    [Theory]
-    [InlineData("{request}", "request")]
-    [InlineData("{request}", "@request")]
-    [InlineData("{@request}", "request")]
-    [InlineData("{@request}", "@request")]
     public async Task AtSymbolArgumentOutOfOrder(string stringTemplate, string parameterName)
     {
         await RunGenerator(@$"

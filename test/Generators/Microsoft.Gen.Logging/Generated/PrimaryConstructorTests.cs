@@ -9,7 +9,7 @@ using static TestClasses.LogPropertiesRedactionExtensions;
 
 namespace Microsoft.Gen.Logging.Test;
 
-public class LogMethodExtendedTests
+public class PrimaryConstructorTests
 {
     [Fact]
     public void FindsLoggerInPrimaryConstructorParameter()
@@ -19,7 +19,10 @@ public class LogMethodExtendedTests
         var collector = logger.FakeLogCollector;
 
         new ClassWithPrimaryConstructor(logger).Test();
+
+        Assert.Null(collector.LatestRecord.Exception);
         Assert.Equal("Test.", collector.LatestRecord.Message);
+        Assert.Equal(1, collector.Count);
     }
 
     [Fact]
@@ -30,7 +33,10 @@ public class LogMethodExtendedTests
         var collector = logger.FakeLogCollector;
 
         new ClassWithPrimaryConstructorInDifferentPartialDeclaration(logger).Test();
+
+        Assert.Null(collector.LatestRecord.Exception);
         Assert.Equal("Test.", collector.LatestRecord.Message);
+        Assert.Equal(1, collector.Count);
     }
 
     [Fact]
@@ -41,6 +47,23 @@ public class LogMethodExtendedTests
         var collector = logger.FakeLogCollector;
 
         new ClassWithPrimaryConstructorAndField(logger).Test();
+
+        Assert.Null(collector.LatestRecord.Exception);
         Assert.Equal("Test.", collector.LatestRecord.Message);
+        Assert.Equal(1, collector.Count);
+    }
+
+    [Fact]
+    public void FindsLoggerInRecordPrimaryConstructorParameter()
+    {
+        using var logger = Utils.GetLogger();
+
+        var collector = logger.FakeLogCollector;
+
+        new RecordWithPrimaryConstructor(logger).Test();
+
+        Assert.Null(collector.LatestRecord.Exception);
+        Assert.Equal("Test.", collector.LatestRecord.Message);
+        Assert.Equal(1, collector.Count);
     }
 }

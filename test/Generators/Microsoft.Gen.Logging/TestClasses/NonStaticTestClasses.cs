@@ -43,21 +43,28 @@ namespace TestClasses
         public partial void M1(string p0);
     }
 
-    // The following classes are not used in any tests, but they validate that the generation is working correctly.
-
     public partial class LoggerInProtectedFieldTestClass
     {
-        protected readonly ILogger Logger = null!;
+        protected readonly ILogger Logger;
+
+        public LoggerInProtectedFieldTestClass(ILogger logger)
+        {
+            Logger = logger;
+        }
 
         [LoggerMessage(1, LogLevel.Debug, "M0 {p0}")]
         public partial void M0(string p0);
     }
 
-    public partial class PrivateLoggerInPropertyDerivedTestClass : LoggerInPropertyTestClass
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Used in generated code")]
+    public partial class PrivateLoggerInNullablePropertyDerivedTestClass : LoggerInNullablePropertyTestClass
     {
-#pragma warning disable IDE0051 // Remove unused private members. Used to test generation.
-        private readonly ILogger _logger = null!;
-#pragma warning restore IDE0051 // Remove unused private members
+        private readonly ILogger _logger;
+
+        public PrivateLoggerInNullablePropertyDerivedTestClass(ILogger logger)
+        {
+            _logger = logger;
+        }
 
         [LoggerMessage(1, LogLevel.Debug, "M1 {p0}")]
         public partial void M1(string p0);
@@ -71,6 +78,11 @@ namespace TestClasses
 
     public partial class LoggerInProtectedFieldDerivedTestClass : LoggerInProtectedFieldTestClass
     {
+        public LoggerInProtectedFieldDerivedTestClass(ILogger logger)
+            : base(logger)
+        {
+        }
+
         [LoggerMessage(1, LogLevel.Debug, "M1 {p0}")]
         public partial void M1(string p0);
     }

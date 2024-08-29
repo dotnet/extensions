@@ -21,14 +21,18 @@ namespace TestClasses
         public partial void Test();
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Used in generated code")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S3604:Member initializer values should not be redundant", Justification = "Used for testing")]
     public partial class ClassWithPrimaryConstructorAndField(ILogger logger)
     {
-#pragma warning disable IDE0052 // Remove unread private members
-#pragma warning disable S3604 // Member initializer values should not be redundant
         private readonly ILogger _logger = logger;
-#pragma warning restore S3604 // Member initializer values should not be redundant
-#pragma warning restore IDE0052 // Remove unread private members
 
+        [LoggerMessage(0, LogLevel.Debug, "Test.")]
+        public partial void Test();
+    }
+
+    public partial record RecordWithPrimaryConstructor(ILogger Logger)
+    {
         [LoggerMessage(0, LogLevel.Debug, "Test.")]
         public partial void Test();
     }
