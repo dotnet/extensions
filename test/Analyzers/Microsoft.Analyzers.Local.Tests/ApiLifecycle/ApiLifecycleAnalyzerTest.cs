@@ -442,7 +442,6 @@ public class ApiLifecycleAnalyzerTest
                 [Obsolete(""Deprecated since 1.17.0 and will be removed in 1.20.0. Use IAsyncContext<T> instead."")]
                 public interface IAsyncContext
                 {
-                    [SuppressMessage(""Minor Code Smell"", ""S4049:Properties should be preferred"", Justification = ""Not suitable"")]
                     T? GetAsyncState<T>()
                         where T : notnull;
 
