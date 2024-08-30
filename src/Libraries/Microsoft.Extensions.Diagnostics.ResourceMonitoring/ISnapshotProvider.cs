@@ -1,12 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
+
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 
 /// <summary>
 /// An interface to be implemented by a provider that represents an underlying system and gets resources data about it.
 /// </summary>
-internal interface ISnapshotProvider
+[Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
+public interface ISnapshotProvider
 {
     /// <summary>
     /// Gets the static values of CPU and memory limitations defined by the system.
@@ -17,7 +21,5 @@ internal interface ISnapshotProvider
     /// Get a snapshot of the resource utilization of the system.
     /// </summary>
     /// <returns>An appropriate sample.</returns>
-#pragma warning disable S4049 // Properties should be preferred
     Snapshot GetSnapshot();
-#pragma warning restore S4049 // Properties should be preferred
 }

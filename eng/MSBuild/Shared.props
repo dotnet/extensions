@@ -38,4 +38,8 @@
   <ItemGroup Condition="'$(InjectSharedBufferWriterPool)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\BufferWriterPool\*.cs" LinkBase="Shared\Pools" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectStringSplitExtensions)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\StringSplit\*.cs" LinkBase="Shared\StringSplit" />
+  </ItemGroup>
 </Project>

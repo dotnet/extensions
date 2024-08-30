@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
@@ -11,7 +12,8 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 /// A snapshot of CPU and memory usage taken periodically over time.
 /// </summary>
 [SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Comparing instances is not an expected scenario")]
-internal readonly struct Snapshot
+[Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
+public readonly struct Snapshot
 {
     /// <summary>
     /// Gets the total CPU time that has elapsed since startup.

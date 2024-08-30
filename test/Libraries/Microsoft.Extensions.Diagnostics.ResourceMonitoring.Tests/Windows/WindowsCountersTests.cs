@@ -32,7 +32,7 @@ public sealed class WindowsCountersTests
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
 
-        var tcpTableInfo = new TcpTableInfo(Options.Options.Create(options));
+        var tcpTableInfo = new WindowsTcpStateInfo(Options.Options.Create(options));
         tcpTableInfo.SetGetTcpTableDelegate(TcpTableInfoTests.FakeGetTcpTableWithFakeInformation);
         tcpTableInfo.SetGetTcp6TableDelegate(Tcp6TableInfoTests.FakeGetTcp6TableWithFakeInformation);
         var windowsCounters = new WindowsNetworkMetrics(meterFactoryMock.Object, tcpTableInfo);
@@ -74,7 +74,7 @@ public sealed class WindowsCountersTests
         meterFactoryMock.Setup(x => x.Create(It.IsAny<MeterOptions>()))
             .Returns(meter);
 
-        var tcpTableInfo = new TcpTableInfo(Options.Options.Create(options));
+        var tcpTableInfo = new WindowsTcpStateInfo(Options.Options.Create(options));
         tcpTableInfo.SetGetTcpTableDelegate(TcpTableInfoTests.FakeGetTcpTableWithUnsuccessfulStatusAllTheTime);
         tcpTableInfo.SetGetTcp6TableDelegate(Tcp6TableInfoTests.FakeGetTcp6TableWithUnsuccessfulStatusAllTheTime);
         var windowsCounters = new WindowsNetworkMetrics(meterFactoryMock.Object, tcpTableInfo);
