@@ -92,42 +92,4 @@
       <Analyzer Remove="@(_Microsoft_Extensions_Logging_AbstractionsAnalyzer)" />
     </ItemGroup>
   </Target>
-
-  <!-- 
-    Check whether the project is referencing Grpc.Net.ClientFactory/2.64.0 or later.
-    If the vesion is earlier warn the user to update.
-    -->
-  <Target Name="_CheckGrpcNetClientFactoryVersion"
-          BeforeTargets="ResolveReferences"
-          Condition=" '$(SuppressCheckGrpcNetClientFactoryVersion)' != 'true' ">
-    <ItemGroup>
-      <!-- Find the package in the .csproj file. -->
-      <_GrpcNetClientFactoryPackageReference Include="@(PackageReference)" Condition=" '%(PackageReference.Identity)' == 'Grpc.Net.ClientFactory' " />
-      
-      <!-- Find the package in the Directory.Packages.props file. -->
-      <_GrpcNetClientFactoryPackageVersion Include="@(PackageVersion)" Condition=" '%(PackageVersion.Identity)' == 'Grpc.Net.ClientFactory' " />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <_ErrorMessage>Grpc.Net.ClientFactory v2.64.0 or later is required (see https://github.com/dotnet/extensions/issues/4924 for more details). The check can be suppressed with SuppressCheckGrpcNetClientFactoryVersion=true.</_ErrorMessage>
-    </PropertyGroup>
-
-    <!-- The version of the package is included in the .csproj file. -->
-    <Error Condition=" @(_GrpcNetClientFactoryPackageReference->Count()) &gt; 0
-                       AND '%(_GrpcNetClientFactoryPackageReference.Version)' != ''
-                       AND $([MSBuild]::VersionLessThan('%(_GrpcNetClientFactoryPackageReference.Version)', '2.64.0')) "
-           Text="$(_ErrorMessage)" />
-
-    <!-- The version of the package is overridden in the .csproj file using the VersionOverride property. -->
-    <Error Condition=" @(_GrpcNetClientFactoryPackageReference->Count()) &gt; 0
-                       AND '%(_GrpcNetClientFactoryPackageReference.VersionOverride)' != ''
-                       AND $([MSBuild]::VersionLessThan('%(_GrpcNetClientFactoryPackageReference.VersionOverride)', '2.64.0')) "
-           Text="$(_ErrorMessage)" />
-
-    <!-- The version of the package is included in the Directory.Packages.props file. -->
-    <Error Condition=" @(_GrpcNetClientFactoryPackageReference->Count()) &gt; 0
-                       AND '%(_GrpcNetClientFactoryPackageVersion.Version)' != ''
-                       AND $([MSBuild]::VersionLessThan('%(_GrpcNetClientFactoryPackageVersion.Version)', '2.64.0')) "
-           Text="$(_ErrorMessage)" />
-  </Target>
 </Project>
