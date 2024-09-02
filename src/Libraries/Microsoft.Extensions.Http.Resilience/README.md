@@ -4,11 +4,6 @@ Resilience mechanisms for `HttpClient` built on the [Polly framework](https://ww
 
 ## Install the package
 
-> [!IMPORTANT]
-> If you're using the `Grpc.Net.ClientFactory` package then update it to the version `>=2.64.0`
-> before installing the `Microsoft.Extensions.Http.Resilience` package. This will help you to
-> avoid issues like the [following](https://github.com/dotnet/extensions/issues/4924).
-
 From the command-line:
 
 ```console
@@ -76,6 +71,37 @@ clientBuilder.AddResilienceHandler("myHandler", b =>
     .AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions())
     .AddTimeout(new HttpTimeoutStrategyOptions());
 });
+```
+
+## Known issues
+
+### Compatibility with the `Grpc.Net.ClientFactory` package
+
+If you're using `Grpc.Net.ClientFactory` `2.63.0` or earlier then enabling the standard resilience or
+hedging handlers for a gRPC client could cause a runtime exception. Specifically, the following code sample
+
+```csharp
+services
+    .AddGrpcClient<Greeter.GreeterClient>()
+    .AddStandardResilienceHandler();
+```
+
+will cause the following exception
+
+```
+System.InvalidOperationException: The ConfigureHttpClient method is not supported when creating gRPC clients. Unable to create client with name 'GreeterClient'.
+```
+
+If you're getting this exception consider using `Grpc.Net.ClientFactory` `2.64.0.` or later.
+
+We've implemented a build time check that verifies if your using `Grpc.Net.ClientFactory` `2.63.0`
+or earlier, and if you are the check produces a compilation error. You can suppress the check and the
+error by setting the following property in the project's file:
+
+```xml
+<PropertyGroup>
+  <SuppressCheckGrpcNetClientFactoryVersion>true</SuppressCheckGrpcNetClientFactoryVersion>
+</PropertyGroup>
 ```
 
 ## Feedback & Contributing
