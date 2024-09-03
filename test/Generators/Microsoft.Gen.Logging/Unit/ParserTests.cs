@@ -107,20 +107,6 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task NullableLogger()
-    {
-        await RunGenerator(@"
-            namespace TestClasses
-            {
-                internal static partial class NullableTestExtensions
-                {
-                    [LoggerMessage(6, LogLevel.Debug, ""M6 {p0}"")]
-                    internal static partial void M6(ILogger? logger, string p0);
-                }
-            }");
-    }
-
-    [Fact]
     public async Task MissingAttributeValue()
     {
         await RunGenerator(@"
@@ -231,24 +217,6 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task InvalidMethodBody()
-    {
-        const string Source = @"
-                partial class C
-                {
-                    static partial void M1(ILogger logger);
-
-                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    static partial void M1(ILogger logger)
-                    /*0+*/{
-                    }/*-0*/
-                }
-            ";
-
-        await RunGenerator(Source, DiagDescriptors.LoggingMethodHasBody);
-    }
-
-    [Fact]
     public async Task MissingTemplate()
     {
         const string Source = @"
@@ -300,7 +268,23 @@ public partial class ParserTests
                 static partial void M1(ILogger logger, int param);
             }}";
 
-        await RunGenerator(source, DiagDescriptors.TemplateStartsWithAtSymbol);
+        await RunGenerator(source);
+    }
+
+    [Theory]
+    [InlineData("{request}", "request")]
+    [InlineData("{request}", "@request")]
+    [InlineData("{@request}", "request")]
+    [InlineData("{@request}", "@request")]
+    public async Task AtSymbolArgumentOutOfOrder(string stringTemplate, string parameterName)
+    {
+        await RunGenerator(@$"
+                partial class C
+                {{
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Debug, Message = ""{stringTemplate} {{a1}}"")]
+                    static partial void M1(ILogger logger,string a1, string {parameterName});
+                }}
+            ");
     }
 
     [Fact]
@@ -525,408 +509,84 @@ public partial class ParserTests
     }
 
     [Fact]
-    public async Task MethodReturnType()
-    {
-        const string Source = @"
-                partial class C
-                {
-                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    public static partial /*0+*/int/*-0*/ M1(ILogger logger);
-
-                    public static partial int M1(ILogger logger) { return 0; }
-                }
-            ";
-
-        await RunGenerator(Source, DiagDescriptors.LoggingMethodMustReturnVoid);
-    }
-
-    [Fact]
-    public async Task MissingILogger()
-    {
-        const string Source = @"
-                partial class C
-                {
-                    [LoggerMessage(0, LogLevel.Debug, ""M1 {p1}"")]
-                    static partial void M1/*0+*/(int p1)/*-0*/;
-                }
-            ";
-
-        await RunGenerator(Source, DiagDescriptors.MissingLoggerParameter);
-    }
-
-    [Fact]
-    public async Task NotStatic()
-    {
-        const string Source = @"
-                partial class C
-                {
-                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    partial void /*0+*/M1/*-0*/(ILogger logger);
-                }
-            ";
-
-        await RunGenerator(Source, DiagDescriptors.LoggingMethodShouldBeStatic);
-    }
-
-    [Fact]
-    public async Task NoILoggerField()
-    {
-        const string Source = @"
-                partial class C
-                {
-                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    public partial void /*0+*/M1/*-0*/();
-                }
-            ";
-
-        await RunGenerator(Source, DiagDescriptors.MissingLoggerMember);
-    }
-
-    [Fact]
-    public async Task MultipleILoggerMembers()
-    {
-        const string Source = @"
-                partial class C
-                {
-                    public ILogger _logger1;
-                    public ILogger /*0+*/_logger2/*-0*/;
-
-                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    public partial void M1();
-                }
-
-                partial class D
-                {
-                    public ILogger? Logger { get; set; } = null!;
-                    public ILogger /*1+*/_logger2/*-1*/;
-
-                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    public partial void M1();
-                }
-
-                partial class E
-                {
-                    public ILogger<int> Logger { get; set; } = null!;
-                    public ILogger /*2+*/_logger2/*-2*/;
-
-                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    public partial void M1();
-                }
-
-                partial class F
-                {
-                    public ILogger? /*3+*/Logger/*-3*/ { get; set; }
-
-                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    public partial void M1();
-                }
-
-                partial class G : F
-                {
-                    private readonly ILogger? _logger;
-
-                    [LoggerMessage(1, LogLevel.Debug, ""M2"")]
-                    public partial void M2();
-                }
-            ";
-
-        await RunGenerator(Source, DiagDescriptors.MultipleLoggerMembers);
-    }
-
-    [Fact]
-    public async Task InstanceEmptyLoggingMethod()
-    {
-        const string Source = @"
-            partial class C
-            {
-                public ILogger _logger;
-
-                [LoggerMessage]
-                public partial void /*0+*/M1/*-0*/(LogLevel level);
-
-                [LoggerMessage(LogLevel.Debug)]
-                public partial void /*1+*/M2/*-1*/();
-            }";
-
-        await RunGenerator(Source, DiagDescriptors.EmptyLoggingMethod);
-    }
-
-    [Fact]
-    public async Task StaticEmptyLoggingMethod()
-    {
-        const string Source = @"
-            partial class C
-            {
-                [LoggerMessage]
-                public static partial void /*0+*/M1/*-0*/(ILogger logger, LogLevel level);
-
-                [LoggerMessage(LogLevel.Debug)]
-                public static partial void /*1+*/M2/*-1*/(ILogger logger);
-            }";
-
-        await RunGenerator(Source, DiagDescriptors.EmptyLoggingMethod);
-    }
-
-    [Fact]
-    public async Task NonEmptyLoggingMethod()
+    public async Task ValidTemplates()
     {
         await RunGenerator(@"
                 partial class C
                 {
-                    public ILogger _logger;
-
-                    [LoggerMessage]
-                    public partial void M1(LogLevel level, Exception ex);
-
-                    [LoggerMessage(LogLevel.Debug)]
-                    public partial void M2(Exception ex);
-
-                    [LoggerMessage]
-                    public static partial void M3(ILogger logger, LogLevel level, Exception ex);
-
-                    [LoggerMessage(LogLevel.Debug)]
-                    public static partial void M4(ILogger logger, Exception ex);
-                }");
-    }
-
-    [Fact]
-    public async Task NotPartial()
-    {
-        const string Source = @"
-                partial class C
-                {
-                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    static void /*0+*/M1/*-0*/(ILogger logger);
-                }
-            ";
-
-        await RunGenerator(Source, DiagDescriptors.LoggingMethodMustBePartial);
-    }
-
-    [Fact]
-    public async Task MethodGeneric()
-    {
-        const string Source = @"
-                partial class C
-                {
-                    [LoggerMessage(0, LogLevel.Debug, ""M1"")]
-                    static partial void M1/*0+*/<T>/*-0*/(ILogger logger);
-                }
-            ";
-
-        await RunGenerator(Source, DiagDescriptors.LoggingMethodIsGeneric);
-    }
-
-    [Theory]
-    [CombinatorialData]
-    public async Task LogMethodParamsRefKind([CombinatorialValues("ref", "out")] string modifier)
-    {
-        string source = @$"
-            partial class C
-            {{
-                [LoggerMessage(0, LogLevel.Debug, ""Parameter {{P1}}"")]
-                static partial void M(ILogger logger, {modifier} int /*0+*/p1/*-0*/);
-            }}";
-
-        await RunGenerator(source, DiagDescriptors.LoggingMethodParameterRefKind);
-    }
-
-    [Theory]
-    [CombinatorialData]
-    public async Task LogMethod_DetectsSensitiveMembersInRecord([CombinatorialRange(0, TotalSensitiveCases)] int positionNumber)
-    {
-        var sb = new System.Text.StringBuilder(@"
-            using Microsoft.Extensions.Compliance.Testing;
-            using System.Collections;
-
-            {17}
-            public record class BaseRecord
-            {
-                {0}public string PropBase { get; }
-                {1}public string FieldBase;
-            }
-
-            {18}
-            public record struct InlineStruct({2}string InlineProp);
-
-            {19}
-            public record class InterimRecord : BaseRecord
-            {
-                {3}public string PropInterim { get; }
-                {4}public string FieldInterim;
-
-                // Hiding on purpose:
-                {5}public new string FieldBase;
-                public virtual string PropVirt => nameof(PropVirt);
-            }
-
-            {20}
-            // 'internal' on purpose
-            internal record struct EnumerableStructRecord : IEnumerable
-            {
-                {6}public string EnumProp => nameof(EnumProp);
-                public IEnumerator GetEnumerator() => null!;
-            }
-
-            {16}
-            record MyRecord : InterimRecord
-            {
-                {7}public string Field;
-                {8}public string PropGet { get; }
-                {9}public string PropGetSet { get; set; }
-                {10}public string PropPrivateGet { private get; set; }
-                {11}public string PropInternalGet { internal get; set; }
-                {12}public string PropProtectedGet { protected get; set; }
-                {13}public override string PropVirt => nameof(MyRecord);
-                {14}public string PropGetInit { get; init; }
-                public EnumerableStructRecord PropRecord { get; } = new();
-                {15}public InlineStruct FieldRecord = new(nameof(FieldRecord));
-            }
-
-            partial class C
-            {
-                [LoggerMessage(LogLevel.Debug, ""Param is {p0}"")]
-                public static partial void LogTemplate(ILogger logger, IRedactorProvider provider, MyRecord /*0+*/p0/*-0*/);
-
-                [LoggerMessage(LogLevel.Debug, ""No param here"")]
-                public static partial void LogStructured(ILogger logger, MyRecord /*1+*/p0/*-1*/);
-
-                [LoggerMessage(LogLevel.Debug)]
-                public static partial void LogFullyStructured(ILogger logger, MyRecord /*2+*/p0/*-2*/);
-
-                [LoggerMessage(LogLevel.Debug, ""Param is {p0}"")]
-                public static partial void LogProperties(ILogger logger, IRedactorProvider rp, [LogProperties] MyRecord /*3+*/p0/*-3*/);
-            }");
-
-        for (int i = 0; i < TotalSensitiveCases; i++)
-        {
-            var template = "{" + i.ToString() + "}";
-            var replacement = i switch
-            {
-                _ when positionNumber == i
-                        => "[PrivateData] ",
-                _ => string.Empty,
-            };
-
-            sb.Replace(template, replacement);
-        }
-
-        await RunGenerator(
-            sb.ToString(),
-            DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate,
-            ignoreDiag: DiagDescriptors.ParameterHasNoCorrespondingTemplate);
-    }
-
-    [Theory]
-    [InlineData("System.Nullable<int>")]
-    [InlineData("int?")]
-    public async Task LogMethod_DetectsSensitiveNullableMembersInRecord(string type)
-    {
-        await RunGenerator(@$"
-            using Microsoft.Extensions.Compliance.Testing;
-
-            record MyRecord
-            {{
-                [PrivateData]
-                public {type} Field;
-            }}
-
-            partial class C
-            {{
-                [LoggerMessage(LogLevel.Debug, ""Param is {{p0}}"")]
-                public static partial void LogTemplate(ILogger logger, MyRecord /*0+*/p0/*-0*/);
-            }}",
-            DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
-    }
-
-    [Theory]
-    [InlineData("[PrivateData]")]
-    [InlineData("[property: PrivateData]")]
-    public async Task LogMethod_DetectsSensitiveMembersInRecord_WithPrimaryCtor(string annotation)
-    {
-        await RunGenerator(@$"
-            using Microsoft.Extensions.Compliance.Testing;
-
-            record MyRecord({annotation} string userIp);
-
-            partial class C
-            {{
-                [LoggerMessage(LogLevel.Debug, ""Param is {{p0}}"")]
-                public static partial void LogTemplate(ILogger logger, MyRecord /*0+*/p0/*-0*/);
-            }}",
-            DiagDescriptors.RecordTypeSensitiveArgumentIsInTemplate);
-    }
-
-    [Fact]
-    public async Task LogMethod_SkipsNonSensitiveMembersInRecord()
-    {
-        await RunGenerator(@"
-            using Microsoft.Extensions.Compliance.Testing;
-
-            public record class BaseRecord
-            {
-                [PrivateData] public const int ConstFieldBase = 99;
-                [PrivateData] public static int StaticFieldBase;
-                [PrivateData] public static int StaticPropBase => 100;
-                [PrivateData] private int PrivateFieldBase;
-                [PrivateData] internal int InternalFieldBase;
-            }
-
-            public record class InterimRecord : BaseRecord
-            {
-                [PrivateData] public virtual decimal PropVirt => decimal.MinusOne;
-            }
-
-            internal record class MyRecord : InterimRecord
-            {
-                [PrivateData] public const int ConstField = 99;
-                [PrivateData] public static int StaticField;
-                [PrivateData] public static int StaticProp => 100;
-                [PrivateData] private int PrivateField;
-                [PrivateData] internal int InternalField;
-                [PrivateData] private string PrivatePropGetSet { get; set; }
-                [PrivateData] internal string InternalPropGetSet { get; set; }
-                [PrivateData] protected string ProtectedPropGetSet { get; set; }
-
-                // This one overrides 'virtual' property declared in 'InterimRecord':
-                public override decimal PropVirt => decimal.One;
-            }
-
-            partial class C
-            {
-                [LoggerMessage(LogLevel.Debug, ""Param is {p0}"")]
-                public static partial void LogFunc(ILogger logger, IRedactorProvider provider, MyRecord /*0+*/p0/*-0*/);
-            }");
-    }
-
-    [Fact]
-    public async Task Templates()
-    {
-        await RunGenerator(@"
-                partial class C
-                {
-                    [LoggerMessage(1, LogLevel.Debug, ""M1"")]
+                    [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = """")]
                     static partial void M1(ILogger logger);
 
-                    [LoggerMessage(2, LogLevel.Debug, ""M2 {arg1} {arg2}"")]
-                    static partial void M2(ILogger logger, string arg1, string arg2);
+                    [LoggerMessage(EventId = 2, Level = LogLevel.Debug, Message = ""M2"")]
+                    static partial void M2(ILogger logger);
 
-                    [LoggerMessage(3, LogLevel.Debug, ""M3 {arg1"")]
-                    static partial void M3(ILogger logger);
+                    [LoggerMessage(EventId = 3, Level = LogLevel.Debug, Message = ""{arg1}"")]
+                    static partial void M3(ILogger logger, int arg1);
 
-                    [LoggerMessage(4, LogLevel.Debug, ""M4 arg1}"")]
-                    static partial void M4(ILogger logger);
+                    [LoggerMessage(EventId = 4, Level = LogLevel.Debug, Message = ""M4 {arg1}"")]
+                    static partial void M4(ILogger logger, int arg1);
 
-                    [LoggerMessage(5, LogLevel.Debug, ""M5 {"")]
-                    static partial void M5(ILogger logger);
+                    [LoggerMessage(EventId = 5, Level = LogLevel.Debug, Message = ""{arg1} M5"")]
+                    static partial void M5(ILogger logger, int arg1);
 
-                    [LoggerMessage(6, LogLevel.Debug, ""}M6 "")]
-                    static partial void M6(ILogger logger);
+                    [LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = ""M6{arg1}M6{arg2}M6"")]
+                    static partial void M6(ILogger logger, string arg1, string arg2);
 
-                    [LoggerMessage(7, LogLevel.Debug, ""M7 {{arg1}}"")]
+                    [LoggerMessage(EventId = 7, Level = LogLevel.Debug, Message = ""M7 {{const}}"")]
                     static partial void M7(ILogger logger);
+
+                    [LoggerMessage(EventId = 8, Level = LogLevel.Debug, Message = ""{{prefix{{{arg1}}}suffix}}"")]
+                    static partial void M8(ILogger logger, string arg1);
+
+                    [LoggerMessage(EventId = 9, Level = LogLevel.Debug, Message = ""prefix }}"")]
+                    static partial void M9(ILogger logger);
+
+                    [LoggerMessage(EventId = 10, Level = LogLevel.Debug, Message = ""}}suffix"")]
+                    static partial void M10(ILogger logger);
                 }
             ");
+    }
+
+    [Fact]
+    public async Task MalformedFormatString()
+    {
+        await RunGenerator(@"
+                partial class C
+                {
+                    [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = ""M1 {A} M1 { M1"")]
+                    static partial void /*0+*/M1/*-0*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 2, Level = LogLevel.Debug, Message = ""M2 {A} M2 } M2"")]
+                    static partial void /*1+*/M2/*-1*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 3, Level = LogLevel.Debug, Message = ""M3 {arg1"")]
+                    static partial void /*2+*/M3/*-2*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 4, Level = LogLevel.Debug, Message = ""M4 arg1}"")]
+                    static partial void /*3+*/M4/*-3*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 5, Level = LogLevel.Debug, Message = ""M5 {"")]
+                    static partial void /*4+*/M5/*-4*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 6, Level = LogLevel.Debug, Message = ""}M6 "")]
+                    static partial void /*5+*/M6/*-5*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 7, Level = LogLevel.Debug, Message = ""{M7{"")]
+                    static partial void /*6+*/M7/*-6*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 8, Level = LogLevel.Debug, Message = ""{{{arg1 M8"")]
+                    static partial void /*7+*/M8/*-7*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 9, Level = LogLevel.Debug, Message = ""arg1}}} M9"")]
+                    static partial void /*8+*/M9/*-8*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 10, Level = LogLevel.Debug, Message = ""{} M10"")]
+                    static partial void /*9+*/M10/*-9*/(ILogger logger);
+
+                    [LoggerMessage(EventId = 11, Level = LogLevel.Debug, Message = ""{ } M11"")]
+                    static partial void /*10+*/M11/*-10*/(ILogger logger);
+                }
+            ", DiagDescriptors.MalformedFormatStrings);
     }
 
     [Fact]
@@ -1069,7 +729,7 @@ public partial class ParserTests
             };
         }
 
-        var (d, _) = await RoslynTestUtils.RunGenerator(
+        var (d, sources) = await RoslynTestUtils.RunGenerator(
             new LoggingGenerator(),
             refs,
             new[] { text },
