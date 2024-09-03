@@ -37,11 +37,12 @@ internal sealed class WindowsNetworkMetrics
 
     private IEnumerable<Measurement<long>> GetMeasurements()
     {
+        const string NetworkTypeKey = "network.type";
         const string NetworkStateKey = "system.network.state";
 
         // These are covered in https://github.com/open-telemetry/semantic-conventions/blob/main/docs/rpc/rpc-metrics.md#attributes:
-        KeyValuePair<string, object?> tcpVersionFourTag = new("network.type", "ipv4");
-        KeyValuePair<string, object?> tcpVersionSixTag = new("network.type", "ipv6");
+        KeyValuePair<string, object?> tcpVersionFourTag = new(NetworkTypeKey, "ipv4");
+        KeyValuePair<string, object?> tcpVersionSixTag = new(NetworkTypeKey, "ipv6");
 
         List<Measurement<long>> measurements = new(24);
 
