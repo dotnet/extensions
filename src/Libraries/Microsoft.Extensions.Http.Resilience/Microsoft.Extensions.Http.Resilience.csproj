@@ -40,18 +40,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="buildTransitive\$(MSBuildProjectName).*"
+    <None Include="buildTransitive\$(MSBuildProjectName).targets"
           CopyToOutputDirectory="PreserveNewest"
           Pack="true"
           PackagePath="buildTransitive\$(MinimumSupportedTfmForPackaging)\" />
     
-    <!-- For net462 we copy only .props file. The .targets file is added automatically by the build process, and the code
-         that checks the version of the Grpc.Net.ClientFactory package will be added to the .targets file as a value
-         of the _AdditionalNETStandardCompatErrorFileContents variable. -->
-    <None Include="buildTransitive\$(MSBuildProjectName).props"
+    <!-- For net462 we have to rename the .targets file, because our build process automatically adds a .targets file
+         with the same name as the project file. Then we'll import the renamed .targets file in the automatically
+         added .targets file. For that we need to set the _AdditionalNETStandardCompatErrorFileContents variable. -->
+    <None Include="buildTransitive\$(MSBuildProjectName).targets"
           CopyToOutputDirectory="PreserveNewest"
           Pack="true"
-          PackagePath="buildTransitive\net462\" />
+          PackagePath="buildTransitive\net462\Microsoft.Extensions.Http.Resilience.net462.targets" />
   </ItemGroup>
 
   <!-- For net462 we automatically add the .targets file, and to include the code that checks the version of the
@@ -59,51 +59,7 @@
   <PropertyGroup>
     <_AdditionalNETStandardCompatErrorFileContents>
       <![CDATA[
-  <!--
-    Check whether the project is referencing Grpc.Net.ClientFactory 2.64.0 or later.
-    If the vesion is earlier warn the user to update.
-    See https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.Http.Resilience#known-issues for more details.
-    -->
-  <Target Name="_CheckGrpcNetClientFactoryVersion"
-          BeforeTargets="ResolveReferences"
-          Condition=" '%24(SuppressCheckGrpcNetClientFactoryVersion)' != 'true' ">
-    <ItemGroup>
-      <!-- Find the package in the .csproj file. -->
-      <_GrpcNetClientFactoryPackageReference Include="%40(PackageReference)" Condition=" '%(PackageReference.Identity)' == '%24(_GrpcNetClientFactory)' " />
-
-      <!-- Find the version of the package in the Central Package Source. The solution uses the Central Package Management. -->
-      <_GrpcNetClientFactoryPackageVersion Include="%40(PackageVersion)" Condition=" '%(PackageVersion.Identity)' == '%24(_GrpcNetClientFactory)' " />
-      
-      <!-- The package is added to the project as a transitive dependency. -->
-      <_GrpcNetClientFactoryTransitiveDependency Include="%40(ReferencePath)" Condition=" '%(ReferencePath.NuGetPackageId)' == '%24(_GrpcNetClientFactory)' " />
-    </ItemGroup>
-
-    <!-- The version of the package is included in the .csproj file. -->
-    <Error Condition=" %40(_GrpcNetClientFactoryPackageReference->Count()) &gt%3B 0
-                       AND '%(_GrpcNetClientFactoryPackageReference.Version)' != ''
-                       AND %24([MSBuild]::VersionLessThan('%(_GrpcNetClientFactoryPackageReference.Version)', '%24(_CompatibleGrpcNetClientFactoryVersion)')) "
-           Text="%24(_GrpcNetClientFactoryVersionIsIncorrect)" />
-
-    <!-- The solution uses the Central Package Management and the version of the package is overridden in the .csproj file using the VersionOverride property. -->
-    <Error Condition=" '%24(ManagePackageVersionsCentrally)' == 'true'
-                       AND %40(_GrpcNetClientFactoryPackageReference->Count()) &gt%3B 0
-                       AND '%(_GrpcNetClientFactoryPackageReference.VersionOverride)' != ''
-                       AND %24([MSBuild]::VersionLessThan('%(_GrpcNetClientFactoryPackageReference.VersionOverride)', '%24(_CompatibleGrpcNetClientFactoryVersion)')) "
-           Text="%24(_GrpcNetClientFactoryVersionIsIncorrect)" />
-
-    <!-- The solution uses the Central Package Management and the version of the package is included in the Central Package Source. -->
-    <Error Condition=" '%24(ManagePackageVersionsCentrally)' == 'true'
-                       AND %40(_GrpcNetClientFactoryPackageReference->Count()) &gt%3B 0
-                       AND '%(_GrpcNetClientFactoryPackageVersion.Version)' != ''
-                       AND %24([MSBuild]::VersionLessThan('%(_GrpcNetClientFactoryPackageVersion.Version)', '%24(_CompatibleGrpcNetClientFactoryVersion)')) "
-           Text="%24(_GrpcNetClientFactoryVersionIsIncorrect)" />
-
-    <!-- This condition handles a case when the package is added to the project as a transitive dependency. -->
-    <Error Condition=" %40(_GrpcNetClientFactoryTransitiveDependency->Count()) &gt%3B 0
-                       AND '%(_GrpcNetClientFactoryTransitiveDependency.NuGetPackageVersion)' != ''
-                       AND %24([MSBuild]::VersionLessThan('%(_GrpcNetClientFactoryTransitiveDependency.NuGetPackageVersion)', '%24(_CompatibleGrpcNetClientFactoryVersion)')) "
-           Text="%24(_GrpcNetClientFactoryVersionIsIncorrect)" />
-  </Target>
+  <Import Project="%24(MSBuildThisFileDirectory)\Microsoft.Extensions.Http.Resilience.net462.targets" />
 ]]>
     </_AdditionalNETStandardCompatErrorFileContents>
   </PropertyGroup>

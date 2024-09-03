@@ -1,8 +1,0 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <SuppressCheckGrpcNetClientFactoryVersion>false</SuppressCheckGrpcNetClientFactoryVersion>
-    <_GrpcNetClientFactory>Grpc.Net.ClientFactory</_GrpcNetClientFactory>
-    <_CompatibleGrpcNetClientFactoryVersion>2.64.0</_CompatibleGrpcNetClientFactoryVersion>
-    <_GrpcNetClientFactoryVersionIsIncorrect>Grpc.Net.ClientFactory 2.63.0 or earlier could cause issues when used together with Microsoft.Extensions.Http.Resilience. For more details, see https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.Http.Resilience#known-issues. Consider using Grpc.Net.ClientFactory $(_CompatibleGrpcNetClientFactoryVersion) or later. To suppress the error set SuppressCheckGrpcNetClientFactoryVersion=true.</_GrpcNetClientFactoryVersionIsIncorrect>
-  </PropertyGroup>
-</Project>
