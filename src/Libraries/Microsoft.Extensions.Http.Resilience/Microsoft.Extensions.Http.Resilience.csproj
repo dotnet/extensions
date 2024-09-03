@@ -51,7 +51,7 @@
     <None Include="buildTransitive\$(MSBuildProjectName).targets"
           CopyToOutputDirectory="PreserveNewest"
           Pack="true"
-          PackagePath="buildTransitive\net462\Microsoft.Extensions.Http.Resilience.net462.targets" />
+          PackagePath="buildTransitive\net462\$(MSBuildProjectName).net462.targets" />
   </ItemGroup>
 
   <!-- For net462 we automatically add the .targets file, and to include the code that checks the version of the
@@ -59,7 +59,7 @@
   <PropertyGroup>
     <_AdditionalNETStandardCompatErrorFileContents>
       <![CDATA[
-  <Import Project="%24(MSBuildThisFileDirectory)\Microsoft.Extensions.Http.Resilience.net462.targets" />
+  <Import Project="%24(MSBuildThisFileDirectory)\$(MSBuildProjectName).net462.targets" />
 ]]>
     </_AdditionalNETStandardCompatErrorFileContents>
   </PropertyGroup>
