@@ -2,13 +2,13 @@
   <PropertyGroup>
     <_GrpcNetClientFactory>Grpc.Net.ClientFactory</_GrpcNetClientFactory>
     <_CompatibleGrpcNetClientFactoryVersion>2.64.0</_CompatibleGrpcNetClientFactoryVersion>
-    <_GrpcNetClientFactoryVersionIsIncorrect>Grpc.Net.ClientFactory 2.63.0 or earlier could cause issues when used together with Microsoft.Extensions.Http.Resilience. For more details, see https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.Http.Resilience#known-issues. Consider using Grpc.Net.ClientFactory $(_CompatibleGrpcNetClientFactoryVersion) or later. To suppress the error set SuppressCheckGrpcNetClientFactoryVersion=true.</_GrpcNetClientFactoryVersionIsIncorrect>
+    <_GrpcNetClientFactoryVersionIsIncorrect>Grpc.Net.ClientFactory 2.63.0 or earlier could cause issues when used together with Microsoft.Extensions.Http.Resilience. For more details, see https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience#known-issues. Consider using Grpc.Net.ClientFactory $(_CompatibleGrpcNetClientFactoryVersion) or later. To suppress the error set SuppressCheckGrpcNetClientFactoryVersion=true.</_GrpcNetClientFactoryVersionIsIncorrect>
   </PropertyGroup>
 
   <!--
     Check whether the project is referencing Grpc.Net.ClientFactory 2.64.0 or later.
     If the vesion is earlier warn the user to update.
-    See https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.Http.Resilience#known-issues for more details.
+    See https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience#known-issues for more details.
     -->
   <Target Name="_CheckGrpcNetClientFactoryVersion"
           BeforeTargets="ResolveReferences"
