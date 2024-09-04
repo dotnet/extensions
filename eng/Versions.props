@@ -3,7 +3,7 @@
     <MajorVersion>8</MajorVersion>
     <MinorVersion>9</MinorVersion>
     <PatchVersion>0</PatchVersion>
-    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>rtm</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>
     </PreReleaseVersionIteration>
     <VersionPrefix>$(MajorVersion).$(MinorVersion).$(PatchVersion)</VersionPrefix>
@@ -11,8 +11,11 @@
     <AssemblyVersion>$(MajorVersion).$(MinorVersion).0.0</AssemblyVersion>
     <!--
         When DotNetFinalVersionKind is set to 'release', this branch will produce stable outputs for 'Shipping' packages
+
+        In 8.0, we shipped this package as stable even when it was in the dev stage, so we
+        keep it as stable for compatiblity.
     -->
-    <DotNetFinalVersionKind />
+    <DotNetFinalVersionKind Condition="'$(DotNetFinalVersionKind)' == '' And ('$(Stage)' != 'dev' Or '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.Testing')">release</DotNetFinalVersionKind>
     <!-- Enabling this rule will cause build failures on undocumented public APIs. -->
     <SkipArcadeNoWarnCS1591>true</SkipArcadeNoWarnCS1591>
   </PropertyGroup>
