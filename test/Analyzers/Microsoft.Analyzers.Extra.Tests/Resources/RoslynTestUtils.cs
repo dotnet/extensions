@@ -538,7 +538,7 @@ internal static class RoslynTestUtils
             }
 
             var comp = await _project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
-            var diags = await comp!.WithAnalyzers(_analyzers, cancellationToken: cancellationToken)
+            var diags = await comp!.WithAnalyzers(_analyzers)
                                    .GetAllDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
 
             return diags.Where(d => _fixer.FixableDiagnosticIds.Contains(d.Id));
