@@ -130,7 +130,10 @@ internal sealed class ResourceMonitorService : BackgroundService, IResourceMonit
 
             try
             {
-                _snapshotsStore.Add(_provider.GetSnapshot());
+                var snapshot = _provider.GetSnapshot();
+                _snapshotsStore.Add(snapshot);
+
+                Log.SnapshotReceived(_logger, snapshot.TotalTimeSinceStart, snapshot.KernelTimeSinceStart, snapshot.UserTimeSinceStart, snapshot.MemoryUsageInBytes);
             }
             catch (Exception e)
             {

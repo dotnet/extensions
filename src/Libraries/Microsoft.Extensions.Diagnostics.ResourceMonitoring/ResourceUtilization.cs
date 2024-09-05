@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
@@ -41,7 +42,11 @@ public readonly struct ResourceUtilization
     /// </summary>
     public SystemResources SystemResources { get; }
 
-    internal Snapshot Snapshot { get; } = default;
+    /// <summary>
+    /// Gets the latest snapshot of the resource utilization of the system.
+    /// </summary>
+    [Experimental(diagnosticId: DiagnosticIds.Experiments.ResourceMonitoring, UrlFormat = DiagnosticIds.UrlFormat)]
+    public Snapshot Snapshot { get; } = default;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ResourceUtilization"/> struct.
@@ -57,7 +62,7 @@ public readonly struct ResourceUtilization
             guaranteedCpuUnits = 1;
         }
 
-        CpuUsedPercentage = Throw.IfLessThan(cpuUsedPercentage / guaranteedCpuUnits, 0.0);
+        CpuUsedPercentage = Math.Min(Hundred, Throw.IfLessThan(cpuUsedPercentage / guaranteedCpuUnits, 0.0));
         MemoryUsedInBytes = Throw.IfLessThan(memoryUsedInBytes, 0);
         SystemResources = systemResources;
         MemoryUsedPercentage = Math.Min(Hundred, (double)MemoryUsedInBytes / systemResources.GuaranteedMemoryInBytes * Hundred);

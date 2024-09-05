@@ -102,9 +102,14 @@ public sealed class ComplianceReportsGenerator : ISourceGenerator
             return;
         }
 
+        // File IO has been marked as banned for use in analyzers, and an alternate should be used instead
+        // Suppressing until this issue is addressed in https://github.com/dotnet/extensions/issues/5390
+
+#pragma warning disable RS1035 // Do not use APIs banned for analyzers
         _ = Directory.CreateDirectory(_directory);
 
         // Write report as JSON file.
         File.WriteAllText(Path.Combine(_directory, _fileName), report, Encoding.UTF8);
+#pragma warning restore RS1035 // Do not use APIs banned for analyzers
     }
 }

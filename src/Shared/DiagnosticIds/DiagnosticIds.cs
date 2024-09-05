@@ -86,6 +86,8 @@ internal static class DiagnosticIds
         internal const string LOGGEN034 = nameof(LOGGEN034);
         internal const string LOGGEN035 = nameof(LOGGEN035);
         internal const string LOGGEN036 = nameof(LOGGEN036);
+        internal const string LOGGEN037 = nameof(LOGGEN037);
+        internal const string LOGGEN038 = nameof(LOGGEN038);
     }
 
     internal static class Metrics
@@ -116,6 +118,12 @@ internal static class DiagnosticIds
     {
         internal const string AUDREPGEN000 = nameof(AUDREPGEN000);
         internal const string AUDREPGEN001 = nameof(AUDREPGEN001);
+    }
+
+    internal static class Obsoletions
+    {
+        internal const string IResourceUtilizationPublisherDiagId = "EXTOBS0001";
+        internal const string IResourceUtilizationPublisherMessage = "This API is obsolete and will be removed in a future version. Consider using Resource Monitoring observable instruments.";
     }
 }
 

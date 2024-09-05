@@ -1,9 +1,0 @@
-﻿{
-  Type: InvalidOperationException,
-  Message: Could not parse '/proc/meminfo'. We expected first line of the file to start with 'MemTotal:' but it was 'MemoryTotal: 1024 MB ' instead.,
-  StackTrace:
-at Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(String message)
-at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationParserCgroupV2.GetHostAvailableMemory()
-at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test.LinuxUtilizationParserCgroupV2Tests.<>c__DisplayClass10_0.<Throws_When_MemInfo_Does_Not_Contain_TotalMemory>b__0()
-at Xunit.Record.Exception(Func`1 testCode)
-}

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Publishers;
 
 /// <summary>
-/// A publisher that do nothing.
+/// A publisher that does nothing.
 /// </summary>
 internal sealed class EmptyPublisher : IResourceUtilizationPublisher
 {

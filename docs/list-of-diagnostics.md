@@ -41,6 +41,16 @@ if desired.
 | `EXTEXP0016` | Hosting integration testing experiments |
 | `EXTEXP0017` | Contextual options experiments |
 
+# Obsoletions
+
+At some point in its lifecycle APIs become obsolete. If you use obsolete APIs, you will get one of the diagnostic shown below.
+
+You may continue using obsolete APIs in your application, but we advise exploring proposed alternatives which you will find in the obsoletion message.
+
+| Diagnostic ID     | Description |
+| :---------------- | :---------- |
+| `EXTOBS0001` | This API is obsolete and will be removed in a future version. Consider using [Resource Monitoring observable instruments](https://learn.microsoft.com/dotnet/core/diagnostics/built-in-metrics-diagnostics#microsoftextensionsdiagnosticsresourcemonitoring). |
+
 # LoggerMessage
 
 | Diagnostic ID     | Description |
@@ -82,6 +92,8 @@ if desired.
 | `LOGGEN034` | Attribute can't be used in this context |
 | `LOGGEN035` | The logging method parameter leaks sensitive data |
 | `LOGGEN036` | A value being logged doesn't have an effective way to be converted into a string |
+| `LOGGEN037` | Logging method contains malformed format strings |
+| `LOGGEN038` | Primary constructor parameter of type Microsoft.Extensions.Logging.ILogger is hidden by a field |
 
 # Metrics
 

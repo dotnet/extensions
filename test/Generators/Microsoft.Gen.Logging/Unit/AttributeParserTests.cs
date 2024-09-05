@@ -170,6 +170,58 @@ public class AttributeParserTests
         Assert.Equal(DiagDescriptors.LoggingMethodShouldBeStatic.Id, diagnostics[0].Id);
     }
 
+    [Fact]
+    public async Task CantUseDataClassificationWithLogProperties()
+    {
+        const string Source = @"
+            class MyClass
+            {
+                public string Property { get; set; }
+            }
+
+            partial class LoggerClass
+            {
+                [LoggerMessage(0, LogLevel.Debug, ""No params..."")]
+                static partial void M(ILogger logger, [PrivateData][LogProperties] MyClass p1);
+            }";
+
+        var diagnostics = await RunGenerator(Source);
+
+        _ = Assert.Single(diagnostics);
+
+        Assert.Equal(DiagDescriptors.CantUseDataClassificationWithLogPropertiesOrTagProvider.Id, diagnostics[0].Id);
+    }
+
+    [Fact]
+    public async Task CantUseDataClassificationWithTagProvider()
+    {
+        const string Source = @"
+            class MyClass
+            {
+                public string Property { get; set; }
+            }
+
+            static class Provider
+            {
+                public static void Provide(ITagCollector props, MyClass? value)
+                {
+                    return;
+                }
+            }
+
+            partial class C
+            {
+                [LoggerMessage(0, LogLevel.Debug, ""Parameter"")]
+                static partial void M(ILogger logger, [PrivateData][TagProvider(typeof(Provider), nameof(Provider.Provide))] MyClass p1);
+            }";
+
+        var diagnostics = await RunGenerator(Source);
+
+        _ = Assert.Single(diagnostics);
+
+        Assert.Equal(DiagDescriptors.CantUseDataClassificationWithLogPropertiesOrTagProvider.Id, diagnostics[0].Id);
+    }
+
     private static async Task<IReadOnlyList<Diagnostic>> RunGenerator(string code)
     {
         var text = $@"

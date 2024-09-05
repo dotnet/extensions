@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Microsoft.Extensions.Diagnostics.ResourceMonitoring</RootNamespace>
     <Description>Measures processor and memory usage.</Description>
@@ -12,8 +12,10 @@
     <InjectSharedDataValidation>true</InjectSharedDataValidation>
     <InjectSharedRentedSpan>true</InjectSharedRentedSpan>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
+    <InjectObsoleteAttributeOnLegacy>true</InjectObsoleteAttributeOnLegacy>
     <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <InjectStringSplitExtensions>true</InjectStringSplitExtensions>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -23,7 +25,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <Compile Remove="Linux\*.cs" />
+    <Compile Remove="Linux\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,7 +46,6 @@
 
   <ItemGroup>
     <InternalsVisibleToDynamicProxyGenAssembly2 Include="*" />
-    <InternalsVisibleToDynamicProxyGenAssembly2 Remove="ResourceMonitoringLinuxCgroupVersion.cs" />
     <InternalsVisibleToTest Include="$(AssemblyName).Tests" />
   </ItemGroup>
 </Project>

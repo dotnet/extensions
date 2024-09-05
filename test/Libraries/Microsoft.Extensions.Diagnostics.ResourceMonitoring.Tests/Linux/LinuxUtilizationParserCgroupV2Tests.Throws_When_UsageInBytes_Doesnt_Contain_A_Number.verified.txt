@@ -1,9 +1,0 @@
-﻿{
-  Type: InvalidOperationException,
-  Message: We tried to read '/sys/fs/cgroup/system.slice/memory.current', and we expected to get a positive number but instead it was: 'dasda'.,
-  StackTrace:
-at Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(String message)
-at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.LinuxUtilizationParserCgroupV2.GetMemoryUsageInBytesFromSlices(String pattern)
-at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test.LinuxUtilizationParserCgroupV2Tests.<>c__DisplayClass7_0.<Throws_When_UsageInBytes_Doesnt_Contain_A_Number>b__0()
-at Xunit.Record.Exception(Func`1 testCode)
-}

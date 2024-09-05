@@ -12,7 +12,6 @@ using Xunit;
 namespace Microsoft.Extensions.Http.Resilience.Test.Resilience;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
 
 public class RequestMessageSnapshotTests
 {
