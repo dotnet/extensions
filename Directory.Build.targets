@@ -8,6 +8,8 @@
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\Generators.targets" />
   <Import Project="$(MSBuildThisFileDirectory)\eng\MSBuild\ProjectStaging.targets" />
 
+  <Import Project="$(MSBuildThisFileDirectory)\eng\Net9Workarounds.targets" />
+
   <!-- Warning stuff -->
   <PropertyGroup>
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1138;MSB3270</MSBuildWarningsAsMessages>
@@ -29,6 +31,9 @@
     <NoWarn>$(NoWarn);NU5104</NoWarn>
 
     <NoWarn Condition="'$(GenerateDocumentationFile)' != 'true'">$(NoWarn);SA1600;SA0001</NoWarn>
+
+    <!-- Conflicts with SA1405: Debug.Assert should provide message text -->
+    <NoWarn>$(NoWarn);S3236</NoWarn>
 
     <!-- Legacy targets do not support attributes for a nullable context thus suppressing null check warnings -->
     <NoWarn Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">$(NoWarn);CA1062</NoWarn>

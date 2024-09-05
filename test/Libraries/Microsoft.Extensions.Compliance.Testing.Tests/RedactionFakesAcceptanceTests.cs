@@ -220,7 +220,7 @@ public class RedactionFakesAcceptanceTests
 
         Assert.Equal(1, collector.LastRedactorRequested.SequenceNumber);
         Assert.Equal(dc, collector.LastRedactorRequested.DataClassifications);
-        Assert.Equal(1, collector.AllRedactorRequests.Count);
+        Assert.Single(collector.AllRedactorRequests);
     }
 
     [Fact]

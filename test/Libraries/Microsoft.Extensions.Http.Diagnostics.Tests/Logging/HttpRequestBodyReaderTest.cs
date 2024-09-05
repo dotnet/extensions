@@ -43,7 +43,7 @@ public class HttpRequestBodyReaderTest
         };
 
         var httpRequestBodyReader = new HttpRequestBodyReader(options);
-        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None).ConfigureAwait(false);
+        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None);
 
         requestBody.Should().BeEquivalentTo(input);
     }
@@ -63,7 +63,7 @@ public class HttpRequestBodyReaderTest
         };
         var httpRequestBodyReader = new HttpRequestBodyReader(options);
 
-        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None).ConfigureAwait(false);
+        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None);
 
         requestBody.Should().BeEquivalentTo(Constants.NoContent);
     }
@@ -87,7 +87,7 @@ public class HttpRequestBodyReaderTest
         };
 
         var httpRequestBodyReader = new HttpRequestBodyReader(options);
-        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None).ConfigureAwait(false);
+        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None);
 
         requestBody.Should().Be(Constants.UnreadableContent);
     }
@@ -136,7 +136,7 @@ public class HttpRequestBodyReaderTest
         };
 
         var httpRequestBodyReader = new HttpRequestBodyReader(options);
-        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None).ConfigureAwait(false);
+        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None);
 
         requestBody.Should().BeEquivalentTo(input.Substring(0, limit));
     }
@@ -160,7 +160,7 @@ public class HttpRequestBodyReaderTest
         };
 
         var httpRequestBodyReader = new HttpRequestBodyReader(options);
-        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None).ConfigureAwait(false);
+        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None);
 
         requestBody.Should().BeEquivalentTo(input.Substring(0, limit / 2));
     }
@@ -190,7 +190,7 @@ public class HttpRequestBodyReaderTest
 
         var httpRequestBodyReader = new HttpRequestBodyReader(options);
 
-        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None).ConfigureAwait(false);
+        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None);
 
         var returnedValue = requestBody;
         var expectedValue = Constants.ReadCancelled;
@@ -214,7 +214,7 @@ public class HttpRequestBodyReaderTest
 
         var httpRequestBodyReader = new HttpRequestBodyReader(options);
 
-        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None).ConfigureAwait(false);
+        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None);
 
         requestBody.Should().Be(string.Empty);
     }
@@ -235,7 +235,7 @@ public class HttpRequestBodyReaderTest
 
         var httpRequestBodyReader = new HttpRequestBodyReader(options);
 
-        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None).ConfigureAwait(false);
+        var requestBody = await httpRequestBodyReader.ReadAsync(httpRequest, CancellationToken.None);
 
         requestBody.Should().Be(string.Empty);
     }
