@@ -49,7 +49,7 @@
     <!-- For net462 we copy all buildTransitive files except the .targets file. We have to rename the .targets file
          when copying it because our build process automatically adds a .targets file with the same name as the project
          file. Then we'll import the renamed .targets file in the automatically added .targets file. For that we need
-         to set the _AdditionalNETStandardCompatErrorFileContents variable. -->    
+         to set the _AdditionalNETStandardCompatErrorFileContents variable. -->
     <None Include="buildTransitive\**\*"
           Exclude="buildTransitive\$(MSBuildProjectName).targets"
           CopyToOutputDirectory="PreserveNewest"
