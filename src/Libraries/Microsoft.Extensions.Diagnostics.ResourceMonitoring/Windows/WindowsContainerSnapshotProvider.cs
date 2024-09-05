@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 {
     private const double Hundred = 100.0d;
+    private const string MeterName = "Microsoft.Extensions.Diagnostics.ResourceMonitoring";
 
     private readonly Lazy<MEMORYSTATUSEX> _memoryStatus;
 
@@ -105,7 +106,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         // We don't dispose the meter because IMeterFactory handles that
         // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
         // Related documentation: https://github.com/dotnet/docs/pull/37170
-        var meter = meterFactory.Create(nameof(Microsoft.Extensions.Diagnostics.ResourceMonitoring));
+        var meter = meterFactory.Create(MeterName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         // Container based metrics:
