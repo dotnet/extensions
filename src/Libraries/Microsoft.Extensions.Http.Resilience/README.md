@@ -95,8 +95,8 @@ System.InvalidOperationException: The ConfigureHttpClient method is not supporte
 To resolve this issue, we recommend upgrading to `Grpc.Net.ClientFactory` version `2.64.0` or later.
 
 We've implemented a build time check that verifies if you're using `Grpc.Net.ClientFactory` version
-`2.63.0` or earlier, and if you are the check produces a compilation error. You can suppress the
-check and the error by setting the following property in your project file:
+`2.63.0` or earlier, and if you are the check produces a compilation warning. You can suppress the
+warning by setting the following property in your project file:
 
 ```xml
 <PropertyGroup>
