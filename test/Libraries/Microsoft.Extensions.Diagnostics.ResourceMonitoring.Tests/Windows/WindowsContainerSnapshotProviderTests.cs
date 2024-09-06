@@ -331,7 +331,15 @@ public sealed class WindowsContainerSnapshotProviderTests
         var options = Options.Options.Create<ResourceMonitoringOptions>(new());
         using var meterFactory = new TestMeterFactory();
 
-        _ = new WindowsContainerSnapshotProvider(_logger, meterFactory, options);
+        _ = new WindowsContainerSnapshotProvider(
+            _memoryInfoMock.Object,
+            _systemInfoMock.Object,
+            _processInfoMock.Object,
+            _logger,
+            meterFactory,
+            () => _jobHandleMock.Object,
+            new FakeTimeProvider(),
+            new());
 
         var meter = meterFactory.Meters.Single();
         Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);

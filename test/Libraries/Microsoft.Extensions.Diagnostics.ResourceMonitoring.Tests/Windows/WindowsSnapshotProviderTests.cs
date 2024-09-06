@@ -158,7 +158,7 @@ public sealed class WindowsSnapshotProviderTests
         Assert.InRange(usage, 0, long.MaxValue);
     }
 
-    [Fact]
+    [ConditionalFact]
     public void Provider_Creates_Meter_With_Correct_Name()
     {
         using var meterFactory = new TestMeterFactory();
