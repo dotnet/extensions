@@ -12,6 +12,11 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring;
 internal static class ResourceUtilizationInstruments
 {
     /// <summary>
+    /// The name of the ResourceMonitoring Meter.
+    /// </summary>
+    public const string MeterName = "Microsoft.Extensions.Diagnostics.ResourceMonitoring";
+
+    /// <summary>
     /// The name of an instrument to retrieve CPU limit consumption of all processes running inside a container or control group in range <c>[0, 1]</c>.
     /// </summary>
     /// <remarks>

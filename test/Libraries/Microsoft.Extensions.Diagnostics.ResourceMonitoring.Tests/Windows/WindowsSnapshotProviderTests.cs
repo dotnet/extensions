@@ -3,8 +3,10 @@
 
 using System;
 using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
@@ -154,5 +156,16 @@ public sealed class WindowsSnapshotProviderTests
         // This is a synthetic test to have full test coverage:
         var usage = WindowsSnapshotProvider.GetMemoryUsageInBytes();
         Assert.InRange(usage, 0, long.MaxValue);
+    }
+
+    [Fact]
+    public void Provider_Creates_Meter_With_Correct_Name()
+    {
+        using var meterFactory = new TestMeterFactory();
+
+        _ = new WindowsSnapshotProvider(_fakeLogger, meterFactory, _options);
+
+        var meter = meterFactory.Meters.Single();
+        Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);
     }
 }
