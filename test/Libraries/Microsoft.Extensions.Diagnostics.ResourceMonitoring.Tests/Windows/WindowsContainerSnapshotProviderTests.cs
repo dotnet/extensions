@@ -3,8 +3,10 @@
 
 using System;
 using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows.Interop;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Time.Testing;
@@ -321,5 +323,17 @@ public sealed class WindowsContainerSnapshotProviderTests
         var logRecords = _logger.Collector.GetSnapshot();
 
         return Verifier.Verify(logRecords).UniqueForRuntime().UseDirectory(VerifiedDataDirectory);
+    }
+
+    [Fact]
+    public void Provider_Creates_Meter_With_Correct_Name()
+    {
+        var options = Options.Options.Create<ResourceMonitoringOptions>(new());
+        using var meterFactory = new TestMeterFactory();
+
+        _ = new WindowsContainerSnapshotProvider(_logger, meterFactory, options);
+
+        var meter = meterFactory.Meters.Single();
+        Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);
     }
 }
