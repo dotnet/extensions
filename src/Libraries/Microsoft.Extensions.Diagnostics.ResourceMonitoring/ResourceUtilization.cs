@@ -62,7 +62,7 @@ public readonly struct ResourceUtilization
             guaranteedCpuUnits = 1;
         }
 
-        CpuUsedPercentage = Throw.IfLessThan(cpuUsedPercentage / guaranteedCpuUnits, 0.0);
+        CpuUsedPercentage = Math.Min(Hundred, Throw.IfLessThan(cpuUsedPercentage / guaranteedCpuUnits, 0.0));
         MemoryUsedInBytes = Throw.IfLessThan(memoryUsedInBytes, 0);
         SystemResources = systemResources;
         MemoryUsedPercentage = Math.Min(Hundred, (double)MemoryUsedInBytes / systemResources.GuaranteedMemoryInBytes * Hundred);
