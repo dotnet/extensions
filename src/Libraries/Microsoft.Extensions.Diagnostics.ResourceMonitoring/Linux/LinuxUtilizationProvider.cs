@@ -62,7 +62,7 @@ internal sealed class LinuxUtilizationProvider : ISnapshotProvider
         // We don't dispose the meter because IMeterFactory handles that
         // An issue on analyzer side: https://github.com/dotnet/roslyn-analyzers/issues/6912
         // Related documentation: https://github.com/dotnet/docs/pull/37170
-        var meter = meterFactory.Create(nameof(Microsoft.Extensions.Diagnostics.ResourceMonitoring));
+        var meter = meterFactory.Create(ResourceUtilizationInstruments.MeterName);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         _ = meter.CreateObservableGauge(name: ResourceUtilizationInstruments.ContainerCpuLimitUtilization, observeValue: () => CpuUtilization() * _scaleRelativeToCpuLimit, unit: "1");

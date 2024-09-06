@@ -7,6 +7,7 @@ using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Test.Helpers;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.TestUtilities;
 using Moq;
@@ -190,5 +191,18 @@ public sealed class LinuxUtilizationProviderTests
         var logRecords = logger.Collector.GetSnapshot();
 
         return Verifier.Verify(logRecords).UseDirectory(VerifiedDataDirectory);
+    }
+
+    [Fact]
+    public void Provider_Creates_Meter_With_Correct_Name()
+    {
+        var options = Options.Options.Create<ResourceMonitoringOptions>(new());
+        using var meterFactory = new TestMeterFactory();
+
+        var parser = new DummyLinuxUtilizationParser();
+        _ = new LinuxUtilizationProvider(options, parser, meterFactory);
+
+        var meter = meterFactory.Meters.Single();
+        Assert.Equal(ResourceUtilizationInstruments.MeterName, meter.Name);
     }
 }
