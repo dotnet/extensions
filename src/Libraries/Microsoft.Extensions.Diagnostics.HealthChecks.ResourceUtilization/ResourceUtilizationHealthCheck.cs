@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.ResourceMonitoring;
@@ -14,7 +15,6 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 /// </summary>
 internal sealed class ResourceUtilizationHealthCheck : IHealthCheck
 {
-    private static readonly Task<HealthCheckResult> _healthy = Task.FromResult(HealthCheckResult.Healthy());
     private readonly ResourceUtilizationHealthCheckOptions _options;
     private readonly IResourceMonitor _dataTracker;
 
@@ -39,26 +39,58 @@ internal sealed class ResourceUtilizationHealthCheck : IHealthCheck
     public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         var utilization = _dataTracker.GetUtilization(_options.SamplingWindow);
-        if (utilization.CpuUsedPercentage > _options.CpuThresholds.UnhealthyUtilizationPercentage)
+        IReadOnlyDictionary<string, object> data = new Dictionary<string, object>
         {
-            return Task.FromResult(HealthCheckResult.Unhealthy("CPU usage is above the limit"));
+            { nameof(utilization.CpuUsedPercentage), utilization.CpuUsedPercentage },
+            { nameof(utilization.MemoryUsedPercentage), utilization.MemoryUsedPercentage },
+        };
+
+        bool cpuUnhealthy = utilization.CpuUsedPercentage > _options.CpuThresholds.UnhealthyUtilizationPercentage;
+        bool memoryUnhealthy = utilization.MemoryUsedPercentage > _options.MemoryThresholds.UnhealthyUtilizationPercentage;
+
+        if (cpuUnhealthy || memoryUnhealthy)
+        {
+            string message = string.Empty;
+            if (cpuUnhealthy && memoryUnhealthy)
+            {
+                message = "CPU and Memory";
+            }
+            else if (cpuUnhealthy)
+            {
+                message = "CPU";
+            }
+            else
+            {
+                message = "Memory";
+            }
+
+            message += " usage is above the limit";
+            return Task.FromResult(HealthCheckResult.Unhealthy(message, default, data));
         }
 
-        if (utilization.MemoryUsedPercentage > _options.MemoryThresholds.UnhealthyUtilizationPercentage)
+        bool cpuDegraded = utilization.CpuUsedPercentage > _options.CpuThresholds.DegradedUtilizationPercentage;
+        bool memoryDegraded = utilization.MemoryUsedPercentage > _options.MemoryThresholds.DegradedUtilizationPercentage;
+
+        if (cpuDegraded || memoryDegraded)
         {
-            return Task.FromResult(HealthCheckResult.Unhealthy("Memory usage is above the limit"));
+            string message = string.Empty;
+            if (cpuDegraded && memoryDegraded)
+            {
+                message = "CPU and Memory";
+            }
+            else if (cpuDegraded)
+            {
+                message = "CPU";
+            }
+            else
+            {
+                message = "Memory";
+            }
+
+            message += " usage is close to the limit";
+            return Task.FromResult(HealthCheckResult.Degraded(message, default, data));
         }
 
-        if (utilization.CpuUsedPercentage > _options.CpuThresholds.DegradedUtilizationPercentage)
-        {
-            return Task.FromResult(HealthCheckResult.Degraded("CPU usage is close to the limit"));
-        }
-
-        if (utilization.MemoryUsedPercentage > _options.MemoryThresholds.DegradedUtilizationPercentage)
-        {
-            return Task.FromResult(HealthCheckResult.Degraded("Memory usage is close to the limit"));
-        }
-
-        return _healthy;
+        return Task.FromResult(HealthCheckResult.Healthy(default, data));
     }
 }

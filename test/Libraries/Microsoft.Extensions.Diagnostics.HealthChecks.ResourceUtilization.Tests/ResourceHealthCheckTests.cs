@@ -23,6 +23,7 @@ public class ResourceHealthCheckTests
                 0UL,
                 1000UL,
                 new ResourceUsageThresholds(),
+                new ResourceUsageThresholds(),
                 "",
             },
             new object[]
@@ -31,6 +32,7 @@ public class ResourceHealthCheckTests
                 0.2,
                 0UL,
                 1000UL,
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.2 },
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.2 },
                 ""
             },
@@ -41,6 +43,7 @@ public class ResourceHealthCheckTests
                 2UL,
                 1000UL,
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.2 },
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.2 },
                 ""
             },
             new object[]
@@ -50,7 +53,8 @@ public class ResourceHealthCheckTests
                 3UL,
                 1000UL,
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.4 },
-                " usage is close to the limit"
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.4 },
+                "CPU and Memory usage is close to the limit"
             },
             new object[]
             {
@@ -59,7 +63,8 @@ public class ResourceHealthCheckTests
                 5UL,
                 1000UL,
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.4 },
-                " usage is above the limit"
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.4 },
+                "CPU and Memory usage is above the limit"
             },
             new object[]
             {
@@ -68,7 +73,8 @@ public class ResourceHealthCheckTests
                 5UL,
                 1000UL,
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.4, UnhealthyUtilizationPercentage = 0.2 },
-                " usage is above the limit"
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.4, UnhealthyUtilizationPercentage = 0.2 },
+                "CPU and Memory usage is above the limit"
             },
             new object[]
             {
@@ -77,7 +83,8 @@ public class ResourceHealthCheckTests
                 3UL,
                 1000UL,
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2 },
-                " usage is close to the limit"
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2 },
+                "CPU and Memory usage is close to the limit"
             },
             new object[]
             {
@@ -86,67 +93,79 @@ public class ResourceHealthCheckTests
                 5UL,
                 1000UL,
                 new ResourceUsageThresholds { UnhealthyUtilizationPercentage = 0.4 },
-                " usage is above the limit"
+                new ResourceUsageThresholds { UnhealthyUtilizationPercentage = 0.4 },
+                "CPU and Memory usage is above the limit"
+            },
+            new object[]
+            {
+                HealthStatus.Degraded,
+                0.3,
+                3UL,
+                1000UL,
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.4 },
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.9, UnhealthyUtilizationPercentage = 0.9 },
+                "CPU usage is close to the limit"
+            },
+            new object[]
+            {
+                HealthStatus.Degraded,
+                0.1,
+                3UL,
+                1000UL,
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.9, UnhealthyUtilizationPercentage = 0.9 },
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.4 },
+                "Memory usage is close to the limit"
+            },
+            new object[]
+            {
+                HealthStatus.Unhealthy,
+                0.5,
+                5UL,
+                1000UL,
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.4 },
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.9, UnhealthyUtilizationPercentage = 0.9 },
+                "CPU usage is above the limit"
+            },
+            new object[]
+            {
+                HealthStatus.Unhealthy,
+                0.1,
+                5UL,
+                1000UL,
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.9, UnhealthyUtilizationPercentage = 0.9 },
+                new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.4 },
+                "Memory usage is above the limit"
             },
         };
 
     [Theory]
     [MemberData(nameof(Data))]
-#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
-    public async Task TestCpuChecks(HealthStatus expected, double utilization, ulong _, ulong totalMemory, ResourceUsageThresholds thresholds, string expectedDescription)
-#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
+    public async Task TestCpuAndMemoryChecks(HealthStatus expected, double utilization, ulong memoryUsed, ulong totalMemory,
+        ResourceUsageThresholds cpuThresholds, ResourceUsageThresholds memoryThresholds, string expectedDescription)
     {
         var systemResources = new SystemResources(1.0, 1.0, totalMemory, totalMemory);
         var dataTracker = new Mock<IResourceMonitor>();
         var samplingWindow = TimeSpan.FromSeconds(1);
         dataTracker
             .Setup(tracker => tracker.GetUtilization(samplingWindow))
-            .Returns(new ResourceUtilization(cpuUsedPercentage: utilization, memoryUsedInBytes: 0, systemResources));
+            .Returns(new ResourceUtilization(cpuUsedPercentage: utilization, memoryUsedInBytes: memoryUsed, systemResources));
 
         var checkContext = new HealthCheckContext();
-        var cpuCheckOptions = new ResourceUtilizationHealthCheckOptions
+        var checkOptions = new ResourceUtilizationHealthCheckOptions
         {
-            CpuThresholds = thresholds,
+            CpuThresholds = cpuThresholds,
+            MemoryThresholds = memoryThresholds,
             SamplingWindow = samplingWindow
         };
 
-        var options = Microsoft.Extensions.Options.Options.Create(cpuCheckOptions);
+        var options = Microsoft.Extensions.Options.Options.Create(checkOptions);
         var healthCheck = new ResourceUtilizationHealthCheck(options, dataTracker.Object);
         var healthCheckResult = await healthCheck.CheckHealthAsync(checkContext);
         Assert.Equal(expected, healthCheckResult.Status);
+        Assert.NotEmpty(healthCheckResult.Data);
         if (healthCheckResult.Status != HealthStatus.Healthy)
         {
-            Assert.Equal("CPU" + expectedDescription, healthCheckResult.Description);
-        }
-    }
-
-    [Theory]
-    [MemberData(nameof(Data))]
-#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
-    public async Task TestMemoryChecks(HealthStatus expected, double _, ulong memoryUsed, ulong totalMemory, ResourceUsageThresholds thresholds, string expectedDescription)
-#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
-    {
-        var systemResources = new SystemResources(1.0, 1.0, totalMemory, totalMemory);
-        var dataTracker = new Mock<IResourceMonitor>();
-        var samplingWindow = TimeSpan.FromSeconds(1);
-        dataTracker
-            .Setup(tracker => tracker.GetUtilization(samplingWindow))
-            .Returns(new ResourceUtilization(cpuUsedPercentage: 0, memoryUsedInBytes: memoryUsed, systemResources));
-
-        var checkContext = new HealthCheckContext();
-        var memCheckOptions = new ResourceUtilizationHealthCheckOptions
-        {
-            MemoryThresholds = thresholds,
-            SamplingWindow = samplingWindow
-        };
-
-        var options = Microsoft.Extensions.Options.Options.Create(memCheckOptions);
-        var healthCheck = new ResourceUtilizationHealthCheck(options, dataTracker.Object);
-        var healthCheckResult = await healthCheck.CheckHealthAsync(checkContext);
-        Assert.Equal(expected, healthCheckResult.Status);
-        if (healthCheckResult.Status != HealthStatus.Healthy)
-        {
-            Assert.Equal("Memory" + expectedDescription, healthCheckResult.Description);
+            Assert.Equal(expectedDescription, healthCheckResult.Description);
         }
     }
 
