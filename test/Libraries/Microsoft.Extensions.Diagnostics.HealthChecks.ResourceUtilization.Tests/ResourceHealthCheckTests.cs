@@ -54,7 +54,7 @@ public class ResourceHealthCheckTests
                 1000UL,
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.4 },
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.4 },
-                "CPU and Memory usage is close to the limit"
+                "CPU and memory usage is close to the limit"
             },
             new object[]
             {
@@ -64,7 +64,7 @@ public class ResourceHealthCheckTests
                 1000UL,
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.4 },
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2, UnhealthyUtilizationPercentage = 0.4 },
-                "CPU and Memory usage is above the limit"
+                "CPU and memory usage is above the limit"
             },
             new object[]
             {
@@ -74,7 +74,7 @@ public class ResourceHealthCheckTests
                 1000UL,
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.4, UnhealthyUtilizationPercentage = 0.2 },
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.4, UnhealthyUtilizationPercentage = 0.2 },
-                "CPU and Memory usage is above the limit"
+                "CPU and memory usage is above the limit"
             },
             new object[]
             {
@@ -84,7 +84,7 @@ public class ResourceHealthCheckTests
                 1000UL,
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2 },
                 new ResourceUsageThresholds { DegradedUtilizationPercentage = 0.2 },
-                "CPU and Memory usage is close to the limit"
+                "CPU and memory usage is close to the limit"
             },
             new object[]
             {
@@ -94,7 +94,7 @@ public class ResourceHealthCheckTests
                 1000UL,
                 new ResourceUsageThresholds { UnhealthyUtilizationPercentage = 0.4 },
                 new ResourceUsageThresholds { UnhealthyUtilizationPercentage = 0.4 },
-                "CPU and Memory usage is above the limit"
+                "CPU and memory usage is above the limit"
             },
             new object[]
             {
