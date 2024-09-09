@@ -53,18 +53,17 @@ internal sealed class ResourceUtilizationHealthCheck : IHealthCheck
             string message = string.Empty;
             if (cpuUnhealthy && memoryUnhealthy)
             {
-                message = "CPU and Memory";
+                message = "CPU and memory usage is above the limit";
             }
             else if (cpuUnhealthy)
             {
-                message = "CPU";
+                message = "CPU usage is above the limit";
             }
             else
             {
-                message = "Memory";
+                message = "Memory usage is above the limit";
             }
 
-            message += " usage is above the limit";
             return Task.FromResult(HealthCheckResult.Unhealthy(message, default, data));
         }
 
@@ -76,18 +75,17 @@ internal sealed class ResourceUtilizationHealthCheck : IHealthCheck
             string message = string.Empty;
             if (cpuDegraded && memoryDegraded)
             {
-                message = "CPU and Memory";
+                message = "CPU and memory usage is close to the limit";
             }
             else if (cpuDegraded)
             {
-                message = "CPU";
+                message = "CPU usage is close to the limit";
             }
             else
             {
-                message = "Memory";
+                message = "Memory usage is close to the limit";
             }
 
-            message += " usage is close to the limit";
             return Task.FromResult(HealthCheckResult.Degraded(message, default, data));
         }
 
