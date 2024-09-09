@@ -2,7 +2,7 @@
   <PropertyGroup>
     <_GrpcNetClientFactory>Grpc.Net.ClientFactory</_GrpcNetClientFactory>
     <_CompatibleGrpcNetClientFactoryVersion>2.64.0</_CompatibleGrpcNetClientFactoryVersion>
-    <_GrpcNetClientFactoryVersionIsIncorrect>Grpc.Net.ClientFactory 2.63.0 or earlier could cause issues when used together with Microsoft.Extensions.Http.Resilience. For more details, see https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience#known-issues. Consider using Grpc.Net.ClientFactory $(_CompatibleGrpcNetClientFactoryVersion) or later. To suppress the warning set SuppressCheckGrpcNetClientFactoryVersion=true.</_GrpcNetClientFactoryVersionIsIncorrect>
+    <_GrpcNetClientFactoryVersionIsIncorrect>Grpc.Net.ClientFactory 2.63.0 or earlier could cause issues when used together with Microsoft.Extensions.Http.Resilience. For more details, see https://learn.microsoft.com/dotnet/core/resilience/http-resilience#known-issues. Consider using Grpc.Net.ClientFactory $(_CompatibleGrpcNetClientFactoryVersion) or later. To suppress the warning set SuppressCheckGrpcNetClientFactoryVersion=true.</_GrpcNetClientFactoryVersionIsIncorrect>
   </PropertyGroup>
 
   <!--
