@@ -5,7 +5,7 @@
     <PackageVersion Include="autofixture" Version="4.17.0" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.13.5" />
     <PackageVersion Include="FluentAssertions" Version="6.11.0" />
-    <PackageVersion Include="Grpc.AspNetCore" Version="2.57.0" />
+    <PackageVersion Include="Grpc.AspNetCore" Version="2.65.0" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.3" />
     <PackageVersion Include="Moq.AutoMock" Version="3.1.0" />
     <PackageVersion Include="Moq" Version="4.18.4" />
