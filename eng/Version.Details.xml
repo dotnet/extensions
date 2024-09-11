@@ -8,6 +8,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>31528d082bd760377b8d818fc839a338cd071b1f</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="9.0.0-rc.2.24453.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>418c3b9e2753715fa017ace6b3f1f5ec4d4d6aae</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0-rc.2.24453.5" CoherentParentDependency="Microsoft.AspNetCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>31528d082bd760377b8d818fc839a338cd071b1f</Sha>
@@ -143,6 +147,10 @@
     <Dependency Name="Microsoft.AspNetCore.TestHost" Version="9.0.0-rc.2.24460.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>fc4f8810d8df45a9f42e02f688041bf592c18138</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="9.0.0-rc.2.24460.5">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>2b865e33f2c7c9484c28a3b62e8ff07966e23434</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0-rc.2.24460.5">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
