@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Multi-level caching implementation building on and extending IDistributedCache</Description>
@@ -9,12 +9,12 @@
     <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
     <InjectCallerAttributesOnLegacy>true</InjectCallerAttributesOnLegacy>
     <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <IsPackable>true</IsPackable>
-
-    <!-- ignore "use [Experimental] for new API" -->
-    <NoWarn>$(NoWarn),LA0003</NoWarn>
+    <Stage>normal</Stage>
+    <MinCodeCoverage>75</MinCodeCoverage>
+    <MinMutationScore>50</MinMutationScore>
+    <Workstream>Fundamentals</Workstream>
   </PropertyGroup>
 
   <ItemGroup>

@@ -24,26 +24,6 @@ internal readonly struct BufferChunk
 
     public bool ReturnToPool => (_lengthAndPoolFlag & FlagReturnToPool) != 0;
 
-    public byte[] ToArray()
-    {
-        var length = Length;
-        if (length == 0)
-        {
-            return [];
-        }
-
-        var copy = new byte[length];
-        Buffer.BlockCopy(Array!, 0, copy, 0, length);
-        return copy;
-
-        // Note on nullability of Array; the usage here is that a non-null array
-        // is always provided during construction, so the only null scenario is for default(BufferChunk).
-        // Since the constructor explicitly accesses array.Length, any null array passed to the constructor
-        // will cause an exception, even in release (the Debug.Assert only covers debug) - although in
-        // reality we do not expect this to ever occur (internal type, usage checked, etc). In the case of
-        // default(BufferChunk), we know that Length will be zero, which means we will hit the [] case.
-    }
-
     public BufferChunk(byte[] array)
     {
         Debug.Assert(array is not null, "expected valid array input");
@@ -67,6 +47,26 @@ internal readonly struct BufferChunk
         _lengthAndPoolFlag = length | (returnToPool ? FlagReturnToPool : 0);
         Debug.Assert(ReturnToPool == returnToPool, "return-to-pool not respected");
         Debug.Assert(Length == length, "length not respected");
+    }
+
+    public byte[] ToArray()
+    {
+        var length = Length;
+        if (length == 0)
+        {
+            return [];
+        }
+
+        var copy = new byte[length];
+        Buffer.BlockCopy(Array!, 0, copy, 0, length);
+        return copy;
+
+        // Note on nullability of Array; the usage here is that a non-null array
+        // is always provided during construction, so the only null scenario is for default(BufferChunk).
+        // Since the constructor explicitly accesses array.Length, any null array passed to the constructor
+        // will cause an exception, even in release (the Debug.Assert only covers debug) - although in
+        // reality we do not expect this to ever occur (internal type, usage checked, etc). In the case of
+        // default(BufferChunk), we know that Length will be zero, which means we will hit the [] case.
     }
 
     internal void RecycleIfAppropriate()
