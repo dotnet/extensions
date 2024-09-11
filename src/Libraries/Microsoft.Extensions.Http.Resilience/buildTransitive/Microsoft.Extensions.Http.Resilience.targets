@@ -1,0 +1,54 @@
+<Project>
+  <PropertyGroup>
+    <_GrpcNetClientFactory>Grpc.Net.ClientFactory</_GrpcNetClientFactory>
+    <_CompatibleGrpcNetClientFactoryVersion>2.64.0</_CompatibleGrpcNetClientFactoryVersion>
+    <_GrpcNetClientFactoryVersionIsIncorrect>Grpc.Net.ClientFactory 2.63.0 or earlier could cause issues when used together with Microsoft.Extensions.Http.Resilience. For more details, see https://learn.microsoft.com/dotnet/core/resilience/http-resilience#known-issues. Consider using Grpc.Net.ClientFactory $(_CompatibleGrpcNetClientFactoryVersion) or later. To suppress the warning set SuppressCheckGrpcNetClientFactoryVersion=true.</_GrpcNetClientFactoryVersionIsIncorrect>
+  </PropertyGroup>
+
+  <!--
+    Check whether the project is referencing Grpc.Net.ClientFactory 2.64.0 or later.
+    If the vesion is earlier warn the user to update.
+    See https://learn.microsoft.com/en-us/dotnet/core/resilience/http-resilience#known-issues for more details.
+    -->
+  <Target Name="_CheckGrpcNetClientFactoryVersion"
+          BeforeTargets="ResolveReferences"
+          Condition=" '$(SuppressCheckGrpcNetClientFactoryVersion)' != 'true' ">
+    <ItemGroup>
+      <!-- Find the package in the .csproj file. -->
+      <_GrpcNetClientFactoryPackageReference Include="@(PackageReference)" Condition=" '%(PackageReference.Identity)' == '$(_GrpcNetClientFactory)' " />
+
+      <!-- Find the version of the package in the Central Package Source. The solution uses the Central Package Management. -->
+      <_GrpcNetClientFactoryPackageVersion Include="@(PackageVersion)" Condition=" '%(PackageVersion.Identity)' == '$(_GrpcNetClientFactory)' " />
+      
+      <!-- The package is added to the project as a transitive dependency. -->
+      <_GrpcNetClientFactoryTransitiveDependency Include="@(ReferencePath)" Condition=" '%(ReferencePath.NuGetPackageId)' == '$(_GrpcNetClientFactory)' " />
+    </ItemGroup>
+
+    <!-- The version of the package is included in the .csproj file. -->
+    <Warning Condition=" @(_GrpcNetClientFactoryPackageReference->Count()) &gt; 0
+                         AND '%(_GrpcNetClientFactoryPackageReference.Version)' != ''
+                         AND $([MSBuild]::VersionLessThan('%(_GrpcNetClientFactoryPackageReference.Version)', '$(_CompatibleGrpcNetClientFactoryVersion)')) "
+             Text="$(_GrpcNetClientFactoryVersionIsIncorrect)" />
+
+    <!-- The solution uses the Central Package Management and the version of the package is overridden in the .csproj file using the VersionOverride property. -->
+    <Warning Condition=" '$(ManagePackageVersionsCentrally)' == 'true'
+                         AND @(_GrpcNetClientFactoryPackageReference->Count()) &gt; 0
+                         AND '%(_GrpcNetClientFactoryPackageReference.VersionOverride)' != ''
+                         AND $([MSBuild]::VersionLessThan('%(_GrpcNetClientFactoryPackageReference.VersionOverride)', '$(_CompatibleGrpcNetClientFactoryVersion)')) "
+             Text="$(_GrpcNetClientFactoryVersionIsIncorrect)" />
+
+    <!-- The solution uses the Central Package Management and the version of the package is included in the Central Package Source. -->
+    <Warning Condition=" '$(ManagePackageVersionsCentrally)' == 'true'
+                         AND @(_GrpcNetClientFactoryPackageReference->Count()) &gt; 0
+                         AND '%(_GrpcNetClientFactoryPackageVersion.Version)' != ''
+                         AND $([MSBuild]::VersionLessThan('%(_GrpcNetClientFactoryPackageVersion.Version)', '$(_CompatibleGrpcNetClientFactoryVersion)')) "
+             Text="$(_GrpcNetClientFactoryVersionIsIncorrect)" />
+
+    <!-- This condition handles a case when the package is added to the project as a transitive dependency. -->
+    <Warning Condition=" @(_GrpcNetClientFactoryPackageReference->Count()) == 0
+                         AND @(_GrpcNetClientFactoryTransitiveDependency->Count()) &gt; 0
+                         AND '%(_GrpcNetClientFactoryTransitiveDependency.NuGetPackageVersion)' != ''
+                         AND $([MSBuild]::VersionLessThan('%(_GrpcNetClientFactoryTransitiveDependency.NuGetPackageVersion)', '$(_CompatibleGrpcNetClientFactoryVersion)')) "
+             Text="$(_GrpcNetClientFactoryVersionIsIncorrect)" />
+  </Target>
+</Project>

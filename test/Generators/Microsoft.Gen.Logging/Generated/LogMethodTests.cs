@@ -750,6 +750,19 @@ public class LogMethodTests
         };
 
         collector.Clear();
+        AtSymbolsTestExtensions.UseAtSymbol3(logger, LogLevel.Debug, "42", 42);
+        Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("@myevent2"));
+        Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("otherevent"));
+        Assert.Equal("UseAtSymbol3, 42 42", collector.LatestRecord.Message);
+
+        collector.Clear();
+        AtSymbolsTestExtensions.UseAtSymbol4(logger, LogLevel.Debug, "42", 42, new ArgumentException("Foo"));
+        Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("@myevent3"));
+        Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("otherevent"));
+        Assert.Equal("UseAtSymbol4 with error, 42 42", collector.LatestRecord.Message);
+        Assert.NotNull(collector.LatestRecord.Exception);
+
+        collector.Clear();
         AtSymbolsTestExtensions.M3(logger, LogLevel.Debug, o);
         Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("event.class"));
 
@@ -761,6 +774,11 @@ public class LogMethodTests
         AtSymbolsTestExtensions.M6(logger, "42");
         Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("class"));
         Assert.Equal("M6 class 42", collector.LatestRecord.Message);
+
+        collector.Clear();
+        AtSymbolsTestExtensions.M7(logger, "42");
+        Assert.Equal("42", collector.LatestRecord.StructuredState!.GetValue("@param"));
+        Assert.Equal("M7 param 42", collector.LatestRecord.Message);
     }
 
     [Fact]

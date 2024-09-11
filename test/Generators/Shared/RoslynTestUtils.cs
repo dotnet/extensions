@@ -49,7 +49,11 @@ internal static class RoslynTestUtils
     /// <param name="references">Assembly references to include in the project.</param>
     /// <param name="preprocessorSymbols">Preprocessor symbols to run compilation with.</param>
     /// <param name="includeBaseReferences">Whether to include references to the BCL assemblies.</param>
-    public static Project CreateTestProject(IEnumerable<Assembly>? references, IEnumerable<string> preprocessorSymbols, bool includeBaseReferences = true)
+    public static Project CreateTestProject(
+        IEnumerable<Assembly>? references,
+        IEnumerable<string> preprocessorSymbols,
+        bool includeBaseReferences = true,
+        LanguageVersion langVersion = LanguageVersion.Preview)
     {
         var corelib = Assembly.GetAssembly(typeof(object))!.Location;
         var runtimeDir = Path.GetDirectoryName(corelib)!;
@@ -75,7 +79,7 @@ internal static class RoslynTestUtils
                     .AddSolution(SolutionInfo.Create(SolutionId.CreateNewId(), VersionStamp.Create()))
                     .AddProject("Test", "test.dll", "C#")
                         .WithMetadataReferences(refs)
-                        .WithParseOptions(new CSharpParseOptions().WithPreprocessorSymbols(preprocessorSymbols))
+                        .WithParseOptions(new CSharpParseOptions(langVersion).WithPreprocessorSymbols(preprocessorSymbols))
                         .WithCompilationOptions(
                             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary).WithNullableContextOptions(NullableContextOptions.Enable));
 #pragma warning restore CA2000 // Dispose objects before losing scope
@@ -288,7 +292,7 @@ internal static class RoslynTestUtils
         bool includeBaseReferences = true,
         CancellationToken cancellationToken = default)
     {
-        return RunGenerator(generator, references, sources, Empty.Enumerable<string>(), includeBaseReferences, cancellationToken);
+        return RunGenerator(generator, references, sources, preprocessorSymbols: Empty.Enumerable<string>(), includeBaseReferences: includeBaseReferences, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -300,9 +304,10 @@ internal static class RoslynTestUtils
         IEnumerable<string> sources,
         IEnumerable<string> preprocessorSymbols,
         bool includeBaseReferences = true,
+        LanguageVersion langVersion = LanguageVersion.Preview,
         CancellationToken cancellationToken = default)
     {
-        var proj = CreateTestProject(references, preprocessorSymbols, includeBaseReferences);
+        var proj = CreateTestProject(references, preprocessorSymbols, includeBaseReferences, langVersion);
 
         var count = 0;
         foreach (var s in sources)
@@ -311,27 +316,22 @@ internal static class RoslynTestUtils
         }
 
         proj.CommitChanges();
-        var comp = await proj!.GetCompilationAsync(CancellationToken.None).ConfigureAwait(false);
 
-        CSharpParseOptions options = CSharpParseOptions.Default;
-        CSharpGeneratorDriver cgd = CSharpGeneratorDriver.Create(new[] { generator.AsSourceGenerator() }, parseOptions: options);
+        Compilation? comp = await proj!.GetCompilationAsync(CancellationToken.None).ConfigureAwait(false);
 
-        var gd = cgd.RunGeneratorsAndUpdateCompilation(comp!, out var newComp, out var newDiags, cancellationToken);
-        var r = gd.GetRunResult();
+        CSharpGeneratorDriver cgd = CSharpGeneratorDriver.Create(generator);
 
-        if (r.Results[0].Diagnostics.Length == 0)
-        {
-            if (newDiags.Length > 0)
-            {
-                throw new InvalidDataException("Was unable to fully compile assembly with generated code");
-            }
-        }
+        GeneratorDriver gd = cgd.RunGenerators(comp!, cancellationToken);
+
+        GeneratorDriverRunResult r = gd.GetRunResult();
 
         return (Sort(r.Results[0].Diagnostics), r.Results[0].GeneratedSources);
     }
 
     [Generator]
+#pragma warning disable RS1036 // Specify analyzer banned API enforcement setting. Testing code.
     private sealed class Generator : ISourceGenerator
+#pragma warning restore RS1036 // Specify analyzer banned API enforcement setting
     {
         private readonly ISyntaxReceiver _receiver;
 

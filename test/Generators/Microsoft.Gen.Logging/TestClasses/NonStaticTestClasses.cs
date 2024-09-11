@@ -43,8 +43,46 @@ namespace TestClasses
         public partial void M1(string p0);
     }
 
-    public partial class GenericLoggerInPropertyDerivedTestClass : LoggerInNullablePropertyTestClass
+    public partial class LoggerInProtectedFieldTestClass
     {
+        protected readonly ILogger Logger;
+
+        public LoggerInProtectedFieldTestClass(ILogger logger)
+        {
+            Logger = logger;
+        }
+
+        [LoggerMessage(1, LogLevel.Debug, "M0 {p0}")]
+        public partial void M0(string p0);
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Used in generated code")]
+    public partial class PrivateLoggerInNullablePropertyDerivedTestClass : LoggerInNullablePropertyTestClass
+    {
+        private readonly ILogger _logger;
+
+        public PrivateLoggerInNullablePropertyDerivedTestClass(ILogger logger)
+        {
+            _logger = logger;
+        }
+
+        [LoggerMessage(1, LogLevel.Debug, "M1 {p0}")]
+        public partial void M1(string p0);
+    }
+
+    public partial class GenericLoggerInPropertyDerivedTestClass : GenericLoggerInPropertyTestClass
+    {
+        [LoggerMessage(1, LogLevel.Debug, "M1 {p0}")]
+        public partial void M1(string p0);
+    }
+
+    public partial class LoggerInProtectedFieldDerivedTestClass : LoggerInProtectedFieldTestClass
+    {
+        public LoggerInProtectedFieldDerivedTestClass(ILogger logger)
+            : base(logger)
+        {
+        }
+
         [LoggerMessage(1, LogLevel.Debug, "M1 {p0}")]
         public partial void M1(string p0);
     }
