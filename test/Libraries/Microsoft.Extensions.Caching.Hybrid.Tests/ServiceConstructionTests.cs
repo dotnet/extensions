@@ -19,6 +19,7 @@ using Microsoft.Extensions.Configuration.Json;
 #pragma warning disable CS8769 // Nullability of reference types in type of parameter doesn't match implemented member (possibly because of nullability attributes).
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
+
 public class ServiceConstructionTests
 {
     [Fact]

@@ -8,10 +8,12 @@
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
     <InjectCallerAttributesOnLegacy>true</InjectCallerAttributesOnLegacy>
+    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectTrimAttributesOnLegacy>true</InjectTrimAttributesOnLegacy>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <IsPackable>true</IsPackable>
-    <Stage>normal</Stage>
+    <Stage>dev</Stage>
+    <StageDevDiagnosticId>EXTEXP0018</StageDevDiagnosticId>
     <MinCodeCoverage>75</MinCodeCoverage>
     <MinMutationScore>50</MinMutationScore>
     <Workstream>Fundamentals</Workstream>
