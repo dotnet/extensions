@@ -10,7 +10,7 @@ public class SizeTests
 {
     [Theory]
     [InlineData(null, true)] // does not enforce size limits
-    [InlineData(8L, false)] // unreasonably small limt; chosen because our test string has length 12 - hence no expectation to find the second time
+    [InlineData(8L, false)] // unreasonably small limit; chosen because our test string has length 12 - hence no expectation to find the second time
     [InlineData(1024L, true)] // reasonable size limit
     public async Task ValidateSizeLimit_Immutable(long? sizeLimit, bool expectFromL1)
     {
@@ -55,7 +55,7 @@ public class SizeTests
 
     [Theory]
     [InlineData(null, true)] // does not enforce size limits
-    [InlineData(8L, false)] // unreasonably small limt; chosen because our test string has length 12 - hence no expectation to find the second time
+    [InlineData(8L, false)] // unreasonably small limit; chosen because our test string has length 12 - hence no expectation to find the second time
     [InlineData(1024L, true)] // reasonable size limit
     public async Task ValidateSizeLimit_Mutable(long? sizeLimit, bool expectFromL1)
     {
