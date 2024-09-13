@@ -68,7 +68,7 @@ public class KubernetesProbesOptionsValidatorTests
     [Fact]
     public async Task Validator_WhenHostStarts_Succeeds()
     {
-        using IHost host = CreateHostBuilder(services =>
+        using IHost host = CreateHost(services =>
         {
             services.AddKubernetesProbes(options =>
             {
@@ -99,7 +99,7 @@ public class KubernetesProbesOptionsValidatorTests
     {
         Action action = () =>
         {
-            using IHost host = CreateHostBuilder(services =>
+            using IHost host = CreateHost(services =>
             {
                 services.AddKubernetesProbes(options =>
                 {
@@ -115,7 +115,7 @@ public class KubernetesProbesOptionsValidatorTests
         Assert.Throws<OptionsValidationException>(action);
     }
 
-    private static IHost CreateHostBuilder(Action<IServiceCollection> configureServices)
+    private static IHost CreateHost(Action<IServiceCollection> configureServices)
     {
         return Host.CreateDefaultBuilder()
             .ConfigureServices(configureServices)
