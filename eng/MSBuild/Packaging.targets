@@ -11,15 +11,17 @@
   <PropertyGroup>
     <IsPackable Condition="'$(Stage)' == ''">false</IsPackable>
     <BeforePack>$(BeforePack);_VerifyMinimumSupportedTfmForPackagingIsUsed;_AddNETStandardCompatErrorFileForPackaging</BeforePack>
+    <IsPackNet462 Condition="'$(MinimumSupportedTfmForPackaging)' != '' and
+                             '$(ConditionalNet462)' != '' and
+                             ($(TargetFrameworks.Contains('$(MinimumSupportedTfmForPackaging)')) and $(TargetFrameworks.Contains('$(ConditionalNet462)')))"
+                  >true</IsPackNet462>
   </PropertyGroup>
 
   <!-- Include a compat warning for users trying to use our packages on unsupported TFMs -->
   <ItemGroup>
     <NETStandardCompatError Include="$(ConditionalNet462)"
                             Supported="$(MinimumSupportedTfmForPackaging)"
-                            Condition="'$(MinimumSupportedTfmForPackaging)' != '' and
-                                       '$(ConditionalNet462)' != '' and
-                                       ($(TargetFrameworks.Contains('$(MinimumSupportedTfmForPackaging)')) and $(TargetFrameworks.Contains('$(ConditionalNet462)')))" />
+                            Condition="'$(IsPackNet462)' == 'true'" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(IsPackable)' == 'true' and '$(IsShipping)' == 'true' ">

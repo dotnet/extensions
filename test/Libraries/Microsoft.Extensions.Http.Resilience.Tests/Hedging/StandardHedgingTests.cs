@@ -265,6 +265,14 @@ public sealed class StandardHedgingTests : HedgingTests<IStandardHedgingHandlerB
         AssertNoResponse();
     }
 
+    [Fact]
+    public void AddStandardResilienceHandler_EnsureHttpClientTimeoutDisabled()
+    {
+        var client = CreateClientWithHandler();
+
+        client.Timeout.Should().Be(Timeout.InfiniteTimeSpan);
+    }
+
     [Theory]
 #if NET6_0_OR_GREATER
     [CombinatorialData]
