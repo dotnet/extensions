@@ -177,7 +177,7 @@ internal partial class DefaultHybridCache
                 if ((Key.Flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0)
                 {
                     // invoke the callback supplied by the caller
-                    var newValue = await _underlying!(_state!, SharedToken).ConfigureAwait(false);
+                    T newValue = await _underlying!(_state!, SharedToken).ConfigureAwait(false);
 
                     // If we're writing this value *anywhere*, we're going to need to serialize; this is obvious
                     // in the case of L2, but we also need it for L1, because MemoryCache might be enforcing
