@@ -28,6 +28,8 @@ public static class ResourceUtilizationHealthCheckExtensions
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(tags);
 
+        _ = builder.Services.AddResourceMonitoring();
+
         _ = builder.Services.AddOptionsWithValidateOnStart<ResourceUtilizationHealthCheckOptions, ResourceUtilizationHealthCheckOptionsValidator>();
         return builder.AddCheck<ResourceUtilizationHealthCheck>(HealthCheckName, tags: tags);
     }
@@ -43,6 +45,8 @@ public static class ResourceUtilizationHealthCheckExtensions
     {
         _ = Throw.IfNull(builder);
         _ = Throw.IfNull(tags);
+
+        _ = builder.Services.AddResourceMonitoring();
 
         _ = builder.Services.AddOptionsWithValidateOnStart<ResourceUtilizationHealthCheckOptions, ResourceUtilizationHealthCheckOptionsValidator>();
         return builder.AddCheck<ResourceUtilizationHealthCheck>(HealthCheckName, tags: tags);
