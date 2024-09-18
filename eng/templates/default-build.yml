@@ -49,7 +49,7 @@ jobs:
         vmImage: windows-2019
       ${{ if ne(variables['System.TeamProject'], 'public') }}:
         name: NetCore1ESPool-Svc-Internal
-        image: 1es-windows-2019-pt
+        image: 1es-windows-2019
         os: windows
   variables:
     AgentOsName: ${{ parameters.agentOs }}
