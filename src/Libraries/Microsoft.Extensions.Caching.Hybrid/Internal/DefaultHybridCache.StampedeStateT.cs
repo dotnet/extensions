@@ -14,8 +14,7 @@ internal partial class DefaultHybridCache
 {
     internal sealed class StampedeState<TState, T> : StampedeState
     {
-        [DoesNotReturn]
-        private static CacheItem<T> ThrowUnexpectedCacheItem() => throw new InvalidOperationException("Unexpected cache item");
+        const HybridCacheEntryFlags FlagsDisableL1AndL2 = HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite;
 
         private readonly TaskCompletionSource<CacheItem<T>>? _result;
         private TState? _state;
@@ -40,6 +39,9 @@ internal partial class DefaultHybridCache
         }
 
         public override Type Type => typeof(T);
+
+        [DoesNotReturn]
+        private static CacheItem<T> ThrowUnexpectedCacheItem() => throw new InvalidOperationException("Unexpected cache item");
 
         public void QueueUserWorkItem(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
@@ -188,9 +190,8 @@ internal partial class DefaultHybridCache
                     // - it is an ImmutableCacheItem
                     // - we're writing neither to L1 nor L2
 
-                    const HybridCacheEntryFlags DisableL1AndL2 = HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite;
                     CacheItem cacheItem = CacheItem;
-                    bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (Key.Flags & DisableL1AndL2) == DisableL1AndL2;
+                    bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (Key.Flags & FlagsDisableL1AndL2) == FlagsDisableL1AndL2;
 
                     if (skipSerialize)
                     {
@@ -207,9 +208,18 @@ internal partial class DefaultHybridCache
                         BufferChunk buffer = new(writer.DetachCommitted(out var length), length, returnToPool: true); // remove buffer ownership from the writer
                         writer.Dispose(); // we're done with the writer
 
-                        // protect "buffer" (this is why we "reserved"); we don't want SetResult to nuke our local
-                        BufferChunk snapshot = buffer;
-                        SetResultPreSerialized(newValue, ref snapshot, serializer);
+                        // protect "buffer" (this is why we "reserved") for writing to L2 if needed; SetResultPreSerialized
+                        // *may* (depending on context) claim this buffer, in which case "bufferToRelease" gets reset, and
+                        // the final RecycleIfAppropriate() is a no-op; however, the buffer is valid in either event,
+                        // (with TryReserve above guaranteeing that we aren't in a race condition).
+                        BufferChunk bufferToRelease = buffer;
+
+                        // and since "bufferToRelease" is the thing that will be returned at some point, we can make it explicit
+                        // that we do not need or want "buffer" to do any recycling (they're the same memory)
+                        buffer = buffer.DoNotReturnToPool();
+
+                        // set the underlying result for this operation (includes L1 write if appropriate)
+                        SetResultPreSerialized(newValue, ref bufferToRelease, serializer);
 
                         // Note that at this point we've already released most or all of the waiting callers. Everything
                         // from this point onwards happens in the background, from the perspective of the calling code.
@@ -224,12 +234,12 @@ internal partial class DefaultHybridCache
                         // Release our hook on the CacheItem (only really important for "mutable").
                         _ = cacheItem.Release();
 
-                        // Finally, recycle whatever was left over from SetResultPreSerialized; using "snapshot"
+                        // Finally, recycle whatever was left over from SetResultPreSerialized; using "bufferToRelease"
                         // here is NOT a typo; if SetResultPreSerialized left this value alone (immutable), then
                         // this is our recycle step; if SetResultPreSerialized transferred ownership to the (mutable)
                         // CacheItem, then this becomes a no-op, and the buffer only gets fully recycled when the
                         // CacheItem itself is fully clear.
-                        snapshot.RecycleIfAppropriate();
+                        bufferToRelease.RecycleIfAppropriate();
                     }
                     else
                     {
@@ -299,6 +309,8 @@ internal partial class DefaultHybridCache
 
         private void SetImmutableResultWithoutSerialize(T value)
         {
+            Debug.Assert((Key.Flags & FlagsDisableL1AndL2) == FlagsDisableL1AndL2, "Only expected if L1+L2 disabled");
+
             // set a result from a value we calculated directly
             CacheItem<T> cacheItem;
             switch (CacheItem)
