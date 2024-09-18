@@ -87,6 +87,8 @@ internal partial class DefaultHybridCache
 
     internal abstract class CacheItem<T> : CacheItem
     {
+        public abstract bool TryGetSize(out long size);
+
         // attempt to get a value that was *not* previously reserved
         public abstract bool TryGetValue(out T value);
 

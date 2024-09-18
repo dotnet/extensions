@@ -45,7 +45,7 @@ public class RedisTests : DistributedCacheTests, IClassFixture<RedisFixture>
         var services = new ServiceCollection();
         await ConfigureAsync(services);
         services.AddHybridCache();
-        var provider = services.BuildServiceProvider(); // not "using" - that will tear down our redis; use the fixture for that
+        ServiceProvider provider = services.BuildServiceProvider(); // not "using" - that will tear down our redis; use the fixture for that
 
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
         if (cache.BackendCache is null)

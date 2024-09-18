@@ -27,7 +27,7 @@ public class ServiceConstructionTests
     {
         var services = new ServiceCollection();
         services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
         Assert.IsType<DefaultHybridCache>(provider.GetService<HybridCache>());
     }
 
@@ -40,7 +40,7 @@ public class ServiceConstructionTests
             options.MaximumKeyLength = 937;
             options.DefaultEntryOptions = new() { Expiration = TimeSpan.FromSeconds(120), Flags = HybridCacheEntryFlags.DisableLocalCacheRead };
         });
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
         var obj = Assert.IsType<DefaultHybridCache>(provider.GetService<HybridCache>());
         var options = obj.Options;
         Assert.Equal(937, options.MaximumKeyLength);
@@ -88,7 +88,7 @@ public class ServiceConstructionTests
     {
         var services = new ServiceCollection();
         services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
         var cache = provider.GetRequiredService<HybridCache>();
 
         var expected = Guid.NewGuid().ToString();
@@ -101,7 +101,7 @@ public class ServiceConstructionTests
     {
         var services = new ServiceCollection();
         services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
         var cache = provider.GetRequiredService<HybridCache>();
 
         var expected = Guid.NewGuid().ToString();
@@ -114,7 +114,7 @@ public class ServiceConstructionTests
     {
         var services = new ServiceCollection();
         services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
 
         Assert.IsType<InbuiltTypeSerializer>(cache.GetSerializer<string>());
@@ -128,7 +128,7 @@ public class ServiceConstructionTests
     {
         var services = new ServiceCollection();
         services.AddHybridCache().AddSerializer<Customer, CustomerSerializer>();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
 
         Assert.IsType<CustomerSerializer>(cache.GetSerializer<Customer>());
@@ -140,7 +140,7 @@ public class ServiceConstructionTests
     {
         var services = new ServiceCollection();
         services.AddHybridCache().AddSerializerFactory<CustomFactory>();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
 
         Assert.IsType<CustomerSerializer>(cache.GetSerializer<Customer>());
@@ -163,7 +163,7 @@ public class ServiceConstructionTests
         }
 
         services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
 
         Assert.Null(cache.BackendCache);
@@ -175,7 +175,7 @@ public class ServiceConstructionTests
         var services = new ServiceCollection();
         services.AddSingleton<IDistributedCache, CustomMemoryDistributedCache>();
         services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
 
         Assert.NotNull(cache.BackendCache);
@@ -198,7 +198,7 @@ public class ServiceConstructionTests
 
         services.AddSingleton<IMemoryCache, CustomMemoryCache>();
         services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
 
         Assert.NotNull(cache.BackendCache);

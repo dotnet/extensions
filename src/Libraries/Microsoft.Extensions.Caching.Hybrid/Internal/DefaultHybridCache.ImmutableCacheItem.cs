@@ -13,6 +13,8 @@ internal partial class DefaultHybridCache
 
         private T _value = default!; // deferred until SetValue
 
+        public long Size { get; private set; } = -1;
+
         public override bool DebugIsImmutable => true;
 
         // get a shared instance that passes as "reserved"; doesn't need to be 100% singleton,
@@ -30,12 +32,22 @@ internal partial class DefaultHybridCache
             return obj;
         }
 
-        public void SetValue(T value) => _value = value;
+        public void SetValue(T value, long size)
+        {
+            _value = value;
+            Size = size;
+        }
 
         public override bool TryGetValue(out T value)
         {
             value = _value;
             return true; // always available
+        }
+
+        public override bool TryGetSize(out long size)
+        {
+            size = Size;
+            return size >= 0;
         }
 
         public override bool TryReserveBuffer(out BufferChunk buffer)

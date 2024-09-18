@@ -19,7 +19,7 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         var services = new ServiceCollection();
         config?.Invoke(services);
         services.AddHybridCache();
-        var provider = services.BuildServiceProvider();
+        ServiceProvider provider = services.BuildServiceProvider();
         cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
         return provider;
     }
@@ -117,8 +117,8 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         // prep the backend with our data
         var key = Me();
         Assert.NotNull(cache.BackendCache);
-        var serializer = cache.GetSerializer<Customer>();
-        using (var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue))
+        IHybridCacheSerializer<Customer> serializer = cache.GetSerializer<Customer>();
+        using (RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue))
         {
             serializer.Serialize(await GetAsync(), writer);
             cache.BackendCache.Set(key, writer.ToArray());
@@ -176,8 +176,8 @@ public class BufferReleaseTests // note that buffer ref-counting is only enabled
         // prep the backend with our data
         var key = Me();
         Assert.NotNull(cache.BackendCache);
-        var serializer = cache.GetSerializer<Customer>();
-        using (var writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue))
+        IHybridCacheSerializer<Customer> serializer = cache.GetSerializer<Customer>();
+        using (RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(int.MaxValue))
         {
             serializer.Serialize(await GetAsync(), writer);
             cache.BackendCache.Set(key, writer.ToArray());

@@ -34,7 +34,7 @@ internal partial class DefaultHybridCache
                 return new(GetValidPayloadSegment(pendingLegacy.Result)); // already complete
 
             case CacheFeatures.BackendCache | CacheFeatures.BackendBuffers: // IBufferWriter<byte>-based
-                var writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes);
+                RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes);
                 var cache = Unsafe.As<IBufferDistributedCache>(_backendCache!); // type-checked already
                 var pendingBuffers = cache.TryGetAsync(key, writer, token);
                 if (!pendingBuffers.IsCompletedSuccessfully)
@@ -95,13 +95,26 @@ internal partial class DefaultHybridCache
         if (value.TryReserve())
         {
             // based on CacheExtensions.Set<TItem>, but with post-eviction recycling
-            using var cacheEntry = _localCache.CreateEntry(key);
+
+            // intentionally use manual Dispose rather than "using"; confusingly, it is Dispose()
+            // that actually commits the add - so: if we fault, we don't want to try
+            // committing a partially configured cache entry
+            ICacheEntry cacheEntry = _localCache.CreateEntry(key);
             cacheEntry.AbsoluteExpirationRelativeToNow = options?.LocalCacheExpiration ?? _defaultLocalCacheExpiration;
             cacheEntry.Value = value;
+
+            if (value.TryGetSize(out var size))
+            {
+                cacheEntry = cacheEntry.SetSize(size);
+            }
+
             if (value.NeedsEvictionCallback)
             {
-                _ = cacheEntry.RegisterPostEvictionCallback(CacheItem.SharedOnEviction);
+                cacheEntry = cacheEntry.RegisterPostEvictionCallback(CacheItem.SharedOnEviction);
             }
+
+            // commit
+            cacheEntry.Dispose();
         }
     }
 

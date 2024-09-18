@@ -21,34 +21,38 @@ internal partial class DefaultHybridCache
             buffer = default; // we're taking over the lifetime; the caller no longer has it!
         }
 
-        public void SetValue(T value, IHybridCacheSerializer<T> serializer, int maxLength)
-        {
-            _serializer = serializer;
-            var writer = RecyclableArrayBufferWriter<byte>.Create(maxLength);
-            serializer.Serialize(value, writer);
-
-            _buffer = new(writer.DetachCommitted(out var length), length, returnToPool: true);
-            writer.Dispose(); // no buffers left (we just detached them), but just in case of other logic
-        }
-
         public override bool TryGetValue(out T value)
         {
             // only if we haven't already burned
-            if (!TryReserve())
+            if (TryReserve())
             {
-                value = default!;
-                return false;
+                try
+                {
+                    value = _serializer.Deserialize(_buffer.AsSequence());
+                    return true;
+                }
+                finally
+                {
+                    _ = Release();
+                }
             }
 
-            try
+            value = default!;
+            return false;
+        }
+
+        public override bool TryGetSize(out long size)
+        {
+            // only if we haven't already burned
+            if (TryReserve())
             {
-                value = _serializer.Deserialize(_buffer.AsSequence());
+                size = _buffer.Length;
+                _ = Release();
                 return true;
             }
-            finally
-            {
-                _ = Release();
-            }
+
+            size = 0;
+            return false;
         }
 
         public override bool TryReserveBuffer(out BufferChunk buffer)
