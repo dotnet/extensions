@@ -14,7 +14,7 @@ internal partial class DefaultHybridCache
 {
     internal sealed class StampedeState<TState, T> : StampedeState
     {
-        const HybridCacheEntryFlags FlagsDisableL1AndL2 = HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite;
+        private const HybridCacheEntryFlags FlagsDisableL1AndL2 = HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite;
 
         private readonly TaskCompletionSource<CacheItem<T>>? _result;
         private TState? _state;
@@ -39,9 +39,6 @@ internal partial class DefaultHybridCache
         }
 
         public override Type Type => typeof(T);
-
-        [DoesNotReturn]
-        private static CacheItem<T> ThrowUnexpectedCacheItem() => throw new InvalidOperationException("Unexpected cache item");
 
         public void QueueUserWorkItem(in TState state, Func<TState, CancellationToken, ValueTask<T>> underlying, HybridCacheEntryOptions? options)
         {
@@ -156,6 +153,9 @@ internal partial class DefaultHybridCache
             static async Task<T> AwaitedAsync(Task<CacheItem<T>> task)
                 => (await task.ConfigureAwait(false)).GetReservedValue();
         }
+
+        [DoesNotReturn]
+        private static CacheItem<T> ThrowUnexpectedCacheItem() => throw new InvalidOperationException("Unexpected cache item");
 
         [SuppressMessage("Resilience", "EA0014:The async method doesn't support cancellation", Justification = "In this case the cancellation token is provided internally via SharedToken")]
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception is passed through to faulted task result")]
