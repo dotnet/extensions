@@ -38,7 +38,7 @@ public class L2Tests(ITestOutputHelper log)
         var localCache = new MemoryDistributedCache(localCacheOptions);
         services.AddSingleton<IDistributedCache>(buffers ? new BufferLoggingCache(Log, localCache) : new LoggingCache(Log, localCache));
         services.AddHybridCache();
-        var provider = services.BuildServiceProvider();
+        ServiceProvider provider = services.BuildServiceProvider();
         cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
         return provider;
     }

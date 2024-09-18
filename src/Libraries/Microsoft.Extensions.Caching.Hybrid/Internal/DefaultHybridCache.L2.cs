@@ -34,7 +34,7 @@ internal partial class DefaultHybridCache
                 return new(GetValidPayloadSegment(pendingLegacy.Result)); // already complete
 
             case CacheFeatures.BackendCache | CacheFeatures.BackendBuffers: // IBufferWriter<byte>-based
-                var writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes);
+                RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes);
                 var cache = Unsafe.As<IBufferDistributedCache>(_backendCache!); // type-checked already
                 var pendingBuffers = cache.TryGetAsync(key, writer, token);
                 if (!pendingBuffers.IsCompletedSuccessfully)
@@ -99,7 +99,7 @@ internal partial class DefaultHybridCache
             // intentionally use manual Dispose rather than "using"; confusingly, it is Dispose()
             // that actually commits the add - so: if we fault, we don't want to try
             // committing a partially configured cache entry
-            var cacheEntry = _localCache.CreateEntry(key);
+            ICacheEntry cacheEntry = _localCache.CreateEntry(key);
             cacheEntry.AbsoluteExpirationRelativeToNow = options?.LocalCacheExpiration ?? _defaultLocalCacheExpiration;
             cacheEntry.Value = value;
 

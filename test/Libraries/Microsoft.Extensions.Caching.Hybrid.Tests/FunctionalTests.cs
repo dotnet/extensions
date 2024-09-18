@@ -13,7 +13,7 @@ public class FunctionalTests
         var services = new ServiceCollection();
         config?.Invoke(services);
         services.AddHybridCache();
-        var provider = services.BuildServiceProvider();
+        ServiceProvider provider = services.BuildServiceProvider();
         cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
         return provider;
     }

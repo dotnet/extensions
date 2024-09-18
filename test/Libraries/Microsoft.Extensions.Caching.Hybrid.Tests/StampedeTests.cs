@@ -24,7 +24,7 @@ public class StampedeTests
                 Flags = HybridCacheEntryFlags.DisableDistributedCache | HybridCacheEntryFlags.DisableLocalCache
             };
         });
-        var provider = services.BuildServiceProvider();
+        ServiceProvider provider = services.BuildServiceProvider();
         cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
         return provider;
     }

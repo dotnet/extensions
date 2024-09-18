@@ -16,7 +16,7 @@ public class SampleUsage
         var services = new ServiceCollection();
         services.AddDistributedMemoryCache();
         services.AddTransient<SomeDCService>();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
 
         var obj = provider.GetRequiredService<SomeDCService>();
         string name = "abc";
@@ -36,7 +36,7 @@ public class SampleUsage
         var services = new ServiceCollection();
         services.AddHybridCache();
         services.AddTransient<SomeHCService>();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
 
         var obj = provider.GetRequiredService<SomeHCService>();
         string name = "abc";
@@ -56,7 +56,7 @@ public class SampleUsage
         var services = new ServiceCollection();
         services.AddHybridCache();
         services.AddTransient<SomeHCServiceNoCapture>();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
 
         var obj = provider.GetRequiredService<SomeHCServiceNoCapture>();
         string name = "abc";
@@ -76,7 +76,7 @@ public class SampleUsage
         var services = new ServiceCollection();
         services.AddHybridCache();
         services.AddTransient<SomeHCServiceNoCaptureObjReuse>();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
 
         var obj = provider.GetRequiredService<SomeHCServiceNoCaptureObjReuse>();
         string name = "abc";

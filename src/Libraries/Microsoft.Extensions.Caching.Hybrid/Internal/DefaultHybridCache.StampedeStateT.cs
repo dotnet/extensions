@@ -189,7 +189,7 @@ internal partial class DefaultHybridCache
                     // - we're writing neither to L1 nor L2
 
                     const HybridCacheEntryFlags DisableL1AndL2 = HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite;
-                    var cacheItem = CacheItem;
+                    CacheItem cacheItem = CacheItem;
                     bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (Key.Flags & DisableL1AndL2) == DisableL1AndL2;
 
                     if (skipSerialize)
@@ -201,14 +201,14 @@ internal partial class DefaultHybridCache
                         // ^^^ The first thing we need to do is make sure we're not getting into a thread race over buffer disposal.
                         // In particular, if this cache item is somehow so short-lived that the buffers would be released *before* we're
                         // done writing them to L2, which happens *after* we've provided the value to consumers.
-                        var writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
-                        var serializer = Cache.GetSerializer<T>();
+                        RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
+                        IHybridCacheSerializer<T> serializer = Cache.GetSerializer<T>();
                         serializer.Serialize(newValue, writer);
                         BufferChunk buffer = new(writer.DetachCommitted(out var length), length, returnToPool: true); // remove buffer ownership from the writer
                         writer.Dispose(); // we're done with the writer
 
                         // protect "buffer" (this is why we "reserved"); we don't want SetResult to nuke our local
-                        var snapshot = buffer;
+                        BufferChunk snapshot = buffer;
                         SetResultPreSerialized(newValue, ref snapshot, serializer);
 
                         // Note that at this point we've already released most or all of the waiting callers. Everything
@@ -273,7 +273,7 @@ internal partial class DefaultHybridCache
             // set a result from L2 cache
             Debug.Assert(value.Array is not null, "expected buffer");
 
-            var serializer = Cache.GetSerializer<T>();
+            IHybridCacheSerializer<T> serializer = Cache.GetSerializer<T>();
             CacheItem<T> cacheItem;
             switch (CacheItem)
             {

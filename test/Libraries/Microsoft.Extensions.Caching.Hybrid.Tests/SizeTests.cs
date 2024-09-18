@@ -17,7 +17,7 @@ public class SizeTests
         var services = new ServiceCollection();
         services.AddMemoryCache(options => options.SizeLimit = sizeLimit);
         services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
 
         const string Key = "abc";
@@ -62,7 +62,7 @@ public class SizeTests
         var services = new ServiceCollection();
         services.AddMemoryCache(options => options.SizeLimit = sizeLimit);
         services.AddHybridCache();
-        using var provider = services.BuildServiceProvider();
+        using ServiceProvider provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
 
         const string Key = "abc";
