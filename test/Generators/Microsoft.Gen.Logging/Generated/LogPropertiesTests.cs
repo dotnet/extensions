@@ -314,6 +314,45 @@ public class LogPropertiesTests
     }
 
     [Fact]
+    public void LogPropertiesTestNullablePropertyInClass()
+    {
+        var now = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var classToLog = new MyClassWithNullableProperty { NullableDateTime = now, NonNullableDateTime = now };
+        LogMethodNullablePropertyInClassMatchesNonNullable(_logger, classToLog);
+        Assert.Equal(1, _logger.Collector.Count);
+        Assert.Equal(LogLevel.Information, _logger.Collector.LatestRecord.Level);
+        Assert.Equal($"Testing nullable property within class here...", _logger.Collector.LatestRecord.Message);
+        var expectedState = new Dictionary<string, string?>
+        {
+            // Note that, regardless of nullability, the datetime fields SHOULD match given the same, non-null input.
+            ["classWithNullablePropertyParam.NullableDateTime"] = "01/01/2024 00:00:00",
+            ["classWithNullablePropertyParam.NonNullableDateTime"] = "01/01/2024 00:00:00",
+            ["{OriginalFormat}"] = "Testing nullable property within class here..."
+        };
+
+        _logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+    }
+
+    [Fact]
+    public void LogPropertiesTestNullablePropertyInClass_WhenNull()
+    {
+        var now = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var classToLog = new MyClassWithNullableProperty { NullableDateTime = null, NonNullableDateTime = now };
+        LogMethodNullablePropertyInClassMatchesNonNullable(_logger, classToLog);
+        Assert.Equal(1, _logger.Collector.Count);
+        Assert.Equal(LogLevel.Information, _logger.Collector.LatestRecord.Level);
+        Assert.Equal($"Testing nullable property within class here...", _logger.Collector.LatestRecord.Message);
+        var expectedState = new Dictionary<string, string?>
+        {
+            ["classWithNullablePropertyParam.NullableDateTime"] = null,
+            ["classWithNullablePropertyParam.NonNullableDateTime"] = "01/01/2024 00:00:00",
+            ["{OriginalFormat}"] = "Testing nullable property within class here..."
+        };
+
+        _logger.Collector.LatestRecord.StructuredState.Should().NotBeNull().And.Equal(expectedState);
+    }
+
+    [Fact]
     public void LogPropertiesNonStaticClassTest()
     {
         const string StringParamValue = "Value for a string";
@@ -458,7 +497,7 @@ public class LogPropertiesTests
         Assert.Equal(1, _logger.Collector.Count);
         var latestRecord = _logger.Collector.LatestRecord;
         Assert.Null(latestRecord.Exception);
-        Assert.Equal(5, latestRecord.Id.Id);
+        Assert.Equal(6, latestRecord.Id.Id);
         Assert.Equal(LogLevel.Information, latestRecord.Level);
         Assert.Equal("Testing interface-typed argument here...", latestRecord.Message);
 
