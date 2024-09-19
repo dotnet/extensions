@@ -1,8 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Gen.Logging.Parsing;
+using Microsoft.Gen.Shared;
+using VerifyXunit;
 using Xunit;
 
 namespace Microsoft.Gen.Logging.Test;
@@ -432,5 +438,56 @@ public partial class ParserTests
                     MyRecordClass p5,
                     MyRecordStruct p6);
             }", DiagDescriptors.DefaultToString);
+    }
+
+    [Fact]
+    public async Task ClassWithNullableProperty()
+    {
+        string source = @"
+                namespace Test
+                {
+                    using System;
+
+                    using Microsoft.Extensions.Logging;
+
+                    internal static class LoggerUtils
+                    {
+                        public class MyClassWithNullableProperty
+                        {
+                            public DateTime? NullableDateTime { get; set; }
+                            public DateTime NonNullableDateTime { get; set; }
+                        }
+
+                        partial class MyLogger
+                        {
+                            [LoggerMessage(0, LogLevel.Information, ""Testing nullable property within class here..."")]
+                            public static partial void LogMethodNullablePropertyInClassMatchesNonNullable(ILogger logger, [LogProperties] MyClassWithNullableProperty classWithNullablePropertyParam);
+                        }
+                    }
+                }";
+
+#if NET6_0_OR_GREATER
+        var symbols = new[] { "NET7_0_OR_GREATER", "NET6_0_OR_GREATER", "NET5_0_OR_GREATER" };
+#else
+        var symbols = new[] { "NET5_0_OR_GREATER" };
+#endif
+
+        var (d, r) = await RoslynTestUtils.RunGenerator(
+            new LoggingGenerator(),
+            new[]
+            {
+                Assembly.GetAssembly(typeof(ILogger))!,
+                Assembly.GetAssembly(typeof(LogPropertiesAttribute))!,
+                Assembly.GetAssembly(typeof(LoggerMessageAttribute))!,
+                Assembly.GetAssembly(typeof(DateTime))!,
+            },
+            [source],
+            symbols)
+            .ConfigureAwait(false);
+
+        Assert.Empty(d);
+        await Verifier.Verify(r[0].SourceText.ToString())
+            .AddScrubber(_ => _.Replace(GeneratorUtilities.CurrentVersion, "VERSION"))
+            .UseDirectory(Path.Combine("..", "Verified"));
     }
 }

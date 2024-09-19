@@ -111,6 +111,12 @@ namespace TestClasses
             }
         }
 
+        public class MyClassWithNullableProperty
+        {
+            public DateTime? NullableDateTime { get; set; }
+            public DateTime NonNullableDateTime { get; set; }
+        }
+
         public struct MyTransitiveStruct
         {
             public DateTimeOffset DateTimeOffsetProperty { get; set; } = DateTimeOffset.UtcNow;
@@ -230,10 +236,13 @@ namespace TestClasses
         [LoggerMessage(4, LogLevel.Information, "Testing explicit nullable struct here...")]
         public static partial void LogMethodExplicitNullableStruct(ILogger logger, [LogProperties] Nullable<MyCustomStruct> structParam);
 
+        [LoggerMessage(5, LogLevel.Information, "Testing nullable property within class here...")]
+        public static partial void LogMethodNullablePropertyInClassMatchesNonNullable(ILogger logger, [LogProperties] MyClassWithNullableProperty classWithNullablePropertyParam);
+
         [LoggerMessage]
         public static partial void LogMethodDefaultAttrCtor(ILogger logger, LogLevel level, [LogProperties] ClassAsParam? complexParam);
 
-        [LoggerMessage(5, LogLevel.Information, "Testing interface-typed argument here...")]
+        [LoggerMessage(6, LogLevel.Information, "Testing interface-typed argument here...")]
         public static partial void LogMethodInterfaceArg(ILogger logger, [LogProperties] IMyInterface complexParam);
     }
 }
