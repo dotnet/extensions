@@ -58,14 +58,14 @@ public class UsingToStringInLoggersTests
         var generated = await RoslynTestUtils.RunGenerator(
             new LoggingGenerator(),
             References,
-            new[] { Source }).ConfigureAwait(false);
+            new[] { Source });
 
-        Assert.Equal(0, generated.diagnostics.Count);
+        Assert.Empty(generated.diagnostics);
 
         var fullDiags = await RoslynTestUtils.RunAnalyzer(
             new UsingToStringInLoggersAnalyzer(),
             References,
-            new[] { Source, generated.generatedSources[0].SourceText.ToString() }).ConfigureAwait(false);
+            new[] { Source, generated.generatedSources[0].SourceText.ToString() });
 
         var d = RoslynTestUtils.FilterDiagnostics(fullDiags, DiagDescriptors.UsingToStringInLoggers);
 
@@ -113,8 +113,8 @@ public class UsingToStringInLoggersTests
         var d = await RoslynTestUtils.RunAnalyzer(
             new UsingToStringInLoggersAnalyzer(),
             References,
-            new[] { Source }).ConfigureAwait(false);
+            new[] { Source });
 
-        Assert.Equal(0, d.Count);
+        Assert.Empty(d);
     }
 }
