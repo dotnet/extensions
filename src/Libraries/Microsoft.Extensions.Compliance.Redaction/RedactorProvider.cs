@@ -5,7 +5,6 @@ using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
@@ -41,7 +40,7 @@ internal sealed class RedactorProvider : IRedactorProvider
         if (!map.ContainsKey(DataClassification.None))
         {
             map.Add(DataClassification.None, typeof(NullRedactor));
-            redactors = redactors.Concat([NullRedactor.Instance]);
+            redactors = [.. redactors, NullRedactor.Instance];
         }
 
         var dict = new Dictionary<DataClassificationSet, Redactor>(map.Count);
