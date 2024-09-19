@@ -37,6 +37,12 @@ internal sealed class RedactorProvider : IRedactorProvider
 
     private static FrozenDictionary<DataClassificationSet, Redactor> GetClassRedactorMap(IEnumerable<Redactor> redactors, Dictionary<DataClassificationSet, Type> map)
     {
+        if (!map.ContainsKey(DataClassification.None))
+        {
+            map.Add(DataClassification.None, typeof(NullRedactor));
+            redactors = [.. redactors, NullRedactor.Instance];
+        }
+
         var dict = new Dictionary<DataClassificationSet, Redactor>(map.Count);
         foreach (var m in map)
         {
@@ -45,6 +51,7 @@ internal sealed class RedactorProvider : IRedactorProvider
                 if (r.GetType() == m.Value)
                 {
                     dict[m.Key] = r;
+                    break;
                 }
             }
         }

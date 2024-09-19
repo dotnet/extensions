@@ -11,6 +11,16 @@ namespace Microsoft.Extensions.Compliance.Redaction.Test;
 public class RedactorProviderTests
 {
     [Fact]
+    public void RedactorProvider_Returns_NullRedactor_For_NoneDataClassification()
+    {
+        var redactorProvider = new RedactorProvider(
+            redactors: [ErasingRedactor.Instance],
+            options: Microsoft.Extensions.Options.Options.Create(new RedactorProviderOptions()));
+
+        Assert.IsType<NullRedactor>(redactorProvider.GetRedactor(DataClassification.None));
+    }
+
+    [Fact]
     public void RedactorProvider_Returns_Redactor_For_Every_Data_Classification()
     {
         var dc = new DataClassification("Foo", "0x2");
@@ -38,13 +48,15 @@ public class RedactorProviderTests
             redactors: new Redactor[] { ErasingRedactor.Instance, NullRedactor.Instance },
             options: Microsoft.Extensions.Options.Options.Create(opt));
 
-        var r1 = redactorProvider.GetRedactor(_dataClassification1);
-        var r2 = redactorProvider.GetRedactor(_dataClassification2);
-        var r3 = redactorProvider.GetRedactor(_dataClassification3);
+        Redactor r1 = redactorProvider.GetRedactor(_dataClassification1);
+        Redactor r2 = redactorProvider.GetRedactor(_dataClassification2);
+        Redactor r3 = redactorProvider.GetRedactor(_dataClassification3);
+        Redactor r4 = redactorProvider.GetRedactor(DataClassification.None);
 
-        Assert.Equal(typeof(ErasingRedactor), r1.GetType());
-        Assert.Equal(typeof(NullRedactor), r2.GetType());
-        Assert.Equal(typeof(ErasingRedactor), r3.GetType());
+        Assert.IsType<ErasingRedactor>(r1);
+        Assert.IsType<NullRedactor>(r2);
+        Assert.IsType<ErasingRedactor>(r3);
+        Assert.IsType<NullRedactor>(r4);
     }
 
     [Fact]
