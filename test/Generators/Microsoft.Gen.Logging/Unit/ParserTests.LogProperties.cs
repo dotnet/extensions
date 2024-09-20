@@ -482,8 +482,7 @@ public partial class ParserTests
                 Assembly.GetAssembly(typeof(DateTime))!,
             },
             [source],
-            symbols)
-            .ConfigureAwait(false);
+            symbols);
 
         Assert.Empty(d);
         await Verifier.Verify(r[0].SourceText.ToString())
