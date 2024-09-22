@@ -15,6 +15,8 @@ internal static class TypeSymbolExtensions
 
     internal static bool ImplementsIConvertible(this ITypeSymbol sym, SymbolHolder symbols)
     {
+        sym = sym.GetPossiblyNullWrappedType();
+
         foreach (var member in sym.GetMembers("ToString"))
         {
             if (member is IMethodSymbol ts)
@@ -36,6 +38,8 @@ internal static class TypeSymbolExtensions
 
     internal static bool ImplementsIFormattable(this ITypeSymbol sym, SymbolHolder symbols)
     {
+        sym = sym.GetPossiblyNullWrappedType();
+
         foreach (var member in sym.GetMembers("ToString"))
         {
             if (member is IMethodSymbol ts)
@@ -57,7 +61,11 @@ internal static class TypeSymbolExtensions
     }
 
     internal static bool ImplementsISpanFormattable(this ITypeSymbol sym, SymbolHolder symbols)
-        => symbols.SpanFormattableSymbol != null && (sym.ImplementsInterface(symbols.SpanFormattableSymbol) || SymbolEqualityComparer.Default.Equals(sym, symbols.SpanFormattableSymbol));
+    {
+        sym = sym.GetPossiblyNullWrappedType();
+
+        return symbols.SpanFormattableSymbol != null && (sym.ImplementsInterface(symbols.SpanFormattableSymbol) || SymbolEqualityComparer.Default.Equals(sym, symbols.SpanFormattableSymbol));
+    }
 
     internal static bool IsSpecialType(this ITypeSymbol typeSymbol, SymbolHolder symbols)
         => typeSymbol.SpecialType != SpecialType.None ||
@@ -82,4 +90,13 @@ internal static class TypeSymbolExtensions
         return false;
     }
 
+    internal static ITypeSymbol GetPossiblyNullWrappedType(this ITypeSymbol sym)
+    {
+        if (sym is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.IsGenericType && namedTypeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+        {
+            return namedTypeSymbol.TypeArguments[0];
+        }
+
+        return sym;
+    }
 }
