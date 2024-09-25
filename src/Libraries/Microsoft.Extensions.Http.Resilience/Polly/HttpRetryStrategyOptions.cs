@@ -25,7 +25,6 @@ public class HttpRetryStrategyOptions : RetryStrategyOptions<HttpResponseMessage
     /// By default, the options are configured to handle only transient failures.
     /// Specifically, this includes HTTP status codes 408, 429, 500 and above, 
     /// as well as <see cref="HttpRequestException"/> and <see cref="TimeoutRejectedException"/> exceptions.
-    /// Additionally, if the response includes a <c>Retry-After</c> header, its value will be used to determine the delay before retrying.
     /// </remarks>
     public HttpRetryStrategyOptions()
     {
