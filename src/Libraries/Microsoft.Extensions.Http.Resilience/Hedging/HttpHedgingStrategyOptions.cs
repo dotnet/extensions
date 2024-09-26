@@ -3,7 +3,9 @@
 
 using System.Net.Http;
 using System.Threading.Tasks;
+using Polly.CircuitBreaker;
 using Polly.Hedging;
+using Polly.Timeout;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
@@ -16,8 +18,9 @@ public class HttpHedgingStrategyOptions : HedgingStrategyOptions<HttpResponseMes
     /// Initializes a new instance of the <see cref="HttpHedgingStrategyOptions"/> class.
     /// </summary>
     /// <remarks>
-    /// By default, the options are set to handle only transient failures,
-    /// that is, timeouts, 5xx responses, and <see cref="HttpRequestException"/> exceptions.
+    /// By default, the options are configured to handle only transient failures.
+    /// Specifically, this includes HTTP status codes 408, 429, 500 and above, 
+    /// as well as <see cref="HttpRequestException"/>, <see cref="BrokenCircuitException"/>, and <see cref="TimeoutRejectedException"/> exceptions.
     /// </remarks>
     public HttpHedgingStrategyOptions()
     {
