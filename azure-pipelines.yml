@@ -29,6 +29,10 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
     sdl:
+      policheck:
+        enabled: true
+      tsa:
+        enabled: true
       sourceAnalysisPool:
         name: NetCore1ESPool-Svc-Internal
         image: 1es-windows-2022
