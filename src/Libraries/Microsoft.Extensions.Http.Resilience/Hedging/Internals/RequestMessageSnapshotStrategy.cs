@@ -20,7 +20,9 @@ internal sealed class RequestMessageSnapshotStrategy : ResilienceStrategy
         ResilienceContext context,
         TState state)
     {
-        if (!context.Properties.TryGetValue(ResilienceKeys.RequestMessage, out var request) || request is null)
+        HttpRequestMessage? request = context.GetRequestMessage();
+
+        if (request is null)
         {
             Throw.InvalidOperationException("The HTTP request message was not found in the resilience context.");
         }

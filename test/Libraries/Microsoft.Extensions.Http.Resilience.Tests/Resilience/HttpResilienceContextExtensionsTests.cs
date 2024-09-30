@@ -24,8 +24,6 @@ public class HttpResilienceContextExtensionsTests
         var context = ResilienceContextPool.Shared.Get();
 
         Assert.Null(context.GetRequestMessage());
-
-        ResilienceContextPool.Shared.Return(context);
     }
 
     [Fact]
@@ -35,8 +33,6 @@ public class HttpResilienceContextExtensionsTests
         context.Properties.Set(ResilienceKeys.RequestMessage, null);
 
         Assert.Null(context.GetRequestMessage());
-
-        ResilienceContextPool.Shared.Return(context);
     }
 
     [Fact]
@@ -47,8 +43,6 @@ public class HttpResilienceContextExtensionsTests
         context.Properties.Set(ResilienceKeys.RequestMessage, request);
 
         Assert.Same(request, context.GetRequestMessage());
-
-        ResilienceContextPool.Shared.Return(context);
     }
 
     [Fact]
@@ -56,6 +50,7 @@ public class HttpResilienceContextExtensionsTests
     {
         ResilienceContext context = null!;
         using var request = new HttpRequestMessage();
+
         Assert.Throws<ArgumentNullException>(() => context.SetRequestMessage(request));
     }
 
@@ -67,8 +62,6 @@ public class HttpResilienceContextExtensionsTests
 
         Assert.True(context.Properties.TryGetValue(ResilienceKeys.RequestMessage, out HttpRequestMessage? request));
         Assert.Null(request);
-
-        ResilienceContextPool.Shared.Return(context);
     }
 
     [Fact]
@@ -80,7 +73,5 @@ public class HttpResilienceContextExtensionsTests
 
         Assert.True(context.Properties.TryGetValue(ResilienceKeys.RequestMessage, out HttpRequestMessage? actualRequest));
         Assert.Same(request, actualRequest);
-
-        ResilienceContextPool.Shared.Return(context);
     }
 }
