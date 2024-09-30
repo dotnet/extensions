@@ -49,6 +49,7 @@
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourceVersion)" />
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="$(SystemDiagnosticsPerformanceCounterVersion)" />
     <PackageVersion Include="System.IO.Hashing" Version="$(SystemIOHashingVersion)" />
+    <PackageVersion Include="System.IO.Pipelines" Version="$(SystemIOPipelinesVersion)" />
     <PackageVersion Include="System.Memory" Version="4.5.5" />
     <PackageVersion Include="System.Net.Http.Json" Version="$(SystemNetHttpJsonVersion)" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />

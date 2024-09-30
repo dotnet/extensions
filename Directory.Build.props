@@ -5,7 +5,7 @@
   <!-- TFMs and their permutations -->
   <PropertyGroup>
     <TargetFrameworkName>net</TargetFrameworkName>
-    <TargetFrameworkMajorVersion>8</TargetFrameworkMajorVersion>
+    <TargetFrameworkMajorVersion>9</TargetFrameworkMajorVersion>
     <TargetFrameworkMinorVersion>0</TargetFrameworkMinorVersion>
     <TargetFrameworkVersion>$(TargetFrameworkMajorVersion).$(TargetFrameworkMinorVersion)</TargetFrameworkVersion>
 
@@ -13,7 +13,7 @@
     <LatestTargetFramework>$(TargetFrameworkName)$(TargetFrameworkVersion)</LatestTargetFramework>
     <!-- All the .NET TFMs we're building -->
     <SupportedNetCoreTargetFrameworks>$(LatestTargetFramework)</SupportedNetCoreTargetFrameworks>
-    <NetCoreTargetFrameworks>$(SupportedNetCoreTargetFrameworks);net6.0</NetCoreTargetFrameworks>
+    <NetCoreTargetFrameworks>$(SupportedNetCoreTargetFrameworks);net8.0</NetCoreTargetFrameworks>
 
     <!-- The minimum supported .NET version for external consumers. This is used for packaging control, see Packaging.targets -->
     <MinimumSupportedTfmForPackaging>net6.0</MinimumSupportedTfmForPackaging>
