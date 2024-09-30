@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.Http.Resilience.Internal;
+using Microsoft.Shared.DiagnosticIds;
 using Microsoft.Shared.Diagnostics;
 using Polly;
 
@@ -12,6 +14,7 @@ namespace Polly;
 /// <summary>
 /// Provides utility methods for working with <see cref="ResilienceContext"/>.
 /// </summary>
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Resilience, UrlFormat = DiagnosticIds.UrlFormat)]
 public static class HttpResilienceContextExtensions
 {
     /// <summary>
