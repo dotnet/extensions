@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Shared.Diagnostics;
@@ -26,7 +27,9 @@ internal sealed class RoutingResilienceStrategy : ResilienceStrategy
         ResilienceContext context,
         TState state)
     {
-        if (!context.Properties.TryGetValue(ResilienceKeys.RequestMessage, out var request))
+        HttpRequestMessage? request = context.GetRequestMessage();
+
+        if (request is null)
         {
             Throw.InvalidOperationException("The HTTP request message was not found in the resilience context.");
         }

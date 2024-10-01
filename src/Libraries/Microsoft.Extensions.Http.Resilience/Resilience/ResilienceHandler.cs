@@ -58,7 +58,7 @@ public class ResilienceHandler : DelegatingHandler
 
         ResilienceContext context = GetOrSetResilienceContext(request, cancellationToken, out bool created);
         TrySetRequestMetadata(context, request);
-        SetRequestMessage(context, request);
+        context.SetRequestMessage(request);
 
         try
         {
@@ -117,7 +117,7 @@ public class ResilienceHandler : DelegatingHandler
 
         ResilienceContext context = GetOrSetResilienceContext(request, cancellationToken, out bool created);
         TrySetRequestMetadata(context, request);
-        SetRequestMessage(context, request);
+        context.SetRequestMessage(request);
 
         try
         {
@@ -165,11 +165,8 @@ public class ResilienceHandler : DelegatingHandler
         }
     }
 
-    private static void SetRequestMessage(ResilienceContext context, HttpRequestMessage request)
-        => context.Properties.Set(ResilienceKeys.RequestMessage, request);
-
     private static HttpRequestMessage GetRequestMessage(ResilienceContext context, HttpRequestMessage request)
-        => context.Properties.GetValue(ResilienceKeys.RequestMessage, request);
+        => context.GetRequestMessage() ?? request;
 
     private static void RestoreResilienceContext(ResilienceContext context, HttpRequestMessage request, bool created)
     {

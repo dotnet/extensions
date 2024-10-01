@@ -94,7 +94,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
                 requestMessage.SetResilienceContext(args.ActionContext);
 
                 // replace the request message
-                args.ActionContext.Properties.Set(ResilienceKeys.RequestMessage, requestMessage);
+                args.ActionContext.SetRequestMessage(requestMessage);
 
                 if (args.PrimaryContext.Properties.TryGetValue(ResilienceKeys.RoutingStrategy, out var routingPipeline))
                 {

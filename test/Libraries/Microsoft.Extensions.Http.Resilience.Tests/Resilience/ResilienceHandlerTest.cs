@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Http.Diagnostics;
-using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Test.Helpers;
 using Polly;
 using Xunit;
@@ -108,7 +107,7 @@ public class ResilienceHandlerTest
         handler.InnerHandler = new TestHandlerStub((r, _) =>
         {
             r.GetResilienceContext().Should().NotBeNull();
-            r.GetResilienceContext()!.Properties.GetValue(ResilienceKeys.RequestMessage, null!).Should().BeSameAs(r);
+            r.GetResilienceContext()!.GetRequestMessage().Should().BeSameAs(r);
 
             return Task.FromResult(new HttpResponseMessage { StatusCode = HttpStatusCode.Created });
         });
