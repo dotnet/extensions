@@ -534,20 +534,20 @@ public partial class AcceptanceTests
                 var sixthRecord = logRecords[5].StructuredState;
 
                 Assert.Equal(5, firstRecord!.Count);
-                Assert.Equal(1, secondRecord!.Count);
+                Assert.Single(secondRecord!);
                 Assert.Equal(5, fourthRecord!.Count);
-                Assert.Equal(1, fithRecord!.Count);
+                Assert.Single(fithRecord!);
                 Assert.DoesNotContain(firstRecord, x => x.Key == HttpLoggingTagNames.StatusCode);
                 Assert.DoesNotContain(firstRecord, x => x.Key == HttpLoggingTagNames.Duration);
-                Assert.DoesNotContain(secondRecord, x => x.Key == HttpLoggingTagNames.Duration);
+                Assert.DoesNotContain(secondRecord!, x => x.Key == HttpLoggingTagNames.Duration);
                 Assert.DoesNotContain(fourthRecord, x => x.Key == HttpLoggingTagNames.StatusCode);
                 Assert.DoesNotContain(fourthRecord, x => x.Key == HttpLoggingTagNames.Duration);
-                Assert.DoesNotContain(fithRecord, x => x.Key == HttpLoggingTagNames.Duration);
+                Assert.DoesNotContain(fithRecord!, x => x.Key == HttpLoggingTagNames.Duration);
 
-                Assert.Equal(1, secondRecord!.Count);
-                Assert.Equal(1, fithRecord!.Count);
-                Assert.Single(secondRecord, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
-                Assert.Single(fithRecord, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+                Assert.Single(secondRecord!);
+                Assert.Single(fithRecord!);
+                Assert.Single(secondRecord!, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
+                Assert.Single(fithRecord!, x => x.Key == HttpLoggingTagNames.StatusCode && x.Value == responseStatus);
 
                 Assert.Equal(2, thirdRecord!.Count);
                 Assert.Equal(2, sixthRecord!.Count);
