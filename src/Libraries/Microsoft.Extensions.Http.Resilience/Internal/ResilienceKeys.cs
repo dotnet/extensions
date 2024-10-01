@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Http.Resilience.Internal;
 
 internal static class ResilienceKeys
 {
-    public static readonly ResiliencePropertyKey<HttpRequestMessage> RequestMessage = new("Resilience.Http.RequestMessage");
+    public static readonly ResiliencePropertyKey<HttpRequestMessage?> RequestMessage = new("Resilience.Http.RequestMessage");
 
     public static readonly ResiliencePropertyKey<RequestRoutingStrategy> RoutingStrategy = new("Resilience.Http.RequestRoutingStrategy");
 
