@@ -70,21 +70,22 @@ internal partial class DefaultHybridCache
         }
         catch (Exception ex)
         {
-            bool logged = false;
+            bool knownCause = false;
             if (writer is not null)
             {
                 if (writer.QuotaExceeded)
                 {
                     _logger.MaximumPayloadBytesExceeded(ex, MaximumPayloadBytes);
-                    logged = true;
+                    knownCause = true;
                 }
 
                 writer.Dispose();
             }
 
-            if (!logged)
+            if (!knownCause)
             {
                 _logger.SerializationFailure(ex);
+                throw;
             }
 
             buffer = default;

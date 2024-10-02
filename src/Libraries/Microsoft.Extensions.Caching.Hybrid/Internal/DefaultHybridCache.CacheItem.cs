@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
@@ -22,7 +23,7 @@ internal partial class DefaultHybridCache
         // zero.
         // This counter also drives cache lifetime, with the cache itself incrementing the count by one. In the
         // case of mutable data, cache eviction may reduce this to zero (in cooperation with any concurrent readers,
-        // who incr/decr around their fetch), allowing safe buffer recycling.
+        // who increment/decrement around their fetch), allowing safe buffer recycling.
 
         internal int RefCount => Volatile.Read(ref _refCount);
 
@@ -89,13 +90,15 @@ internal partial class DefaultHybridCache
     {
         public abstract bool TryGetSize(out long size);
 
-        // attempt to get a value that was *not* previously reserved
-        public abstract bool TryGetValue(out T value);
+        // Attempt to get a value that was *not* previously reserved.
+        // Note on ILogger usage: we don't want to propagate and store this everywhere.
+        // It is used for reporting deserialization problems - pass it as needed.
+        public abstract bool TryGetValue(ILogger log, out T value);
 
         // get a value that *was* reserved, countermanding our reservation in the process
-        public T GetReservedValue()
+        public T GetReservedValue(ILogger log)
         {
-            if (!TryGetValue(out var value))
+            if (!TryGetValue(log, out var value))
             {
                 Throw();
             }

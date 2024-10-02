@@ -23,7 +23,8 @@ internal class LogCollector : ILoggerProvider
         {
             foreach (var logItem in _items)
             {
-                log.WriteLine($"{logItem.categoryName} {logItem.eventId}: {logItem.message}");
+                var errSuffix = logItem.exception is null ? "" : $" - {logItem.exception.Message}";
+                log.WriteLine($"{logItem.categoryName} {logItem.eventId}: {logItem.message}{errSuffix}");
             }
         }
     }
@@ -50,6 +51,7 @@ internal class LogCollector : ILoggerProvider
             {
                 same = false;
             }
+
             if (!same)
             {
                 // we expect this to fail, then

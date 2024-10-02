@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using static Microsoft.Extensions.Caching.Hybrid.Internal.DefaultHybridCache;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
@@ -14,7 +15,7 @@ internal partial class DefaultHybridCache
 {
     internal sealed class StampedeState<TState, T> : StampedeState
     {
-        private const HybridCacheEntryFlags FlagsDisableL1AndL2 = HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite;
+        private const HybridCacheEntryFlags FlagsDisableL1AndL2_Write = HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite;
 
         private readonly TaskCompletionSource<CacheItem<T>>? _result;
         private TState? _state;
@@ -76,13 +77,13 @@ internal partial class DefaultHybridCache
         public override void SetCanceled() => _result?.TrySetCanceled(SharedToken);
 
         [SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Custom task management")]
-        public ValueTask<T> JoinAsync(CancellationToken token)
+        public ValueTask<T> JoinAsync(ILogger log, CancellationToken token)
         {
             // If the underlying has already completed, and/or our local token can't cancel: we
             // can simply wrap the shared task; otherwise, we need our own cancellation state.
-            return token.CanBeCanceled && !Task.IsCompleted ? WithCancellationAsync(this, token) : UnwrapReservedAsync();
+            return token.CanBeCanceled && !Task.IsCompleted ? WithCancellationAsync(log, this, token) : UnwrapReservedAsync(log);
 
-            static async ValueTask<T> WithCancellationAsync(StampedeState<TState, T> stampede, CancellationToken token)
+            static async ValueTask<T> WithCancellationAsync(ILogger log, StampedeState<TState, T> stampede, CancellationToken token)
             {
                 var cancelStub = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
                 using var reg = token.Register(static obj =>
@@ -112,7 +113,7 @@ internal partial class DefaultHybridCache
                 }
 
                 // outside the catch, so we know we only decrement one way or the other
-                return result.GetReservedValue();
+                return result.GetReservedValue(log);
             }
         }
 
@@ -133,7 +134,7 @@ internal partial class DefaultHybridCache
         [SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "Checked manual unwrap")]
         [SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Checked manual unwrap")]
         [SuppressMessage("Major Code Smell", "S1121:Assignments should not be made from within sub-expressions", Justification = "Unusual, but legit here")]
-        internal ValueTask<T> UnwrapReservedAsync()
+        internal ValueTask<T> UnwrapReservedAsync(ILogger log)
         {
             var task = Task;
 #if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -142,16 +143,16 @@ internal partial class DefaultHybridCache
             if (task.Status == TaskStatus.RanToCompletion)
 #endif
             {
-                return new(task.Result.GetReservedValue());
+                return new(task.Result.GetReservedValue(log));
             }
 
             // if the type is immutable, callers can share the final step too (this may leave dangling
             // reservation counters, but that's OK)
-            var result = ImmutableTypeCache<T>.IsImmutable ? (_sharedUnwrap ??= AwaitedAsync(Task)) : AwaitedAsync(Task);
+            var result = ImmutableTypeCache<T>.IsImmutable ? (_sharedUnwrap ??= AwaitedAsync(log, Task)) : AwaitedAsync(log, Task);
             return new(result);
 
-            static async Task<T> AwaitedAsync(Task<CacheItem<T>> task)
-                => (await task.ConfigureAwait(false)).GetReservedValue();
+            static async Task<T> AwaitedAsync(ILogger log, Task<CacheItem<T>> task)
+                => (await task.ConfigureAwait(false)).GetReservedValue(log);
         }
 
         [DoesNotReturn]
@@ -187,11 +188,11 @@ internal partial class DefaultHybridCache
                     // Likewise, if we're writing to a MutableCacheItem, we'll be serializing *anyway* for the payload.
                     //
                     // Rephrasing that: the only scenario in which we *do not* need to serialize is if:
-                    // - it is an ImmutableCacheItem
-                    // - we're writing neither to L1 nor L2
+                    // - it is an ImmutableCacheItem (so we don't need bytes for the CacheItem, L1)
+                    // - we're not writing to L2
 
                     CacheItem cacheItem = CacheItem;
-                    bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (Key.Flags & FlagsDisableL1AndL2) == FlagsDisableL1AndL2;
+                    bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (Key.Flags & FlagsDisableL1AndL2_Write) == FlagsDisableL1AndL2_Write;
 
                     if (skipSerialize)
                     {
@@ -231,7 +232,7 @@ internal partial class DefaultHybridCache
                         }
                         else
                         {
-                            // unable to serialize (or quota exceeded) ;try to at least store the onwards value; this is
+                            // unable to serialize (or quota exceeded); try to at least store the onwards value; this is
                             // especially useful for immutable data types
                             SetResultPreSerialized(newValue, ref bufferToRelease, serializer);
                         }
@@ -314,7 +315,7 @@ internal partial class DefaultHybridCache
 
         private void SetImmutableResultWithoutSerialize(T value)
         {
-            Debug.Assert((Key.Flags & FlagsDisableL1AndL2) == FlagsDisableL1AndL2, "Only expected if L1+L2 disabled");
+            Debug.Assert((Key.Flags & FlagsDisableL1AndL2_Write) == FlagsDisableL1AndL2_Write, "Only expected if L1+L2 disabled");
 
             // set a result from a value we calculated directly
             CacheItem<T> cacheItem;

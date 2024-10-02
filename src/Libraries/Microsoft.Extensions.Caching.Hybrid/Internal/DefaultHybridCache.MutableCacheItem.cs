@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
 internal partial class DefaultHybridCache
@@ -27,7 +30,7 @@ internal partial class DefaultHybridCache
             _fallbackValue = fallbackValue;
         }
 
-        public override bool TryGetValue(out T value)
+        public override bool TryGetValue(ILogger log, out T value)
         {
             // only if we haven't already burned
             if (TryReserve())
@@ -37,6 +40,11 @@ internal partial class DefaultHybridCache
                     var serializer = _serializer;
                     value = serializer is null ? _fallbackValue! : serializer.Deserialize(_buffer.AsSequence());
                     return true;
+                }
+                catch (Exception ex)
+                {
+                    log.DeserializationFailure(ex);
+                    throw;
                 }
                 finally
                 {

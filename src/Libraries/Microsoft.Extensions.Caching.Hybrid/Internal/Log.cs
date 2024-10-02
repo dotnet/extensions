@@ -10,19 +10,28 @@ internal static partial class Log
 {
     internal const int IdMaximumPayloadBytesExceeded = 1;
     internal const int IdSerializationFailure = 2;
-    internal const int IdKeyEmptyOrWhitespace = 3;
-    internal const int IdMaximumKeyLengthExceeded = 4;
+    internal const int IdDeserializationFailure = 3;
+    internal const int IdKeyEmptyOrWhitespace = 4;
+    internal const int IdMaximumKeyLengthExceeded = 5;
 
-    [LoggerMessage(LogLevel.Warning, "Cache MaximumPayloadBytes ({bytes}) exceeded", EventId = IdMaximumPayloadBytesExceeded)]
+    [LoggerMessage(LogLevel.Error, "Cache MaximumPayloadBytes ({bytes}) exceeded", EventId = IdMaximumPayloadBytesExceeded)]
     internal static partial void MaximumPayloadBytesExceeded(this ILogger logger, Exception e, int bytes);
 
-    [LoggerMessage(LogLevel.Warning, "Cache serialization failure", EventId = IdSerializationFailure)]
+    // note that serialization is critical enough that we perform hard failures in addition to logging; serialization
+    // failures are unlikely to be transient (i.e. connectivity); we would rather this shows up in QA, rather than
+    // being invisible and people *thinking* they're using cache, when actually they are not
+
+    [LoggerMessage(LogLevel.Error, "Cache serialization failure", EventId = IdSerializationFailure)]
     internal static partial void SerializationFailure(this ILogger logger, Exception e);
 
-    [LoggerMessage(LogLevel.Warning, "Cache key empty or whitespace", EventId = IdKeyEmptyOrWhitespace)]
+    // (see same notes per SerializationFailure)
+    [LoggerMessage(LogLevel.Error, "Cache deserialization failure", EventId = IdDeserializationFailure)]
+    internal static partial void DeserializationFailure(this ILogger logger, Exception e);
+
+    [LoggerMessage(LogLevel.Error, "Cache key empty or whitespace", EventId = IdKeyEmptyOrWhitespace)]
     internal static partial void KeyEmptyOrWhitespace(this ILogger logger);
 
-    [LoggerMessage(LogLevel.Warning, "Cache key maximum length exceeded (maximum: {maxLength}, actual: {keyLength})", EventId = IdMaximumKeyLengthExceeded)]
+    [LoggerMessage(LogLevel.Error, "Cache key maximum length exceeded (maximum: {maxLength}, actual: {keyLength})", EventId = IdMaximumKeyLengthExceeded)]
     internal static partial void MaximumKeyLengthExceeded(this ILogger logger, int maxLength, int keyLength);
 }
 
@@ -33,7 +42,7 @@ internal static partial class Log
     {
         if (logger is not null && logger.IsEnabled(LogLevel.Warning))
         {
-            logger.Log(LogLevel.Warning, IdMaximumPayloadBytesExceeded, bytes,
+            logger.Log(LogLevel.Error, IdMaximumPayloadBytesExceeded, bytes,
                 e, static (state, e) => $"Cache MaximumPayloadBytes ({state}) exceeded");
         }
     }
@@ -42,8 +51,17 @@ internal static partial class Log
     {
         if (logger is not null && logger.IsEnabled(LogLevel.Warning))
         {
-            logger.Log(LogLevel.Warning, IdSerializationFailure, 0,
+            logger.Log(LogLevel.Error, IdSerializationFailure, 0,
                 e, static (state, e) => $"Cache serialization failure");
+        }
+    }
+
+    internal static partial void DeserializationFailure(this ILogger logger, Exception e)
+    {
+        if (logger is not null && logger.IsEnabled(LogLevel.Warning))
+        {
+            logger.Log(LogLevel.Error, IdDeserializationFailure, 0,
+                e, static (state, e) => $"Cache deserialization failure");
         }
     }
 
@@ -51,7 +69,7 @@ internal static partial class Log
     {
         if (logger is not null && logger.IsEnabled(LogLevel.Warning))
         {
-            logger.Log(LogLevel.Warning, IdKeyEmptyOrWhitespace, 0,
+            logger.Log(LogLevel.Error, IdKeyEmptyOrWhitespace, 0,
                 null, static (state, e) => $"Cache key empty or whitespace");
         }
     }
@@ -60,7 +78,7 @@ internal static partial class Log
     {
         if (logger is not null && logger.IsEnabled(LogLevel.Warning))
         {
-            logger.Log(LogLevel.Warning, IdMaximumKeyLengthExceeded, (maxLength, keyLength),
+            logger.Log(LogLevel.Error, IdMaximumKeyLengthExceeded, (maxLength, keyLength),
                 null, static (state, e) => $"Cache key maximum length exceeded (maximum: {state.maxLength}, actual: {state.keyLength})");
         }
     }

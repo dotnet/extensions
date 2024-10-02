@@ -128,7 +128,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
         }
 
         if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0 && _localCache.TryGetValue(key, out var untyped)
-            && untyped is CacheItem<T> typed && typed.TryGetValue(out var value))
+            && untyped is CacheItem<T> typed && typed.TryGetValue(_logger, out var value))
         {
             // short-circuit
             return new(value);
@@ -147,11 +147,11 @@ internal sealed partial class DefaultHybridCache : HybridCache
             {
                 // we're going to run to completion; no need to get complicated
                 _ = stampede.ExecuteDirectAsync(in state, underlyingDataCallback, options); // this larger task includes L2 write etc
-                return stampede.UnwrapReservedAsync();
+                return stampede.UnwrapReservedAsync(_logger);
             }
         }
 
-        return stampede.JoinAsync(cancellationToken);
+        return stampede.JoinAsync(_logger, cancellationToken);
     }
 
     public override ValueTask RemoveAsync(string key, CancellationToken token = default)
