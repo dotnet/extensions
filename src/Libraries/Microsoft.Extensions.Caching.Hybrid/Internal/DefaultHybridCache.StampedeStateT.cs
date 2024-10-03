@@ -15,7 +15,7 @@ internal partial class DefaultHybridCache
 {
     internal sealed class StampedeState<TState, T> : StampedeState
     {
-        private const HybridCacheEntryFlags FlagsDisableL1AndL2_Write = HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite;
+        private const HybridCacheEntryFlags FlagsDisableL1AndL2Write = HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite;
 
         private readonly TaskCompletionSource<CacheItem<T>>? _result;
         private TState? _state;
@@ -167,7 +167,16 @@ internal partial class DefaultHybridCache
                 // read from L2 if appropriate
                 if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheRead) == 0)
                 {
-                    var result = await Cache.GetFromL2Async(Key.Key, SharedToken).ConfigureAwait(false);
+                    BufferChunk result;
+                    try
+                    {
+                        result = await Cache.GetFromL2Async(Key.Key, SharedToken).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Cache._logger.CacheBackendReadFailure(ex);
+                        result = default; // treat as "miss"
+                    }
 
                     if (result.Array is not null)
                     {
@@ -192,7 +201,7 @@ internal partial class DefaultHybridCache
                     // - we're not writing to L2
 
                     CacheItem cacheItem = CacheItem;
-                    bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (Key.Flags & FlagsDisableL1AndL2_Write) == FlagsDisableL1AndL2_Write;
+                    bool skipSerialize = cacheItem is ImmutableCacheItem<T> && (Key.Flags & FlagsDisableL1AndL2Write) == FlagsDisableL1AndL2Write;
 
                     if (skipSerialize)
                     {
@@ -227,7 +236,14 @@ internal partial class DefaultHybridCache
                             if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
                             {
                                 // We already have the payload serialized, so this is trivial to do.
-                                await Cache.SetL2Async(Key.Key, in buffer, _options, SharedToken).ConfigureAwait(false);
+                                try
+                                {
+                                    await Cache.SetL2Async(Key.Key, in buffer, _options, SharedToken).ConfigureAwait(false);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Cache._logger.CacheBackendWriteFailure(ex);
+                                }
                             }
                         }
                         else
@@ -315,7 +331,7 @@ internal partial class DefaultHybridCache
 
         private void SetImmutableResultWithoutSerialize(T value)
         {
-            Debug.Assert((Key.Flags & FlagsDisableL1AndL2_Write) == FlagsDisableL1AndL2_Write, "Only expected if L1+L2 disabled");
+            Debug.Assert((Key.Flags & FlagsDisableL1AndL2Write) == FlagsDisableL1AndL2Write, "Only expected if L1+L2 disabled");
 
             // set a result from a value we calculated directly
             CacheItem<T> cacheItem;
