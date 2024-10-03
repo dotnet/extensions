@@ -25,6 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options" />
+    <ProjectReference Include="..\Microsoft.Extensions.Telemetry.Abstractions\Microsoft.Extensions.Telemetry.Abstractions.csproj" PrivateAssets="All" />
 
     <!-- this provides the default L1 implementation; L2 is optional -->
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
