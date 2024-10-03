@@ -40,6 +40,7 @@ if desired.
 | `EXTEXP0015` | Environmental probes experiments |
 | `EXTEXP0016` | Hosting integration testing experiments |
 | `EXTEXP0017` | Contextual options experiments |
+| `EXTEXP0018` | HybridCache experiments |
 
 # Obsoletions
 
@@ -81,7 +82,7 @@ You may continue using obsolete APIs in your application, but we advise explorin
 | `LOGGEN023` | Tag provider method is inaccessible |
 | `LOGGEN024` | Property provider method has an invalid signature |
 | `LOGGEN025` | Logging method parameters can't have "ref" or "out" modifiers |
-| `LOGGEN026` | Parameters with a custom tag provider are not subject to redaciton |
+| `LOGGEN026` | Parameters with a custom tag provider are not subject to redaction |
 | `LOGGEN027` | Multiple logging methods shouldn't use the same event name |
 | `LOGGEN028` | Logging method parameter's type has a hidden property |
 | `LOGGEN029` | A logging method parameter causes name conflicts |

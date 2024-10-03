@@ -53,7 +53,7 @@ Here are few commands that you will likely use the most:
     - `build.sh --build`: to build the solution<sup>1</sup>.
     - `build.sh --test`: to run all unit tests in the solution<sup>1</sup>.
     - `build.sh --vs <keywords>`: to generate a "filtered" solution and save it as `SDK.sln`. It also performs the "restore" operation. Keywords can be any part of the name or path of project files you want to include. For example: `./build.sh --vs Http,Fakes,AspNetCore`.<br />
-    If for some reason you wish to generate a solution with all projects you can pass `*` for the keyword, e.g.: `./build.sh --vs '*'` (Note: you have to escape the asterisk or use `set -f` to turn off expansion).<br />
+    If for some reason you wish to generate a solution with all projects you can pass `*` for the keyword, e.g.: `./build.sh -vs '*'` (Note: you have to escape the asterisk or use `set -f` to turn off expansion).<br />
       > Under the hood, this invokes `scripts/Slngen.ps1` script, which in turn executes [slngen tool][slngen-tool]. If you want to customize how the "filtered" solution is generated, you will need to invoke `scripts/Slngen.ps1` script directly.<br />
         Run `./scripts/Slngen.ps1 -help` for more details.
 
