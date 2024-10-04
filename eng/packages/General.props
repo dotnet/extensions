@@ -28,7 +28,7 @@
   
   <!-- The items in this ItemGroup are packages coming from aspnetcore and runtime repos. When an asset is targeting net9.0 version
   of the framework, the following versions should be used. -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0' Or '$(ForceDotnet9Versions)' == 'true'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0' Or '$(ForceLatestDotnetVersions)' == 'true'">
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProviderVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryVersion)" />
@@ -62,7 +62,7 @@
 
  <!-- The items in this ItemGroup are packages coming from aspnetcore and runtime repos. When an asset is not targeting net9.0 version
   of the framework, we should use the following LTS versions instead -->
-  <ItemGroup Condition="'$(TargetFramework)' != 'net9.0' And '$(ForceDotnet9Versions)' != 'true'">
+  <ItemGroup Condition="'$(TargetFramework)' != 'net9.0' And '$(ForceLatestDotnetVersions)' != 'true'">
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProviderLTSVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsLTSVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryLTSVersion)" />
