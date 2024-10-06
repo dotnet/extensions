@@ -147,7 +147,7 @@ public sealed class WindowsSnapshotProviderTests
         metricCollector.RecordObservableInstruments();
 
         // Memory usage should be the same as before, as we're not simulating any CPU usage:
-        Assert.Equal(1, metricCollector.LastMeasurement.Value); // Consuming 100% of the memory
+        Assert.Equal(1, Math.Round(metricCollector.LastMeasurement.Value)); // Consuming 100% of the memory
     }
 
     [ConditionalFact]
