@@ -96,14 +96,14 @@ public sealed class WindowsSnapshotProviderTests
         // Step #1 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
-        Assert.Equal(5, metricCollector.LastMeasurement?.Value); // Consuming 5% of the CPU (2 CPUs, 1000 ticks, 1ms).
+        Assert.Equal(0.05, metricCollector.LastMeasurement?.Value); // Consuming 5% of the CPU (2 CPUs, 1000 ticks, 1ms).
 
         // Step #2 - simulate another 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
 
         // CPU usage should be the same as before, as we're not simulating any CPU usage:
-        Assert.Equal(5, metricCollector.LastMeasurement?.Value); // Still consuming 5% of the CPU
+        Assert.Equal(0.05, metricCollector.LastMeasurement?.Value); // Still consuming 5% of the CPU
     }
 
     [ConditionalFact]
@@ -124,7 +124,7 @@ public sealed class WindowsSnapshotProviderTests
         // Step #0 - state in the beginning:
         metricCollector.RecordObservableInstruments();
         Assert.NotNull(metricCollector.LastMeasurement);
-        Assert.Equal(10, metricCollector.LastMeasurement.Value); // Consuming 5% of the memory initially
+        Assert.Equal(0.1, metricCollector.LastMeasurement.Value); // Consuming 5% of the memory initially
 
         memoryUsed = 900L; // Simulate 30% memory usage.
 
@@ -132,13 +132,13 @@ public sealed class WindowsSnapshotProviderTests
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
 
-        Assert.Equal(10, metricCollector.LastMeasurement.Value); // Still consuming 10% as gauge wasn't updated.
+        Assert.Equal(0.1, metricCollector.LastMeasurement.Value); // Still consuming 10% as gauge wasn't updated.
 
         // Step #2 - simulate 1 millisecond passing and collect metrics again:
         fakeClock.Advance(TimeSpan.FromMilliseconds(1));
         metricCollector.RecordObservableInstruments();
 
-        Assert.Equal(30, metricCollector.LastMeasurement.Value); // Consuming 30% of the memory afterwards
+        Assert.Equal(0.3, metricCollector.LastMeasurement.Value); // Consuming 30% of the memory afterwards
 
         memoryUsed = 3_100L; // Simulate more than 100% memory usage
 
@@ -147,7 +147,7 @@ public sealed class WindowsSnapshotProviderTests
         metricCollector.RecordObservableInstruments();
 
         // Memory usage should be the same as before, as we're not simulating any CPU usage:
-        Assert.Equal(100, metricCollector.LastMeasurement.Value); // Consuming 100% of the memory
+        Assert.Equal(1, metricCollector.LastMeasurement.Value); // Consuming 100% of the memory
     }
 
     [ConditionalFact]

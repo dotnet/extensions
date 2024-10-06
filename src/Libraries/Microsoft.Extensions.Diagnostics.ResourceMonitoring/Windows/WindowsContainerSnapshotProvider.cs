@@ -195,7 +195,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         {
             if (now >= _refreshAfterMemory)
             {
-                _memoryPercentage = Math.Min(Hundred, memoryUsage / _memoryLimit * Hundred); // Don't change calculation order, otherwise we loose some precision
+                _memoryPercentage = Math.Min(Hundred, memoryUsage / _memoryLimit);
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
@@ -229,7 +229,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
                 var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuLimit;
                 if (usageTickDelta > 0 && timeTickDelta > 0)
                 {
-                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / timeTickDelta * Hundred); // Don't change calculation order, otherwise precision is lost.
+                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / timeTickDelta);
 
                     Log.CpuContainerUsageData(
                         _logger, basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, _cpuLimit, _cpuPercentage);
