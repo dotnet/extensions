@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.Extensions.Diagnostics.Logging.Sampling;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
@@ -19,19 +18,16 @@ public class LoggerFilterRule
     /// <param name="eventId">The event ID to use in this filter rule.</param>
     /// <param name="logLevel">The <see cref="LogLevel"/> to use in this filter rule.</param>
     /// <param name="filter">The filter to apply.</param>
-    /// <param name="sampler">The sampler to apply.</param>
     public LoggerFilterRule(
         string? categoryName,
         EventId? eventId,
         LogLevel? logLevel,
-        Func<string?, EventId?, LogLevel?, bool>? filter,
-        ILoggerSampler? sampler)
+        Func<string?, EventId?, LogLevel?, bool>? filter)
     {
         CategoryName = categoryName;
         EventId = eventId;
         LogLevel = logLevel;
         Filter = filter;
-        Sampler = sampler;
     }
 
     /// <summary>
@@ -53,9 +49,4 @@ public class LoggerFilterRule
     /// Gets the filter delegate that would be applied to logs.
     /// </summary>
     public Func<string?, EventId?, LogLevel?, bool>? Filter { get; }
-
-    /// <summary>
-    /// Gets the sampler that would be applied to logs.
-    /// </summary>
-    public ILoggerSampler? Sampler { get; }
 }
