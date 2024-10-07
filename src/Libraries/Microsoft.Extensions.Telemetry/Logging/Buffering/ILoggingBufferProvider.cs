@@ -1,17 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-
 namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
 
 /// <summary>
-/// Options to configure log buffering.
+/// Interface providing access to the current logging buffer.
 /// </summary>
-public class LogBufferingOptions
+public interface ILoggingBufferProvider
 {
     /// <summary>
-    /// Gets or sets a list of log buffers.
+    /// Gets current logging buffer.
     /// </summary>
-    public ISet<LogBufferConfig> Configs { get; set; } = new HashSet<LogBufferConfig>();
+    public ILoggingBuffer CurrentBuffer { get; }
 }
