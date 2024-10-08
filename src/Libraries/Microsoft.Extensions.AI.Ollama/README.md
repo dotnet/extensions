@@ -226,16 +226,13 @@ foreach (var prompt in new[] { "What is AI?", "What is .NET?", "What is AI?" })
 
 ```csharp
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 // App Setup
 var builder = Host.CreateApplicationBuilder();
-builder.Services.AddSingleton<IDistributedCache>(new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions())));
+builder.Services.AddDistributedMemoryCache();
 builder.Services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
 builder.Services.AddChatClient(b => b
