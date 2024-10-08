@@ -1,4 +1,8 @@
 <Project>
+  <ItemGroup Condition="'$(InjectSharedCollectionExtensions)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\CollectionExtensions\*.cs" LinkBase="Shared\CollectionExtensions" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(InjectSharedDiagnosticIds)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\DiagnosticIds\*.cs" LinkBase="Shared\DiagnosticIds" />
   </ItemGroup>

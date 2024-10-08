@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
+    <Description>Utilities for working with generative AI components.</Description>
+    <Workstream>AI</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>preview</Stage>
+    <MinCodeCoverage>0</MinCodeCoverage>
+    <MinMutationScore>0</MinMutationScore>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
+    <NoWarn>$(NoWarn);CA2227;CA1034;SA1316;S1067;S1121;S1994;S3253</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectSharedCollectionExtensions>true</InjectSharedCollectionExtensions>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../Microsoft.Extensions.AI.Abstractions/Contents/FunctionCallHelpers.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" />
+  </ItemGroup>
+  
+</Project>
