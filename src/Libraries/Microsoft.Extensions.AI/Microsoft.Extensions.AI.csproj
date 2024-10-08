@@ -19,6 +19,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- TEMPORARY UNTIL JSON SOURCE GENERATOR ISSUE CAN BE SORTED OUT -->
+    <NoWarn>$(NoWarn);IL2026</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <InjectSharedCollectionExtensions>true</InjectSharedCollectionExtensions>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
   </PropertyGroup>

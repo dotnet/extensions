@@ -44,6 +44,8 @@ public static
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
+    [RequiresUnreferencedCode("Reflection is used to access types from the supplied MethodInfo.")]
+    [RequiresDynamicCode("Reflection is used to access types from the supplied MethodInfo.")]
     public static AIFunction Create(Delegate method, AIFunctionFactoryCreateOptions options)
     {
         _ = Throw.IfNull(method);
@@ -67,6 +69,8 @@ public static
     /// <param name="name">The name to use for the <see cref="AIFunction"/>.</param>
     /// <param name="description">The description to use for the <see cref="AIFunction"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
+    [RequiresUnreferencedCode("Reflection is used to access types from the supplied MethodInfo.")]
+    [RequiresDynamicCode("Reflection is used to access types from the supplied MethodInfo.")]
     public static AIFunction Create(Delegate method, JsonSerializerOptions options, string? name = null, string? description = null)
     {
         _ = Throw.IfNull(method);
@@ -100,6 +104,8 @@ public static
     /// </param>
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
+    [RequiresUnreferencedCode("Reflection is used to access types from the supplied MethodInfo.")]
+    [RequiresDynamicCode("Reflection is used to access types from the supplied MethodInfo.")]
     public static AIFunction Create(MethodInfo method, object? target, AIFunctionFactoryCreateOptions options)
     {
         _ = Throw.IfNull(method);
@@ -130,6 +136,8 @@ public static
         /// This should be <see langword="null"/> if and only if <paramref name="method"/> is a static method.
         /// </param>
         /// <param name="options">Function creation options.</param>
+        [RequiresUnreferencedCode("Reflection is used to access types from the supplied MethodInfo.")]
+        [RequiresDynamicCode("Reflection is used to access types from the supplied MethodInfo.")]
         public ReflectionAIFunction(MethodInfo method, object? target, AIFunctionFactoryCreateOptions options)
         {
             _ = Throw.IfNull(method);
@@ -376,6 +384,8 @@ public static
         /// <summary>
         /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{FunctionResult}"/> to return from the invocation.
         /// </summary>
+        [RequiresUnreferencedCode("Reflection is used to access types from the supplied MethodInfo.")]
+        [RequiresDynamicCode("Reflection is used to access types from the supplied MethodInfo.")]
         private static Type GetReturnMarshaler(MethodInfo method, out Func<object?, ValueTask<object?>> marshaler)
         {
             // Handle each known return type for the method

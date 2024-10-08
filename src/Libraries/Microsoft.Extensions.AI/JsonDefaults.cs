@@ -28,9 +28,9 @@ internal static partial class JsonDefaults
             var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-#pragma warning disable IL3050
+#pragma warning disable IL3050, IL2026 // only used when reflection-based serialization is enabled
                 TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-#pragma warning restore IL3050
+#pragma warning restore IL3050, IL2026
             };
 
             options.MakeReadOnly();

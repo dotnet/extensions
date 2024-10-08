@@ -68,6 +68,8 @@ public static partial class ChatClientStructuredOutputExtensions
     /// <typeparam name="T">The type of structured output to request.</typeparam>
     [RequiresDynamicCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. "
         + "Use System.Text.Json source generation for native AOT applications.")]
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed and might need runtime code generation. "
+        + "Use System.Text.Json source generation for native AOT applications.")]
     public static Task<ChatCompletion<T>> CompleteAsync<T>(
         this IChatClient chatClient,
         string chatMessage,
