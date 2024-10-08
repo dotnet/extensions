@@ -28,6 +28,7 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
+    <MicrosoftBclAsyncInterfaces>9.0.0-rc.2.24473.5</MicrosoftBclAsyncInterfaces>
     <MicrosoftBclTimeProviderVersion>9.0.0-rc.2.24473.5</MicrosoftBclTimeProviderVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>9.0.0-rc.2.24473.5</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>9.0.0-rc.2.24473.5</MicrosoftExtensionsCachingMemoryVersion>
@@ -55,11 +56,14 @@
     <SystemDiagnosticsPerformanceCounterVersion>9.0.0-rc.2.24473.5</SystemDiagnosticsPerformanceCounterVersion>
     <SystemIOHashingVersion>9.0.0-rc.2.24473.5</SystemIOHashingVersion>
     <SystemIOPipelinesVersion>9.0.0-rc.2.24473.5</SystemIOPipelinesVersion>
+    <SystemMemoryDataVersion>9.0.0-rc.2.24473.5</SystemMemoryDataVersion>
+    <SystemNetHttpJsonVersion>9.0.0-rc.2.24473.5</SystemNetHttpJsonVersion>
     <SystemRuntimeCachingVersion>9.0.0-rc.2.24473.5</SystemRuntimeCachingVersion>
     <SystemSecurityCryptographyPkcsVersion>9.0.0-rc.2.24473.5</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>9.0.0-rc.2.24473.5</SystemSecurityCryptographyXmlVersion>
     <SystemTextEncodingsWebVersion>9.0.0-rc.2.24473.5</SystemTextEncodingsWebVersion>
     <SystemTextJsonVersion>9.0.0-rc.2.24473.5</SystemTextJsonVersion>
+    <SystemNumericsTensorsVersion>9.0.0-rc.2.24473.5</SystemNumericsTensorsVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
     <MicrosoftAspNetCoreAppRefVersion>9.0.0-rc.2.24474.3</MicrosoftAspNetCoreAppRefVersion>
     <MicrosoftAspNetCoreAppRuntimewinx64Version>9.0.0-rc.2.24474.3</MicrosoftAspNetCoreAppRuntimewinx64Version>

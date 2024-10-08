@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
+    <Description>Unit tests for Microsoft.Extensions.AI.Abstractions.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1063;CA1861;CA2201;VSTHRD003</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Memory.Data" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" ProjectUnderTest="true" />
+    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
+  </ItemGroup>
+</Project>

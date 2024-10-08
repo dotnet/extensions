@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
+    <Description>Implementation of generative AI abstractions for Azure.AI.Inference.</Description>
+    <Workstream>AI</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>preview</Stage>
+    <MinCodeCoverage>0</MinCodeCoverage>
+    <MinMutationScore>0</MinMutationScore>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
+    <NoWarn>$(NoWarn);CA1063;CA2227;SA1316;S1067;S1121;S3358</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectCompilerFeatureRequiredOnLegacy>true</InjectCompilerFeatureRequiredOnLegacy>
+    <InjectSharedCollectionExtensions>true</InjectSharedCollectionExtensions>
+    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+    <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../Microsoft.Extensions.AI.Abstractions/Contents/FunctionCallHelpers.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.AI.Inference" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Microsoft.Extensions.AI.Abstractions/Microsoft.Extensions.AI.Abstractions.csproj" />
+  </ItemGroup>
+  
+</Project>
