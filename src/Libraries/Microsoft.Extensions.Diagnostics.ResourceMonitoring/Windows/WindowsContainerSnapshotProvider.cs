@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 
 internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
 {
-    private const double Hundred = 100.0d;
+    private const double One = 1.0d;
 
     private readonly Lazy<MEMORYSTATUSEX> _memoryStatus;
 
@@ -195,7 +195,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
         {
             if (now >= _refreshAfterMemory)
             {
-                _memoryPercentage = Math.Min(Hundred, memoryUsage / _memoryLimit);
+                _memoryPercentage = Math.Min(One, memoryUsage / _memoryLimit);
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
@@ -229,7 +229,7 @@ internal sealed class WindowsContainerSnapshotProvider : ISnapshotProvider
                 var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuLimit;
                 if (usageTickDelta > 0 && timeTickDelta > 0)
                 {
-                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / timeTickDelta);
+                    _cpuPercentage = Math.Min(One, usageTickDelta / timeTickDelta);
 
                     Log.CpuContainerUsageData(
                         _logger, basicAccountingInfo.TotalKernelTime, basicAccountingInfo.TotalUserTime, _oldCpuUsageTicks, timeTickDelta, _cpuLimit, _cpuPercentage);

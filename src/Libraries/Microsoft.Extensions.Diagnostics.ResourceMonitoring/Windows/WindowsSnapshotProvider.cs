@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Windows;
 
 internal sealed class WindowsSnapshotProvider : ISnapshotProvider
 {
-    private const double Hundred = 100.0d;
+    private const double One = 1.0d;
 
     public SystemResources Resources { get; }
 
@@ -136,7 +136,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
         {
             if (now >= _refreshAfterMemory)
             {
-                _memoryPercentage = Math.Min(Hundred, currentMemoryUsage / _totalMemory);
+                _memoryPercentage = Math.Min(One, currentMemoryUsage / _totalMemory);
                 _refreshAfterMemory = now.Add(_memoryRefreshInterval);
             }
 
@@ -168,7 +168,7 @@ internal sealed class WindowsSnapshotProvider : ISnapshotProvider
                 var timeTickDelta = (now.Ticks - _oldCpuTimeTicks) * _cpuUnits;
                 if (usageTickDelta > 0 && timeTickDelta > 0)
                 {
-                    _cpuPercentage = Math.Min(Hundred, usageTickDelta / (double)timeTickDelta);
+                    _cpuPercentage = Math.Min(One, usageTickDelta / (double)timeTickDelta);
 
                     Log.CpuUsageData(_logger, currentCpuTicks, _oldCpuUsageTicks, timeTickDelta, _cpuUnits, _cpuPercentage);
 
