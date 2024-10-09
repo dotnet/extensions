@@ -13,6 +13,19 @@ namespace Microsoft.Extensions.AI;
 public class FunctionInvokingChatClientTests
 {
     [Fact]
+    public void Ctor_HasExpectedDefaults()
+    {
+        using TestChatClient innerClient = new();
+        using FunctionInvokingChatClient client = new(innerClient);
+
+        Assert.False(client.ConcurrentInvocation);
+        Assert.False(client.DetailedErrors);
+        Assert.True(client.KeepFunctionCallingMessages);
+        Assert.Null(client.MaximumIterationsPerRequest);
+        Assert.False(client.RetryOnError);
+    }
+
+    [Fact]
     public async Task SupportsSingleFunctionCallPerRequestAsync()
     {
         var options = new ChatOptions
@@ -71,7 +84,7 @@ public class FunctionInvokingChatClientTests
     }
 
     [Fact]
-    public async Task ParallelFunctionCallsInvokedConcurrentlyByDefaultAsync()
+    public async Task ParallelFunctionCallsMayBeInvokedConcurrentlyAsync()
     {
         using var barrier = new Barrier(2);
 
@@ -97,11 +110,11 @@ public class FunctionInvokingChatClientTests
                 new FunctionResultContent("callId2", "Func", result: "worldworld"),
             ]),
             new ChatMessage(ChatRole.Assistant, "done"),
-        ]);
+        ], configurePipeline: b => b.Use(s => new FunctionInvokingChatClient(s) { ConcurrentInvocation = true }));
     }
 
     [Fact]
-    public async Task ConcurrentInvocationOfParallelCallsCanBeDisabledAsync()
+    public async Task ConcurrentInvocationOfParallelCallsDisabledByDefaultAsync()
     {
         int activeCount = 0;
 
@@ -130,7 +143,7 @@ public class FunctionInvokingChatClientTests
                 new FunctionResultContent("callId2", "Func", result: "worldworld"),
             ]),
             new ChatMessage(ChatRole.Assistant, "done"),
-        ], configurePipeline: b => b.Use(s => new FunctionInvokingChatClient(s) { ConcurrentInvocation = false }));
+        ]);
     }
 
     [Theory]
