@@ -83,7 +83,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// <para>
     /// An individual response from the inner client may contain multiple function call requests.
     /// By default, such function calls are processed serially. Set <see cref="ConcurrentInvocation"/> to
-    /// true to enable concurrent invocation such that multiple function calls may execute in parallel.
+    /// <see langword="true"/> to enable concurrent invocation such that multiple function calls may execute in parallel.
     /// </para>
     /// <para>
     /// The default value is <see langword="false"/>.
