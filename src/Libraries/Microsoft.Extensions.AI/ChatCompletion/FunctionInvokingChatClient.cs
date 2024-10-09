@@ -82,15 +82,14 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// <remarks>
     /// <para>
     /// An individual response from the inner client may contain multiple function call requests.
-    /// By default, such function calls may be issued to execute concurrently with each other. Set
-    /// <see cref="ConcurrentInvocation"/> to false to disable such concurrent invocation and force
-    /// the functions to be invoked serially.
+    /// By default, such function calls are processed serially. Set <see cref="ConcurrentInvocation"/> to
+    /// <see langword="true"/> to enable concurrent invocation such that multiple function calls may execute in parallel.
     /// </para>
     /// <para>
-    /// The default value is <see langword="true"/>.
+    /// The default value is <see langword="false"/>.
     /// </para>
     /// </remarks>
-    public bool ConcurrentInvocation { get; set; } = true;
+    public bool ConcurrentInvocation { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to keep intermediate messages in the chat history.
