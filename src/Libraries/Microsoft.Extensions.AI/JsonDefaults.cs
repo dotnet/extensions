@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -16,6 +17,8 @@ internal static partial class JsonDefaults
     public static JsonSerializerOptions Options { get; } = CreateDefaultOptions();
 
     /// <summary>Creates the default <see cref="JsonSerializerOptions"/> to use for serialization-related operations.</summary>
+    [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
     private static JsonSerializerOptions CreateDefaultOptions()
     {
         // If reflection-based serialization is enabled by default, use it, as it's the most permissive in terms of what it can serialize,
@@ -28,9 +31,7 @@ internal static partial class JsonDefaults
             var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
             {
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-#pragma warning disable IL3050, IL2026 // only used when reflection-based serialization is enabled
                 TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-#pragma warning restore IL3050, IL2026
             };
 
             options.MakeReadOnly();

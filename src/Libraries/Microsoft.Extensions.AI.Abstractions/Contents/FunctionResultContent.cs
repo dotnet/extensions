@@ -20,10 +20,31 @@ public sealed class FunctionResultContent : AIContent
     /// </summary>
     /// <param name="callId">The function call ID for which this is the result.</param>
     /// <param name="name">The function name that produced the result.</param>
-    /// <param name="result">The function call result.</param>
-    /// <param name="exception">Any exception that occurred when invoking the function.</param>
+    /// <param name="result">
+    /// This may be <see langword="null"/> if the function returned <see langword="null"/>, if the function was void-returning
+    /// and thus had no result, or if the function call failed. Typically, however, in order to provide meaningfully representative
+    /// information to an AI service, a human-readable representation of those conditions should be supplied.
+    /// </param>
     [JsonConstructor]
-    public FunctionResultContent(string callId, string name, object? result = null, Exception? exception = null)
+    public FunctionResultContent(string callId, string name, object? result)
+    {
+        CallId = Throw.IfNull(callId);
+        Name = Throw.IfNull(name);
+        Result = result;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FunctionResultContent"/> class.
+    /// </summary>
+    /// <param name="callId">The function call ID for which this is the result.</param>
+    /// <param name="name">The function name that produced the result.</param>
+    /// <param name="result">
+    /// This may be <see langword="null"/> if the function returned <see langword="null"/>, if the function was void-returning
+    /// and thus had no result, or if the function call failed. Typically, however, in order to provide meaningfully representative
+    /// information to an AI service, a human-readable representation of those conditions should be supplied.
+    /// </param>
+    /// <param name="exception">Any exception that occurred when invoking the function.</param>
+    public FunctionResultContent(string callId, string name, object? result, Exception? exception)
     {
         CallId = Throw.IfNull(callId);
         Name = Throw.IfNull(name);
@@ -35,9 +56,13 @@ public sealed class FunctionResultContent : AIContent
     /// Initializes a new instance of the <see cref="FunctionResultContent"/> class.
     /// </summary>
     /// <param name="functionCall">The function call for which this is the result.</param>
-    /// <param name="result">The function call result.</param>
+    /// <param name="result">
+    /// This may be <see langword="null"/> if the function returned <see langword="null"/>, if the function was void-returning
+    /// and thus had no result, or if the function call failed. Typically, however, in order to provide meaningfully representative
+    /// information to an AI service, a human-readable representation of those conditions should be supplied.
+    /// </param>
     /// <param name="exception">Any exception that occurred when invoking the function.</param>
-    public FunctionResultContent(FunctionCallContent functionCall, object? result = null, Exception? exception = null)
+    public FunctionResultContent(FunctionCallContent functionCall, object? result, Exception? exception = null)
         : this(Throw.IfNull(functionCall).CallId, functionCall.Name, result, exception)
     {
     }
@@ -59,17 +84,22 @@ public sealed class FunctionResultContent : AIContent
     /// <summary>
     /// Gets or sets the result of the function call, or a generic error message if the function call failed.
     /// </summary>
+    /// <remarks>
+    /// This may be <see langword="null"/> if the function returned <see langword="null"/>, if the function was void-returning
+    /// and thus had no result, or if the function call failed. Typically, however, in order to provide meaningfully representative
+    /// information to an AI service, a human-readable representation of those conditions should be supplied.
+    /// </remarks>
     public object? Result { get; set; }
 
     /// <summary>
     /// Gets or sets an exception that occurred if the function call failed.
     /// </summary>
     /// <remarks>
-    /// When an instance of <see cref="FunctionResultContent"/> is serialized using <see cref="JsonSerializer"/>, any exception
-    /// stored in this property will be serialized as a string. When deserialized, the string will be converted back to an instance
-    /// of the base <see cref="Exception"/> type. As such, consumers shouldn't rely on the exact type of the exception stored in this property.
+    /// This property is for information purposes only. The <see cref="Exception"/> is not serialized as part of serializing
+    /// instances of this class with <see cref="JsonSerializer"/>; as such, upon deserialization, this property will be <see langword="null"/>.
+    /// Consumers should not rely on <see langword="null"/> indicating success. 
     /// </remarks>
-    [JsonConverter(typeof(FunctionCallExceptionConverter))]
+    [JsonIgnore]
     public Exception? Exception { get; set; }
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>

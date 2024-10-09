@@ -49,11 +49,11 @@ public sealed class FunctionCallContent : AIContent
     /// Gets or sets any exception that occurred while mapping the original function call data to this class.
     /// </summary>
     /// <remarks>
-    /// When an instance of <see cref="FunctionCallContent"/> is serialized using <see cref="JsonSerializer"/>, any exception
-    /// stored in this property will be serialized as a string. When deserialized, the string will be converted back to an instance
-    /// of the base <see cref="Exception"/> type. As such, consumers shouldn't rely on the exact type of the exception stored in this property.
+    /// This property is for information purposes only. The <see cref="Exception"/> is not serialized as part of serializing
+    /// instances of this class with <see cref="JsonSerializer"/>; as such, upon deserialization, this property will be <see langword="null"/>.
+    /// Consumers should not rely on <see langword="null"/> indicating success. 
     /// </remarks>
-    [JsonConverter(typeof(FunctionCallExceptionConverter))]
+    [JsonIgnore]
     public Exception? Exception { get; set; }
 
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
