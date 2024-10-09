@@ -5,11 +5,11 @@
   "tools": {
     "dotnet": "9.0.100-rtm.24479.2",
     "runtimes": {
-      "dotnet/x64": [
+      "dotnet": [
         "8.0.0",
         "9.0.0-rc.1.24431.7"
       ],
-      "aspnetcore/x64": [
+      "aspnetcore": [
         "8.0.0",
         "9.0.0-rc.1.24452.1"
       ]
