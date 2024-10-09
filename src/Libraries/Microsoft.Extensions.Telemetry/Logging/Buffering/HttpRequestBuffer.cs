@@ -14,7 +14,7 @@ internal class HttpRequestBuffer : ILoggingBuffer
 {
     private readonly HttpRequestBufferingOptions _options;
     private readonly IBufferedLogger[] _loggers;
-    private readonly ConcurrentQueue<HttpRequestBufferingLogRecord> _queue;
+    private readonly ConcurrentQueue<HttpRequestBufferedLogRecord> _queue;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private DateTimeOffset _lastFlushTimestamp;
 
@@ -22,7 +22,7 @@ internal class HttpRequestBuffer : ILoggingBuffer
     {
         _options = options.Value;
         _loggers = loggers.ToArray();
-        _queue = new ConcurrentQueue<HttpRequestBufferingLogRecord>();
+        _queue = new ConcurrentQueue<HttpRequestBufferedLogRecord>();
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
     }
 
@@ -30,10 +30,10 @@ internal class HttpRequestBuffer : ILoggingBuffer
     {
         if (_queue.Count >= _options.Capacity)
         {
-            _ = _queue.TryDequeue(out HttpRequestBufferingLogRecord? _);
+            _ = _queue.TryDequeue(out HttpRequestBufferedLogRecord? _);
         }
 
-        var record = new HttpRequestBufferingLogRecord(logLevel, eventId, joiner, exception, v);
+        var record = new HttpRequestBufferedLogRecord(logLevel, eventId, joiner, exception, v);
         _queue.Enqueue(record);
     }
 
@@ -43,7 +43,7 @@ internal class HttpRequestBuffer : ILoggingBuffer
 
         while (!_queue.IsEmpty)
         {
-            if (_queue.TryDequeue(out HttpRequestBufferingLogRecord? item))
+            if (_queue.TryDequeue(out HttpRequestBufferedLogRecord? item))
             {
                 result.Add(item);
             }

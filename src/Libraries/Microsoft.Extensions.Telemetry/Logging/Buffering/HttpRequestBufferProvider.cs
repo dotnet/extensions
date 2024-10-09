@@ -9,7 +9,7 @@ internal class HttpRequestBufferProvider : ILoggingBufferProvider
 {
     private readonly GlobalBuffer _globalBuffer;
     private readonly IHttpContextAccessor _accessor;
-    private readonly ConcurrentDictionary<HttpContext, HttpRequestBuffer> _requestBuffers = new();
+    private readonly ConcurrentDictionary<string, HttpRequestBuffer> _requestBuffers = new();
 
     public HttpRequestBufferProvider(GlobalBuffer globalBuffer, IHttpContextAccessor accessor)
     {
@@ -23,8 +23,8 @@ internal class HttpRequestBufferProvider : ILoggingBufferProvider
         {
             if (_accessor.HttpContext != null)
             {
-                // TODO: access/create the buffer for the current request
-                _requestBuffers.GetOrAdd(_accessor.HttpContext, _accessor.HttpContext.RequestServices);
+                // TODO: resolve the buffer for the current request from RequestServices 
+                _requestBuffers.GetOrAdd(_accessor.HttpContext.TraceIdentifier, _accessor.HttpContext.RequestServices);
             }
 
             return _globalBuffer;

@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
@@ -18,15 +17,29 @@ public static class HttpRequestBufferingLoggerBuilderExtensions
     /// Adds a log buffer to the factory.
     /// </summary>
     /// <param name="builder">The <see cref="ILoggingBuilder"/> to add the buffer to.</param>
-    /// <param name="filter">The filter to be used to decide what to buffer.</param>
     /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
-    public static ILoggingBuilder AddScopedBuffer(this ILoggingBuilder builder, Func<string?, EventId?, LogLevel?, bool> filter)
+    public static ILoggingBuilder AddHttpRequestBufferProvider(this ILoggingBuilder builder)
     {
         _ = Throw.IfNull(builder);
 
-        builder.Services.TryAddScoped<HttpRequestBuffer>();
+        _ = builder.Services.AddActivatedSingleton<ILoggingBufferProvider, HttpRequestBufferProvider>();
 
-        return builder.ConfigureFilter(options => options.AddFilter(null, filter));
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds a log buffer to the factory.
+    /// </summary>
+    /// <param name="builder">The <see cref="ILoggingBuilder"/> to add the buffer to.</param>
+    /// <param name="filter">The filter to be used to decide what to buffer.</param>
+    /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
+    public static ILoggingBuilder AddHttpRequestBuffering(this ILoggingBuilder builder, Func<string?, EventId?, LogLevel?, bool> filter)
+    {
+        _ = Throw.IfNull(builder);
+
+        return builder
+            .AddHttpRequestBufferProvider()
+            .ConfigureFilter(options => options.AddFilter(null, filter));
     }
 
     /// <summary>
@@ -36,13 +49,13 @@ public static class HttpRequestBufferingLoggerBuilderExtensions
     /// <param name="category">The category to filter.</param>
     /// <param name="filter">The filter to be used to decide what to buffer.</param>
     /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
-    public static ILoggingBuilder AddScopedBuffer(this ILoggingBuilder builder, string? category, Func<string?, EventId?, LogLevel?, bool> filter)
+    public static ILoggingBuilder AddHttpRequestBuffering(this ILoggingBuilder builder, string? category, Func<string?, EventId?, LogLevel?, bool> filter)
     {
         _ = Throw.IfNull(builder);
 
-        builder.Services.TryAddScoped<HttpRequestBuffer>();
-
-        return builder.ConfigureFilter(options => options.AddFilter(category, filter));
+        return builder
+            .AddHttpRequestBufferProvider()
+            .ConfigureFilter(options => options.AddFilter(category, filter));
     }
 
     /// <summary>
@@ -53,13 +66,13 @@ public static class HttpRequestBufferingLoggerBuilderExtensions
     /// <param name="eventId">The event ID to filter.</param>
     /// <param name="level">The level to filter.</param>
     /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
-    public static ILoggingBuilder AddScopedBuffer(this ILoggingBuilder builder, string? category, EventId? eventId, LogLevel? level)
+    public static ILoggingBuilder AddHttpRequestBuffering(this ILoggingBuilder builder, string? category, EventId? eventId, LogLevel? level)
     {
         _ = Throw.IfNull(builder);
 
-        builder.Services.TryAddScoped<HttpRequestBuffer>();
-
-        return builder.ConfigureFilter(options => options.AddFilter(category, eventId, level));
+        return builder
+            .AddHttpRequestBufferProvider()
+            .ConfigureFilter(options => options.AddFilter(category, eventId, level));
     }
 
     /// <summary>
@@ -91,7 +104,7 @@ public static class HttpRequestBufferingLoggerBuilderExtensions
     {
         _ = Throw.IfNull(options);
 
-        options.Rules.Add(new Microsoft.Extensions.Diagnostics.Logging.Buffering.LoggerFilterRule(category, eventId, level, filter, null));
+        options.Rules.Add(new Microsoft.Extensions.Diagnostics.Logging.Buffering.LoggerFilterRule(category, eventId, level, filter));
         return options;
     }
 }

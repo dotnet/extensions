@@ -7,9 +7,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
 
-internal class HttpRequestBufferingLogRecord : GlobalBufferingLogRecord
+internal class HttpRequestBufferedLogRecord : GlobalBufferedLogRecord
 {
-    public HttpRequestBufferingLogRecord(LogLevel logLevel,
+    public HttpRequestBufferedLogRecord(LogLevel logLevel,
         EventId eventId,
         IReadOnlyList<KeyValuePair<string, object?>> state,
         Exception? exception,

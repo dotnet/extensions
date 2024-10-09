@@ -23,9 +23,9 @@ public static class GlobalBufferingLoggerBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        builder.Services.TryAddActivatedSingleton<ILoggingBufferProvider, GlobalBufferProvider>();
-
-        return builder.AddBuffering(filter);
+        return builder
+            .AddGlobalBufferProvider()
+            .AddBuffering(filter);
     }
 
     /// <summary>
@@ -39,9 +39,9 @@ public static class GlobalBufferingLoggerBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        builder.Services.TryAddActivatedSingleton<ILoggingBufferProvider, GlobalBufferProvider>();
-
-        return builder.AddBuffering(category, filter);
+        return builder
+            .AddGlobalBufferProvider()
+            .AddBuffering(category, filter);
     }
 
     /// <summary>
@@ -56,9 +56,23 @@ public static class GlobalBufferingLoggerBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
+        return builder
+            .AddGlobalBufferProvider()
+            .AddBuffering(category, eventId, level);
+    }
+
+    /// <summary>
+    /// Adds global logging buffer provider.
+    /// </summary>
+    /// <param name="builder">The <see cref="ILoggingBuilder"/> to add the buffer to.</param>
+    /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
+    public static ILoggingBuilder AddGlobalBufferProvider(this ILoggingBuilder builder)
+    {
+        _ = Throw.IfNull(builder);
+
         builder.Services.TryAddActivatedSingleton<ILoggingBufferProvider, GlobalBufferProvider>();
 
-        return builder.AddBuffering(category, eventId, level);
+        return builder;
     }
 
     /// <summary>
@@ -132,7 +146,7 @@ public static class GlobalBufferingLoggerBuilderExtensions
     {
         _ = Throw.IfNull(options);
 
-        options.Rules.Add(new Microsoft.Extensions.Diagnostics.Logging.Buffering.LoggerFilterRule(category, eventId, level, filter, null));
+        options.Rules.Add(new Microsoft.Extensions.Diagnostics.Logging.Buffering.LoggerFilterRule(category, eventId, level, filter));
         return options;
     }
 }

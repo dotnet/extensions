@@ -19,7 +19,7 @@ internal class GlobalBuffer : BackgroundService, ILoggingBuffer
 {
     private readonly GlobalBufferingOptions _options;
     private readonly IBufferedLogger[] _loggers;
-    private readonly ConcurrentQueue<GlobalBufferingLogRecord> _queue;
+    private readonly ConcurrentQueue<GlobalBufferedLogRecord> _queue;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private DateTimeOffset _lastFlushTimestamp;
 
@@ -27,7 +27,7 @@ internal class GlobalBuffer : BackgroundService, ILoggingBuffer
     {
         _options = options.Value;
         _loggers = loggers.ToArray();
-        _queue = new ConcurrentQueue<GlobalBufferingLogRecord>();
+        _queue = new ConcurrentQueue<GlobalBufferedLogRecord>();
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
     }
 
@@ -35,10 +35,10 @@ internal class GlobalBuffer : BackgroundService, ILoggingBuffer
     {
         if (_queue.Count >= _options.Capacity)
         {
-            _ = _queue.TryDequeue(out GlobalBufferingLogRecord? _);
+            _ = _queue.TryDequeue(out GlobalBufferedLogRecord? _);
         }
 
-        var record = new GlobalBufferingLogRecord(logLevel, eventId, joiner, exception, v);
+        var record = new GlobalBufferedLogRecord(logLevel, eventId, joiner, exception, v);
         _queue.Enqueue(record);
     }
 
@@ -48,7 +48,7 @@ internal class GlobalBuffer : BackgroundService, ILoggingBuffer
 
         while (!_queue.IsEmpty)
         {
-            if (_queue.TryDequeue(out GlobalBufferingLogRecord? item))
+            if (_queue.TryDequeue(out GlobalBufferedLogRecord? item))
             {
                 result.Add(item);
             }
@@ -88,7 +88,7 @@ internal class GlobalBuffer : BackgroundService, ILoggingBuffer
 
             while (!_queue.IsEmpty)
             {
-                if (_queue.TryPeek(out GlobalBufferingLogRecord? item))
+                if (_queue.TryPeek(out GlobalBufferedLogRecord? item))
                 {
                     if (_timeProvider.GetUtcNow() - item.Timestamp > _options.Duration)
                     {

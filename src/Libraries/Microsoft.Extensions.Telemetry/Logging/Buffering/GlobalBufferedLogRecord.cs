@@ -8,9 +8,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
 
-internal class GlobalBufferingLogRecord : BufferedLogRecord
+internal class GlobalBufferedLogRecord : BufferedLogRecord
 {
-    public GlobalBufferingLogRecord(
+    public GlobalBufferedLogRecord(
         LogLevel logLevel,
         EventId eventId,
         IReadOnlyList<KeyValuePair<string, object?>> state,
