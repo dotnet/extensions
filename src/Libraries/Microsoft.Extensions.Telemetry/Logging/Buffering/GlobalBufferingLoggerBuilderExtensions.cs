@@ -70,7 +70,7 @@ public static class GlobalBufferingLoggerBuilderExtensions
     {
         _ = Throw.IfNull(builder);
 
-        builder.Services.TryAddActivatedSingleton<ILoggingBufferProvider, GlobalBufferProvider>();
+        builder.Services.AddActivatedSingleton<ILoggingBufferProvider, GlobalBufferProvider>();
 
         return builder;
     }
