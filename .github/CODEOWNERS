@@ -1,0 +1,28 @@
+# These owners will be the default owners for everything in the repo. Unless a later match takes precedence,
+# @dotnet/dotnet-extensions-fundamentals will be requested for review when someone opens a pull request.
+
+*.cmd                                                   @dotnet/dotnet-extensions-infra
+*.sh                                                    @dotnet/dotnet-extensions-infra
+*.ps1                                                   @dotnet/dotnet-extensions-infra
+*.yml                                                   @dotnet/dotnet-extensions-infra
+*.props                                                 @dotnet/dotnet-extensions-infra
+*.targets                                               @dotnet/dotnet-extensions-infra
+/global.json                                            @dotnet/dotnet-extensions-infra
+/.azure/                                                @dotnet/dotnet-extensions-infra
+/.azuredevops/                                          @dotnet/dotnet-extensions-infra
+/.config/                                               @dotnet/dotnet-extensions-infra
+/.devcontainer/                                         @dotnet/dotnet-extensions-infra
+/.vscode/                                               @dotnet/dotnet-extensions-infra
+/.github/                                               @dotnet/dotnet-extensions-infra
+/docs/                                                  @dotnet/dotnet-extensions-infra
+/eng/                                                   @dotnet/dotnet-extensions-infra
+
+/src/Libraries/Microsoft.Extensions.AI                  @dotnet/dotnet-extensions-ai
+/src/Libraries/Microsoft.Extensions.AI.*                @dotnet/dotnet-extensions-ai
+/test/Libraries/Microsoft.Extensions.AI                 @dotnet/dotnet-extensions-ai
+/test/Libraries/Microsoft.Extensions.AI.*               @dotnet/dotnet-extensions-ai
+
+/src/Libraries/Microsoft.Extensions.Caching.Hybrid      @dotnet/dotnet-extensions-caching-hybrid
+/src/Libraries/Microsoft.Extensions.Caching.Hybrid.*    @dotnet/dotnet-extensions-caching-hybrid
+/test/Libraries/Microsoft.Extensions.Caching.Hybrid     @dotnet/dotnet-extensions-caching-hybrid
+/test/Libraries/Microsoft.Extensions.Caching.Hybrid.*   @dotnet/dotnet-extensions-caching-hybrid
