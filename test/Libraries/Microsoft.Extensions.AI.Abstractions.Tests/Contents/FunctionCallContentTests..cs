@@ -5,9 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-#if NET
-using System.Runtime.ExceptionServices;
-#endif
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -89,41 +86,19 @@ public class FunctionCallContentTests
     {
         // Arrange
         var ex = new InvalidOperationException("hello", new NullReferenceException("bye"));
-#if NET
-        ExceptionDispatchInfo.SetRemoteStackTrace(ex, "stack trace");
-#endif
-        var sut = new FunctionCallContent("callId1", "functionName") { Exception = ex };
+        var sut = new FunctionCallContent("callId1", "functionName", new Dictionary<string, object?> { ["key"] = "value" }) { Exception = ex };
 
         // Act
         var json = JsonSerializer.SerializeToNode(sut, TestJsonSerializerContext.Default.Options);
         var deserializedSut = JsonSerializer.Deserialize<FunctionCallContent>(json, TestJsonSerializerContext.Default.Options);
 
         // Assert
-        JsonObject jsonEx = Assert.IsType<JsonObject>(json!["exception"]);
-        Assert.Equal(4, jsonEx.Count);
-        Assert.Equal("System.InvalidOperationException", (string?)jsonEx["className"]);
-        Assert.Equal("hello", (string?)jsonEx["message"]);
-#if NET
-        Assert.StartsWith("stack trace", (string?)jsonEx["stackTraceString"]);
-#endif
-        JsonObject jsonExInner = Assert.IsType<JsonObject>(jsonEx["innerException"]);
-        Assert.Equal(4, jsonExInner.Count);
-        Assert.Equal("System.NullReferenceException", (string?)jsonExInner["className"]);
-        Assert.Equal("bye", (string?)jsonExInner["message"]);
-        Assert.Null(jsonExInner["innerException"]);
-        Assert.Null(jsonExInner["stackTraceString"]);
-
         Assert.NotNull(deserializedSut);
-        Assert.IsType<Exception>(deserializedSut.Exception);
-        Assert.Equal("hello", deserializedSut.Exception.Message);
-#if NET
-        Assert.StartsWith("stack trace", deserializedSut.Exception.StackTrace);
-#endif
-
-        Assert.IsType<Exception>(deserializedSut.Exception.InnerException);
-        Assert.Equal("bye", deserializedSut.Exception.InnerException.Message);
-        Assert.Null(deserializedSut.Exception.InnerException.StackTrace);
-        Assert.Null(deserializedSut.Exception.InnerException.InnerException);
+        Assert.Equal("callId1", deserializedSut.CallId);
+        Assert.Equal("functionName", deserializedSut.Name);
+        Assert.NotNull(deserializedSut.Arguments);
+        Assert.Single(deserializedSut.Arguments);
+        Assert.Null(deserializedSut.Exception);
     }
 
     [Fact]
