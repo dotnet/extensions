@@ -11,6 +11,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -167,7 +168,7 @@ public static partial class ChatClientStructuredOutputExtensions
             // the LLM backend is meant to do whatever's needed to explain the schema to the LLM.
             options.ResponseFormat = ChatResponseFormat.ForJsonSchema(
                 schema,
-                schemaName: typeof(T).Name,
+                schemaName: SanitizeMetadataName(typeof(T).Name),
                 schemaDescription: typeof(T).GetCustomAttribute<DescriptionAttribute>()?.Description);
         }
         else
@@ -224,4 +225,21 @@ public static partial class ChatClientStructuredOutputExtensions
     [JsonSerializable(typeof(JsonNode))]
     [JsonSourceGenerationOptions(WriteIndented = true)]
     private sealed partial class JsonNodeContext : JsonSerializerContext;
+
+    /// <summary>
+    /// Remove characters from type name that are valid in metadata but shouldn't be used in a schema name.
+    /// Removes arrays and generic type parameters, and replaces invalid characters with underscores.
+    /// </summary>
+    private static string SanitizeMetadataName(string typeName) =>
+        InvalidNameCharsRegex().Replace(typeName, "_");
+
+    /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]")]
+    private static partial Regex InvalidNameCharsRegex();
+#else
+    private static Regex InvalidNameCharsRegex() => _invalidNameCharsRegex;
+    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+#endif
+
 }
