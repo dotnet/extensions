@@ -173,6 +173,40 @@ public class ChatClientStructuredOutputExtensionsTests
     }
 
     [Fact]
+    public async Task CanUseNativeStructuredOutputWithSanitizedTypeName()
+    {
+        var expectedResult = new Data<Animal> { Value = new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger } };
+        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult))]);
+
+        using var client = new TestChatClient
+        {
+            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
+
+                Assert.Matches("Data_1", responseFormat.SchemaName);
+
+                return Task.FromResult(expectedCompletion);
+            },
+        };
+
+        var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
+        var response = await client.CompleteAsync<Data<Animal>>(chatHistory, useNativeJsonSchema: true);
+
+        // The completion contains the deserialized result and other completion properties
+        Assert.Equal(1, response.Result!.Value!.Id);
+        Assert.Equal("Tigger", response.Result.Value.FullName);
+        Assert.Equal(Species.Tiger, response.Result.Value.Species);
+
+        // TryGetResult returns the same value
+        Assert.True(response.TryGetResult(out var tryGetResultOutput));
+        Assert.Same(response.Result, tryGetResultOutput);
+
+        // History remains unmutated
+        Assert.Equal("Hello", Assert.Single(chatHistory).Text);
+    }
+
+    [Fact]
     public async Task CanSpecifyCustomJsonSerializationOptions()
     {
         var jso = new JsonSerializerOptions
@@ -245,6 +279,11 @@ public class ChatClientStructuredOutputExtensionsTests
         public int Id { get; set; }
         public string? FullName { get; set; }
         public Species Species { get; set; }
+    }
+
+    private class Data<T>
+    {
+        public T? Value { get; set; }
     }
 
     private enum Species

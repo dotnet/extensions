@@ -14,6 +14,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Microsoft.Shared.Diagnostics;
 
 using FunctionParameterKey = (System.Type? Type, string ParameterName, string? Description, bool HasDefaultValue, object? DefaultValue);
@@ -375,4 +376,20 @@ internal static partial class FunctionCallHelpers
     [JsonSerializable(typeof(JsonElement))]
     [JsonSerializable(typeof(JsonDocument))]
     private sealed partial class FunctionCallHelperContext : JsonSerializerContext;
+
+    /// <summary>
+    /// Remove characters from method name that are valid in metadata but shouldn't be used in a method name.
+    /// This is primarily intended to remove characters emitted by for compiler-generated method name mangling.
+    /// </summary>
+    public static string SanitizeMetadataName(string metadataName) =>
+        InvalidNameCharsRegex().Replace(metadataName, "_");
+
+    /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
+#if NET
+    [GeneratedRegex("[^0-9A-Za-z_]")]
+    private static partial Regex InvalidNameCharsRegex();
+#else
+    private static Regex InvalidNameCharsRegex() => _invalidNameCharsRegex;
+    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
+#endif
 }

@@ -14,6 +14,7 @@ using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
+using static Microsoft.Extensions.AI.FunctionCallHelpers;
 
 namespace Microsoft.Extensions.AI;
 
@@ -167,7 +168,7 @@ public static partial class ChatClientStructuredOutputExtensions
             // the LLM backend is meant to do whatever's needed to explain the schema to the LLM.
             options.ResponseFormat = ChatResponseFormat.ForJsonSchema(
                 schema,
-                schemaName: typeof(T).Name,
+                schemaName: SanitizeMetadataName(typeof(T).Name),
                 schemaDescription: typeof(T).GetCustomAttribute<DescriptionAttribute>()?.Description);
         }
         else
