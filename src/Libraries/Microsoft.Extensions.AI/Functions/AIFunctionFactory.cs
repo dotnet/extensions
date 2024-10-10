@@ -12,11 +12,11 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
+using static Microsoft.Extensions.AI.FunctionCallHelpers;
 
 namespace Microsoft.Extensions.AI;
 
@@ -474,21 +474,5 @@ public static
 #pragma warning restore S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
             return specializedType.GetMethods(All).First(m => m.MetadataToken == genericMethodDefinition.MetadataToken);
         }
-
-        /// <summary>
-        /// Remove characters from method name that are valid in metadata but shouldn't be used in a method name.
-        /// This is primarily intended to remove characters emitted by for compiler-generated method name mangling.
-        /// </summary>
-        private static string SanitizeMetadataName(string methodName) =>
-            InvalidNameCharsRegex().Replace(methodName, "_");
-
-        /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
-#if NET
-        [GeneratedRegex("[^0-9A-Za-z_]")]
-        private static partial Regex InvalidNameCharsRegex();
-#else
-        private static Regex InvalidNameCharsRegex() => _invalidNameCharsRegex;
-        private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
-#endif
     }
 }
