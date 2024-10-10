@@ -5,6 +5,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+#if NET
+using System.Globalization;
+#endif
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Logging;
@@ -67,7 +70,11 @@ public static class LoggerMessageHelper
             }
             else
             {
+#if NET
+                _ = sb.Append(CultureInfo.InvariantCulture, $"\"{e}\"");
+#else
                 _ = sb.Append(FormattableString.Invariant($"\"{e}\""));
+#endif
             }
 
             first = false;
@@ -108,7 +115,11 @@ public static class LoggerMessageHelper
 
             if (typeof(TKey).IsValueType || kvp.Key is not null)
             {
+#if NET
+                _ = sb.Append(CultureInfo.InvariantCulture, $"\"{kvp.Key}\"=");
+#else
                 _ = sb.Append(FormattableString.Invariant($"\"{kvp.Key}\"="));
+#endif
             }
             else
             {
@@ -117,7 +128,11 @@ public static class LoggerMessageHelper
 
             if (typeof(TValue).IsValueType || kvp.Value is not null)
             {
+#if NET
+                _ = sb.Append(CultureInfo.InvariantCulture, $"\"{kvp.Value}\"");
+#else
                 _ = sb.Append(FormattableString.Invariant($"\"{kvp.Value}\""));
+#endif
             }
             else
             {

@@ -116,7 +116,11 @@ internal sealed partial class Emitter : EmitterBase
             });
 
             var s = EscapeMessageString(mapped!);
+            OutLn($@"#if NET");
+            OutLn($@"return string.Create(global::System.Globalization.CultureInfo.InvariantCulture, ${s});");
+            OutLn($@"#else");
             OutLn($@"return global::System.FormattableString.Invariant(${s});");
+            OutLn($@"#endif");
         }
         else if (string.IsNullOrEmpty(lm.Message))
         {
