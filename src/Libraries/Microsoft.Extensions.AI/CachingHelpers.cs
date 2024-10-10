@@ -44,7 +44,10 @@ internal static class CachingHelpers
         }
 
         // The complete JSON representation is excessively long for a cache key, duplicating much of the content
-        // from the value. So we use a hash of it as the default key.
+        // from the value. So we use a hash of it as the default key, and we rely on collision resistance for security purposes.
+        // If a collision occurs, we'd serve the cached LLM response for a potentially unrelated prompt, leading to information
+        // disclosure. Use of SHA256 is an implementation detail and can be easily swapped in the future if needed, albeit
+        // invalidating any existing cache entries that may exist in whatever IDistributedCache was in use.
 #if NET8_0_OR_GREATER
         Span<byte> hashData = stackalloc byte[SHA256.HashSizeInBytes];
         SHA256.HashData(jsonKeyBytes, hashData);
