@@ -184,7 +184,7 @@ public class ChatClientStructuredOutputExtensionsTests
             {
                 var responseFormat = Assert.IsType<ChatResponseFormatJson>(options!.ResponseFormat);
 
-                Assert.Matches("^[a-zA-Z0-9_-]+$", responseFormat.SchemaName);
+                Assert.Matches("Data_1", responseFormat.SchemaName);
 
                 return Task.FromResult(expectedCompletion);
             },
