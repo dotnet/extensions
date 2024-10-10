@@ -23,17 +23,12 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Provides factory methods for creating commonly-used implementations of <see cref="AIFunction"/>.</summary>
 public static class AIFunctionFactory
 {
-    internal const string UsesReflectionJsonSerializerMessage =
-        "This method uses the reflection-based JsonSerializer which can break in trimmed or AOT applications.";
-
     /// <summary>Lazily-initialized default options instance.</summary>
     private static AIFunctionFactoryCreateOptions? _defaultOptions;
 
     /// <summary>Creates an <see cref="AIFunction"/> instance for a method, specified via a delegate.</summary>
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
-    [RequiresUnreferencedCode(UsesReflectionJsonSerializerMessage)]
-    [RequiresDynamicCode(UsesReflectionJsonSerializerMessage)]
     public static AIFunction Create(Delegate method) => Create(method, _defaultOptions ??= new());
 
     /// <summary>Creates an <see cref="AIFunction"/> instance for a method, specified via a delegate.</summary>
@@ -52,8 +47,6 @@ public static class AIFunctionFactory
     /// <param name="name">The name to use for the <see cref="AIFunction"/>.</param>
     /// <param name="description">The description to use for the <see cref="AIFunction"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
-    [RequiresUnreferencedCode("Reflection is used to access types from the supplied Delegate.")]
-    [RequiresDynamicCode("Reflection is used to access types from the supplied Delegate.")]
     public static AIFunction Create(Delegate method, string? name, string? description = null)
         => Create(method, (_defaultOptions ??= new()).SerializerOptions, name, description);
 
@@ -80,8 +73,6 @@ public static class AIFunctionFactory
     /// This should be <see langword="null"/> if and only if <paramref name="method"/> is a static method.
     /// </param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
-    [RequiresUnreferencedCode("Reflection is used to access types from the supplied MethodInfo.")]
-    [RequiresDynamicCode("Reflection is used to access types from the supplied MethodInfo.")]
     public static AIFunction Create(MethodInfo method, object? target = null)
         => Create(method, target, _defaultOptions ??= new());
 
@@ -107,8 +98,8 @@ public static class AIFunctionFactory
     {
         private readonly MethodInfo _method;
         private readonly object? _target;
-        private readonly Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?>[] _parameterMarshalers;
-        private readonly Func<object?, ValueTask<object?>> _returnMarshaler;
+        private readonly Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?>[] _parameterMarshallers;
+        private readonly Func<object?, ValueTask<object?>> _returnMarshaller;
         private readonly JsonTypeInfo? _returnTypeInfo;
         private readonly bool _needsAIFunctionContext;
 
@@ -185,11 +176,11 @@ public static class AIFunctionFactory
 
             // Get marshaling delegates for parameters and build up the parameter metadata.
             var parameters = method.GetParameters();
-            _parameterMarshalers = new Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?>[parameters.Length];
+            _parameterMarshallers = new Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?>[parameters.Length];
             bool sawAIContextParameter = false;
             for (int i = 0; i < parameters.Length; i++)
             {
-                if (GetParameterMarshaler(options.SerializerOptions, parameters[i], ref sawAIContextParameter, out _parameterMarshalers[i]) is AIFunctionParameterMetadata parameterView)
+                if (GetParameterMarshaller(options.SerializerOptions, parameters[i], ref sawAIContextParameter, out _parameterMarshallers[i]) is AIFunctionParameterMetadata parameterView)
                 {
                     parameterMetadata?.Add(parameterView);
                 }
@@ -198,7 +189,7 @@ public static class AIFunctionFactory
             _needsAIFunctionContext = sawAIContextParameter;
 
             // Get the return type and a marshaling func for the return value.
-            Type returnType = GetReturnMarshaler(method, out _returnMarshaler);
+            Type returnType = GetReturnMarshaller(method, out _returnMarshaller);
             _returnTypeInfo = returnType != typeof(void) ? options.SerializerOptions.GetTypeInfo(returnType) : null;
 
             Metadata = new AIFunctionMetadata(functionName)
@@ -224,8 +215,8 @@ public static class AIFunctionFactory
             IEnumerable<KeyValuePair<string, object?>>? arguments,
             CancellationToken cancellationToken)
         {
-            var paramMarshalers = _parameterMarshalers;
-            object?[] args = paramMarshalers.Length != 0 ? new object?[paramMarshalers.Length] : [];
+            var paramMarshallers = _parameterMarshallers;
+            object?[] args = paramMarshallers.Length != 0 ? new object?[paramMarshallers.Length] : [];
 
             IReadOnlyDictionary<string, object?> argDict =
                 arguments is null || args.Length == 0 ? EmptyReadOnlyDictionary<string, object?>.Instance :
@@ -242,10 +233,10 @@ public static class AIFunctionFactory
 
             for (int i = 0; i < args.Length; i++)
             {
-                args[i] = paramMarshalers[i](argDict, context);
+                args[i] = paramMarshallers[i](argDict, context);
             }
 
-            object? result = await _returnMarshaler(ReflectionInvoke(_method, _target, args)).ConfigureAwait(false);
+            object? result = await _returnMarshaller(ReflectionInvoke(_method, _target, args)).ConfigureAwait(false);
 
             switch (_returnTypeInfo)
             {
@@ -271,11 +262,11 @@ public static class AIFunctionFactory
         /// <summary>
         /// Gets a delegate for handling the marshaling of a parameter.
         /// </summary>
-        private static AIFunctionParameterMetadata? GetParameterMarshaler(
+        private static AIFunctionParameterMetadata? GetParameterMarshaller(
             JsonSerializerOptions options,
             ParameterInfo parameter,
             ref bool sawAIFunctionContext,
-            out Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?> marshaler)
+            out Func<IReadOnlyDictionary<string, object?>, AIFunctionContext?, object?> marshaller)
         {
             if (string.IsNullOrWhiteSpace(parameter.Name))
             {
@@ -292,7 +283,7 @@ public static class AIFunctionFactory
 
                 sawAIFunctionContext = true;
 
-                marshaler = static (_, ctx) =>
+                marshaller = static (_, ctx) =>
                 {
                     Debug.Assert(ctx is not null, "Expected a non-null context object.");
                     return ctx;
@@ -300,12 +291,12 @@ public static class AIFunctionFactory
                 return null;
             }
 
-            // Resolve the contract used to marshall the value from JSON -- can throw if not supported or not found.
+            // Resolve the contract used to marshal the value from JSON -- can throw if not supported or not found.
             Type parameterType = parameter.ParameterType;
             JsonTypeInfo typeInfo = options.GetTypeInfo(parameterType);
 
-            // Create a marshaler that simply looks up the parameter by name in the arguments dictionary.
-            marshaler = (IReadOnlyDictionary<string, object?> arguments, AIFunctionContext? _) =>
+            // Create a marshaller that simply looks up the parameter by name in the arguments dictionary.
+            marshaller = (IReadOnlyDictionary<string, object?> arguments, AIFunctionContext? _) =>
             {
                 // If the parameter has an argument specified in the dictionary, return that argument.
                 if (arguments.TryGetValue(parameter.Name, out object? value))
@@ -368,7 +359,7 @@ public static class AIFunctionFactory
         /// <summary>
         /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{FunctionResult}"/> to return from the invocation.
         /// </summary>
-        private static Type GetReturnMarshaler(MethodInfo method, out Func<object?, ValueTask<object?>> marshaler)
+        private static Type GetReturnMarshaller(MethodInfo method, out Func<object?, ValueTask<object?>> marshaller)
         {
             // Handle each known return type for the method
             Type returnType = method.ReturnType;
@@ -376,7 +367,7 @@ public static class AIFunctionFactory
             // Task
             if (returnType == typeof(Task))
             {
-                marshaler = async static result =>
+                marshaller = async static result =>
                 {
                     await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
                     return null;
@@ -387,7 +378,7 @@ public static class AIFunctionFactory
             // ValueTask
             if (returnType == typeof(ValueTask))
             {
-                marshaler = async static result =>
+                marshaller = async static result =>
                 {
                     await ((ValueTask)ThrowIfNullResult(result)).ConfigureAwait(false);
                     return null;
@@ -401,7 +392,7 @@ public static class AIFunctionFactory
                 if (returnType.GetGenericTypeDefinition() == typeof(Task<>))
                 {
                     MethodInfo taskResultGetter = GetMethodFromGenericMethodDefinition(returnType, _taskGetResult);
-                    marshaler = async result =>
+                    marshaller = async result =>
                     {
                         await ((Task)ThrowIfNullResult(result)).ConfigureAwait(false);
                         return ReflectionInvoke(taskResultGetter, result, null);
@@ -414,7 +405,7 @@ public static class AIFunctionFactory
                 {
                     MethodInfo valueTaskAsTask = GetMethodFromGenericMethodDefinition(returnType, _valueTaskAsTask);
                     MethodInfo asTaskResultGetter = GetMethodFromGenericMethodDefinition(valueTaskAsTask.ReturnType, _taskGetResult);
-                    marshaler = async result =>
+                    marshaller = async result =>
                     {
                         var task = (Task)ReflectionInvoke(valueTaskAsTask, ThrowIfNullResult(result), null)!;
                         await task.ConfigureAwait(false);
@@ -425,7 +416,7 @@ public static class AIFunctionFactory
             }
 
             // For everything else, just use the result as-is.
-            marshaler = result => new ValueTask<object?>(result);
+            marshaller = result => new ValueTask<object?>(result);
             return returnType;
 
             // Throws an exception if a result is found to be null unexpectedly

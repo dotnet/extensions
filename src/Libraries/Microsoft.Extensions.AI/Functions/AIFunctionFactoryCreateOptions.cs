@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.Shared.Diagnostics;
@@ -19,10 +18,8 @@ public sealed class AIFunctionFactoryCreateOptions
     /// <summary>
     /// Initializes a new instance of the <see cref="AIFunctionFactoryCreateOptions"/> class with default serializer options.
     /// </summary>
-    [RequiresUnreferencedCode(AIFunctionFactory.UsesReflectionJsonSerializerMessage)]
-    [RequiresDynamicCode(AIFunctionFactory.UsesReflectionJsonSerializerMessage)]
     public AIFunctionFactoryCreateOptions()
-        : this(JsonSerializerOptions.Default)
+        : this(JsonDefaults.Options)
     {
     }
 

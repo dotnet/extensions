@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 
@@ -30,9 +31,10 @@ internal static partial class JsonDefaults
             // Keep in sync with the JsonSourceGenerationOptions on JsonContext below.
             var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
             {
-                WriteIndented = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+                Converters = { new JsonStringEnumConverter() },
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                WriteIndented = true,
             };
 
             options.MakeReadOnly();
@@ -45,7 +47,10 @@ internal static partial class JsonDefaults
     }
 
     // Keep in sync with CreateDefaultOptions above.
-    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web, WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web,
+        UseStringEnumConverter = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        WriteIndented = true)]
     [JsonSerializable(typeof(IList<ChatMessage>))]
     [JsonSerializable(typeof(ChatOptions))]
     [JsonSerializable(typeof(EmbeddingGenerationOptions))]
@@ -57,7 +62,9 @@ internal static partial class JsonDefaults
     [JsonSerializable(typeof(Dictionary<string, object>))]
     [JsonSerializable(typeof(IDictionary<int, int>))]
     [JsonSerializable(typeof(IDictionary<string, object?>))]
+    [JsonSerializable(typeof(JsonDocument))]
     [JsonSerializable(typeof(JsonElement))]
+    [JsonSerializable(typeof(JsonNode))]
     [JsonSerializable(typeof(IEnumerable<string>))]
     [JsonSerializable(typeof(string))]
     [JsonSerializable(typeof(int))]
