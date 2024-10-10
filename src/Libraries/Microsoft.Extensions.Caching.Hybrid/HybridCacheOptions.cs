@@ -50,7 +50,7 @@ public class HybridCacheOptions
     /// Gets or sets a value indicating whether to use "tags" data as dimensions on metric reporting.
     /// </summary>
     /// <value>
-    /// <see langword="true"> to use "tags" data as dimensions on metric reporting; otherwise, <see langword="false"/>.
+    /// <see langword="true"/> to use "tags" data as dimensions on metric reporting; otherwise, <see langword="false"/>.
     /// </value>
     /// <remarks>
     /// If enabled, take care to ensure that tags don't contain data that
