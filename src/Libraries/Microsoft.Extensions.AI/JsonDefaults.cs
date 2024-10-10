@@ -30,6 +30,7 @@ internal static partial class JsonDefaults
             // Keep in sync with the JsonSourceGenerationOptions on JsonContext below.
             var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
             {
+                WriteIndented = true,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
             };
@@ -44,7 +45,7 @@ internal static partial class JsonDefaults
     }
 
     // Keep in sync with CreateDefaultOptions above.
-    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web, WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonSerializable(typeof(IList<ChatMessage>))]
     [JsonSerializable(typeof(ChatOptions))]
     [JsonSerializable(typeof(EmbeddingGenerationOptions))]
