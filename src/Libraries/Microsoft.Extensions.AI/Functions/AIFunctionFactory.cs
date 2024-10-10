@@ -21,11 +21,7 @@ using static Microsoft.Extensions.AI.FunctionCallHelpers;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides factory methods for creating commonly-used implementations of <see cref="AIFunction"/>.</summary>
-public static
-#if NET
-    partial
-#endif
-    class AIFunctionFactory
+public static class AIFunctionFactory
 {
     internal const string UsesReflectionJsonSerializerMessage =
         "This method uses the reflection-based JsonSerializer which can break in trimmed or AOT applications.";
@@ -107,11 +103,7 @@ public static
         return new ReflectionAIFunction(method, target, options);
     }
 
-    private sealed
-#if NET
-        partial
-#endif
-        class ReflectionAIFunction : AIFunction
+    private sealed class ReflectionAIFunction : AIFunction
     {
         private readonly MethodInfo _method;
         private readonly object? _target;
