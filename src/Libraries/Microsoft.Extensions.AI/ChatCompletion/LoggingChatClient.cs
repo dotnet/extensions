@@ -10,13 +10,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable EA0000 // Use source generated logging methods for improved performance
-#pragma warning disable CA2254 // Template should be a static expression
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>A delegating chat client that logs chat operations to an <see cref="ILogger"/>.</summary>
-public class LoggingChatClient : DelegatingChatClient
+public partial class LoggingChatClient : DelegatingChatClient
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
     private readonly ILogger _logger;
@@ -45,7 +42,18 @@ public class LoggingChatClient : DelegatingChatClient
     public override async Task<ChatCompletion> CompleteAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        LogStart(chatMessages, options);
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                LogInvokedSensitive(nameof(CompleteAsync), AsJson(chatMessages), AsJson(options), AsJson(Metadata));
+            }
+            else
+            {
+                LogInvoked(nameof(CompleteAsync));
+            }
+        }
+
         try
         {
             var completion = await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
@@ -54,20 +62,24 @@ public class LoggingChatClient : DelegatingChatClient
             {
                 if (_logger.IsEnabled(LogLevel.Trace))
                 {
-                    _logger.Log(LogLevel.Trace, 0, (completion, _jsonSerializerOptions), null, static (state, _) =>
-                        $"CompleteAsync completed: {JsonSerializer.Serialize(state.completion, state._jsonSerializerOptions.GetTypeInfo(typeof(ChatCompletion)))}");
+                    LogCompletedSensitive(nameof(CompleteAsync), AsJson(completion));
                 }
                 else
                 {
-                    _logger.LogDebug("CompleteAsync completed.");
+                    LogCompleted(nameof(CompleteAsync));
                 }
             }
 
             return completion;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (OperationCanceledException)
         {
-            _logger.LogError(ex, "CompleteAsync failed.");
+            LogInvocationCanceled(nameof(CompleteAsync));
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LogInvocationFailed(nameof(CompleteAsync), ex);
             throw;
         }
     }
@@ -76,16 +88,31 @@ public class LoggingChatClient : DelegatingChatClient
     public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        LogStart(chatMessages, options);
+        if (_logger.IsEnabled(LogLevel.Debug))
+        {
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                LogInvokedSensitive(nameof(CompleteStreamingAsync), AsJson(chatMessages), AsJson(options), AsJson(Metadata));
+            }
+            else
+            {
+                LogInvoked(nameof(CompleteStreamingAsync));
+            }
+        }
 
         IAsyncEnumerator<StreamingChatCompletionUpdate> e;
         try
         {
             e = base.CompleteStreamingAsync(chatMessages, options, cancellationToken).GetAsyncEnumerator(cancellationToken);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (OperationCanceledException)
         {
-            _logger.LogError(ex, "CompleteStreamingAsync failed.");
+            LogInvocationCanceled(nameof(CompleteStreamingAsync));
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LogInvocationFailed(nameof(CompleteStreamingAsync), ex);
             throw;
         }
 
@@ -103,9 +130,14 @@ public class LoggingChatClient : DelegatingChatClient
 
                     update = e.Current;
                 }
-                catch (Exception ex) when (ex is not OperationCanceledException)
+                catch (OperationCanceledException)
                 {
-                    _logger.LogError(ex, "CompleteStreamingAsync failed.");
+                    LogInvocationCanceled(nameof(CompleteStreamingAsync));
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    LogInvocationFailed(nameof(CompleteStreamingAsync), ex);
                     throw;
                 }
 
@@ -113,19 +145,18 @@ public class LoggingChatClient : DelegatingChatClient
                 {
                     if (_logger.IsEnabled(LogLevel.Trace))
                     {
-                        _logger.Log(LogLevel.Trace, 0, (update, _jsonSerializerOptions), null, static (state, _) =>
-                            $"CompleteStreamingAsync received update: {JsonSerializer.Serialize(state.update, state._jsonSerializerOptions.GetTypeInfo(typeof(StreamingChatCompletionUpdate)))}");
+                        LogStreamingUpdateSensitive(AsJson(update));
                     }
                     else
                     {
-                        _logger.LogDebug("CompleteStreamingAsync received update.");
+                        LogStreamingUpdate();
                     }
                 }
 
                 yield return update;
             }
 
-            _logger.LogDebug("CompleteStreamingAsync completed.");
+            LogCompleted(nameof(CompleteStreamingAsync));
         }
         finally
         {
@@ -133,22 +164,29 @@ public class LoggingChatClient : DelegatingChatClient
         }
     }
 
-    private void LogStart(IList<ChatMessage> chatMessages, ChatOptions? options, [CallerMemberName] string? methodName = null)
-    {
-        if (_logger.IsEnabled(LogLevel.Debug))
-        {
-            if (_logger.IsEnabled(LogLevel.Trace))
-            {
-                _logger.Log(LogLevel.Trace, 0, (methodName, chatMessages, options, this), null, static (state, _) =>
-                    $"{state.methodName} invoked: " +
-                    $"Messages: {JsonSerializer.Serialize(state.chatMessages, state.Item4._jsonSerializerOptions.GetTypeInfo(typeof(IList<ChatMessage>)))}. " +
-                    $"Options: {JsonSerializer.Serialize(state.options, state.Item4._jsonSerializerOptions.GetTypeInfo(typeof(ChatOptions)))}. " +
-                    $"Metadata: {JsonSerializer.Serialize(state.Item4.Metadata, state.Item4._jsonSerializerOptions.GetTypeInfo(typeof(ChatClientMetadata)))}.");
-            }
-            else
-            {
-                _logger.LogDebug($"{methodName} invoked.");
-            }
-        }
-    }
+    private string AsJson<T>(T value) => JsonSerializer.Serialize(value, _jsonSerializerOptions.GetTypeInfo(typeof(T)));
+
+    [LoggerMessage(LogLevel.Debug, "{MethodName} invoked.")]
+    private partial void LogInvoked(string methodName);
+
+    [LoggerMessage(LogLevel.Trace, "{MethodName} invoked: {ChatMessages}. Options: {ChatOptions}. Metadata: {ChatClientMetadata}.")]
+    private partial void LogInvokedSensitive(string methodName, string chatMessages, string chatOptions, string chatClientMetadata);
+
+    [LoggerMessage(LogLevel.Debug, "{MethodName} completed.")]
+    private partial void LogCompleted(string methodName);
+
+    [LoggerMessage(LogLevel.Trace, "{MethodName} completed: {ChatCompletion}.")]
+    private partial void LogCompletedSensitive(string methodName, string chatCompletion);
+
+    [LoggerMessage(LogLevel.Debug, "CompleteStreamingAsync received update.")]
+    private partial void LogStreamingUpdate();
+
+    [LoggerMessage(LogLevel.Trace, "CompleteStreamingAsync received update: {StreamingChatCompletionUpdate}")]
+    private partial void LogStreamingUpdateSensitive(string streamingChatCompletionUpdate);
+
+    [LoggerMessage(LogLevel.Debug, "{MethodName} canceled.")]
+    private partial void LogInvocationCanceled(string methodName);
+
+    [LoggerMessage(LogLevel.Error, "{MethodName} failed.")]
+    private partial void LogInvocationFailed(string methodName, Exception error);
 }

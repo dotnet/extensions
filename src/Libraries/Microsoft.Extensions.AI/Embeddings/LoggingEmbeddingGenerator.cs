@@ -10,14 +10,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable EA0000 // Use source generated logging methods for improved performance
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>A delegating embedding generator that logs embedding generation operations to an <see cref="ILogger"/>.</summary>
 /// <typeparam name="TInput">Specifies the type of the input passed to the generator.</typeparam>
 /// <typeparam name="TEmbedding">Specifies the type of the embedding instance produced by the generator.</typeparam>
-public class LoggingEmbeddingGenerator<TInput, TEmbedding> : DelegatingEmbeddingGenerator<TInput, TEmbedding>
+public partial class LoggingEmbeddingGenerator<TInput, TEmbedding> : DelegatingEmbeddingGenerator<TInput, TEmbedding>
     where TEmbedding : Embedding
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
@@ -50,15 +48,11 @@ public class LoggingEmbeddingGenerator<TInput, TEmbedding> : DelegatingEmbedding
         {
             if (_logger.IsEnabled(LogLevel.Trace))
             {
-                _logger.Log(LogLevel.Trace, 0, (values, options, this), null, static (state, _) =>
-                    "GenerateAsync invoked: " +
-                    $"Values: {JsonSerializer.Serialize(state.values, state.Item3._jsonSerializerOptions.GetTypeInfo(typeof(IEnumerable<TInput>)))}. " +
-                    $"Options: {JsonSerializer.Serialize(state.options, state.Item3._jsonSerializerOptions.GetTypeInfo(typeof(EmbeddingGenerationOptions)))}. " +
-                    $"Metadata: {JsonSerializer.Serialize(state.Item3.Metadata, state.Item3._jsonSerializerOptions.GetTypeInfo(typeof(EmbeddingGeneratorMetadata)))}.");
+                LogInvokedSensitive(AsJson(values), AsJson(options), AsJson(Metadata));
             }
             else
             {
-                _logger.LogDebug("GenerateAsync invoked.");
+                LogInvoked();
             }
         }
 
@@ -66,17 +60,36 @@ public class LoggingEmbeddingGenerator<TInput, TEmbedding> : DelegatingEmbedding
         {
             var embeddings = await base.GenerateAsync(values, options, cancellationToken).ConfigureAwait(false);
 
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                _logger.LogDebug("GenerateAsync generated {Count} embedding(s).", embeddings.Count);
-            }
+            LogCompleted(embeddings.Count);
 
             return embeddings;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (OperationCanceledException)
         {
-            _logger.LogError(ex, "GenerateAsync failed.");
+            LogInvocationCanceled();
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LogInvocationFailed(ex);
             throw;
         }
     }
+
+    private string AsJson<T>(T value) => JsonSerializer.Serialize(value, _jsonSerializerOptions.GetTypeInfo(typeof(T)));
+
+    [LoggerMessage(LogLevel.Debug, "GenerateAsync invoked.")]
+    private partial void LogInvoked();
+
+    [LoggerMessage(LogLevel.Trace, "GenerateAsync invoked: {Values}. Options: {EmbeddingGenerationOptions}. Metadata: {EmbeddingGeneratorMetadata}.")]
+    private partial void LogInvokedSensitive(string values, string embeddingGenerationOptions, string embeddingGeneratorMetadata);
+
+    [LoggerMessage(LogLevel.Debug, "GenerateAsync generated {EmbeddingsCount} embedding(s).")]
+    private partial void LogCompleted(int embeddingsCount);
+
+    [LoggerMessage(LogLevel.Debug, "GenerateAsync canceled.")]
+    private partial void LogInvocationCanceled();
+
+    [LoggerMessage(LogLevel.Error, "GenerateAsync failed.")]
+    private partial void LogInvocationFailed(Exception error);
 }

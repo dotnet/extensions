@@ -503,8 +503,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         Assert.Collection(logger.Entries,
             entry => Assert.Contains("What is the current secret number?", entry.Message),
-            entry => Assert.Contains("\"name\":\"GetSecretNumber\"", entry.Message),
-            entry => Assert.Contains($"\"result\":{secretNumber}", entry.Message),
+            entry => Assert.Contains("\"name\": \"GetSecretNumber\"", entry.Message),
+            entry => Assert.Contains($"\"result\": {secretNumber}", entry.Message),
             entry => Assert.Contains(secretNumber.ToString(), entry.Message));
     }
 
@@ -528,8 +528,8 @@ public abstract class ChatClientIntegrationTests : IDisposable
         }
 
         Assert.Contains(logger.Entries, e => e.Message.Contains("What is the current secret number?"));
-        Assert.Contains(logger.Entries, e => e.Message.Contains("\"name\":\"GetSecretNumber\""));
-        Assert.Contains(logger.Entries, e => e.Message.Contains($"\"result\":{secretNumber}"));
+        Assert.Contains(logger.Entries, e => e.Message.Contains("\"name\": \"GetSecretNumber\""));
+        Assert.Contains(logger.Entries, e => e.Message.Contains($"\"result\": {secretNumber}"));
     }
 
     [ConditionalFact]

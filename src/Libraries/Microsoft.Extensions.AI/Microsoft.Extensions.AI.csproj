@@ -21,6 +21,7 @@
   <PropertyGroup>
     <InjectSharedCollectionExtensions>true</InjectSharedCollectionExtensions>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+    <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
   </PropertyGroup>
 
   <ItemGroup>
