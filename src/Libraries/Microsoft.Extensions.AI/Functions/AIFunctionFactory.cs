@@ -46,7 +46,7 @@ public static class AIFunctionFactory
     {
         _ = Throw.IfNull(method);
 
-        AIFunctionFactoryCreateOptions? createOptions = serializerOptions is null && name is null && description is null
+        AIFunctionFactoryCreateOptions createOptions = serializerOptions is null && name is null && description is null
             ? _defaultOptions
             : new()
             {
@@ -69,10 +69,39 @@ public static class AIFunctionFactory
     /// </param>
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
-    public static AIFunction Create(MethodInfo method, object? target = null, AIFunctionFactoryCreateOptions? options = null)
+    public static AIFunction Create(MethodInfo method, object? target, AIFunctionFactoryCreateOptions? options)
     {
         _ = Throw.IfNull(method);
         return new ReflectionAIFunction(method, target, options ?? _defaultOptions);
+    }
+
+    /// <summary>
+    /// Creates an <see cref="AIFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
+    /// and an optional target object if the method is an instance method.
+    /// </summary>
+    /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
+    /// <param name="target">
+    /// The target object for the <paramref name="method"/> if it represents an instance method.
+    /// This should be <see langword="null"/> if and only if <paramref name="method"/> is a static method.
+    /// </param>
+    /// <param name="name">The name to use for the <see cref="AIFunction"/>.</param>
+    /// <param name="description">The description to use for the <see cref="AIFunction"/>.</param>
+    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters.</param>
+    /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
+    public static AIFunction Create(MethodInfo method, object? target, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
+    {
+        _ = Throw.IfNull(method);
+
+        AIFunctionFactoryCreateOptions? createOptions = serializerOptions is null && name is null && description is null
+            ? _defaultOptions
+            : new()
+            {
+                SerializerOptions = serializerOptions ?? _defaultOptions.SerializerOptions,
+                Name = name,
+                Description = description
+            };
+
+        return new ReflectionAIFunction(method, target, createOptions);
     }
 
     private sealed class ReflectionAIFunction : AIFunction
