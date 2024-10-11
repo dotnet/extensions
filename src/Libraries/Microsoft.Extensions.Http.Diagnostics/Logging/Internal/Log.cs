@@ -3,6 +3,9 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+#if NET
+using System.Globalization;
+#endif
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
 
@@ -152,7 +155,11 @@ internal static partial class Log
         var httpMethod = request[startIndex].Value;
         var httpHost = request[startIndex + 1].Value;
         var httpPath = request[startIndex + 2].Value;
+#if NET
+        return string.Create(CultureInfo.InvariantCulture, stackalloc char[256], $"{httpMethod} {httpHost}/{httpPath}");
+#else
         return FormattableString.Invariant($"{httpMethod} {httpHost}/{httpPath}");
+#endif
     }
 
     private static int FindStartIndex(LoggerMessageState request)
