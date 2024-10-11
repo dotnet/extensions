@@ -28,10 +28,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../Microsoft.Extensions.AI.Abstractions/Contents/FunctionCallHelpers.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="System.Net.Http.Json" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>

@@ -5,12 +5,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Schema;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
-using static Microsoft.Extensions.AI.FunctionCallHelpers;
 
 namespace Microsoft.Extensions.AI;
 
@@ -120,26 +117,14 @@ public static class ChatClientStructuredOutputExtensions
 
         serializerOptions.MakeReadOnly();
 
-        var schemaNode = (JsonObject)serializerOptions.GetJsonSchemaAsNode(typeof(T), new()
-        {
-            TreatNullObliviousAsNonNullable = true,
-            TransformSchemaNode = static (context, node) =>
-            {
-                if (node is JsonObject obj)
-                {
-                    if (obj.TryGetPropertyValue("enum", out _)
-                        && !obj.TryGetPropertyValue("type", out _))
-                    {
-                        obj.Insert(0, "type", "string");
-                    }
-                }
+        var schemaNode = FunctionCallUtilities.InferJsonSchema(
+            typeof(T),
+            serializerOptions,
+            includeTypeInEnumSchemas: true,
+            disallowAdditionalProperties: true,
+            includeSchemaKeyword: true);
 
-                return node;
-            },
-        });
-        schemaNode.Insert(0, "$schema", "https://json-schema.org/draft/2020-12/schema");
-        schemaNode.Add("additionalProperties", false);
-        var schema = JsonSerializer.Serialize(schemaNode, JsonDefaults.Options.GetTypeInfo(typeof(JsonNode)));
+        var schema = JsonSerializer.Serialize(schemaNode, JsonDefaults.Options.GetTypeInfo(typeof(JsonElement)));
 
         ChatMessage? promptAugmentation = null;
         options = (options ?? new()).Clone();
@@ -153,7 +138,7 @@ public static class ChatClientStructuredOutputExtensions
             // the LLM backend is meant to do whatever's needed to explain the schema to the LLM.
             options.ResponseFormat = ChatResponseFormat.ForJsonSchema(
                 schema,
-                schemaName: SanitizeMetadataName(typeof(T).Name),
+                schemaName: FunctionCallUtilities.SanitizeMemberName(typeof(T).Name),
                 schemaDescription: typeof(T).GetCustomAttribute<DescriptionAttribute>()?.Description);
         }
         else

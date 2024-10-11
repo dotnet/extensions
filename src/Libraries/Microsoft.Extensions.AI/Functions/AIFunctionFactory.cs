@@ -15,7 +15,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
-using static Microsoft.Extensions.AI.FunctionCallHelpers;
 
 namespace Microsoft.Extensions.AI;
 
@@ -40,7 +39,7 @@ public static class AIFunctionFactory
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
     /// <param name="name">The name to use for the <see cref="AIFunction"/>.</param>
     /// <param name="description">The description to use for the <see cref="AIFunction"/>.</param>
-    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters.</param>
+    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters and return value.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     public static AIFunction Create(Delegate method, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
     {
@@ -86,7 +85,7 @@ public static class AIFunctionFactory
     /// </param>
     /// <param name="name">The name to use for the <see cref="AIFunction"/>.</param>
     /// <param name="description">The description to use for the <see cref="AIFunction"/>.</param>
-    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters.</param>
+    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters and return value.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     public static AIFunction Create(MethodInfo method, object? target, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
     {
@@ -147,7 +146,7 @@ public static class AIFunctionFactory
             string? functionName = options.Name;
             if (functionName is null)
             {
-                functionName = SanitizeMetadataName(method.Name!);
+                functionName = FunctionCallUtilities.SanitizeMemberName(method.Name!);
 
                 const string AsyncSuffix = "Async";
                 if (IsAsyncMethod(method) &&
@@ -210,7 +209,7 @@ public static class AIFunctionFactory
                 {
                     ParameterType = returnType,
                     Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-                    Schema = FunctionCallHelpers.InferReturnParameterJsonSchema(returnType, options.SerializerOptions),
+                    Schema = FunctionCallUtilities.InferJsonSchema(returnType, options.SerializerOptions),
                 },
                 AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance,
                 JsonSerializerOptions = options.SerializerOptions,
@@ -356,13 +355,13 @@ public static class AIFunctionFactory
                 DefaultValue = parameter.HasDefaultValue ? parameter.DefaultValue : null,
                 IsRequired = !parameter.IsOptional,
                 ParameterType = parameter.ParameterType,
-                Schema = FunctionCallHelpers.InferParameterJsonSchema(
+                Schema = FunctionCallUtilities.InferParameterJsonSchema(
                     parameter.ParameterType,
                     parameter.Name,
+                    options,
                     description,
                     parameter.HasDefaultValue,
-                    parameter.DefaultValue,
-                    options)
+                    parameter.DefaultValue)
             };
         }
 

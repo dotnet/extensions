@@ -363,13 +363,13 @@ public sealed class OllamaChatClient : IChatClient
                         {
                             CallId = fcc.CallId,
                             Name = fcc.Name,
-                            Arguments = FunctionCallHelpers.FormatFunctionParametersAsJsonElement(fcc.Arguments, ToolCallJsonSerializerOptions),
+                            Arguments = FunctionCallUtilities.FormatFunctionParametersAsJsonElement(fcc.Arguments, ToolCallJsonSerializerOptions),
                         }, JsonContext.Default.OllamaFunctionCallContent)
                     };
                     break;
 
                 case FunctionResultContent frc:
-                    JsonElement jsonResult = FunctionCallHelpers.FormatFunctionResultAsJsonElement(frc.Result, ToolCallJsonSerializerOptions);
+                    JsonElement jsonResult = FunctionCallUtilities.FormatFunctionResultAsJsonElement(frc.Result, ToolCallJsonSerializerOptions);
                     yield return new OllamaChatRequestMessage
                     {
                         Role = "tool",
@@ -400,7 +400,7 @@ public sealed class OllamaChatClient : IChatClient
             {
                 Properties = function.Metadata.Parameters.ToDictionary(
                     p => p.Name,
-                    p => FunctionCallHelpers.InferParameterJsonSchema(p, function.Metadata, ToolCallJsonSerializerOptions)),
+                    p => FunctionCallUtilities.InferParameterJsonSchema(p, function.Metadata, ToolCallJsonSerializerOptions)),
                 Required = function.Metadata.Parameters.Where(p => p.IsRequired).Select(p => p.Name).ToList(),
             },
         }
