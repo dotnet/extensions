@@ -116,7 +116,7 @@ public class FunctionCallContentTests
             })),
         };
 
-        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, TestJsonSerializerContext.Default.Options);
+        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, serializerOptions: TestJsonSerializerContext.Default.Options);
         var result = await function.InvokeAsync(arguments);
         AssertExtensions.EqualFunctionCallResults(123.4, result);
     }
@@ -138,7 +138,7 @@ public class FunctionCallContentTests
             """, TestJsonSerializerContext.Default.Options)!;
         Assert.All(arguments.Values, v => Assert.IsType<JsonElement>(v));
 
-        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, TestJsonSerializerContext.Default.Options);
+        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, serializerOptions: TestJsonSerializerContext.Default.Options);
         var result = await function.InvokeAsync(arguments);
         AssertExtensions.EqualFunctionCallResults(123.4, result);
     }
@@ -146,11 +146,11 @@ public class FunctionCallContentTests
     [Fact]
     public void AIFunctionFactory_WhenTypesUnknownByContext_Throws()
     {
-        var ex = Assert.Throws<NotSupportedException>(() => AIFunctionFactory.Create((CustomType arg) => { }, TestJsonSerializerContext.Default.Options));
+        var ex = Assert.Throws<NotSupportedException>(() => AIFunctionFactory.Create((CustomType arg) => { }, serializerOptions: TestJsonSerializerContext.Default.Options));
         Assert.Contains("JsonTypeInfo metadata", ex.Message);
         Assert.Contains(nameof(CustomType), ex.Message);
 
-        ex = Assert.Throws<NotSupportedException>(() => AIFunctionFactory.Create(() => new CustomType(), TestJsonSerializerContext.Default.Options));
+        ex = Assert.Throws<NotSupportedException>(() => AIFunctionFactory.Create(() => new CustomType(), serializerOptions: TestJsonSerializerContext.Default.Options));
         Assert.Contains("JsonTypeInfo metadata", ex.Message);
         Assert.Contains(nameof(CustomType), ex.Message);
     }
@@ -171,7 +171,7 @@ public class FunctionCallContentTests
             }
             """, TestJsonSerializerContext.Default.Options)!.ToDictionary(k => k.Key, k => (object?)k.Value);
 
-        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, TestJsonSerializerContext.Default.Options);
+        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, serializerOptions: TestJsonSerializerContext.Default.Options);
         var result = await function.InvokeAsync(arguments);
         AssertExtensions.EqualFunctionCallResults(123.4, result);
     }
@@ -192,7 +192,7 @@ public class FunctionCallContentTests
             }
             """, TestJsonSerializerContext.Default.Options)!.ToDictionary(k => k.Key, k => (object?)k.Value);
 
-        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, TestJsonSerializerContext.Default.Options);
+        AIFunction function = AIFunctionFactory.Create((DayOfWeek[] a, double b, Guid c, Dictionary<string, string> d) => b, serializerOptions: TestJsonSerializerContext.Default.Options);
         var result = await function.InvokeAsync(arguments);
         AssertExtensions.EqualFunctionCallResults(123.4, result);
     }

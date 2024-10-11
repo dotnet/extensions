@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -16,9 +15,9 @@ public class AIFunctionFactoryTest
     [Fact]
     public void InvalidArguments_Throw()
     {
-        Delegate nullDelegate = null!;
-        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(nullDelegate));
-        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create((MethodInfo)null!));
+        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(method: null!));
+        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(method: null!, target: new object()));
+        Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(method: null!, target: new object(), name: "myAiFunk"));
         Assert.Throws<ArgumentNullException>(() => AIFunctionFactory.Create(typeof(AIFunctionFactoryTest).GetMethod(nameof(InvalidArguments_Throw))!, null));
         Assert.Throws<ArgumentException>(() => AIFunctionFactory.Create(typeof(List<>).GetMethod("Add")!, new List<int>()));
     }

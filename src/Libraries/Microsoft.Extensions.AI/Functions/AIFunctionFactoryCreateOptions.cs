@@ -15,25 +15,21 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public sealed class AIFunctionFactoryCreateOptions
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AIFunctionFactoryCreateOptions"/> class with default serializer options.
-    /// </summary>
-    public AIFunctionFactoryCreateOptions()
-        : this(JsonDefaults.Options)
-    {
-    }
+    private JsonSerializerOptions _options = JsonDefaults.Options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AIFunctionFactoryCreateOptions"/> class.
     /// </summary>
-    /// <param name="serializerOptions">The JSON serialization options used to marshal .NET types.</param>
-    public AIFunctionFactoryCreateOptions(JsonSerializerOptions serializerOptions)
+    public AIFunctionFactoryCreateOptions()
     {
-        SerializerOptions = Throw.IfNull(serializerOptions);
     }
 
-    /// <summary>Gets the <see cref="JsonSerializerOptions"/> used to marshal .NET values being passed to the underlying delegate.</summary>
-    public JsonSerializerOptions SerializerOptions { get; }
+    /// <summary>Gets or sets the <see cref="JsonSerializerOptions"/> used to marshal .NET values being passed to the underlying delegate.</summary>
+    public JsonSerializerOptions SerializerOptions
+    {
+        get => _options;
+        set => _options = Throw.IfNull(value);
+    }
 
     /// <summary>Gets or sets the name to use for the function.</summary>
     /// <remarks>
