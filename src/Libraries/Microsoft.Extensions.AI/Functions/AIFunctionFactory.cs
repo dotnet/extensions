@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -23,13 +22,8 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Provides factory methods for creating commonly-used implementations of <see cref="AIFunction"/>.</summary>
 public static class AIFunctionFactory
 {
-    /// <summary>Lazily-initialized default options instance.</summary>
-    private static AIFunctionFactoryCreateOptions? _defaultOptions;
-
-    /// <summary>Creates an <see cref="AIFunction"/> instance for a method, specified via a delegate.</summary>
-    /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
-    /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
-    public static AIFunction Create(Delegate method) => Create(method, _defaultOptions ??= new());
+    /// <summary>Holds the default options instance used when creating function.</summary>
+    private static readonly AIFunctionFactoryCreateOptions _defaultOptions = new();
 
     /// <summary>Creates an <see cref="AIFunction"/> instance for a method, specified via a delegate.</summary>
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
@@ -38,7 +32,6 @@ public static class AIFunctionFactory
     public static AIFunction Create(Delegate method, AIFunctionFactoryCreateOptions options)
     {
         _ = Throw.IfNull(method);
-        _ = Throw.IfNull(options);
         return new ReflectionAIFunction(method.Method, method.Target, options);
     }
 
@@ -46,35 +39,23 @@ public static class AIFunctionFactory
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
     /// <param name="name">The name to use for the <see cref="AIFunction"/>.</param>
     /// <param name="description">The description to use for the <see cref="AIFunction"/>.</param>
+    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
-    public static AIFunction Create(Delegate method, string? name, string? description = null)
-        => Create(method, (_defaultOptions ??= new()).SerializerOptions, name, description);
-
-    /// <summary>Creates an <see cref="AIFunction"/> instance for a method, specified via a delegate.</summary>
-    /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
-    /// <param name="options">The <see cref="JsonSerializerOptions"/> used to marshal function parameters.</param>
-    /// <param name="name">The name to use for the <see cref="AIFunction"/>.</param>
-    /// <param name="description">The description to use for the <see cref="AIFunction"/>.</param>
-    /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
-    public static AIFunction Create(Delegate method, JsonSerializerOptions options, string? name = null, string? description = null)
+    public static AIFunction Create(Delegate method, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
     {
         _ = Throw.IfNull(method);
-        _ = Throw.IfNull(options);
-        return new ReflectionAIFunction(method.Method, method.Target, new(options) { Name = name, Description = description });
-    }
 
-    /// <summary>
-    /// Creates an <see cref="AIFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
-    /// and an optional target object if the method is an instance method.
-    /// </summary>
-    /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
-    /// <param name="target">
-    /// The target object for the <paramref name="method"/> if it represents an instance method.
-    /// This should be <see langword="null"/> if and only if <paramref name="method"/> is a static method.
-    /// </param>
-    /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
-    public static AIFunction Create(MethodInfo method, object? target = null)
-        => Create(method, target, _defaultOptions ??= new());
+        AIFunctionFactoryCreateOptions createOptions = serializerOptions is null && name is null && description is null
+            ? _defaultOptions
+            : new()
+            {
+                SerializerOptions = serializerOptions ?? _defaultOptions.SerializerOptions,
+                Name = name,
+                Description = description
+            };
+
+        return new ReflectionAIFunction(method.Method, method.Target, createOptions);
+    }
 
     /// <summary>
     /// Creates an <see cref="AIFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -87,11 +68,10 @@ public static class AIFunctionFactory
     /// </param>
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
-    public static AIFunction Create(MethodInfo method, object? target, AIFunctionFactoryCreateOptions options)
+    public static AIFunction Create(MethodInfo method, object? target = null, AIFunctionFactoryCreateOptions? options = null)
     {
         _ = Throw.IfNull(method);
-        _ = Throw.IfNull(options);
-        return new ReflectionAIFunction(method, target, options);
+        return new ReflectionAIFunction(method, target, options ?? _defaultOptions);
     }
 
     private sealed class ReflectionAIFunction : AIFunction
