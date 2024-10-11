@@ -13,6 +13,10 @@ namespace Microsoft.Extensions.AI;
 /// <summary>
 /// A delegating chat client that caches the results of completion calls, storing them as JSON in an <see cref="IDistributedCache"/>.
 /// </summary>
+/// <remarks>
+/// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the employed
+/// <see cref="IDistributedCache"/> is similarly thread-safe for concurrent use.
+/// </remarks>
 public class DistributedCachingChatClient : CachingChatClient
 {
     private readonly IDistributedCache _storage;

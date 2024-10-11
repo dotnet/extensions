@@ -13,6 +13,10 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>A delegating chat client that logs chat operations to an <see cref="ILogger"/>.</summary>
+/// <para>
+/// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the
+/// <see cref="ILogger"/> employed is also thread-safe for concurrent use.
+/// </para>
 public partial class LoggingChatClient : DelegatingChatClient
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>

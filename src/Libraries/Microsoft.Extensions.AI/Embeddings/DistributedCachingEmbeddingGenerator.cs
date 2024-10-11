@@ -16,6 +16,10 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>
 /// <typeparam name="TEmbedding">The type of embeddings to generate.</typeparam>
+/// <remarks>
+/// The provided implementation of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> is thread-safe for concurrent
+/// use so long as the employed <see cref="IDistributedCache"/> is similarly thread-safe for concurrent use.
+/// </remarks>
 public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingEmbeddingGenerator<TInput, TEmbedding>
     where TEmbedding : Embedding
 {

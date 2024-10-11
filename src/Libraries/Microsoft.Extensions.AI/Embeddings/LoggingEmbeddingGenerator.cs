@@ -15,6 +15,10 @@ namespace Microsoft.Extensions.AI;
 /// <summary>A delegating embedding generator that logs embedding generation operations to an <see cref="ILogger"/>.</summary>
 /// <typeparam name="TInput">Specifies the type of the input passed to the generator.</typeparam>
 /// <typeparam name="TEmbedding">Specifies the type of the embedding instance produced by the generator.</typeparam>
+/// <para>
+/// The provided implementation of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> is thread-safe for concurrent use
+/// so long as the <see cref="ILogger"/> employed is also thread-safe for concurrent use.
+/// </para>
 public partial class LoggingEmbeddingGenerator<TInput, TEmbedding> : DelegatingEmbeddingGenerator<TInput, TEmbedding>
     where TEmbedding : Embedding
 {

@@ -17,9 +17,22 @@ namespace Microsoft.Extensions.AI;
 /// Include this in a chat pipeline to resolve function calls automatically.
 /// </summary>
 /// <remarks>
+/// <para>
 /// When this client receives a <see cref="FunctionCallContent"/> in a chat completion, it responds
 /// by calling the corresponding <see cref="AIFunction"/> defined in <see cref="ChatOptions"/>,
 /// producing a <see cref="FunctionResultContent"/>.
+/// </para>
+/// <para>
+/// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the
+/// <see cref="AIFunction"/> instances employed as part of the supplied <see cref="ChatOptions"/> are also safe.
+/// The <see cref="ConcurrentInvocation"/> property may be used to control whether multiple function invocation
+/// requests as part of the same request are invocable concurrently, but even with that set to <see langword="false"/>
+/// (the default), multiple concurrent requests to this same instance and using the same tools could result in those
+/// tools being used concurrently (one per request). For example, a function that accesses the HttpContext of a specific
+/// ASP.NET web request should only be used as part of a single <see cref="ChatOptions"/> at a time, and only with
+/// <see cref="ConcurrentInvocation"/> set to <see langword="false"/>, in case the inner client decided to issue multiple
+/// invocation requests to that same function.
+/// </para>
 /// </remarks>
 public class FunctionInvokingChatClient : DelegatingChatClient
 {
@@ -49,6 +62,10 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// to continue attempting function calls until <see cref="MaximumIterationsPerRequest"/> is reached.
     /// </para>
     /// <para>
+    /// Changing the value of this property while the client is in use may result in inconsistencies
+    /// as to whether errors are retried during an in-flight request.
+    /// </para>
+    /// <para>
     /// The default value is <see langword="false"/>.
     /// </para>
     /// </remarks>
@@ -73,6 +90,10 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// result in disclosing the raw exception information to external users, which may be a security
     /// concern depending on the application scenario.
     /// </para>
+    /// <para>
+    /// Changing the value of this property while the client is in use may result in inconsistencies
+    /// as to whether detailed errors are provided during an in-flight request.
+    /// </para>
     /// </remarks>
     public bool DetailedErrors { get; set; }
 
@@ -95,6 +116,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// Gets or sets a value indicating whether to keep intermediate messages in the chat history.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// When the inner <see cref="IChatClient"/> returns <see cref="FunctionCallContent"/> to the
     /// <see cref="FunctionInvokingChatClient"/>, the <see cref="FunctionInvokingChatClient"/> adds
     /// those messages to the list of messages, along with <see cref="FunctionResultContent"/> instances
@@ -104,6 +126,11 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// messages will persist in the <see cref="IList{ChatMessage}"/> list provided to <see cref="CompleteAsync"/>
     /// and <see cref="CompleteStreamingAsync"/> by the caller. Set <see cref="KeepFunctionCallingMessages"/>
     /// to <see langword="false"/> to remove those messages prior to completing the operation.
+    /// </para>
+    /// <para>
+    /// Changing the value of this property while the client is in use may result in inconsistencies
+    /// as to whether function calling messages are kept during an in-flight request.
+    /// </para>
     /// </remarks>
     public bool KeepFunctionCallingMessages { get; set; } = true;
 
@@ -118,6 +145,10 @@ public class FunctionInvokingChatClient : DelegatingChatClient
     /// back to the inner client in a new request. This property limits the number of times
     /// such a roundtrip is performed. If null, there is no limit applied. If set, the value
     /// must be at least one, as it includes the initial request.
+    /// </para>
+    /// <para>
+    /// Changing the value of this property while the client is in use may result in inconsistencies
+    /// as to how many iterations are allowed for an in-flight request.
     /// </para>
     /// <para>
     /// The default value is <see langword="null"/>.
