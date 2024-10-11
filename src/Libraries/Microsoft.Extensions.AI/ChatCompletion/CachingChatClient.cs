@@ -3,9 +3,12 @@
 
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
+
+#pragma warning disable S127 // "for" loop stop conditions should be invariant
 
 namespace Microsoft.Extensions.AI;
 
@@ -20,6 +23,20 @@ public abstract class CachingChatClient : DelegatingChatClient
         : base(innerClient)
     {
     }
+
+    /// <summary>Gets or sets a value indicating whether to coalesce streaming updates.</summary>
+    /// <remarks>
+    /// <para>
+    /// When <see langword="true"/>, the client will attempt to coalesce contiguous streaming updates
+    /// into a single update, in order to reduce the number of individual items that are yielded on
+    /// subsequent enumerations of the cached data. When <see langword="false"/>, the updates are
+    /// kept unaltered.
+    /// </para>
+    /// <para>
+    /// The default is <see langword="true"/>.
+    /// </para>
+    /// </remarks>
+    public bool CoalesceStreamingUpdates { get; set; } = true;
 
     /// <inheritdoc />
     public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -50,6 +67,7 @@ public abstract class CachingChatClient : DelegatingChatClient
         var cacheKey = GetCacheKey(true, chatMessages, options);
         if (await ReadCacheStreamingAsync(cacheKey, cancellationToken).ConfigureAwait(false) is { } existingChunks)
         {
+            // Yield all of the cached items.
             foreach (var chunk in existingChunks)
             {
                 yield return chunk;
@@ -57,51 +75,118 @@ public abstract class CachingChatClient : DelegatingChatClient
         }
         else
         {
-            var capturedItems = new List<StreamingChatCompletionUpdate>();
-            StreamingChatCompletionUpdate? previousCoalescedCopy = null;
-            await foreach (var item in base.CompleteStreamingAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
+            // Yield and store all of the items.
+            List<StreamingChatCompletionUpdate> capturedItems = [];
+            await foreach (var chunk in base.CompleteStreamingAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
             {
-                yield return item;
-
-                // If this item is compatible with the previous one, we will coalesce them in the cache
-                var previous = capturedItems.Count > 0 ? capturedItems[capturedItems.Count - 1] : null;
-                if (item.ChoiceIndex == 0
-                    && item.Contents.Count == 1
-                    && item.Contents[0] is TextContent currentTextContent
-                    && previous is { ChoiceIndex: 0 }
-                    && previous.Role == item.Role
-                    && previous.Contents is { Count: 1 }
-                    && previous.Contents[0] is TextContent previousTextContent)
-                {
-                    if (!ReferenceEquals(previous, previousCoalescedCopy))
-                    {
-                        // We don't want to mutate any object that we also yield, since the recipient might
-                        // not expect that. Instead make a copy we can safely mutate.
-                        previousCoalescedCopy = new()
-                        {
-                            Role = previous.Role,
-                            AuthorName = previous.AuthorName,
-                            AdditionalProperties = previous.AdditionalProperties,
-                            ChoiceIndex = previous.ChoiceIndex,
-                            RawRepresentation = previous.RawRepresentation,
-                            Contents = [new TextContent(previousTextContent.Text)]
-                        };
-
-                        // The last item we captured was before we knew it could be coalesced
-                        // with this one, so replace it with the coalesced copy
-                        capturedItems[capturedItems.Count - 1] = previousCoalescedCopy;
-                    }
-
-#pragma warning disable S1643 // Strings should not be concatenated using '+' in a loop
-                    ((TextContent)previousCoalescedCopy.Contents[0]).Text += currentTextContent.Text;
-#pragma warning restore S1643
-                }
-                else
-                {
-                    capturedItems.Add(item);
-                }
+                capturedItems.Add(chunk);
+                yield return chunk;
             }
 
+            // If the caching client is configured to coalesce streaming updates, do so now within the capturedItems list.
+            if (CoalesceStreamingUpdates)
+            {
+                StringBuilder coalescedText = new();
+
+                // Iterate through all of the items in the list looking for contiguous items that can be coalesced.
+                for (int startInclusive = 0; startInclusive < capturedItems.Count; startInclusive++)
+                {
+                    // If an item isn't generally coalescable, skip it.
+                    StreamingChatCompletionUpdate update = capturedItems[startInclusive];
+                    if (update.ChoiceIndex != 0 ||
+                        update.Contents.Count != 1 ||
+                        update.Contents[0] is not TextContent textContent)
+                    {
+                        continue;
+                    }
+
+                    // We found a coalescable item. Look for more contiguous items that are also coalescable with it.
+                    int endExclusive = startInclusive + 1;
+                    for (; endExclusive < capturedItems.Count; endExclusive++)
+                    {
+                        StreamingChatCompletionUpdate next = capturedItems[endExclusive];
+                        if (next.ChoiceIndex != 0 ||
+                            next.Contents.Count != 1 ||
+                            next.Contents[0] is not TextContent ||
+
+                            // changing role or author would be really strange, but check anyway
+                            (update.Role is not null && next.Role is not null && update.Role != next.Role) ||
+                            (update.AuthorName is not null && next.AuthorName is not null && update.AuthorName != next.AuthorName))
+                        {
+                            break;
+                        }
+                    }
+
+                    // If we couldn't find anything to coalesce, there's nothing to do.
+                    if (endExclusive - startInclusive <= 1)
+                    {
+                        continue;
+                    }
+
+                    // We found a coalescable run of items. Create a new node to represent the run. We create a new one
+                    // rather than reappropriating one of the existing ones so as not to mutate an item already yielded.
+                    _ = coalescedText.Clear().Append(capturedItems[startInclusive].Text);
+
+                    TextContent coalescedContent = new(null) // will patch the text after examining all items in the run
+                    {
+                        AdditionalProperties = textContent.AdditionalProperties?.Clone(),
+                        ModelId = textContent.ModelId,
+                    };
+
+                    StreamingChatCompletionUpdate coalesced = new()
+                    {
+                        AdditionalProperties = update.AdditionalProperties?.Clone(),
+                        AuthorName = update.AuthorName,
+                        CompletionId = update.CompletionId,
+                        Contents = [coalescedContent],
+                        CreatedAt = update.CreatedAt,
+                        FinishReason = update.FinishReason,
+                        Role = update.Role,
+
+                        // Explicitly don't include RawRepresentation. It's not applicable if one update ends up being used
+                        // to represent multiple, and it won't be serialized anyway.
+                    };
+
+                    // Replace the starting node with the coalesced node.
+                    capturedItems[startInclusive] = coalesced;
+
+                    // Now iterate through all the rest of the updates in the run, updating the coalesced node with relevant properties,
+                    // and nulling out the nodes along the way. We do this rather than removing the entry in order to avoid an O(N^2) operation.
+                    // We'll remove all the null entries at the end of the loop, using RemoveAll to do so, which can remove all of
+                    // the nulls in a single O(N) pass.
+                    for (int i = startInclusive + 1; i < endExclusive; i++)
+                    {
+                        // Grab the next item.
+                        StreamingChatCompletionUpdate next = capturedItems[i];
+                        capturedItems[i] = null!;
+
+                        TextContent nextContent = (TextContent)next.Contents[0];
+                        _ = coalescedText.Append(nextContent.Text);
+
+                        coalesced.AdditionalProperties = MergeProperties(coalesced.AdditionalProperties, next.AdditionalProperties);
+                        coalesced.AuthorName ??= next.AuthorName;
+                        coalesced.CompletionId ??= next.CompletionId;
+                        coalesced.CreatedAt ??= next.CreatedAt;
+                        coalesced.FinishReason ??= next.FinishReason;
+                        coalesced.Role ??= next.Role;
+
+                        coalescedContent.ModelId ??= nextContent.ModelId;
+                        coalescedContent.AdditionalProperties = MergeProperties(coalescedContent.AdditionalProperties, nextContent.AdditionalProperties);
+                    }
+
+                    // Complete the coalescing by patching the text of the coalesced node.
+                    coalesced.Text = coalescedText.ToString();
+
+                    // Jump to the last update in the run, so that when we loop around and bump ahead,
+                    // we're at the next update just after the run.
+                    startInclusive = endExclusive - 1;
+                }
+
+                // Remove all of the null slots left over from the coalescing process.
+                _ = capturedItems.RemoveAll(u => u is null);
+            }
+
+            // Write the captured items to the cache.
             await WriteCacheStreamingAsync(cacheKey, capturedItems, cancellationToken).ConfigureAwait(false);
         }
     }
@@ -152,4 +237,27 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
     protected abstract Task WriteCacheStreamingAsync(string key, IReadOnlyList<StreamingChatCompletionUpdate> value, CancellationToken cancellationToken);
+
+    /// <summary>Merges the properties from source into target.</summary>
+    /// <returns>
+    /// <paramref name="target"/> if <paramref name="target"/> is not <see langword="null"/> or if <paramref name="source"/> is <see langword="null"/> or empty.
+    /// Otherwise, a clone of <paramref name="source"/>.
+    /// </returns>
+    private static AdditionalPropertiesDictionary? MergeProperties(AdditionalPropertiesDictionary? target, AdditionalPropertiesDictionary? source)
+    {
+        if (source is { Count: > 0 })
+        {
+            if (target is null)
+            {
+                return source.Clone();
+            }
+
+            foreach (var entry in source)
+            {
+                target[entry.Key] = entry.Value;
+            }
+        }
+
+        return target;
+    }
 }

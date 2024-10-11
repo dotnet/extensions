@@ -18,6 +18,21 @@ public class DistributedCachingChatClientTest
     private readonly TestInMemoryCacheStorage _storage = new();
 
     [Fact]
+    public void Ctor_ExpectedDefaults()
+    {
+        using var innerClient = new TestChatClient();
+        using var cachingClient = new DistributedCachingChatClient(innerClient, _storage);
+
+        Assert.True(cachingClient.CoalesceStreamingUpdates);
+
+        cachingClient.CoalesceStreamingUpdates = false;
+        Assert.False(cachingClient.CoalesceStreamingUpdates);
+
+        cachingClient.CoalesceStreamingUpdates = true;
+        Assert.True(cachingClient.CoalesceStreamingUpdates);
+    }
+
+    [Fact]
     public async Task CachesSuccessResultsAsync()
     {
         // Arrange
@@ -251,8 +266,11 @@ public class DistributedCachingChatClientTest
         Assert.Equal(2, innerCallCount);
     }
 
-    [Fact]
-    public async Task StreamingCoalescesConsecutiveTextChunksAsync()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    [InlineData(null)]
+    public async Task StreamingCoalescesConsecutiveTextChunksAsync(bool? coalesce)
     {
         // Arrange
         List<StreamingChatCompletionUpdate> expectedCompletion =
@@ -274,6 +292,11 @@ public class DistributedCachingChatClientTest
             JsonSerializerOptions = TestJsonSerializerContext.Default.Options
         };
 
+        if (coalesce is not null)
+        {
+            outer.CoalesceStreamingUpdates = coalesce.Value;
+        }
+
         var result1 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
         await ToListAsync(result1);
 
@@ -281,10 +304,91 @@ public class DistributedCachingChatClientTest
         var result2 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
 
         // Assert
-        Assert.Collection(await ToListAsync(result2),
-            c => Assert.Equal("This becomes one chunk", c.Text),
-            c => Assert.IsType<FunctionCallContent>(Assert.Single(c.Contents)),
-            c => Assert.Equal("... and this becomes another one.", c.Text));
+        if (coalesce is null or true)
+        {
+            Assert.Collection(await ToListAsync(result2),
+                c => Assert.Equal("This becomes one chunk", c.Text),
+                c => Assert.IsType<FunctionCallContent>(Assert.Single(c.Contents)),
+                c => Assert.Equal("... and this becomes another one.", c.Text));
+        }
+        else
+        {
+            Assert.Collection(await ToListAsync(result2),
+                c => Assert.Equal("This", c.Text),
+                c => Assert.Equal(" becomes one chunk", c.Text),
+                c => Assert.IsType<FunctionCallContent>(Assert.Single(c.Contents)),
+                c => Assert.Equal("... and this", c.Text),
+                c => Assert.Equal(" becomes another", c.Text),
+                c => Assert.Equal(" one.", c.Text));
+        }
+    }
+
+    [Fact]
+    public async Task StreamingCoalescingPropagatesMetadataAsync()
+    {
+        // Arrange
+        List<StreamingChatCompletionUpdate> expectedCompletion =
+        [
+            new() { Role = ChatRole.Assistant, Contents = [new TextContent("Hello")] },
+            new() { Role = ChatRole.Assistant, Contents = [new TextContent(" world, ") { ModelId = "some model" }] },
+            new()
+            {
+                Role = ChatRole.Assistant,
+                Contents =
+                [
+                    new TextContent("how ")
+                    {
+                        ModelId = "some other model",
+                        AdditionalProperties = new() { ["a"] = "b", ["c"] = "d" },
+                    }
+                ]
+            },
+            new()
+            {
+                Role = ChatRole.Assistant,
+                Contents =
+                [
+                    new TextContent("are you?")
+                    {
+                        AdditionalProperties = new() { ["e"] = "f", ["g"] = "h" },
+                    }
+                ],
+                CreatedAt = DateTime.Parse("2024-10-11T19:23:36.0152137Z"),
+                CompletionId = "12345",
+                AuthorName = "Someone",
+                FinishReason = ChatFinishReason.Length,
+            },
+        ];
+
+        using var testClient = new TestChatClient
+        {
+            CompleteStreamingAsyncCallback = delegate { return ToAsyncEnumerableAsync(expectedCompletion); }
+        };
+        using var outer = new DistributedCachingChatClient(testClient, _storage)
+        {
+            JsonSerializerOptions = TestJsonSerializerContext.Default.Options
+        };
+
+        var result1 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+        await ToListAsync(result1);
+
+        // Act
+        var result2 = outer.CompleteStreamingAsync([new ChatMessage(ChatRole.User, "some input")]);
+
+        // Assert
+        var items = await ToListAsync(result2);
+        var item = Assert.Single(items);
+        Assert.Equal("Hello world, how are you?", item.Text);
+        Assert.Equal("12345", item.CompletionId);
+        Assert.Equal("Someone", item.AuthorName);
+        Assert.Equal(ChatFinishReason.Length, item.FinishReason);
+        Assert.Equal(DateTime.Parse("2024-10-11T19:23:36.0152137Z"), item.CreatedAt);
+
+        var content = Assert.IsType<TextContent>(Assert.Single(item.Contents));
+        Assert.Equal("Hello world, how are you?", content.Text);
+        Assert.Equal("some model", content.ModelId);
+        Assert.NotNull(content.AdditionalProperties);
+        Assert.Equal(4, content.AdditionalProperties.Count);
     }
 
     [Fact]

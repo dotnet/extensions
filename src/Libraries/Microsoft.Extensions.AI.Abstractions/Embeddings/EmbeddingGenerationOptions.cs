@@ -18,18 +18,10 @@ public class EmbeddingGenerationOptions
     /// The clone will have the same values for all properties as the original instance. Any collections, like <see cref="AdditionalProperties"/>
     /// are shallow-cloned, meaning a new collection instance is created, but any references contained by the collections are shared with the original.
     /// </remarks>
-    public virtual EmbeddingGenerationOptions Clone()
-    {
-        EmbeddingGenerationOptions options = new()
+    public virtual EmbeddingGenerationOptions Clone() =>
+        new()
         {
             ModelId = ModelId,
+            AdditionalProperties = AdditionalProperties?.Clone(),
         };
-
-        if (AdditionalProperties is not null)
-        {
-            options.AdditionalProperties = new(AdditionalProperties);
-        }
-
-        return options;
-    }
 }

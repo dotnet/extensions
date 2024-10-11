@@ -40,6 +40,13 @@ public sealed class AdditionalPropertiesDictionary : IDictionary<string, object?
 #endif
     }
 
+    /// <summary>Creates a shallow clone of the properties dictionary.</summary>
+    /// <returns>
+    /// A shallow clone of the properties dictionary. The instance will not be the same as the current instance,
+    /// but it will contain all of the same key-value pairs.
+    /// </returns>
+    public AdditionalPropertiesDictionary Clone() => new AdditionalPropertiesDictionary(_dictionary);
+
     /// <inheritdoc />
     public object? this[string key]
     {
