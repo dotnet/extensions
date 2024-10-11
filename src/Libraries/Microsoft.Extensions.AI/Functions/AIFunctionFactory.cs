@@ -32,6 +32,7 @@ public static class AIFunctionFactory
     public static AIFunction Create(Delegate method, AIFunctionFactoryCreateOptions options)
     {
         _ = Throw.IfNull(method);
+        _ = Throw.IfNull(options);
         return new ReflectionAIFunction(method.Method, method.Target, options);
     }
 
