@@ -69,7 +69,7 @@ public static partial class FunctionCallUtilities
     /// <param name="json">A JSON object containing the parameters.</param>
     /// <param name="parsingException">If the parsing fails, the resulting exception.</param>
     /// <returns>The parsed dictionary of objects encoded as <see cref="JsonElement"/>.</returns>
-    public static Dictionary<string, object?>? ParseFunctionCallArguments([StringSyntax("json")] string json, out Exception? parsingException)
+    public static Dictionary<string, object?>? ParseFunctionCallArguments([StringSyntax(StringSyntaxAttribute.Json)] string json, out Exception? parsingException)
     {
         _ = Throw.IfNull(json);
 
