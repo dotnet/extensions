@@ -29,11 +29,11 @@ public static class AIFunctionFactory
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
     /// <param name="options">Metadata to use to override defaults inferred from <paramref name="method"/>.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
-    public static AIFunction Create(Delegate method, AIFunctionFactoryCreateOptions options)
+    public static AIFunction Create(Delegate method, AIFunctionFactoryCreateOptions? options)
     {
         _ = Throw.IfNull(method);
-        _ = Throw.IfNull(options);
-        return new ReflectionAIFunction(method.Method, method.Target, options);
+
+        return new ReflectionAIFunction(method.Method, method.Target, options ?? _defaultOptions);
     }
 
     /// <summary>Creates an <see cref="AIFunction"/> instance for a method, specified via a delegate.</summary>
@@ -46,7 +46,7 @@ public static class AIFunctionFactory
     {
         _ = Throw.IfNull(method);
 
-        AIFunctionFactoryCreateOptions createOptions = serializerOptions is null && name is null && description is null
+        AIFunctionFactoryCreateOptions? createOptions = serializerOptions is null && name is null && description is null
             ? _defaultOptions
             : new()
             {
