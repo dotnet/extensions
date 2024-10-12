@@ -73,6 +73,7 @@ public class ChatOptions
             ResponseFormat = ResponseFormat,
             ModelId = ModelId,
             ToolMode = ToolMode,
+            AdditionalProperties = AdditionalProperties?.Clone(),
         };
 
         if (StopSequences is not null)
@@ -83,11 +84,6 @@ public class ChatOptions
         if (Tools is not null)
         {
             options.Tools = new List<AITool>(Tools);
-        }
-
-        if (AdditionalProperties is not null)
-        {
-            options.AdditionalProperties = new(AdditionalProperties);
         }
 
         return options;
