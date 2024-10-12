@@ -11,6 +11,19 @@ namespace Microsoft.Extensions.AI;
 /// <summary>Represents a generator of embeddings.</summary>
 /// <typeparam name="TInput">The type from which embeddings will be generated.</typeparam>
 /// <typeparam name="TEmbedding">The type of embeddings to generate.</typeparam>
+/// <remarks>
+/// <para>
+/// Unless otherwise specified, all members of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> are thread-safe for concurrent use.
+/// It is expected that all implementations of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> support being used by multiple requests concurrently.
+/// </para>
+/// <para>
+/// However, implementations of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> may mutate the arguments supplied to
+/// <see cref="GenerateAsync"/>, such as by adding additional values to the values list or configuring the options
+/// instance. Thus, consumers of the interface either should avoid using shared instances of these arguments for concurrent
+/// invocations or should otherwise ensure by construction that no <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> instances
+/// are used which might employ such mutation.
+/// </para>
+/// </remarks>
 public interface IEmbeddingGenerator<TInput, TEmbedding> : IDisposable
     where TEmbedding : Embedding
 {

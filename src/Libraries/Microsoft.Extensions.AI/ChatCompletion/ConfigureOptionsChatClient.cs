@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.AI;
 
 /// <summary>A delegating chat client that updates or replaces the <see cref="ChatOptions"/> used by the remainder of the pipeline.</summary>
 /// <remarks>
+/// <para>
 /// The configuration callback is invoked with the caller-supplied <see cref="ChatOptions"/> instance. To override the caller-supplied options
 /// with a new instance, the callback may simply return that new instance, for example <c>_ => new ChatOptions() { MaxTokens = 1000 }</c>. To provide
 /// a new instance only if the caller-supplied instance is `null`, the callback may conditionally return a new instance, for example
@@ -28,6 +29,12 @@ namespace Microsoft.Extensions.AI;
 ///     return newOptions;
 /// }
 /// </c>
+/// </para>
+/// <para>
+/// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the employed configuration
+/// callback is also thread-safe for concurrent requests. If callers employ a shared options instance, care should be taken in the
+/// configuration callback, as multiple calls to it may end up running in parallel with the same options instance.
+/// </para>
 /// </remarks>
 public sealed class ConfigureOptionsChatClient : DelegatingChatClient
 {

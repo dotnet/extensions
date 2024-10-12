@@ -9,6 +9,20 @@ using System.Threading.Tasks;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents a chat completion client.</summary>
+/// <remarks>
+/// <para>
+/// Unless otherwise specified, all members of <see cref="IChatClient"/> are thread-safe for concurrent use.
+/// It is expected that all implementations of <see cref="IChatClient"/> support being used by multiple requests concurrently.
+/// </para>
+/// <para>
+/// However, implementations of <see cref="IChatClient"/> may mutate the arguments supplied to <see cref="CompleteAsync"/> and
+/// <see cref="CompleteStreamingAsync"/>, such as by adding additional messages to the messages list or configuring the options
+/// instance. Thus, consumers of the interface either should avoid using shared instances of these arguments for concurrent
+/// invocations or should otherwise ensure by construction that no <see cref="IChatClient"/> instances are used which might employ
+/// such mutation. For example, the WithChatOptions method be provided with a callback that could mutate the supplied options
+/// argument, and that should be avoided if using a singleton options instance.
+/// </para>
+/// </remarks>
 public interface IChatClient : IDisposable
 {
     /// <summary>Sends chat messages to the model and returns the response messages.</summary>
