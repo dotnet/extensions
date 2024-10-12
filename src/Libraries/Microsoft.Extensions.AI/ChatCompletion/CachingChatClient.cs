@@ -163,7 +163,6 @@ public abstract class CachingChatClient : DelegatingChatClient
                         TextContent nextContent = (TextContent)next.Contents[0];
                         _ = coalescedText.Append(nextContent.Text);
 
-                        coalesced.AdditionalProperties = MergeProperties(coalesced.AdditionalProperties, next.AdditionalProperties);
                         coalesced.AuthorName ??= next.AuthorName;
                         coalesced.CompletionId ??= next.CompletionId;
                         coalesced.CreatedAt ??= next.CreatedAt;
@@ -171,7 +170,6 @@ public abstract class CachingChatClient : DelegatingChatClient
                         coalesced.Role ??= next.Role;
 
                         coalescedContent.ModelId ??= nextContent.ModelId;
-                        coalescedContent.AdditionalProperties = MergeProperties(coalescedContent.AdditionalProperties, nextContent.AdditionalProperties);
                     }
 
                     // Complete the coalescing by patching the text of the coalesced node.
@@ -237,27 +235,4 @@ public abstract class CachingChatClient : DelegatingChatClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
     protected abstract Task WriteCacheStreamingAsync(string key, IReadOnlyList<StreamingChatCompletionUpdate> value, CancellationToken cancellationToken);
-
-    /// <summary>Merges the properties from source into target.</summary>
-    /// <returns>
-    /// <paramref name="target"/> if <paramref name="target"/> is not <see langword="null"/> or if <paramref name="source"/> is <see langword="null"/> or empty.
-    /// Otherwise, a clone of <paramref name="source"/>.
-    /// </returns>
-    private static AdditionalPropertiesDictionary? MergeProperties(AdditionalPropertiesDictionary? target, AdditionalPropertiesDictionary? source)
-    {
-        if (source is { Count: > 0 })
-        {
-            if (target is null)
-            {
-                return source.Clone();
-            }
-
-            foreach (var entry in source)
-            {
-                target[entry.Key] = entry.Value;
-            }
-        }
-
-        return target;
-    }
 }

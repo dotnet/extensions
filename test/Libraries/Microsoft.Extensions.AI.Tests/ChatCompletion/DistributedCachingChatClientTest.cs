@@ -387,8 +387,6 @@ public class DistributedCachingChatClientTest
         var content = Assert.IsType<TextContent>(Assert.Single(item.Contents));
         Assert.Equal("Hello world, how are you?", content.Text);
         Assert.Equal("some model", content.ModelId);
-        Assert.NotNull(content.AdditionalProperties);
-        Assert.Equal(4, content.AdditionalProperties.Count);
     }
 
     [Fact]
