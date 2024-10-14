@@ -1,13 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Principal;
 using Microsoft.Extensions.Diagnostics.Logging.Buffering;
 using Microsoft.Extensions.Diagnostics.Logging.Sampling;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace ConsoleLogger
 {
@@ -45,44 +41,79 @@ namespace ConsoleLogger
 
         private static ILoggerFactory CreateLoggerFactory(bool formatMessage)
         {
-            const string myGlobalBufferName = "My buffer";
             return LoggerFactory.Create(builder =>
             {
-                builder
-                    .EnableBuffering(opts =>
+                // don't want to add tags right now
+                builder.AddBuffering((category, eventId, logLevel) => logLevel <= LogLevel.Warning); // Buffer warnings and below
+
+                builder.AddSampler((SamplingParameters parameters) =>
+                {
+                    /*custom logic in place to return true/false.*/
+
+                    // for example:
+                    // For Information category, sample 1% of logs
+                    if (parameters.LogLevel <= LogLevel.Information)
                     {
-                        opts.Configs.Add(new LogBufferConfig
-                        {
-                            Name = myGlobalBufferName,
-                            SuspendAfterFlushDuration = TimeSpan.FromSeconds(10),
-                            Duration = TimeSpan.FromSeconds(10),
-                            Size = 1_000_000,
-                        });
-                    })
-                    .EnableSampling(samplingBuilder => samplingBuilder
-                        .EnableSimpleSamplingFilter(opts =>
-                        {
-                            opts.Matchers.Add(
-                                new SamplingMatcher(
-                                    new LogRecordPattern
-                                    {
-                                        LogLevel = LogLevel.Information,
-                                        Category = "Microsoft.Extensions.Hosting",
-                                    },
-                                    (pattern) => Random.Shared.NextDouble() < 0.01));
-                        })
-                        .EnableSimpleBufferingFilter(opts =>
-                        {
-                            opts.Matchers.Add(
-                                new BufferingMatcher(
-                                    new LogRecordPattern
-                                    {
-                                        LogLevel = LogLevel.Error,
-                                    },
-                                    (tool, pattern) => tool.Buffer(myGlobalBufferName, pattern)));
-                        }));
+                        return Random.Shared.NextDouble() < 0.01;
+                    }
+
+                    // For Warning category, sample 75% of logs
+                    if (parameters.LogLevel == LogLevel.Warning)
+                    {
+                        return Random.Shared.NextDouble() < 0.75;
+                    }
+
+                    // For verything else, sample all
+                    return true;
+                });
+                builder.AddSampler<MyCustomSampler>();
+                builder.AddRatioBasedSampler(0.75, LogLevel.Warning);
+                builder.AddTraceBasedSampling();
             });
         }
+                //builder.AddScopedSampler(new MySampler());
+
+                //builder
+                //    AddSampling()
+                //AddHttpRequestBuffer
+                //    .AddBuffering("bufferName", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10), 1_000_000) //used and applied to everything by default
+                //    //should be able to invert
+                //    .AddBuffering(new Buffer(with options))
+                //    .AddBuffering(name, timespan, options =>  { options.AddFilter(...); excludes.AddFilter(...)  })
+
+                //    //add eventId filtering later
+                //    // or accept a function to filter by eventId for AddSampling. for tags ??
+
+                //    //
+
+                ////align with AddFilter()
+                //AddBuffering(excludes.AddFilter("Hosting", LogLevel));
+                //AddHttpRequestBuffer(excludes.AddFilter("Hosting", LogLevel))
+                //AddSampling((catg, LogLevel, eventId, state) => bool)
+                //how much people care about state?
+                //talk to people who use API
+                //does it solve people's problem?'
+                //AddFilter
+
+                //    .AddSampler("samplerName", (category, loglevel, HttpContext context) => Random.Shared.NextDouble() < 0.01) // use composable sampler instead
+                //    .AddStandardSampler1()
+                //    ...
+
+                //    .UseSampling("Microsoft.Extensions.Hosting", LogLevel.Information)
+                //        .WithSampler(Constants.StandardSamplerName);
+
+                //     .UseSampling("Microsoft.Extensions.Hosting", LogLevel.Information)
+                //        .WithBuffer("bufferName"); // for request-based sampling try to use DI scope mechanism
+
+                //.UseSomethingElse()
+                //    .WithBuffer()
+
+
+
+                //AddSampler(new ParenBasedSampler(..))
+
+                //new ProbabilisticSampler(0.01)
+                //.WithBuffer(
 
         private static void AssertNotNull(object? obj)
         {

@@ -4,7 +4,7 @@
 using System;
 
 namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
-public class HttpRequestRatioBasedSampler : LoggerSampler
+internal class HttpRequestRatioBasedSampler : LoggerSampler
 {
     private readonly int _sampleRate;
     private readonly IHttpContextAccessor _accessor;
@@ -15,7 +15,7 @@ public class HttpRequestRatioBasedSampler : LoggerSampler
         _accessor = accessor;
     }
 
-    public override bool ShouldSample(in SamplingParameters parameters)
+    public override bool ShouldSample(SamplingParameters parameters)
     {
         Span<byte> traceIdBytes = stackalloc byte[16];
         return Math.Abs(GetLowerLong(_accessor.HttpContext?.TraceIdentifier)) < sampleRate;

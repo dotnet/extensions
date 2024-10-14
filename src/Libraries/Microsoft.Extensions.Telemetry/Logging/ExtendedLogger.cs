@@ -269,18 +269,7 @@ internal sealed partial class ExtendedLogger : ILogger
 
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
-                var samplingParameters = new SamplingParameters(loggerInfo.Category!, eventId, logLevel);
-                var shouldEmit = false;
-                for (int j = 0; j < config.Samplers.Length; j++)
-                {
-                    if (config.Samplers[i].ShouldSample(samplingParameters))
-                    {
-                        shouldEmit = true;
-                        break;
-                    }
-                }
-
-                if (!shouldEmit)
+                if (!config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category!, eventId)))
                 {
                     // the record was not selected for sampling, so we just drop it forever.
                     continue;

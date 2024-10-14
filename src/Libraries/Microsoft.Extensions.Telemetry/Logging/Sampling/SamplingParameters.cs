@@ -16,11 +16,11 @@ public readonly struct SamplingParameters
     /// <param name="category">cat.</param>
     /// <param name="eventId">event id.</param>
     /// <param name="logLevel">level.</param>
-    public SamplingParameters(string category, EventId eventId, LogLevel logLevel)
+    public SamplingParameters(LogLevel logLevel, string category, EventId eventId)
     {
+        LogLevel = logLevel;
         Category = category;
         EventId = eventId;
-        LogLevel = logLevel;
     }
 
     /// <summary>

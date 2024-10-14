@@ -12,5 +12,5 @@ public abstract class LoggerSampler
     /// Makes a sampling decision based on the provided parameters.
     /// </summary>
     /// <returns>True, if the log record should be sampled. False otherwise.</returns>
-    public abstract bool ShouldSample(in SamplingParameters parameters);
+    public abstract bool ShouldSample(SamplingParameters parameters);
 }
