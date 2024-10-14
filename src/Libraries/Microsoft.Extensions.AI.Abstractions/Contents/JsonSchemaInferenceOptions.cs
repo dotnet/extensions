@@ -14,7 +14,7 @@ public sealed class JsonSchemaInferenceOptions
     public static JsonSchemaInferenceOptions Default { get; } = new JsonSchemaInferenceOptions();
 
     /// <summary>
-    /// Gets a value indicating whether to include the type keywork in inferred schemas for .NET enums.
+    /// Gets a value indicating whether to include the type keyword in inferred schemas for .NET enums.
     /// </summary>
     public bool IncludeTypeInEnumSchemas { get; init; }
 
