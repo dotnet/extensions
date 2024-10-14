@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Extensions.Diagnostics.Logging.Buffering;
 using Microsoft.Extensions.Diagnostics.Logging.Sampling;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Pools;
 
 namespace Microsoft.Extensions.Logging;
@@ -40,29 +41,12 @@ internal sealed partial class ExtendedLogger : ILogger
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        var pattern = new LogRecordPattern
-        {
-            Category = //TODO: get category somehow?
-            Tags = state,
-            EventId = eventId,
-            LogLevel = logLevel,
-            //and Timestamp is filled in automatically from DateTime.UtcNow
-        };
-
-        foreach (var sampler in _factory.Config.Samplers)
-        {
-            if (sampler.Sample(pattern))
-            {
-                return;
-            }
-        }
-
         if (typeof(TState) == typeof(LoggerMessageState))
         {
             var msgState = (LoggerMessageState?)(object?)state;
             if (msgState != null)
             {
-                ModernPath(logLevel, eventId, msgState, exception, (Func<LoggerMessageState, Exception?, string>)(object)formatter);
+                ModernPath<TState>(logLevel, eventId, msgState, exception, (Func<LoggerMessageState, Exception?, string>)(object)formatter);
                 return;
             }
         }
@@ -223,7 +207,7 @@ internal sealed partial class ExtendedLogger : ILogger
         }
     }
 
-    private void ModernPath(LogLevel logLevel, EventId eventId, LoggerMessageState msgState, Exception? exception, Func<LoggerMessageState, Exception?, string> formatter)
+    private void ModernPath<TState>(LogLevel logLevel, EventId eventId, LoggerMessageState msgState, Exception? exception, Func<LoggerMessageState, Exception?, string> formatter)
     {
         var loggers = MessageLoggers;
         var config = _factory.Config;
@@ -282,8 +266,37 @@ internal sealed partial class ExtendedLogger : ILogger
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
+
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
+                var samplingParameters = new SamplingParameters(loggerInfo.Category!, eventId, logLevel);
+                var shouldEmit = false;
+                for (int j = 0; j < config.Samplers.Length; j++)
+                {
+                    if (config.Samplers[i].ShouldSample(samplingParameters))
+                    {
+                        shouldEmit = true;
+                        break;
+                    }
+                }
+
+                if (!shouldEmit)
+                {
+                    // the record was not selected for sampling, so we just drop it forever.
+                    continue;
+                }
+
+                if (loggerInfo.Logger is IBufferedLogger bufferedLogger &&
+                    config.BufferProvider.CurrentBuffer.IsEnabled(loggerInfo.Category!, logLevel, eventId))
+                {
+                    config.BufferProvider.CurrentBuffer.Enqueue(logLevel, eventId, joiner, exception, joiner.Formatter!(joiner.State, exception));
+
+                    // the record was buffered, so we skip logging it for now.
+                    // when a caller needs to flush the buffer,
+                    // the GlobalBuffer will internally call IBufferedLogger.LogRecords to emit log records.
+                    continue;
+                }
+
                 try
                 {
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>

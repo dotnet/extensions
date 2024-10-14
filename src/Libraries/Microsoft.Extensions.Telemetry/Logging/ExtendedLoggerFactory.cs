@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
 using Microsoft.Extensions.Diagnostics.Enrichment;
+using Microsoft.Extensions.Diagnostics.Logging.Buffering;
 using Microsoft.Extensions.Diagnostics.Logging.Sampling;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
@@ -24,7 +25,8 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     private readonly IDisposable? _enrichmentOptionsChangeTokenRegistration;
     private readonly IDisposable? _redactionOptionsChangeTokenRegistration;
     private readonly Action<IEnrichmentTagCollector>[] _enrichers;
-    private readonly ILogSampler[] _samplers;
+    private readonly LoggerSampler[] _samplers;
+    private readonly ILoggingBufferProvider? _bufferProvider;
     private readonly KeyValuePair<string, object?>[] _staticTags;
     private readonly Func<DataClassificationSet, Redactor> _redactorProvider;
     private volatile bool _disposed;
@@ -35,18 +37,20 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     public ExtendedLoggerFactory(
         IEnumerable<ILoggerProvider> providers,
         IEnumerable<ILogEnricher> enrichers,
-        IEnumerable<ILogSampler> samplers,
+        IEnumerable<LoggerSampler> samplers,
         IEnumerable<IStaticLogEnricher> staticEnrichers,
         IOptionsMonitor<LoggerFilterOptions> filterOptions,
         IOptions<LoggerFactoryOptions>? factoryOptions = null,
         IExternalScopeProvider? scopeProvider = null,
         IOptionsMonitor<LoggerEnrichmentOptions>? enrichmentOptions = null,
         IOptionsMonitor<LoggerRedactionOptions>? redactionOptions = null,
-        IRedactorProvider? redactorProvider = null)
+        IRedactorProvider? redactorProvider = null,
+        ILoggingBufferProvider? bufferProvider = null)
 #pragma warning restore S107 // Methods should not have too many parameters
     {
         _scopeProvider = scopeProvider;
         _samplers = samplers.ToArray();
+        _bufferProvider = bufferProvider;
 
         _factoryOptions = factoryOptions == null || factoryOptions.Value == null ? new LoggerFactoryOptions() : factoryOptions.Value;
 
@@ -294,7 +298,8 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
                 enrichmentOptions.IncludeExceptionMessage,
                 enrichmentOptions.MaxStackTraceLength,
                 _redactorProvider,
-                redactionOptions.ApplyDiscriminator);
+                redactionOptions.ApplyDiscriminator,
+                _bufferProvider);
     }
 
     private void UpdateEnrichmentOptions(LoggerEnrichmentOptions enrichmentOptions) => Config = ComputeConfig(enrichmentOptions, null);
