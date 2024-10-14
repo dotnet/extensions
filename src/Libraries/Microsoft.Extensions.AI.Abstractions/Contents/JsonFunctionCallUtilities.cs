@@ -68,42 +68,61 @@ public static partial class JsonFunctionCallUtilities
         return InvalidNameCharsRegex().Replace(memberName, "_");
     }
 
-    /// <summary>Parses a JSON object into a dictionary of objects encoded as <see cref="JsonElement"/>.</summary>
+    /// <summary>Parses a JSON object into a <see cref="FunctionCallContent"/> with arguments encoded as <see cref="JsonElement"/>.</summary>
     /// <param name="json">A JSON object containing the parameters.</param>
-    /// <param name="parsingException">If the parsing fails, the resulting exception.</param>
+    /// <param name="callId">The function call ID.</param>
+    /// <param name="functionName">The function name.</param>
     /// <returns>The parsed dictionary of objects encoded as <see cref="JsonElement"/>.</returns>
-    public static Dictionary<string, object?>? ParseFunctionCallArguments([StringSyntax(StringSyntaxAttribute.Json)] string json, out Exception? parsingException)
+    public static FunctionCallContent ParseFunctionCallContent([StringSyntax(StringSyntaxAttribute.Json)] string json, string callId, string functionName)
     {
+        _ = Throw.IfNull(callId);
+        _ = Throw.IfNull(functionName);
         _ = Throw.IfNull(json);
 
-        parsingException = null;
+        Dictionary<string, object?>? arguments = null;
+        Exception? parsingException = null;
+
         try
         {
-            return JsonSerializer.Deserialize(json, FunctionCallUtilityContext.Default.DictionaryStringObject);
+            arguments = JsonSerializer.Deserialize(json, FunctionCallUtilityContext.Default.DictionaryStringObject);
         }
         catch (JsonException ex)
         {
             parsingException = new InvalidOperationException($"Function call arguments contained invalid JSON: {json}", ex);
-            return null;
         }
+
+        return new FunctionCallContent(callId, functionName, arguments)
+        {
+            Exception = parsingException
+        };
     }
 
-    /// <summary>Parses a JSON object into a dictionary of objects encoded as <see cref="JsonElement"/>.</summary>
+    /// <summary>Parses a JSON object into a <see cref="FunctionCallContent"/> with arguments encoded as <see cref="JsonElement"/>.</summary>
     /// <param name="utf8Json">A UTF-8 encoded JSON object containing the parameters.</param>
-    /// <param name="parsingException">If the parsing fails, the resulting exception.</param>
+    /// <param name="callId">The function call ID.</param>
+    /// <param name="functionName">The function name.</param>
     /// <returns>The parsed dictionary of objects encoded as <see cref="JsonElement"/>.</returns>
-    public static Dictionary<string, object?>? ParseFunctionCallArguments(ReadOnlySpan<byte> utf8Json, out Exception? parsingException)
+    public static FunctionCallContent ParseFunctionCallContent(ReadOnlySpan<byte> utf8Json, string callId, string functionName)
     {
-        parsingException = null;
+        _ = Throw.IfNull(callId);
+        _ = Throw.IfNull(functionName);
+
+        Dictionary<string, object?>? arguments = null;
+        Exception? parsingException = null;
+
         try
         {
-            return JsonSerializer.Deserialize(utf8Json, FunctionCallUtilityContext.Default.DictionaryStringObject);
+            arguments = JsonSerializer.Deserialize(utf8Json, FunctionCallUtilityContext.Default.DictionaryStringObject);
         }
         catch (JsonException ex)
         {
             parsingException = new InvalidOperationException($"Function call arguments contained invalid JSON: {Encoding.UTF8.GetString(utf8Json.ToArray())}", ex);
-            return null;
         }
+
+        return new FunctionCallContent(callId, functionName, arguments)
+        {
+            Exception = parsingException
+        };
     }
 
     /// <summary>

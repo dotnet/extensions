@@ -93,14 +93,11 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 {
                     if (toolCall is ChatCompletionsFunctionToolCall ftc && !string.IsNullOrWhiteSpace(ftc.Name))
                     {
-                        Dictionary<string, object?>? arguments = JsonFunctionCallUtilities.ParseFunctionCallArguments(ftc.Arguments, out Exception? parsingException);
+                        FunctionCallContent callContent = JsonFunctionCallUtilities.ParseFunctionCallContent(ftc.Arguments, toolCall.Id, ftc.Name);
+                        callContent.ModelId = response.Model;
+                        callContent.RawRepresentation = toolCall;
 
-                        returnMessage.Contents.Add(new FunctionCallContent(toolCall.Id, ftc.Name, arguments)
-                        {
-                            ModelId = response.Model,
-                            Exception = parsingException,
-                            RawRepresentation = toolCall
-                        });
+                        returnMessage.Contents.Add(callContent);
                     }
                 }
             }
@@ -226,15 +223,14 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 FunctionCallInfo fci = entry.Value;
                 if (!string.IsNullOrWhiteSpace(fci.Name))
                 {
-                    var arguments = JsonFunctionCallUtilities.ParseFunctionCallArguments(
+                    var callContent = JsonFunctionCallUtilities.ParseFunctionCallContent(
                         fci.Arguments?.ToString() ?? string.Empty,
-                        out Exception? parsingException);
+                        fci.CallId!,
+                        fci.Name!);
 
-                    completionUpdate.Contents.Add(new FunctionCallContent(fci.CallId!, fci.Name!, arguments)
-                    {
-                        ModelId = modelId,
-                        Exception = parsingException
-                    });
+                    callContent.ModelId = modelId;
+
+                    completionUpdate.Contents.Add(callContent);
                 }
             }
 

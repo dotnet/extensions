@@ -124,14 +124,11 @@ public sealed partial class OpenAIChatClient : IChatClient
             {
                 if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
                 {
-                    Dictionary<string, object?>? arguments = JsonFunctionCallUtilities.ParseFunctionCallArguments(toolCall.FunctionArguments, out Exception? parsingException);
+                    var callContent = JsonFunctionCallUtilities.ParseFunctionCallContent(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
+                    callContent.ModelId = response.Model;
+                    callContent.RawRepresentation = toolCall;
 
-                    returnMessage.Contents.Add(new FunctionCallContent(toolCall.Id, toolCall.FunctionName, arguments)
-                    {
-                        ModelId = response.Model,
-                        Exception = parsingException,
-                        RawRepresentation = toolCall
-                    });
+                    returnMessage.Contents.Add(callContent);
                 }
             }
         }
@@ -321,15 +318,14 @@ public sealed partial class OpenAIChatClient : IChatClient
                 FunctionCallInfo fci = entry.Value;
                 if (!string.IsNullOrWhiteSpace(fci.Name))
                 {
-                    var arguments = JsonFunctionCallUtilities.ParseFunctionCallArguments(
+                    var callContent = JsonFunctionCallUtilities.ParseFunctionCallContent(
                         fci.Arguments?.ToString() ?? string.Empty,
-                        out Exception? parsingException);
+                        fci.CallId!,
+                        fci.Name!);
 
-                    completionUpdate.Contents.Add(new FunctionCallContent(fci.CallId!, fci.Name!, arguments)
-                    {
-                        ModelId = modelId,
-                        Exception = parsingException
-                    });
+                    callContent.ModelId = modelId;
+
+                    completionUpdate.Contents.Add(callContent);
                 }
             }
 

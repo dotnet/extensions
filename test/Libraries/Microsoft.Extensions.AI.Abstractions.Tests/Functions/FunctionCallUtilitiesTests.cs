@@ -31,21 +31,25 @@ public static class FunctionCallUtilitiesTests
     }
 
     [Fact]
-    public static void ParseFunctionCallArguments_NullJsonInput_ReturnsNullDictionary()
+    public static void ParseFunctionCallContent_NullJsonInput_ReturnsNullArgumentDictionary()
     {
-        var result = JsonFunctionCallUtilities.ParseFunctionCallArguments("null", out Exception? parsingException);
-        Assert.Null(parsingException);
-        Assert.Null(result);
+        var content = JsonFunctionCallUtilities.ParseFunctionCallContent("null", "callId", "functionName");
+
+        Assert.NotNull(content);
+        Assert.Null(content.Arguments);
+        Assert.Null(content.Exception);
     }
 
     [Fact]
-    public static void ParseFunctionCallArguments_ObjectJsonInput_ReturnsElementDictionary()
+    public static void ParseFunctionCallContent_ObjectJsonInput_ReturnsElementArgumentDictionary()
     {
-        var result = JsonFunctionCallUtilities.ParseFunctionCallArguments("""{"Key1":{}, "Key2":null, "Key3" : [], "Key4" : 42, "Key5" : true }""", out Exception? parsingException);
-        Assert.Null(parsingException);
-        Assert.NotNull(result);
-        Assert.Equal(5, result.Count);
-        Assert.Collection(result,
+        var content = JsonFunctionCallUtilities.ParseFunctionCallContent("""{"Key1":{}, "Key2":null, "Key3" : [], "Key4" : 42, "Key5" : true }""", "callId", "functionName");
+
+        Assert.NotNull(content);
+        Assert.Null(content.Exception);
+        Assert.NotNull(content.Arguments);
+        Assert.Equal(5, content.Arguments.Count);
+        Assert.Collection(content.Arguments,
             kvp =>
             {
                 Assert.Equal("Key1", kvp.Key);
@@ -78,18 +82,21 @@ public static class FunctionCallUtilitiesTests
     [InlineData("1")]
     [InlineData("false")]
     [InlineData("[]")]
-    public static void ParseFunctionCallArguments_InvalidJsonInput_ReturnsParsingException(string json)
+    public static void ParseFunctionCallContent_InvalidJsonInput_ReturnsParsingException(string json)
     {
-        var result = JsonFunctionCallUtilities.ParseFunctionCallArguments(json!, out Exception? parsingException);
-        Assert.Null(result);
-        Assert.IsType<InvalidOperationException>(parsingException);
-        Assert.IsType<JsonException>(parsingException.InnerException);
+        var content = JsonFunctionCallUtilities.ParseFunctionCallContent(json, "callId", "functionName");
+        Assert.NotNull(content);
+        Assert.Null(content.Arguments);
+        Assert.IsType<InvalidOperationException>(content.Exception);
+        Assert.IsType<JsonException>(content.Exception.InnerException);
     }
 
     [Fact]
-    public static void ParseFunctionCallArguments_NullInput_ThrowsArgumentNullException()
+    public static void ParseFunctionCallContent_NullInput_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => JsonFunctionCallUtilities.ParseFunctionCallArguments((string)null!, out Exception? parsingException));
+        Assert.Throws<ArgumentNullException>(() => JsonFunctionCallUtilities.ParseFunctionCallContent((string)null!, "callId", "functionName"));
+        Assert.Throws<ArgumentNullException>(() => JsonFunctionCallUtilities.ParseFunctionCallContent("{}", null!, "functionName"));
+        Assert.Throws<ArgumentNullException>(() => JsonFunctionCallUtilities.ParseFunctionCallContent("{}", "callId", null!));
     }
 
     [Theory]
