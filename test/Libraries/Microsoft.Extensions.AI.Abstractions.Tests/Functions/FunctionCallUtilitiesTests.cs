@@ -93,30 +93,6 @@ public static class FunctionCallUtilitiesTests
     }
 
     [Fact]
-    public static void FormatFunctionParametersAsJsonString_ProducesExpectedJsonString()
-    {
-        Dictionary<string, object?> parameters = new()
-        {
-            ["Key1"] = null,
-            ["Key2"] = JsonSerializer.Deserialize<JsonElement>("{}"),
-            ["Key3"] = JsonSerializer.Deserialize<JsonElement>("[]"),
-            ["Key4"] = JsonSerializer.Deserialize<JsonElement>("42"),
-            ["Key5"] = JsonSerializer.Deserialize<JsonElement>("true"),
-        };
-
-        string expectedResult = JsonSerializer.Serialize(parameters);
-        string result = FunctionCallUtilities.FormatFunctionParametersAsJsonString(parameters);
-        Assert.Equal(expectedResult, result);
-    }
-
-    [Fact]
-    public static void FormatFunctionParametersAsJsonString_NullInput_ProducesNullJsonString()
-    {
-        string result = FunctionCallUtilities.FormatFunctionParametersAsJsonString(null);
-        Assert.Equal("null", result);
-    }
-
-    [Fact]
     public static void InferJsonSchema_DefaultParameters_GeneratesExpectedJsonSchema()
     {
         JsonElement expected = JsonDocument.Parse("""

@@ -596,9 +596,10 @@ public sealed partial class OpenAIChatClient : IChatClient
                         string? result = resultContent.Result as string;
                         if (result is null && resultContent.Result is not null)
                         {
+                            JsonSerializerOptions options = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
                             try
                             {
-                                result = FunctionCallUtilities.FormatFunctionResultAsJsonString(resultContent.Result, ToolCallJsonSerializerOptions);
+                                result = JsonSerializer.Serialize(resultContent.Result, options.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -655,5 +656,6 @@ public sealed partial class OpenAIChatClient : IChatClient
 
     /// <summary>Source-generated JSON type information.</summary>
     [JsonSerializable(typeof(OpenAIChatToolJson))]
+    [JsonSerializable(typeof(JsonElement))]
     private sealed partial class JsonContext : JsonSerializerContext;
 }

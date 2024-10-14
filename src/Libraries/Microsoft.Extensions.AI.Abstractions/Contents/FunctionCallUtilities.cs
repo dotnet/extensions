@@ -104,62 +104,6 @@ public static partial class FunctionCallUtilities
     }
 
     /// <summary>
-    /// Serializes a dictionary of function parameters into a JSON string.
-    /// </summary>
-    /// <param name="parameters">The dictionary of parameters.</param>
-    /// <param name="options">A <see cref="JsonSerializerOptions"/> governing serialization.</param>
-    /// <returns>A JSON encoding of the parameters.</returns>
-    public static string FormatFunctionParametersAsJsonString(IDictionary<string, object?>? parameters, JsonSerializerOptions? options = null)
-    {
-        // Fall back to the built-in context since in most cases the return value is JsonElement or JsonNode.
-        options ??= FunctionCallUtilityContext.Default.Options;
-        options.MakeReadOnly();
-        return JsonSerializer.Serialize(parameters, options.GetTypeInfo(typeof(IDictionary<string, object>)));
-    }
-
-    /// <summary>
-    /// Serializes a dictionary of function parameters into a <see cref="JsonElement"/>.
-    /// </summary>
-    /// <param name="parameters">The dictionary of parameters.</param>
-    /// <param name="options">A <see cref="JsonSerializerOptions"/> governing serialization.</param>
-    /// <returns>A JSON encoding of the parameters.</returns>
-    public static JsonElement FormatFunctionParametersAsJsonElement(IDictionary<string, object?>? parameters, JsonSerializerOptions? options = null)
-    {
-        // Fall back to the built-in context since in most cases the return value is JsonElement or JsonNode.
-        options ??= FunctionCallUtilityContext.Default.Options;
-        options.MakeReadOnly();
-        return JsonSerializer.SerializeToElement(parameters, options.GetTypeInfo(typeof(IDictionary<string, object>)));
-    }
-
-    /// <summary>
-    /// Serializes a .NET function return parameter to a JSON string.
-    /// </summary>
-    /// <param name="result">The result value to be serialized.</param>
-    /// <param name="options">A <see cref="JsonSerializerOptions"/> governing serialization.</param>
-    /// <returns>A JSON encoding of the parameter.</returns>
-    public static string FormatFunctionResultAsJsonString(object? result, JsonSerializerOptions? options = null)
-    {
-        // Fall back to the built-in context since in most cases the return value is JsonElement or JsonNode.
-        options ??= FunctionCallUtilityContext.Default.Options;
-        options.MakeReadOnly();
-        return JsonSerializer.Serialize(result, options.GetTypeInfo(typeof(object)));
-    }
-
-    /// <summary>
-    /// Serializes a .NET function return parameter to a JSON element.
-    /// </summary>
-    /// <param name="result">The result value to be serialized.</param>
-    /// <param name="options">A <see cref="JsonSerializerOptions"/> governing serialization.</param>
-    /// <returns>A JSON encoding of the parameter.</returns>
-    public static JsonElement FormatFunctionResultAsJsonElement(object? result, JsonSerializerOptions? options = null)
-    {
-        // Fall back to the built-in context since in most cases the return value is JsonElement or JsonNode.
-        options ??= FunctionCallUtilityContext.Default.Options;
-        options.MakeReadOnly();
-        return JsonSerializer.SerializeToElement(result, options.GetTypeInfo(typeof(object)));
-    }
-
-    /// <summary>
     /// Determines a JSON schema for the provided parameter metadata.
     /// </summary>
     /// <param name="parameterMetadata">The parameter metadata from which to infer the schema.</param>

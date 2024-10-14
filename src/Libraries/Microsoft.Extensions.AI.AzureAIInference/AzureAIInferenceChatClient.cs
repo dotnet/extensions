@@ -428,9 +428,10 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                         string? result = resultContent.Result as string;
                         if (result is null && resultContent.Result is not null)
                         {
+                            JsonSerializerOptions options = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
                             try
                             {
-                                result = FunctionCallUtilities.FormatFunctionResultAsJsonString(resultContent.Result, ToolCallJsonSerializerOptions);
+                                result = JsonSerializer.Serialize(resultContent.Result, options.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -461,7 +462,8 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 {
                     if (content is FunctionCallContent callRequest && callRequest.CallId is not null && toolCalls?.ContainsKey(callRequest.CallId) is not true)
                     {
-                        string jsonArguments = FunctionCallUtilities.FormatFunctionParametersAsJsonString(callRequest.Arguments, ToolCallJsonSerializerOptions);
+                        JsonSerializerOptions serializerOptions = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
+                        string jsonArguments = JsonSerializer.Serialize(callRequest.Arguments, serializerOptions.GetTypeInfo(typeof(IDictionary<string, object>)));
                         (toolCalls ??= []).Add(
                             callRequest.CallId,
                             new ChatCompletionsFunctionToolCall(
@@ -491,5 +493,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
 
     /// <summary>Source-generated JSON type information.</summary>
     [JsonSerializable(typeof(AzureAIChatToolJson))]
+    [JsonSerializable(typeof(IDictionary<string, object?>))]
+    [JsonSerializable(typeof(JsonElement))]
     private sealed partial class JsonContext : JsonSerializerContext;
 }
