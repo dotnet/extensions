@@ -262,38 +262,40 @@ for (int i = 0; i < 3; i++)
 
 Anyone can layer in such additional functionality. While it's possible to implement `IChatClient` directly, the `DelegatingChatClient` class is an implementation of the `IChatClient` interface that serves as a base class for creating chat clients that delegate their operations to another `IChatClient` instance. It is designed to facilitate the chaining of multiple clients, allowing calls to be passed through to an underlying client. The class provides default implementations for methods such as `CompleteAsync`, `CompleteStreamingAsync`, and `Dispose`, simply forwarding the calls to the inner client instance. A derived type may then override just the methods it needs to in order to augment the behavior, delegating to the base implementation in order to forward the call along to the wrapped client. This setup is useful for creating flexible and modular chat clients that can be easily extended and composed.
 
-Here is an example class derived from `DelegatingChatClient` to provide logging functionality:
+Here is an example class derived from `DelegatingChatClient` to provide rate limiting functionality, utilizing the [System.Threading.RateLimiting](https://www.nuget.org/packages/System.Threading.RateLimiting) library:
 ```csharp
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
+using System.Threading.RateLimiting;
 
-public sealed class LoggingChatClient(IChatClient innerClient, ILogger? logger = null) : 
-    DelegatingChatClient(innerClient)
+public sealed class RateLimitingChatClient(IChatClient innerClient, RateLimiter rateLimiter) : DelegatingChatClient(innerClient)
 {
     public override async Task<ChatCompletion> CompleteAsync(
-        IList<ChatMessage> chatMessages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
+        IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        logger?.LogTrace("Request: {Messages}", chatMessages);
-        var chatCompletion = await base.CompleteAsync(chatMessages, options, cancellationToken);
-        logger?.LogTrace("Response: {Completion}", JsonSerializer.Serialize(chatCompletion));
-        return chatCompletion;
+        using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
+        if (!lease.IsAcquired)
+            throw new InvalidOperationException("Unable to acquire lease.");
+
+        return await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
     }
 
     public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
-        IList<ChatMessage> chatMessages,
-        ChatOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        logger?.LogTrace("Request: {Messages}", chatMessages);
-        await foreach (var update in base.CompleteStreamingAsync(chatMessages, options, cancellationToken))
-        {
-            logger?.LogTrace("Response Update: {Update}", JsonSerializer.Serialize(update));
+        using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
+        if (!lease.IsAcquired)
+            throw new InvalidOperationException("Unable to acquire lease.");
+
+        await foreach (var update in base.CompleteStreamingAsync(chatMessages, options, cancellationToken).ConfigureAwait(false))
             yield return update;
-        }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+            rateLimiter.Dispose();
+
+        base.Dispose(disposing);
     }
 }
 ```
@@ -302,13 +304,13 @@ This can then be composed as with other `IChatClient` implementations.
 
 ```csharp
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
+using System.Threading.RateLimiting;
 
-var client = new LoggingChatClient(
+var client = new RateLimitingChatClient(
     new SampleChatClient(new Uri("http://localhost"), "test"),
-    LoggerFactory.Create(b => b.AddConsole().SetMinimumLevel(LogLevel.Trace)).CreateLogger("AI"));
+    new ConcurrencyLimiter(new() { PermitLimit = 1, QueueLimit = int.MaxValue }));
 
-await client.CompleteAsync("Hello, world!");
+await client.CompleteAsync("What color is the sky?");
 ```
 
 #### Dependency Injection
@@ -435,35 +437,44 @@ foreach (var embedding in embeddings)
 
 Also as with `IChatClient`, `IEmbeddingGenerator` enables building custom middleware that extends the functionality of an `IEmbeddingGenerator`. The `DelegatingEmbeddingGenerator<TInput, TEmbedding>` class is an implementation of the `IEmbeddingGenerator<TInput, TEmbedding>` interface that serves as a base class for creating embedding generators which delegate their operations to another `IEmbeddingGenerator<TInput, TEmbedding>` instance. It allows for chaining multiple generators in any order, passing calls through to an underlying generator. The class provides default implementations for methods such as `GenerateAsync` and `Dispose`, which simply forward the calls to the inner generator instance, enabling flexible and modular embedding generation.
 
-Here is an example implementation of such a delegating embedding generator that logs embedding generation requests:
+Here is an example implementation of such a delegating embedding generator that rate limits embedding generation requests:
 ```csharp
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
+using System.Threading.RateLimiting;
 
-public class LoggingEmbeddingGenerator(IEmbeddingGenerator<string, Embedding<float>> innerGenerator, ILogger? logger = null) :
+public class RateLimitingEmbeddingGenerator(IEmbeddingGenerator<string, Embedding<float>> innerGenerator, RateLimiter rateLimiter) :
     DelegatingEmbeddingGenerator<string, Embedding<float>>(innerGenerator)
 {
-    public override Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
-        IEnumerable<string> values,
-        EmbeddingGenerationOptions? options = null,
-        CancellationToken cancellationToken = default)
+    public override async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
+        IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
-        logger?.LogInformation("Generating embeddings for {Count} values", values.Count());
-        return base.GenerateAsync(values, options, cancellationToken);
+        using var lease = await rateLimiter.AcquireAsync(permitCount: 1, cancellationToken).ConfigureAwait(false);
+        if (!lease.IsAcquired)
+            throw new InvalidOperationException("Unable to acquire lease.");
+
+        return await base.GenerateAsync(values, options, cancellationToken);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+            rateLimiter.Dispose();
+
+        base.Dispose(disposing);
     }
 }
 ```
 
-This can then be layered around an arbitrary `IEmbeddingGenerator<string, Embedding<float>>` to log all embedding generation operations performed.
+This can then be layered around an arbitrary `IEmbeddingGenerator<string, Embedding<float>>` to rate limit all embedding generation operations performed.
 
 ```csharp
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
+using System.Threading.RateLimiting;
 
 IEmbeddingGenerator<string, Embedding<float>> generator =
-    new LoggingEmbeddingGenerator(
+    new RateLimitingEmbeddingGenerator(
         new SampleEmbeddingGenerator(new Uri("http://coolsite.ai"), "my-custom-model"),
-        LoggerFactory.Create(b => b.AddConsole().SetMinimumLevel(LogLevel.Trace)).CreateLogger("AI"));
+        new ConcurrencyLimiter(new() { PermitLimit = 1, QueueLimit = int.MaxValue }));
 
 foreach (var embedding in await generator.GenerateAsync(["What is AI?", "What is .NET?"]))
 {
