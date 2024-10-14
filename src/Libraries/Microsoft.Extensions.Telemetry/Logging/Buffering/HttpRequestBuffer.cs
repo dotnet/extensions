@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
+
 internal class HttpRequestBuffer : ILoggingBuffer
 {
     private readonly HttpRequestBufferingOptions _options;

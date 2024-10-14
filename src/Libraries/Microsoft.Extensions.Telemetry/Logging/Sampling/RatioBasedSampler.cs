@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
 /// <summary>
 /// Samples logs according to the specified probability.
 /// </summary>
-public class RatioBasedSampler : LoggerSampler
+internal class RatioBasedSampler : LoggerSampler
 {
     private readonly int _sampleRate;
     private readonly SamplingParameters _parameters;
