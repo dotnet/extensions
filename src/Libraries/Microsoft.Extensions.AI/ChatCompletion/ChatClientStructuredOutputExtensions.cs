@@ -16,6 +16,13 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public static class ChatClientStructuredOutputExtensions
 {
+    private static readonly JsonSchemaInferenceOptions _inferenceOptions = new()
+    {
+        IncludeSchemaKeyword = true,
+        DisallowAdditionalProperties = true,
+        IncludeTypeInEnumSchemas = true
+    };
+
     /// <summary>Sends chat messages to the model, requesting a response matching the type <typeparamref name="T"/>.</summary>
     /// <param name="chatClient">The <see cref="IChatClient"/>.</param>
     /// <param name="chatMessages">The chat content to send.</param>
@@ -117,12 +124,10 @@ public static class ChatClientStructuredOutputExtensions
 
         serializerOptions.MakeReadOnly();
 
-        var schemaNode = FunctionCallUtilities.InferJsonSchema(
+        var schemaNode = JsonFunctionCallUtilities.InferJsonSchema(
             typeof(T),
             serializerOptions,
-            includeTypeInEnumSchemas: true,
-            disallowAdditionalProperties: true,
-            includeSchemaKeyword: true);
+            inferenceOptions: _inferenceOptions);
 
         var schema = JsonSerializer.Serialize(schemaNode, JsonDefaults.Options.GetTypeInfo(typeof(JsonElement)));
 
@@ -138,7 +143,7 @@ public static class ChatClientStructuredOutputExtensions
             // the LLM backend is meant to do whatever's needed to explain the schema to the LLM.
             options.ResponseFormat = ChatResponseFormat.ForJsonSchema(
                 schema,
-                schemaName: FunctionCallUtilities.SanitizeMemberName(typeof(T).Name),
+                schemaName: JsonFunctionCallUtilities.SanitizeMemberName(typeof(T).Name),
                 schemaDescription: typeof(T).GetCustomAttribute<DescriptionAttribute>()?.Description);
         }
         else

@@ -35,7 +35,7 @@ using FunctionParameterKey = (
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides a collection of static utility methods for marshalling JSON data in function calling.</summary>
-public static partial class FunctionCallUtilities
+public static partial class JsonFunctionCallUtilities
 {
     /// <summary>The uri used when populating the $schema keyword in inferred schemas.</summary>
 #pragma warning disable S1075 // URIs should not be hardcoded
@@ -108,23 +108,21 @@ public static partial class FunctionCallUtilities
     /// </summary>
     /// <param name="parameterMetadata">The parameter metadata from which to infer the schema.</param>
     /// <param name="functionMetadata">The containing function metadata.</param>
-    /// <param name="options">The global <see cref="JsonSerializerOptions"/> governing serialization.</param>
-    /// <param name="includeTypeInEnumSchemas">Whether to include the type keyword in schemas for enum types.</param>
-    /// <param name="disallowAdditionalProperties">Whether to emit an additionalProperties keyword set to false.</param>
+    /// <param name="serializerOptions">The global <see cref="JsonSerializerOptions"/> governing serialization.</param>
+    /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
     public static JsonElement InferParameterJsonSchema(
         AIFunctionParameterMetadata parameterMetadata,
         AIFunctionMetadata functionMetadata,
-        JsonSerializerOptions? options,
-        bool includeTypeInEnumSchemas = false,
-        bool disallowAdditionalProperties = false)
+        JsonSerializerOptions? serializerOptions,
+        JsonSchemaInferenceOptions? inferenceOptions = null)
     {
         _ = Throw.IfNull(parameterMetadata);
         _ = Throw.IfNull(functionMetadata);
 
-        options ??= functionMetadata.JsonSerializerOptions;
+        serializerOptions ??= functionMetadata.JsonSerializerOptions;
 
-        if (ReferenceEquals(options, functionMetadata.JsonSerializerOptions) &&
+        if (ReferenceEquals(serializerOptions, functionMetadata.JsonSerializerOptions) &&
             parameterMetadata.Schema is JsonElement schema)
         {
             // If the resolved options matches that of the function metadata,
@@ -132,7 +130,7 @@ public static partial class FunctionCallUtilities
             return schema;
         }
 
-        if (options is null)
+        if (serializerOptions is null)
         {
             return _trueJsonSchema;
         }
@@ -140,12 +138,11 @@ public static partial class FunctionCallUtilities
         return InferParameterJsonSchema(
             parameterMetadata.ParameterType,
             parameterMetadata.Name,
-            options,
+            serializerOptions,
             description: parameterMetadata.Description,
             hasDefaultValue: parameterMetadata.HasDefaultValue,
             defaultValue: parameterMetadata.DefaultValue,
-            includeTypeInEnumSchemas,
-            disallowAdditionalProperties);
+            inferenceOptions);
     }
 
     /// <summary>
@@ -153,25 +150,24 @@ public static partial class FunctionCallUtilities
     /// </summary>
     /// <param name="type">The type of the parameter.</param>
     /// <param name="parameterName">The name of the parameter.</param>
-    /// <param name="options">The options used to extract the schema from the specified type.</param>
+    /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="description">The description of the parameter.</param>
     /// <param name="hasDefaultValue">Whether the parameter is optional.</param>
     /// <param name="defaultValue">The default value of the optional parameter, if applicable.</param>
-    /// <param name="includeTypeInEnumSchemas">Whether to include the type keyword in schemas for enum types.</param>
-    /// <param name="disallowAdditionalProperties">Whether to emit an additionalProperties keyword set to false.</param>
+    /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
     public static JsonElement InferParameterJsonSchema(
         Type? type,
         string parameterName,
-        JsonSerializerOptions options,
+        JsonSerializerOptions serializerOptions,
         string? description = null,
         bool hasDefaultValue = false,
         object? defaultValue = null,
-        bool includeTypeInEnumSchemas = false,
-        bool disallowAdditionalProperties = false)
+        JsonSchemaInferenceOptions? inferenceOptions = null)
     {
         _ = Throw.IfNull(parameterName);
-        _ = Throw.IfNull(options);
+        _ = Throw.IfNull(serializerOptions);
+        inferenceOptions ??= JsonSchemaInferenceOptions.Default;
 
         FunctionParameterKey key = (
             type,
@@ -180,44 +176,42 @@ public static partial class FunctionCallUtilities
             hasDefaultValue,
             defaultValue,
             IncludeSchemaUri: false,
-            disallowAdditionalProperties,
-            includeTypeInEnumSchemas);
+            inferenceOptions.DisallowAdditionalProperties,
+            inferenceOptions.IncludeTypeInEnumSchemas);
 
-        return GetJsonSchemaCached(options, key);
+        return GetJsonSchemaCached(serializerOptions, key);
     }
 
     /// <summary>Infers a JSON schema for the specified type.</summary>
     /// <param name="type">The type for which to generate the schema.</param>
-    /// <param name="options">The options used to extract the schema from the specified type.</param>
+    /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="description">The description of the parameter.</param>
     /// <param name="hasDefaultValue">Whether the parameter is optional.</param>
     /// <param name="defaultValue">The default value of the optional parameter, if applicable.</param>
-    /// <param name="includeTypeInEnumSchemas">Whether to include the type keyword in schemas for enum types.</param>
-    /// <param name="disallowAdditionalProperties">Whether to emit an additionalProperties keyword set to false.</param>
-    /// <param name="includeSchemaKeyword">Whether the include a $schema keyword in the document.</param>
+    /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A <see cref="JsonElement"/> representing the schema.</returns>
     public static JsonElement InferJsonSchema(
         Type? type,
-        JsonSerializerOptions options,
+        JsonSerializerOptions serializerOptions,
         string? description = null,
         bool hasDefaultValue = false,
         object? defaultValue = null,
-        bool includeTypeInEnumSchemas = false,
-        bool disallowAdditionalProperties = false,
-        bool includeSchemaKeyword = false)
+        JsonSchemaInferenceOptions? inferenceOptions = null)
     {
-        _ = Throw.IfNull(options);
+        _ = Throw.IfNull(serializerOptions);
+        inferenceOptions ??= JsonSchemaInferenceOptions.Default;
+
         FunctionParameterKey key = (
             type,
             ParameterName: null,
             description,
             hasDefaultValue,
             defaultValue,
-            includeSchemaKeyword,
-            disallowAdditionalProperties,
-            includeTypeInEnumSchemas);
+            inferenceOptions.IncludeSchemaKeyword,
+            inferenceOptions.DisallowAdditionalProperties,
+            inferenceOptions.IncludeTypeInEnumSchemas);
 
-        return GetJsonSchemaCached(options, key);
+        return GetJsonSchemaCached(serializerOptions, key);
     }
 
     private static JsonElement GetJsonSchemaCached(JsonSerializerOptions options, FunctionParameterKey key)
@@ -414,7 +408,6 @@ public static partial class FunctionCallUtilities
     }
 
     [JsonSerializable(typeof(Dictionary<string, object?>))]
-    [JsonSerializable(typeof(IDictionary<string, object?>))]
     [JsonSerializable(typeof(JsonNode))]
     [JsonSerializable(typeof(JsonElement))]
     [JsonSerializable(typeof(JsonDocument))]

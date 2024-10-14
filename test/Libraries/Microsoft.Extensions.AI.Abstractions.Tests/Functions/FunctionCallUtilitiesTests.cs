@@ -20,20 +20,20 @@ public static class FunctionCallUtilitiesTests
     [InlineData("<<Main>$>g__Test", "__Main___g__Test")]
     public static void SanitizeMemberName_ReturnsExpectedValue(string name, string expected)
     {
-        string actual = FunctionCallUtilities.SanitizeMemberName(name);
+        string actual = JsonFunctionCallUtilities.SanitizeMemberName(name);
         Assert.Equal(expected, actual);
     }
 
     [Fact]
     public static void SanitizeMemberName_NullInput_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => FunctionCallUtilities.SanitizeMemberName(null!));
+        Assert.Throws<ArgumentNullException>(() => JsonFunctionCallUtilities.SanitizeMemberName(null!));
     }
 
     [Fact]
     public static void ParseFunctionCallArguments_NullJsonInput_ReturnsNullDictionary()
     {
-        var result = FunctionCallUtilities.ParseFunctionCallArguments("null", out Exception? parsingException);
+        var result = JsonFunctionCallUtilities.ParseFunctionCallArguments("null", out Exception? parsingException);
         Assert.Null(parsingException);
         Assert.Null(result);
     }
@@ -41,7 +41,7 @@ public static class FunctionCallUtilitiesTests
     [Fact]
     public static void ParseFunctionCallArguments_ObjectJsonInput_ReturnsElementDictionary()
     {
-        var result = FunctionCallUtilities.ParseFunctionCallArguments("""{"Key1":{}, "Key2":null, "Key3" : [], "Key4" : 42, "Key5" : true }""", out Exception? parsingException);
+        var result = JsonFunctionCallUtilities.ParseFunctionCallArguments("""{"Key1":{}, "Key2":null, "Key3" : [], "Key4" : 42, "Key5" : true }""", out Exception? parsingException);
         Assert.Null(parsingException);
         Assert.NotNull(result);
         Assert.Equal(5, result.Count);
@@ -80,7 +80,7 @@ public static class FunctionCallUtilitiesTests
     [InlineData("[]")]
     public static void ParseFunctionCallArguments_InvalidJsonInput_ReturnsParsingException(string json)
     {
-        var result = FunctionCallUtilities.ParseFunctionCallArguments(json!, out Exception? parsingException);
+        var result = JsonFunctionCallUtilities.ParseFunctionCallArguments(json!, out Exception? parsingException);
         Assert.Null(result);
         Assert.IsType<InvalidOperationException>(parsingException);
         Assert.IsType<JsonException>(parsingException.InnerException);
@@ -89,7 +89,18 @@ public static class FunctionCallUtilitiesTests
     [Fact]
     public static void ParseFunctionCallArguments_NullInput_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => FunctionCallUtilities.ParseFunctionCallArguments((string)null!, out Exception? parsingException));
+        Assert.Throws<ArgumentNullException>(() => JsonFunctionCallUtilities.ParseFunctionCallArguments((string)null!, out Exception? parsingException));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public static void JsonSchemaInferenceOptions_DefaultInstance_ReturnsExpectedValues(bool useSingleton)
+    {
+        JsonSchemaInferenceOptions options = useSingleton ? JsonSchemaInferenceOptions.Default : new JsonSchemaInferenceOptions();
+        Assert.False(options.IncludeTypeInEnumSchemas);
+        Assert.False(options.DisallowAdditionalProperties);
+        Assert.False(options.IncludeSchemaKeyword);
     }
 
     [Fact]
@@ -116,7 +127,7 @@ public static class FunctionCallUtilitiesTests
             }
             """).RootElement;
 
-        JsonElement actual = FunctionCallUtilities.InferJsonSchema(typeof(MyPoco), JsonSerializerOptions.Default);
+        JsonElement actual = JsonFunctionCallUtilities.InferJsonSchema(typeof(MyPoco), JsonSerializerOptions.Default);
         Assert.True(JsonElement.DeepEquals(expected, actual));
     }
 
@@ -148,13 +159,18 @@ public static class FunctionCallUtilitiesTests
             }
             """).RootElement;
 
-        JsonElement actual = FunctionCallUtilities.InferJsonSchema(typeof(MyPoco), JsonSerializerOptions.Default,
+        JsonSchemaInferenceOptions inferenceOptions = new JsonSchemaInferenceOptions
+        {
+            IncludeTypeInEnumSchemas = true,
+            DisallowAdditionalProperties = true,
+            IncludeSchemaKeyword = true
+        };
+
+        JsonElement actual = JsonFunctionCallUtilities.InferJsonSchema(typeof(MyPoco), JsonSerializerOptions.Default,
             description: "alternative description",
             hasDefaultValue: true,
             defaultValue: 42,
-            includeTypeInEnumSchemas: true,
-            disallowAdditionalProperties: true,
-            includeSchemaKeyword: true);
+            inferenceOptions);
 
         Assert.True(JsonElement.DeepEquals(expected, actual));
     }
