@@ -62,8 +62,11 @@ public static partial class JsonFunctionCallUtilities
     /// Replaces non-alphanumeric characters in the identifier with the underscore character.
     /// Primarily intended to remove characters produced by compiler-generated method name mangling.
     /// </returns>
-    public static string SanitizeMemberName(string memberName) =>
-        InvalidNameCharsRegex().Replace(memberName, "_");
+    public static string SanitizeMemberName(string memberName)
+    {
+        _ = Throw.IfNull(memberName);
+        return InvalidNameCharsRegex().Replace(memberName, "_");
+    }
 
     /// <summary>Parses a JSON object into a dictionary of objects encoded as <see cref="JsonElement"/>.</summary>
     /// <param name="json">A JSON object containing the parameters.</param>
@@ -353,10 +356,12 @@ public static partial class JsonFunctionCallUtilities
                     int index = obj.IndexOf(DescriptionPropertyName);
                     if (index < 0)
                     {
+                        // If there's no description property, insert it at the beginning of the doc.
                         obj.Insert(0, DescriptionPropertyName, (JsonNode)key.Description!);
                     }
                     else
                     {
+                        // If there is a description property, just update it in-place.
                         obj[index] = (JsonNode)key.Description!;
                     }
                 }

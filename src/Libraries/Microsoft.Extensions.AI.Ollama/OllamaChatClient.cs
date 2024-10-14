@@ -356,6 +356,7 @@ public sealed class OllamaChatClient : IChatClient
                     break;
 
                 case FunctionCallContent fcc:
+                {
                     JsonSerializerOptions serializerOptions = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
                     yield return new OllamaChatRequestMessage
                     {
@@ -368,10 +369,12 @@ public sealed class OllamaChatClient : IChatClient
                         }, JsonContext.Default.OllamaFunctionCallContent)
                     };
                     break;
+                }
 
                 case FunctionResultContent frc:
-                    JsonSerializerOptions serializerOptions1 = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
-                    JsonElement jsonResult = JsonSerializer.SerializeToElement(frc.Result, serializerOptions1.GetTypeInfo(typeof(object)));
+                {
+                    JsonSerializerOptions serializerOptions = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
+                    JsonElement jsonResult = JsonSerializer.SerializeToElement(frc.Result, serializerOptions.GetTypeInfo(typeof(object)));
                     yield return new OllamaChatRequestMessage
                     {
                         Role = "tool",
@@ -382,6 +385,7 @@ public sealed class OllamaChatClient : IChatClient
                         }, JsonContext.Default.OllamaFunctionResultContent)
                     };
                     break;
+                }
             }
         }
 
