@@ -52,6 +52,7 @@
     <PackageVersion Include="System.Memory" Version="4.5.5" />
     <PackageVersion Include="System.Memory.Data" Version="$(SystemMemoryDataVersion)" />
     <PackageVersion Include="System.Net.Http.Json" Version="$(SystemNetHttpJsonVersion)" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="$(SystemNumericsTensorsVersion)" />
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />

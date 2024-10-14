@@ -16,7 +16,6 @@
     <PackageVersion Include="Polly.Testing" Version="8.4.2" />
     <PackageVersion Include="StrongNamer" Version="0.2.5" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerVersion)" />
-    <PackageVersion Include="System.Numerics.Tensors" Version="$(SystemNumericsTensorsVersion)" />
     <PackageVersion Include="Verify.Xunit" Version="20.4.0" />
     <PackageVersion Include="Xunit.Combinatorial" Version="1.6.24" />
     <PackageVersion Include="xunit.extensibility.execution" Version="2.4.2" />

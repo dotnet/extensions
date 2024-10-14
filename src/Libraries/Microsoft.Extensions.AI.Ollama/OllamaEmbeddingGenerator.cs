@@ -128,6 +128,7 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
             {
                 CreatedAt = DateTimeOffset.UtcNow,
                 ModelId = response.Model ?? requestModel,
+                Normalized = true, // Ollama always normalizes embeddings
             }))
         {
             Usage = usage,

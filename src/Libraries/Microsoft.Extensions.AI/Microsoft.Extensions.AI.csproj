@@ -33,6 +33,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+    <PackageReference Include="System.Numerics.Tensors" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
