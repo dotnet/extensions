@@ -148,41 +148,41 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>990ebf52fc408ca45929fd176d2740675a67fab8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="9.0.0-rc.2.24474.3">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c70204ae3c91d2b48fa6d9b92b62265f368421b4</Sha>
+    <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="9.0.0-rtm.24514.7">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>228b9ea237f21b19647f11c98e342efdb9a1f3f1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="9.0.0-rc.2.24474.3">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c70204ae3c91d2b48fa6d9b92b62265f368421b4</Sha>
+    <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="9.0.0-rtm.24514.7">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>228b9ea237f21b19647f11c98e342efdb9a1f3f1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0-rc.2.24474.3">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c70204ae3c91d2b48fa6d9b92b62265f368421b4</Sha>
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0-rtm.24514.7">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>228b9ea237f21b19647f11c98e342efdb9a1f3f1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="9.0.0-rc.2.24474.3">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c70204ae3c91d2b48fa6d9b92b62265f368421b4</Sha>
+    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="9.0.0-rtm.24514.7">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>228b9ea237f21b19647f11c98e342efdb9a1f3f1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="9.0.0-rc.2.24474.3">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c70204ae3c91d2b48fa6d9b92b62265f368421b4</Sha>
+    <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="9.0.0-rtm.24514.7">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>228b9ea237f21b19647f11c98e342efdb9a1f3f1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0-rc.2.24474.3">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c70204ae3c91d2b48fa6d9b92b62265f368421b4</Sha>
+    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0-rtm.24514.7">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>228b9ea237f21b19647f11c98e342efdb9a1f3f1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.0-rc.2.24474.3">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c70204ae3c91d2b48fa6d9b92b62265f368421b4</Sha>
+    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.0-rtm.24514.7">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>228b9ea237f21b19647f11c98e342efdb9a1f3f1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Http.Polly" Version="9.0.0-rc.2.24474.3">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c70204ae3c91d2b48fa6d9b92b62265f368421b4</Sha>
+    <Dependency Name="Microsoft.Extensions.Http.Polly" Version="9.0.0-rtm.24514.7">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>228b9ea237f21b19647f11c98e342efdb9a1f3f1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="9.0.0-rc.2.24474.3">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
-      <Sha>c70204ae3c91d2b48fa6d9b92b62265f368421b4</Sha>
+    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="9.0.0-rtm.24514.7">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>228b9ea237f21b19647f11c98e342efdb9a1f3f1</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
