@@ -21,6 +21,7 @@ using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S1121 // Assignments should not be made from within sub-expressions
 #pragma warning disable S107 // Methods should not have too many parameters
+#pragma warning disable S1075 // URIs should not be hardcoded
 
 using FunctionParameterKey = (
     System.Type? Type,
@@ -38,9 +39,7 @@ namespace Microsoft.Extensions.AI;
 public static partial class JsonFunctionCallUtilities
 {
     /// <summary>The uri used when populating the $schema keyword in inferred schemas.</summary>
-#pragma warning disable S1075 // URIs should not be hardcoded
     private const string SchemaKeywordUri = "https://json-schema.org/draft/2020-12/schema";
-#pragma warning restore S1075 // URIs should not be hardcoded
 
     /// <summary>Soft limit for how many items should be stored in the dictionaries in <see cref="_schemaCaches"/>.</summary>
     private const int CacheSoftLimit = 4096;
@@ -260,11 +259,6 @@ public static partial class JsonFunctionCallUtilities
     {
         _ = Throw.IfNull(options);
         options.MakeReadOnly();
-
-        if (options.ReferenceHandler == ReferenceHandler.Preserve)
-        {
-            throw new NotSupportedException("Schema generation not supported with ReferenceHandler.Preserve enabled.");
-        }
 
         if (key.Type is null)
         {
