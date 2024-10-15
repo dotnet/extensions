@@ -26,7 +26,6 @@ public static class SamplingLoggerBuilderExtensions
         return builder.AddSampler<TraceBasedSampler>();
     }
 
-
     /// <summary>
     /// Adds a log sampler to the factory.
     /// </summary>

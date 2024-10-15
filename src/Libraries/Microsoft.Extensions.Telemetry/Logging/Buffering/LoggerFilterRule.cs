@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
 
 /// <summary>
-/// Defines a rule used to filter log messages.
+/// Defines a rule used to filter log messages for the purpose of buffering later.
 /// </summary>
 public class LoggerFilterRule
 {

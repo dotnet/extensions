@@ -41,39 +41,14 @@ namespace ConsoleLogger
 
         private static ILoggerFactory CreateLoggerFactory(bool formatMessage)
         {
-            return LoggerFactory.Create(builder =>
+            return LoggerFactory.Create(loggingBuilder =>
             {
-                // don't want to add tags right now
-                builder.AddBuffering((category, eventId, logLevel) => logLevel <= LogLevel.Warning); // Buffer warnings and below
-
-                builder.AddSampler((SamplingParameters parameters) =>
-                {
-                    /*custom logic in place to return true/false.*/
-
-                    // for example:
-                    // For Information category, sample 1% of logs
-                    if (parameters.LogLevel <= LogLevel.Information)
-                    {
-                        return Random.Shared.NextDouble() < 0.01;
-                    }
-
-                    // For Warning category, sample 75% of logs
-                    if (parameters.LogLevel == LogLevel.Warning)
-                    {
-                        return Random.Shared.NextDouble() < 0.75;
-                    }
-
-                    // For verything else, sample all
-                    return true;
-                });
-                builder.AddSampler<MyCustomSampler>();
-                builder.AddRatioBasedSampler(0.75, LogLevel.Warning);
-                builder.AddTraceBasedSampling();
+c
             });
         }
-                //builder.AddScopedSampler(new MySampler());
+                //loggingBuilder.AddScopedSampler(new MySampler());
 
-                //builder
+                //loggingBuilder
                 //    AddSampling()
                 //AddHttpRequestBuffer
                 //    .AddBuffering("bufferName", TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10), 1_000_000) //used and applied to everything by default

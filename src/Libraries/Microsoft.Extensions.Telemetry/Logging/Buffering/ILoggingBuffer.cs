@@ -26,5 +26,5 @@ public interface ILoggingBuffer
     /// <summary>
     /// Enqueues a log record.
     /// </summary>
-    void Enqueue(LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> joiner, Exception? exception, string v);
+    void Enqueue(LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> joiner, Exception? exception, string formatter);
 }
