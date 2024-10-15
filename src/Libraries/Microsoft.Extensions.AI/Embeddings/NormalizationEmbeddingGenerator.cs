@@ -10,9 +10,14 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>A delegating embedding generator that normalizes embedding vectors not already annotated as being normalized.</summary>
+/// <summary>A delegating embedding generator that normalizes embedding vectors.</summary>
 /// <typeparam name="TInput">Specifies the type of the input passed to the generator.</typeparam>
 /// <typeparam name="TEmbeddingValue">Specifies the type of the values in the embedding vectors produced by the generator.</typeparam>
+/// <remarks>
+/// Most embedding generators produce normalized vectors, so this generator typically is not needed. However, if a generator
+/// is known to produce non-normalized vectors, this generator may be used to normalize those vectors. The implementation performs
+/// an operation equivalent to <c>newVector[i] = oldVector[i] / EuclideanNorm(oldVector)</c>.
+/// </remarks>
 public sealed class NormalizationEmbeddingGenerator<TInput, TEmbeddingValue> : DelegatingEmbeddingGenerator<TInput, Embedding<TEmbeddingValue>>
     where TEmbeddingValue : IRootFunctions<TEmbeddingValue>
 {
@@ -31,13 +36,9 @@ public sealed class NormalizationEmbeddingGenerator<TInput, TEmbeddingValue> : D
 
         foreach (var e in embeddings)
         {
-            if (!e.Normalized)
-            {
-                var normalized = new TEmbeddingValue[e.Vector.Length];
-                TensorPrimitives.Divide(e.Vector.Span, TensorPrimitives.Norm(e.Vector.Span), normalized);
-                e.Vector = normalized;
-                e.Normalized = true;
-            }
+            var normalized = new TEmbeddingValue[e.Vector.Length];
+            TensorPrimitives.Divide(e.Vector.Span, TensorPrimitives.Norm(e.Vector.Span), normalized);
+            e.Vector = normalized;
         }
 
         return embeddings;

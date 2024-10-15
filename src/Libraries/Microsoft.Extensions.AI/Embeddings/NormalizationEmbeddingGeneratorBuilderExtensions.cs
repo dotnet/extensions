@@ -17,6 +17,11 @@ public static class NormalizationEmbeddingGeneratorBuilderExtensions
     /// <param name="builder">The <see cref="EmbeddingGeneratorBuilder{TInput, Embedding}"/>.</param>
     /// <param name="configure">An optional callback that can be used to configure the <see cref="NormalizationEmbeddingGenerator{TInput, TEmbeddingValue}"/> instance.</param>
     /// <returns>The <paramref name="builder"/>.</returns>
+    /// <remarks>
+    /// Most embedding generators produce normalized vectors, so this operation typically is not needed. However, if a generator
+    /// is known to produce non-normalized vectors, this operation may be used to normalize those vectors. The implementation performs
+    /// an operation equivalent to <c>newVector[i] = oldVector[i] / EuclideanNorm(oldVector)</c>.
+    /// </remarks>
     public static EmbeddingGeneratorBuilder<TInput, Embedding<TEmbeddingValue>> UseNormalization<TInput, TEmbeddingValue>(
         this EmbeddingGeneratorBuilder<TInput, Embedding<TEmbeddingValue>> builder, Action<NormalizationEmbeddingGenerator<TInput, TEmbeddingValue>>? configure = null)
         where TEmbeddingValue : IRootFunctions<TEmbeddingValue>

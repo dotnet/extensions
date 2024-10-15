@@ -117,7 +117,6 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
                 {
                     CreatedAt = DateTimeOffset.UtcNow,
                     ModelId = embeddings.Model,
-                    Normalized = true, // OpenAI always normalizes embeddings
                 }))
         {
             Usage = new()
