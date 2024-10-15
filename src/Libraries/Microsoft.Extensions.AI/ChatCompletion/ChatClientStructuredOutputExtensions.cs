@@ -44,8 +44,7 @@ public static class ChatClientStructuredOutputExtensions
         IList<ChatMessage> chatMessages,
         ChatOptions? options = null,
         bool? useNativeJsonSchema = null,
-        CancellationToken cancellationToken = default)
-        where T : class =>
+        CancellationToken cancellationToken = default) =>
         CompleteAsync<T>(chatClient, chatMessages, AIJsonUtilities.DefaultOptions, options, useNativeJsonSchema, cancellationToken);
 
     /// <summary>Sends a user chat text message to the model, requesting a response matching the type <typeparamref name="T"/>.</summary>
@@ -65,8 +64,7 @@ public static class ChatClientStructuredOutputExtensions
         string chatMessage,
         ChatOptions? options = null,
         bool? useNativeJsonSchema = null,
-        CancellationToken cancellationToken = default)
-        where T : class =>
+        CancellationToken cancellationToken = default) =>
         CompleteAsync<T>(chatClient, [new ChatMessage(ChatRole.User, chatMessage)], options, useNativeJsonSchema, cancellationToken);
 
     /// <summary>Sends a user chat text message to the model, requesting a response matching the type <typeparamref name="T"/>.</summary>
@@ -88,8 +86,7 @@ public static class ChatClientStructuredOutputExtensions
         JsonSerializerOptions serializerOptions,
         ChatOptions? options = null,
         bool? useNativeJsonSchema = null,
-        CancellationToken cancellationToken = default)
-        where T : class =>
+        CancellationToken cancellationToken = default) =>
         CompleteAsync<T>(chatClient, [new ChatMessage(ChatRole.User, chatMessage)], serializerOptions, options, useNativeJsonSchema, cancellationToken);
 
     /// <summary>Sends chat messages to the model, requesting a response matching the type <typeparamref name="T"/>.</summary>
@@ -116,7 +113,6 @@ public static class ChatClientStructuredOutputExtensions
         ChatOptions? options = null,
         bool? useNativeJsonSchema = null,
         CancellationToken cancellationToken = default)
-        where T : class
     {
         _ = Throw.IfNull(chatClient);
         _ = Throw.IfNull(chatMessages);
@@ -128,7 +124,22 @@ public static class ChatClientStructuredOutputExtensions
             type: typeof(T),
             serializerOptions: serializerOptions,
             inferenceOptions: _inferenceOptions);
+        var isObject = schemaNode.TryGetPropertyValue("type", out var schemaType) &&
+                schemaType?.GetValueKind() == JsonValueKind.String &&
+                schemaType.GetValue<string>() is { } type &&
+                type.Equals("object", System.StringComparison.Ordinal);
 
+        var wrapped = false;
+
+        // We wrap regardless of native structured output, since it also applies to Azure Inference
+        if (!isObject)
+        {
+            schemaNode = (JsonObject)serializerOptions.GetJsonSchemaAsNode(typeof(Payload<T>), exporterOptions);
+            wrapped = true;
+        }
+
+        schemaNode.Insert(0, "$schema", "https://json-schema.org/draft/2020-12/schema");
+        schemaNode.Add("additionalProperties", false);
         var schema = JsonSerializer.Serialize(schemaNode, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
 
         ChatMessage? promptAugmentation = null;
@@ -166,6 +177,13 @@ public static class ChatClientStructuredOutputExtensions
         try
         {
             var result = await chatClient.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+            if (wrapped)
+            {
+                // We don't initialize the dictionary unless we need it, to avoid unnecessary allocations.
+                result.AdditionalProperties ??= [];
+                result.AdditionalProperties["$wrapped"] = true;
+            }
+
             return new ChatCompletion<T>(result, serializerOptions);
         }
         finally
@@ -176,4 +194,6 @@ public static class ChatClientStructuredOutputExtensions
             }
         }
     }
+
+    private sealed record Payload<TValue>(TValue Data);
 }

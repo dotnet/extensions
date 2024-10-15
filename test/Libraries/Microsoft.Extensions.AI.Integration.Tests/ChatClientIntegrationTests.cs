@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -567,15 +568,89 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
+        // For openai, we can use the native JSON schema support
         var response = await _chatClient.CompleteAsync<Person>("""
             Who is described in the following sentence?
             Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
-            """);
+            """,
+            useNativeJsonSchema: _chatClient.Metadata.ProviderName == "openai");
 
         Assert.Equal("Jimbo Smith", response.Result.FullName);
         Assert.Equal(35, response.Result.AgeInYears);
         Assert.Contains("Cardiff", response.Result.HomeTown);
         Assert.Equal(JobType.Programmer, response.Result.Job);
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutputArray()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.CompleteAsync<Person[]>("""
+            Who are described in the following sentence?
+            Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
+            Josh Simpson is a 25-year-old software developer from Newport, Wales.
+            """,
+            useNativeJsonSchema: _chatClient.Metadata.ProviderName == "openai");
+
+        Assert.Equal(2, response.Result.Length);
+        Assert.Contains(response.Result, x => x.FullName == "Jimbo Smith");
+        Assert.Contains(response.Result, x => x.FullName == "Josh Simpson");
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutputInteger()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.CompleteAsync<int>("""
+            As of today (october 2024), Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
+            Which year was he born in?
+            """,
+            useNativeJsonSchema: _chatClient.Metadata.ProviderName == "openai");
+
+        Assert.Equal(1989, response.Result);
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutputString()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.CompleteAsync<string>("""
+            The software developer, Jimbo Smith, is a 35-year-old software developer from Cardiff, Wales.
+            What's his full name?
+            """,
+            useNativeJsonSchema: _chatClient.Metadata.ProviderName == "openai");
+
+        Assert.Equal("Jimbo Smith", response.Result);
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutputBool()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.CompleteAsync<bool>("""
+            The software developer, Jimbo Smith, is a 35-year-old software developer from Cardiff, Wales.
+            Is he a medical doctor?
+            """,
+            useNativeJsonSchema: _chatClient.Metadata.ProviderName == "openai");
+
+        Assert.False(response.Result);
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutputEnum()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.CompleteAsync<Architecture>("""
+            I'm using a Macbook Pro with an M2 chip. What architecture am I using?
+            """,
+            useNativeJsonSchema: _chatClient.Metadata.ProviderName == "openai");
+
+        Assert.Equal(Architecture.Arm64, response.Result);
     }
 
     [ConditionalFact]
