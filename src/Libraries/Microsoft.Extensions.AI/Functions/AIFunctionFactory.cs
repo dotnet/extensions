@@ -39,7 +39,7 @@ public static class AIFunctionFactory
     /// <param name="method">The method to be represented via the created <see cref="AIFunction"/>.</param>
     /// <param name="name">The name to use for the <see cref="AIFunction"/>.</param>
     /// <param name="description">The description to use for the <see cref="AIFunction"/>.</param>
-    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters and return value.</param>
+    /// <param name="serializerOptions">The <see cref="JsonSerializerOptions"/> used to marshal function parameters and any return value.</param>
     /// <returns>The created <see cref="AIFunction"/> for invoking <paramref name="method"/>.</returns>
     public static AIFunction Create(Delegate method, string? name = null, string? description = null, JsonSerializerOptions? serializerOptions = null)
     {
