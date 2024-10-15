@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public static class ChatClientStructuredOutputExtensions
 {
-    private static readonly JsonSchemaInferenceOptions _inferenceOptions = new()
+    private static readonly AIJsonSchemaCreateOptions _inferenceOptions = new()
     {
         IncludeSchemaKeyword = true,
         DisallowAdditionalProperties = true,
@@ -46,7 +46,7 @@ public static class ChatClientStructuredOutputExtensions
         bool? useNativeJsonSchema = null,
         CancellationToken cancellationToken = default)
         where T : class =>
-        CompleteAsync<T>(chatClient, chatMessages, JsonDefaults.Options, options, useNativeJsonSchema, cancellationToken);
+        CompleteAsync<T>(chatClient, chatMessages, AIJsonUtilities.DefaultOptions, options, useNativeJsonSchema, cancellationToken);
 
     /// <summary>Sends a user chat text message to the model, requesting a response matching the type <typeparamref name="T"/>.</summary>
     /// <param name="chatClient">The <see cref="IChatClient"/>.</param>
@@ -124,12 +124,12 @@ public static class ChatClientStructuredOutputExtensions
 
         serializerOptions.MakeReadOnly();
 
-        var schemaNode = JsonFunctionCallUtilities.InferJsonSchema(
-            typeof(T),
-            serializerOptions,
+        var schemaNode = AIJsonUtilities.CreateJsonSchema(
+            type: typeof(T),
+            serializerOptions: serializerOptions,
             inferenceOptions: _inferenceOptions);
 
-        var schema = JsonSerializer.Serialize(schemaNode, JsonDefaults.Options.GetTypeInfo(typeof(JsonElement)));
+        var schema = JsonSerializer.Serialize(schemaNode, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
 
         ChatMessage? promptAugmentation = null;
         options = (options ?? new()).Clone();
@@ -143,7 +143,7 @@ public static class ChatClientStructuredOutputExtensions
             // the LLM backend is meant to do whatever's needed to explain the schema to the LLM.
             options.ResponseFormat = ChatResponseFormat.ForJsonSchema(
                 schema,
-                schemaName: JsonFunctionCallUtilities.SanitizeMemberName(typeof(T).Name),
+                schemaName: AIJsonUtilities.SanitizeMemberName(typeof(T).Name),
                 schemaDescription: typeof(T).GetCustomAttribute<DescriptionAttribute>()?.Description);
         }
         else

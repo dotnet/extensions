@@ -406,7 +406,7 @@ public sealed class OllamaChatClient : IChatClient
             {
                 Properties = function.Metadata.Parameters.ToDictionary(
                     p => p.Name,
-                    p => JsonFunctionCallUtilities.InferParameterJsonSchema(p, function.Metadata, ToolCallJsonSerializerOptions)),
+                    p => AIJsonUtilities.ResolveParameterSchema(p, function.Metadata, ToolCallJsonSerializerOptions)),
                 Required = function.Metadata.Parameters.Where(p => p.IsRequired).Select(p => p.Name).ToList(),
             },
         }

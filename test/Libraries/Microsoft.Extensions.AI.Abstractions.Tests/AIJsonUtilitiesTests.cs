@@ -2,16 +2,35 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Xunit;
 
-namespace Microsoft.Extensions.AI.Functions;
+namespace Microsoft.Extensions.AI;
 
-public static class FunctionCallUtilitiesTests
+public static class AIJsonUtilitiesTests
 {
+    [Fact]
+    public static void DefaultOptions_HasExpectedConfiguration()
+    {
+        var options = AIJsonUtilities.DefaultOptions;
+
+        // Must be read-only singleton.
+        Assert.NotNull(options);
+        Assert.Same(options, AIJsonUtilities.DefaultOptions);
+        Assert.True(options.IsReadOnly);
+
+        // Must conform to JsonSerializerDefaults.Web
+        Assert.Equal(JsonNamingPolicy.CamelCase, options.PropertyNamingPolicy);
+        Assert.True(options.PropertyNameCaseInsensitive);
+        Assert.Equal(JsonNumberHandling.AllowReadingFromString, options.NumberHandling);
+
+        // Additional settings
+        Assert.Equal(JsonIgnoreCondition.WhenWritingNull, options.DefaultIgnoreCondition);
+        Assert.True(options.WriteIndented);
+    }
+
     [Theory]
     [InlineData("", "")]
     [InlineData(" \t\n", "___")]
@@ -20,20 +39,20 @@ public static class FunctionCallUtilitiesTests
     [InlineData("<<Main>$>g__Test", "__Main___g__Test")]
     public static void SanitizeMemberName_ReturnsExpectedValue(string name, string expected)
     {
-        string actual = JsonFunctionCallUtilities.SanitizeMemberName(name);
+        string actual = AIJsonUtilities.SanitizeMemberName(name);
         Assert.Equal(expected, actual);
     }
 
     [Fact]
     public static void SanitizeMemberName_NullInput_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => JsonFunctionCallUtilities.SanitizeMemberName(null!));
+        Assert.Throws<ArgumentNullException>(() => AIJsonUtilities.SanitizeMemberName(null!));
     }
 
     [Fact]
     public static void ParseFunctionCallContent_NullJsonInput_ReturnsNullArgumentDictionary()
     {
-        var content = JsonFunctionCallUtilities.ParseFunctionCallContent("null", "callId", "functionName");
+        var content = AIJsonUtilities.ParseFunctionCallContent("null", "callId", "functionName");
 
         Assert.NotNull(content);
         Assert.Null(content.Arguments);
@@ -43,7 +62,7 @@ public static class FunctionCallUtilitiesTests
     [Fact]
     public static void ParseFunctionCallContent_ObjectJsonInput_ReturnsElementArgumentDictionary()
     {
-        var content = JsonFunctionCallUtilities.ParseFunctionCallContent("""{"Key1":{}, "Key2":null, "Key3" : [], "Key4" : 42, "Key5" : true }""", "callId", "functionName");
+        var content = AIJsonUtilities.ParseFunctionCallContent("""{"Key1":{}, "Key2":null, "Key3" : [], "Key4" : 42, "Key5" : true }""", "callId", "functionName");
 
         Assert.NotNull(content);
         Assert.Null(content.Exception);
@@ -84,7 +103,7 @@ public static class FunctionCallUtilitiesTests
     [InlineData("[]")]
     public static void ParseFunctionCallContent_InvalidJsonInput_ReturnsParsingException(string json)
     {
-        var content = JsonFunctionCallUtilities.ParseFunctionCallContent(json, "callId", "functionName");
+        var content = AIJsonUtilities.ParseFunctionCallContent(json, "callId", "functionName");
         Assert.NotNull(content);
         Assert.Null(content.Arguments);
         Assert.IsType<InvalidOperationException>(content.Exception);
@@ -94,24 +113,24 @@ public static class FunctionCallUtilitiesTests
     [Fact]
     public static void ParseFunctionCallContent_NullInput_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => JsonFunctionCallUtilities.ParseFunctionCallContent((string)null!, "callId", "functionName"));
-        Assert.Throws<ArgumentNullException>(() => JsonFunctionCallUtilities.ParseFunctionCallContent("{}", null!, "functionName"));
-        Assert.Throws<ArgumentNullException>(() => JsonFunctionCallUtilities.ParseFunctionCallContent("{}", "callId", null!));
+        Assert.Throws<ArgumentNullException>(() => AIJsonUtilities.ParseFunctionCallContent((string)null!, "callId", "functionName"));
+        Assert.Throws<ArgumentNullException>(() => AIJsonUtilities.ParseFunctionCallContent("{}", null!, "functionName"));
+        Assert.Throws<ArgumentNullException>(() => AIJsonUtilities.ParseFunctionCallContent("{}", "callId", null!));
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public static void JsonSchemaInferenceOptions_DefaultInstance_ReturnsExpectedValues(bool useSingleton)
+    public static void AIJsonSchemaCreateOptions_DefaultInstance_ReturnsExpectedValues(bool useSingleton)
     {
-        JsonSchemaInferenceOptions options = useSingleton ? JsonSchemaInferenceOptions.Default : new JsonSchemaInferenceOptions();
+        AIJsonSchemaCreateOptions options = useSingleton ? AIJsonSchemaCreateOptions.Default : new AIJsonSchemaCreateOptions();
         Assert.False(options.IncludeTypeInEnumSchemas);
         Assert.False(options.DisallowAdditionalProperties);
         Assert.False(options.IncludeSchemaKeyword);
     }
 
     [Fact]
-    public static void InferJsonSchema_DefaultParameters_GeneratesExpectedJsonSchema()
+    public static void CreateJsonSchema_DefaultParameters_GeneratesExpectedJsonSchema()
     {
         JsonElement expected = JsonDocument.Parse("""
             {
@@ -134,12 +153,12 @@ public static class FunctionCallUtilitiesTests
             }
             """).RootElement;
 
-        JsonElement actual = JsonFunctionCallUtilities.InferJsonSchema(typeof(MyPoco), JsonSerializerOptions.Default);
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco), serializerOptions: JsonSerializerOptions.Default);
         Assert.True(JsonElement.DeepEquals(expected, actual));
     }
 
     [Fact]
-    public static void InferJsonSchema_OverriddenParameters_GeneratesExpectedJsonSchema()
+    public static void CreateJsonSchema_OverriddenParameters_GeneratesExpectedJsonSchema()
     {
         JsonElement expected = JsonDocument.Parse("""
             {
@@ -166,20 +185,40 @@ public static class FunctionCallUtilitiesTests
             }
             """).RootElement;
 
-        JsonSchemaInferenceOptions inferenceOptions = new JsonSchemaInferenceOptions
+        AIJsonSchemaCreateOptions inferenceOptions = new AIJsonSchemaCreateOptions
         {
             IncludeTypeInEnumSchemas = true,
             DisallowAdditionalProperties = true,
             IncludeSchemaKeyword = true
         };
 
-        JsonElement actual = JsonFunctionCallUtilities.InferJsonSchema(typeof(MyPoco), JsonSerializerOptions.Default,
+        JsonElement actual = AIJsonUtilities.CreateJsonSchema(typeof(MyPoco),
             description: "alternative description",
             hasDefaultValue: true,
             defaultValue: 42,
+            JsonSerializerOptions.Default,
             inferenceOptions);
 
         Assert.True(JsonElement.DeepEquals(expected, actual));
+    }
+
+    [Fact]
+    public static void ResolveJsonSchema_ReturnsExpectedValue()
+    {
+        JsonSerializerOptions options = new(JsonSerializerOptions.Default);
+        AIFunction func = AIFunctionFactory.Create((int x, int y) => x + y, serializerOptions: options);
+
+        AIFunctionMetadata metadata = func.Metadata;
+        AIFunctionParameterMetadata param = metadata.Parameters[0];
+        JsonElement generatedSchema = Assert.IsType<JsonElement>(param.Schema);
+
+        JsonElement resolvedSchema;
+        resolvedSchema = AIJsonUtilities.ResolveParameterSchema(param, metadata, options);
+        Assert.True(JsonElement.DeepEquals(generatedSchema, resolvedSchema));
+
+        options = new(options) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
+        resolvedSchema = AIJsonUtilities.ResolveParameterSchema(param, metadata, options);
+        Assert.False(JsonElement.DeepEquals(generatedSchema, resolvedSchema));
     }
 
     [Description("The type")]

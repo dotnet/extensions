@@ -35,7 +35,7 @@ public partial class LoggingEmbeddingGenerator<TInput, TEmbedding> : DelegatingE
         : base(innerGenerator)
     {
         _logger = Throw.IfNull(logger);
-        _jsonSerializerOptions = JsonDefaults.Options;
+        _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
     }
 
     /// <summary>Gets or sets JSON serialization options to use when serializing logging data.</summary>

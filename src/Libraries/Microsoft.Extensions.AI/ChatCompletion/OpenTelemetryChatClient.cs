@@ -66,7 +66,7 @@ public sealed class OpenTelemetryChatClient : DelegatingChatClient
             OpenTelemetryConsts.GenAI.Client.OperationDuration.Description,
             advice: new() { HistogramBucketBoundaries = OpenTelemetryConsts.GenAI.Client.OperationDuration.ExplicitBucketBoundaries });
 
-        _jsonSerializerOptions = JsonDefaults.Options;
+        _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
     }
 
     /// <summary>Gets or sets JSON serialization options to use when formatting chat data into telemetry strings.</summary>

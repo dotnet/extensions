@@ -4,14 +4,14 @@
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// An options class for configuring the behavior of <see cref="JsonFunctionCallUtilities"/> JSON schema inference functionality.
+/// An options class for configuring the behavior of <see cref="AIJsonUtilities"/> JSON schema creation functionality.
 /// </summary>
-public sealed class JsonSchemaInferenceOptions
+public sealed class AIJsonSchemaCreateOptions
 {
     /// <summary>
     /// Gets the default options instance.
     /// </summary>
-    public static JsonSchemaInferenceOptions Default { get; } = new JsonSchemaInferenceOptions();
+    public static AIJsonSchemaCreateOptions Default { get; } = new AIJsonSchemaCreateOptions();
 
     /// <summary>
     /// Gets a value indicating whether to include the type keyword in inferred schemas for .NET enums.

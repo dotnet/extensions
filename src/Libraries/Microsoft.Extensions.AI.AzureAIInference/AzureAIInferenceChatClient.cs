@@ -93,7 +93,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 {
                     if (toolCall is ChatCompletionsFunctionToolCall ftc && !string.IsNullOrWhiteSpace(ftc.Name))
                     {
-                        FunctionCallContent callContent = JsonFunctionCallUtilities.ParseFunctionCallContent(ftc.Arguments, toolCall.Id, ftc.Name);
+                        FunctionCallContent callContent = AIJsonUtilities.ParseFunctionCallContent(ftc.Arguments, toolCall.Id, ftc.Name);
                         callContent.ModelId = response.Model;
                         callContent.RawRepresentation = toolCall;
 
@@ -223,7 +223,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 FunctionCallInfo fci = entry.Value;
                 if (!string.IsNullOrWhiteSpace(fci.Name))
                 {
-                    var callContent = JsonFunctionCallUtilities.ParseFunctionCallContent(
+                    var callContent = AIJsonUtilities.ParseFunctionCallContent(
                         fci.Arguments?.ToString() ?? string.Empty,
                         fci.CallId!,
                         fci.Name!);
@@ -367,7 +367,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
             {
                 tool.Properties.Add(
                     parameter.Name,
-                    JsonFunctionCallUtilities.InferParameterJsonSchema(parameter, aiFunction.Metadata, ToolCallJsonSerializerOptions));
+                    AIJsonUtilities.ResolveParameterSchema(parameter, aiFunction.Metadata, ToolCallJsonSerializerOptions));
 
                 if (parameter.IsRequired)
                 {

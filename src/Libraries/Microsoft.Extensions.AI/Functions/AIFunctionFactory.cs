@@ -146,7 +146,7 @@ public static class AIFunctionFactory
             string? functionName = options.Name;
             if (functionName is null)
             {
-                functionName = JsonFunctionCallUtilities.SanitizeMemberName(method.Name!);
+                functionName = AIJsonUtilities.SanitizeMemberName(method.Name!);
 
                 const string AsyncSuffix = "Async";
                 if (IsAsyncMethod(method) &&
@@ -209,7 +209,7 @@ public static class AIFunctionFactory
                 {
                     ParameterType = returnType,
                     Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-                    Schema = JsonFunctionCallUtilities.InferJsonSchema(returnType, options.SerializerOptions),
+                    Schema = AIJsonUtilities.CreateJsonSchema(returnType, serializerOptions: options.SerializerOptions),
                 },
                 AdditionalProperties = options.AdditionalProperties ?? EmptyReadOnlyDictionary<string, object?>.Instance,
                 JsonSerializerOptions = options.SerializerOptions,
@@ -355,13 +355,13 @@ public static class AIFunctionFactory
                 DefaultValue = parameter.HasDefaultValue ? parameter.DefaultValue : null,
                 IsRequired = !parameter.IsOptional,
                 ParameterType = parameter.ParameterType,
-                Schema = JsonFunctionCallUtilities.InferParameterJsonSchema(
+                Schema = AIJsonUtilities.CreateParameterJsonSchema(
                     parameter.ParameterType,
                     parameter.Name,
-                    options,
                     description,
                     parameter.HasDefaultValue,
-                    parameter.DefaultValue)
+                    parameter.DefaultValue,
+                    options)
             };
         }
 

@@ -3,20 +3,14 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
-using System.Text.RegularExpressions;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S1121 // Assignments should not be made from within sub-expressions
@@ -35,8 +29,8 @@ using FunctionParameterKey = (
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides a collection of static utility methods for marshalling JSON data in function calling.</summary>
-public static partial class JsonFunctionCallUtilities
+/// <summary>Provides a collection of utility methods for marshalling JSON data.</summary>
+public static partial class AIJsonUtilities
 {
     /// <summary>The uri used when populating the $schema keyword in inferred schemas.</summary>
     private const string SchemaKeywordUri = "https://json-schema.org/draft/2020-12/schema";
@@ -54,94 +48,23 @@ public static partial class JsonFunctionCallUtilities
     private static readonly JsonElement _nullJsonSchema = ParseJsonElement("""{"type":"null"}"""u8);
 
     /// <summary>
-    /// Removes characters from a .NET member name that shouldn't be used in an AI function name.
-    /// </summary>
-    /// <param name="memberName">The .NET member name that should be sanitized.</param>
-    /// <returns>
-    /// Replaces non-alphanumeric characters in the identifier with the underscore character.
-    /// Primarily intended to remove characters produced by compiler-generated method name mangling.
-    /// </returns>
-    public static string SanitizeMemberName(string memberName)
-    {
-        _ = Throw.IfNull(memberName);
-        return InvalidNameCharsRegex().Replace(memberName, "_");
-    }
-
-    /// <summary>Parses a JSON object into a <see cref="FunctionCallContent"/> with arguments encoded as <see cref="JsonElement"/>.</summary>
-    /// <param name="json">A JSON object containing the parameters.</param>
-    /// <param name="callId">The function call ID.</param>
-    /// <param name="functionName">The function name.</param>
-    /// <returns>The parsed dictionary of objects encoded as <see cref="JsonElement"/>.</returns>
-    public static FunctionCallContent ParseFunctionCallContent([StringSyntax(StringSyntaxAttribute.Json)] string json, string callId, string functionName)
-    {
-        _ = Throw.IfNull(callId);
-        _ = Throw.IfNull(functionName);
-        _ = Throw.IfNull(json);
-
-        Dictionary<string, object?>? arguments = null;
-        Exception? parsingException = null;
-
-        try
-        {
-            arguments = JsonSerializer.Deserialize(json, FunctionCallUtilityContext.Default.DictionaryStringObject);
-        }
-        catch (JsonException ex)
-        {
-            parsingException = new InvalidOperationException($"Function call arguments contained invalid JSON: {json}", ex);
-        }
-
-        return new FunctionCallContent(callId, functionName, arguments)
-        {
-            Exception = parsingException
-        };
-    }
-
-    /// <summary>Parses a JSON object into a <see cref="FunctionCallContent"/> with arguments encoded as <see cref="JsonElement"/>.</summary>
-    /// <param name="utf8Json">A UTF-8 encoded JSON object containing the parameters.</param>
-    /// <param name="callId">The function call ID.</param>
-    /// <param name="functionName">The function name.</param>
-    /// <returns>The parsed dictionary of objects encoded as <see cref="JsonElement"/>.</returns>
-    public static FunctionCallContent ParseFunctionCallContent(ReadOnlySpan<byte> utf8Json, string callId, string functionName)
-    {
-        _ = Throw.IfNull(callId);
-        _ = Throw.IfNull(functionName);
-
-        Dictionary<string, object?>? arguments = null;
-        Exception? parsingException = null;
-
-        try
-        {
-            arguments = JsonSerializer.Deserialize(utf8Json, FunctionCallUtilityContext.Default.DictionaryStringObject);
-        }
-        catch (JsonException ex)
-        {
-            parsingException = new InvalidOperationException($"Function call arguments contained invalid JSON: {Encoding.UTF8.GetString(utf8Json.ToArray())}", ex);
-        }
-
-        return new FunctionCallContent(callId, functionName, arguments)
-        {
-            Exception = parsingException
-        };
-    }
-
-    /// <summary>
     /// Determines a JSON schema for the provided parameter metadata.
     /// </summary>
     /// <param name="parameterMetadata">The parameter metadata from which to infer the schema.</param>
     /// <param name="functionMetadata">The containing function metadata.</param>
-    /// <param name="serializerOptions">The global <see cref="JsonSerializerOptions"/> governing serialization.</param>
+    /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
-    public static JsonElement InferParameterJsonSchema(
+    public static JsonElement ResolveParameterSchema(
         AIFunctionParameterMetadata parameterMetadata,
         AIFunctionMetadata functionMetadata,
-        JsonSerializerOptions? serializerOptions,
-        JsonSchemaInferenceOptions? inferenceOptions = null)
+        JsonSerializerOptions? serializerOptions = null,
+        AIJsonSchemaCreateOptions? inferenceOptions = null)
     {
         _ = Throw.IfNull(parameterMetadata);
         _ = Throw.IfNull(functionMetadata);
 
-        serializerOptions ??= functionMetadata.JsonSerializerOptions;
+        serializerOptions ??= functionMetadata.JsonSerializerOptions ?? DefaultOptions;
 
         if (ReferenceEquals(serializerOptions, functionMetadata.JsonSerializerOptions) &&
             parameterMetadata.Schema is JsonElement schema)
@@ -151,44 +74,40 @@ public static partial class JsonFunctionCallUtilities
             return schema;
         }
 
-        if (serializerOptions is null)
-        {
-            return _trueJsonSchema;
-        }
-
-        return InferParameterJsonSchema(
+        return CreateParameterJsonSchema(
             parameterMetadata.ParameterType,
             parameterMetadata.Name,
-            serializerOptions,
             description: parameterMetadata.Description,
             hasDefaultValue: parameterMetadata.HasDefaultValue,
             defaultValue: parameterMetadata.DefaultValue,
+            serializerOptions,
             inferenceOptions);
     }
 
     /// <summary>
-    /// Determines a JSON schema for the provided parameter metadata.
+    /// Creates a JSON schema for the provided parameter metadata.
     /// </summary>
     /// <param name="type">The type of the parameter.</param>
     /// <param name="parameterName">The name of the parameter.</param>
-    /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="description">The description of the parameter.</param>
     /// <param name="hasDefaultValue">Whether the parameter is optional.</param>
     /// <param name="defaultValue">The default value of the optional parameter, if applicable.</param>
+    /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
-    public static JsonElement InferParameterJsonSchema(
+    public static JsonElement CreateParameterJsonSchema(
         Type? type,
         string parameterName,
-        JsonSerializerOptions serializerOptions,
         string? description = null,
         bool hasDefaultValue = false,
         object? defaultValue = null,
-        JsonSchemaInferenceOptions? inferenceOptions = null)
+        JsonSerializerOptions? serializerOptions = null,
+        AIJsonSchemaCreateOptions? inferenceOptions = null)
     {
         _ = Throw.IfNull(parameterName);
-        _ = Throw.IfNull(serializerOptions);
-        inferenceOptions ??= JsonSchemaInferenceOptions.Default;
+
+        serializerOptions ??= DefaultOptions;
+        inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
 
         FunctionParameterKey key = (
             type,
@@ -203,24 +122,26 @@ public static partial class JsonFunctionCallUtilities
         return GetJsonSchemaCached(serializerOptions, key);
     }
 
-    /// <summary>Infers a JSON schema for the specified type.</summary>
+    /// <summary>Creates a JSON schema for the specified type.</summary>
     /// <param name="type">The type for which to generate the schema.</param>
-    /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="description">The description of the parameter.</param>
     /// <param name="hasDefaultValue">Whether the parameter is optional.</param>
     /// <param name="defaultValue">The default value of the optional parameter, if applicable.</param>
+    /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A <see cref="JsonElement"/> representing the schema.</returns>
-    public static JsonElement InferJsonSchema(
+    public static JsonElement CreateJsonSchema(
         Type? type,
-        JsonSerializerOptions serializerOptions,
         string? description = null,
         bool hasDefaultValue = false,
         object? defaultValue = null,
-        JsonSchemaInferenceOptions? inferenceOptions = null)
+        JsonSerializerOptions? serializerOptions = null,
+        AIJsonSchemaCreateOptions? inferenceOptions = null)
     {
         _ = Throw.IfNull(serializerOptions);
-        inferenceOptions ??= JsonSchemaInferenceOptions.Default;
+
+        serializerOptions ??= DefaultOptions;
+        inferenceOptions ??= AIJsonSchemaCreateOptions.Default;
 
         FunctionParameterKey key = (
             type,
@@ -287,7 +208,7 @@ public static partial class JsonFunctionCallUtilities
 
             return schemaObj is null
                 ? _trueJsonSchema
-                : JsonSerializer.SerializeToElement(schemaObj, FunctionCallUtilityContext.Default.JsonNode);
+                : JsonSerializer.SerializeToElement(schemaObj, JsonContext.Default.JsonNode);
         }
 
         if (key.Type == typeof(void))
@@ -302,7 +223,7 @@ public static partial class JsonFunctionCallUtilities
         };
 
         JsonNode node = options.GetJsonSchemaAsNode(key.Type, exporterOptions);
-        return JsonSerializer.SerializeToElement(node, FunctionCallUtilityContext.Default.JsonNode);
+        return JsonSerializer.SerializeToElement(node, JsonContext.Default.JsonNode);
 
         JsonNode TransformSchemaNode(JsonSchemaExporterContext ctx, JsonNode schema)
         {
@@ -424,19 +345,4 @@ public static partial class JsonFunctionCallUtilities
         Utf8JsonReader reader = new(utf8Json);
         return JsonElement.ParseValue(ref reader);
     }
-
-    [JsonSerializable(typeof(Dictionary<string, object?>))]
-    [JsonSerializable(typeof(JsonNode))]
-    [JsonSerializable(typeof(JsonElement))]
-    [JsonSerializable(typeof(JsonDocument))]
-    private sealed partial class FunctionCallUtilityContext : JsonSerializerContext;
-
-    /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
-#if NET
-    [GeneratedRegex("[^0-9A-Za-z_]")]
-    private static partial Regex InvalidNameCharsRegex();
-#else
-    private static Regex InvalidNameCharsRegex() => _invalidNameCharsRegex;
-    private static readonly Regex _invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
-#endif
 }

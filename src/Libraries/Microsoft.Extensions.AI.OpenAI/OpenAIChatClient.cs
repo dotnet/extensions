@@ -124,7 +124,7 @@ public sealed partial class OpenAIChatClient : IChatClient
             {
                 if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
                 {
-                    var callContent = JsonFunctionCallUtilities.ParseFunctionCallContent(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
+                    var callContent = AIJsonUtilities.ParseFunctionCallContent(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
                     callContent.ModelId = response.Model;
                     callContent.RawRepresentation = toolCall;
 
@@ -318,7 +318,7 @@ public sealed partial class OpenAIChatClient : IChatClient
                 FunctionCallInfo fci = entry.Value;
                 if (!string.IsNullOrWhiteSpace(fci.Name))
                 {
-                    var callContent = JsonFunctionCallUtilities.ParseFunctionCallContent(
+                    var callContent = AIJsonUtilities.ParseFunctionCallContent(
                         fci.Arguments?.ToString() ?? string.Empty,
                         fci.CallId!,
                         fci.Name!);
@@ -497,7 +497,7 @@ public sealed partial class OpenAIChatClient : IChatClient
             {
                 tool.Properties.Add(
                     parameter.Name,
-                    JsonFunctionCallUtilities.InferParameterJsonSchema(parameter, aiFunction.Metadata, ToolCallJsonSerializerOptions));
+                    AIJsonUtilities.ResolveParameterSchema(parameter, aiFunction.Metadata, ToolCallJsonSerializerOptions));
 
                 if (parameter.IsRequired)
                 {
