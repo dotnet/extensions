@@ -43,7 +43,44 @@ namespace ConsoleLogger
         {
             return LoggerFactory.Create(loggingBuilder =>
             {
-c
+                // buffer all logs
+                loggingBuilder.AddGlobalBuffering((category, eventId, logLevel) => logLevel <= LogLevel.Warning); // Buffer warnings and below
+
+                // buffer logs for each HTTP request/response pair into a separate buffer
+                // and only for the lifetime of the respective HttpContext
+                loggingBuilder.AddHttpRequestBuffering((category, eventId, logLevel) => logLevel <= LogLevel.Warning);
+
+                // sample logs
+                loggingBuilder.AddSampler((SamplingParameters parameters) =>
+                {
+                    /*custom logic in place to return true/false.*/
+
+                    // for example:
+                    // For Information category, sample 1% of logs
+                    if (parameters.LogLevel <= LogLevel.Information)
+                    {
+                        return Random.Shared.NextDouble() < 0.01;
+                    }
+
+                    // For Warning category, sample 75% of logs
+                    if (parameters.LogLevel == LogLevel.Warning)
+                    {
+                        return Random.Shared.NextDouble() < 0.75;
+                    }
+
+                    // For everything else, sample all
+                    return true;
+                });
+
+                // or use a custom log sampler:
+                loggingBuilder.AddSampler<MyCustomSampler>();
+
+                // or use a built-in probabilistic sampler:
+                loggingBuilder.AddRatioBasedSampler(0.1, LogLevel.Information);
+
+                // or use any OpenTelemetry .NET Tracing Sampler
+                // if you have configured OpenTelemetry Tracing separately:
+                loggingBuilder.AddTraceBasedSampling();
             });
         }
                 //loggingBuilder.AddScopedSampler(new MySampler());
