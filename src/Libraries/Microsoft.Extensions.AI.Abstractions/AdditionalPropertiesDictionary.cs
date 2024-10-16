@@ -109,12 +109,18 @@ public sealed class AdditionalPropertiesDictionary : IDictionary<string, object?
     public bool TryGetValue(string key, out object? value) => _dictionary.TryGetValue(key, out value);
 
     /// <summary>Attempts to extract a typed value from the dictionary.</summary>
-    /// <typeparam name="T">Species the type of the value to be retrieved.</typeparam>
+    /// <typeparam name="T">Specifies the type of the value to be retrieved.</typeparam>
     /// <param name="key">The key to locate.</param>
-    /// <param name="value">The value retrieved from the dictionary, if found; otherwise, default.</param>
-    /// <returns>True if the value was found and converted to the requested type; otherwise, false.</returns>
+    /// <param name="value">
+    /// The value retrieved from the dictionary, if found and successfully converted to the requested type;
+    /// otherwise, the default value of <typeparamref name="T"/>.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if a non-<see langword="null"/> value was found for <paramref name="key"/>
+    /// in the dictionary and converted to the requested type; otherwise, <see langword="false"/>.
+    /// </returns>
     /// <remarks>
-    /// If a value is found for the key in the dictionary, but the value is not of the requested type but is
+    /// If a non-<see langword="null"/> is found for the key in the dictionary, but the value is not of the requested type but is
     /// an <see cref="IConvertible"/> object, the method will attempt to convert the object to the requested type.
     /// </remarks>
     public bool TryGetValue<T>(string key, [NotNullWhen(true)] out T? value)
