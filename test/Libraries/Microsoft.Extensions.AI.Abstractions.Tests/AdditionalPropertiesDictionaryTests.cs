@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -43,5 +44,50 @@ public class AdditionalPropertiesDictionaryTests
 
         Assert.Equal("value5", d["Key3"]);
         Assert.Equal("value5", d["KEy3"]);
+    }
+
+    [Fact]
+    public void TryGetValue_Typed_ExtractsExpectedValue()
+    {
+        AssertFound(42, 42L);
+        AssertFound(42, 42.0);
+        AssertFound(42, 42f);
+        AssertFound(42, true);
+        AssertFound(42, "42");
+        AssertFound(42, (object)42);
+        AssertFound(42.0, 42f);
+        AssertFound(42f, 42.0);
+        AssertFound(42m, 42.0f);
+        AssertFound(42L, 42);
+        AssertFound("42", "42");
+        AssertFound("42", 42);
+        AssertFound("42", 42L);
+        AssertFound("42", 42.0);
+        AssertFound("42", 42f);
+        AssertFound(true, 1);
+        AssertFound(false, 0);
+
+        AssertNotFound<int, DateTime>(42);
+        AssertNotFound<int, AdditionalPropertiesDictionaryTests>(42);
+
+        static void AssertFound<T1, T2>(T1 input, T2 expected)
+        {
+            AdditionalPropertiesDictionary d = [];
+            d["key"] = input;
+
+            Assert.True(d.TryGetValue("key", out T2? value));
+            Assert.Equal(expected, value);
+
+            Assert.False(d.TryGetValue("key2", out value));
+            Assert.Equal(default, value);
+        }
+
+        static void AssertNotFound<T1, T2>(T1 input)
+        {
+            AdditionalPropertiesDictionary d = [];
+            d["key"] = input;
+            Assert.False(d.TryGetValue("key", out T2? value));
+            Assert.Equal(default(T2), value);
+        }
     }
 }

@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -75,12 +74,12 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
 
         if (options?.AdditionalProperties is { } requestProps)
         {
-            if (requestProps.TryGetConvertedValue("keep_alive", out long keepAlive))
+            if (requestProps.TryGetValue("keep_alive", out long keepAlive))
             {
                 request.KeepAlive = keepAlive;
             }
 
-            if (requestProps.TryGetConvertedValue("truncate", out bool truncate))
+            if (requestProps.TryGetValue("truncate", out bool truncate))
             {
                 request.Truncate = truncate;
             }
