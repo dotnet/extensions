@@ -126,11 +126,10 @@ public class ChatCompletion<T> : ChatCompletion
         }
 
         T? deserialized = default;
-        var wrapped = AdditionalProperties?.TryGetValue("$wrapped", out var isWrappedValue) == true && isWrappedValue is bool isWrappedBool && isWrappedBool;
 
         // If there's an exception here, we want it to propagate, since the Result property is meant to throw directly
 
-        if (wrapped)
+        if (this.IsWrapped())
         {
             var doc = JsonDocument.Parse(json!);
             if (doc.RootElement.TryGetProperty("data", out var data))
