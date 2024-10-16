@@ -116,7 +116,7 @@ public static class ChatClientStructuredOutputExtensions
 
         serializerOptions.MakeReadOnly();
 
-        var exporterOptions = new JsonSchemaExporterOptions
+        var schemaNode = (JsonObject)serializerOptions.GetJsonSchemaAsNode(typeof(T), new()
         {
             TreatNullObliviousAsNonNullable = true,
             TransformSchemaNode = static (context, node) =>
@@ -132,9 +132,8 @@ public static class ChatClientStructuredOutputExtensions
 
                 return node;
             },
-        };
+        });
 
-        var schemaNode = (JsonObject)serializerOptions.GetJsonSchemaAsNode(typeof(T), exporterOptions);
         var isObject = schemaNode.TryGetPropertyValue("type", out var schemaType) &&
                 schemaType?.GetValueKind() == JsonValueKind.String &&
                 schemaType.GetValue<string>() is { } type &&
@@ -145,7 +144,11 @@ public static class ChatClientStructuredOutputExtensions
         // We wrap regardless of native structured output, since it also applies to Azure Inference
         if (!isObject)
         {
-            schemaNode = (JsonObject)serializerOptions.GetJsonSchemaAsNode(typeof(Payload<T>), exporterOptions);
+            schemaNode = new JsonObject
+            {
+                { "type", "object" },
+                { "properties", new JsonObject { { "data", schemaNode } } },
+            };
             wrapped = true;
         }
 
@@ -205,6 +208,4 @@ public static class ChatClientStructuredOutputExtensions
             }
         }
     }
-
-    private sealed record Payload<TValue>(TValue Data);
 }
