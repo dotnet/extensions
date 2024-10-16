@@ -182,13 +182,7 @@ public static class ChatClientStructuredOutputExtensions
         try
         {
             var result = await chatClient.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
-            if (wrapped)
-            {
-                // We don't initialize the dictionary unless we need it, to avoid unnecessary allocations.
-                result.AdditionalProperties ??= [];
-                result.AdditionalProperties["$wrapped"] = true;
-            }
-
+            result.SetWrapped(wrapped);
             return new ChatCompletion<T>(result, serializerOptions);
         }
         finally
@@ -198,5 +192,20 @@ public static class ChatClientStructuredOutputExtensions
                 _ = chatMessages.Remove(promptAugmentation);
             }
         }
+    }
+
+    internal static bool IsWrapped(this ChatCompletion completion) =>
+        completion.AdditionalProperties?.TryGetValue("$wrapped", out var value) == true && value is bool wrapped && wrapped;
+
+    private static void SetWrapped(this ChatCompletion completion, bool wrapped)
+    {
+        if (!wrapped)
+        {
+            return;
+        }
+
+        // We don't initialize the dictionary unless we need it, to avoid unnecessary allocations.
+        completion.AdditionalProperties ??= [];
+        completion.AdditionalProperties["$wrapped"] = true;
     }
 }
