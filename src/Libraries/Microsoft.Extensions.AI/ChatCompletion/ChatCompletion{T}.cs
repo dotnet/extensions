@@ -83,7 +83,7 @@ public class ChatCompletion<T> : ChatCompletion
 #pragma warning restore CA1031 // Do not catch general exception types
     }
 
-    private static TValue? DeserializeFirstTopLevelObject<TValue>(string json, JsonTypeInfo<TValue> typeInfo)
+    private static T? DeserializeFirstTopLevelObject(string json, JsonTypeInfo<T> typeInfo)
     {
         // We need to deserialize only the first top-level object as a workaround for a common LLM backend
         // issue. GPT 3.5 Turbo commonly returns multiple top-level objects after doing a function call.
@@ -132,10 +132,10 @@ public class ChatCompletion<T> : ChatCompletion
 
         if (wrapped)
         {
-            var result = DeserializeFirstTopLevelObject(json!, (JsonTypeInfo<Payload<T>>)_serializerOptions.GetTypeInfo(typeof(Payload<T>)));
-            if (result != null)
+            var doc = JsonDocument.Parse(json!);
+            if (doc.RootElement.TryGetProperty("data", out var data))
             {
-                deserialized = result.Data;
+                deserialized = DeserializeFirstTopLevelObject(data.GetRawText(), (JsonTypeInfo<T>)_serializerOptions.GetTypeInfo(typeof(T)));
             }
         }
         else
@@ -154,8 +154,6 @@ public class ChatCompletion<T> : ChatCompletion
         failureReason = default;
         return deserialized;
     }
-
-    private sealed record Payload<TValue>(TValue Data);
 
     private enum FailureReason
     {
