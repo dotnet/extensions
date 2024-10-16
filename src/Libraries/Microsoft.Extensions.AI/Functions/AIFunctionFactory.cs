@@ -19,7 +19,7 @@ using Microsoft.Shared.Diagnostics;
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Provides factory methods for creating commonly-used implementations of <see cref="AIFunction"/>.</summary>
-public static class AIFunctionFactory
+public static partial class AIFunctionFactory
 {
     /// <summary>Holds the default options instance used when creating function.</summary>
     private static readonly AIFunctionFactoryCreateOptions _defaultOptions = new();
@@ -146,7 +146,7 @@ public static class AIFunctionFactory
             string? functionName = options.Name;
             if (functionName is null)
             {
-                functionName = AIJsonUtilities.SanitizeMemberName(method.Name!);
+                functionName = SanitizeMemberName(method.Name!);
 
                 const string AsyncSuffix = "Async";
                 if (IsAsyncMethod(method) &&

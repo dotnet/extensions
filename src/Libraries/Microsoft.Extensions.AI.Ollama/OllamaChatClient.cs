@@ -15,12 +15,15 @@ using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>An <see cref="IChatClient"/> for Ollama.</summary>
 public sealed class OllamaChatClient : IChatClient
 {
+    private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
+
     /// <summary>The api/chat endpoint URI.</summary>
     private readonly Uri _apiChatEndpoint;
 
@@ -395,7 +398,7 @@ public sealed class OllamaChatClient : IChatClient
         }
     }
 
-    private OllamaTool ToOllamaTool(AIFunction function) => new()
+    private static OllamaTool ToOllamaTool(AIFunction function) => new()
     {
         Type = "function",
         Function = new OllamaFunctionTool
@@ -406,7 +409,7 @@ public sealed class OllamaChatClient : IChatClient
             {
                 Properties = function.Metadata.Parameters.ToDictionary(
                     p => p.Name,
-                    p => AIJsonUtilities.ResolveParameterSchema(p, function.Metadata, ToolCallJsonSerializerOptions)),
+                    p => p.Schema is JsonElement e ? e : _defaultParameterSchema),
                 Required = function.Metadata.Parameters.Where(p => p.IsRequired).Select(p => p.Name).ToList(),
             },
         }

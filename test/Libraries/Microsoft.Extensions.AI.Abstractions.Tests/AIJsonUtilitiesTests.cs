@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -29,93 +28,6 @@ public static class AIJsonUtilitiesTests
         // Additional settings
         Assert.Equal(JsonIgnoreCondition.WhenWritingNull, options.DefaultIgnoreCondition);
         Assert.True(options.WriteIndented);
-    }
-
-    [Theory]
-    [InlineData("", "")]
-    [InlineData(" \t\n", "___")]
-    [InlineData("MethodName42", "MethodName42")]
-    [InlineData("MethodName`3", "MethodName_3")]
-    [InlineData("<<Main>$>g__Test", "__Main___g__Test")]
-    public static void SanitizeMemberName_ReturnsExpectedValue(string name, string expected)
-    {
-        string actual = AIJsonUtilities.SanitizeMemberName(name);
-        Assert.Equal(expected, actual);
-    }
-
-    [Fact]
-    public static void SanitizeMemberName_NullInput_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => AIJsonUtilities.SanitizeMemberName(null!));
-    }
-
-    [Fact]
-    public static void ParseFunctionCallContent_NullJsonInput_ReturnsNullArgumentDictionary()
-    {
-        var content = AIJsonUtilities.ParseFunctionCallContent("null", "callId", "functionName");
-
-        Assert.NotNull(content);
-        Assert.Null(content.Arguments);
-        Assert.Null(content.Exception);
-    }
-
-    [Fact]
-    public static void ParseFunctionCallContent_ObjectJsonInput_ReturnsElementArgumentDictionary()
-    {
-        var content = AIJsonUtilities.ParseFunctionCallContent("""{"Key1":{}, "Key2":null, "Key3" : [], "Key4" : 42, "Key5" : true }""", "callId", "functionName");
-
-        Assert.NotNull(content);
-        Assert.Null(content.Exception);
-        Assert.NotNull(content.Arguments);
-        Assert.Equal(5, content.Arguments.Count);
-        Assert.Collection(content.Arguments,
-            kvp =>
-            {
-                Assert.Equal("Key1", kvp.Key);
-                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.Object });
-            },
-            kvp =>
-            {
-                Assert.Equal("Key2", kvp.Key);
-                Assert.Null(kvp.Value);
-            },
-            kvp =>
-            {
-                Assert.Equal("Key3", kvp.Key);
-                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.Array });
-            },
-            kvp =>
-            {
-                Assert.Equal("Key4", kvp.Key);
-                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.Number });
-            },
-            kvp =>
-            {
-                Assert.Equal("Key5", kvp.Key);
-                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.True });
-            });
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("1")]
-    [InlineData("false")]
-    [InlineData("[]")]
-    public static void ParseFunctionCallContent_InvalidJsonInput_ReturnsParsingException(string json)
-    {
-        var content = AIJsonUtilities.ParseFunctionCallContent(json, "callId", "functionName");
-        Assert.NotNull(content);
-        Assert.Null(content.Arguments);
-        Assert.IsType<InvalidOperationException>(content.Exception);
-        Assert.IsType<JsonException>(content.Exception.InnerException);
-    }
-
-    [Fact]
-    public static void ParseFunctionCallContent_NullInput_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => AIJsonUtilities.ParseFunctionCallContent((string)null!, "callId", "functionName"));
-        Assert.Throws<ArgumentNullException>(() => AIJsonUtilities.ParseFunctionCallContent("{}", null!, "functionName"));
-        Assert.Throws<ArgumentNullException>(() => AIJsonUtilities.ParseFunctionCallContent("{}", "callId", null!));
     }
 
     [Theory]
