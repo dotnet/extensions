@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Embeddings;
@@ -144,12 +143,12 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
         if (options?.AdditionalProperties is { Count: > 0 } additionalProperties)
         {
             // Allow per-instance dimensions to be overridden by a per-call property
-            if (additionalProperties.TryGetConvertedValue(nameof(openAIOptions.Dimensions), out int? dimensions))
+            if (additionalProperties.TryGetValue(nameof(openAIOptions.Dimensions), out int? dimensions))
             {
                 openAIOptions.Dimensions = dimensions;
             }
 
-            if (additionalProperties.TryGetConvertedValue(nameof(openAIOptions.EndUserId), out string? endUserId))
+            if (additionalProperties.TryGetValue(nameof(openAIOptions.EndUserId), out string? endUserId))
             {
                 openAIOptions.EndUserId = endUserId;
             }

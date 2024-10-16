@@ -11,7 +11,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -308,7 +307,7 @@ public sealed class OpenTelemetryChatClient : DelegatingChatClient
                         _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.Temperature, temperature);
                     }
 
-                    if (options.AdditionalProperties?.TryGetConvertedValue("top_k", out double topK) is true)
+                    if (options.AdditionalProperties?.TryGetValue("top_k", out double topK) is true)
                     {
                         _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.TopK, topK);
                     }

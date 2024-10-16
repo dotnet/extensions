@@ -414,8 +414,7 @@ public class OpenAIChatClientTests
                                         "type": "string"
                                     }
                                 }
-                            },
-                            "strict": false
+                            }
                         }
                     }
                 ],
@@ -529,8 +528,7 @@ public class OpenAIChatClientTests
                                         "type": "string"
                                     }
                                 }
-                            },
-                            "strict": false
+                            }
                         }
                     }
                 ],

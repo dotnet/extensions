@@ -11,7 +11,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 using OpenAI;
 using OpenAI.Chat;
@@ -410,17 +409,17 @@ public sealed partial class OpenAIChatClient : IChatClient
 
             if (options.AdditionalProperties is { Count: > 0 } additionalProperties)
             {
-                if (additionalProperties.TryGetConvertedValue(nameof(result.EndUserId), out string? endUserId))
+                if (additionalProperties.TryGetValue(nameof(result.EndUserId), out string? endUserId))
                 {
                     result.EndUserId = endUserId;
                 }
 
-                if (additionalProperties.TryGetConvertedValue(nameof(result.IncludeLogProbabilities), out bool includeLogProbabilities))
+                if (additionalProperties.TryGetValue(nameof(result.IncludeLogProbabilities), out bool includeLogProbabilities))
                 {
                     result.IncludeLogProbabilities = includeLogProbabilities;
                 }
 
-                if (additionalProperties.TryGetConvertedValue(nameof(result.LogitBiases), out IDictionary<int, int>? logitBiases))
+                if (additionalProperties.TryGetValue(nameof(result.LogitBiases), out IDictionary<int, int>? logitBiases))
                 {
                     foreach (KeyValuePair<int, int> kvp in logitBiases!)
                     {
@@ -428,19 +427,19 @@ public sealed partial class OpenAIChatClient : IChatClient
                     }
                 }
 
-                if (additionalProperties.TryGetConvertedValue(nameof(result.AllowParallelToolCalls), out bool allowParallelToolCalls))
+                if (additionalProperties.TryGetValue(nameof(result.AllowParallelToolCalls), out bool allowParallelToolCalls))
                 {
                     result.AllowParallelToolCalls = allowParallelToolCalls;
                 }
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-                if (additionalProperties.TryGetConvertedValue(nameof(result.Seed), out long seed))
+                if (additionalProperties.TryGetValue(nameof(result.Seed), out long seed))
                 {
                     result.Seed = seed;
                 }
 #pragma warning restore OPENAI001
 
-                if (additionalProperties.TryGetConvertedValue(nameof(result.TopLogProbabilityCount), out int topLogProbabilityCountInt))
+                if (additionalProperties.TryGetValue(nameof(result.TopLogProbabilityCount), out int topLogProbabilityCountInt))
                 {
                     result.TopLogProbabilityCount = topLogProbabilityCountInt;
                 }
@@ -488,7 +487,10 @@ public sealed partial class OpenAIChatClient : IChatClient
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
     private ChatTool ToOpenAIChatTool(AIFunction aiFunction)
     {
-        _ = aiFunction.Metadata.AdditionalProperties.TryGetConvertedValue("Strict", out bool strict);
+        bool? strict =
+            aiFunction.Metadata.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
+            strictObj is bool strictValue ?
+            strictValue : null;
 
         BinaryData resultParameters = OpenAIChatToolJson.ZeroFunctionParametersSchema;
 
@@ -643,7 +645,7 @@ public sealed partial class OpenAIChatClient : IChatClient
                     new(toolCalls.Values) { ParticipantName = input.AuthorName } :
                     new(input.Text) { ParticipantName = input.AuthorName };
 
-                if (input.AdditionalProperties?.TryGetConvertedValue(nameof(message.Refusal), out string? refusal) is true)
+                if (input.AdditionalProperties?.TryGetValue(nameof(message.Refusal), out string? refusal) is true)
                 {
                     message.Refusal = refusal;
                 }
