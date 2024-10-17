@@ -215,7 +215,7 @@ public class GeneratorTests(ITestOutputHelper output)
         {
             _options = analyzerOptions ?? [];
             _options.TryAdd("build_property.GenerateMetadataReport", bool.TrueString);
-   //         _options.TryAdd("build_property.MetadataReportOutputPath", Directory.GetCurrentDirectory());
+            _options.TryAdd("build_property.outputpath", Directory.GetCurrentDirectory());
         }
 
         public override bool TryGetValue(string key, out string value)

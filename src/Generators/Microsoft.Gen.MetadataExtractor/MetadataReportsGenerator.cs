@@ -48,15 +48,19 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
     public void Execute(GeneratorExecutionContext context)
     {
         context.CancellationToken.ThrowIfCancellationRequested();
-        if (!GeneratorUtilities.ShouldGenerateReport(context, GenerateMetadataMSBuildProperty))
+
+        if (context.SyntaxReceiver is not TypeDeclarationSyntaxReceiver ||
+            ((TypeDeclarationSyntaxReceiver)context.SyntaxReceiver).TypeDeclarations.Count == 0 ||
+            !GeneratorUtilities.ShouldGenerateReport(context, GenerateMetadataMSBuildProperty))
+        {
             return;
+        }
 
         if ((context.SyntaxReceiver is not TypeDeclarationSyntaxReceiver || ((TypeDeclarationSyntaxReceiver)context.SyntaxReceiver).TypeDeclarations.Count == 0))
         {
             // nothing to do yet
             return;
         }
-
 
         var options = context.AnalyzerConfigOptions.GlobalOptions;
         var path = GeneratorUtilities.TryRetrieveOptionsValue(options, ReportOutputPathMSBuildProperty, out var reportOutputPath)
