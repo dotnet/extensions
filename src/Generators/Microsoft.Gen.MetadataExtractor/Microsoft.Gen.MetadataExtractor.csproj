@@ -51,5 +51,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Gen.Metrics\Microsoft.Gen.Metrics.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+    <InternalsVisibleToTest Include="Microsoft.Gen.MetadataExtractor.Unit.Tests" />
+  </ItemGroup>
 </Project>
