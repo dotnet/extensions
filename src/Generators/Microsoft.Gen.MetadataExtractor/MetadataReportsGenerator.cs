@@ -81,11 +81,11 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
         metadataReport.metricReport = HandleMetricReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
         metadataReport.complianceReport = HandleComplianceReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
 
-        string combinedReport = "{ \"name\": " + context.Compilation.AssemblyName! + "," +
-                                    " \"metricReport\": "
-                                    + (string.IsNullOrEmpty(metadataReport.metricReport) ? "{}" : metadataReport.metricReport)
-                                    + ", \"complianceReport\": "
-                                    + (string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport) + " }";
+        string combinedReport = "{ \"Name\": " + context.Compilation.AssemblyName!
+                                    +", \"ComplianceReport\": "
+                                    + (string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport) + " }"
+                                    + " \"MetricReport\": "
+                                    + (string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport);
 
 #pragma warning disable RS1035 // Do not use APIs banned for analyzers
         File.WriteAllText(Path.Combine(path, _fileName), combinedReport, Encoding.UTF8);
