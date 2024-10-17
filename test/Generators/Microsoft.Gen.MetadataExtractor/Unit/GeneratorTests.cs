@@ -118,7 +118,8 @@ public class GeneratorTests(ITestOutputHelper output)
         var options = new Dictionary<string, string>
         {
             ["build_property.GenerateMetadataReport"] = bool.FalseString,
-            ["build_property.MetadataReportOutputPath"] = Path.GetTempPath()
+            ["build_property.MetadataReportOutputPath"] = Path.GetTempPath(),
+            ["build_property.rootnamespace"] = "TestClasses"
         };
 
         var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);

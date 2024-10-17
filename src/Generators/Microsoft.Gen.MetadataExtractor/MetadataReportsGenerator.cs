@@ -26,6 +26,7 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
 {
     private const string GenerateMetadataMSBuildProperty = "build_property.GenerateMetadataReport";
     private const string ReportOutputPathMSBuildProperty = "build_property.MetadataReportOutputPath";
+    private const string RootNamespace = "build_property.rootnamespace";
     private const string FallbackFileName = "MetadataReport.json";
     private readonly string _fileName;
 
@@ -103,7 +104,7 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
             return string.Empty;
         }
 
-        _ = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(ReportOutputPathMSBuildProperty, out var rootNamespace);
+        _ = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue(RootNamespace, out var rootNamespace);
         var reportedMetrics = MetricsReportsHelpers.MapToCommonModel(meteringClasses, rootNamespace);
         var emitter = new MetricDefinitionEmitter();
         var report = emitter.GenerateReport(reportedMetrics, context.CancellationToken);

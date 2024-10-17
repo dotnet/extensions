@@ -1,40 +1,34 @@
 ﻿{
   "Name": "test.dll",
-  "ComplianceReport":{},
-  "MetricReport":[
+  "ComplianceReport": {},
+  "MetricReport": [
     {
-     "TestClasses":
-     [
-      {
-       "TestClasses":
-       [
-         {
+      "TestClasses": [
+        {
           "MetricName": "CounterWithDescription",
           "MetricDescription": "CounterWithDescription description.",
           "InstrumentName": "Counter"
-         },
-         {
+        },
+        {
           "MetricName": "HistogramWithDescription",
           "MetricDescription": "HistogramWithDescription description.",
           "InstrumentName": "Histogram"
-         },
-         {
+        },
+        {
           "MetricName": "HistogramWithWrongDescription",
           "MetricDescription": "(Missing Summary)",
           "InstrumentName": "Histogram"
-         },
-         {
+        },
+        {
           "MetricName": "ConstDescribedCounter",
           "MetricDescription": "CreateConstDescribedCounter description.",
           "InstrumentName": "Counter",
           "Dimensions": {
-           "Dim4": "Dim4 description.",
-           "InClassDim": "InClassDim description."
-           }
-         }
-       ]
-      }
-     ]
+            "Dim4": "Dim4 description.",
+            "InClassDim": "InClassDim description."
+          }
+        }
+      ]
     }
-   ]
+  ]
 }
