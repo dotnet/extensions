@@ -115,7 +115,7 @@ public static class AIJsonUtilitiesTests
     }
 
     [Fact]
-    public static void ResolveJsonSchema_ReturnsExpectedValue()
+    public static void ResolveParameterJsonSchema_ReturnsExpectedValue()
     {
         JsonSerializerOptions options = new(JsonSerializerOptions.Default);
         AIFunction func = AIFunctionFactory.Create((int x, int y) => x + y, serializerOptions: options);
@@ -125,11 +125,11 @@ public static class AIJsonUtilitiesTests
         JsonElement generatedSchema = Assert.IsType<JsonElement>(param.Schema);
 
         JsonElement resolvedSchema;
-        resolvedSchema = AIJsonUtilities.ResolveParameterSchema(param, metadata, options);
+        resolvedSchema = AIJsonUtilities.ResolveParameterJsonSchema(param, metadata, options);
         Assert.True(JsonElement.DeepEquals(generatedSchema, resolvedSchema));
 
         options = new(options) { NumberHandling = JsonNumberHandling.AllowReadingFromString };
-        resolvedSchema = AIJsonUtilities.ResolveParameterSchema(param, metadata, options);
+        resolvedSchema = AIJsonUtilities.ResolveParameterJsonSchema(param, metadata, options);
         Assert.False(JsonElement.DeepEquals(generatedSchema, resolvedSchema));
     }
 

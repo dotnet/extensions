@@ -55,7 +55,7 @@ public static partial class AIJsonUtilities
     /// <param name="serializerOptions">The options used to extract the schema from the specified type.</param>
     /// <param name="inferenceOptions">The options controlling schema inference.</param>
     /// <returns>A JSON schema document encoded as a <see cref="JsonElement"/>.</returns>
-    public static JsonElement ResolveParameterSchema(
+    public static JsonElement ResolveParameterJsonSchema(
         AIFunctionParameterMetadata parameterMetadata,
         AIFunctionMetadata functionMetadata,
         JsonSerializerOptions? serializerOptions = null,

@@ -316,30 +316,22 @@ public class FunctionCallContentTests
             });
     }
 
-    [Fact]
-    public static void CreateFromParsedArguments_ParseException_HasExpectedHandling()
+    [Theory]
+    [InlineData(typeof(JsonException))]
+    [InlineData(typeof(InvalidOperationException))]
+    [InlineData(typeof(NotSupportedException))]
+    public static void CreateFromParsedArguments_ParseException_HasExpectedHandling(Type exceptionType)
     {
-        FunctionCallContent content;
-        JsonException exc = new();
+        Exception exc = (Exception)Activator.CreateInstance(exceptionType)!;
+        FunctionCallContent content = FunctionCallContent.CreateFromParsedArguments(exc, "callId", "functionName", ThrowingParser);
 
-        content = FunctionCallContent.CreateFromParsedArguments(exc, "callId", "functionName", ThrowingParser);
+        Assert.Equal("functionName", content.Name);
+        Assert.Equal("callId", content.CallId);
         Assert.Null(content.Arguments);
         Assert.IsType<InvalidOperationException>(content.Exception);
         Assert.Same(exc, content.Exception.InnerException);
-
-        content = FunctionCallContent.CreateFromParsedArguments(exc, "callId", "functionName", ThrowingParser, exceptionFilter: IsJsonException);
-        Assert.Null(content.Arguments);
-        Assert.IsType<InvalidOperationException>(content.Exception);
-        Assert.Same(exc, content.Exception.InnerException);
-
-        NotSupportedException otherExc = new();
-        NotSupportedException thrownEx = Assert.Throws<NotSupportedException>(() =>
-            FunctionCallContent.CreateFromParsedArguments(otherExc, "callId", "functionName", ThrowingParser, exceptionFilter: IsJsonException));
-
-        Assert.Same(otherExc, thrownEx);
 
         static Dictionary<string, object?> ThrowingParser(Exception ex) => throw ex;
-        static bool IsJsonException(Exception ex) => ex is JsonException;
     }
 
     [Fact]
