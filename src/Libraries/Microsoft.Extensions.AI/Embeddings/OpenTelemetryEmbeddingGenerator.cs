@@ -132,13 +132,13 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
                 if (_endpointAddress is not null)
                 {
                     _ = activity
-                        .SetTag(OpenTelemetryConsts.Server.Address, _endpointAddress)
-                        .SetTag(OpenTelemetryConsts.Server.Port, _endpointPort);
+                        .AddTag(OpenTelemetryConsts.Server.Address, _endpointAddress)
+                        .AddTag(OpenTelemetryConsts.Server.Port, _endpointPort);
                 }
 
                 if (_dimensions is int dimensions)
                 {
-                    _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.EmbeddingDimensions, dimensions);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.EmbeddingDimensions, dimensions);
                 }
             }
         }
@@ -190,18 +190,18 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             if (error is not null)
             {
                 _ = activity
-                    .SetTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
+                    .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
                     .SetStatus(ActivityStatusCode.Error, error.Message);
             }
 
             if (inputTokens.HasValue)
             {
-                _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.InputTokens, inputTokens);
+                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, inputTokens);
             }
 
             if (responseModelId is not null)
             {
-                _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.Model, responseModelId);
+                _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Model, responseModelId);
             }
         }
     }

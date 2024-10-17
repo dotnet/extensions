@@ -299,7 +299,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
             // These properties are strongly-typed on ChatOptions but not on ChatCompletionsOptions.
             if (options.TopK is int topK)
             {
-                result.AdditionalProperties["top_k"] = BinaryData.FromObjectAsJson(topK, ToolCallJsonSerializerOptions);
+                result.AdditionalProperties["top_k"] = BinaryData.FromObjectAsJson(topK, JsonContext.Default.Options);
             }
 
             if (options.AdditionalProperties is { } props)
@@ -505,5 +505,6 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
     [JsonSerializable(typeof(AzureAIChatToolJson))]
     [JsonSerializable(typeof(IDictionary<string, object?>))]
     [JsonSerializable(typeof(JsonElement))]
+    [JsonSerializable(typeof(int))]
     private sealed partial class JsonContext : JsonSerializerContext;
 }

@@ -17,9 +17,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
-#pragma warning disable S1135 // Track uses of "TODO" tags
-#pragma warning disable S3358 // Ternary operators should not be nested
-
 namespace Microsoft.Extensions.AI;
 
 /// <summary>A delegating chat client that implements the OpenTelemetry Semantic Conventions for Generative AI systems.</summary>
@@ -258,58 +255,57 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 
             activity = _activitySource.StartActivity(
                 $"{OpenTelemetryConsts.GenAI.Chat} {modelId}",
-                ActivityKind.Client,
-                default(ActivityContext),
-                [
-                    new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Chat),
-                    new(OpenTelemetryConsts.GenAI.Request.Model, modelId),
-                    new(OpenTelemetryConsts.GenAI.SystemName, _system),
-                ]);
+                ActivityKind.Client);
 
             if (activity is not null)
             {
+                _ = activity
+                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Chat)
+                    .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
+                    .AddTag(OpenTelemetryConsts.GenAI.SystemName, _system);
+
                 if (_serverAddress is not null)
                 {
                     _ = activity
-                        .SetTag(OpenTelemetryConsts.Server.Address, _serverAddress)
-                        .SetTag(OpenTelemetryConsts.Server.Port, _serverPort);
+                        .AddTag(OpenTelemetryConsts.Server.Address, _serverAddress)
+                        .AddTag(OpenTelemetryConsts.Server.Port, _serverPort);
                 }
 
                 if (options is not null)
                 {
                     if (options.FrequencyPenalty is float frequencyPenalty)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.FrequencyPenalty, frequencyPenalty);
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.FrequencyPenalty, frequencyPenalty);
                     }
 
                     if (options.MaxOutputTokens is int maxTokens)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.MaxTokens, maxTokens);
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.MaxTokens, maxTokens);
                     }
 
                     if (options.PresencePenalty is float presencePenalty)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.PresencePenalty, presencePenalty);
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PresencePenalty, presencePenalty);
                     }
 
                     if (options.StopSequences is IList<string> stopSequences)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.StopSequences, $"[{string.Join(", ", stopSequences.Select(s => $"\"{s}\""))}]");
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.StopSequences, $"[{string.Join(", ", stopSequences.Select(s => $"\"{s}\""))}]");
                     }
 
                     if (options.Temperature is float temperature)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.Temperature, temperature);
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.Temperature, temperature);
                     }
 
                     if (options.TopK is int topK)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.TopK, topK);
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.TopK, topK);
                     }
 
                     if (options.TopP is float top_p)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.TopP, top_p);
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.TopP, top_p);
                     }
 
                     if (_system is not null)
@@ -323,12 +319,12 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                                 ChatResponseFormatJson => "json_object",
                                 _ => "_OTHER",
                             };
-                            _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.PerProvider(_system, "response_format"), responseFormat);
+                            _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PerProvider(_system, "response_format"), responseFormat);
                         }
 
                         if (options.AdditionalProperties?.TryGetValue("seed", out long seed) is true)
                         {
-                            _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.PerProvider(_system, "seed"), seed);
+                            _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PerProvider(_system, "seed"), seed);
                         }
                     }
                 }
@@ -381,7 +377,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
         if (error is not null)
         {
             _ = activity?
-                .SetTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
+                .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
                 .SetStatus(ActivityStatusCode.Error, error.Message);
         }
 
@@ -394,28 +390,28 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 if (completion.FinishReason is ChatFinishReason finishReason)
                 {
 #pragma warning disable CA1308 // Normalize strings to uppercase
-                    _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.FinishReasons, $"[\"{finishReason.Value.ToLowerInvariant()}\"]");
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.FinishReasons, $"[\"{finishReason.Value.ToLowerInvariant()}\"]");
 #pragma warning restore CA1308
                 }
 
                 if (!string.IsNullOrWhiteSpace(completion.CompletionId))
                 {
-                    _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.Id, completion.CompletionId);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Id, completion.CompletionId);
                 }
 
                 if (completion.ModelId is not null)
                 {
-                    _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.Model, completion.ModelId);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Model, completion.ModelId);
                 }
 
                 if (completion.Usage?.InputTokenCount is int inputTokens)
                 {
-                    _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.InputTokens, inputTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, inputTokens);
                 }
 
                 if (completion.Usage?.OutputTokenCount is int outputTokens)
                 {
-                    _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, outputTokens);
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, outputTokens);
                 }
             }
         }
@@ -544,7 +540,6 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
     {
         if (EnableSensitiveData)
         {
-            // TODO: Include other content types once the genai specification details what's expected.
             string content = string.Concat(message.Contents.OfType<TextContent>().Select(c => c.Text));
             if (content.Length > 0)
             {
