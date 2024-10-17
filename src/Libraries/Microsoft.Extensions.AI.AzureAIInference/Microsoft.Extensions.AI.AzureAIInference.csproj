@@ -24,11 +24,7 @@
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="../Microsoft.Extensions.AI.Abstractions/Contents/FunctionCallHelpers.cs" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Azure.AI.Inference" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />

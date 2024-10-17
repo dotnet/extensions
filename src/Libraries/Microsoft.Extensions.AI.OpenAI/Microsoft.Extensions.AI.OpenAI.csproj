@@ -24,10 +24,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../Microsoft.Extensions.AI.Abstractions/Contents/FunctionCallHelpers.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="OpenAI" />
     <PackageReference Include="System.Text.Json" />
 

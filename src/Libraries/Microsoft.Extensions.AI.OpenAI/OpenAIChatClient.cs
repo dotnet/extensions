@@ -17,12 +17,15 @@ using OpenAI.Chat;
 
 #pragma warning disable S1135 // Track uses of "TODO" tags
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>An <see cref="IChatClient"/> for an OpenAI <see cref="OpenAIClient"/> or <see cref="OpenAI.Chat.ChatClient"/>.</summary>
 public sealed partial class OpenAIChatClient : IChatClient
 {
+    private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
+
     /// <summary>Default OpenAI endpoint.</summary>
     private static readonly Uri _defaultOpenAIEndpoint = new("https://api.openai.com/v1");
 
@@ -123,14 +126,11 @@ public sealed partial class OpenAIChatClient : IChatClient
             {
                 if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
                 {
-                    Dictionary<string, object?>? arguments = FunctionCallHelpers.ParseFunctionCallArguments(toolCall.FunctionArguments, out Exception? parsingException);
+                    var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
+                    callContent.ModelId = response.Model;
+                    callContent.RawRepresentation = toolCall;
 
-                    returnMessage.Contents.Add(new FunctionCallContent(toolCall.Id, toolCall.FunctionName, arguments)
-                    {
-                        ModelId = response.Model,
-                        Exception = parsingException,
-                        RawRepresentation = toolCall
-                    });
+                    returnMessage.Contents.Add(callContent);
                 }
             }
         }
@@ -320,15 +320,14 @@ public sealed partial class OpenAIChatClient : IChatClient
                 FunctionCallInfo fci = entry.Value;
                 if (!string.IsNullOrWhiteSpace(fci.Name))
                 {
-                    var arguments = FunctionCallHelpers.ParseFunctionCallArguments(
+                    var callContent = ParseCallContentFromJsonString(
                         fci.Arguments?.ToString() ?? string.Empty,
-                        out Exception? parsingException);
+                        fci.CallId!,
+                        fci.Name!);
 
-                    completionUpdate.Contents.Add(new FunctionCallContent(fci.CallId!, fci.Name!, arguments)
-                    {
-                        ModelId = modelId,
-                        Exception = parsingException
-                    });
+                    callContent.ModelId = modelId;
+
+                    completionUpdate.Contents.Add(callContent);
                 }
             }
 
@@ -387,7 +386,7 @@ public sealed partial class OpenAIChatClient : IChatClient
         };
 
     /// <summary>Converts an extensions options instance to an OpenAI options instance.</summary>
-    private ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
+    private static ChatCompletionOptions ToOpenAIOptions(ChatOptions? options)
     {
         ChatCompletionOptions result = new();
 
@@ -485,7 +484,7 @@ public sealed partial class OpenAIChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions function to an OpenAI chat tool.</summary>
-    private ChatTool ToOpenAIChatTool(AIFunction aiFunction)
+    private static ChatTool ToOpenAIChatTool(AIFunction aiFunction)
     {
         bool? strict =
             aiFunction.Metadata.AdditionalProperties.TryGetValue("Strict", out object? strictObj) &&
@@ -501,9 +500,7 @@ public sealed partial class OpenAIChatClient : IChatClient
 
             foreach (AIFunctionParameterMetadata parameter in parameters)
             {
-                tool.Properties.Add(
-                    parameter.Name,
-                    FunctionCallHelpers.InferParameterJsonSchema(parameter, aiFunction.Metadata, ToolCallJsonSerializerOptions));
+                tool.Properties.Add(parameter.Name, parameter.Schema is JsonElement e ? e : _defaultParameterSchema);
 
                 if (parameter.IsRequired)
                 {
@@ -598,9 +595,10 @@ public sealed partial class OpenAIChatClient : IChatClient
                         string? result = resultContent.Result as string;
                         if (result is null && resultContent.Result is not null)
                         {
+                            JsonSerializerOptions options = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
                             try
                             {
-                                result = FunctionCallHelpers.FormatFunctionResultAsJson(resultContent.Result, ToolCallJsonSerializerOptions);
+                                result = JsonSerializer.Serialize(resultContent.Result, options.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -655,7 +653,19 @@ public sealed partial class OpenAIChatClient : IChatClient
         }
     }
 
+    private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
+        FunctionCallContent.CreateFromParsedArguments(json, callId, name,
+            argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject),
+            exceptionFilter: static ex => ex is JsonException);
+
+    private static FunctionCallContent ParseCallContentFromBinaryData(BinaryData ut8Json, string callId, string name) =>
+        FunctionCallContent.CreateFromParsedArguments(ut8Json, callId, name,
+            argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject),
+            exceptionFilter: static ex => ex is JsonException);
+
     /// <summary>Source-generated JSON type information.</summary>
     [JsonSerializable(typeof(OpenAIChatToolJson))]
+    [JsonSerializable(typeof(IDictionary<string, object?>))]
+    [JsonSerializable(typeof(JsonElement))]
     private sealed partial class JsonContext : JsonSerializerContext;
 }

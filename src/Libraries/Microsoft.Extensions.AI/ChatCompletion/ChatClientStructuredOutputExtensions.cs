@@ -5,12 +5,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Schema;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
-using static Microsoft.Extensions.AI.FunctionCallHelpers;
 
 namespace Microsoft.Extensions.AI;
 
@@ -19,6 +16,13 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public static class ChatClientStructuredOutputExtensions
 {
+    private static readonly AIJsonSchemaCreateOptions _inferenceOptions = new()
+    {
+        IncludeSchemaKeyword = true,
+        DisallowAdditionalProperties = true,
+        IncludeTypeInEnumSchemas = true
+    };
+
     /// <summary>Sends chat messages to the model, requesting a response matching the type <typeparamref name="T"/>.</summary>
     /// <param name="chatClient">The <see cref="IChatClient"/>.</param>
     /// <param name="chatMessages">The chat content to send.</param>
@@ -42,7 +46,7 @@ public static class ChatClientStructuredOutputExtensions
         bool? useNativeJsonSchema = null,
         CancellationToken cancellationToken = default)
         where T : class =>
-        CompleteAsync<T>(chatClient, chatMessages, JsonDefaults.Options, options, useNativeJsonSchema, cancellationToken);
+        CompleteAsync<T>(chatClient, chatMessages, AIJsonUtilities.DefaultOptions, options, useNativeJsonSchema, cancellationToken);
 
     /// <summary>Sends a user chat text message to the model, requesting a response matching the type <typeparamref name="T"/>.</summary>
     /// <param name="chatClient">The <see cref="IChatClient"/>.</param>
@@ -120,26 +124,12 @@ public static class ChatClientStructuredOutputExtensions
 
         serializerOptions.MakeReadOnly();
 
-        var schemaNode = (JsonObject)serializerOptions.GetJsonSchemaAsNode(typeof(T), new()
-        {
-            TreatNullObliviousAsNonNullable = true,
-            TransformSchemaNode = static (context, node) =>
-            {
-                if (node is JsonObject obj)
-                {
-                    if (obj.TryGetPropertyValue("enum", out _)
-                        && !obj.TryGetPropertyValue("type", out _))
-                    {
-                        obj.Insert(0, "type", "string");
-                    }
-                }
+        var schemaNode = AIJsonUtilities.CreateJsonSchema(
+            type: typeof(T),
+            serializerOptions: serializerOptions,
+            inferenceOptions: _inferenceOptions);
 
-                return node;
-            },
-        });
-        schemaNode.Insert(0, "$schema", "https://json-schema.org/draft/2020-12/schema");
-        schemaNode.Add("additionalProperties", false);
-        var schema = JsonSerializer.Serialize(schemaNode, JsonDefaults.Options.GetTypeInfo(typeof(JsonNode)));
+        var schema = JsonSerializer.Serialize(schemaNode, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
 
         ChatMessage? promptAugmentation = null;
         options = (options ?? new()).Clone();
@@ -153,7 +143,7 @@ public static class ChatClientStructuredOutputExtensions
             // the LLM backend is meant to do whatever's needed to explain the schema to the LLM.
             options.ResponseFormat = ChatResponseFormat.ForJsonSchema(
                 schema,
-                schemaName: SanitizeMetadataName(typeof(T).Name),
+                schemaName: AIFunctionFactory.SanitizeMemberName(typeof(T).Name),
                 schemaDescription: typeof(T).GetCustomAttribute<DescriptionAttribute>()?.Description);
         }
         else

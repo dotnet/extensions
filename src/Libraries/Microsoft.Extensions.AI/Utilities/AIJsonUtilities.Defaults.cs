@@ -11,11 +11,10 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides cached options around JSON serialization to be used by the project.</summary>
-internal static partial class JsonDefaults
+public static partial class AIJsonUtilities
 {
-    /// <summary>Gets the <see cref="JsonSerializerOptions"/> singleton to use for serialization-related operations.</summary>
-    public static JsonSerializerOptions Options { get; } = CreateDefaultOptions();
+    /// <summary>Gets the <see cref="JsonSerializerOptions"/> singleton used as the default in JSON serialization operations.</summary>
+    public static JsonSerializerOptions DefaultOptions { get; } = CreateDefaultOptions();
 
     /// <summary>Creates the default <see cref="JsonSerializerOptions"/> to use for serialization-related operations.</summary>
     [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
@@ -29,7 +28,7 @@ internal static partial class JsonDefaults
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
             // Keep in sync with the JsonSourceGenerationOptions on JsonContext below.
-            var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+            JsonSerializerOptions options = new(JsonSerializerDefaults.Web)
             {
                 TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
                 Converters = { new JsonStringEnumConverter() },

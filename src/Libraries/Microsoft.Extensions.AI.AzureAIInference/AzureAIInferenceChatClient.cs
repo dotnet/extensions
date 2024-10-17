@@ -16,12 +16,15 @@ using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable S1135 // Track uses of "TODO" tags
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>An <see cref="IChatClient"/> for an Azure AI Inference <see cref="ChatCompletionsClient"/>.</summary>
 public sealed partial class AzureAIInferenceChatClient : IChatClient
 {
+    private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
+
     /// <summary>The underlying <see cref="ChatCompletionsClient" />.</summary>
     private readonly ChatCompletionsClient _chatCompletionsClient;
 
@@ -93,14 +96,11 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 {
                     if (toolCall is ChatCompletionsFunctionToolCall ftc && !string.IsNullOrWhiteSpace(ftc.Name))
                     {
-                        Dictionary<string, object?>? arguments = FunctionCallHelpers.ParseFunctionCallArguments(ftc.Arguments, out Exception? parsingException);
+                        FunctionCallContent callContent = ParseCallContentFromJsonString(ftc.Arguments, toolCall.Id, ftc.Name);
+                        callContent.ModelId = response.Model;
+                        callContent.RawRepresentation = toolCall;
 
-                        returnMessage.Contents.Add(new FunctionCallContent(toolCall.Id, ftc.Name, arguments)
-                        {
-                            ModelId = response.Model,
-                            Exception = parsingException,
-                            RawRepresentation = toolCall
-                        });
+                        returnMessage.Contents.Add(callContent);
                     }
                 }
             }
@@ -226,15 +226,14 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 FunctionCallInfo fci = entry.Value;
                 if (!string.IsNullOrWhiteSpace(fci.Name))
                 {
-                    var arguments = FunctionCallHelpers.ParseFunctionCallArguments(
+                    FunctionCallContent callContent = ParseCallContentFromJsonString(
                         fci.Arguments?.ToString() ?? string.Empty,
-                        out Exception? parsingException);
+                        fci.CallId!,
+                        fci.Name!);
 
-                    completionUpdate.Contents.Add(new FunctionCallContent(fci.CallId!, fci.Name!, arguments)
-                    {
-                        ModelId = modelId,
-                        Exception = parsingException
-                    });
+                    callContent.ModelId = modelId;
+
+                    completionUpdate.Contents.Add(callContent);
                 }
             }
 
@@ -358,7 +357,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
     }
 
     /// <summary>Converts an Extensions function to an AzureAI chat tool.</summary>
-    private ChatCompletionsFunctionToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
+    private static ChatCompletionsFunctionToolDefinition ToAzureAIChatTool(AIFunction aiFunction)
     {
         BinaryData resultParameters = AzureAIChatToolJson.ZeroFunctionParametersSchema;
 
@@ -371,7 +370,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
             {
                 tool.Properties.Add(
                     parameter.Name,
-                    FunctionCallHelpers.InferParameterJsonSchema(parameter, aiFunction.Metadata, ToolCallJsonSerializerOptions));
+                    parameter.Schema is JsonElement schema ? schema : _defaultParameterSchema);
 
                 if (parameter.IsRequired)
                 {
@@ -428,9 +427,10 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                         string? result = resultContent.Result as string;
                         if (result is null && resultContent.Result is not null)
                         {
+                            JsonSerializerOptions options = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
                             try
                             {
-                                result = FunctionCallHelpers.FormatFunctionResultAsJson(resultContent.Result, ToolCallJsonSerializerOptions);
+                                result = JsonSerializer.Serialize(resultContent.Result, options.GetTypeInfo(typeof(object)));
                             }
                             catch (NotSupportedException)
                             {
@@ -461,7 +461,8 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 {
                     if (content is FunctionCallContent callRequest && callRequest.CallId is not null && toolCalls?.ContainsKey(callRequest.CallId) is not true)
                     {
-                        string jsonArguments = FunctionCallHelpers.FormatFunctionParametersAsJson(callRequest.Arguments, ToolCallJsonSerializerOptions);
+                        JsonSerializerOptions serializerOptions = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
+                        string jsonArguments = JsonSerializer.Serialize(callRequest.Arguments, serializerOptions.GetTypeInfo(typeof(IDictionary<string, object>)));
                         (toolCalls ??= []).Add(
                             callRequest.CallId,
                             new ChatCompletionsFunctionToolCall(
@@ -489,7 +490,14 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
         }
     }
 
+    private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
+        FunctionCallContent.CreateFromParsedArguments(json, callId, name,
+            argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject),
+            exceptionFilter: static ex => ex is JsonException);
+
     /// <summary>Source-generated JSON type information.</summary>
     [JsonSerializable(typeof(AzureAIChatToolJson))]
+    [JsonSerializable(typeof(IDictionary<string, object?>))]
+    [JsonSerializable(typeof(JsonElement))]
     private sealed partial class JsonContext : JsonSerializerContext;
 }
