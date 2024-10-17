@@ -86,6 +86,7 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
         }
 
         (string metricReport, string complianceReport) metadataReport = (string.Empty, string.Empty);
+
         if ((((ClassDeclarationSyntaxReceiver)context.SyntaxReceiver)?.ClassDeclarations?.Count ?? 0) > 0)
         {
             metadataReport.metricReport = HandleMetricReportGeneration(context, (ClassDeclarationSyntaxReceiver)context.SyntaxReceiver);
@@ -100,9 +101,9 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
 
         string combinedReport = "{ \"name\": " + context.Compilation.AssemblyName! + "," +
                                     " \"metricReport\": "
-                                    + metadataReport.metricReport
+                                    + (string.IsNullOrEmpty(metadataReport.metricReport) ? "{}" : metadataReport.metricReport)
                                     + ", \"complianceReport\": "
-                                    + metadataReport.complianceReport + " }";
+                                    + (string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport) + " }";
 
 #pragma warning disable RS1035 // Do not use APIs banned for analyzers
         File.WriteAllText(Path.Combine(path, _fileName), combinedReport, Encoding.UTF8);
@@ -110,7 +111,7 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
 
     }
 
-    private string HandleMetricReportGeneration(GeneratorExecutionContext context, ClassDeclarationSyntaxReceiver receiver)
+    private static string HandleMetricReportGeneration(GeneratorExecutionContext context, ClassDeclarationSyntaxReceiver receiver)
     {
         var meteringParser = new Metrics.Parser(context.Compilation, context.ReportDiagnostic, context.CancellationToken);
         var meteringClasses = meteringParser.GetMetricClasses(receiver.ClassDeclarations);
@@ -126,7 +127,7 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
         var report = emitter.GenerateReport(reportedMetrics, context.CancellationToken);
         return report;
     }
-    private string HandleComplianceReportGeneration(GeneratorExecutionContext context, TypeDeclarationSyntaxReceiver receiver)
+    private static string HandleComplianceReportGeneration(GeneratorExecutionContext context, TypeDeclarationSyntaxReceiver receiver)
     {
         _ = SymbolLoader.TryLoad(context.Compilation, out var symbolHolder);
         var parser = new Parser(context.Compilation, symbolHolder!, context.CancellationToken);
