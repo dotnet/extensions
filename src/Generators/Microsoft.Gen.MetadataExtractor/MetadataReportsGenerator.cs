@@ -32,7 +32,6 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
     public void Initialize(GeneratorInitializationContext context)
     {
         context.RegisterForSyntaxNotifications(TypeDeclarationSyntaxReceiver.Create);
-        context.RegisterForSyntaxNotifications(ClassDeclarationSyntaxReceiver.Create);
     }
 
     public MetadataReportsGenerator()
@@ -40,7 +39,7 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
     {
     }
 
-    internal MetadataReportsGenerator(string reportFileName)
+    public MetadataReportsGenerator(string reportFileName)
     {
         _fileName = reportFileName;
     }
@@ -51,19 +50,12 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
         if (!GeneratorUtilities.ShouldGenerateReport(context, GenerateMetadataMSBuildProperty))
             return;
 
-        if ((context.SyntaxReceiver is not TypeDeclarationSyntaxReceiver || ((TypeDeclarationSyntaxReceiver)context.SyntaxReceiver).TypeDeclarations.Count == 0)
-            &&
-            (context.SyntaxReceiver is not ClassDeclarationSyntaxReceiver || ((ClassDeclarationSyntaxReceiver)context.SyntaxReceiver).ClassDeclarations.Count == 0))
+        if ((context.SyntaxReceiver is not TypeDeclarationSyntaxReceiver || ((TypeDeclarationSyntaxReceiver)context.SyntaxReceiver).TypeDeclarations.Count == 0))
         {
             // nothing to do yet
             return;
         }
 
-        if (!SymbolLoader.TryLoad(context.Compilation, out var symbolHolder))
-        {
-            // Not eligible compilation
-            return;
-        }
 
         var options = context.AnalyzerConfigOptions.GlobalOptions;
         var path = GeneratorUtilities.TryRetrieveOptionsValue(options, ReportOutputPathMSBuildProperty, out var reportOutputPath)
@@ -86,18 +78,8 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
         }
 
         (string metricReport, string complianceReport) metadataReport = (string.Empty, string.Empty);
-
-        if ((((ClassDeclarationSyntaxReceiver)context.SyntaxReceiver)?.ClassDeclarations?.Count ?? 0) > 0)
-        {
-            metadataReport.metricReport = HandleMetricReportGeneration(context, (ClassDeclarationSyntaxReceiver)context.SyntaxReceiver);
-        }
-
-
-        if ((((TypeDeclarationSyntaxReceiver)context.SyntaxReceiver)?.TypeDeclarations?.Count ?? 0) > 0)
-        {
-            metadataReport.complianceReport = HandleComplianceReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
-        }
-
+        metadataReport.metricReport = HandleMetricReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
+        metadataReport.complianceReport = HandleComplianceReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
 
         string combinedReport = "{ \"name\": " + context.Compilation.AssemblyName! + "," +
                                     " \"metricReport\": "
@@ -111,10 +93,10 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
 
     }
 
-    private static string HandleMetricReportGeneration(GeneratorExecutionContext context, ClassDeclarationSyntaxReceiver receiver)
+    private static string HandleMetricReportGeneration(GeneratorExecutionContext context, TypeDeclarationSyntaxReceiver receiver)
     {
         var meteringParser = new Metrics.Parser(context.Compilation, context.ReportDiagnostic, context.CancellationToken);
-        var meteringClasses = meteringParser.GetMetricClasses(receiver.ClassDeclarations);
+        var meteringClasses = meteringParser.GetMetricClasses(receiver.TypeDeclarations);
 
         if (meteringClasses.Count == 0)
         {
@@ -129,7 +111,10 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
     }
     private static string HandleComplianceReportGeneration(GeneratorExecutionContext context, TypeDeclarationSyntaxReceiver receiver)
     {
-        _ = SymbolLoader.TryLoad(context.Compilation, out var symbolHolder);
+        if (!SymbolLoader.TryLoad(context.Compilation, out var symbolHolder))
+        {
+            return string.Empty;
+        }
         var parser = new Parser(context.Compilation, symbolHolder!, context.CancellationToken);
         var classifiedTypes = parser.GetClassifiedTypes(receiver.TypeDeclarations);
         if (classifiedTypes.Count == 0)
