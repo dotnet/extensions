@@ -4,13 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -20,34 +24,40 @@ namespace Microsoft.Extensions.AI;
 /// The draft specification this follows is available at https://opentelemetry.io/docs/specs/semconv/gen-ai/.
 /// The specification is still experimental and subject to change; as such, the telemetry output by this client is also subject to change.
 /// </remarks>
-public sealed class OpenTelemetryChatClient : DelegatingChatClient
+public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
 {
+    private const LogLevel EventLogLevel = LogLevel.Information;
+
     private readonly ActivitySource _activitySource;
     private readonly Meter _meter;
+    private readonly ILogger _logger;
 
     private readonly Histogram<int> _tokenUsageHistogram;
     private readonly Histogram<double> _operationDurationHistogram;
 
     private readonly string? _modelId;
-    private readonly string? _modelProvider;
-    private readonly string? _endpointAddress;
-    private readonly int _endpointPort;
+    private readonly string? _system;
+    private readonly string? _serverAddress;
+    private readonly int _serverPort;
 
     private JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>Initializes a new instance of the <see cref="OpenTelemetryChatClient"/> class.</summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use for emitting events.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
-    public OpenTelemetryChatClient(IChatClient innerClient, string? sourceName = null)
+    public OpenTelemetryChatClient(IChatClient innerClient, ILogger? logger = null, string? sourceName = null)
         : base(innerClient)
     {
         Debug.Assert(innerClient is not null, "Should have been validated by the base ctor");
 
+        _logger = logger ?? NullLogger.Instance;
+
         ChatClientMetadata metadata = innerClient!.Metadata;
         _modelId = metadata.ModelId;
-        _modelProvider = metadata.ProviderName;
-        _endpointAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
-        _endpointPort = metadata.ProviderUri?.Port ?? 0;
+        _system = metadata.ProviderName;
+        _serverAddress = metadata.ProviderUri?.GetLeftPart(UriPartial.Path);
+        _serverPort = metadata.ProviderUri?.Port ?? 0;
 
         string name = string.IsNullOrEmpty(sourceName) ? OpenTelemetryConsts.DefaultSourceName : sourceName!;
         _activitySource = new(name);
@@ -88,27 +98,32 @@ public sealed class OpenTelemetryChatClient : DelegatingChatClient
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether potentially sensitive information (e.g. prompts) should be included in telemetry.
+    /// Gets or sets a value indicating whether potentially sensitive information should be included in telemetry.
     /// </summary>
     /// <remarks>
-    /// The value is <see langword="false"/> by default, meaning that telemetry will include metadata such as token counts but not the raw text of prompts or completions.
+    /// The value is <see langword="false"/> by default, meaning that telemetry will include metadata such as token counts but not raw inputs
+    /// and outputs such as message content, function call arguments, and function call results.
     /// </remarks>
     public bool EnableSensitiveData { get; set; }
 
     /// <inheritdoc/>
     public override async Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(chatMessages);
         _jsonSerializerOptions.MakeReadOnly();
 
-        using Activity? activity = StartActivity(chatMessages, options);
+        using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _modelId;
 
-        ChatCompletion? response = null;
+        LogChatMessages(chatMessages);
+
+        ChatCompletion? completion = null;
         Exception? error = null;
         try
         {
-            response = await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+            completion = await base.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+            return completion;
         }
         catch (Exception ex)
         {
@@ -117,35 +132,37 @@ public sealed class OpenTelemetryChatClient : DelegatingChatClient
         }
         finally
         {
-            SetCompletionResponse(activity, requestModelId, response, error, stopwatch);
+            TraceCompletion(activity, requestModelId, completion, error, stopwatch);
         }
-
-        return response;
     }
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(
         IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        _ = Throw.IfNull(chatMessages);
         _jsonSerializerOptions.MakeReadOnly();
 
-        using Activity? activity = StartActivity(chatMessages, options);
+        using Activity? activity = CreateAndConfigureActivity(options);
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
         string? requestModelId = options?.ModelId ?? _modelId;
 
-        IAsyncEnumerable<StreamingChatCompletionUpdate> response;
+        LogChatMessages(chatMessages);
+
+        IAsyncEnumerable<StreamingChatCompletionUpdate> updates;
         try
         {
-            response = base.CompleteStreamingAsync(chatMessages, options, cancellationToken);
+            updates = base.CompleteStreamingAsync(chatMessages, options, cancellationToken);
         }
         catch (Exception ex)
         {
-            SetCompletionResponse(activity, requestModelId, null, ex, stopwatch);
+            TraceCompletion(activity, requestModelId, completion: null, ex, stopwatch);
             throw;
         }
 
-        var responseEnumerator = response.ConfigureAwait(false).GetAsyncEnumerator();
-        List<StreamingChatCompletionUpdate>? streamedContents = activity is not null ? [] : null;
+        var responseEnumerator = updates.ConfigureAwait(false).GetAsyncEnumerator();
+        List<StreamingChatCompletionUpdate> trackedUpdates = [];
+        Exception? error = null;
         try
         {
             while (true)
@@ -162,167 +179,154 @@ public sealed class OpenTelemetryChatClient : DelegatingChatClient
                 }
                 catch (Exception ex)
                 {
-                    SetCompletionResponse(activity, requestModelId, null, ex, stopwatch);
+                    error = ex;
                     throw;
                 }
 
-                streamedContents?.Add(update);
+                trackedUpdates.Add(update);
                 yield return update;
             }
         }
         finally
         {
-            if (activity is not null)
-            {
-                UsageContent? usageContent = streamedContents?.SelectMany(c => c.Contents).OfType<UsageContent>().LastOrDefault();
-                SetCompletionResponse(
-                    activity,
-                    stopwatch,
-                    requestModelId,
-                    OrganizeStreamingContent(streamedContents),
-                    streamedContents?.SelectMany(c => c.Contents).OfType<FunctionCallContent>(),
-                    usage: usageContent?.Details);
-            }
+            TraceCompletion(activity, requestModelId, ComposeStreamingUpdatesIntoChatCompletion(trackedUpdates), error, stopwatch);
 
             await responseEnumerator.DisposeAsync();
         }
     }
 
-    /// <summary>Gets a value indicating whether diagnostics are enabled.</summary>
-    private bool Enabled => _activitySource.HasListeners();
-
-    /// <summary>Convert chat history to a string aligned with the OpenAI format.</summary>
-    private static string ToOpenAIFormat(IEnumerable<ChatMessage> messages, JsonSerializerOptions serializerOptions)
+    /// <summary>Creates a <see cref="ChatCompletion"/> from a collection of <see cref="StreamingChatCompletionUpdate"/> instances.</summary>
+    /// <remarks>
+    /// This only propagates information that's later used by the telemetry. If additional information from the <see cref="ChatCompletion"/>
+    /// is needed, this implementation should be updated to include it.
+    /// </remarks>
+    private static ChatCompletion ComposeStreamingUpdatesIntoChatCompletion(
+        List<StreamingChatCompletionUpdate> updates)
     {
-        var sb = new StringBuilder().Append('[');
-
-        string messageSeparator = string.Empty;
-        foreach (var message in messages)
-        {
-            _ = sb.Append(messageSeparator);
-            messageSeparator = ", \n";
-
-            string text = string.Concat(message.Contents.OfType<TextContent>().Select(c => c.Text));
-            _ = sb.Append("{\"role\": \"").Append(message.Role).Append("\", \"content\": ").Append(JsonSerializer.Serialize(text, serializerOptions.GetTypeInfo(typeof(string))));
-
-            if (message.Contents.OfType<FunctionCallContent>().Any())
-            {
-                _ = sb.Append(", \"tool_calls\": ").Append('[');
-
-                string messageItemSeparator = string.Empty;
-                foreach (var functionCall in message.Contents.OfType<FunctionCallContent>())
-                {
-                    _ = sb.Append(messageItemSeparator);
-                    messageItemSeparator = ", \n";
-
-                    _ = sb.Append("{\"id\": \"").Append(functionCall.CallId)
-                          .Append("\", \"function\": {\"arguments\": ").Append(JsonSerializer.Serialize(functionCall.Arguments, serializerOptions.GetTypeInfo(typeof(IDictionary<string, object?>))))
-                          .Append(", \"name\": \"").Append(functionCall.Name)
-                          .Append("\"}, \"type\": \"function\"}");
-                }
-
-                _ = sb.Append(']');
-            }
-
-            _ = sb.Append('}');
-        }
-
-        _ = sb.Append(']');
-        return sb.ToString();
-    }
-
-    /// <summary>Organize streaming content by choice index.</summary>
-    private static Dictionary<int, List<StreamingChatCompletionUpdate>> OrganizeStreamingContent(IEnumerable<StreamingChatCompletionUpdate>? contents)
-    {
+        // Group updates by choice index.
         Dictionary<int, List<StreamingChatCompletionUpdate>> choices = [];
-        if (contents is null)
+        foreach (var update in updates)
         {
-            return choices;
-        }
-
-        foreach (var content in contents)
-        {
-            if (!choices.TryGetValue(content.ChoiceIndex, out var choiceContents))
+            if (!choices.TryGetValue(update.ChoiceIndex, out var choiceContents))
             {
-                choices[content.ChoiceIndex] = choiceContents = [];
+                choices[update.ChoiceIndex] = choiceContents = [];
             }
 
-            choiceContents.Add(content);
+            choiceContents.Add(update);
         }
 
-        return choices;
+        // Add a ChatMessage for each choice.
+        string? id = null;
+        ChatFinishReason? finishReason = null;
+        string? modelId = null;
+        List<ChatMessage> messages = new(choices.Count);
+        foreach (var choice in choices.OrderBy(c => c.Key))
+        {
+            ChatRole? role = null;
+            List<AIContent> items = [];
+            foreach (var update in choice.Value)
+            {
+                id ??= update.CompletionId;
+                finishReason ??= update.FinishReason;
+                role ??= update.Role;
+                items.AddRange(update.Contents);
+                modelId ??= update.Contents.FirstOrDefault(c => c.ModelId is not null)?.ModelId;
+            }
+
+            messages.Add(new ChatMessage(role ?? ChatRole.Assistant, items));
+        }
+
+        return new(messages)
+        {
+            CompletionId = id,
+            FinishReason = finishReason,
+            ModelId = modelId,
+            Usage = updates.SelectMany(c => c.Contents).OfType<UsageContent>().LastOrDefault()?.Details,
+        };
     }
 
     /// <summary>Creates an activity for a chat completion request, or returns null if not enabled.</summary>
-    private Activity? StartActivity(IList<ChatMessage> chatMessages, ChatOptions? options)
+    private Activity? CreateAndConfigureActivity(ChatOptions? options)
     {
         Activity? activity = null;
-        if (Enabled)
+        if (_activitySource.HasListeners())
         {
             string? modelId = options?.ModelId ?? _modelId;
 
             activity = _activitySource.StartActivity(
-                $"chat.completions {modelId}",
-                ActivityKind.Client,
-                default(ActivityContext),
-                [
-                    new(OpenTelemetryConsts.GenAI.Operation.Name, "chat"),
-                    new(OpenTelemetryConsts.GenAI.Request.Model, modelId),
-                    new(OpenTelemetryConsts.GenAI.System, _modelProvider),
-                ]);
+                $"{OpenTelemetryConsts.GenAI.Chat} {modelId}",
+                ActivityKind.Client);
 
             if (activity is not null)
             {
-                if (_endpointAddress is not null)
+                _ = activity
+                    .AddTag(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Chat)
+                    .AddTag(OpenTelemetryConsts.GenAI.Request.Model, modelId)
+                    .AddTag(OpenTelemetryConsts.GenAI.SystemName, _system);
+
+                if (_serverAddress is not null)
                 {
                     _ = activity
-                        .SetTag(OpenTelemetryConsts.Server.Address, _endpointAddress)
-                        .SetTag(OpenTelemetryConsts.Server.Port, _endpointPort);
+                        .AddTag(OpenTelemetryConsts.Server.Address, _serverAddress)
+                        .AddTag(OpenTelemetryConsts.Server.Port, _serverPort);
                 }
 
                 if (options is not null)
                 {
                     if (options.FrequencyPenalty is float frequencyPenalty)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.FrequencyPenalty, frequencyPenalty);
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.FrequencyPenalty, frequencyPenalty);
                     }
 
                     if (options.MaxOutputTokens is int maxTokens)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.MaxTokens, maxTokens);
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.MaxTokens, maxTokens);
                     }
 
                     if (options.PresencePenalty is float presencePenalty)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.PresencePenalty, presencePenalty);
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PresencePenalty, presencePenalty);
                     }
 
                     if (options.StopSequences is IList<string> stopSequences)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.StopSequences, $"[{string.Join(", ", stopSequences.Select(s => $"\"{s}\""))}]");
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.StopSequences, $"[{string.Join(", ", stopSequences.Select(s => $"\"{s}\""))}]");
                     }
 
                     if (options.Temperature is float temperature)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.Temperature, temperature);
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.Temperature, temperature);
                     }
 
-                    if (options.AdditionalProperties?.TryGetValue("top_k", out double topK) is true)
+                    if (options.TopK is int topK)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.TopK, topK);
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.TopK, topK);
                     }
 
                     if (options.TopP is float top_p)
                     {
-                        _ = activity.SetTag(OpenTelemetryConsts.GenAI.Request.TopP, top_p);
+                        _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.TopP, top_p);
                     }
-                }
 
-                if (EnableSensitiveData)
-                {
-                    _ = activity.AddEvent(new ActivityEvent(
-                        OpenTelemetryConsts.GenAI.Content.Prompt,
-                        tags: new ActivityTagsCollection([new(OpenTelemetryConsts.GenAI.Prompt, ToOpenAIFormat(chatMessages, _jsonSerializerOptions))])));
+                    if (_system is not null)
+                    {
+                        if (options.ResponseFormat is not null)
+                        {
+                            string responseFormat = options.ResponseFormat switch
+                            {
+                                ChatResponseFormatText => "text",
+                                ChatResponseFormatJson { Schema: null } => "json_schema",
+                                ChatResponseFormatJson => "json_object",
+                                _ => "_OTHER",
+                            };
+                            _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PerProvider(_system, "response_format"), responseFormat);
+                        }
+
+                        if (options.AdditionalProperties?.TryGetValue("seed", out long seed) is true)
+                        {
+                            _ = activity.AddTag(OpenTelemetryConsts.GenAI.Request.PerProvider(_system, "seed"), seed);
+                        }
+                    }
                 }
             }
         }
@@ -331,23 +335,18 @@ public sealed class OpenTelemetryChatClient : DelegatingChatClient
     }
 
     /// <summary>Adds chat completion information to the activity.</summary>
-    private void SetCompletionResponse(
+    private void TraceCompletion(
         Activity? activity,
         string? requestModelId,
-        ChatCompletion? completions,
+        ChatCompletion? completion,
         Exception? error,
         Stopwatch? stopwatch)
     {
-        if (!Enabled)
-        {
-            return;
-        }
-
         if (_operationDurationHistogram.Enabled && stopwatch is not null)
         {
             TagList tags = default;
 
-            AddMetricTags(ref tags, requestModelId, completions);
+            AddMetricTags(ref tags, requestModelId, completion);
             if (error is not null)
             {
                 tags.Add(OpenTelemetryConsts.Error.Type, error.GetType().FullName);
@@ -356,13 +355,13 @@ public sealed class OpenTelemetryChatClient : DelegatingChatClient
             _operationDurationHistogram.Record(stopwatch.Elapsed.TotalSeconds, tags);
         }
 
-        if (_tokenUsageHistogram.Enabled && completions?.Usage is { } usage)
+        if (_tokenUsageHistogram.Enabled && completion?.Usage is { } usage)
         {
             if (usage.InputTokenCount is int inputTokens)
             {
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, "input");
-                AddMetricTags(ref tags, requestModelId, completions);
+                AddMetricTags(ref tags, requestModelId, completion);
                 _tokenUsageHistogram.Record(inputTokens);
             }
 
@@ -370,139 +369,230 @@ public sealed class OpenTelemetryChatClient : DelegatingChatClient
             {
                 TagList tags = default;
                 tags.Add(OpenTelemetryConsts.GenAI.Token.Type, "output");
-                AddMetricTags(ref tags, requestModelId, completions);
+                AddMetricTags(ref tags, requestModelId, completion);
                 _tokenUsageHistogram.Record(outputTokens);
             }
         }
 
-        if (activity is null)
-        {
-            return;
-        }
-
         if (error is not null)
         {
-            _ = activity
-                .SetTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
+            _ = activity?
+                .AddTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
                 .SetStatus(ActivityStatusCode.Error, error.Message);
-            return;
         }
 
-        if (completions is not null)
+        if (completion is not null)
         {
-            if (completions.FinishReason is ChatFinishReason finishReason)
+            LogChatCompletion(completion);
+
+            if (activity is not null)
             {
-#pragma warning disable CA1308 // Normalize strings to uppercase
-                _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.FinishReasons, $"[\"{finishReason.Value.ToLowerInvariant()}\"]");
-#pragma warning restore CA1308
-            }
-
-            if (!string.IsNullOrWhiteSpace(completions.CompletionId))
-            {
-                _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.Id, completions.CompletionId);
-            }
-
-            if (completions.ModelId is not null)
-            {
-                _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.Model, completions.ModelId);
-            }
-
-            if (completions.Usage?.InputTokenCount is int inputTokens)
-            {
-                _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.InputTokens, inputTokens);
-            }
-
-            if (completions.Usage?.OutputTokenCount is int outputTokens)
-            {
-                _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, outputTokens);
-            }
-
-            if (EnableSensitiveData)
-            {
-                _ = activity.AddEvent(new ActivityEvent(
-                    OpenTelemetryConsts.GenAI.Content.Completion,
-                    tags: new ActivityTagsCollection([new(OpenTelemetryConsts.GenAI.Completion, ToOpenAIFormat(completions.Choices, _jsonSerializerOptions))])));
-            }
-        }
-    }
-
-    /// <summary>Adds streaming chat completion information to the activity.</summary>
-    private void SetCompletionResponse(
-        Activity? activity,
-        Stopwatch? stopwatch,
-        string? requestModelId,
-        Dictionary<int, List<StreamingChatCompletionUpdate>> choices,
-        IEnumerable<FunctionCallContent>? toolCalls,
-        UsageDetails? usage)
-    {
-        if (activity is null || !Enabled || choices.Count == 0)
-        {
-            return;
-        }
-
-        string? id = null;
-        ChatFinishReason? finishReason = null;
-        string? modelId = null;
-        List<ChatMessage> messages = new(choices.Count);
-
-        foreach (var choice in choices)
-        {
-            ChatRole? role = null;
-            List<AIContent> items = [];
-            foreach (var update in choice.Value)
-            {
-                id ??= update.CompletionId;
-                role ??= update.Role;
-                finishReason ??= update.FinishReason;
-                foreach (AIContent content in update.Contents)
+                if (completion.FinishReason is ChatFinishReason finishReason)
                 {
-                    items.Add(content);
-                    modelId ??= content.ModelId;
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.FinishReasons, $"[\"{finishReason.Value.ToLowerInvariant()}\"]");
+#pragma warning restore CA1308
+                }
+
+                if (!string.IsNullOrWhiteSpace(completion.CompletionId))
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Id, completion.CompletionId);
+                }
+
+                if (completion.ModelId is not null)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.Model, completion.ModelId);
+                }
+
+                if (completion.Usage?.InputTokenCount is int inputTokens)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.InputTokens, inputTokens);
+                }
+
+                if (completion.Usage?.OutputTokenCount is int outputTokens)
+                {
+                    _ = activity.AddTag(OpenTelemetryConsts.GenAI.Response.OutputTokens, outputTokens);
                 }
             }
-
-            messages.Add(new ChatMessage(role ?? ChatRole.Assistant, items));
         }
 
-        if (toolCalls is not null && messages.FirstOrDefault()?.Contents is { } c)
+        void AddMetricTags(ref TagList tags, string? requestModelId, ChatCompletion? completions)
         {
-            foreach (var functionCall in toolCalls)
+            tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Chat);
+
+            if (requestModelId is not null)
             {
-                c.Add(functionCall);
+                tags.Add(OpenTelemetryConsts.GenAI.Request.Model, requestModelId);
+            }
+
+            tags.Add(OpenTelemetryConsts.GenAI.SystemName, _system);
+
+            if (_serverAddress is string endpointAddress)
+            {
+                tags.Add(OpenTelemetryConsts.Server.Address, endpointAddress);
+                tags.Add(OpenTelemetryConsts.Server.Port, _serverPort);
+            }
+
+            if (completions?.ModelId is string responseModel)
+            {
+                tags.Add(OpenTelemetryConsts.GenAI.Response.Model, responseModel);
+            }
+        }
+    }
+
+    private void LogChatMessages(IEnumerable<ChatMessage> messages)
+    {
+        if (!_logger.IsEnabled(EventLogLevel))
+        {
+            return;
+        }
+
+        foreach (ChatMessage message in messages)
+        {
+            if (message.Role == ChatRole.Assistant)
+            {
+                Log(new(1, OpenTelemetryConsts.GenAI.Assistant.Message),
+                    JsonSerializer.Serialize(CreateAssistantEvent(message), OtelContext.Default.AssistantEvent));
+            }
+            else if (message.Role == ChatRole.Tool)
+            {
+                foreach (FunctionResultContent frc in message.Contents.OfType<FunctionResultContent>())
+                {
+                    Log(new(1, OpenTelemetryConsts.GenAI.Tool.Message),
+                        JsonSerializer.Serialize(new()
+                        {
+                            Id = frc.CallId,
+                            Content = EnableSensitiveData && frc.Result is object result ?
+                                JsonSerializer.SerializeToNode(result, _jsonSerializerOptions.GetTypeInfo(result.GetType())) :
+                                null,
+                        }, OtelContext.Default.ToolEvent));
+                }
+            }
+            else
+            {
+                Log(new(1, message.Role == ChatRole.System ? OpenTelemetryConsts.GenAI.System.Message : OpenTelemetryConsts.GenAI.User.Message),
+                    JsonSerializer.Serialize(new()
+                    {
+                        Role = message.Role != ChatRole.System && message.Role != ChatRole.User && !string.IsNullOrWhiteSpace(message.Role.Value) ? message.Role.Value : null,
+                        Content = GetMessageContent(message),
+                    }, OtelContext.Default.SystemOrUserEvent));
+            }
+        }
+    }
+
+    private void LogChatCompletion(ChatCompletion completion)
+    {
+        if (!_logger.IsEnabled(EventLogLevel))
+        {
+            return;
+        }
+
+        EventId id = new(1, OpenTelemetryConsts.GenAI.Choice);
+        int choiceCount = completion.Choices.Count;
+        for (int choiceIndex = 0; choiceIndex < choiceCount; choiceIndex++)
+        {
+            Log(id, JsonSerializer.Serialize(new()
+            {
+                FinishReason = completion.FinishReason?.Value ?? "error",
+                Index = choiceIndex,
+                Message = CreateAssistantEvent(completion.Choices[choiceIndex]),
+            }, OtelContext.Default.ChoiceEvent));
+        }
+    }
+
+    private void Log(EventId id, [StringSyntax(StringSyntaxAttribute.Json)] string eventBodyJson)
+    {
+        // This is not the idiomatic way to log, but it's necessary for now in order to structure
+        // the data in a way that the OpenTelemetry collector can work with it. The event body
+        // can be very large and should not be logged as an attribute.
+
+        KeyValuePair<string, object?>[] tags =
+        [
+            new(OpenTelemetryConsts.Event.Name, id.Name),
+            new(OpenTelemetryConsts.GenAI.SystemName, _system),
+        ];
+
+        _logger.Log(EventLogLevel, id, tags, null, (_, __) => eventBodyJson);
+    }
+
+    private AssistantEvent CreateAssistantEvent(ChatMessage message)
+    {
+        var toolCalls = message.Contents.OfType<FunctionCallContent>().Select(fc => new ToolCall
+        {
+            Id = fc.CallId,
+            Function = new()
+            {
+                Name = fc.Name,
+                Arguments = EnableSensitiveData ?
+                    JsonSerializer.SerializeToNode(fc.Arguments, _jsonSerializerOptions.GetTypeInfo(typeof(IDictionary<string, object?>))) :
+                    null,
+            },
+        }).ToArray();
+
+        return new()
+        {
+            Content = GetMessageContent(message),
+            ToolCalls = toolCalls.Length > 0 ? toolCalls : null,
+        };
+    }
+
+    private string? GetMessageContent(ChatMessage message)
+    {
+        if (EnableSensitiveData)
+        {
+            string content = string.Concat(message.Contents.OfType<TextContent>().Select(c => c.Text));
+            if (content.Length > 0)
+            {
+                return content;
             }
         }
 
-        ChatCompletion completion = new(messages)
-        {
-            CompletionId = id,
-            FinishReason = finishReason,
-            ModelId = modelId,
-            Usage = usage,
-        };
-
-        SetCompletionResponse(activity, requestModelId, completion, error: null, stopwatch);
+        return null;
     }
 
-    private void AddMetricTags(ref TagList tags, string? requestModelId, ChatCompletion? completions)
+    private sealed class SystemOrUserEvent
     {
-        tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, "chat");
-
-        if (requestModelId is not null)
-        {
-            tags.Add(OpenTelemetryConsts.GenAI.Request.Model, requestModelId);
-        }
-
-        tags.Add(OpenTelemetryConsts.GenAI.System, _modelProvider);
-
-        if (_endpointAddress is string endpointAddress)
-        {
-            tags.Add(OpenTelemetryConsts.Server.Address, endpointAddress);
-            tags.Add(OpenTelemetryConsts.Server.Port, _endpointPort);
-        }
-
-        if (completions?.ModelId is string responseModel)
-        {
-            tags.Add(OpenTelemetryConsts.GenAI.Response.Model, responseModel);
-        }
+        public string? Role { get; set; }
+        public string? Content { get; set; }
     }
+
+    private sealed class AssistantEvent
+    {
+        public string? Content { get; set; }
+        public ToolCall[]? ToolCalls { get; set; }
+    }
+
+    private sealed class ToolEvent
+    {
+        public string? Id { get; set; }
+        public JsonNode? Content { get; set; }
+    }
+
+    private sealed class ChoiceEvent
+    {
+        public string? FinishReason { get; set; }
+        public int Index { get; set; }
+        public AssistantEvent? Message { get; set; }
+    }
+
+    private sealed class ToolCall
+    {
+        public string? Id { get; set; }
+        public string? Type { get; set; } = "function";
+        public ToolCallFunction? Function { get; set; }
+    }
+
+    private sealed class ToolCallFunction
+    {
+        public string? Name { get; set; }
+        public JsonNode? Arguments { get; set; }
+    }
+
+    [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonSerializable(typeof(SystemOrUserEvent))]
+    [JsonSerializable(typeof(AssistantEvent))]
+    [JsonSerializable(typeof(ToolEvent))]
+    [JsonSerializable(typeof(ChoiceEvent))]
+    [JsonSerializable(typeof(object))]
+    private sealed partial class OtelContext : JsonSerializerContext;
 }

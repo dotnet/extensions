@@ -259,7 +259,6 @@ public sealed class OllamaChatClient : IChatClient
             TransferMetadataValue<float>(nameof(OllamaRequestOptions.repeat_penalty), (options, value) => options.repeat_penalty = value);
             TransferMetadataValue<long>(nameof(OllamaRequestOptions.seed), (options, value) => options.seed = value);
             TransferMetadataValue<float>(nameof(OllamaRequestOptions.tfs_z), (options, value) => options.tfs_z = value);
-            TransferMetadataValue<int>(nameof(OllamaRequestOptions.top_k), (options, value) => options.top_k = value);
             TransferMetadataValue<float>(nameof(OllamaRequestOptions.typical_p), (options, value) => options.typical_p = value);
             TransferMetadataValue<bool>(nameof(OllamaRequestOptions.use_mmap), (options, value) => options.use_mmap = value);
             TransferMetadataValue<bool>(nameof(OllamaRequestOptions.use_mlock), (options, value) => options.use_mlock = value);
@@ -293,6 +292,11 @@ public sealed class OllamaChatClient : IChatClient
             if (options.TopP is float topP)
             {
                 (request.Options ??= new()).top_p = topP;
+            }
+
+            if (options.TopK is int topK)
+            {
+                (request.Options ??= new()).top_k = topK;
             }
         }
 

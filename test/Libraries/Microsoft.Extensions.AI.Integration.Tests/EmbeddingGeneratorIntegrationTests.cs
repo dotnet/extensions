@@ -111,7 +111,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
             .Build();
 
         var embeddingGenerator = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
-            .UseOpenTelemetry(sourceName)
+            .UseOpenTelemetry(sourceName: sourceName)
             .Use(CreateEmbeddingGenerator()!);
 
         _ = await embeddingGenerator.GenerateAsync("Hello, world!");

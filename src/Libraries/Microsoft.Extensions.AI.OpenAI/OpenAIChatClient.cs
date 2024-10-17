@@ -50,11 +50,10 @@ public sealed partial class OpenAIChatClient : IChatClient
         // The endpoint isn't currently exposed, so use reflection to get at it, temporarily. Once packages
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
-        string providerName = openAIClient.GetType().Name.StartsWith("Azure", StringComparison.Ordinal) ? "azureopenai" : "openai";
         Uri providerUrl = typeof(OpenAIClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(openAIClient) as Uri ?? _defaultOpenAIEndpoint;
 
-        Metadata = new(providerName, providerUrl, modelId);
+        Metadata = new("openai", providerUrl, modelId);
     }
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIChatClient"/> class for the specified <see cref="ChatClient"/>.</summary>
@@ -69,13 +68,12 @@ public sealed partial class OpenAIChatClient : IChatClient
         // The endpoint and model aren't currently exposed, so use reflection to get at them, temporarily. Once packages
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
-        string providerName = chatClient.GetType().Name.StartsWith("Azure", StringComparison.Ordinal) ? "azureopenai" : "openai";
         Uri providerUrl = typeof(ChatClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatClient) as Uri ?? _defaultOpenAIEndpoint;
         string? model = typeof(ChatClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatClient) as string;
 
-        Metadata = new(providerName, providerUrl, model);
+        Metadata = new("openai", providerUrl, model);
     }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>

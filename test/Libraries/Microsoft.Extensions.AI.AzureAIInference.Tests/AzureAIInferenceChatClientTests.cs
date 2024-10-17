@@ -47,7 +47,7 @@ public class AzureAIInferenceChatClientTests
         ChatCompletionsClient client = new(endpoint, new AzureKeyCredential("key"));
 
         IChatClient chatClient = client.AsChatClient(model);
-        Assert.Equal("AzureAIInference", chatClient.Metadata.ProviderName);
+        Assert.Equal("az.ai.inference", chatClient.Metadata.ProviderName);
         Assert.Equal(endpoint, chatClient.Metadata.ProviderUri);
         Assert.Equal(model, chatClient.Metadata.ModelId);
     }

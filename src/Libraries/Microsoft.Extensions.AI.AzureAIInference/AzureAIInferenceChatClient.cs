@@ -48,7 +48,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
         var providerUrl = typeof(ChatCompletionsClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(chatCompletionsClient) as Uri;
 
-        Metadata = new("AzureAIInference", providerUrl, modelId);
+        Metadata = new("az.ai.inference", providerUrl, modelId);
     }
 
     /// <summary>Gets or sets <see cref="JsonSerializerOptions"/> to use for any serialization activities related to tool call arguments and results.</summary>
@@ -296,13 +296,19 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 }
             }
 
+            // These properties are strongly-typed on ChatOptions but not on ChatCompletionsOptions.
+            if (options.TopK is int topK)
+            {
+                result.AdditionalProperties["top_k"] = BinaryData.FromObjectAsJson(topK, JsonContext.Default.Options);
+            }
+
             if (options.AdditionalProperties is { } props)
             {
                 foreach (var prop in props)
                 {
                     switch (prop.Key)
                     {
-                        // These properties are strongly-typed on the ChatCompletionsOptions class.
+                        // These properties are strongly-typed on the ChatCompletionsOptions class but not on the ChatOptions class.
                         case nameof(result.Seed) when prop.Value is long seed:
                             result.Seed = seed;
                             break;
@@ -498,5 +504,6 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
     [JsonSerializable(typeof(AzureAIChatToolJson))]
     [JsonSerializable(typeof(IDictionary<string, object?>))]
     [JsonSerializable(typeof(JsonElement))]
+    [JsonSerializable(typeof(int))]
     private sealed partial class JsonContext : JsonSerializerContext;
 }
