@@ -1,0 +1,7 @@
+D:\a\_work\1\s\artifacts\Release\packages\internal\Microsoft.AspNetCore.BenchmarkRunner.Sources.2.3.0.symbols.nupkg|;;
+D:\a\_work\1\s\artifacts\Release\packages\internal\Microsoft.Extensions.ActivatorUtilities.Sources.2.3.0.symbols.nupkg|;;
+D:\a\_work\1\s\artifacts\Release\packages\internal\Microsoft.Extensions.CommandLineUtils.Sources.2.3.0.symbols.nupkg|;;
+D:\a\_work\1\s\artifacts\Release\packages\internal\Microsoft.Extensions.HashCodeCombiner.Sources.2.3.0.symbols.nupkg|;;
+D:\a\_work\1\s\artifacts\Release\packages\internal\Microsoft.Extensions.ParameterDefaultValue.Sources.2.3.0.symbols.nupkg|;;
+D:\a\_work\1\s\artifacts\Release\packages\internal\Microsoft.Extensions.TypeNameHelper.Sources.2.3.0.symbols.nupkg|;;
+D:\a\_work\1\s\artifacts\Release\packages\internal\Microsoft.Extensions.ValueStopwatch.Sources.2.3.0.symbols.nupkg|;;

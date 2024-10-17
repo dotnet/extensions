@@ -17,6 +17,15 @@ pr:
 
 name: $(Date:yyyyMMdd).$(Rev:rr)
 
+variables:
+- name: TeamName
+  value: AspNetCore
+- ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
+  - name: PB_ISFINALBUILD
+    value: ${{ coalesce(variables.PB_ISFINALBUILD, 'true') }}
+  - name: PB_SignType
+    value: ${{ coalesce(variables.PB_SignType, 'real') }}
+
 resources:
   repositories:
   # Repo: 1ESPipelineTemplates/1ESPipelineTemplates
