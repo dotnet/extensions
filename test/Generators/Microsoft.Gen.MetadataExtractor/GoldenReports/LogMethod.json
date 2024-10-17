@@ -1,7 +1,6 @@
-
+{ "Name": "test.dll", "ComplianceReport":
 {
-    "Name": "test.dll",
-    "ComplianceReport":{"Types": [
+    "Types": [
         {
             "Name": "Test.LogMethod",
             "Logging Methods": [
@@ -30,6 +29,5 @@
                 }
             ]
         }
-    ]}
-    ,"MetricReport":[]
-}
+    ]
+} , "MetricReport": [] }

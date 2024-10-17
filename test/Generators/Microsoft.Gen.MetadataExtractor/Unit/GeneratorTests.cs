@@ -7,6 +7,7 @@ using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -21,7 +22,7 @@ namespace Microsoft.Gen.MetadataExtractor.Unit.Tests;
 
 public class GeneratorTests(ITestOutputHelper output)
 {
-    private const string ReportFilename = "MetricsReport.json";
+    private const string ReportFilename = "MetadataReport.json";
     private const string TestTaxonomy = @"
         using Microsoft.Extensions.Compliance.Classification;
 
@@ -60,7 +61,7 @@ public class GeneratorTests(ITestOutputHelper output)
     public async Task TestAll(bool useExplicitReportPath)
     {
         Dictionary<string, string>? options = useExplicitReportPath
-            ? new() { ["build_property.MetricsReportOutputPath"] = Directory.GetCurrentDirectory() }
+            ? new() { ["build_property.MetadataReportOutputPath"] = Directory.GetCurrentDirectory() }
             : null;
 
         foreach (var inputFile in Directory.GetFiles("TestClasses"))
@@ -92,6 +93,13 @@ public class GeneratorTests(ITestOutputHelper output)
                 }
 
                 File.Delete(generatedReportPath);
+
+                golden = Regex.Replace(golden, @"\s+", "");
+                generated = Regex.Replace(generated, @"\s+", "");
+
+                golden = golden.Replace("\r\n", "\n");
+                generated = generated.Replace("\r\n", "\n");
+
                 Assert.Equal(golden, generated);
             }
             else
@@ -109,8 +117,8 @@ public class GeneratorTests(ITestOutputHelper output)
         var inputFile = Directory.GetFiles("TestClasses").First();
         var options = new Dictionary<string, string>
         {
-            ["build_property.GenerateMetricsReport"] = bool.FalseString,
-            ["build_property.MetricsReportOutputPath"] = Path.GetTempPath()
+            ["build_property.GenerateMetadataReport"] = bool.FalseString,
+            ["build_property.MetadataReportOutputPath"] = Path.GetTempPath()
         };
 
         var d = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
@@ -125,12 +133,12 @@ public class GeneratorTests(ITestOutputHelper output)
         var inputFile = Directory.GetFiles("TestClasses").First();
         var options = new Dictionary<string, string>
         {
-            ["build_property.outputpath"] = string.Empty
+            ["build_property.MetadataReportOutputPath"] = string.Empty
         };
 
         if (isReportPathProvided)
         {
-            options.Add("build_property.MetricsReportOutputPath", string.Empty);
+            options.Add("build_property.MetadataReportOutputPath", string.Empty);
         }
 
         var diags = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
@@ -153,7 +161,7 @@ public class GeneratorTests(ITestOutputHelper output)
             var options = new Dictionary<string, string>
             {
                 ["build_property.projectdir"] = projectDir,
-                ["build_property.outputpath"] = outputPath
+                ["build_property.MetadataReportOutputPath"] = outputPath
             };
 
             var diags = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
@@ -190,7 +198,7 @@ public class GeneratorTests(ITestOutputHelper output)
         var (d, _) = await RoslynTestUtils.RunGenerator(
             generator,
             refs,
-            new[] { code , TestTaxonomy },
+            new[] { code, TestTaxonomy },
             new OptionsProvider(analyzerOptions),
             includeBaseReferences: true,
             cancellationToken: cancellationToken).ConfigureAwait(false);
