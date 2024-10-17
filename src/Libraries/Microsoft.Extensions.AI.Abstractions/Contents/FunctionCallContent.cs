@@ -64,14 +64,12 @@ public sealed class FunctionCallContent : AIContent
     /// <param name="callId">The function call ID.</param>
     /// <param name="name">The function name.</param>
     /// <param name="argumentParser">The parsing implementation converting the encoding to a dictionary of arguments.</param>
-    /// <param name="exceptionFilter">Filters potential parsing exceptions that should be caught and included in the result.</param>
     /// <returns>A new instance of <see cref="FunctionCallContent"/> containing the parse result.</returns>
     public static FunctionCallContent CreateFromParsedArguments<TEncoding>(
         TEncoding encodedArguments,
         string callId,
         string name,
-        Func<TEncoding, IDictionary<string, object?>?> argumentParser,
-        Func<Exception, bool>? exceptionFilter = null)
+        Func<TEncoding, IDictionary<string, object?>?> argumentParser)
     {
         _ = Throw.IfNull(callId);
         _ = Throw.IfNull(name);
@@ -81,14 +79,16 @@ public sealed class FunctionCallContent : AIContent
         IDictionary<string, object?>? arguments = null;
         Exception? parsingException = null;
 
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
             arguments = argumentParser(encodedArguments);
         }
-        catch (Exception ex) when (exceptionFilter is null || exceptionFilter(ex))
+        catch (Exception ex)
         {
             parsingException = new InvalidOperationException("Error parsing function call arguments.", ex);
         }
+#pragma warning restore CA1031 // Do not catch general exception types
 
         return new FunctionCallContent(callId, name, arguments)
         {
