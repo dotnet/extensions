@@ -50,14 +50,7 @@ public class MetricsReportsGenerator : ISourceGenerator
             return;
         }
 
-        var meteringParser = new Metrics.Parser(context.Compilation, context.ReportDiagnostic, context.CancellationToken);
 
-        var meteringClasses = meteringParser.GetMetricClasses(receiver.ClassDeclarations);
-
-        if (meteringClasses.Count == 0)
-        {
-            return;
-        }
 
         var options = context.AnalyzerConfigOptions.GlobalOptions;
 
@@ -82,10 +75,19 @@ public class MetricsReportsGenerator : ISourceGenerator
             return;
         }
 
+        var meteringParser = new Metrics.Parser(context.Compilation, context.ReportDiagnostic, context.CancellationToken);
+        var meteringClasses = meteringParser.GetMetricClasses(receiver.ClassDeclarations);
+
+        if (meteringClasses.Count == 0)
+        {
+            return;
+        }
+
+
         _ = options.TryGetValue(RootNamespace, out var rootNamespace);
 
+        var reportedMetrics = MetricsReportsHelpers.MapToCommonModel(meteringClasses, rootNamespace);
         var emitter = new MetricDefinitionEmitter();
-        var reportedMetrics = MapToCommonModel(meteringClasses, rootNamespace);
         var report = emitter.GenerateReport(reportedMetrics, context.CancellationToken);
 
         // File IO has been marked as banned for use in analyzers, and an alternate should be used instead
@@ -96,22 +98,5 @@ public class MetricsReportsGenerator : ISourceGenerator
 #pragma warning restore RS1035 // Do not use APIs banned for analyzers
     }
 
-    private static ReportedMetricClass[] MapToCommonModel(IReadOnlyList<MetricType> meteringClasses, string? rootNamespace)
-    {
-        var reportedMetrics = meteringClasses
-            .Select(meteringClass => new ReportedMetricClass(
-                Name: meteringClass.Name,
-                RootNamespace: rootNamespace ?? meteringClass.Namespace,
-                Constraints: meteringClass.Constraints,
-                Modifiers: meteringClass.Modifiers,
-                Methods: meteringClass.Methods.Select(meteringMethod => new ReportedMetricMethod(
-                    MetricName: meteringMethod.MetricName ?? "(Missing Name)",
-                    Summary: meteringMethod.XmlDefinition ?? "(Missing Summary)",
-                    Kind: meteringMethod.InstrumentKind,
-                    Dimensions: meteringMethod.TagKeys,
-                    DimensionsDescriptions: meteringMethod.TagDescriptionDictionary))
-                .ToArray()));
 
-        return reportedMetrics.ToArray();
-    }
 }
