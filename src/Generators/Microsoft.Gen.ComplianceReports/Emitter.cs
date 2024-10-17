@@ -26,7 +26,9 @@ internal sealed class Emitter : EmitterBase
         OutObject(() =>
         {
             if (includeName)
+            {
                 OutNameValue("Name", assemblyName);
+            }
 
             OutArray("Types", () =>
             {
