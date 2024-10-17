@@ -207,6 +207,34 @@ public class ChatClientStructuredOutputExtensionsTests
     }
 
     [Fact]
+    public async Task CanUseNativeStructuredOutputWithArray()
+    {
+        var expectedResult = new[] { new Animal { Id = 1, FullName = "Tigger", Species = Species.Tiger } };
+        var payload = new { data = expectedResult };
+        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(payload))]);
+
+        using var client = new TestChatClient
+        {
+            CompleteAsyncCallback = (messages, options, cancellationToken) => Task.FromResult(expectedCompletion)
+        };
+
+        var chatHistory = new List<ChatMessage> { new(ChatRole.User, "Hello") };
+        var response = await client.CompleteAsync<Animal[]>(chatHistory, useNativeJsonSchema: true);
+
+        // The completion contains the deserialized result and other completion properties
+        Assert.Single(response.Result!);
+        Assert.Equal("Tigger", response.Result[0].FullName);
+        Assert.Equal(Species.Tiger, response.Result[0].Species);
+
+        // TryGetResult returns the same value
+        Assert.True(response.TryGetResult(out var tryGetResultOutput));
+        Assert.Same(response.Result, tryGetResultOutput);
+
+        // History remains unmutated
+        Assert.Equal("Hello", Assert.Single(chatHistory).Text);
+    }
+
+    [Fact]
     public async Task CanSpecifyCustomJsonSerializationOptions()
     {
         var jso = new JsonSerializerOptions

@@ -125,8 +125,23 @@ public class ChatCompletion<T> : ChatCompletion
             return default;
         }
 
+        T? deserialized = default;
+
         // If there's an exception here, we want it to propagate, since the Result property is meant to throw directly
-        var deserialized = DeserializeFirstTopLevelObject(json!, (JsonTypeInfo<T>)_serializerOptions.GetTypeInfo(typeof(T)));
+
+        if (this.IsWrapped())
+        {
+            var doc = JsonDocument.Parse(json!);
+            if (doc.RootElement.TryGetProperty("data", out var data))
+            {
+                deserialized = DeserializeFirstTopLevelObject(data.GetRawText(), (JsonTypeInfo<T>)_serializerOptions.GetTypeInfo(typeof(T)));
+            }
+        }
+        else
+        {
+            deserialized = DeserializeFirstTopLevelObject(json!, (JsonTypeInfo<T>)_serializerOptions.GetTypeInfo(typeof(T)));
+        }
+
         if (deserialized is null)
         {
             failureReason = FailureReason.DeserializationProducedNull;
