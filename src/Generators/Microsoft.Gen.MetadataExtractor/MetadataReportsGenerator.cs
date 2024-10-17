@@ -67,7 +67,7 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
             var diagnostic = new DiagnosticDescriptor(
                 DiagnosticIds.AuditReports.AUDREPGEN000,
                 "MetricsReports generator couldn't resolve output path for the report. It won't be generated.",
-                "Both <MetricsReportOutputPath> and <OutputPath> MSBuild properties are not set. The report won't be generated.",
+                "Both <MetadataReportOutputPath> and <OutputPath> MSBuild properties are not set. The report won't be generated.",
                 nameof(DiagnosticIds.AuditReports),
                 DiagnosticSeverity.Info,
                 isEnabledByDefault: true,
@@ -81,11 +81,11 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
         metadataReport.metricReport = HandleMetricReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
         metadataReport.complianceReport = HandleComplianceReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
 
-        string combinedReport = "{ \"Name\": " + context.Compilation.AssemblyName!
-                                    +", \"ComplianceReport\": "
-                                    + (string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport) + " }"
+        string combinedReport = "{ \"Name\": \"" + context.Compilation.AssemblyName!
+                                    + "\", \"ComplianceReport\": "
+                                    + (string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport) + " ,"
                                     + " \"MetricReport\": "
-                                    + (string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport);
+                                    + (string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport) + " }";
 
 #pragma warning disable RS1035 // Do not use APIs banned for analyzers
         File.WriteAllText(Path.Combine(path, _fileName), combinedReport, Encoding.UTF8);
