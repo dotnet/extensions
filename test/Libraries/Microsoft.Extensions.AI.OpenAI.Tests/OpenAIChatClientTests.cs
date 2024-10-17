@@ -45,13 +45,17 @@ public class OpenAIChatClientTests
         Assert.Throws<ArgumentException>("modelId", () => client.AsChatClient("   "));
     }
 
-    [Fact]
-    public void AsChatClient_OpenAIClient_ProducesExpectedMetadata()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AsChatClient_OpenAIClient_ProducesExpectedMetadata(bool useAzureOpenAI)
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
-        OpenAIClient client = new(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
+        var client = useAzureOpenAI ?
+            new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
+            new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         IChatClient chatClient = client.AsChatClient(model);
         Assert.Equal("openai", chatClient.Metadata.ProviderName);
@@ -60,25 +64,6 @@ public class OpenAIChatClientTests
 
         chatClient = client.GetChatClient(model).AsChatClient();
         Assert.Equal("openai", chatClient.Metadata.ProviderName);
-        Assert.Equal(endpoint, chatClient.Metadata.ProviderUri);
-        Assert.Equal(model, chatClient.Metadata.ModelId);
-    }
-
-    [Fact]
-    public void AsChatClient_AzureOpenAIClient_ProducesExpectedMetadata()
-    {
-        Uri endpoint = new("http://localhost/some/endpoint");
-        string model = "amazingModel";
-
-        AzureOpenAIClient client = new(endpoint, new ApiKeyCredential("key"));
-
-        IChatClient chatClient = client.AsChatClient(model);
-        Assert.Equal("azureopenai", chatClient.Metadata.ProviderName);
-        Assert.Equal(endpoint, chatClient.Metadata.ProviderUri);
-        Assert.Equal(model, chatClient.Metadata.ModelId);
-
-        chatClient = client.GetChatClient(model).AsChatClient();
-        Assert.Equal("azureopenai", chatClient.Metadata.ProviderName);
         Assert.Equal(endpoint, chatClient.Metadata.ProviderUri);
         Assert.Equal(model, chatClient.Metadata.ModelId);
     }

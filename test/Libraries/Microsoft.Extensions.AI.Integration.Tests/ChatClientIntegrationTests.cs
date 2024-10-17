@@ -545,31 +545,19 @@ public abstract class ChatClientIntegrationTests : IDisposable
             .Build();
 
         var chatClient = new ChatClientBuilder()
-            .UseOpenTelemetry(sourceName, instance => { instance.EnableSensitiveData = true; })
+            .UseOpenTelemetry(sourceName: sourceName)
             .Use(CreateChatClient()!);
 
         var response = await chatClient.CompleteAsync([new(ChatRole.User, "What's the biggest animal?")]);
 
         var activity = Assert.Single(activities);
-        Assert.StartsWith("chat.completions", activity.DisplayName);
+        Assert.StartsWith("chat", activity.DisplayName);
         Assert.StartsWith("http", (string)activity.GetTagItem("server.address")!);
         Assert.Equal(chatClient.Metadata.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
         Assert.NotNull(activity.Id);
         Assert.NotEmpty(activity.Id);
         Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.input_tokens")!);
         Assert.NotEqual(0, (int)activity.GetTagItem("gen_ai.response.output_tokens")!);
-
-        Assert.Collection(activity.Events,
-            evt =>
-            {
-                Assert.Equal("gen_ai.content.prompt", evt.Name);
-                Assert.Equal("""[{"role": "user", "content": "What\u0027s the biggest animal?"}]""", evt.Tags.FirstOrDefault(t => t.Key == "gen_ai.prompt").Value);
-            },
-            evt =>
-            {
-                Assert.Equal("gen_ai.content.completion", evt.Name);
-                Assert.Contains("whale", (string)evt.Tags.FirstOrDefault(t => t.Key == "gen_ai.completion").Value!);
-            });
 
         Assert.True(activity.Duration.TotalMilliseconds > 0);
     }

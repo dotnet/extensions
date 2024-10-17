@@ -8,6 +8,7 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -38,8 +39,11 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     /// Initializes a new instance of the <see cref="OpenTelemetryEmbeddingGenerator{TInput, TEmbedding}"/> class.
     /// </summary>
     /// <param name="innerGenerator">The underlying <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/>, which is the next stage of the pipeline.</param>
+    /// <param name="logger">The <see cref="ILogger"/> to use for emitting events.</param>
     /// <param name="sourceName">An optional source name that will be used on the telemetry data.</param>
-    public OpenTelemetryEmbeddingGenerator(IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, string? sourceName = null)
+#pragma warning disable IDE0060 // Remove unused parameter; it exists for future use and consistency with OpenTelemetryChatClient
+    public OpenTelemetryEmbeddingGenerator(IEmbeddingGenerator<TInput, TEmbedding> innerGenerator, ILogger? logger = null, string? sourceName = null)
+#pragma warning restore IDE0060
         : base(innerGenerator)
     {
         Debug.Assert(innerGenerator is not null, "Should have been validated by the base ctor.");
@@ -69,26 +73,11 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     }
 
     /// <inheritdoc/>
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _activitySource.Dispose();
-            _meter.Dispose();
-        }
-
-        base.Dispose(disposing);
-    }
-
-    /// <summary>Gets a value indicating whether diagnostics are enabled.</summary>
-    private bool Enabled => _activitySource.HasListeners();
-
-    /// <inheritdoc/>
     public override async Task<GeneratedEmbeddings<TEmbedding>> GenerateAsync(IEnumerable<TInput> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(values);
 
-        using Activity? activity = StartActivity();
+        using Activity? activity = CreateAndConfigureActivity();
         Stopwatch? stopwatch = _operationDurationHistogram.Enabled ? Stopwatch.StartNew() : null;
 
         GeneratedEmbeddings<TEmbedding>? response = null;
@@ -104,26 +93,38 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
         }
         finally
         {
-            SetCompletionResponse(activity, response, error, stopwatch);
+            TraceCompletion(activity, response, error, stopwatch);
         }
 
         return response;
     }
 
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _activitySource.Dispose();
+            _meter.Dispose();
+        }
+
+        base.Dispose(disposing);
+    }
+
     /// <summary>Creates an activity for an embedding generation request, or returns null if not enabled.</summary>
-    private Activity? StartActivity()
+    private Activity? CreateAndConfigureActivity()
     {
         Activity? activity = null;
-        if (Enabled)
+        if (_activitySource.HasListeners())
         {
             activity = _activitySource.StartActivity(
-                $"embedding {_modelId}",
+                $"{OpenTelemetryConsts.GenAI.Embed} {_modelId}",
                 ActivityKind.Client,
                 default(ActivityContext),
                 [
-                    new(OpenTelemetryConsts.GenAI.Operation.Name, "embedding"),
+                    new(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Embed),
                     new(OpenTelemetryConsts.GenAI.Request.Model, _modelId),
-                    new(OpenTelemetryConsts.GenAI.System, _modelProvider),
+                    new(OpenTelemetryConsts.GenAI.SystemName, _modelProvider),
                 ]);
 
             if (activity is not null)
@@ -146,17 +147,12 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
     }
 
     /// <summary>Adds embedding generation response information to the activity.</summary>
-    private void SetCompletionResponse(
+    private void TraceCompletion(
         Activity? activity,
         GeneratedEmbeddings<TEmbedding>? embeddings,
         Exception? error,
         Stopwatch? stopwatch)
     {
-        if (!Enabled)
-        {
-            return;
-        }
-
         int? inputTokens = null;
         string? responseModelId = null;
         if (embeddings is not null)
@@ -189,40 +185,37 @@ public sealed class OpenTelemetryEmbeddingGenerator<TInput, TEmbedding> : Delega
             _tokenUsageHistogram.Record(inputTokens.Value);
         }
 
-        if (activity is null)
+        if (activity is not null)
         {
-            return;
-        }
+            if (error is not null)
+            {
+                _ = activity
+                    .SetTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
+                    .SetStatus(ActivityStatusCode.Error, error.Message);
+            }
 
-        if (error is not null)
-        {
-            _ = activity
-                .SetTag(OpenTelemetryConsts.Error.Type, error.GetType().FullName)
-                .SetStatus(ActivityStatusCode.Error, error.Message);
-            return;
-        }
+            if (inputTokens.HasValue)
+            {
+                _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.InputTokens, inputTokens);
+            }
 
-        if (inputTokens.HasValue)
-        {
-            _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.InputTokens, inputTokens);
-        }
-
-        if (responseModelId is not null)
-        {
-            _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.Model, responseModelId);
+            if (responseModelId is not null)
+            {
+                _ = activity.SetTag(OpenTelemetryConsts.GenAI.Response.Model, responseModelId);
+            }
         }
     }
 
     private void AddMetricTags(ref TagList tags, string? responseModelId)
     {
-        tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, "embedding");
+        tags.Add(OpenTelemetryConsts.GenAI.Operation.Name, OpenTelemetryConsts.GenAI.Embed);
 
         if (_modelId is string requestModel)
         {
             tags.Add(OpenTelemetryConsts.GenAI.Request.Model, requestModel);
         }
 
-        tags.Add(OpenTelemetryConsts.GenAI.System, _modelProvider);
+        tags.Add(OpenTelemetryConsts.GenAI.SystemName, _modelProvider);
 
         if (_endpointAddress is string endpointAddress)
         {

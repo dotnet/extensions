@@ -52,12 +52,11 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
         // The endpoint isn't currently exposed, so use reflection to get at it, temporarily. Once packages
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
-        string providerName = openAIClient.GetType().Name.StartsWith("Azure", StringComparison.Ordinal) ? "azureopenai" : "openai";
         string providerUrl = (typeof(OpenAIClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(openAIClient) as Uri)?.ToString() ??
             DefaultOpenAIEndpoint;
 
-        Metadata = CreateMetadata(dimensions, providerName, providerUrl, modelId);
+        Metadata = CreateMetadata("openai", providerUrl, modelId, dimensions);
     }
 
     /// <summary>Initializes a new instance of the <see cref="OpenAIEmbeddingGenerator"/> class.</summary>
@@ -78,7 +77,6 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
         // The endpoint and model aren't currently exposed, so use reflection to get at them, temporarily. Once packages
         // implement the abstractions directly rather than providing adapters on top of the public APIs,
         // the package can provide such implementations separate from what's exposed in the public API.
-        string providerName = embeddingClient.GetType().Name.StartsWith("Azure", StringComparison.Ordinal) ? "azureopenai" : "openai";
         string providerUrl = (typeof(EmbeddingClient).GetField("_endpoint", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(embeddingClient) as Uri)?.ToString() ??
             DefaultOpenAIEndpoint;
@@ -86,11 +84,11 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
         FieldInfo? modelField = typeof(EmbeddingClient).GetField("_model", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         string? model = modelField?.GetValue(embeddingClient) as string;
 
-        Metadata = CreateMetadata(dimensions, providerName, providerUrl, model);
+        Metadata = CreateMetadata("openai", providerUrl, model, dimensions);
     }
 
     /// <summary>Creates the <see cref="EmbeddingGeneratorMetadata"/> for this instance.</summary>
-    private static EmbeddingGeneratorMetadata CreateMetadata(int? dimensions, string providerName, string providerUrl, string? model) =>
+    private static EmbeddingGeneratorMetadata CreateMetadata(string providerName, string providerUrl, string? model, int? dimensions) =>
         new(providerName, Uri.TryCreate(providerUrl, UriKind.Absolute, out Uri? providerUri) ? providerUri : null, model, dimensions);
 
     /// <inheritdoc />
