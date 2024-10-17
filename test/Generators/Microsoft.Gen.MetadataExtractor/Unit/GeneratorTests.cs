@@ -134,7 +134,7 @@ public class GeneratorTests(ITestOutputHelper output)
         var inputFile = Directory.GetFiles("TestClasses").First();
         var options = new Dictionary<string, string>
         {
-            ["build_property.MetadataReportOutputPath"] = string.Empty
+            ["build_property.outputpath"] = string.Empty
         };
 
         if (isReportPathProvided)
@@ -162,7 +162,7 @@ public class GeneratorTests(ITestOutputHelper output)
             var options = new Dictionary<string, string>
             {
                 ["build_property.projectdir"] = projectDir,
-                ["build_property.MetadataReportOutputPath"] = outputPath
+                ["build_property.MetadataReportOutputPath"] = fullReportPath
             };
 
             var diags = await RunGenerator(await File.ReadAllTextAsync(inputFile), options);
@@ -215,7 +215,7 @@ public class GeneratorTests(ITestOutputHelper output)
         {
             _options = analyzerOptions ?? [];
             _options.TryAdd("build_property.GenerateMetadataReport", bool.TrueString);
-            _options.TryAdd("build_property.MetadataReportOutputPath", Directory.GetCurrentDirectory());
+   //         _options.TryAdd("build_property.MetadataReportOutputPath", Directory.GetCurrentDirectory());
         }
 
         public override bool TryGetValue(string key, out string value)
