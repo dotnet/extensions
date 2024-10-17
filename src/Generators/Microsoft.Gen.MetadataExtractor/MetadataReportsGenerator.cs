@@ -1,20 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Composition;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.Gen;
 using Microsoft.Gen.ComplianceReports;
 using Microsoft.Gen.MetricsReports;
 using Microsoft.Gen.Shared;
 using Microsoft.Shared.DiagnosticIds;
-
 
 namespace Microsoft.Gen.MetadataExtractor;
 
@@ -114,12 +108,14 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
         var report = emitter.GenerateReport(reportedMetrics, context.CancellationToken);
         return report;
     }
+
     private static string HandleComplianceReportGeneration(GeneratorExecutionContext context, TypeDeclarationSyntaxReceiver receiver)
     {
         if (!SymbolLoader.TryLoad(context.Compilation, out var symbolHolder))
         {
             return string.Empty;
         }
+
         var parser = new Parser(context.Compilation, symbolHolder!, context.CancellationToken);
         var classifiedTypes = parser.GetClassifiedTypes(receiver.TypeDeclarations);
         if (classifiedTypes.Count == 0)
