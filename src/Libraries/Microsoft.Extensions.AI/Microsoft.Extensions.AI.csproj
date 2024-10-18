@@ -4,6 +4,8 @@
     <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
     <Description>Utilities for working with generative AI components.</Description>
     <Workstream>AI</Workstream>
+    <!-- This package needs to stay referencing .NET 9 versions of its dependencies -->
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
   </PropertyGroup>
 
   <PropertyGroup>
