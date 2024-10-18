@@ -192,7 +192,6 @@ public abstract class DataContentTests<T>
         Assert.Equal([0x01, 0x02, 0x03, 0x04], content.Data!.Value.ToArray());
         Assert.Equal("text/plain", content.MediaType);
         Assert.True(content.ContainsData);
-        Assert.Equal("gpt-4", content.ModelId);
         Assert.Equal("value", content.AdditionalProperties!["key"]!.ToString());
     }
 

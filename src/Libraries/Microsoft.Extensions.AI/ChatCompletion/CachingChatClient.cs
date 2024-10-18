@@ -130,7 +130,6 @@ public abstract class CachingChatClient : DelegatingChatClient
                     TextContent coalescedContent = new(null) // will patch the text after examining all items in the run
                     {
                         AdditionalProperties = textContent.AdditionalProperties?.Clone(),
-                        ModelId = textContent.ModelId,
                     };
 
                     StreamingChatCompletionUpdate coalesced = new()
@@ -141,6 +140,7 @@ public abstract class CachingChatClient : DelegatingChatClient
                         Contents = [coalescedContent],
                         CreatedAt = update.CreatedAt,
                         FinishReason = update.FinishReason,
+                        ModelId = update.ModelId,
                         Role = update.Role,
 
                         // Explicitly don't include RawRepresentation. It's not applicable if one update ends up being used
@@ -160,16 +160,15 @@ public abstract class CachingChatClient : DelegatingChatClient
                         StreamingChatCompletionUpdate next = capturedItems[i];
                         capturedItems[i] = null!;
 
-                        TextContent nextContent = (TextContent)next.Contents[0];
+                        var nextContent = (TextContent)next.Contents[0];
                         _ = coalescedText.Append(nextContent.Text);
 
                         coalesced.AuthorName ??= next.AuthorName;
                         coalesced.CompletionId ??= next.CompletionId;
                         coalesced.CreatedAt ??= next.CreatedAt;
                         coalesced.FinishReason ??= next.FinishReason;
+                        coalesced.ModelId ??= next.ModelId;
                         coalesced.Role ??= next.Role;
-
-                        coalescedContent.ModelId ??= nextContent.ModelId;
                     }
 
                     // Complete the coalescing by patching the text of the coalesced node.

@@ -16,7 +16,6 @@ public class FunctionResultContentTests
         Assert.Equal("callId1", c.CallId);
         Assert.Equal("functionName", c.Name);
         Assert.Null(c.RawRepresentation);
-        Assert.Null(c.ModelId);
         Assert.Null(c.AdditionalProperties);
         Assert.Null(c.Result);
         Assert.Null(c.Exception);
@@ -29,7 +28,6 @@ public class FunctionResultContentTests
 
         FunctionResultContent c = new("id", "name", "result", e);
         Assert.Null(c.RawRepresentation);
-        Assert.Null(c.ModelId);
         Assert.Null(c.AdditionalProperties);
         Assert.Equal("name", c.Name);
         Assert.Equal("id", c.CallId);
@@ -44,7 +42,6 @@ public class FunctionResultContentTests
 
         FunctionResultContent c = new(new FunctionCallContent("id", "name"), "result", e);
         Assert.Null(c.RawRepresentation);
-        Assert.Null(c.ModelId);
         Assert.Null(c.AdditionalProperties);
         Assert.Equal("id", c.CallId);
         Assert.Equal("result", c.Result);
@@ -60,10 +57,6 @@ public class FunctionResultContentTests
         object raw = new();
         c.RawRepresentation = raw;
         Assert.Same(raw, c.RawRepresentation);
-
-        Assert.Null(c.ModelId);
-        c.ModelId = "modelId";
-        Assert.Equal("modelId", c.ModelId);
 
         Assert.Null(c.AdditionalProperties);
         AdditionalPropertiesDictionary props = new() { { "key", "value" } };

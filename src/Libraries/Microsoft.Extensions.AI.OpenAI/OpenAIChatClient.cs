@@ -111,7 +111,7 @@ public sealed partial class OpenAIChatClient : IChatClient
         // Populate its content from those in the OpenAI response content.
         foreach (ChatMessageContentPart contentPart in response.Content)
         {
-            if (ToAIContent(contentPart, response.Model) is AIContent aiContent)
+            if (ToAIContent(contentPart) is AIContent aiContent)
             {
                 returnMessage.Contents.Add(aiContent);
             }
@@ -125,7 +125,6 @@ public sealed partial class OpenAIChatClient : IChatClient
                 if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
                 {
                     var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
-                    callContent.ModelId = response.Model;
                     callContent.RawRepresentation = toolCall;
 
                     returnMessage.Contents.Add(callContent);
@@ -214,6 +213,7 @@ public sealed partial class OpenAIChatClient : IChatClient
                 CompletionId = chatCompletionUpdate.CompletionId,
                 CreatedAt = chatCompletionUpdate.CreatedAt,
                 FinishReason = finishReason,
+                ModelId = modelId,
                 RawRepresentation = chatCompletionUpdate,
                 Role = streamedRole,
             };
@@ -239,7 +239,7 @@ public sealed partial class OpenAIChatClient : IChatClient
             {
                 foreach (ChatMessageContentPart contentPart in chatCompletionUpdate.ContentUpdate)
                 {
-                    if (ToAIContent(contentPart, modelId) is AIContent aiContent)
+                    if (ToAIContent(contentPart) is AIContent aiContent)
                     {
                         completionUpdate.Contents.Add(aiContent);
                     }
@@ -292,10 +292,7 @@ public sealed partial class OpenAIChatClient : IChatClient
 
                 // TODO: Add support for prompt token details (e.g. cached tokens) once it's exposed in OpenAI library.
 
-                completionUpdate.Contents.Add(new UsageContent(usageDetails)
-                {
-                    ModelId = modelId
-                });
+                completionUpdate.Contents.Add(new UsageContent(usageDetails));
             }
 
             // Now yield the item.
@@ -310,6 +307,7 @@ public sealed partial class OpenAIChatClient : IChatClient
                 CompletionId = completionId,
                 CreatedAt = createdAt,
                 FinishReason = finishReason,
+                ModelId = modelId,
                 Role = streamedRole,
             };
 
@@ -322,9 +320,6 @@ public sealed partial class OpenAIChatClient : IChatClient
                         fci.Arguments?.ToString() ?? string.Empty,
                         fci.CallId!,
                         fci.Name!);
-
-                    callContent.ModelId = modelId;
-
                     completionUpdate.Contents.Add(callContent);
                 }
             }
@@ -531,9 +526,8 @@ public sealed partial class OpenAIChatClient : IChatClient
 
     /// <summary>Creates an <see cref="AIContent"/> from a <see cref="ChatMessageContentPart"/>.</summary>
     /// <param name="contentPart">The content part to convert into a content.</param>
-    /// <param name="modelId">The model ID.</param>
     /// <returns>The constructed <see cref="AIContent"/>, or null if the content part could not be converted.</returns>
-    private static AIContent? ToAIContent(ChatMessageContentPart contentPart, string? modelId)
+    private static AIContent? ToAIContent(ChatMessageContentPart contentPart)
     {
         AIContent? aiContent = null;
 
@@ -564,7 +558,6 @@ public sealed partial class OpenAIChatClient : IChatClient
                 (additionalProperties ??= [])[nameof(contentPart.Refusal)] = refusal;
             }
 
-            aiContent.ModelId = modelId;
             aiContent.AdditionalProperties = additionalProperties;
             aiContent.RawRepresentation = contentPart;
         }

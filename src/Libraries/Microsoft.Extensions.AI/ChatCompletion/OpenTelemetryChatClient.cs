@@ -230,7 +230,7 @@ public sealed partial class OpenTelemetryChatClient : DelegatingChatClient
                 finishReason ??= update.FinishReason;
                 role ??= update.Role;
                 items.AddRange(update.Contents);
-                modelId ??= update.Contents.FirstOrDefault(c => c.ModelId is not null)?.ModelId;
+                modelId ??= update.ModelId;
             }
 
             messages.Add(new ChatMessage(role ?? ChatRole.Assistant, items));
