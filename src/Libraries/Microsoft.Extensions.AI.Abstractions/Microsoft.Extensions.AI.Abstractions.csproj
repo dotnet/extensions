@@ -24,10 +24,6 @@
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
-    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonLTSVersion)" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <Reference Include="System.Net.Http" />
   </ItemGroup>
