@@ -21,7 +21,7 @@ internal sealed class Emitter : EmitterBase
     }
 
     [SuppressMessage("Performance", "LA0002:Use 'Microsoft.Extensions.Text.NumericExtensions.ToInvariantString' for improved performance", Justification = "Can't use that in a generator")]
-    public string Emit(IReadOnlyCollection<ClassifiedType> classifiedTypes, string assemblyName, bool includeName = true)
+    public string Emit(IReadOnlyCollection<ClassifiedType> classifiedTypes, string assemblyName, bool includeName = true) // show or hide assemblyName in the report,defaulted to true.
     {
         OutObject(() =>
         {
