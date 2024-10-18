@@ -7,7 +7,6 @@ using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -20,6 +19,10 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Gen.MetadataExtractor.Unit.Tests;
 
+/// <summary>
+/// Tests for the <see cref="MetadataReportsGenerator"/>.
+/// </summary>
+/// <param name="output">The test output helper.</param>
 public class GeneratorTests(ITestOutputHelper output)
 {
     private const string ReportFilename = "MetadataReport.json";
@@ -47,6 +50,9 @@ public class GeneratorTests(ITestOutputHelper output)
         }
     ";
 
+    /// <summary>
+    /// Generator should not do anything if general execution context does not have class declaration.
+    /// </summary>
     [Fact]
     public void GeneratorShouldNotDoAnythingIfGeneralExecutionContextDoesNotHaveClassDeclarationSyntaxReceiver()
     {
@@ -56,6 +62,11 @@ public class GeneratorTests(ITestOutputHelper output)
         Assert.Null(defaultGeneralExecutionContext.SyntaxReceiver);
     }
 
+
+    /// <summary>
+    /// Tests Generations for both compliance & metric or both or none.
+    /// </summary>
+    /// <param name="useExplicitReportPath">The Use Explicit Report Path.</param>
     [Theory]
     [CombinatorialData]
     public async Task TestAll(bool useExplicitReportPath)
@@ -105,6 +116,9 @@ public class GeneratorTests(ITestOutputHelper output)
         }
     }
 
+    /// <summary>
+    /// Generator should not do anything if there are no class declarations.
+    /// </summary>
     [Fact]
     public async Task ShouldNot_Generate_WhenDisabledViaConfig()
     {
@@ -121,6 +135,10 @@ public class GeneratorTests(ITestOutputHelper output)
         Assert.False(File.Exists(Path.Combine(Path.GetTempPath(), ReportFilename)));
     }
 
+    /// <summary>
+    /// Generator should emit warning when path is not provided.
+    /// </summary>
+    /// <param name="isReportPathProvided">If the report path is provided.</param>
     [Theory]
     [CombinatorialData]
     public async Task Should_EmitWarning_WhenPathUnavailable(bool isReportPathProvided)
@@ -142,6 +160,9 @@ public class GeneratorTests(ITestOutputHelper output)
         Assert.Equal(DiagnosticSeverity.Info, diag.Severity);
     }
 
+    /// <summary>
+    /// Generator should emit warning when path is not provided.
+    /// </summary>
     [Fact]
     public async Task Should_UseProjectDir_WhenOutputPathIsRelative()
     {
@@ -169,6 +190,13 @@ public class GeneratorTests(ITestOutputHelper output)
         }
     }
 
+    /// <summary>
+    /// Runs the generator on the given code.
+    /// </summary>
+    /// <param name="code">The coded that the generation will be based-on.</param>
+    /// <param name="analyzerOptions">The analyzer options.</param>
+    /// <param name="cancellationToken">The cancellation Token.</param>
+    /// <param name="reportFileName">The report file name.</param>
     private static async Task<IReadOnlyList<Diagnostic>> RunGenerator(
         string code,
         Dictionary<string, string>? analyzerOptions = null,
@@ -201,6 +229,9 @@ public class GeneratorTests(ITestOutputHelper output)
         return d;
     }
 
+    /// <summary>
+    /// Options for the generator.
+    /// </summary>
     private sealed class Options : AnalyzerConfigOptions
     {
         private readonly Dictionary<string, string> _options;
@@ -216,6 +247,10 @@ public class GeneratorTests(ITestOutputHelper output)
             => _options.TryGetValue(key, out value!);
     }
 
+    /// <summary>
+    /// Options provider for the generator.
+    /// </summary>
+    /// <param name="analyzerOptions">The analyzer options.</param>
     private sealed class OptionsProvider(Dictionary<string, string>? analyzerOptions) : AnalyzerConfigOptionsProvider
     {
         public override AnalyzerConfigOptions GlobalOptions => new Options(analyzerOptions);
