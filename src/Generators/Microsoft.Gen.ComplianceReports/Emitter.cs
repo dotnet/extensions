@@ -25,6 +25,7 @@ internal sealed class Emitter : EmitterBase
     {
         OutObject(() =>
         {
+            // this is only for not displaying a name as part of ComplianceReport properties,it should be at the root of the report, defaulted to true for beackward compatibility
             if (includeName)
             {
                 OutNameValue("Name", assemblyName);

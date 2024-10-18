@@ -80,18 +80,27 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
         metadataReport.metricReport = HandleMetricReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
         metadataReport.complianceReport = HandleComplianceReportGeneration(context, (TypeDeclarationSyntaxReceiver)context.SyntaxReceiver);
 
-        string combinedReport = "{ \"Name\": \"" + context.Compilation.AssemblyName!
-                                    + "\", \"ComplianceReport\": "
-                                    + (string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport) + " ,"
-                                    + " \"MetricReport\": "
-                                    + (string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport) + " }";
+        StringBuilder reportStringBuilder = new StringBuilder()
+            .Append("{ \"Name\": \"")
+            .Append(context.Compilation.AssemblyName!)
+            .Append("\", \"ComplianceReport\": ")
+            .Append((string.IsNullOrEmpty(metadataReport.complianceReport) ? "{}" : metadataReport.complianceReport))
+            .Append(" ,")
+            .Append(" \"MetricReport\": ")
+            .Append((string.IsNullOrEmpty(metadataReport.metricReport) ? "[]" : metadataReport.metricReport) + " }");
 
 #pragma warning disable RS1035 // Do not use APIs banned for analyzers
-        File.WriteAllText(Path.Combine(path, _fileName), combinedReport, Encoding.UTF8);
+        File.WriteAllText(Path.Combine(path, _fileName), reportStringBuilder.ToString(), Encoding.UTF8);
 #pragma warning restore RS1035 // Do not use APIs banned for analyzers
 
     }
 
+    /// <summary>
+    /// used to generate the report for metrics annotations.
+    /// </summary>
+    /// <param name="context">The GeneratorExecutionContext.</param>
+    /// <param name="receiver">The TypeDeclarationSyntaxReceiver.</param>
+    /// <returns>string report as json or String.Empty.</returns>
     private static string HandleMetricReportGeneration(GeneratorExecutionContext context, TypeDeclarationSyntaxReceiver receiver)
     {
         var meteringParser = new Metrics.Parser(context.Compilation, context.ReportDiagnostic, context.CancellationToken);
@@ -109,6 +118,12 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
         return report;
     }
 
+    /// <summary>
+    /// used to generate the report for compliance annotations.
+    /// </summary>
+    /// <param name="context">The GeneratorExecutionContext.</param>
+    /// <param name="receiver">The TypeDeclarationSyntaxReceiver.</param>
+    /// <returns>string report as json or String.Empty.</returns>
     private static string HandleComplianceReportGeneration(GeneratorExecutionContext context, TypeDeclarationSyntaxReceiver receiver)
     {
         if (!SymbolLoader.TryLoad(context.Compilation, out var symbolHolder))
