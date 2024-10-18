@@ -62,7 +62,6 @@ public class GeneratorTests(ITestOutputHelper output)
         Assert.Null(defaultGeneralExecutionContext.SyntaxReceiver);
     }
 
-
     /// <summary>
     /// Tests Generations for both compliance & metric or both or none.
     /// </summary>
