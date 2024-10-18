@@ -3,6 +3,7 @@
  <!-- The items in this ItemGroup are packages coming from aspnetcore and runtime repos. When an asset is not targeting net9.0 version
   of the framework, we should use the following LTS versions instead -->
   <ItemGroup Condition="'$(TargetFramework)' != 'net9.0' And '$(ForceLatestDotnetVersions)' != 'true'">
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesLTSVersion)" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProviderLTSVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsLTSVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryLTSVersion)" />
@@ -31,6 +32,9 @@
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="$(SystemDiagnosticsPerformanceCounterLTSVersion)" />
     <PackageVersion Include="System.IO.Hashing" Version="$(SystemIOHashingLTSVersion)" />
     <PackageVersion Include="System.IO.Pipelines" Version="$(SystemIOPipelinesLTSVersion)" />
+    <PackageVersion Include="System.Memory.Data" Version="$(SystemMemoryDataLTSVersion)" />
+    <PackageVersion Include="System.Net.Http.Json" Version="$(SystemNetHttpJsonLTSVersion)" />
+    <PackageVersion Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebLTSVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonLTSVersion)" />
   </ItemGroup>
 

@@ -27,6 +27,7 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
+    <MicrosoftBclAsyncInterfacesVersion>9.0.0-rc.2.24473.5</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftBclTimeProviderVersion>9.0.0-rc.2.24473.5</MicrosoftBclTimeProviderVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>9.0.0-rc.2.24473.5</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>9.0.0-rc.2.24473.5</MicrosoftExtensionsCachingMemoryVersion>
@@ -54,10 +55,13 @@
     <SystemDiagnosticsPerformanceCounterVersion>9.0.0-rc.2.24473.5</SystemDiagnosticsPerformanceCounterVersion>
     <SystemIOHashingVersion>9.0.0-rc.2.24473.5</SystemIOHashingVersion>
     <SystemIOPipelinesVersion>9.0.0-rc.2.24473.5</SystemIOPipelinesVersion>
+    <SystemMemoryDataVersion>9.0.0-rc.2.24473.5</SystemMemoryDataVersion>
+    <SystemNetHttpJsonVersion>9.0.0-rc.2.24473.5</SystemNetHttpJsonVersion>
     <SystemRuntimeCachingVersion>9.0.0-rc.2.24473.5</SystemRuntimeCachingVersion>
     <SystemSecurityCryptographyPkcsVersion>9.0.0-rc.2.24473.5</SystemSecurityCryptographyPkcsVersion>
     <SystemSecurityCryptographyXmlVersion>9.0.0-rc.2.24473.5</SystemSecurityCryptographyXmlVersion>
     <SystemTextEncodingsWebVersion>9.0.0-rc.2.24473.5</SystemTextEncodingsWebVersion>
+    <SystemNumericsTensorsVersion>9.0.0-rc.2.24473.5</SystemNumericsTensorsVersion>
     <SystemTextJsonVersion>9.0.0-rc.2.24473.5</SystemTextJsonVersion>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
     <MicrosoftAspNetCoreAppRefVersion>9.0.0-rc.2.24474.3</MicrosoftAspNetCoreAppRefVersion>
@@ -72,6 +76,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Manual">
     <!-- Packages from dotnet/runtime -->
+    <MicrosoftBclAsyncInterfacesLTSVersion>8.0.0</MicrosoftBclAsyncInterfacesLTSVersion>
     <MicrosoftBclTimeProviderLTSVersion>8.0.1</MicrosoftBclTimeProviderLTSVersion>
     <MicrosoftExtensionsCachingAbstractionsLTSVersion>8.0.0</MicrosoftExtensionsCachingAbstractionsLTSVersion>
     <MicrosoftExtensionsCachingMemoryLTSVersion>8.0.1</MicrosoftExtensionsCachingMemoryLTSVersion>
@@ -99,6 +104,8 @@
     <SystemDiagnosticsPerformanceCounterLTSVersion>8.0.1</SystemDiagnosticsPerformanceCounterLTSVersion>
     <SystemIOHashingLTSVersion>8.0.0</SystemIOHashingLTSVersion>
     <SystemIOPipelinesLTSVersion>8.0.0</SystemIOPipelinesLTSVersion>
+    <SystemMemoryDataLTSVersion>8.0.1</SystemMemoryDataLTSVersion>
+    <SystemNetHttpJsonLTSVersion>8.0.1</SystemNetHttpJsonLTSVersion>
     <SystemRuntimeCachingLTSVersion>8.0.1</SystemRuntimeCachingLTSVersion>
     <SystemSecurityCryptographyPkcsLTSVersion>8.0.1</SystemSecurityCryptographyPkcsLTSVersion>
     <SystemSecurityCryptographyXmlLTSVersion>8.0.2</SystemSecurityCryptographyXmlLTSVersion>
