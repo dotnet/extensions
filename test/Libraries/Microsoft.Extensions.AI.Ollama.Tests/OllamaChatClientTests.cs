@@ -172,7 +172,7 @@ public class OllamaChatClientTests
         {
             Assert.Equal(i < updates.Count - 1 ? 1 : 2, updates[i].Contents.Count);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
-            Assert.All(updates[i].Contents, u => Assert.Equal("llama3.1", u.ModelId));
+            Assert.Equal("llama3.1", updates[i].ModelId);
             Assert.Equal(createdAts[i], updates[i].CreatedAt);
             Assert.Equal(i < updates.Count - 1 ? null : ChatFinishReason.Length, updates[i].FinishReason);
         }

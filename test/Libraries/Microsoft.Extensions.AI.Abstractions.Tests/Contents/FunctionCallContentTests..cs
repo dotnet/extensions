@@ -21,7 +21,6 @@ public class FunctionCallContentTests
         FunctionCallContent c = new("callId1", "name");
 
         Assert.Null(c.RawRepresentation);
-        Assert.Null(c.ModelId);
         Assert.Null(c.AdditionalProperties);
 
         Assert.Equal("callId1", c.CallId);
@@ -39,7 +38,6 @@ public class FunctionCallContentTests
         FunctionCallContent c = new("id", "name", args);
 
         Assert.Null(c.RawRepresentation);
-        Assert.Null(c.ModelId);
         Assert.Null(c.AdditionalProperties);
 
         Assert.Equal("name", c.Name);
@@ -56,10 +54,6 @@ public class FunctionCallContentTests
         object raw = new();
         c.RawRepresentation = raw;
         Assert.Same(raw, c.RawRepresentation);
-
-        Assert.Null(c.ModelId);
-        c.ModelId = "modelId";
-        Assert.Equal("modelId", c.ModelId);
 
         Assert.Null(c.AdditionalProperties);
         AdditionalPropertiesDictionary props = new() { { "key", "value" } };
@@ -322,8 +316,8 @@ public class FunctionCallContentTests
     [InlineData(typeof(NotSupportedException))]
     public static void CreateFromParsedArguments_ParseException_HasExpectedHandling(Type exceptionType)
     {
-        Exception exc = (Exception)Activator.CreateInstance(exceptionType)!;
-        FunctionCallContent content = FunctionCallContent.CreateFromParsedArguments(exc, "callId", "functionName", ThrowingParser);
+        var exc = (Exception)Activator.CreateInstance(exceptionType)!;
+        var content = FunctionCallContent.CreateFromParsedArguments(exc, "callId", "functionName", ThrowingParser);
 
         Assert.Equal("functionName", content.Name);
         Assert.Equal("callId", content.CallId);

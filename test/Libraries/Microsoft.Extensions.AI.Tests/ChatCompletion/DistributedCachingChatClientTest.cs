@@ -330,7 +330,7 @@ public class DistributedCachingChatClientTest
         List<StreamingChatCompletionUpdate> expectedCompletion =
         [
             new() { Role = ChatRole.Assistant, Contents = [new TextContent("Hello")] },
-            new() { Role = ChatRole.Assistant, Contents = [new TextContent(" world, ") { ModelId = "some model" }] },
+            new() { Role = ChatRole.Assistant, Contents = [new TextContent(" world, ")] },
             new()
             {
                 Role = ChatRole.Assistant,
@@ -338,7 +338,6 @@ public class DistributedCachingChatClientTest
                 [
                     new TextContent("how ")
                     {
-                        ModelId = "some other model",
                         AdditionalProperties = new() { ["a"] = "b", ["c"] = "d" },
                     }
                 ]
@@ -386,7 +385,6 @@ public class DistributedCachingChatClientTest
 
         var content = Assert.IsType<TextContent>(Assert.Single(item.Contents));
         Assert.Equal("Hello world, how are you?", content.Text);
-        Assert.Equal("some model", content.ModelId);
     }
 
     [Fact]
@@ -717,7 +715,6 @@ public class DistributedCachingChatClientTest
             {
                 var expectedItem = expected.Choices[i].Contents[itemIndex];
                 var actualItem = actual.Choices[i].Contents[itemIndex];
-                Assert.Equal(expectedItem.ModelId, actualItem.ModelId);
                 Assert.IsType(expectedItem.GetType(), actualItem);
 
                 if (expectedItem is FunctionCallContent expectedFcc)

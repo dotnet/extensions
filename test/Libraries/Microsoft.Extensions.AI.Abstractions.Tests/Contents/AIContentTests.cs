@@ -12,7 +12,6 @@ public class AIContentTests
     {
         DerivedAIContent c = new();
         Assert.Null(c.RawRepresentation);
-        Assert.Null(c.ModelId);
         Assert.Null(c.AdditionalProperties);
     }
 
@@ -25,10 +24,6 @@ public class AIContentTests
         object raw = new();
         c.RawRepresentation = raw;
         Assert.Same(raw, c.RawRepresentation);
-
-        Assert.Null(c.ModelId);
-        c.ModelId = "modelId";
-        Assert.Equal("modelId", c.ModelId);
 
         Assert.Null(c.AdditionalProperties);
         AdditionalPropertiesDictionary props = new() { { "key", "value" } };
