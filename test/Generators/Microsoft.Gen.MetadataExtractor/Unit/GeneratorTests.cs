@@ -94,12 +94,6 @@ public class GeneratorTests(ITestOutputHelper output)
 
                 File.Delete(generatedReportPath);
 
-                golden = Regex.Replace(golden, @"\s+", "");
-                generated = Regex.Replace(generated, @"\s+", "");
-
-                golden = golden.Replace("\r\n", "\n");
-                generated = generated.Replace("\r\n", "\n");
-
                 Assert.Equal(golden, generated);
             }
             else
