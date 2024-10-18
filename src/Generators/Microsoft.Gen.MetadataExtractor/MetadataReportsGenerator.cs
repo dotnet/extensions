@@ -24,21 +24,37 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
     private const string FallbackFileName = "MetadataReport.json";
     private readonly string _fileName;
 
-    public void Initialize(GeneratorInitializationContext context)
-    {
-        context.RegisterForSyntaxNotifications(TypeDeclarationSyntaxReceiver.Create);
-    }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MetadataReportsGenerator"/> class.
+    /// </summary>
     public MetadataReportsGenerator()
     : this(FallbackFileName)
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MetadataReportsGenerator"/> class.
+    /// </summary>
+    /// <param name="reportFileName">The report file name.</param>
     public MetadataReportsGenerator(string reportFileName)
     {
         _fileName = reportFileName;
     }
 
+    /// <summary>
+    /// Initializes the generator.
+    /// </summary>
+    /// <param name="context">The generator initialization context.</param>
+    public void Initialize(GeneratorInitializationContext context)
+    {
+        context.RegisterForSyntaxNotifications(TypeDeclarationSyntaxReceiver.Create);
+    }
+
+    /// <summary>
+    /// Generates reports for compliance & metrics annotations.
+    /// </summary>
+    /// <param name="context">The generator execution context.</param>
     public void Execute(GeneratorExecutionContext context)
     {
         context.CancellationToken.ThrowIfCancellationRequested();
@@ -98,8 +114,8 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
     /// <summary>
     /// used to generate the report for metrics annotations.
     /// </summary>
-    /// <param name="context">The GeneratorExecutionContext.</param>
-    /// <param name="receiver">The TypeDeclarationSyntaxReceiver.</param>
+    /// <param name="context">The generator execution context.</param>
+    /// <param name="receiver">The typeDeclaration syntax receiver.</param>
     /// <returns>string report as json or String.Empty.</returns>
     private static string HandleMetricReportGeneration(GeneratorExecutionContext context, TypeDeclarationSyntaxReceiver receiver)
     {
@@ -121,8 +137,8 @@ public sealed class MetadataReportsGenerator : ISourceGenerator
     /// <summary>
     /// used to generate the report for compliance annotations.
     /// </summary>
-    /// <param name="context">The GeneratorExecutionContext.</param>
-    /// <param name="receiver">The TypeDeclarationSyntaxReceiver.</param>
+    /// <param name="context">The generator execution context.</param>
+    /// <param name="receiver">The type declaration syntax receiver.</param>
     /// <returns>string report as json or String.Empty.</returns>
     private static string HandleComplianceReportGeneration(GeneratorExecutionContext context, TypeDeclarationSyntaxReceiver receiver)
     {
