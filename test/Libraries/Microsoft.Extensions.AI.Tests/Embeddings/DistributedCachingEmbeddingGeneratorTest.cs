@@ -44,17 +44,15 @@ public class DistributedCachingEmbeddingGeneratorTest
 
         // Make the initial request and do a quick sanity check
         var result1 = await outer.GenerateAsync("abc");
-        Assert.Single(result1);
-        AssertEmbeddingsEqual(_expectedEmbedding, result1[0]);
+        AssertEmbeddingsEqual(_expectedEmbedding, result1);
         Assert.Equal(1, innerCallCount);
 
         // Act
         var result2 = await outer.GenerateAsync("abc");
 
         // Assert
-        Assert.Single(result2);
         Assert.Equal(1, innerCallCount);
-        AssertEmbeddingsEqual(_expectedEmbedding, result2[0]);
+        AssertEmbeddingsEqual(_expectedEmbedding, result2);
 
         // Act/Assert 2: Cache misses do not return cached results
         await outer.GenerateAsync(["def"]);
@@ -144,13 +142,13 @@ public class DistributedCachingEmbeddingGeneratorTest
         Assert.False(result1.IsCompleted);
         Assert.False(result2.IsCompleted);
         completionTcs.SetResult(true);
-        AssertEmbeddingsEqual(_expectedEmbedding, (await result1)[0]);
-        AssertEmbeddingsEqual(_expectedEmbedding, (await result2)[0]);
+        AssertEmbeddingsEqual(_expectedEmbedding, await result1);
+        AssertEmbeddingsEqual(_expectedEmbedding, await result2);
 
         // Act 2: Subsequent calls after completion are resolved from the cache
         var result3 = await outer.GenerateAsync("abc");
         Assert.Equal(2, innerCallCount);
-        AssertEmbeddingsEqual(_expectedEmbedding, (await result1)[0]);
+        AssertEmbeddingsEqual(_expectedEmbedding, await result1);
     }
 
     [Fact]
@@ -218,9 +216,8 @@ public class DistributedCachingEmbeddingGeneratorTest
 
         // Act/Assert: Second call can succeed
         var result2 = await outer.GenerateAsync("abc");
-        Assert.Single(result2);
         Assert.Equal(2, innerCallCount);
-        AssertEmbeddingsEqual(_expectedEmbedding, result2[0]);
+        AssertEmbeddingsEqual(_expectedEmbedding, result2);
     }
 
     [Fact]
@@ -254,11 +251,9 @@ public class DistributedCachingEmbeddingGeneratorTest
         });
 
         // Assert: Same result
-        Assert.Single(result1);
-        Assert.Single(result2);
         Assert.Equal(1, innerCallCount);
-        AssertEmbeddingsEqual(_expectedEmbedding, result1[0]);
-        AssertEmbeddingsEqual(_expectedEmbedding, result2[0]);
+        AssertEmbeddingsEqual(_expectedEmbedding, result1);
+        AssertEmbeddingsEqual(_expectedEmbedding, result2);
     }
 
     [Fact]
@@ -292,11 +287,9 @@ public class DistributedCachingEmbeddingGeneratorTest
         });
 
         // Assert: Different results
-        Assert.Single(result1);
-        Assert.Single(result2);
         Assert.Equal(2, innerCallCount);
-        AssertEmbeddingsEqual(_expectedEmbedding, result1[0]);
-        AssertEmbeddingsEqual(_expectedEmbedding, result2[0]);
+        AssertEmbeddingsEqual(_expectedEmbedding, result1);
+        AssertEmbeddingsEqual(_expectedEmbedding, result2);
     }
 
     [Fact]
