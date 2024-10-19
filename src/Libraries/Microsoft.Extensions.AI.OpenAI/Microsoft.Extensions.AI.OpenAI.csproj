@@ -26,9 +26,6 @@
   <ItemGroup>
     <PackageReference Include="OpenAI" />
     <PackageReference Include="System.Text.Json" />
-
-    <!-- To resolve a conflict -->
-    <PackageReference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
   <ItemGroup>
