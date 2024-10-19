@@ -653,11 +653,11 @@ public sealed partial class OpenAIChatClient : IChatClient
 
     private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject));
+            argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject)!);
 
     private static FunctionCallContent ParseCallContentFromBinaryData(BinaryData ut8Json, string callId, string name) =>
         FunctionCallContent.CreateFromParsedArguments(ut8Json, callId, name,
-            argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject));
+            argumentParser: static json => JsonSerializer.Deserialize(json, JsonContext.Default.IDictionaryStringObject)!);
 
     /// <summary>Source-generated JSON type information.</summary>
     [JsonSerializable(typeof(OpenAIChatToolJson))]
