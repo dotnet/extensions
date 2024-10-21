@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -18,7 +19,7 @@ public static class EmbeddingGeneratorExtensions
     /// <param name="options">The embedding generation options to configure the request.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The generated embedding for the specified <paramref name="value"/>.</returns>
-    public static Task<GeneratedEmbeddings<TEmbedding>> GenerateAsync<TValue, TEmbedding>(
+    public static async Task<TEmbedding> GenerateAsync<TValue, TEmbedding>(
         this IEmbeddingGenerator<TValue, TEmbedding> generator,
         TValue value,
         EmbeddingGenerationOptions? options = null,
@@ -28,6 +29,12 @@ public static class EmbeddingGeneratorExtensions
         _ = Throw.IfNull(generator);
         _ = Throw.IfNull(value);
 
-        return generator.GenerateAsync([value], options, cancellationToken);
+        var embeddings = await generator.GenerateAsync([value], options, cancellationToken).ConfigureAwait(false);
+        if (embeddings.Count != 1)
+        {
+            throw new InvalidOperationException("Expected exactly one embedding to be generated.");
+        }
+
+        return embeddings[0];
     }
 }

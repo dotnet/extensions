@@ -44,7 +44,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        var embeddings = await _embeddingGenerator.GenerateAsync("Using AI with .NET");
+        var embeddings = await _embeddingGenerator.GenerateAsync(["Using AI with .NET"]);
 
         Assert.NotNull(embeddings.Usage);
         Assert.NotNull(embeddings.Usage.InputTokenCount);
