@@ -201,7 +201,7 @@ public class AzureAIInferenceChatClientTests
         {
             Assert.Equal("chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK", updates[i].CompletionId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
-            Assert.All(updates[i].Contents, u => Assert.Equal("gpt-4o-mini-2024-07-18", u.ModelId));
+            Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.Equal(i < 10 ? 1 : 0, updates[i].Contents.Count);
             Assert.Equal(i < 10 ? null : ChatFinishReason.Stop, updates[i].FinishReason);
@@ -516,7 +516,7 @@ public class AzureAIInferenceChatClientTests
         {
             Assert.Equal("chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl", updates[i].CompletionId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
-            Assert.All(updates[i].Contents, u => Assert.Equal("gpt-4o-mini-2024-07-18", u.ModelId));
+            Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.Equal(i < 7 ? null : ChatFinishReason.ToolCalls, updates[i].FinishReason);
         }

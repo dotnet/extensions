@@ -247,7 +247,7 @@ public class OpenAIChatClientTests
         {
             Assert.Equal("chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK", updates[i].CompletionId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
-            Assert.All(updates[i].Contents, u => Assert.Equal("gpt-4o-mini-2024-07-18", u.ModelId));
+            Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.NotNull(updates[i].AdditionalProperties);
             Assert.Equal("fp_f85bea6784", updates[i].AdditionalProperties![nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
@@ -565,7 +565,7 @@ public class OpenAIChatClientTests
         {
             Assert.Equal("chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl", updates[i].CompletionId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
-            Assert.All(updates[i].Contents, u => Assert.Equal("gpt-4o-mini-2024-07-18", u.ModelId));
+            Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.NotNull(updates[i].AdditionalProperties);
             Assert.Equal("fp_f85bea6784", updates[i].AdditionalProperties![nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);

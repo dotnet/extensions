@@ -32,11 +32,6 @@ public class AIContent
     [JsonIgnore]
     public object? RawRepresentation { get; set; }
 
-    /// <summary>
-    /// Gets or sets the model ID used to generate the content.
-    /// </summary>
-    public string? ModelId { get; set; }
-
     /// <summary>Gets or sets additional properties for the content.</summary>
     public AdditionalPropertiesDictionary? AdditionalProperties { get; set; }
 }
