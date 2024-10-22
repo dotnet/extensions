@@ -22,14 +22,14 @@ public class OllamaChatClientTests
     [Fact]
     public void Ctor_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("endpoint", () => new OllamaChatClient(null!));
-        Assert.Throws<ArgumentException>("modelId", () => new OllamaChatClient(new("http://localhost"), "   "));
+        Assert.Throws<ArgumentNullException>("endpoint", () => new OllamaChatClient((Uri)null!));
+        Assert.Throws<ArgumentException>("modelId", () => new OllamaChatClient("http://localhost", "   "));
     }
 
     [Fact]
     public void GetService_SuccessfullyReturnsUnderlyingClient()
     {
-        using OllamaChatClient client = new(new("http://localhost"));
+        using OllamaChatClient client = new("http://localhost");
 
         Assert.Same(client, client.GetService<OllamaChatClient>());
         Assert.Same(client, client.GetService<IChatClient>());
@@ -94,7 +94,7 @@ public class OllamaChatClientTests
 
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
-        using OllamaChatClient client = new(new("http://localhost:11434"), "llama3.1", httpClient);
+        using OllamaChatClient client = new("http://localhost:11434", "llama3.1", httpClient);
         var response = await client.CompleteAsync("hello", new()
         {
             MaxOutputTokens = 10,
@@ -152,7 +152,7 @@ public class OllamaChatClientTests
 
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
-        using IChatClient client = new OllamaChatClient(new("http://localhost:11434"), "llama3.1", httpClient);
+        using IChatClient client = new OllamaChatClient("http://localhost:11434", "llama3.1", httpClient);
 
         List<StreamingChatCompletionUpdate> updates = [];
         await foreach (var update in client.CompleteStreamingAsync("hello", new()
@@ -238,7 +238,7 @@ public class OllamaChatClientTests
 
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
-        using IChatClient client = new OllamaChatClient(new("http://localhost:11434"), httpClient: httpClient);
+        using IChatClient client = new OllamaChatClient("http://localhost:11434", httpClient: httpClient);
 
         List<ChatMessage> messages =
         [
@@ -342,7 +342,7 @@ public class OllamaChatClientTests
 
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler) { Timeout = Timeout.InfiniteTimeSpan };
-        using IChatClient client = new OllamaChatClient(new("http://localhost:11434"), "llama3.1", httpClient)
+        using IChatClient client = new OllamaChatClient("http://localhost:11434", "llama3.1", httpClient)
         {
             ToolCallJsonSerializerOptions = TestJsonSerializerContext.Default.Options,
         };
@@ -434,7 +434,7 @@ public class OllamaChatClientTests
 
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler) { Timeout = Timeout.InfiniteTimeSpan };
-        using IChatClient client = new OllamaChatClient(new("http://localhost:11434"), "llama3.1", httpClient)
+        using IChatClient client = new OllamaChatClient("http://localhost:11434", "llama3.1", httpClient)
         {
             ToolCallJsonSerializerOptions = TestJsonSerializerContext.Default.Options,
         };

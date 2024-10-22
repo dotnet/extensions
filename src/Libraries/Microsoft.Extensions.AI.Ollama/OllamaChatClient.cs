@@ -37,6 +37,18 @@ public sealed class OllamaChatClient : IChatClient
     /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model id.
     /// </param>
     /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
+    public OllamaChatClient(string endpoint, string? modelId = null, HttpClient? httpClient = null)
+        : this(new Uri(Throw.IfNull(endpoint)), modelId, httpClient)
+    {
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="OllamaChatClient"/> class.</summary>
+    /// <param name="endpoint">The endpoint URI where Ollama is hosted.</param>
+    /// <param name="modelId">
+    /// The id of the model to use. This may also be overridden per request via <see cref="ChatOptions.ModelId"/>.
+    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model id.
+    /// </param>
+    /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
     public OllamaChatClient(Uri endpoint, string? modelId = null, HttpClient? httpClient = null)
     {
         _ = Throw.IfNull(endpoint);
