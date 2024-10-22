@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Memory.Data" />
+    <PackageReference Include="System.Net.ServerSentEvents" />
   </ItemGroup>
 
   <ItemGroup>
