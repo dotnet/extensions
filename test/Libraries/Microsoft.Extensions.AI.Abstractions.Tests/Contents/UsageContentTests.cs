@@ -19,7 +19,6 @@ public class UsageContentTests
     {
         UsageContent c = new();
         Assert.Null(c.RawRepresentation);
-        Assert.Null(c.ModelId);
         Assert.Null(c.AdditionalProperties);
 
         Assert.NotNull(c.Details);
@@ -37,7 +36,6 @@ public class UsageContentTests
 
         UsageContent c = new(details);
         Assert.Null(c.RawRepresentation);
-        Assert.Null(c.ModelId);
         Assert.Null(c.AdditionalProperties);
 
         Assert.Same(details, c.Details);

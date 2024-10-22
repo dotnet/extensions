@@ -125,24 +125,25 @@ public sealed class OllamaChatClient : IChatClient
                 continue;
             }
 
+            string? modelId = chunk.Model ?? Metadata.ModelId;
+
             StreamingChatCompletionUpdate update = new()
             {
                 Role = chunk.Message?.Role is not null ? new ChatRole(chunk.Message.Role) : null,
                 CreatedAt = DateTimeOffset.TryParse(chunk.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
                 AdditionalProperties = ParseOllamaChatResponseProps(chunk),
                 FinishReason = ToFinishReason(chunk),
+                ModelId = modelId,
             };
-
-            string? modelId = chunk.Model ?? Metadata.ModelId;
 
             if (chunk.Message is { } message)
             {
-                update.Contents.Add(new TextContent(message.Content) { ModelId = modelId });
+                update.Contents.Add(new TextContent(message.Content));
             }
 
             if (ParseOllamaChatResponseUsage(chunk) is { } usage)
             {
-                update.Contents.Add(new UsageContent(usage) { ModelId = modelId });
+                update.Contents.Add(new UsageContent(usage));
             }
 
             yield return update;

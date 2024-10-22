@@ -97,7 +97,6 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                     if (toolCall is ChatCompletionsFunctionToolCall ftc && !string.IsNullOrWhiteSpace(ftc.Name))
                     {
                         FunctionCallContent callContent = ParseCallContentFromJsonString(ftc.Arguments, toolCall.Id, ftc.Name);
-                        callContent.ModelId = response.Model;
                         callContent.RawRepresentation = toolCall;
 
                         returnMessage.Contents.Add(callContent);
@@ -109,7 +108,6 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
             {
                 returnMessage.Contents.Add(new TextContent(choice.Message.Content)
                 {
-                    ModelId = response.Model,
                     RawRepresentation = choice.Message
                 });
             }
@@ -173,6 +171,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 CompletionId = chatCompletionUpdate.Id,
                 CreatedAt = chatCompletionUpdate.Created,
                 FinishReason = finishReason,
+                ModelId = modelId,
                 RawRepresentation = chatCompletionUpdate,
                 Role = streamedRole,
             };
@@ -180,10 +179,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
             // Transfer over content update items.
             if (chatCompletionUpdate.ContentUpdate is string update)
             {
-                completionUpdate.Contents.Add(new TextContent(update)
-                {
-                    ModelId = modelId,
-                });
+                completionUpdate.Contents.Add(new TextContent(update));
             }
 
             // Transfer over tool call updates.
@@ -218,6 +214,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                 CompletionId = completionId,
                 CreatedAt = createdAt,
                 FinishReason = finishReason,
+                ModelId = modelId,
                 Role = streamedRole,
             };
 
@@ -230,9 +227,6 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                         fci.Arguments?.ToString() ?? string.Empty,
                         fci.CallId!,
                         fci.Name!);
-
-                    callContent.ModelId = modelId;
-
                     completionUpdate.Contents.Add(callContent);
                 }
             }

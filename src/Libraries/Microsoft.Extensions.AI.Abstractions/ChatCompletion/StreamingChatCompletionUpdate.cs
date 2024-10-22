@@ -91,6 +91,9 @@ public class StreamingChatCompletionUpdate
     /// <summary>Gets or sets the finish reason for the operation.</summary>
     public ChatFinishReason? FinishReason { get; set; }
 
+    /// <summary>Gets or sets the model ID using in the creation of the chat completion of which this update is a part.</summary>
+    public string? ModelId { get; set; }
+
     /// <inheritdoc/>
     public override string ToString() => Text ?? string.Empty;
 }
