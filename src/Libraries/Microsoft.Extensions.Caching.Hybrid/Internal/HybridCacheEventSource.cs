@@ -13,6 +13,19 @@ internal sealed class HybridCacheEventSource : EventSource
 {
     public static readonly HybridCacheEventSource Log = new();
 
+    private const int EventIdLocalCacheHit = 1;
+    private const int EventIdLocalCacheMiss = 2;
+    private const int EventIdDistributedCacheGet = 3;
+    private const int EventIdDistributedCacheHit = 4;
+    private const int EventIdDistributedCacheMiss = 5;
+    private const int EventIdDistributedCacheFailed = 6;
+    private const int EventIdBackendExecuteStart = 7;
+    private const int EventIdBackendExecuteComplete = 8;
+    private const int EventIdBackendExecuteFailed = 9;
+    private const int EventIdLocalCacheWrite = 10;
+    private const int EventIdDistributedCacheWrite = 11;
+    private const int EventIdStampedeJoin = 12;
+
     // fast local counters
     private long _totalLocalCacheHit;
     private long _totalLocalCacheMiss;
@@ -45,105 +58,105 @@ internal sealed class HybridCacheEventSource : EventSource
         Volatile.Write(ref _totalStampedeJoin, 0);
     }
 
-    [Event(1, Level = EventLevel.Verbose)]
+    [Event(EventIdLocalCacheHit, Level = EventLevel.Verbose)]
     public void LocalCacheHit()
     {
         DebugAssertEnabled();
         _ = Interlocked.Increment(ref _totalLocalCacheHit);
-        WriteEvent(1);
+        WriteEvent(EventIdLocalCacheHit);
     }
 
-    [Event(2, Level = EventLevel.Verbose)]
+    [Event(EventIdLocalCacheMiss, Level = EventLevel.Verbose)]
     public void LocalCacheMiss()
     {
         DebugAssertEnabled();
         _ = Interlocked.Increment(ref _totalLocalCacheMiss);
-        WriteEvent(2);
+        WriteEvent(EventIdLocalCacheMiss);
     }
 
-    [Event(3, Level = EventLevel.Verbose)]
+    [Event(EventIdDistributedCacheGet, Level = EventLevel.Verbose)]
     public void DistributedCacheGet()
     {
         // should be followed by DistributedCacheHit, DistributedCacheMiss or DistributedCacheFailed
         DebugAssertEnabled();
         _ = Interlocked.Increment(ref _currentDistributedFetch);
-        WriteEvent(3);
+        WriteEvent(EventIdDistributedCacheGet);
     }
 
-    [Event(4, Level = EventLevel.Verbose)]
+    [Event(EventIdDistributedCacheHit, Level = EventLevel.Verbose)]
     public void DistributedCacheHit()
     {
         DebugAssertEnabled();
         _ = Interlocked.Increment(ref _totalDistributedCacheHit);
         _ = Interlocked.Decrement(ref _currentDistributedFetch);
-        WriteEvent(4);
+        WriteEvent(EventIdDistributedCacheHit);
     }
 
-    [Event(5, Level = EventLevel.Verbose)]
+    [Event(EventIdDistributedCacheMiss, Level = EventLevel.Verbose)]
     public void DistributedCacheMiss()
     {
         DebugAssertEnabled();
         _ = Interlocked.Increment(ref _totalDistributedCacheMiss);
         _ = Interlocked.Decrement(ref _currentDistributedFetch);
-        WriteEvent(5);
+        WriteEvent(EventIdDistributedCacheMiss);
     }
 
-    [Event(6, Level = EventLevel.Error)]
+    [Event(EventIdDistributedCacheFailed, Level = EventLevel.Error)]
     public void DistributedCacheFailed()
     {
         DebugAssertEnabled();
         _ = Interlocked.Decrement(ref _currentDistributedFetch);
-        WriteEvent(6);
+        WriteEvent(EventIdDistributedCacheFailed);
     }
 
-    [Event(7, Level = EventLevel.Verbose)]
+    [Event(EventIdBackendExecuteStart, Level = EventLevel.Verbose)]
     public void BackendExecuteStart()
     {
         // should be followed by BackendExecuteComplete or BackendExecuteFailed
         DebugAssertEnabled();
         _ = Interlocked.Increment(ref _totalBackendExecute);
         _ = Interlocked.Increment(ref _currentBackendExecute);
-        WriteEvent(7);
+        WriteEvent(EventIdBackendExecuteStart);
     }
 
-    [Event(8, Level = EventLevel.Verbose)]
+    [Event(EventIdBackendExecuteComplete, Level = EventLevel.Verbose)]
     public void BackendExecuteComplete()
     {
         DebugAssertEnabled();
         _ = Interlocked.Decrement(ref _currentBackendExecute);
-        WriteEvent(8);
+        WriteEvent(EventIdBackendExecuteComplete);
     }
 
-    [Event(9, Level = EventLevel.Error)]
+    [Event(EventIdBackendExecuteFailed, Level = EventLevel.Error)]
     public void BackendExecuteFailed()
     {
         DebugAssertEnabled();
         _ = Interlocked.Decrement(ref _currentBackendExecute);
-        WriteEvent(9);
+        WriteEvent(EventIdBackendExecuteFailed);
     }
 
-    [Event(10, Level = EventLevel.Verbose)]
+    [Event(EventIdLocalCacheWrite, Level = EventLevel.Verbose)]
     public void LocalCacheWrite()
     {
         DebugAssertEnabled();
         _ = Interlocked.Increment(ref _totalLocalCacheWrite);
-        WriteEvent(10);
+        WriteEvent(EventIdLocalCacheWrite);
     }
 
-    [Event(11, Level = EventLevel.Verbose)]
+    [Event(EventIdDistributedCacheWrite, Level = EventLevel.Verbose)]
     public void DistributedCacheWrite()
     {
         DebugAssertEnabled();
         _ = Interlocked.Increment(ref _totalDistributedCacheWrite);
-        WriteEvent(11);
+        WriteEvent(EventIdDistributedCacheWrite);
     }
 
-    [Event(12, Level = EventLevel.Verbose)]
+    [Event(EventIdStampedeJoin, Level = EventLevel.Verbose)]
     internal void StampedeJoin()
     {
         DebugAssertEnabled();
         _ = Interlocked.Increment(ref _totalStampedeJoin);
-        WriteEvent(12);
+        WriteEvent(EventIdStampedeJoin);
     }
 
 #if !(NETSTANDARD2_0 || NET462)
