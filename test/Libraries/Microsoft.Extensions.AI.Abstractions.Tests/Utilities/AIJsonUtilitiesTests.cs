@@ -2,14 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Net.ServerSentEvents;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading.Tasks;
 using Microsoft.Extensions.AI.JsonSchemaExporter;
 using Xunit;
+
+#pragma warning disable S2197 // Modulus results should not be checked for direct equality
 
 namespace Microsoft.Extensions.AI;
 
@@ -287,4 +294,81 @@ public static class AIJsonUtilitiesTests
         JsonNode? serializedValue = JsonSerializer.SerializeToNode(testData.Value, testData.Type, options);
         SchemaTestHelpers.AssertDocumentMatchesSchema(schemaAsNode, serializedValue);
     }
+
+    [Fact]
+    public static async Task SerializeAsSseAsync_HasExpectedOutput()
+    {
+        using MemoryStream stream = new();
+        await AIJsonUtilities.SerializeAsSseAsync(stream, CreateEvents());
+        string output = Encoding.UTF8.GetString(stream.ToArray());
+
+        Assert.Equal("""
+            data: {"value":1}
+
+            event: eventType1
+            data: {"value":2}
+
+            data: {"value":3}
+            id: 3
+
+            event: eventType2
+            data: {"value":4}
+            id: 4
+
+
+            """,
+            output);
+
+        static async IAsyncEnumerable<SseEvent<SseValue>> CreateEvents()
+        {
+            yield return new SseEvent<SseValue>(new SseValue(1));
+            yield return new SseEvent<SseValue>(new SseValue(2)) { EventType = "eventType1" };
+            await Task.CompletedTask;
+            yield return new SseEvent<SseValue>(new SseValue(3)) { Id = "3" };
+            yield return new SseEvent<SseValue>(new SseValue(4)) { Id = "4", EventType = "eventType2" };
+        }
+    }
+
+    [Fact]
+    public static async Task SerializeAsSseAsync_CanRoundtripValues()
+    {
+        using MemoryStream stream = new();
+        await AIJsonUtilities.SerializeAsSseAsync(stream, CreateEvents(100), cancellationToken: default);
+        stream.Position = 0;
+
+        var parser = SseParser.Create(stream, (_, data) => JsonSerializer.Deserialize<SseValue>(data, AIJsonUtilities.DefaultOptions)!);
+        string expectedLastEventId = "";
+        int i = 0;
+
+        foreach (var parsedEvent in parser.Enumerate())
+        {
+            Assert.NotNull(parsedEvent.Data);
+            Assert.Equal(i, parsedEvent.Data.Value);
+            Assert.Equal((i % 7) switch { 3 => "A", 5 => "B", _ => "message" }, parsedEvent.EventType);
+
+            if (i % 10 == 9)
+            {
+                expectedLastEventId = i.ToString();
+            }
+
+            Assert.Equal(expectedLastEventId, parser.LastEventId);
+            i++;
+        }
+
+        static async IAsyncEnumerable<SseEvent<SseValue>> CreateEvents(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                yield return new SseEvent<SseValue>(new SseValue(i))
+                {
+                    Id = i % 10 == 9 ? i.ToString() : null,
+                    EventType = (i % 7) switch { 3 => "A", 5 => "B", _ => null },
+                };
+            }
+
+            await Task.CompletedTask;
+        }
+    }
+
+    public record SseValue(int Value);
 }
