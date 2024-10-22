@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
-[EventSource(Name = "HybridCache")]
+[EventSource(Name = "HybridCache", Guid = "447667be-e2b5-4962-b3b8-f2c591ec517c")]
 internal sealed class HybridCacheEventSource : EventSource
 {
     public static readonly HybridCacheEventSource Log = new();
