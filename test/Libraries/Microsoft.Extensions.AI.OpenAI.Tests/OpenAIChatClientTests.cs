@@ -371,6 +371,187 @@ public class OpenAIChatClientTests
     }
 
     [Fact]
+    public async Task MultiPartSystemMessage_NonStreaming()
+    {
+        const string Input = """
+            {
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "You are a really nice friend."
+                            },
+                            {
+                                "type": "text",
+                                "text": "Really nice."
+                            }
+                        ]
+                    },
+                    {
+                        "role": "user",
+                        "content": "hello!"
+                    }
+                ],
+                "model": "gpt-4o-mini"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P",
+              "object": "chat.completion",
+              "created": 1727894187,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hi! It's so good to hear from you!",
+                    "refusal": null
+                  },
+                  "logprobs": null,
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 42,
+                "completion_tokens": 15,
+                "total_tokens": 57,
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                }
+              },
+              "system_fingerprint": "fp_f85bea6784"
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.System, [new TextContent("You are a really nice friend."), new TextContent("Really nice.")]),
+            new(ChatRole.User, "hello!"),
+        ];
+
+        var response = await client.CompleteAsync(messages);
+        Assert.NotNull(response);
+
+        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.CompletionId);
+        Assert.Equal("Hi! It's so good to hear from you!", response.Message.Text);
+        Assert.Single(response.Message.Contents);
+        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_187), response.CreatedAt);
+        Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(42, response.Usage.InputTokenCount);
+        Assert.Equal(15, response.Usage.OutputTokenCount);
+        Assert.Equal(57, response.Usage.TotalTokenCount);
+        Assert.NotNull(response.Usage.AdditionalProperties);
+
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
+    }
+
+    [Fact]
+    public async Task EmptyAssistantMessage_NonStreaming()
+    {
+        const string Input = """
+            {
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are a really nice friend."
+                    },
+                    {
+                        "role": "user",
+                        "content": "hello!"
+                    },
+                    {
+                        "role": "user",
+                        "content": "i\u0027m good. how are you?"
+                    }
+                ],
+                "model": "gpt-4o-mini"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P",
+              "object": "chat.completion",
+              "created": 1727894187,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "I’m doing well, thank you! What’s on your mind today?",
+                    "refusal": null
+                  },
+                  "logprobs": null,
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 42,
+                "completion_tokens": 15,
+                "total_tokens": 57,
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                }
+              },
+              "system_fingerprint": "fp_f85bea6784"
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.System, "You are a really nice friend."),
+            new(ChatRole.User, "hello!"),
+            new(ChatRole.Assistant, (string?)null),
+            new(ChatRole.User, "i'm good. how are you?"),
+        ];
+
+        var response = await client.CompleteAsync(messages);
+        Assert.NotNull(response);
+
+        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.CompletionId);
+        Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Message.Text);
+        Assert.Single(response.Message.Contents);
+        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_187), response.CreatedAt);
+        Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(42, response.Usage.InputTokenCount);
+        Assert.Equal(15, response.Usage.OutputTokenCount);
+        Assert.Equal(57, response.Usage.TotalTokenCount);
+        Assert.NotNull(response.Usage.AdditionalProperties);
+
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
+    }
+
+    [Fact]
     public async Task FunctionCallContent_NonStreaming()
     {
         const string Input = """
@@ -583,6 +764,142 @@ public class OpenAIChatClientTests
         Assert.Equal(77, usage.Details.TotalTokenCount);
         Assert.NotNull(usage.Details.AdditionalProperties);
         Assert.Equal(new Dictionary<string, object> { [nameof(ChatOutputTokenUsageDetails.ReasoningTokenCount)] = 0 }, usage.Details.AdditionalProperties[nameof(ChatTokenUsage.OutputTokenDetails)]);
+    }
+
+    [Fact]
+    public async Task AssistantMessageWithBothToolsAndContent_NonStreaming()
+    {
+        const string Input = """
+            {
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are a really nice friend."
+                    },
+                    {
+                        "role": "user",
+                        "content": "hello!"
+                    },
+                    {
+                        "role": "assistant",
+                        "content": "hi, how are you?",
+                        "tool_calls": [
+                            {
+                                "id": "12345",
+                                "type": "function",
+                                "function": {
+                                    "name": "SayHello",
+                                    "arguments": "null"
+                                }
+                            },
+                            {
+                                "id": "12346",
+                                "type": "function",
+                                "function": {
+                                    "name": "SayHi",
+                                    "arguments": "null"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "role": "tool",
+                        "tool_call_id": "12345",
+                        "content": "Said hello"
+                    },
+                    {
+                        "role":"tool",
+                        "tool_call_id":"12346",
+                        "content":"Said hi"
+                    },
+                    {
+                        "role":"assistant",
+                        "content":"You are great."
+                    },
+                    {
+                        "role":"user",
+                        "content":"Thanks!"
+                    }
+                ],
+                "model":"gpt-4o-mini"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P",
+              "object": "chat.completion",
+              "created": 1727894187,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "I’m doing well, thank you! What’s on your mind today?",
+                    "refusal": null
+                  },
+                  "logprobs": null,
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 42,
+                "completion_tokens": 15,
+                "total_tokens": 57,
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                }
+              },
+              "system_fingerprint": "fp_f85bea6784"
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.System, "You are a really nice friend."),
+            new(ChatRole.User, "hello!"),
+            new(ChatRole.Assistant,
+            [
+                new TextContent("hi, how are you?"),
+                new FunctionCallContent("12345", "SayHello"),
+                new FunctionCallContent("12346", "SayHi"),
+            ]),
+            new (ChatRole.Tool,
+            [
+                new FunctionResultContent("12345", "SayHello", "Said hello"),
+                new FunctionResultContent("12346", "SayHi", "Said hi"),
+            ]),
+            new(ChatRole.Assistant, "You are great."),
+            new(ChatRole.User, "Thanks!"),
+        ];
+
+        var response = await client.CompleteAsync(messages);
+        Assert.NotNull(response);
+
+        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.CompletionId);
+        Assert.Equal("I’m doing well, thank you! What’s on your mind today?", response.Message.Text);
+        Assert.Single(response.Message.Contents);
+        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_187), response.CreatedAt);
+        Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(42, response.Usage.InputTokenCount);
+        Assert.Equal(15, response.Usage.OutputTokenCount);
+        Assert.Equal(57, response.Usage.TotalTokenCount);
+        Assert.NotNull(response.Usage.AdditionalProperties);
+
+        Assert.NotNull(response.AdditionalProperties);
+        Assert.Equal("fp_f85bea6784", response.AdditionalProperties[nameof(OpenAI.Chat.ChatCompletion.SystemFingerprint)]);
     }
 
     private static IChatClient CreateChatClient(HttpClient httpClient, string modelId) =>

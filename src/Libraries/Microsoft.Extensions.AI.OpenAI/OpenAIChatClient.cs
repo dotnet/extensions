@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -569,13 +568,18 @@ public sealed partial class OpenAIChatClient : IChatClient
     private IEnumerable<OpenAI.Chat.ChatMessage> ToOpenAIChatMessages(IEnumerable<ChatMessage> inputs)
     {
         // Maps all of the M.E.AI types to the corresponding OpenAI types.
-        // Unrecognized content is ignored.
+        // Unrecognized or non-processable content is ignored.
 
         foreach (ChatMessage input in inputs)
         {
-            if (input.Role == ChatRole.System)
+            if (input.Role == ChatRole.System || input.Role == ChatRole.User)
             {
-                yield return new SystemChatMessage(input.Text) { ParticipantName = input.AuthorName };
+                if (GetContentParts(input.Contents) is { } parts)
+                {
+                    yield return input.Role == ChatRole.System ?
+                        new SystemChatMessage(parts) { ParticipantName = input.AuthorName } :
+                        new UserChatMessage(parts) { ParticipantName = input.AuthorName };
+                }
             }
             else if (input.Role == ChatRole.Tool)
             {
@@ -601,28 +605,16 @@ public sealed partial class OpenAIChatClient : IChatClient
                     }
                 }
             }
-            else if (input.Role == ChatRole.User)
-            {
-                yield return new UserChatMessage(input.Contents.Select(static (AIContent item) => item switch
-                {
-                    TextContent textContent => ChatMessageContentPart.CreateTextPart(textContent.Text),
-                    ImageContent imageContent => imageContent.Data is { IsEmpty: false } data ? ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MediaType) :
-                                                 imageContent.Uri is string uri ? ChatMessageContentPart.CreateImagePart(new Uri(uri)) :
-                                                 null,
-                    _ => null,
-                }).Where(c => c is not null))
-                { ParticipantName = input.AuthorName };
-            }
             else if (input.Role == ChatRole.Assistant)
             {
-                Dictionary<string, ChatToolCall>? toolCalls = null;
+                var parts = GetContentParts(input.Contents);
 
+                List<ChatToolCall>? toolCalls = null;
                 foreach (var content in input.Contents)
                 {
-                    if (content is FunctionCallContent callRequest && callRequest.CallId is not null && toolCalls?.ContainsKey(callRequest.CallId) is not true)
+                    if (content is FunctionCallContent { CallId: not null } callRequest)
                     {
                         (toolCalls ??= []).Add(
-                            callRequest.CallId,
                             ChatToolCall.CreateFunctionToolCall(
                                 callRequest.CallId,
                                 callRequest.Name,
@@ -630,18 +622,61 @@ public sealed partial class OpenAIChatClient : IChatClient
                     }
                 }
 
-                AssistantChatMessage message = toolCalls is not null ?
-                    new(toolCalls.Values) { ParticipantName = input.AuthorName } :
-                    new(input.Text) { ParticipantName = input.AuthorName };
-
-                if (input.AdditionalProperties?.TryGetValue(nameof(message.Refusal), out string? refusal) is true)
+                AssistantChatMessage? message = null;
+                if (toolCalls is not null)
                 {
-                    message.Refusal = refusal;
+                    message = new(toolCalls);
+                    if (parts is not null)
+                    {
+                        foreach (var contentPart in parts)
+                        {
+                            message.Content.Add(contentPart);
+                        }
+                    }
+                }
+                else if (parts is not null)
+                {
+                    message = new(parts);
                 }
 
-                yield return message;
+                if (message is not null)
+                {
+                    message.ParticipantName = input.AuthorName;
+
+                    if (input.AdditionalProperties?.TryGetValue(nameof(message.Refusal), out string? refusal) is true)
+                    {
+                        message.Refusal = refusal;
+                    }
+
+                    yield return message;
+                }
             }
         }
+    }
+
+    /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentPart"/>.</summary>
+    private static List<ChatMessageContentPart>? GetContentParts(IList<AIContent> contents)
+    {
+        List<ChatMessageContentPart>? parts = null;
+        foreach (var content in contents)
+        {
+            switch (content)
+            {
+                case TextContent textContent when textContent.Text is string text:
+                    (parts ??= []).Add(ChatMessageContentPart.CreateTextPart(text));
+                    break;
+
+                case ImageContent imageContent when imageContent.Data is { IsEmpty: false } data:
+                    (parts ??= []).Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MediaType));
+                    break;
+
+                case ImageContent imageContent when imageContent.Uri is string uri:
+                    (parts ??= []).Add(ChatMessageContentPart.CreateImagePart(new Uri(uri)));
+                    break;
+            }
+        }
+
+        return parts;
     }
 
     private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
