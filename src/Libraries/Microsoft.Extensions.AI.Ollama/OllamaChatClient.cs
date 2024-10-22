@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -114,12 +115,14 @@ public sealed class OllamaChatClient : IChatClient
 #endif
             .ConfigureAwait(false);
 
-        await foreach (OllamaChatResponse? chunk in JsonSerializer.DeserializeAsyncEnumerable(
-            httpResponseStream,
-            JsonContext.Default.OllamaChatResponse,
-            topLevelValues: true,
-            cancellationToken).ConfigureAwait(false))
+        using var streamReader = new StreamReader(httpResponseStream);
+#if NET
+        while ((await streamReader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is { } line)
+#else
+        while ((await streamReader.ReadLineAsync().ConfigureAwait(false)) is { } line)
+#endif
         {
+            var chunk = JsonSerializer.Deserialize(line, JsonContext.Default.OllamaChatResponse);
             if (chunk is null)
             {
                 continue;
