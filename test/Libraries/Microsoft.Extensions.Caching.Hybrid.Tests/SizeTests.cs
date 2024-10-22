@@ -3,29 +3,52 @@
 
 using Microsoft.Extensions.Caching.Hybrid.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 
-public class SizeTests
+public class SizeTests(ITestOutputHelper log)
 {
     [Theory]
-    [InlineData(null, true)] // does not enforce size limits
-    [InlineData(8L, false)] // unreasonably small limit; chosen because our test string has length 12 - hence no expectation to find the second time
-    [InlineData(1024L, true)] // reasonable size limit
-    public async Task ValidateSizeLimit_Immutable(long? sizeLimit, bool expectFromL1)
+    [InlineData("abc", null, true, null, null)] // does not enforce size limits
+    [InlineData("", null, false, null, null, Log.IdKeyEmptyOrWhitespace, Log.IdKeyEmptyOrWhitespace)] // invalid key
+    [InlineData("  ", null, false, null, null, Log.IdKeyEmptyOrWhitespace, Log.IdKeyEmptyOrWhitespace)] // invalid key
+    [InlineData(null, null, false, null, null, Log.IdKeyEmptyOrWhitespace, Log.IdKeyEmptyOrWhitespace)] // invalid key
+    [InlineData("abc", 8L, false, null, null)] // unreasonably small limit; chosen because our test string has length 12 - hence no expectation to find the second time
+    [InlineData("abc", 1024L, true, null, null)] // reasonable size limit
+    [InlineData("abc", 1024L, true, 8L, null, Log.IdMaximumPayloadBytesExceeded)] // reasonable size limit, small HC quota
+    [InlineData("abc", null, false, null, 2, Log.IdMaximumKeyLengthExceeded, Log.IdMaximumKeyLengthExceeded)] // key limit exceeded
+    public async Task ValidateSizeLimit_Immutable(string key, long? sizeLimit, bool expectFromL1, long? maximumPayloadBytes, int? maximumKeyLength,
+        params int[] errorIds)
     {
+        using var collector = new LogCollector();
         var services = new ServiceCollection();
         services.AddMemoryCache(options => options.SizeLimit = sizeLimit);
-        services.AddHybridCache();
+        services.AddHybridCache(options =>
+        {
+            if (maximumKeyLength.HasValue)
+            {
+                options.MaximumKeyLength = maximumKeyLength.GetValueOrDefault();
+            }
+
+            if (maximumPayloadBytes.HasValue)
+            {
+                options.MaximumPayloadBytes = maximumPayloadBytes.GetValueOrDefault();
+            }
+        });
+        services.AddLogging(options =>
+        {
+            options.ClearProviders();
+            options.AddProvider(collector);
+        });
         using ServiceProvider provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
-
-        const string Key = "abc";
 
         // this looks weird; it is intentionally not a const - we want to check
         // same instance without worrying about interning from raw literals
         string expected = new("simple value".ToArray());
-        var actual = await cache.GetOrCreateAsync<string>(Key, ct => new(expected));
+        var actual = await cache.GetOrCreateAsync<string>(key, ct => new(expected));
 
         // expect same contents
         Assert.Equal(expected, actual);
@@ -35,7 +58,7 @@ public class SizeTests
         Assert.Same(expected, actual);
 
         // rinse and repeat, to check we get the value from L1
-        actual = await cache.GetOrCreateAsync<string>(Key, ct => new(Guid.NewGuid().ToString()));
+        actual = await cache.GetOrCreateAsync<string>(key, ct => new(Guid.NewGuid().ToString()));
 
         if (expectFromL1)
         {
@@ -51,30 +74,54 @@ public class SizeTests
             // L1 cache not used
             Assert.NotEqual(expected, actual);
         }
+
+        collector.WriteTo(log);
+        collector.AssertErrors(errorIds);
     }
 
     [Theory]
-    [InlineData(null, true)] // does not enforce size limits
-    [InlineData(8L, false)] // unreasonably small limit; chosen because our test string has length 12 - hence no expectation to find the second time
-    [InlineData(1024L, true)] // reasonable size limit
-    public async Task ValidateSizeLimit_Mutable(long? sizeLimit, bool expectFromL1)
+    [InlineData("abc", null, true, null, null)] // does not enforce size limits
+    [InlineData("", null, false, null, null, Log.IdKeyEmptyOrWhitespace, Log.IdKeyEmptyOrWhitespace)] // invalid key
+    [InlineData("  ", null, false, null, null, Log.IdKeyEmptyOrWhitespace, Log.IdKeyEmptyOrWhitespace)] // invalid key
+    [InlineData(null, null, false, null, null, Log.IdKeyEmptyOrWhitespace, Log.IdKeyEmptyOrWhitespace)] // invalid key
+    [InlineData("abc", 8L, false, null, null)] // unreasonably small limit; chosen because our test string has length 12 - hence no expectation to find the second time
+    [InlineData("abc", 1024L, true, null, null)] // reasonable size limit
+    [InlineData("abc", 1024L, true, 8L, null, Log.IdMaximumPayloadBytesExceeded)] // reasonable size limit, small HC quota
+    [InlineData("abc", null, false, null, 2, Log.IdMaximumKeyLengthExceeded, Log.IdMaximumKeyLengthExceeded)] // key limit exceeded
+    public async Task ValidateSizeLimit_Mutable(string key, long? sizeLimit, bool expectFromL1, long? maximumPayloadBytes, int? maximumKeyLength,
+        params int[] errorIds)
     {
+        using var collector = new LogCollector();
         var services = new ServiceCollection();
         services.AddMemoryCache(options => options.SizeLimit = sizeLimit);
-        services.AddHybridCache();
+        services.AddHybridCache(options =>
+        {
+            if (maximumKeyLength.HasValue)
+            {
+                options.MaximumKeyLength = maximumKeyLength.GetValueOrDefault();
+            }
+
+            if (maximumPayloadBytes.HasValue)
+            {
+                options.MaximumPayloadBytes = maximumPayloadBytes.GetValueOrDefault();
+            }
+        });
+        services.AddLogging(options =>
+        {
+            options.ClearProviders();
+            options.AddProvider(collector);
+        });
         using ServiceProvider provider = services.BuildServiceProvider();
         var cache = Assert.IsType<DefaultHybridCache>(provider.GetRequiredService<HybridCache>());
 
-        const string Key = "abc";
-
         string expected = "simple value";
-        var actual = await cache.GetOrCreateAsync<MutablePoco>(Key, ct => new(new MutablePoco { Value = expected }));
+        var actual = await cache.GetOrCreateAsync<MutablePoco>(key, ct => new(new MutablePoco { Value = expected }));
 
         // expect same contents
         Assert.Equal(expected, actual.Value);
 
         // rinse and repeat, to check we get the value from L1
-        actual = await cache.GetOrCreateAsync<MutablePoco>(Key, ct => new(new MutablePoco { Value = Guid.NewGuid().ToString() }));
+        actual = await cache.GetOrCreateAsync<MutablePoco>(key, ct => new(new MutablePoco { Value = Guid.NewGuid().ToString() }));
 
         if (expectFromL1)
         {
@@ -86,6 +133,9 @@ public class SizeTests
             // L1 cache not used
             Assert.NotEqual(expected, actual.Value);
         }
+
+        collector.WriteTo(log);
+        collector.AssertErrors(errorIds);
     }
 
     public class MutablePoco

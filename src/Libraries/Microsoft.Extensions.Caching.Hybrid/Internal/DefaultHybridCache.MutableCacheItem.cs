@@ -7,8 +7,9 @@ internal partial class DefaultHybridCache
 {
     private sealed partial class MutableCacheItem<T> : CacheItem<T> // used to hold types that require defensive copies
     {
-        private IHybridCacheSerializer<T> _serializer = null!; // deferred until SetValue
+        private IHybridCacheSerializer<T>? _serializer;
         private BufferChunk _buffer;
+        private T? _fallbackValue; // only used in the case of serialization failures
 
         public override bool NeedsEvictionCallback => _buffer.ReturnToPool;
 
@@ -21,6 +22,11 @@ internal partial class DefaultHybridCache
             buffer = default; // we're taking over the lifetime; the caller no longer has it!
         }
 
+        public void SetValue(T fallbackValue)
+        {
+            _fallbackValue = fallbackValue;
+        }
+
         public override bool TryGetValue(out T value)
         {
             // only if we haven't already burned
@@ -28,7 +34,8 @@ internal partial class DefaultHybridCache
             {
                 try
                 {
-                    value = _serializer.Deserialize(_buffer.AsSequence());
+                    var serializer = _serializer;
+                    value = serializer is null ? _fallbackValue! : serializer.Deserialize(_buffer.AsSequence());
                     return true;
                 }
                 finally

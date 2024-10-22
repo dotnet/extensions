@@ -202,33 +202,38 @@ internal partial class DefaultHybridCache
                         // ^^^ The first thing we need to do is make sure we're not getting into a thread race over buffer disposal.
                         // In particular, if this cache item is somehow so short-lived that the buffers would be released *before* we're
                         // done writing them to L2, which happens *after* we've provided the value to consumers.
-                        RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
-                        IHybridCacheSerializer<T> serializer = Cache.GetSerializer<T>();
-                        serializer.Serialize(newValue, writer);
-                        BufferChunk buffer = new(writer.DetachCommitted(out var length), length, returnToPool: true); // remove buffer ownership from the writer
-                        writer.Dispose(); // we're done with the writer
 
-                        // protect "buffer" (this is why we "reserved") for writing to L2 if needed; SetResultPreSerialized
-                        // *may* (depending on context) claim this buffer, in which case "bufferToRelease" gets reset, and
-                        // the final RecycleIfAppropriate() is a no-op; however, the buffer is valid in either event,
-                        // (with TryReserve above guaranteeing that we aren't in a race condition).
-                        BufferChunk bufferToRelease = buffer;
-
-                        // and since "bufferToRelease" is the thing that will be returned at some point, we can make it explicit
-                        // that we do not need or want "buffer" to do any recycling (they're the same memory)
-                        buffer = buffer.DoNotReturnToPool();
-
-                        // set the underlying result for this operation (includes L1 write if appropriate)
-                        SetResultPreSerialized(newValue, ref bufferToRelease, serializer);
-
-                        // Note that at this point we've already released most or all of the waiting callers. Everything
-                        // from this point onwards happens in the background, from the perspective of the calling code.
-
-                        // Write to L2 if appropriate.
-                        if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
+                        BufferChunk bufferToRelease = default;
+                        if (Cache.TrySerialize(newValue, out var buffer, out var serializer))
                         {
-                            // We already have the payload serialized, so this is trivial to do.
-                            await Cache.SetL2Async(Key.Key, in buffer, _options, SharedToken).ConfigureAwait(false);
+                            // protect "buffer" (this is why we "reserved") for writing to L2 if needed; SetResultPreSerialized
+                            // *may* (depending on context) claim this buffer, in which case "bufferToRelease" gets reset, and
+                            // the final RecycleIfAppropriate() is a no-op; however, the buffer is valid in either event,
+                            // (with TryReserve above guaranteeing that we aren't in a race condition).
+                            bufferToRelease = buffer;
+
+                            // and since "bufferToRelease" is the thing that will be returned at some point, we can make it explicit
+                            // that we do not need or want "buffer" to do any recycling (they're the same memory)
+                            buffer = buffer.DoNotReturnToPool();
+
+                            // set the underlying result for this operation (includes L1 write if appropriate)
+                            SetResultPreSerialized(newValue, ref bufferToRelease, serializer);
+
+                            // Note that at this point we've already released most or all of the waiting callers. Everything
+                            // from this point onwards happens in the background, from the perspective of the calling code.
+
+                            // Write to L2 if appropriate.
+                            if ((Key.Flags & HybridCacheEntryFlags.DisableDistributedCacheWrite) == 0)
+                            {
+                                // We already have the payload serialized, so this is trivial to do.
+                                await Cache.SetL2Async(Key.Key, in buffer, _options, SharedToken).ConfigureAwait(false);
+                            }
+                        }
+                        else
+                        {
+                            // unable to serialize (or quota exceeded) ;try to at least store the onwards value; this is
+                            // especially useful for immutable data types
+                            SetResultPreSerialized(newValue, ref bufferToRelease, serializer);
                         }
 
                         // Release our hook on the CacheItem (only really important for "mutable").
@@ -328,7 +333,7 @@ internal partial class DefaultHybridCache
             SetResult(cacheItem);
         }
 
-        private void SetResultPreSerialized(T value, ref BufferChunk buffer, IHybridCacheSerializer<T> serializer)
+        private void SetResultPreSerialized(T value, ref BufferChunk buffer, IHybridCacheSerializer<T>? serializer)
         {
             // set a result from a value we calculated directly that
             // has ALREADY BEEN SERIALIZED (we can optionally consume this buffer)
@@ -343,8 +348,17 @@ internal partial class DefaultHybridCache
                     // (but leave the buffer alone)
                     break;
                 case MutableCacheItem<T> mutable:
-                    mutable.SetValue(ref buffer, serializer);
-                    mutable.DebugOnlyTrackBuffer(Cache);
+                    if (serializer is null)
+                    {
+                        // serialization is failing; set fallback value
+                        mutable.SetValue(value);
+                    }
+                    else
+                    {
+                        mutable.SetValue(ref buffer, serializer);
+                        mutable.DebugOnlyTrackBuffer(Cache);
+                    }
+
                     cacheItem = mutable;
                     break;
                 default:

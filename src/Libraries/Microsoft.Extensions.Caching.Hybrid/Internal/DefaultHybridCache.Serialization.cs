@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -49,6 +49,47 @@ internal partial class DefaultHybridCache
             // store the result so we don't repeat this in future
             @this._serializers[typeof(T)] = serializer;
             return serializer;
+        }
+    }
+
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Intentional for logged failure mode")]
+    private bool TrySerialize<T>(T value, out BufferChunk buffer, out IHybridCacheSerializer<T>? serializer)
+    {
+        RecyclableArrayBufferWriter<byte>? writer = null;
+        buffer = default;
+        try
+        {
+            writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes); // note this lifetime spans the SetL2Async
+            serializer = GetSerializer<T>();
+
+            serializer.Serialize(value, writer);
+
+            buffer = new(writer.DetachCommitted(out var length), length, returnToPool: true); // remove buffer ownership from the writer
+            writer.Dispose(); // we're done with the writer
+            return true;
+        }
+        catch (Exception ex)
+        {
+            bool logged = false;
+            if (writer is not null)
+            {
+                if (writer.QuotaExceeded)
+                {
+                    _logger.MaximumPayloadBytesExceeded(ex, MaximumPayloadBytes);
+                    logged = true;
+                }
+
+                writer.Dispose();
+            }
+
+            if (!logged)
+            {
+                _logger.SerializationFailure(ex);
+            }
+
+            buffer = default;
+            serializer = null;
+            return false;
         }
     }
 }
