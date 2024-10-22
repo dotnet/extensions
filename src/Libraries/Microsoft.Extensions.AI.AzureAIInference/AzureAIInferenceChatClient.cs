@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -410,13 +409,13 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
     private IEnumerable<ChatRequestMessage> ToAzureAIInferenceChatMessages(IEnumerable<ChatMessage> inputs)
     {
         // Maps all of the M.E.AI types to the corresponding AzureAI types.
-        // Unrecognized content is ignored.
+        // Unrecognized or non-processable content is ignored.
 
         foreach (ChatMessage input in inputs)
         {
             if (input.Role == ChatRole.System)
             {
-                yield return new ChatRequestSystemMessage(input.Text);
+                yield return new ChatRequestSystemMessage(input.Text ?? string.Empty);
             }
             else if (input.Role == ChatRole.Tool)
             {
@@ -444,50 +443,62 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
             }
             else if (input.Role == ChatRole.User)
             {
-                yield return new ChatRequestUserMessage(input.Contents.Select(static (AIContent item) => item switch
-                {
-                    TextContent textContent => new ChatMessageTextContentItem(textContent.Text),
-                    ImageContent imageContent => imageContent.Data is { IsEmpty: false } data ? new ChatMessageImageContentItem(BinaryData.FromBytes(data), imageContent.MediaType) :
-                                                 imageContent.Uri is string uri ? new ChatMessageImageContentItem(new Uri(uri)) :
-                                                 (ChatMessageContentItem?)null,
-                    _ => null,
-                }).Where(c => c is not null));
+                yield return new ChatRequestUserMessage(GetContentParts(input.Contents));
             }
             else if (input.Role == ChatRole.Assistant)
             {
-                Dictionary<string, ChatCompletionsToolCall>? toolCalls = null;
+                // TODO: ChatRequestAssistantMessage only enables text content currently.
+                // Update it with other content types when it supports that.
+                ChatRequestAssistantMessage message = new()
+                {
+                    Content = input.Text
+                };
 
                 foreach (var content in input.Contents)
                 {
-                    if (content is FunctionCallContent callRequest && callRequest.CallId is not null && toolCalls?.ContainsKey(callRequest.CallId) is not true)
+                    if (content is FunctionCallContent { CallId: not null } callRequest)
                     {
                         JsonSerializerOptions serializerOptions = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
-                        string jsonArguments = JsonSerializer.Serialize(callRequest.Arguments, serializerOptions.GetTypeInfo(typeof(IDictionary<string, object>)));
-                        (toolCalls ??= []).Add(
+                        message.ToolCalls.Add(new ChatCompletionsFunctionToolCall(
                             callRequest.CallId,
-                            new ChatCompletionsFunctionToolCall(
-                                callRequest.CallId,
-                                callRequest.Name,
-                                jsonArguments));
+                            callRequest.Name,
+                            JsonSerializer.Serialize(callRequest.Arguments, serializerOptions.GetTypeInfo(typeof(IDictionary<string, object>)))));
                     }
-                }
-
-                ChatRequestAssistantMessage message = new();
-                if (toolCalls is not null)
-                {
-                    foreach (var entry in toolCalls)
-                    {
-                        message.ToolCalls.Add(entry.Value);
-                    }
-                }
-                else
-                {
-                    message.Content = input.Text;
                 }
 
                 yield return message;
             }
         }
+    }
+
+    /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentItem"/>.</summary>
+    private static List<ChatMessageContentItem> GetContentParts(IList<AIContent> contents)
+    {
+        List<ChatMessageContentItem> parts = [];
+        foreach (var content in contents)
+        {
+            switch (content)
+            {
+                case TextContent textContent:
+                    (parts ??= []).Add(new ChatMessageTextContentItem(textContent.Text));
+                    break;
+
+                case ImageContent imageContent when imageContent.Data is { IsEmpty: false } data:
+                    (parts ??= []).Add(new ChatMessageImageContentItem(BinaryData.FromBytes(data), imageContent.MediaType));
+                    break;
+
+                case ImageContent imageContent when imageContent.Uri is string uri:
+                    (parts ??= []).Add(new ChatMessageImageContentItem(new Uri(uri)));
+                    break;
+            }
+        }
+
+        if (parts.Count == 0)
+        {
+            parts.Add(new ChatMessageTextContentItem(string.Empty));
+        }
+
+        return parts;
     }
 
     private static FunctionCallContent ParseCallContentFromJsonString(string json, string callId, string name) =>
