@@ -574,12 +574,10 @@ public sealed partial class OpenAIChatClient : IChatClient
         {
             if (input.Role == ChatRole.System || input.Role == ChatRole.User)
             {
-                if (GetContentParts(input.Contents) is { } parts)
-                {
-                    yield return input.Role == ChatRole.System ?
-                        new SystemChatMessage(parts) { ParticipantName = input.AuthorName } :
-                        new UserChatMessage(parts) { ParticipantName = input.AuthorName };
-                }
+                var parts = GetContentParts(input.Contents);
+                yield return input.Role == ChatRole.System ?
+                    new SystemChatMessage(parts) { ParticipantName = input.AuthorName } :
+                    new UserChatMessage(parts) { ParticipantName = input.AuthorName };
             }
             else if (input.Role == ChatRole.Tool)
             {
@@ -607,14 +605,16 @@ public sealed partial class OpenAIChatClient : IChatClient
             }
             else if (input.Role == ChatRole.Assistant)
             {
-                var parts = GetContentParts(input.Contents);
+                AssistantChatMessage message = new(GetContentParts(input.Contents))
+                {
+                    ParticipantName = input.AuthorName
+                };
 
-                List<ChatToolCall>? toolCalls = null;
                 foreach (var content in input.Contents)
                 {
                     if (content is FunctionCallContent { CallId: not null } callRequest)
                     {
-                        (toolCalls ??= []).Add(
+                        message.ToolCalls.Add(
                             ChatToolCall.CreateFunctionToolCall(
                                 callRequest.CallId,
                                 callRequest.Name,
@@ -622,48 +622,26 @@ public sealed partial class OpenAIChatClient : IChatClient
                     }
                 }
 
-                AssistantChatMessage? message = null;
-                if (toolCalls is not null)
+                if (input.AdditionalProperties?.TryGetValue(nameof(message.Refusal), out string? refusal) is true)
                 {
-                    message = new(toolCalls);
-                    if (parts is not null)
-                    {
-                        foreach (var contentPart in parts)
-                        {
-                            message.Content.Add(contentPart);
-                        }
-                    }
-                }
-                else if (parts is not null)
-                {
-                    message = new(parts);
+                    message.Refusal = refusal;
                 }
 
-                if (message is not null)
-                {
-                    message.ParticipantName = input.AuthorName;
-
-                    if (input.AdditionalProperties?.TryGetValue(nameof(message.Refusal), out string? refusal) is true)
-                    {
-                        message.Refusal = refusal;
-                    }
-
-                    yield return message;
-                }
+                yield return message;
             }
         }
     }
 
     /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentPart"/>.</summary>
-    private static List<ChatMessageContentPart>? GetContentParts(IList<AIContent> contents)
+    private static List<ChatMessageContentPart> GetContentParts(IList<AIContent> contents)
     {
-        List<ChatMessageContentPart>? parts = null;
+        List<ChatMessageContentPart> parts = [];
         foreach (var content in contents)
         {
             switch (content)
             {
-                case TextContent textContent when textContent.Text is string text:
-                    (parts ??= []).Add(ChatMessageContentPart.CreateTextPart(text));
+                case TextContent textContent:
+                    (parts ??= []).Add(ChatMessageContentPart.CreateTextPart(textContent.Text));
                     break;
 
                 case ImageContent imageContent when imageContent.Data is { IsEmpty: false } data:
@@ -674,6 +652,11 @@ public sealed partial class OpenAIChatClient : IChatClient
                     (parts ??= []).Add(ChatMessageContentPart.CreateImagePart(new Uri(uri)));
                     break;
             }
+        }
+
+        if (parts.Count == 0)
+        {
+            parts.Add(ChatMessageContentPart.CreateTextPart(string.Empty));
         }
 
         return parts;

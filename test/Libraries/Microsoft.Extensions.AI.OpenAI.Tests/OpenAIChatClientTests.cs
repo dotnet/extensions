@@ -477,6 +477,10 @@ public class OpenAIChatClientTests
                         "content": "hello!"
                     },
                     {
+                        "role": "assistant",
+                        "content": ""
+                    },
+                    {
                         "role": "user",
                         "content": "i\u0027m good. how are you?"
                     }

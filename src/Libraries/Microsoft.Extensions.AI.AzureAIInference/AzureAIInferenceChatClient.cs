@@ -415,10 +415,7 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
         {
             if (input.Role == ChatRole.System)
             {
-                if (input.Text is string text)
-                {
-                    yield return new ChatRequestSystemMessage(text);
-                }
+                yield return new ChatRequestSystemMessage(input.Text ?? string.Empty);
             }
             else if (input.Role == ChatRole.Tool)
             {
@@ -446,14 +443,16 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
             }
             else if (input.Role == ChatRole.User)
             {
-                if (GetContentParts(input.Contents) is { } parts)
-                {
-                    yield return new ChatRequestUserMessage(parts);
-                }
+                yield return new ChatRequestUserMessage(GetContentParts(input.Contents));
             }
             else if (input.Role == ChatRole.Assistant)
             {
-                ChatRequestAssistantMessage message = new();
+                // TODO: ChatRequestAssistantMessage only enables text content currently.
+                // Update it with other content types when it supports that.
+                ChatRequestAssistantMessage message = new()
+                {
+                    Content = input.Text
+                };
 
                 foreach (var content in input.Contents)
                 {
@@ -467,25 +466,20 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                     }
                 }
 
-                if (input.Text is string text)
-                {
-                    message.Content = text;
-                }
-
                 yield return message;
             }
         }
     }
 
     /// <summary>Converts a list of <see cref="AIContent"/> to a list of <see cref="ChatMessageContentItem"/>.</summary>
-    private static List<ChatMessageContentItem>? GetContentParts(IList<AIContent> contents)
+    private static List<ChatMessageContentItem> GetContentParts(IList<AIContent> contents)
     {
-        List<ChatMessageContentItem>? parts = null;
+        List<ChatMessageContentItem> parts = [];
         foreach (var content in contents)
         {
             switch (content)
             {
-                case TextContent textContent when textContent.Text is not null:
+                case TextContent textContent:
                     (parts ??= []).Add(new ChatMessageTextContentItem(textContent.Text));
                     break;
 
@@ -497,6 +491,11 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
                     (parts ??= []).Add(new ChatMessageImageContentItem(new Uri(uri)));
                     break;
             }
+        }
+
+        if (parts.Count == 0)
+        {
+            parts.Add(new ChatMessageTextContentItem(string.Empty));
         }
 
         return parts;

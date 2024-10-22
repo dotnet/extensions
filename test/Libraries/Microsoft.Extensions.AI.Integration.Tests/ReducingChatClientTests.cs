@@ -190,9 +190,9 @@ public sealed class TokenCountingChatReducer : IChatReducer
         int sum = 0;
         foreach (AIContent content in message.Contents)
         {
-            if ((content as TextContent)?.Text is string text)
+            if (content is TextContent text)
             {
-                sum += _tokenizer.CountTokens(text);
+                sum += _tokenizer.CountTokens(text.Text);
             }
         }
 
