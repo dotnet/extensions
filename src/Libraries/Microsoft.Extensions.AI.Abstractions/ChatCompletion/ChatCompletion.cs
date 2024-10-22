@@ -59,7 +59,7 @@ public class ChatCompletion
     /// <summary>Gets or sets the ID of the chat completion.</summary>
     public string? CompletionId { get; set; }
 
-    /// <summary>Gets or sets the model ID using in the creation of the chat completion.</summary>
+    /// <summary>Gets or sets the model ID used in the creation of the chat completion.</summary>
     public string? ModelId { get; set; }
 
     /// <summary>Gets or sets a timestamp for the chat completion.</summary>

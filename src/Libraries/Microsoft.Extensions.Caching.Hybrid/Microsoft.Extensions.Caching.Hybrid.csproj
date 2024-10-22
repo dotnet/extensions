@@ -17,6 +17,9 @@
     <MinCodeCoverage>75</MinCodeCoverage>
     <MinMutationScore>50</MinMutationScore>
     <Workstream>Fundamentals</Workstream>
+    <!-- This package needs to reference the dotnet9 versions of Microsoft.Extensions packages as it depends on
+    surface area that was added in .NET 9. -->
+    <ForceLatestDotnetVersions>true</ForceLatestDotnetVersions>
   </PropertyGroup>
 
   <ItemGroup>

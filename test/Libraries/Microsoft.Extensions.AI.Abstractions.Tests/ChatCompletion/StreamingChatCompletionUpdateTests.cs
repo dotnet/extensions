@@ -96,7 +96,7 @@ public class StreamingChatCompletionUpdateTests
                 new FunctionCallContent("callId1", "fc1"),
                 new TextContent("text-1"),
                 new TextContent("text-2"),
-                new FunctionResultContent(new FunctionCallContent("callId1", "fc2"), "result"),
+                new FunctionResultContent("callId1", "fc2", "result"),
             ],
         };
 

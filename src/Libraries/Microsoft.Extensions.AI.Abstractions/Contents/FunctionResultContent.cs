@@ -34,40 +34,6 @@ public sealed class FunctionResultContent : AIContent
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionResultContent"/> class.
-    /// </summary>
-    /// <param name="callId">The function call ID for which this is the result.</param>
-    /// <param name="name">The function name that produced the result.</param>
-    /// <param name="result">
-    /// This may be <see langword="null"/> if the function returned <see langword="null"/>, if the function was void-returning
-    /// and thus had no result, or if the function call failed. Typically, however, in order to provide meaningfully representative
-    /// information to an AI service, a human-readable representation of those conditions should be supplied.
-    /// </param>
-    /// <param name="exception">Any exception that occurred when invoking the function.</param>
-    public FunctionResultContent(string callId, string name, object? result, Exception? exception)
-    {
-        CallId = Throw.IfNull(callId);
-        Name = Throw.IfNull(name);
-        Result = result;
-        Exception = exception;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionResultContent"/> class.
-    /// </summary>
-    /// <param name="functionCall">The function call for which this is the result.</param>
-    /// <param name="result">
-    /// This may be <see langword="null"/> if the function returned <see langword="null"/>, if the function was void-returning
-    /// and thus had no result, or if the function call failed. Typically, however, in order to provide meaningfully representative
-    /// information to an AI service, a human-readable representation of those conditions should be supplied.
-    /// </param>
-    /// <param name="exception">Any exception that occurred when invoking the function.</param>
-    public FunctionResultContent(FunctionCallContent functionCall, object? result, Exception? exception = null)
-        : this(Throw.IfNull(functionCall).CallId, functionCall.Name, result, exception)
-    {
-    }
-
-    /// <summary>
     /// Gets or sets the ID of the function call for which this is the result.
     /// </summary>
     /// <remarks>
