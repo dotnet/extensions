@@ -110,7 +110,13 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        var response = _chatClient.CompleteStreamingAsync("Explain in 10 words how AI works");
+        var response = _chatClient.CompleteStreamingAsync("Explain in 10 words how AI works", new()
+        {
+            AdditionalProperties = new()
+            {
+                ["stream_options"] = new Dictionary<string, object> { ["include_usage"] = true, },
+            },
+        });
 
         List<StreamingChatCompletionUpdate> chunks = [];
         await foreach (var chunk in response)
