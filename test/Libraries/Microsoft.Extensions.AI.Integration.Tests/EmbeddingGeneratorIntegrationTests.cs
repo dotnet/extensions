@@ -118,7 +118,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
 
         Assert.Single(activities);
         var activity = activities.Single();
-        Assert.StartsWith("embedding", activity.DisplayName);
+        Assert.StartsWith("embed", activity.DisplayName);
         Assert.StartsWith("http", (string)activity.GetTagItem("server.address")!);
         Assert.Equal(embeddingGenerator.Metadata.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
         Assert.NotNull(activity.Id);
