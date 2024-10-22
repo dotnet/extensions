@@ -42,6 +42,7 @@ public class ChatCompletion
     /// If there are multiple choices, this property returns the first choice.
     /// If <see cref="Choices"/> is empty, this will throw. Use <see cref="Choices"/> to access all choices directly."/>.
     /// </remarks>
+    [JsonIgnore]
     public ChatMessage Message
     {
         get
