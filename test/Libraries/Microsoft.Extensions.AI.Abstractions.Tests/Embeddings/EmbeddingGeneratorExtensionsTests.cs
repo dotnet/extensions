@@ -26,6 +26,6 @@ public class EmbeddingGeneratorExtensionsTests
                 Task.FromResult<GeneratedEmbeddings<Embedding<float>>>([result])
         };
 
-        Assert.Same(result, (await service.GenerateAsync("hello"))[0]);
+        Assert.Same(result, await service.GenerateAsync("hello"));
     }
 }
