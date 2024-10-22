@@ -127,11 +127,27 @@ internal sealed partial class DefaultHybridCache : HybridCache
             return RunWithoutCacheAsync(flags, state, underlyingDataCallback, cancellationToken);
         }
 
-        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0 && _localCache.TryGetValue(key, out var untyped)
-            && untyped is CacheItem<T> typed && typed.TryGetValue(_logger, out var value))
+        bool eventSourceEnabled = HybridCacheEventSource.Log.IsEnabled();
+        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0)
         {
-            // short-circuit
-            return new(value);
+            if (_localCache.TryGetValue(key, out var untyped)
+                && untyped is CacheItem<T> typed && typed.TryGetValue(_logger, out var value))
+            {
+                // short-circuit
+                if (eventSourceEnabled)
+                {
+                    HybridCacheEventSource.Log.LocalCacheHit();
+                }
+
+                return new(value);
+            }
+            else
+            {
+                if (eventSourceEnabled)
+                {
+                    HybridCacheEventSource.Log.LocalCacheMiss();
+                }
+            }
         }
 
         if (GetOrCreateStampedeState<TState, T>(key, flags, out var stampede, canBeCanceled))
@@ -148,6 +164,14 @@ internal sealed partial class DefaultHybridCache : HybridCache
                 // we're going to run to completion; no need to get complicated
                 _ = stampede.ExecuteDirectAsync(in state, underlyingDataCallback, options); // this larger task includes L2 write etc
                 return stampede.UnwrapReservedAsync(_logger);
+            }
+        }
+        else
+        {
+            // pre-existing query
+            if (eventSourceEnabled)
+            {
+                HybridCacheEventSource.Log.StampedeJoin();
             }
         }
 

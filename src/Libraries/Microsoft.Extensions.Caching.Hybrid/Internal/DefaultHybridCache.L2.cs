@@ -23,6 +23,7 @@ internal partial class DefaultHybridCache
         switch (GetFeatures(CacheFeatures.BackendCache | CacheFeatures.BackendBuffers))
         {
             case CacheFeatures.BackendCache: // legacy byte[]-based
+
                 var pendingLegacy = _backendCache!.GetAsync(key, token);
 
 #if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
@@ -119,6 +120,11 @@ internal partial class DefaultHybridCache
 
             // commit
             cacheEntry.Dispose();
+
+            if (HybridCacheEventSource.Log.IsEnabled())
+            {
+                HybridCacheEventSource.Log.LocalCacheWrite();
+            }
         }
     }
 

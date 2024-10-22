@@ -162,6 +162,7 @@ internal partial class DefaultHybridCache
         [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception is passed through to faulted task result")]
         private async Task BackgroundFetchAsync()
         {
+            bool eventSourceEnabled = HybridCacheEventSource.Log.IsEnabled();
             try
             {
                 // read from L2 if appropriate
@@ -170,10 +171,31 @@ internal partial class DefaultHybridCache
                     BufferChunk result;
                     try
                     {
+                        if (eventSourceEnabled)
+                        {
+                            HybridCacheEventSource.Log.DistributedCacheGet();
+                        }
+
                         result = await Cache.GetFromL2Async(Key.Key, SharedToken).ConfigureAwait(false);
+                        if (eventSourceEnabled)
+                        {
+                            if (result.Array is not null)
+                            {
+                                HybridCacheEventSource.Log.DistributedCacheHit();
+                            }
+                            else
+                            {
+                                HybridCacheEventSource.Log.DistributedCacheMiss();
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
+                        if (eventSourceEnabled)
+                        {
+                            HybridCacheEventSource.Log.DistributedCacheFailed();
+                        }
+
                         Cache._logger.CacheBackendReadFailure(ex);
                         result = default; // treat as "miss"
                     }
@@ -189,7 +211,30 @@ internal partial class DefaultHybridCache
                 if ((Key.Flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0)
                 {
                     // invoke the callback supplied by the caller
-                    T newValue = await _underlying!(_state!, SharedToken).ConfigureAwait(false);
+                    T newValue;
+                    try
+                    {
+                        if (eventSourceEnabled)
+                        {
+                            HybridCacheEventSource.Log.BackendExecuteStart();
+                        }
+
+                        newValue = await _underlying!(_state!, SharedToken).ConfigureAwait(false);
+
+                        if (eventSourceEnabled)
+                        {
+                            HybridCacheEventSource.Log.BackendExecuteComplete();
+                        }
+                    }
+                    catch
+                    {
+                        if (eventSourceEnabled)
+                        {
+                            HybridCacheEventSource.Log.BackendExecuteFailed();
+                        }
+
+                        throw;
+                    }
 
                     // If we're writing this value *anywhere*, we're going to need to serialize; this is obvious
                     // in the case of L2, but we also need it for L1, because MemoryCache might be enforcing
@@ -239,6 +284,11 @@ internal partial class DefaultHybridCache
                                 try
                                 {
                                     await Cache.SetL2Async(Key.Key, in buffer, _options, SharedToken).ConfigureAwait(false);
+
+                                    if (eventSourceEnabled)
+                                    {
+                                        HybridCacheEventSource.Log.DistributedCacheWrite();
+                                    }
                                 }
                                 catch (Exception ex)
                                 {

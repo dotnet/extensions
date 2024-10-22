@@ -42,4 +42,7 @@
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="Microsoft.Bcl.TimeProvider" />
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Diagnostics.Tracing" />
+  </ItemGroup>
 </Project>
