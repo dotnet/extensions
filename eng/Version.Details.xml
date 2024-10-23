@@ -150,39 +150,39 @@
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="9.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>82199059bae482c603a377129699059c1386757f</Sha>
+      <Sha>6d58cd8ffa1b8f00a04238f16c58248d38c90776</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Runtime.win-x64" Version="9.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>82199059bae482c603a377129699059c1386757f</Sha>
+      <Sha>6d58cd8ffa1b8f00a04238f16c58248d38c90776</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>82199059bae482c603a377129699059c1386757f</Sha>
+      <Sha>6d58cd8ffa1b8f00a04238f16c58248d38c90776</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.TestHost" Version="9.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>82199059bae482c603a377129699059c1386757f</Sha>
+      <Sha>6d58cd8ffa1b8f00a04238f16c58248d38c90776</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="9.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>82199059bae482c603a377129699059c1386757f</Sha>
+      <Sha>6d58cd8ffa1b8f00a04238f16c58248d38c90776</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>82199059bae482c603a377129699059c1386757f</Sha>
+      <Sha>6d58cd8ffa1b8f00a04238f16c58248d38c90776</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>82199059bae482c603a377129699059c1386757f</Sha>
+      <Sha>6d58cd8ffa1b8f00a04238f16c58248d38c90776</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Http.Polly" Version="9.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>82199059bae482c603a377129699059c1386757f</Sha>
+      <Sha>6d58cd8ffa1b8f00a04238f16c58248d38c90776</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.ObjectPool" Version="9.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>82199059bae482c603a377129699059c1386757f</Sha>
+      <Sha>6d58cd8ffa1b8f00a04238f16c58248d38c90776</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
