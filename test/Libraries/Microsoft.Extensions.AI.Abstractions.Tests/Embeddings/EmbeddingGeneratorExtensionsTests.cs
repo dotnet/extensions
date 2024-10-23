@@ -15,7 +15,7 @@ public class EmbeddingGeneratorExtensionsTests
     {
         await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateEmbeddingAsync("hello"));
         await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateEmbeddingVectorAsync("hello"));
-        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateAndZipEmbeddingsAsync(["hello"]));
+        await Assert.ThrowsAsync<ArgumentNullException>("generator", () => ((TestEmbeddingGenerator)null!).GenerateAndZipAsync(["hello"]));
     }
 
     [Fact]
@@ -51,13 +51,13 @@ public class EmbeddingGeneratorExtensionsTests
                 Task.FromResult<GeneratedEmbeddings<Embedding<float>>>(new(embeddings))
         };
 
-        var results = await service.GenerateAndZipEmbeddingsAsync(inputs);
+        var results = await service.GenerateAndZipAsync(inputs);
         Assert.NotNull(results);
-        Assert.Equal(count, results.Count);
+        Assert.Equal(count, results.Length);
         for (int i = 0; i < count; i++)
         {
-            Assert.Equal(inputs[i], results[i].Key);
-            Assert.Same(embeddings[i], results[i].Value);
+            Assert.Equal(inputs[i], results[i].Value);
+            Assert.Same(embeddings[i], results[i].Embedding);
         }
     }
 }
