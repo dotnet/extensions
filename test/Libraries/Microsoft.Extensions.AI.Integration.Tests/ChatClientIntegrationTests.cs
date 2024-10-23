@@ -568,7 +568,6 @@ public abstract class ChatClientIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        // For openai, we can use the native JSON schema support
         var response = await _chatClient.CompleteAsync<Person>("""
             Who is described in the following sentence?
             Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
@@ -602,11 +601,11 @@ public abstract class ChatClientIntegrationTests : IDisposable
         SkipIfNotEnabled();
 
         var response = await _chatClient.CompleteAsync<int>("""
-            There were 17 abstractions for AI programming, which was too many.
+            There were 14 abstractions for AI programming, which was too many.
             To fix this we added another one. How many are there now?
             """);
 
-        Assert.Equal(18, response.Result);
+        Assert.Equal(15, response.Result);
     }
 
     [ConditionalFact]
