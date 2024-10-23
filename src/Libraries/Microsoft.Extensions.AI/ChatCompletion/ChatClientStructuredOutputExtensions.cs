@@ -168,7 +168,7 @@ public static class ChatClientStructuredOutputExtensions
 
             // When not using native structured output, augment the chat messages with a schema prompt
 #pragma warning disable SA1118 // Parameter should not span multiple lines
-            promptAugmentation = new ChatMessage(ChatRole.System, $$"""
+            promptAugmentation = new ChatMessage(ChatRole.User, $$"""
                 Respond with a JSON value conforming to the following schema:
                 ```
                 {{schema}}

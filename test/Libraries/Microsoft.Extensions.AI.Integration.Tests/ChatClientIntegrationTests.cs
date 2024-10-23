@@ -570,7 +570,7 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await _chatClient.CompleteAsync<Person>("""
             Who is described in the following sentence?
-            Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
+            Jimbo Smith is a 35-year-old programmer from Cardiff, Wales.
             """);
 
         Assert.Equal("Jimbo Smith", response.Result.FullName);
