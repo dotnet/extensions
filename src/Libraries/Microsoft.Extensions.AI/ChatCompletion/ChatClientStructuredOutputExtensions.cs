@@ -1,10 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -125,26 +127,24 @@ public static class ChatClientStructuredOutputExtensions
             serializerOptions: serializerOptions,
             inferenceOptions: _inferenceOptions);
 
-        var isObject = schemaNode.TryGetPropertyValue("type", out var schemaType) &&
-                schemaType?.GetValueKind() == JsonValueKind.String &&
-                schemaType.GetValue<string>() is { } type &&
-                type.Equals("object", System.StringComparison.Ordinal);
-
-        var wrapped = false;
+        var isWrappedInObject = false;
 
         // We wrap regardless of native structured output, since it also applies to Azure Inference
-        if (!isObject)
+        if (!SchemaRepresentsObject(schemaNode))
         {
-            schemaNode = new JsonObject
+            var schemaAsJsonObject = (JsonObject)JsonSerializer.Deserialize(
+                schemaNode,
+                AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonObject)))!;
+            schemaNode = JsonSerializer.SerializeToElement(new JsonObject
             {
+                { "$schema", "https://json-schema.org/draft/2020-12/schema" },
                 { "type", "object" },
-                { "properties", new JsonObject { { "data", schemaNode } } },
-            };
-            wrapped = true;
+                { "properties", new JsonObject { { "data", schemaAsJsonObject } } },
+                { "additionalProperties", false },
+            }, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonObject)))!;
+            isWrappedInObject = true;
         }
 
-        schemaNode.Insert(0, "$schema", "https://json-schema.org/draft/2020-12/schema");
-        schemaNode.Add("additionalProperties", false);
         var schema = JsonSerializer.Serialize(schemaNode, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
 
         ChatMessage? promptAugmentation = null;
@@ -182,8 +182,7 @@ public static class ChatClientStructuredOutputExtensions
         try
         {
             var result = await chatClient.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
-            result.SetWrapped(wrapped);
-            return new ChatCompletion<T>(result, serializerOptions);
+            return new ChatCompletion<T>(result, serializerOptions) { IsWrappedInObject = isWrappedInObject };
         }
         finally
         {
@@ -194,18 +193,17 @@ public static class ChatClientStructuredOutputExtensions
         }
     }
 
-    internal static bool IsWrapped(this ChatCompletion completion) =>
-        completion.AdditionalProperties?.TryGetValue("$wrapped", out var value) == true && value is bool wrapped && wrapped;
-
-    private static void SetWrapped(this ChatCompletion completion, bool wrapped)
+    private static bool SchemaRepresentsObject(JsonElement schemaNode)
     {
-        if (!wrapped)
+        foreach (var property in schemaNode.EnumerateObject())
         {
-            return;
+            if (property.NameEquals("type"u8))
+            {
+                return property.Value.ValueKind == JsonValueKind.String
+                    && property.Value.ValueEquals("object"u8);
+            }
         }
 
-        // We don't initialize the dictionary unless we need it, to avoid unnecessary allocations.
-        completion.AdditionalProperties ??= [];
-        completion.AdditionalProperties["$wrapped"] = true;
+        return false;
     }
 }

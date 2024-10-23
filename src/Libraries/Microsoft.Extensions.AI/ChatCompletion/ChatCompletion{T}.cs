@@ -103,6 +103,12 @@ public class ChatCompletion<T> : ChatCompletion
         }
     }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether the JSON schema has an extra object wrapper.
+    /// This is required for any non-JSON-object-typed values such as numbers, enum values, or arrays.
+    /// </summary>
+    internal bool IsWrappedInObject { get; set; }
+
     private string? GetResultAsJson()
     {
         var choice = Choices.Count == 1 ? Choices[0] : null;
@@ -129,7 +135,7 @@ public class ChatCompletion<T> : ChatCompletion
 
         // If there's an exception here, we want it to propagate, since the Result property is meant to throw directly
 
-        if (this.IsWrapped())
+        if (IsWrappedInObject)
         {
             var doc = JsonDocument.Parse(json!);
             if (doc.RootElement.TryGetProperty("data", out var data))
