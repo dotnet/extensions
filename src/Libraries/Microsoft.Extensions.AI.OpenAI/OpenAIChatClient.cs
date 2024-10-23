@@ -530,8 +530,6 @@ public sealed partial class OpenAIChatClient : IChatClient
     {
         AIContent? aiContent = null;
 
-        AdditionalPropertiesDictionary? additionalProperties = null;
-
         if (contentPart.Kind == ChatMessageContentPartKind.Text)
         {
             aiContent = new TextContent(contentPart.Text);
@@ -546,7 +544,7 @@ public sealed partial class OpenAIChatClient : IChatClient
 
             if (imageContent is not null && contentPart.ImageDetailLevel?.ToString() is string detail)
             {
-                (additionalProperties ??= [])[nameof(contentPart.ImageDetailLevel)] = detail;
+                (imageContent.AdditionalProperties ??= [])[nameof(contentPart.ImageDetailLevel)] = detail;
             }
         }
 
@@ -554,10 +552,9 @@ public sealed partial class OpenAIChatClient : IChatClient
         {
             if (contentPart.Refusal is string refusal)
             {
-                (additionalProperties ??= [])[nameof(contentPart.Refusal)] = refusal;
+                (aiContent.AdditionalProperties ??= [])[nameof(contentPart.Refusal)] = refusal;
             }
 
-            aiContent.AdditionalProperties = additionalProperties;
             aiContent.RawRepresentation = contentPart;
         }
 
@@ -641,15 +638,15 @@ public sealed partial class OpenAIChatClient : IChatClient
             switch (content)
             {
                 case TextContent textContent:
-                    (parts ??= []).Add(ChatMessageContentPart.CreateTextPart(textContent.Text));
+                    parts.Add(ChatMessageContentPart.CreateTextPart(textContent.Text));
                     break;
 
                 case ImageContent imageContent when imageContent.Data is { IsEmpty: false } data:
-                    (parts ??= []).Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MediaType));
+                    parts.Add(ChatMessageContentPart.CreateImagePart(BinaryData.FromBytes(data), imageContent.MediaType));
                     break;
 
                 case ImageContent imageContent when imageContent.Uri is string uri:
-                    (parts ??= []).Add(ChatMessageContentPart.CreateImagePart(new Uri(uri)));
+                    parts.Add(ChatMessageContentPart.CreateImagePart(new Uri(uri)));
                     break;
             }
         }
