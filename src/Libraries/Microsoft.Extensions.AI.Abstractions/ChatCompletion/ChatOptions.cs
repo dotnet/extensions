@@ -71,6 +71,7 @@ public class ChatOptions
             Temperature = Temperature,
             MaxOutputTokens = MaxOutputTokens,
             TopP = TopP,
+            TopK = TopK,
             FrequencyPenalty = FrequencyPenalty,
             PresencePenalty = PresencePenalty,
             ResponseFormat = ResponseFormat,
