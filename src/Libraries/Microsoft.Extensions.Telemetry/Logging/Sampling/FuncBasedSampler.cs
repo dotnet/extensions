@@ -5,6 +5,7 @@ using System;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
+
 internal class FuncBasedSampler : LoggerSampler
 {
     private readonly Func<SamplingParameters, bool> _samplingDecisionFunc;

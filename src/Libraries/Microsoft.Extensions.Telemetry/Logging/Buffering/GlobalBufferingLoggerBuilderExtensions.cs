@@ -18,47 +18,18 @@ public static class GlobalBufferingLoggerBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="ILoggingBuilder"/> to add the buffer to.</param>
     /// <param name="filter">The filter to be used to decide what to buffer.</param>
+    /// <param name="options">Options for the buffering.</param>
     /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
-    public static ILoggingBuilder AddGlobalBuffering(this ILoggingBuilder builder, Func<string?, EventId?, LogLevel?, bool> filter)
+    public static ILoggingBuilder AddGlobalBuffering(
+        this ILoggingBuilder builder,
+        Func<string?, EventId?, LogLevel?, bool> filter,
+        Action<BufferingOptions>? options = null)
     {
         _ = Throw.IfNull(builder);
 
         return builder
             .AddGlobalBufferProvider()
-            .AddBuffering(filter);
-    }
-
-    /// <summary>
-    /// Adds global logging buffering.
-    /// </summary>
-    /// <param name="builder">The <see cref="ILoggingBuilder"/> to add the buffer to.</param>
-    /// <param name="category">The category to filter.</param>
-    /// <param name="filter">The filter to be used to decide what to buffer.</param>
-    /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
-    public static ILoggingBuilder AddGlobalBuffering(this ILoggingBuilder builder, string? category, Func<string?, EventId?, LogLevel?, bool> filter)
-    {
-        _ = Throw.IfNull(builder);
-
-        return builder
-            .AddGlobalBufferProvider()
-            .AddBuffering(category, filter);
-    }
-
-    /// <summary>
-    /// Adds global logging buffering.
-    /// </summary>
-    /// <param name="builder">The <see cref="ILoggingBuilder"/> to add the buffer to.</param>
-    /// <param name="category">The category to filter.</param>
-    /// <param name="eventId">The event ID to filter.</param>
-    /// <param name="level">The level to filter.</param>
-    /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
-    public static ILoggingBuilder AddGlobalBuffering(this ILoggingBuilder builder, string? category, EventId? eventId, LogLevel? level)
-    {
-        _ = Throw.IfNull(builder);
-
-        return builder
-            .AddGlobalBufferProvider()
-            .AddBuffering(category, eventId, level);
+            .ConfigureBuffering(filter, options);
     }
 
     /// <summary>
@@ -80,73 +51,31 @@ public static class GlobalBufferingLoggerBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="ILoggingBuilder"/> to add the buffer to.</param>
     /// <param name="filter">The filter to be used to decide what to buffer.</param>
+    /// <param name="configureOptions">The delegate to configure <see cref="BufferingOptions"/>.</param>
     /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
-    public static ILoggingBuilder AddBuffering(this ILoggingBuilder builder, Func<string?, EventId?, LogLevel?, bool> filter)
+    public static ILoggingBuilder ConfigureBuffering(
+        this ILoggingBuilder builder,
+        Func<string?, EventId?, LogLevel?, bool> filter,
+        Action<BufferingOptions>? configureOptions = null)
     {
         _ = Throw.IfNull(builder);
 
-        return builder.ConfigureFilter(options => options.AddFilter(null, filter));
-    }
-
-    /// <summary>
-    /// Adds a log buffer to the factory.
-    /// </summary>
-    /// <param name="builder">The <see cref="ILoggingBuilder"/> to add the buffer to.</param>
-    /// <param name="category">The category to filter.</param>
-    /// <param name="filter">The filter to be used to decide what to buffer.</param>
-    /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
-    public static ILoggingBuilder AddBuffering(this ILoggingBuilder builder, string? category, Func<string?, EventId?, LogLevel?, bool> filter)
-    {
-        _ = Throw.IfNull(builder);
-
-        return builder.ConfigureFilter(options => options.AddFilter(category, filter));
-    }
-
-    /// <summary>
-    /// Adds a log buffer to the factory.
-    /// </summary>
-    /// <param name="builder">The <see cref="ILoggingBuilder"/> to add the buffer to.</param>
-    /// <param name="category">The category to filter.</param>
-    /// <param name="eventId">The event ID to filter.</param>
-    /// <param name="level">The level to filter.</param>
-    /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
-    public static ILoggingBuilder AddBuffering(this ILoggingBuilder builder, string? category, EventId? eventId, LogLevel? level)
-    {
-        _ = Throw.IfNull(builder);
-
-        return builder.ConfigureFilter(options => options.AddFilter(category, eventId, level));
-    }
-
-    /// <summary>
-    /// Adds a log buffer to the factory.
-    /// </summary>
-    /// <returns>The <see cref="LoggerFilterOptions"/> so that additional calls can be chained.</returns>
-    public static GlobalBufferingOptions AddFilter(this GlobalBufferingOptions options, string? category, EventId? eventId, LogLevel? level) =>
-        AddRule(options, category, eventId, level);
-
-    /// <summary>
-    /// Adds a log buffer to the factory.
-    /// </summary>
-    /// <returns>The <see cref="LoggerFilterOptions"/> so that additional calls can be chained.</returns>
-    public static GlobalBufferingOptions AddFilter(this GlobalBufferingOptions options, string? category, Func<string?, EventId?, LogLevel?, bool> filter) =>
-        AddRule(options, category: category, filter: filter);
-
-    private static ILoggingBuilder ConfigureFilter(this ILoggingBuilder builder, Action<GlobalBufferingOptions> configureOptions)
-    {
-        _ = builder.Services.Configure(configureOptions);
+        _ = builder.Services.Configure(configureOptions ?? new Action<BufferingOptions>((_) => { }));
+        _ = builder.Services.Configure<BufferingOptions>(opts => opts.AddFilter(filter));
 
         return builder;
     }
 
-    private static GlobalBufferingOptions AddRule(GlobalBufferingOptions options,
-        string? category = null,
-        EventId? eventId = null,
-        LogLevel? level = null,
-        Func<string?, EventId?, LogLevel?, bool>? filter = null)
+    /// <summary>
+    /// Adds a log buffer to the factory.
+    /// </summary>
+    public static void AddFilter(
+        this BufferingOptions options,
+        Func<string?, EventId?, LogLevel?, bool> filter)
     {
         _ = Throw.IfNull(options);
+        _ = Throw.IfNull(filter);
 
-        options.Rules.Add(new Microsoft.Extensions.Diagnostics.Logging.Buffering.LoggerFilterRule(category, eventId, level, filter));
-        return options;
+        options.Filter = filter;
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All Rights Reserved.
 
 using System;
+using ConsoleLogger;
 using Microsoft.Extensions.Diagnostics.Logging.Buffering;
 using Microsoft.Extensions.Diagnostics.Logging.Sampling;
 using Microsoft.Extensions.Logging;
@@ -43,19 +44,28 @@ namespace ConsoleLogger
         {
             return LoggerFactory.Create(loggingBuilder =>
             {
-                // buffer all logs
-                loggingBuilder.AddGlobalBuffering((category, eventId, logLevel) => logLevel <= LogLevel.Warning); // Buffer warnings and below
+                // BUFFERING:
 
-                // buffer logs for each HTTP request/response pair into a separate buffer
-                // and only for the lifetime of the respective HttpContext
+                // enable buffering using one of the options below:
+                // 1. If you have a non-ASP.NET Core app, and would like to buffer logs of the Warning level and below:
+                loggingBuilder.AddGlobalBuffering((category, eventId, logLevel) => logLevel <= LogLevel.Warning);
+
+                // 2. If you have an ASP.NET Core app, you can buffer logs
+                // for each HTTP request/response pair into a separate buffer
+                // and only for the lifetime of the respective HttpContext.
+                // If there is no active HttpContext, buffering will be done into the global buffer.
+                // again, only for the Warning level and below:
                 loggingBuilder.AddHttpRequestBuffering((category, eventId, logLevel) => logLevel <= LogLevel.Warning);
 
-                // sample logs
+                // SAMPLING:
+                // enable a sampler using one of the options below:
+
+                // 1. sample 10% of Information level logs and below using a built-in probabilistic sampler:
+                loggingBuilder.AddRatioBasedSampler(0.1, LogLevel.Information);
+
+                // 2. or apply more sophisticated sampling logic:
                 loggingBuilder.AddSampler((SamplingParameters parameters) =>
                 {
-                    /*custom logic in place to return true/false.*/
-
-                    // for example:
                     // For Information category, sample 1% of logs
                     if (parameters.LogLevel <= LogLevel.Information)
                     {
@@ -72,17 +82,15 @@ namespace ConsoleLogger
                     return true;
                 });
 
-                // or use a custom log sampler:
+                // 3. or create and register your own sampler:
                 loggingBuilder.AddSampler<MyCustomSampler>();
 
-                // or use a built-in probabilistic sampler:
-                loggingBuilder.AddRatioBasedSampler(0.1, LogLevel.Information);
-
-                // or use any OpenTelemetry .NET Tracing Sampler
-                // if you have configured OpenTelemetry Tracing separately:
+                // 4. or, in case you use OpenTelemetry Tracing Sampling,
+                // just apply same sampling decision to logs which is already made to the underlying Activity:
                 loggingBuilder.AddTraceBasedSampling();
             });
         }
+
                 //loggingBuilder.AddScopedSampler(new MySampler());
 
                 //loggingBuilder

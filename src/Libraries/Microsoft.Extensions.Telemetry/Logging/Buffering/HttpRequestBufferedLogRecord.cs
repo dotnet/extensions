@@ -9,7 +9,8 @@ namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
 
 internal class HttpRequestBufferedLogRecord : GlobalBufferedLogRecord
 {
-    public HttpRequestBufferedLogRecord(LogLevel logLevel,
+    public HttpRequestBufferedLogRecord(
+        LogLevel logLevel,
         EventId eventId,
         IReadOnlyList<KeyValuePair<string, object?>> state,
         Exception? exception,

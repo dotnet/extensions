@@ -2,14 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
 
 /// <summary>
 /// The options for LoggerBuffer.
 /// </summary>
-public class GlobalBufferingOptions
+public class BufferingOptions
 {
     /// <summary>
     /// Gets or sets the time to suspend the buffer after flushing.
@@ -31,10 +31,7 @@ public class GlobalBufferingOptions
     public int Capacity { get; set; } = 1_000_000;
 
     /// <summary>
-    /// Gets the collection of <see cref="LoggerFilterRule"/> used for filtering log messages.
+    /// Gets or sets the filter delegate to determine what to buffer.
     /// </summary>
-    public IList<LoggerFilterRule> Rules => RulesInternal;
-
-    // Concrete representation of the rule list
-    internal List<LoggerFilterRule> RulesInternal { get; } = new List<LoggerFilterRule>();
+    internal Func<string?, EventId?, LogLevel?, bool> Filter { get; set; } = (_, _, _) => false;
 }

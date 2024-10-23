@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
 
@@ -18,13 +19,15 @@ public interface ILoggingBuffer
     void Flush();
 
     /// <summary>
-    /// Checks if the buffer is enabled for the given set of parameters.
-    /// </summary>
-    /// <returns><see langword="true" /> if enabled.</returns>
-    bool IsEnabled(string category, LogLevel logLevel, EventId eventId);
-
-    /// <summary>
     /// Enqueues a log record.
     /// </summary>
-    void Enqueue(LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> joiner, Exception? exception, string formatter);
+    /// <returns>true or false.</returns>
+    bool TryEnqueue(
+        IBufferedLogger logger,
+        string category,
+        LogLevel logLevel,
+        EventId eventId,
+        IReadOnlyList<KeyValuePair<string, object?>> joiner,
+        Exception? exception,
+        string formatter);
 }

@@ -16,7 +16,7 @@ public readonly struct SamplingParameters
     /// <param name="category">cat.</param>
     /// <param name="eventId">event id.</param>
     /// <param name="logLevel">level.</param>
-    public SamplingParameters(LogLevel logLevel, string category, EventId eventId)
+    public SamplingParameters(LogLevel? logLevel, string? category, EventId? eventId)
     {
         LogLevel = logLevel;
         Category = category;
@@ -26,15 +26,15 @@ public readonly struct SamplingParameters
     /// <summary>
     /// Gets the log category.
     /// </summary>
-    public string Category { get; }
+    public string? Category { get; }
 
     /// <summary>
     /// Gets the event ID.
     /// </summary>
-    public EventId EventId { get; }
+    public EventId? EventId { get; }
 
     /// <summary>
     /// Gets the log level.
     /// </summary>
-    public LogLevel LogLevel { get; }
+    public LogLevel? LogLevel { get; }
 }

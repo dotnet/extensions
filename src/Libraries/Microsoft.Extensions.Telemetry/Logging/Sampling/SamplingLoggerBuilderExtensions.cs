@@ -54,7 +54,8 @@ public static class SamplingLoggerBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="ILoggingBuilder"/> to add the sampler to.</param>
     /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
-    public static ILoggingBuilder AddSampler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(this ILoggingBuilder builder)
+    public static ILoggingBuilder AddSampler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
+        this ILoggingBuilder builder)
         where T : LoggerSampler
     {
         _ = Throw.IfNull(builder);

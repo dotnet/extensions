@@ -6,10 +6,6 @@ using System.Diagnostics;
 namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
 internal class TraceBasedSampler : LoggerSampler
 {
-    public override bool ShouldSample(SamplingParameters parameters)
-    {
-        var activity = Activity.Current;
-
-        return activity is not null && activity.Recorded;
-    }
+    public override bool ShouldSample(SamplingParameters parameters) =>
+        Activity.Current?.Recorded ?? false;
 }

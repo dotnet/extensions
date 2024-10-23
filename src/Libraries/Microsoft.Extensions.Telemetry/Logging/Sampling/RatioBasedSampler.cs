@@ -12,6 +12,8 @@ namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
 /// </summary>
 internal class RatioBasedSampler : LoggerSampler
 {
+    private const int Hundred = 100;
+
     private readonly int _sampleRate;
     private readonly SamplingParameters _parameters;
 
@@ -24,19 +26,42 @@ internal class RatioBasedSampler : LoggerSampler
     /// <param name="logLevel">level.</param>
     public RatioBasedSampler(double sampleRate, LogLevel? logLevel, string? category, EventId? eventId)
     {
-        _sampleRate = (int)(sampleRate * 100);
+        _sampleRate = (int)(sampleRate * Hundred);
         _parameters = new SamplingParameters(logLevel, category, eventId);
     }
 
     /// <inheritdoc/>
     public override bool ShouldSample(SamplingParameters parameters)
     {
-        // TODO: compare parameters with _parameters
+        if (!IsApplicable(parameters))
+        {
+            return true;
+        }
 
 #if NET6_0_OR_GREATER
-        return RandomNumberGenerator.GetInt32(101) < _sampleRate;
+        return RandomNumberGenerator.GetInt32(Hundred + 1) < _sampleRate;
 #else
-        return new Random().Next(100) < _sampleRate;
+        return new Random().Next(Hundred) < _sampleRate;
 #endif
+    }
+
+    private bool IsApplicable(SamplingParameters parameters)
+    {
+        if (parameters.LogLevel > _parameters.LogLevel)
+        {
+            return false;
+        }
+
+        if (parameters.EventId != _parameters.EventId)
+        {
+            return false;
+        }
+
+        if (parameters.Category != _parameters.Category)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

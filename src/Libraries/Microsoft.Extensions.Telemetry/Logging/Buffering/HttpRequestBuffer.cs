@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -14,45 +13,65 @@ namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
 internal class HttpRequestBuffer : ILoggingBuffer
 {
     private readonly HttpRequestBufferingOptions _options;
-    private readonly IBufferedLogger[] _loggers;
-    private readonly ConcurrentQueue<HttpRequestBufferedLogRecord> _queue;
+    private readonly ConcurrentDictionary<IBufferedLogger, ConcurrentQueue<HttpRequestBufferedLogRecord>> _buffers;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private DateTimeOffset _lastFlushTimestamp;
 
-    public HttpRequestBuffer(IOptions<HttpRequestBufferingOptions> options, IEnumerable<IBufferedLogger> loggers)
+    public HttpRequestBuffer(IOptions<HttpRequestBufferingOptions> options)
     {
         _options = options.Value;
-        _loggers = loggers.ToArray();
-        _queue = new ConcurrentQueue<HttpRequestBufferedLogRecord>();
+        _buffers = new ConcurrentDictionary<IBufferedLogger, ConcurrentQueue<HttpRequestBufferedLogRecord>>();
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
     }
 
-    public void Enqueue(LogLevel logLevel, EventId eventId, IReadOnlyList<KeyValuePair<string, object?>> joiner, Exception? exception, string v)
+    public bool TryEnqueue(
+        IBufferedLogger logger,
+        string category,
+        LogLevel logLevel,
+        EventId eventId,
+        IReadOnlyList<KeyValuePair<string, object?>> joiner,
+        Exception? exception,
+        string formatter)
     {
-        if (_queue.Count >= _options.Capacity)
+        if (!IsEnabled(category, logLevel, eventId))
         {
-            _ = _queue.TryDequeue(out HttpRequestBufferedLogRecord? _);
+            return false;
         }
 
-        var record = new HttpRequestBufferedLogRecord(logLevel, eventId, joiner, exception, v);
-        _queue.Enqueue(record);
+        var record = new HttpRequestBufferedLogRecord(logLevel, eventId, joiner, exception, formatter);
+        var queue = _buffers.GetOrAdd(logger, _ => new ConcurrentQueue<HttpRequestBufferedLogRecord>());
+
+        // probably don't need to limit buffer capacity?
+        // becase buffer is disposed when the respective HttpContext is disposed
+        // don't expect it to grow so much to cause a problem?
+
+        // having said that, I question the usefullness of the HTTP buffering.
+        // If I have 1000 RPS each with a buffer which is auto-disposed,
+        // then something bad happens and 900 requests out of 1000 failed,
+        // their HttpContext were disposed, as well as buffers,
+        // so at this point logs are lost and it is too late to call the Flusth() method
+
+        queue.Enqueue(record);
+
+        return true;
     }
 
     public void Flush()
     {
-        var result = new List<BufferedLogRecord>();
+        _lastFlushTimestamp = _timeProvider.GetUtcNow();
 
-        while (!_queue.IsEmpty)
+        foreach (var (logger, queue) in _buffers)
         {
-            if (_queue.TryDequeue(out HttpRequestBufferedLogRecord? item))
+            var result = new List<BufferedLogRecord>();
+            while (!queue.IsEmpty)
             {
-                result.Add(item);
+                if (queue.TryDequeue(out HttpRequestBufferedLogRecord? item))
+                {
+                    result.Add(item);
+                }
             }
-        }
 
-        for (int i = 0; i < _loggers.Length; i++)
-        {
-            _loggers[i].LogRecords(result);
+            logger.LogRecords(result);
         }
 
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
@@ -65,12 +84,6 @@ internal class HttpRequestBuffer : ILoggingBuffer
             return false;
         }
 
-        // TODO: check if the supplied pattern applies to any of the options.Rules:
-        _ = _options.Rules;
-        _ = category;
-        _ = logLevel;
-        _ = eventId;
-
-        return true;
+        return _options.Filter(category, eventId, logLevel);
     }
 }
