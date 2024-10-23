@@ -122,20 +122,20 @@ public static class ChatClientStructuredOutputExtensions
 
         serializerOptions.MakeReadOnly();
 
-        var schemaNode = AIJsonUtilities.CreateJsonSchema(
+        var schemaElement = AIJsonUtilities.CreateJsonSchema(
             type: typeof(T),
             serializerOptions: serializerOptions,
             inferenceOptions: _inferenceOptions);
 
         var isWrappedInObject = false;
 
-        // We wrap regardless of native structured output, since it also applies to Azure Inference
-        if (!SchemaRepresentsObject(schemaNode))
+        if (!SchemaRepresentsObject(schemaElement))
         {
+            // We wrap regardless of native structured output, since it also applies to Azure Inference
             var schemaAsJsonObject = (JsonObject)JsonSerializer.Deserialize(
-                schemaNode,
+                schemaElement,
                 AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonObject)))!;
-            schemaNode = JsonSerializer.SerializeToElement(new JsonObject
+            schemaElement = JsonSerializer.SerializeToElement(new JsonObject
             {
                 { "$schema", "https://json-schema.org/draft/2020-12/schema" },
                 { "type", "object" },
@@ -145,7 +145,7 @@ public static class ChatClientStructuredOutputExtensions
             isWrappedInObject = true;
         }
 
-        var schema = JsonSerializer.Serialize(schemaNode, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
+        var schema = JsonSerializer.Serialize(schemaElement, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
 
         ChatMessage? promptAugmentation = null;
         options = (options ?? new()).Clone();
@@ -193,9 +193,9 @@ public static class ChatClientStructuredOutputExtensions
         }
     }
 
-    private static bool SchemaRepresentsObject(JsonElement schemaNode)
+    private static bool SchemaRepresentsObject(JsonElement schemaElement)
     {
-        foreach (var property in schemaNode.EnumerateObject())
+        foreach (var property in schemaElement.EnumerateObject())
         {
             if (property.NameEquals("type"u8))
             {
