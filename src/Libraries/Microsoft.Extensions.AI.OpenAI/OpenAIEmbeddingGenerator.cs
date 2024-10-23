@@ -135,17 +135,11 @@ public sealed class OpenAIEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     {
         OpenAI.Embeddings.EmbeddingGenerationOptions openAIOptions = new()
         {
-            Dimensions = _dimensions,
+            Dimensions = options?.Dimensions ?? _dimensions,
         };
 
         if (options?.AdditionalProperties is { Count: > 0 } additionalProperties)
         {
-            // Allow per-instance dimensions to be overridden by a per-call property
-            if (additionalProperties.TryGetValue(nameof(openAIOptions.Dimensions), out int? dimensions))
-            {
-                openAIOptions.Dimensions = dimensions;
-            }
-
             if (additionalProperties.TryGetValue(nameof(openAIOptions.EndUserId), out string? endUserId))
             {
                 openAIOptions.EndUserId = endUserId;
