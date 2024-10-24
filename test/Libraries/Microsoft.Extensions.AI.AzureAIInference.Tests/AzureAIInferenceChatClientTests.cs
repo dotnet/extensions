@@ -203,7 +203,7 @@ public class AzureAIInferenceChatClientTests
             Assert.Equal(createdAt, updates[i].CreatedAt);
             Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
-            Assert.Equal(i < 10 ? 1 : 0, updates[i].Contents.Count);
+            Assert.Equal(i is < 10 or 11 ? 1 : 0, updates[i].Contents.Count);
             Assert.Equal(i < 10 ? null : ChatFinishReason.Stop, updates[i].FinishReason);
         }
     }
@@ -322,12 +322,13 @@ public class AzureAIInferenceChatClientTests
     }
 
     [Fact]
-    public async Task NullAssistantText_ContentSkipped_NonStreaming()
+    public async Task NullAssistantText_ContentEmpty_NonStreaming()
     {
         const string Input = """
             {
                 "messages": [
                     {
+                        "content": "",
                         "role": "assistant"
                     },
                     {
@@ -423,6 +424,7 @@ public class AzureAIInferenceChatClientTests
                 "model": "gpt-4o-mini",
                 "tools": [
                     {
+                        "type": "function",
                         "function": {
                             "name": "GetPersonAge",
                             "description": "Gets the age of the specified person.",
@@ -436,8 +438,7 @@ public class AzureAIInferenceChatClientTests
                                     }
                                 }
                             }
-                        },
-                        "type": "function"
+                        }
                     }
                 ],
                 "tool_choice": "auto"
@@ -534,6 +535,7 @@ public class AzureAIInferenceChatClientTests
                 "model": "gpt-4o-mini",
                 "tools": [
                     {
+                        "type": "function",
                         "function": {
                             "name": "GetPersonAge",
                             "description": "Gets the age of the specified person.",
@@ -547,8 +549,7 @@ public class AzureAIInferenceChatClientTests
                                     }
                                 }
                             }
-                        },
-                        "type": "function"
+                        }
                     }
                 ],
                 "tool_choice": "auto"
@@ -614,6 +615,6 @@ public class AzureAIInferenceChatClientTests
         new ChatCompletionsClient(
             new("http://somewhere"),
             new AzureKeyCredential("key"),
-            new ChatCompletionsClientOptions { Transport = new HttpClientTransport(httpClient) })
+            new AzureAIInferenceClientOptions { Transport = new HttpClientTransport(httpClient) })
             .AsChatClient(modelId);
 }
