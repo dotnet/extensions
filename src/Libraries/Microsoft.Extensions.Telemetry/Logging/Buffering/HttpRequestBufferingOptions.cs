@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
 /// <summary>
 /// The options for LoggerBuffer.
 /// </summary>
-public class BufferingOptions
+public class HttpRequestBufferingOptions
 {
     /// <summary>
     /// Gets or sets the time to suspend the buffer after flushing.
@@ -21,14 +21,14 @@ public class BufferingOptions
     public TimeSpan SuspendAfterFlushDuration { get; set; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
-    /// Gets or sets the duration to keep logs in the buffer.
+    /// Gets or sets the size of the buffer for a request.
     /// </summary>
-    public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(30);
+    public int PerRequestCapacity { get; set; } = 1_000;
 
     /// <summary>
-    /// Gets or sets the size of the buffer.
+    /// Gets or sets the size of the buffer for a request.
     /// </summary>
-    public int Capacity { get; set; } = 1_000_000;
+    public int GlobalCapacity { get; set; } = 1_000_000;
 
     /// <summary>
     /// Gets or sets the filter delegate to determine what to buffer.

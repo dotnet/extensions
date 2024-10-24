@@ -23,7 +23,7 @@ public static class GlobalBufferingLoggerBuilderExtensions
     public static ILoggingBuilder AddGlobalBuffering(
         this ILoggingBuilder builder,
         Func<string?, EventId?, LogLevel?, bool> filter,
-        Action<BufferingOptions>? options = null)
+        Action<GlobalBufferingOptions>? options = null)
     {
         _ = Throw.IfNull(builder);
 
@@ -51,17 +51,17 @@ public static class GlobalBufferingLoggerBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="ILoggingBuilder"/> to add the buffer to.</param>
     /// <param name="filter">The filter to be used to decide what to buffer.</param>
-    /// <param name="configureOptions">The delegate to configure <see cref="BufferingOptions"/>.</param>
+    /// <param name="configureOptions">The delegate to configure <see cref="GlobalBufferingOptions"/>.</param>
     /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
     public static ILoggingBuilder ConfigureBuffering(
         this ILoggingBuilder builder,
         Func<string?, EventId?, LogLevel?, bool> filter,
-        Action<BufferingOptions>? configureOptions = null)
+        Action<GlobalBufferingOptions>? configureOptions = null)
     {
         _ = Throw.IfNull(builder);
 
-        _ = builder.Services.Configure(configureOptions ?? new Action<BufferingOptions>((_) => { }));
-        _ = builder.Services.Configure<BufferingOptions>(opts => opts.AddFilter(filter));
+        _ = builder.Services.Configure(configureOptions ?? new Action<GlobalBufferingOptions>((_) => { }));
+        _ = builder.Services.Configure<GlobalBufferingOptions>(opts => opts.AddFilter(filter));
 
         return builder;
     }
@@ -70,7 +70,7 @@ public static class GlobalBufferingLoggerBuilderExtensions
     /// Adds a log buffer to the factory.
     /// </summary>
     public static void AddFilter(
-        this BufferingOptions options,
+        this GlobalBufferingOptions options,
         Func<string?, EventId?, LogLevel?, bool> filter)
     {
         _ = Throw.IfNull(options);

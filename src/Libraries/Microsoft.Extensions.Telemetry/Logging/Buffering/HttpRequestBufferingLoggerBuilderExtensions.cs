@@ -23,13 +23,13 @@ public static class HttpRequestBufferingLoggerBuilderExtensions
     public static ILoggingBuilder AddHttpRequestBuffering(
         this ILoggingBuilder builder,
         Func<string?, EventId?, LogLevel?, bool> filter,
-        Action<BufferingOptions>? options = null)
+        Action<HttpRequestBufferingOptions>? options = null)
     {
         _ = Throw.IfNull(builder);
 
         return builder
             .AddHttpRequestBufferProvider()
-            .ConfigureBuffering(filter, options);
+            .ConfigureHttpRequestBuffering(filter, options);
     }
 
     /// <summary>
@@ -44,5 +44,46 @@ public static class HttpRequestBufferingLoggerBuilderExtensions
         _ = builder.Services.AddActivatedSingleton<ILoggingBufferProvider, HttpRequestBufferProvider>();
 
         return builder;
+    }
+
+    /// <summary>
+    /// Adds a log buffer to the factory.
+    /// </summary>
+    /// <param name="builder">The <see cref="ILoggingBuilder"/> to add the buffer to.</param>
+    /// <param name="filter">The filter to be used to decide what to buffer.</param>
+    /// <param name="configureOptions">The delegate to configure <see cref="HttpRequestBufferingOptions"/>.</param>
+    /// <returns>The <see cref="ILoggingBuilder"/> so that additional calls can be chained.</returns>
+    public static ILoggingBuilder ConfigureHttpRequestBuffering(
+        this ILoggingBuilder builder,
+        Func<string?, EventId?, LogLevel?, bool> filter,
+        Action<HttpRequestBufferingOptions>? configureOptions = null)
+    {
+        _ = Throw.IfNull(builder);
+
+        _ = builder.Services.Configure(configureOptions ?? new Action<HttpRequestBufferingOptions>((_) => { }));
+        _ = builder.Services.Configure<HttpRequestBufferingOptions>(opts => opts.AddHttpRequestBufferingFilter(filter));
+        _ = builder.Services
+            .AddOptions<GlobalBufferingOptions>()
+            .Configure<HttpRequestBufferingOptions>((globalOpts, requestOpts) =>
+            {
+                globalOpts.Capacity = requestOpts.GlobalCapacity;
+                globalOpts.Filter = requestOpts.Filter;
+                globalOpts.SuspendAfterFlushDuration = requestOpts.SuspendAfterFlushDuration;
+            });
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds a log buffer to the factory.
+    /// </summary>
+    public static void AddHttpRequestBufferingFilter(
+        this HttpRequestBufferingOptions options,
+        Func<string?, EventId?, LogLevel?, bool> filter)
+    {
+        _ = Throw.IfNull(options);
+        _ = Throw.IfNull(filter);
+
+        options.Filter = filter;
     }
 }

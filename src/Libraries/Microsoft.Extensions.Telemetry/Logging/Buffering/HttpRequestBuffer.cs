@@ -44,12 +44,16 @@ internal class HttpRequestBuffer : ILoggingBuffer
         // probably don't need to limit buffer capacity?
         // becase buffer is disposed when the respective HttpContext is disposed
         // don't expect it to grow so much to cause a problem?
+        if (queue.Count >= _options.PerRequestCapacity)
+        {
+            _ = queue.TryDequeue(out HttpRequestBufferedLogRecord? _);
+        }
 
         // having said that, I question the usefullness of the HTTP buffering.
         // If I have 1000 RPS each with a buffer which is auto-disposed,
         // then something bad happens and 900 requests out of 1000 failed,
         // their HttpContext were disposed, as well as buffers,
-        // so at this point logs are lost and it is too late to call the Flusth() method
+        // so at this point logs are lost and it is too late to call the Flush() method
 
         queue.Enqueue(record);
 

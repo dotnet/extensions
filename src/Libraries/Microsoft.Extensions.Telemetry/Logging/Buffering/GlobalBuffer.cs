@@ -16,12 +16,12 @@ namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
 
 internal class GlobalBuffer : BackgroundService, ILoggingBuffer
 {
-    private readonly BufferingOptions _options;
+    private readonly GlobalBufferingOptions _options;
     private readonly ConcurrentDictionary<IBufferedLogger, ConcurrentQueue<GlobalBufferedLogRecord>> _buffers;
     private readonly TimeProvider _timeProvider = TimeProvider.System;
     private DateTimeOffset _lastFlushTimestamp;
 
-    public GlobalBuffer(IOptions<BufferingOptions> options)
+    public GlobalBuffer(IOptions<GlobalBufferingOptions> options)
     {
         _options = options.Value;
         _lastFlushTimestamp = _timeProvider.GetUtcNow();
