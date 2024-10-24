@@ -16,6 +16,7 @@ public class ChatOptionsTests
         Assert.Null(options.Temperature);
         Assert.Null(options.MaxOutputTokens);
         Assert.Null(options.TopP);
+        Assert.Null(options.TopK);
         Assert.Null(options.FrequencyPenalty);
         Assert.Null(options.PresencePenalty);
         Assert.Null(options.ResponseFormat);
@@ -29,6 +30,7 @@ public class ChatOptionsTests
         Assert.Null(clone.Temperature);
         Assert.Null(clone.MaxOutputTokens);
         Assert.Null(clone.TopP);
+        Assert.Null(clone.TopK);
         Assert.Null(clone.FrequencyPenalty);
         Assert.Null(clone.PresencePenalty);
         Assert.Null(clone.ResponseFormat);
@@ -64,6 +66,7 @@ public class ChatOptionsTests
         options.Temperature = 0.1f;
         options.MaxOutputTokens = 2;
         options.TopP = 0.3f;
+        options.TopK = 42;
         options.FrequencyPenalty = 0.4f;
         options.PresencePenalty = 0.5f;
         options.ResponseFormat = ChatResponseFormat.Json;
@@ -76,6 +79,7 @@ public class ChatOptionsTests
         Assert.Equal(0.1f, options.Temperature);
         Assert.Equal(2, options.MaxOutputTokens);
         Assert.Equal(0.3f, options.TopP);
+        Assert.Equal(42, options.TopK);
         Assert.Equal(0.4f, options.FrequencyPenalty);
         Assert.Equal(0.5f, options.PresencePenalty);
         Assert.Same(ChatResponseFormat.Json, options.ResponseFormat);
@@ -89,6 +93,7 @@ public class ChatOptionsTests
         Assert.Equal(0.1f, clone.Temperature);
         Assert.Equal(2, clone.MaxOutputTokens);
         Assert.Equal(0.3f, clone.TopP);
+        Assert.Equal(42, clone.TopK);
         Assert.Equal(0.4f, clone.FrequencyPenalty);
         Assert.Equal(0.5f, clone.PresencePenalty);
         Assert.Same(ChatResponseFormat.Json, clone.ResponseFormat);
@@ -118,6 +123,7 @@ public class ChatOptionsTests
         options.Temperature = 0.1f;
         options.MaxOutputTokens = 2;
         options.TopP = 0.3f;
+        options.TopK = 42;
         options.FrequencyPenalty = 0.4f;
         options.PresencePenalty = 0.5f;
         options.ResponseFormat = ChatResponseFormat.Json;
@@ -139,6 +145,7 @@ public class ChatOptionsTests
         Assert.Equal(0.1f, deserialized.Temperature);
         Assert.Equal(2, deserialized.MaxOutputTokens);
         Assert.Equal(0.3f, deserialized.TopP);
+        Assert.Equal(42, deserialized.TopK);
         Assert.Equal(0.4f, deserialized.FrequencyPenalty);
         Assert.Equal(0.5f, deserialized.PresencePenalty);
         Assert.Equal(ChatResponseFormat.Json, deserialized.ResponseFormat);
