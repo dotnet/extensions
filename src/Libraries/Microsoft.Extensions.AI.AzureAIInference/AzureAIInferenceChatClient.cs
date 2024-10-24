@@ -480,15 +480,15 @@ public sealed partial class AzureAIInferenceChatClient : IChatClient
             switch (content)
             {
                 case TextContent textContent:
-                    (parts ??= []).Add(new ChatMessageTextContentItem(textContent.Text));
+                    parts.Add(new ChatMessageTextContentItem(textContent.Text));
                     break;
 
                 case ImageContent imageContent when imageContent.Data is { IsEmpty: false } data:
-                    (parts ??= []).Add(new ChatMessageImageContentItem(BinaryData.FromBytes(data), imageContent.MediaType));
+                    parts.Add(new ChatMessageImageContentItem(BinaryData.FromBytes(data), imageContent.MediaType));
                     break;
 
                 case ImageContent imageContent when imageContent.Uri is string uri:
-                    (parts ??= []).Add(new ChatMessageImageContentItem(new Uri(uri)));
+                    parts.Add(new ChatMessageImageContentItem(new Uri(uri)));
                     break;
             }
         }
