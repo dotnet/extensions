@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -17,6 +17,7 @@ using OpenAI.Chat;
 #pragma warning disable S1135 // Track uses of "TODO" tags
 #pragma warning disable S3011 // Reflection should not be used to increase accessibility of classes, methods, or fields
 #pragma warning disable SA1204 // Static elements should appear before instance elements
+#pragma warning disable SA1108 // Block statements should not contain embedded comments
 
 namespace Microsoft.Extensions.AI;
 
@@ -265,7 +266,7 @@ public sealed partial class OpenAIChatClient : IChatClient
                     existing.CallId ??= toolCallUpdate.ToolCallId;
                     existing.Name ??= toolCallUpdate.FunctionName;
                     if (toolCallUpdate.FunctionArgumentsUpdate is { } update &&
-                        update.ToMemory().Length != 0) // workaround for https://github.com/dotnet/runtime/issues/68262 in 6.0.0 package
+                        !update.ToMemory().IsEmpty) // workaround for https://github.com/dotnet/runtime/issues/68262 in 6.0.0 package
                     {
                         _ = (existing.Arguments ??= new()).Append(update.ToString());
                     }
