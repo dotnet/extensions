@@ -127,23 +127,28 @@ public static class ChatClientStructuredOutputExtensions
             serializerOptions: serializerOptions,
             inferenceOptions: _inferenceOptions);
 
-        var isWrappedInObject = false;
-        if (!SchemaRepresentsObject(schemaElement))
+        bool isWrappedInObject;
+        string schema;
+        if (SchemaRepresentsObject(schemaElement))
+        {
+            // For object-representing schemas, we can use them as-is
+            isWrappedInObject = false;
+            schema = JsonSerializer.Serialize(schemaElement, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
+        }
+        else
         {
             // For non-object-representing schemas, we wrap them in an object schema, because all
             // the real LLM providers today require an object schema as the root. This is currently
             // true even for providers that support native structured output.
             isWrappedInObject = true;
-            schemaElement = JsonSerializer.SerializeToElement(new JsonObject
+            schema = JsonSerializer.Serialize(new JsonObject
             {
                 { "$schema", "https://json-schema.org/draft/2020-12/schema" },
                 { "type", "object" },
                 { "properties", new JsonObject { { "data", JsonElementToJsonNode(schemaElement) } } },
                 { "additionalProperties", false },
-            }, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonObject)))!;
+            }, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonObject)));
         }
-
-        var schema = JsonSerializer.Serialize(schemaElement, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
 
         ChatMessage? promptAugmentation = null;
         options = (options ?? new()).Clone();
