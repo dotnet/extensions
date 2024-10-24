@@ -37,6 +37,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
     private readonly HybridCacheEntryFlags _defaultFlags; // note this already includes hardFlags
     private readonly TimeSpan _defaultExpiration;
     private readonly TimeSpan _defaultLocalCacheExpiration;
+    private readonly int _maximumKeyLength;
 
     private readonly DistributedCacheEntryOptions _defaultDistributedCacheExpiration;
 
@@ -90,6 +91,7 @@ internal sealed partial class DefaultHybridCache : HybridCache
         _serializerFactories = factories;
 
         MaximumPayloadBytes = checked((int)_options.MaximumPayloadBytes); // for now hard-limit to 2GiB
+        _maximumKeyLength = _options.MaximumKeyLength;
 
         var defaultEntryOptions = _options.DefaultEntryOptions;
 
@@ -119,11 +121,33 @@ internal sealed partial class DefaultHybridCache : HybridCache
         }
 
         var flags = GetEffectiveFlags(options);
-        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0 && _localCache.TryGetValue(key, out var untyped)
-            && untyped is CacheItem<T> typed && typed.TryGetValue(out var value))
+        if (!ValidateKey(key))
         {
-            // short-circuit
-            return new(value);
+            // we can't use cache, but we can still provide the data
+            return RunWithoutCacheAsync(flags, state, underlyingDataCallback, cancellationToken);
+        }
+
+        bool eventSourceEnabled = HybridCacheEventSource.Log.IsEnabled();
+        if ((flags & HybridCacheEntryFlags.DisableLocalCacheRead) == 0)
+        {
+            if (_localCache.TryGetValue(key, out var untyped)
+                && untyped is CacheItem<T> typed && typed.TryGetValue(_logger, out var value))
+            {
+                // short-circuit
+                if (eventSourceEnabled)
+                {
+                    HybridCacheEventSource.Log.LocalCacheHit();
+                }
+
+                return new(value);
+            }
+            else
+            {
+                if (eventSourceEnabled)
+                {
+                    HybridCacheEventSource.Log.LocalCacheMiss();
+                }
+            }
         }
 
         if (GetOrCreateStampedeState<TState, T>(key, flags, out var stampede, canBeCanceled))
@@ -139,11 +163,19 @@ internal sealed partial class DefaultHybridCache : HybridCache
             {
                 // we're going to run to completion; no need to get complicated
                 _ = stampede.ExecuteDirectAsync(in state, underlyingDataCallback, options); // this larger task includes L2 write etc
-                return stampede.UnwrapReservedAsync();
+                return stampede.UnwrapReservedAsync(_logger);
+            }
+        }
+        else
+        {
+            // pre-existing query
+            if (eventSourceEnabled)
+            {
+                HybridCacheEventSource.Log.StampedeJoin();
             }
         }
 
-        return stampede.JoinAsync(cancellationToken);
+        return stampede.JoinAsync(_logger, cancellationToken);
     }
 
     public override ValueTask RemoveAsync(string key, CancellationToken token = default)
@@ -164,7 +196,33 @@ internal sealed partial class DefaultHybridCache : HybridCache
         return new(state.ExecuteDirectAsync(value, static (state, _) => new(state), options)); // note this spans L2 write etc
     }
 
+    private static ValueTask<T> RunWithoutCacheAsync<TState, T>(HybridCacheEntryFlags flags, TState state,
+        Func<TState, CancellationToken, ValueTask<T>> underlyingDataCallback,
+        CancellationToken cancellationToken)
+    {
+        return (flags & HybridCacheEntryFlags.DisableUnderlyingData) == 0
+            ? underlyingDataCallback(state, cancellationToken) : default;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private HybridCacheEntryFlags GetEffectiveFlags(HybridCacheEntryOptions? options)
-    => (options?.Flags | _hardFlags) ?? _defaultFlags;
+        => (options?.Flags | _hardFlags) ?? _defaultFlags;
+
+    private bool ValidateKey(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            _logger.KeyEmptyOrWhitespace();
+            return false;
+        }
+
+        if (key.Length > _maximumKeyLength)
+        {
+            _logger.MaximumKeyLengthExceeded(_maximumKeyLength, key.Length);
+            return false;
+        }
+
+        // nothing to complain about
+        return true;
+    }
 }

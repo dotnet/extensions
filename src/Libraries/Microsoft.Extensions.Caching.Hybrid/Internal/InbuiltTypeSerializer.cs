@@ -17,6 +17,18 @@ internal sealed class InbuiltTypeSerializer : IHybridCacheSerializer<string>, IH
     public static InbuiltTypeSerializer Instance { get; } = new();
 
     string IHybridCacheSerializer<string>.Deserialize(ReadOnlySequence<byte> source)
+        => DeserializeString(source);
+
+    void IHybridCacheSerializer<string>.Serialize(string value, IBufferWriter<byte> target)
+        => SerializeString(value, target);
+
+    byte[] IHybridCacheSerializer<byte[]>.Deserialize(ReadOnlySequence<byte> source)
+    => source.ToArray();
+
+    void IHybridCacheSerializer<byte[]>.Serialize(byte[] value, IBufferWriter<byte> target)
+        => target.Write(value);
+
+    internal static string DeserializeString(ReadOnlySequence<byte> source)
     {
 #if NET5_0_OR_GREATER
         return Encoding.UTF8.GetString(source);
@@ -36,7 +48,7 @@ internal sealed class InbuiltTypeSerializer : IHybridCacheSerializer<string>, IH
 #endif
     }
 
-    void IHybridCacheSerializer<string>.Serialize(string value, IBufferWriter<byte> target)
+    internal static void SerializeString(string value, IBufferWriter<byte> target)
     {
 #if NET5_0_OR_GREATER
         Encoding.UTF8.GetBytes(value, target);
@@ -49,10 +61,4 @@ internal sealed class InbuiltTypeSerializer : IHybridCacheSerializer<string>, IH
         ArrayPool<byte>.Shared.Return(oversized);
 #endif
     }
-
-    byte[] IHybridCacheSerializer<byte[]>.Deserialize(ReadOnlySequence<byte> source)
-        => source.ToArray();
-
-    void IHybridCacheSerializer<byte[]>.Serialize(byte[] value, IBufferWriter<byte> target)
-        => target.Write(value);
 }

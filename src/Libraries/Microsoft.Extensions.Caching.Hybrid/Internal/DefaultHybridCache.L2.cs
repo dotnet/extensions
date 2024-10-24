@@ -16,12 +16,16 @@ internal partial class DefaultHybridCache
 {
     [SuppressMessage("Performance", "CA1849:Call async methods when in an async method", Justification = "Manual sync check")]
     [SuppressMessage("Usage", "VSTHRD003:Avoid awaiting foreign Tasks", Justification = "Manual sync check")]
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Explicit async exception handling")]
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Deliberate recycle only on success")]
     internal ValueTask<BufferChunk> GetFromL2Async(string key, CancellationToken token)
     {
         switch (GetFeatures(CacheFeatures.BackendCache | CacheFeatures.BackendBuffers))
         {
             case CacheFeatures.BackendCache: // legacy byte[]-based
+
                 var pendingLegacy = _backendCache!.GetAsync(key, token);
+
 #if NETCOREAPP2_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
                 if (!pendingLegacy.IsCompletedSuccessfully)
 #else
@@ -36,6 +40,7 @@ internal partial class DefaultHybridCache
             case CacheFeatures.BackendCache | CacheFeatures.BackendBuffers: // IBufferWriter<byte>-based
                 RecyclableArrayBufferWriter<byte> writer = RecyclableArrayBufferWriter<byte>.Create(MaximumPayloadBytes);
                 var cache = Unsafe.As<IBufferDistributedCache>(_backendCache!); // type-checked already
+
                 var pendingBuffers = cache.TryGetAsync(key, writer, token);
                 if (!pendingBuffers.IsCompletedSuccessfully)
                 {
@@ -49,7 +54,7 @@ internal partial class DefaultHybridCache
                 return new(result);
         }
 
-        return default;
+        return default; // treat as a "miss"
 
         static async Task<BufferChunk> AwaitedLegacyAsync(Task<byte[]?> pending, DefaultHybridCache @this)
         {
@@ -115,6 +120,11 @@ internal partial class DefaultHybridCache
 
             // commit
             cacheEntry.Dispose();
+
+            if (HybridCacheEventSource.Log.IsEnabled())
+            {
+                HybridCacheEventSource.Log.LocalCacheWrite();
+            }
         }
     }
 
