@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -34,12 +35,12 @@ public class ChatClientStructuredOutputExtensionsTests
                 Assert.Null(responseFormat.SchemaName);
                 Assert.Null(responseFormat.SchemaDescription);
 
-                // The inner client receives a trailing "system" message with the schema instruction
+                // The inner client receives a trailing "user" message with the schema instruction
                 Assert.Collection(messages,
                     message => Assert.Equal("Hello", message.Text),
                     message =>
                     {
-                        Assert.Equal(ChatRole.System, message.Role);
+                        Assert.Equal(ChatRole.User, message.Role);
                         Assert.Contains("Respond with a JSON value", message.Text);
                         Assert.Contains("https://json-schema.org/draft/2020-12/schema", message.Text);
                         foreach (Species v in Enum.GetValues(typeof(Species)))
@@ -71,6 +72,39 @@ public class ChatClientStructuredOutputExtensionsTests
 
         // Doesn't mutate history (or at least, reverts any changes)
         Assert.Equal("Hello", Assert.Single(chatHistory).Text);
+    }
+
+    [Fact]
+    public async Task WrapsNonObjectValuesInDataProperty()
+    {
+        var expectedResult = new { data = 123 };
+        var expectedCompletion = new ChatCompletion([new ChatMessage(ChatRole.Assistant, JsonSerializer.Serialize(expectedResult))]);
+
+        using var client = new TestChatClient
+        {
+            CompleteAsyncCallback = (messages, options, cancellationToken) =>
+            {
+                var suppliedSchemaMatch = Regex.Match(messages[1].Text!, "```(.*?)```", RegexOptions.Singleline);
+                Assert.True(suppliedSchemaMatch.Success);
+                Assert.Equal("""
+                    {
+                      "$schema": "https://json-schema.org/draft/2020-12/schema",
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$schema": "https://json-schema.org/draft/2020-12/schema",
+                          "type": "integer"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                    """, suppliedSchemaMatch.Groups[1].Value.Trim());
+                return Task.FromResult(expectedCompletion);
+            },
+        };
+
+        var response = await client.CompleteAsync<int>("Hello");
+        Assert.Equal(123, response.Result);
     }
 
     [Fact]
@@ -252,7 +286,7 @@ public class ChatClientStructuredOutputExtensionsTests
                     message => Assert.Equal("Hello", message.Text),
                     message =>
                     {
-                        Assert.Equal(ChatRole.System, message.Role);
+                        Assert.Equal(ChatRole.User, message.Role);
                         Assert.Contains("Respond with a JSON value", message.Text);
                         Assert.Contains("https://json-schema.org/draft/2020-12/schema", message.Text);
                         Assert.DoesNotContain(nameof(Animal.FullName), message.Text); // The JSO uses snake_case
