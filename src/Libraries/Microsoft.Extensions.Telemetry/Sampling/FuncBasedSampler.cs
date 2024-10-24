@@ -2,9 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
+namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 internal class FuncBasedSampler : LoggerSampler
 {

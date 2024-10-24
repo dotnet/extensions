@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
+namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 #pragma warning disable CA5394 // Do not use insecure randomness
 /// <summary>

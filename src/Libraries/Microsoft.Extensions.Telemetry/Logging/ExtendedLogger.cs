@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Extensions.Diagnostics.Logging.Buffering;
-using Microsoft.Extensions.Diagnostics.Logging.Sampling;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Shared.Pools;
 

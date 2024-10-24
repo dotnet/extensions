@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
 /// Interface for a logging buffer.

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 internal class HttpRequestBufferedLogRecord : GlobalBufferedLogRecord
 {

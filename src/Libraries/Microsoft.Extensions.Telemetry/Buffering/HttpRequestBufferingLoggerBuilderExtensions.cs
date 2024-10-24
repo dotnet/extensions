@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 /// <summary>
 /// Lets you register log buffers in a dependency injection container.

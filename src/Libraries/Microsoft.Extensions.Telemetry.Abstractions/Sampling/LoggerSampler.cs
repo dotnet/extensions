@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
+namespace Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Controls the number of samples of log records collected and sent to the backend.

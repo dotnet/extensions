@@ -3,7 +3,7 @@
 
 using System.Collections.Concurrent;
 
-namespace Microsoft.Extensions.Diagnostics.Logging.Buffering;
+namespace Microsoft.Extensions.Diagnostics.Buffering;
 
 internal class HttpRequestBufferProvider : ILoggingBufferProvider
 {

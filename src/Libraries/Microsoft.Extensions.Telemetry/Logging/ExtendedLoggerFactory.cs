@@ -7,9 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
+using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Diagnostics.Enrichment;
-using Microsoft.Extensions.Diagnostics.Logging.Buffering;
-using Microsoft.Extensions.Diagnostics.Logging.Sampling;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Options;
 using Microsoft.Shared.Diagnostics;
 
@@ -37,9 +37,9 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
     public ExtendedLoggerFactory(
         IEnumerable<ILoggerProvider> providers,
         IEnumerable<ILogEnricher> enrichers,
-        LoggerSampler? sampler = null,
         IEnumerable<IStaticLogEnricher> staticEnrichers,
         IOptionsMonitor<LoggerFilterOptions> filterOptions,
+        LoggerSampler? sampler = null,
         IOptions<LoggerFactoryOptions>? factoryOptions = null,
         IExternalScopeProvider? scopeProvider = null,
         IOptionsMonitor<LoggerEnrichmentOptions>? enrichmentOptions = null,

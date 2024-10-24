@@ -1,7 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
+using Microsoft.Extensions.Logging;
+
+namespace Microsoft.Extensions.Diagnostics.Sampling;
+
 internal class AlwaysOnSampler : LoggerSampler
 {
     public override bool ShouldSample(SamplingParameters _) => true;

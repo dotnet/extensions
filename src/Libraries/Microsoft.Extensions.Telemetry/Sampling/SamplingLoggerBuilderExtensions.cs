@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Shared.Diagnostics;
 
-namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
+namespace Microsoft.Extensions.Diagnostics.Sampling;
 
 /// <summary>
 /// Extensions for configuring logging sampling.
