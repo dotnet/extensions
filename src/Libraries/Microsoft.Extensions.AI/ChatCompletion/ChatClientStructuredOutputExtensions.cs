@@ -212,6 +212,7 @@ public static class ChatClientStructuredOutputExtensions
     {
         return element.ValueKind switch
         {
+            JsonValueKind.Null => null,
             JsonValueKind.Array => JsonArray.Create(element),
             JsonValueKind.Object => JsonObject.Create(element),
             _ => JsonValue.Create(element)
