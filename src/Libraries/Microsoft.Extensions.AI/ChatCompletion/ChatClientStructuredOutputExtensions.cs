@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -128,24 +127,24 @@ public static class ChatClientStructuredOutputExtensions
             inferenceOptions: _inferenceOptions);
 
         var isWrappedInObject = false;
-
+        var schema = JsonSerializer.Serialize(schemaElement, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
         if (!SchemaRepresentsObject(schemaElement))
         {
-            // We wrap regardless of native structured output, since it also applies to Azure Inference
-            var schemaAsJsonObject = (JsonObject)JsonSerializer.Deserialize(
-                schemaElement,
-                AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonObject)))!;
-            schemaElement = JsonSerializer.SerializeToElement(new JsonObject
-            {
-                { "$schema", "https://json-schema.org/draft/2020-12/schema" },
-                { "type", "object" },
-                { "properties", new JsonObject { { "data", schemaAsJsonObject } } },
-                { "additionalProperties", false },
-            }, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonObject)))!;
+            // For non-object-representing schemas, we wrap them in an object schema, because all
+            // the real LLM providers today require an object schema as the root. This is currently
+            // true even for providers that support native structured output.
             isWrappedInObject = true;
+            schema = $$"""
+                {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "type": "object",
+                    "properties": {
+                        "data": {{schema}}
+                    },
+                    "additionalProperties": false
+                }
+                """;
         }
-
-        var schema = JsonSerializer.Serialize(schemaElement, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
 
         ChatMessage? promptAugmentation = null;
         options = (options ?? new()).Clone();
@@ -195,12 +194,15 @@ public static class ChatClientStructuredOutputExtensions
 
     private static bool SchemaRepresentsObject(JsonElement schemaElement)
     {
-        foreach (var property in schemaElement.EnumerateObject())
+        if (schemaElement.ValueKind is JsonValueKind.Object)
         {
-            if (property.NameEquals("type"u8))
+            foreach (var property in schemaElement.EnumerateObject())
             {
-                return property.Value.ValueKind == JsonValueKind.String
-                    && property.Value.ValueEquals("object"u8);
+                if (property.NameEquals("type"u8))
+                {
+                    return property.Value.ValueKind == JsonValueKind.String
+                        && property.Value.ValueEquals("object"u8);
+                }
             }
         }
 
