@@ -11,6 +11,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net462'">
     <PackageReference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
 </Project>
