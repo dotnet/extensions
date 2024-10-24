@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -569,13 +570,93 @@ public abstract class ChatClientIntegrationTests : IDisposable
 
         var response = await _chatClient.CompleteAsync<Person>("""
             Who is described in the following sentence?
-            Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
+            Jimbo Smith is a 35-year-old programmer from Cardiff, Wales.
             """);
 
         Assert.Equal("Jimbo Smith", response.Result.FullName);
         Assert.Equal(35, response.Result.AgeInYears);
         Assert.Contains("Cardiff", response.Result.HomeTown);
         Assert.Equal(JobType.Programmer, response.Result.Job);
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutputArray()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.CompleteAsync<Person[]>("""
+            Who are described in the following sentence?
+            Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
+            Josh Simpson is a 25-year-old software developer from Newport, Wales.
+            """);
+
+        Assert.Equal(2, response.Result.Length);
+        Assert.Contains(response.Result, x => x.FullName == "Jimbo Smith");
+        Assert.Contains(response.Result, x => x.FullName == "Josh Simpson");
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutputInteger()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.CompleteAsync<int>("""
+            There were 14 abstractions for AI programming, which was too many.
+            To fix this we added another one. How many are there now?
+            """);
+
+        Assert.Equal(15, response.Result);
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutputString()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.CompleteAsync<string>("""
+            The software developer, Jimbo Smith, is a 35-year-old from Cardiff, Wales.
+            What's his full name?
+            """);
+
+        Assert.Equal("Jimbo Smith", response.Result);
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutputBool_True()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.CompleteAsync<bool>("""
+            Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
+            Is there at least one software developer from Cardiff?
+            """);
+
+        Assert.True(response.Result);
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutputBool_False()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.CompleteAsync<bool>("""
+            Jimbo Smith is a 35-year-old software developer from Cardiff, Wales.
+            Can we be sure that he is a medical doctor?
+            """);
+
+        Assert.False(response.Result);
+    }
+
+    [ConditionalFact]
+    public virtual async Task CompleteAsync_StructuredOutputEnum()
+    {
+        SkipIfNotEnabled();
+
+        var response = await _chatClient.CompleteAsync<Architecture>("""
+            I'm using a Macbook Pro with an M2 chip. What architecture am I using?
+            """);
+
+        Assert.Equal(Architecture.Arm64, response.Result);
     }
 
     [ConditionalFact]
