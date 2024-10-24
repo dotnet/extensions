@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
@@ -127,24 +128,22 @@ public static class ChatClientStructuredOutputExtensions
             inferenceOptions: _inferenceOptions);
 
         var isWrappedInObject = false;
-        var schema = JsonSerializer.Serialize(schemaElement, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
         if (!SchemaRepresentsObject(schemaElement))
         {
             // For non-object-representing schemas, we wrap them in an object schema, because all
             // the real LLM providers today require an object schema as the root. This is currently
             // true even for providers that support native structured output.
             isWrappedInObject = true;
-            schema = $$"""
-                {
-                    "$schema": "https://json-schema.org/draft/2020-12/schema",
-                    "type": "object",
-                    "properties": {
-                        "data": {{schema}}
-                    },
-                    "additionalProperties": false
-                }
-                """;
+            schemaElement = JsonSerializer.SerializeToElement(new JsonObject
+            {
+                { "$schema", "https://json-schema.org/draft/2020-12/schema" },
+                { "type", "object" },
+                { "properties", new JsonObject { { "data", JsonElementToJsonNode(schemaElement) } } },
+                { "additionalProperties", false },
+            }, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonObject)))!;
         }
+
+        var schema = JsonSerializer.Serialize(schemaElement, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
 
         ChatMessage? promptAugmentation = null;
         options = (options ?? new()).Clone();
@@ -207,5 +206,15 @@ public static class ChatClientStructuredOutputExtensions
         }
 
         return false;
+    }
+
+    private static JsonNode? JsonElementToJsonNode(JsonElement element)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.Array => JsonArray.Create(element),
+            JsonValueKind.Object => JsonObject.Create(element),
+            _ => JsonValue.Create(element)
+        };
     }
 }
