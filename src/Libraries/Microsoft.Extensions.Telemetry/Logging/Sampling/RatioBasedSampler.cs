@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.Logging.Sampling;
 
+#pragma warning disable CA5394 // Do not use insecure randomness
 /// <summary>
 /// Samples logs according to the specified probability.
 /// </summary>
@@ -14,19 +14,25 @@ internal class RatioBasedSampler : LoggerSampler
 {
     private const int Hundred = 100;
 
+#if !NET6_0_OR_GREATER
+    private static readonly System.Threading.ThreadLocal<Random> _randomInstance = new(() => new Random());
+#endif
+
     private readonly int _sampleRate;
     private readonly SamplingParameters _parameters;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RatioBasedSampler"/> class.
     /// </summary>
-    /// <param name="sampleRate">rate.</param>
-    /// <param name="category">cat.</param>
-    /// <param name="eventId">eventId.</param>
-    /// <param name="logLevel">level.</param>
-    public RatioBasedSampler(double sampleRate, LogLevel? logLevel, string? category, EventId? eventId)
+    /// <param name="probability">The desired probability of sampling. This must be between 0.0 and 1.0.
+    /// Higher the value, higher is the probability of a given log record to be sampled in.
+    /// </param>
+    /// <param name="logLevel">Apply sampling to the provided log level or below.</param>
+    /// <param name="category">Log category to apply sampling to.</param>
+    /// <param name="eventId">Log event ID to apply sampling to.</param>
+    public RatioBasedSampler(double probability, LogLevel? logLevel, string? category, EventId? eventId)
     {
-        _sampleRate = (int)(sampleRate * Hundred);
+        _sampleRate = (int)(probability * Hundred);
         _parameters = new SamplingParameters(logLevel, category, eventId);
     }
 
@@ -39,9 +45,9 @@ internal class RatioBasedSampler : LoggerSampler
         }
 
 #if NET6_0_OR_GREATER
-        return RandomNumberGenerator.GetInt32(Hundred + 1) < _sampleRate;
+        return Random.Shared.Next(Hundred) < _sampleRate;
 #else
-        return new Random().Next(Hundred) < _sampleRate;
+        return _randomInstance.Value!.Next(Hundred) < _sampleRate;
 #endif
     }
 
@@ -52,12 +58,12 @@ internal class RatioBasedSampler : LoggerSampler
             return false;
         }
 
-        if (parameters.EventId != _parameters.EventId)
+        if (parameters.Category != _parameters.Category)
         {
             return false;
         }
 
-        if (parameters.Category != _parameters.Category)
+        if (parameters.EventId != _parameters.EventId)
         {
             return false;
         }
