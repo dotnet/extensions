@@ -57,6 +57,7 @@ public class ChatCompletion<T> : ChatCompletion
             {
                 FailureReason.ResultDidNotContainJson => throw new InvalidOperationException("The response did not contain text to be deserialized"),
                 FailureReason.DeserializationProducedNull => throw new InvalidOperationException("The deserialized response is null"),
+                FailureReason.ResultDidNotContainDataProperty => throw new InvalidOperationException("The response did not contain the expected 'data' property"),
                 _ => result!,
             };
         }
@@ -137,16 +138,18 @@ public class ChatCompletion<T> : ChatCompletion
 
         if (IsWrappedInObject)
         {
-            var doc = JsonDocument.Parse(json!);
-            if (doc.RootElement.TryGetProperty("data", out var data))
+            if (JsonDocument.Parse(json!).RootElement.TryGetProperty("data", out var data))
             {
-                deserialized = DeserializeFirstTopLevelObject(data.GetRawText(), (JsonTypeInfo<T>)_serializerOptions.GetTypeInfo(typeof(T)));
+                json = data.GetRawText();
+            }
+            else
+            {
+                failureReason = FailureReason.ResultDidNotContainDataProperty;
+                return default;
             }
         }
-        else
-        {
-            deserialized = DeserializeFirstTopLevelObject(json!, (JsonTypeInfo<T>)_serializerOptions.GetTypeInfo(typeof(T)));
-        }
+
+        deserialized = DeserializeFirstTopLevelObject(json!, (JsonTypeInfo<T>)_serializerOptions.GetTypeInfo(typeof(T)));
 
         if (deserialized is null)
         {
@@ -164,5 +167,6 @@ public class ChatCompletion<T> : ChatCompletion
     {
         ResultDidNotContainJson,
         DeserializationProducedNull,
+        ResultDidNotContainDataProperty,
     }
 }
