@@ -271,7 +271,7 @@ internal sealed partial class ExtendedLogger : ILogger
             {
                 if (!config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category!, eventId)))
                 {
-                    // the record was not selected for sampling, so we just drop it forever.
+                    // the record was not selected for being sampled, so we drop it.
                     continue;
                 }
 
@@ -371,6 +371,12 @@ internal sealed partial class ExtendedLogger : ILogger
             ref readonly MessageLogger loggerInfo = ref loggers[i];
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
+                if (!config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category!, eventId)))
+                {
+                    // the record was not selected for being sampled, so we drop it.
+                    continue;
+                }
+
                 try
                 {
                     loggerInfo.Logger.Log(logLevel, eventId, joiner, exception, static (s, e) =>
