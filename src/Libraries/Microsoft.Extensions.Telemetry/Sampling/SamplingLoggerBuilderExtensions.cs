@@ -52,6 +52,7 @@ public static class SamplingLoggerBuilderExtensions
         EventId? eventId = null)
     {
         _ = Throw.IfNull(builder);
+        _ = Throw.IfOutOfRange(probability, 0, 1, nameof(probability));
 
         return builder.AddSampler(new RatioBasedSampler(probability, level, category, eventId));
     }
