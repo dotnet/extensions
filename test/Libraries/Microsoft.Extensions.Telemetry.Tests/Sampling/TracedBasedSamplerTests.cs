@@ -18,11 +18,14 @@ public class TracedBasedSamplerTests
         // Act
         using var activity = new Activity("my activity");
         activity.ActivityTraceFlags |= ActivityTraceFlags.Recorded;
+        activity.Start();
 
         var shouldSample = sampler.ShouldSample(new SamplingParameters(null, null, null));
 
         // Assert
         Assert.True(shouldSample);
+
+        activity.Stop();
     }
 
     [Fact]
@@ -34,10 +37,13 @@ public class TracedBasedSamplerTests
         // Act
         using var activity = new Activity("my activity");
         activity.ActivityTraceFlags &= ~ActivityTraceFlags.Recorded;
+        activity.Start();
 
         var shouldSample = sampler.ShouldSample(new SamplingParameters(null, null, null));
 
         // Assert
         Assert.False(shouldSample);
+
+        activity.Stop();
     }
 }

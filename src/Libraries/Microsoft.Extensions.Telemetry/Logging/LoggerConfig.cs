@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Compliance.Classification;
 using Microsoft.Extensions.Compliance.Redaction;
-using Microsoft.Extensions.Diagnostics.Buffering;
 using Microsoft.Extensions.Diagnostics.Enrichment;
 
 namespace Microsoft.Extensions.Logging;
@@ -22,8 +21,7 @@ internal sealed class LoggerConfig
         bool includeExceptionMessage,
         int maxStackTraceLength,
         Func<DataClassificationSet, Redactor> getRedactor,
-        bool addRedactionDiscriminator,
-        ILoggingBufferProvider bufferProvider)
+        bool addRedactionDiscriminator)
     {
 #pragma warning restore S107 // Methods should not have too many parameters
         StaticTags = staticTags;
@@ -35,7 +33,6 @@ internal sealed class LoggerConfig
         IncludeExceptionMessage = includeExceptionMessage;
         GetRedactor = getRedactor;
         AddRedactionDiscriminator = addRedactionDiscriminator;
-        BufferProvider = bufferProvider;
     }
 
     public KeyValuePair<string, object?>[] StaticTags { get; }
@@ -47,5 +44,4 @@ internal sealed class LoggerConfig
     public int MaxStackTraceLength { get; }
     public Func<DataClassificationSet, Redactor> GetRedactor { get; }
     public bool AddRedactionDiscriminator { get; }
-    public ILoggingBufferProvider BufferProvider { get; }
 }

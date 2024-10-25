@@ -273,18 +273,6 @@ internal sealed partial class ExtendedLogger : ILogger
                     continue;
                 }
 
-                if (loggerInfo.Logger is IBufferedLogger bufferedLogger)
-                {
-                    _ = config.BufferProvider.CurrentBuffer.TryEnqueue(
-                        bufferedLogger, loggerInfo.Category!,
-                        logLevel, eventId, joiner, exception, joiner.Formatter!(joiner.State, exception));
-
-                    // the record was buffered, so we skip logging it for now.
-                    // when a caller needs to flush the buffer,
-                    // the GlobalBuffer will internally call IBufferedLogger.LogRecords to emit log records.
-                    continue;
-                }
-
                 try
                 {
                     loggerInfo.LoggerLog(logLevel, eventId, joiner, exception, static (s, e) =>

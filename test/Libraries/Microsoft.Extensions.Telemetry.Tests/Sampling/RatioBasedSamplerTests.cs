@@ -25,12 +25,12 @@ public class RatioBasedSamplerTests
     }
 
     [Theory]
-    [InlineData(LogLevel.Warning, null, null, LogLevel.Information, null, null)]
-    [InlineData(null, "my category", null, null, "another category", null)]
+    [InlineData(LogLevel.Warning, null, 0, LogLevel.Information, null, 0)]
+    [InlineData(null, "my category", 0, null, "another category", 0)]
     [InlineData(null, null, 0, null, null, 1)]
     public void WhenParametersNotMatch_AlwaysSamples(
-        LogLevel? logRecordLogLevel, string? logRecordCategory, EventId? logRecordEventId,
-        LogLevel? samplerLogLevel, string? samplerCategory, EventId? samplerEventId)
+        LogLevel? logRecordLogLevel, string? logRecordCategory, EventId logRecordEventId,
+        LogLevel? samplerLogLevel, string? samplerCategory, EventId samplerEventId)
     {
         const double Probability = 0.0;
         var logRecordParameters = new SamplingParameters(logRecordLogLevel, logRecordCategory, logRecordEventId);
@@ -46,12 +46,12 @@ public class RatioBasedSamplerTests
     }
 
     [Theory]
-    [InlineData(LogLevel.Information, null, null, LogLevel.Information, null, null)]
-    [InlineData(null, "my category", null, null, "my category", null)]
+    [InlineData(LogLevel.Information, null, 0, LogLevel.Information, null, 1)]
+    [InlineData(null, "my category", 0, null, "my category", 1)]
     [InlineData(null, null, 1, null, null, 1)]
     public void WhenParametersMatch_UsesProvidedProbability(
-    LogLevel? logRecordLogLevel, string? logRecordCategory, EventId? logRecordEventId,
-    LogLevel? samplerLogLevel, string? samplerCategory, EventId? samplerEventId)
+        LogLevel? logRecordLogLevel, string? logRecordCategory, EventId logRecordEventId,
+        LogLevel? samplerLogLevel, string? samplerCategory, EventId samplerEventId)
     {
         const double Probability = 1.0;
         var logRecordParameters = new SamplingParameters(logRecordLogLevel, logRecordCategory, logRecordEventId);

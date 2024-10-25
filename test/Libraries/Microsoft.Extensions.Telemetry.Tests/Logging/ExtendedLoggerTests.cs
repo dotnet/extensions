@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.Extensions.Compliance.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Enrichment;
+using Microsoft.Extensions.Diagnostics.Sampling;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -117,6 +118,30 @@ public static class ExtendedLoggerTests
             Assert.Null(snap[1].GetStructuredStateValue("SEK1"));
             Assert.Null(snap[1].GetStructuredStateValue("EK1"));
         }
+    }
+
+    [Fact]
+    public static void Sampling()
+    {
+        const string Category = "C1";
+
+        using var provider = new Provider();
+
+        using var lf = new ExtendedLoggerFactory(
+            providers: new[] { provider },
+            filterOptions: new StaticOptionsMonitor<LoggerFilterOptions>(new()),
+            sampler: new RatioBasedSampler(0, LogLevel.Warning, null, null),
+            enrichmentOptions: null,
+            redactionOptions: null,
+            enrichers: Array.Empty<ILogEnricher>(),
+            staticEnrichers: Array.Empty<IStaticLogEnricher>());
+
+        var logger = lf.CreateLogger(Category);
+        logger.LogWarning("MSG0");
+
+        logger.Log(LogLevel.Warning, new EventId(2, "ID2"), "some state", null, (_, _) => "MSG2");
+
+        Assert.Equal(0, provider.Logger!.Collector.Count);
     }
 
     [Theory]

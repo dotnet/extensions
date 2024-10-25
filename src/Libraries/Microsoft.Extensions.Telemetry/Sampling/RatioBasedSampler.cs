@@ -53,17 +53,17 @@ internal class RatioBasedSampler : LoggerSampler
 
     private bool IsApplicable(SamplingParameters parameters)
     {
-        if (parameters.LogLevel > _parameters.LogLevel)
+        if (_parameters.LogLevel is not null && parameters.LogLevel > _parameters.LogLevel)
         {
             return false;
         }
 
-        if (parameters.Category != _parameters.Category)
+        if (_parameters.Category is not null && parameters.Category != _parameters.Category)
         {
             return false;
         }
 
-        if (parameters.EventId != _parameters.EventId)
+        if (_parameters.EventId is not null && parameters.EventId != _parameters.EventId)
         {
             return false;
         }
