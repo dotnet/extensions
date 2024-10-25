@@ -7,7 +7,7 @@ using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
-internal class FuncBasedSampler : LoggerSampler
+internal sealed class FuncBasedSampler : LoggerSampler
 {
     private readonly Func<SamplingParameters, bool> _samplingDecisionFunc;
 

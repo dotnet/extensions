@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.Extensions.Telemetry.Sampling;
-public class TracedBasedSamplerTests
+public class TraceBasedSamplerTests
 {
     [Fact]
     public void WhenActivityIsRecorded_SamplesIn()

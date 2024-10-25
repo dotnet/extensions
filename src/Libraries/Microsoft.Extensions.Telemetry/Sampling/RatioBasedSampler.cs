@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Diagnostics.Sampling;
 /// <summary>
 /// Samples logs according to the specified probability.
 /// </summary>
-internal class RatioBasedSampler : LoggerSampler
+internal sealed class RatioBasedSampler : LoggerSampler
 {
     private const int Hundred = 100;
 

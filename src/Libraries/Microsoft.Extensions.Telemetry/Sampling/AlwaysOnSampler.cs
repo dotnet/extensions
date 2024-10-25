@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.Diagnostics.Sampling;
 
-internal class AlwaysOnSampler : LoggerSampler
+internal sealed class AlwaysOnSampler : LoggerSampler
 {
     public override bool ShouldSample(SamplingParameters _) => true;
 }
