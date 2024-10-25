@@ -1,11 +1,30 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Shared.Diagnostics;
+
 namespace Microsoft.Extensions.AI;
 
 /// <summary>Represents the options for an embedding generation request.</summary>
 public class EmbeddingGenerationOptions
 {
+    private int? _dimensions;
+
+    /// <summary>Gets or sets the number of dimensions requested in the embedding.</summary>
+    public int? Dimensions
+    {
+        get => _dimensions;
+        set
+        {
+            if (value is not null)
+            {
+                _ = Throw.IfLessThan(value.Value, 1);
+            }
+
+            _dimensions = value;
+        }
+    }
+
     /// <summary>Gets or sets the model ID for the embedding generation request.</summary>
     public string? ModelId { get; set; }
 
@@ -22,6 +41,7 @@ public class EmbeddingGenerationOptions
         new()
         {
             ModelId = ModelId,
+            Dimensions = Dimensions,
             AdditionalProperties = AdditionalProperties?.Clone(),
         };
 }

@@ -14,6 +14,8 @@ namespace Microsoft.Extensions.AI;
 #endif
 [JsonDerivedType(typeof(Embedding<float>), typeDiscriminator: "floats")]
 [JsonDerivedType(typeof(Embedding<double>), typeDiscriminator: "doubles")]
+[JsonDerivedType(typeof(Embedding<byte>), typeDiscriminator: "bytes")]
+[JsonDerivedType(typeof(Embedding<sbyte>), typeDiscriminator: "sbytes")]
 public class Embedding
 {
     /// <summary>Initializes a new instance of the <see cref="Embedding"/> class.</summary>
