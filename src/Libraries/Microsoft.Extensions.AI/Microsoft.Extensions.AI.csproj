@@ -23,6 +23,7 @@
   <PropertyGroup>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
+    <InjectSharedBufferWriterPool>true</InjectSharedBufferWriterPool>
     <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
   </PropertyGroup>
 
