@@ -313,3 +313,4 @@ BenchmarkDotNet.artifacts/
 /_TEST
 
 *.binlog
+/eng/scripts/repo-digest.html
