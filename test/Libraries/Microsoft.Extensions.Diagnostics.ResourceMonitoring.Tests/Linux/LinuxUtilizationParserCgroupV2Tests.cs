@@ -3,25 +3,30 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
+using System.Threading.Tasks;
+using Microsoft.Shared.Pools;
 using Microsoft.TestUtilities;
+using Moq;
+using VerifyXunit;
 using Xunit;
 
 namespace Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Test;
 
-[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Windows specific.")]
+[OSSkipCondition(OperatingSystems.Windows | OperatingSystems.MacOSX, SkipReason = "Linux specific tests")]
+[UsesVerify]
 public sealed class LinuxUtilizationParserCgroupV2Tests
 {
+    private const string VerifiedDataDirectory = "Verified";
+
     [ConditionalTheory]
     [InlineData("DFIJEUWGHFWGBWEFWOMDOWKSLA")]
     [InlineData("")]
     [InlineData("________________________Asdasdasdas          dd")]
     [InlineData(" ")]
     [InlineData("!@#!$%!@")]
-    public void Parser_Throws_When_Data_Is_Invalid(string line)
+    public void Throws_When_Data_Is_Invalid(string line)
     {
         var parser = new LinuxUtilizationParserCgroupV2(new HardcodedValueFileSystem(line), new FakeUserHz(100));
 
@@ -36,7 +41,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     }
 
     [ConditionalFact]
-    public void Parser_Can_Read_Host_And_Cgroup_Available_Cpu_Count()
+    public void Can_Read_Host_And_Cgroup_Available_Cpu_Count()
     {
         var parser = new LinuxUtilizationParserCgroupV2(new FileNamesOnlyFileSystem(TestResources.TestFilesLocation), new FakeUserHz(100));
         var hostCpuCount = parser.GetHostCpuCount();
@@ -47,7 +52,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     }
 
     [ConditionalFact]
-    public void Parser_Provides_Total_Available_Memory_In_Bytes()
+    public void Provides_Total_Available_Memory_In_Bytes()
     {
         var fs = new FileNamesOnlyFileSystem(TestResources.TestFilesLocation);
         var parser = new LinuxUtilizationParserCgroupV2(fs, new FakeUserHz(100));
@@ -71,10 +76,10 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     [InlineData("total-inactive-file")]
     [InlineData("total_inactive-file")]
     [InlineData("total_active_file")]
-    [InlineData("total_inactive_file:_ 213912")]
     [InlineData("Total_Inactive_File 2")]
+    [InlineData("total_inactive_file:_ 21391")]
     [InlineData("string@ -1")]
-    public void When_Calling_GetMemoryUsageInBytes_Parser_Throws_When_MemoryStat_Doesnt_Contain_Total_Inactive_File_Section(string content)
+    public Task Throws_When_TotalInactiveFile_Is_Invalid(string content)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -84,9 +89,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytes());
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("/sys/fs/cgroup/memory.stat", r.Message);
-        Assert.Contains("inactive_file", r.Message);
+        return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
@@ -100,7 +103,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     [InlineData("Suspicious12312312")]
     [InlineData("string@")]
     [InlineData("string12312")]
-    public void When_Calling_GetMemoryUsageInBytes_Parser_Throws_When_UsageInBytes_Doesnt_Contain_Just_A_Number(string content)
+    public Task Throws_When_UsageInBytes_Is_Invalid(string content)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -111,15 +114,31 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytes());
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("/sys/fs/cgroup/memory.current", r.Message);
+        return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
+    }
+
+    [ConditionalTheory]
+    [InlineData("max\n", 134_796_910_592ul)]
+    [InlineData("1000000\n", 1_000_000ul)]
+    public void Returns_Available_Memory_When_AvailableMemoryInBytes_Is_Valid(string content, ulong expectedResult)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/memory.max"), content },
+            { new FileInfo("/proc/meminfo"), "MemTotal:       131637608 kB" }
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var result = p.GetAvailableMemoryInBytes();
+
+        Assert.Equal(expectedResult, result);
     }
 
     [ConditionalTheory]
     [InlineData("Suspicious12312312")]
     [InlineData("string@")]
     [InlineData("string12312")]
-    public void When_Calling_GetAvailableMemoryInBytes_Parser_Throws_When_AvailableMemoryInBytes_Doesnt_Contain_Just_A_Number(string content)
+    public Task Throws_When_AvailableMemoryInBytes_Doesnt_Contain_Just_A_Number(string content)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -129,12 +148,11 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetAvailableMemoryInBytes());
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("/sys/fs/cgroup/memory.max", r.Message);
+        return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalFact]
-    public void When_Calling_GetMemoryUsageInBytesFromSlices_Parser_Throws_When_UsageInBytes_Doesnt_Contain_A_Number()
+    public Task Throws_When_UsageInBytes_Doesnt_Contain_A_Number()
     {
         var regexPatternforSlices = @"\w+.slice";
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
@@ -145,12 +163,11 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytesFromSlices(regexPatternforSlices));
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("/sys/fs/cgroup/system.slice/memory.current", r.Message);
+        return Verifier.Verify(r).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalFact]
-    public void When_Calling_GetMemoryUsageInBytesFromSlices_Parser_Does_Not_Throw()
+    public void Returns_Memory_Usage_When_Memory_Usage_Is_Valid()
     {
         var regexPatternforSlices = @"\w+.slice";
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
@@ -159,16 +176,16 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         });
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
-        var r = Record.Exception(() => p.GetMemoryUsageInBytesFromSlices(regexPatternforSlices));
+        var r = p.GetMemoryUsageInBytesFromSlices(regexPatternforSlices);
 
-        Assert.Null(r);
+        Assert.Equal(5_342_342, r);
     }
 
     [ConditionalTheory]
     [InlineData(104343, 1)]
     [InlineData(23423, 22)]
     [InlineData(10000, 100)]
-    public void When_Calling_GetMemoryUsageInBytes_Parser_Throws_When_Inactive_Memory_Is_Bigger_Than_Total_Memory(int inactive, int total)
+    public Task Throws_When_Inactive_Memory_Is_Bigger_Than_Total_Memory(int inactive, int total)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -179,8 +196,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetMemoryUsageInBytes());
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("lesser than", r.Message);
+        return Verifier.Verify(r).UseParameters(inactive, total).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
@@ -188,14 +204,14 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     [InlineData("MemTotal:")]
     [InlineData("MemTotal: 120")]
     [InlineData("MemTotal: kb")]
-    [InlineData("MemTotal: KB")]
+    [InlineData("MemTotal: MB")]
     [InlineData("MemTotal: PB")]
     [InlineData("MemTotal: 1024 PB")]
     [InlineData("MemTotal: 1024   ")]
     [InlineData("MemTotal: 1024 @@  ")]
     [InlineData("MemoryTotal: 1024 MB ")]
     [InlineData("MemoryTotal: 123123123123123123")]
-    public void When_Calling_GetHostAvailableMemory_Parser_Throws_When_MemInfo_Does_Not_Contain_TotalMemory(string totalMemory)
+    public Task Throws_When_MemInfo_Does_Not_Contain_TotalMemory(string totalMemory)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -205,17 +221,15 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetHostAvailableMemory());
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("/proc/meminfo", r.Message);
+        return Verifier.Verify(r).UseParameters(totalMemory).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
-    [InlineData("kB", 231, 236544)]
+    [InlineData("kB", 231, 236_544)]
     [InlineData("MB", 287, 300_941_312)]
     [InlineData("GB", 372, 399_431_958_528)]
-    [InlineData("TB", 2, 219_902_325_555_2)]
-    [SuppressMessage("Critical Code Smell", "S3937:Number patterns should be regular", Justification = "Its OK.")]
-    public void When_Calling_GetHostAvailableMemory_Parser_Correctly_Transforms_Supported_Units_To_Bytes(string unit, int value, ulong bytes)
+    [InlineData("TB", 2, 2_199_023_255_552)]
+    public void Transforms_Supported_Units_To_Bytes(string unit, int value, ulong bytes)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -240,7 +254,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     [InlineData("0-1,2-3", 4)]
     [InlineData("0-1,2-3,4-5", 6)]
     [InlineData("0-2,3-5,6-8", 9)]
-    public void When_No_Cgroup_Cpu_Limits_Are_Not_Set_We_Get_Available_Cpus_From_CpuSetCpus(string content, int result)
+    public void Gets_Available_Cpus_From_CpuSetCpus_When_Cpu_Limits_Not_Set(string content, int result)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -252,6 +266,21 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var cpus = p.GetCgroupLimitedCpus();
 
         Assert.Equal(result, cpus);
+    }
+
+    [ConditionalFact]
+    public void Gets_Available_Cpus_From_CpuSetCpus_When_Cpu_Max_Set_To_Max_()
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/cpuset.cpus.effective"), "0,1,2" },
+            { new FileInfo("/sys/fs/cgroup/cpu.max"), "max 100000" },
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var cpus = p.GetCgroupLimitedCpus();
+
+        Assert.Equal(3, cpus);
     }
 
     [ConditionalTheory]
@@ -266,7 +295,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     [InlineData("1-18-22")]
     [InlineData("1-18                   \r\n")]
     [InlineData("\r\n")]
-    public void Parser_Throws_When_CpuSet_Has_Invalid_Content(string content)
+    public Task Throws_When_CpuSet_Has_Invalid_Content(string content)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -277,12 +306,11 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetHostCpuCount());
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("/sys/fs/cgroup/cpuset.cpus.effective", r.Message);
+        return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalFact]
-    public void When_Quota_And_Period_Are_Minus_One_It_Fallbacks_To_Cpuset()
+    public Task Fallsback_To_Cpuset_When_Quota_And_Period_Are_Minus_One_()
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -293,8 +321,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupLimitedCpus());
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("/sys/fs/cgroup/cpuset.cpus.effective", r.Message);
+        return Verifier.Verify(r).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
@@ -309,7 +336,7 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
     [InlineData("3d", "d3")]
     [InlineData("           12", "eeeee 12")]
     [InlineData("12       ", "")]
-    public void Parser_Throws_When_Cgroup_Cpu_Files_Contain_Invalid_Data(string quota, string period)
+    public Task Throws_When_Cgroup_Cpu_Files_Contain_Invalid_Data(string quota, string period)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -319,12 +346,11 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupLimitedCpus());
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("/sys/fs/cgroup/cpu.max", r.Message);
+        return Verifier.Verify(r).UseParameters(quota, period).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalFact]
-    public void ReadingCpuUsage_Does_Not_Throw_For_Valid_Input()
+    public void Reads_CpuUsage_When_Valid_Input()
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -332,13 +358,13 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         });
 
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
-        var r = Record.Exception(() => p.GetHostCpuUsageInNanoseconds());
+        var r = p.GetHostCpuUsageInNanoseconds();
 
-        Assert.Null(r);
+        Assert.Equal(77_994_900_000_000, r);
     }
 
     [ConditionalFact]
-    public void ReadingTotalMemory_Does_Not_Throw_For_Valid_Input()
+    public void Reads_TotalMemory_When_Valid_Input()
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -354,12 +380,12 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
 
     [ConditionalTheory]
     [InlineData("2569530367000")]
-    [InlineData("  2569530 36700 245693 4860924 82283 0 4360 0dsa 0 0 asdasd @@@@")]
+    [InlineData("  2569530 36700 245693 4860924 82283 0 4360 0dsa")]
     [InlineData("asdasd  2569530 36700 245693 4860924 82283 0 4360 0 0 0")]
     [InlineData("  2569530 36700 245693")]
     [InlineData("cpu  2569530 36700 245693")]
     [InlineData("  2")]
-    public void ReadingCpuUsage_Does_Throws_For_Valid_Input(string content)
+    public Task Throws_When_CpuUsage_Invalid(string content)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -369,15 +395,14 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetHostCpuUsageInNanoseconds());
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("proc/stat", r.Message);
+        return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
     [InlineData("usage_", 12222)]
     [InlineData("dasd", -1)]
     [InlineData("@#dddada", 342322)]
-    public void Parser_Throws_When_CpuAcctUsage_Has_Invalid_Content_Both_Parts(string content, int value)
+    public Task Throws_When_CpuAcctUsage_Has_Invalid_Content_Both_Parts(string content, int value)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -387,15 +412,14 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupCpuUsageInNanoseconds());
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("/sys/fs/cgroup/cpu.stat", r.Message);
+        return Verifier.Verify(r).UseParameters(content, value).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
     [InlineData(-32131)]
     [InlineData(-1)]
     [InlineData(-15.323)]
-    public void Parser_Throws_When_Usage_Usec_Has_Negative_Valuet(int value)
+    public Task Throws_When_Usage_Usec_Has_Negative_Value(int value)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -405,14 +429,15 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupCpuUsageInNanoseconds());
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("/sys/fs/cgroup/cpu.stat", r.Message);
+        return Verifier.Verify(r).UseParameters(value).UseDirectory(VerifiedDataDirectory);
     }
 
     [ConditionalTheory]
     [InlineData("-1")]
     [InlineData("dasrz3424")]
-    public void Parser_Throws_When_Cgroup_Cpu_Weight_Files_Contain_Invalid_Data(string content)
+    [InlineData("0")]
+    [InlineData("10001")]
+    public Task Throws_When_Cgroup_Cpu_Weight_Files_Contain_Invalid_Data(string content)
     {
         var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
         {
@@ -422,7 +447,64 @@ public sealed class LinuxUtilizationParserCgroupV2Tests
         var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
         var r = Record.Exception(() => p.GetCgroupRequestCpu());
 
-        Assert.IsAssignableFrom<InvalidOperationException>(r);
-        Assert.Contains("/sys/fs/cgroup/cpu.weight", r.Message);
+        return Verifier.Verify(r).UseParameters(content).UseDirectory(VerifiedDataDirectory);
+    }
+
+    [ConditionalTheory]
+    [InlineData("2500", 64.0)]
+    [InlineData("10000", 256.0)]
+    public void Calculates_Cpu_Request_From_Cpu_Weight(string content, float result)
+    {
+        var f = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/sys/fs/cgroup/cpu.weight"), content },
+        });
+
+        var p = new LinuxUtilizationParserCgroupV2(f, new FakeUserHz(100));
+        var r = Math.Round(p.GetCgroupRequestCpu());
+
+        Assert.Equal(result, r);
+    }
+
+    [ConditionalFact]
+    public async Task Is_Thread_Safe_Async()
+    {
+        var f1 = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/stat"), "cpu  6163 0 3853 4222848 614 0 1155 0 0 0\r\ncpu0 240 0 279 210987 59 0 927 0 0 0" },
+        });
+        var f2 = new HardcodedValueFileSystem(new Dictionary<FileInfo, string>
+        {
+            { new FileInfo("/proc/stat"), "cpu  9137 0 9296 13972503 1148 0 2786 0 0 0\r\ncpu0 297 0 431 698663 59 0 2513 0 0 0" },
+        });
+
+        int callCount = 0;
+        Mock<IFileSystem> fs = new();
+        fs.Setup(x => x.ReadFirstLine(It.IsAny<FileInfo>(), It.IsAny<BufferWriter<char>>()))
+             .Callback<FileInfo, BufferWriter<char>>((fileInfo, buffer) =>
+             {
+                 callCount++;
+                 if (callCount % 2 == 0)
+                 {
+                     f1.ReadFirstLine(fileInfo, buffer);
+                 }
+                 else
+                 {
+                     f2.ReadFirstLine(fileInfo, buffer);
+                 }
+             })
+             .Verifiable();
+
+        var p = new LinuxUtilizationParserCgroupV2(fs.Object, new FakeUserHz(100));
+
+        Task[] tasks = new Task[1_000];
+        for (int i = 0; i < tasks.Length; i++)
+        {
+            tasks[i] = Task.Run(p.GetHostCpuUsageInNanoseconds);
+        }
+
+        await Task.WhenAll(tasks);
+
+        Assert.True(true);
     }
 }

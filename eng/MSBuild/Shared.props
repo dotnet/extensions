@@ -32,10 +32,14 @@
 
   <ItemGroup Condition="'$(InjectSharedPools)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\Pools\*.cs" LinkBase="Shared\Pools" />
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" />
+    <PackageReference Condition="'$(SkipSharedPoolsReferences)' != 'true'" Include="Microsoft.Extensions.ObjectPool" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(InjectSharedBufferWriterPool)' == 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\BufferWriterPool\*.cs" LinkBase="Shared\Pools" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectStringSplitExtensions)' == 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\Shared\StringSplit\*.cs" LinkBase="Shared\StringSplit" />
   </ItemGroup>
 </Project>

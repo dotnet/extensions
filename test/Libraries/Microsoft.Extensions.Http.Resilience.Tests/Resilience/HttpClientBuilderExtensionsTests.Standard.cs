@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
@@ -34,6 +35,24 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
 
     public void Dispose()
         => _serviceProvider?.Dispose();
+
+    private static Task<HttpResponseMessage> SendRequest(HttpClient client, string url, bool asynchronous)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+#if NET6_0_OR_GREATER
+        if (asynchronous)
+        {
+            return client.SendAsync(request, default);
+        }
+        else
+        {
+            return Task.FromResult(client.Send(request, default));
+        }
+#else
+        return client.SendAsync(request, default);
+#endif
+    }
 
     private HttpClient CreateClient(string name = BuilderName)
     {
@@ -128,7 +147,7 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
 
         AddStandardResilienceHandler(mode, builder, _invalidConfigurationSection, options => { });
 
-        Assert.Throws<InvalidOperationException>(() => HttpClientBuilderExtensionsTests.GetPipeline(builder.Services, $"test-standard"));
+        Assert.Throws<InvalidOperationException>(() => HttpClientBuilderExtensionsTests.GetPipeline(builder.Services, "test-standard"));
     }
 
     [Fact]
@@ -175,7 +194,7 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
             }
         });
 
-        Assert.Throws<OptionsValidationException>(() => GetPipeline(builder.Services, $"test-standard"));
+        Assert.Throws<OptionsValidationException>(() => GetPipeline(builder.Services, "test-standard"));
     }
 
     [InlineData(MethodArgs.None)]
@@ -193,12 +212,17 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
 
         AddStandardResilienceHandler(mode, builder, _validConfigurationSection, options => { });
 
-        var pipeline = GetPipeline(builder.Services, $"test-standard");
+        var pipeline = GetPipeline(builder.Services, "test-standard");
         Assert.NotNull(pipeline);
     }
 
-    [Fact]
-    public async Task DynamicReloads_Ok()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task DynamicReloads_Ok(bool asynchronous = true)
     {
         // arrange
         var requests = new List<HttpRequestMessage>();
@@ -224,14 +248,24 @@ public sealed partial class HttpClientBuilderExtensionsTests : IDisposable
         var client = CreateClient();
 
         // act && assert
-        await client.GetAsync("https://dummy");
+        await SendRequest(client, "https://dummy", asynchronous);
         requests.Should().HaveCount(7);
 
         requests.Clear();
         reloadAction(new() { { "standard:Retry:MaxRetryAttempts", "10" } });
 
-        await client.GetAsync("https://dummy");
+        await SendRequest(client, "https://dummy", asynchronous);
         requests.Should().HaveCount(11);
+    }
+
+    [Fact]
+    public void AddStandardResilienceHandler_EnsureHttpClientTimeoutDisabled()
+    {
+        var builder = new ServiceCollection().AddLogging().AddMetrics().AddHttpClient("test").AddStandardResilienceHandler();
+
+        using var client = builder.Services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient("test");
+
+        client.Timeout.Should().Be(Timeout.InfiniteTimeSpan);
     }
 
     private static void AddStandardResilienceHandler(

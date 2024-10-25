@@ -47,6 +47,10 @@ public static class KubernetesProbesExtensions
         _ = Throw.IfNull(services);
         _ = Throw.IfNull(configure);
 
+        _ = services
+            .AddOptionsWithValidateOnStart<KubernetesProbesOptions, KubernetesProbesOptionsValidator>()
+            .Configure(configure);
+
         var wrapperOptions = new KubernetesProbesOptions();
 
         return services

@@ -4,12 +4,12 @@
 namespace Microsoft.Extensions.Options.Contextual.Provider;
 
 /// <summary>
-/// Used by contextual options providers to collect context data.
+/// Provides functionality for contextual options providers to collect context data.
 /// </summary>
 public interface IOptionsContextReceiver
 {
     /// <summary>
-    /// Add a key-value pair to the context.
+    /// Adds a key-value pair to the context.
     /// </summary>
     /// <typeparam name="T">The type of the data.</typeparam>
     /// <param name="key">The name of the data.</param>

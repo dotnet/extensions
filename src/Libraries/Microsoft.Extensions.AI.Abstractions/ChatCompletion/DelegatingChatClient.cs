@@ -1,0 +1,74 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Shared.Diagnostics;
+
+namespace Microsoft.Extensions.AI;
+
+/// <summary>
+/// Provides an optional base class for an <see cref="IChatClient"/> that passes through calls to another instance.
+/// </summary>
+/// <remarks>
+/// This is recommended as a base type when building clients that can be chained in any order around an underlying <see cref="IChatClient"/>.
+/// The default implementation simply passes each call to the inner client instance.
+/// </remarks>
+public class DelegatingChatClient : IChatClient
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DelegatingChatClient"/> class.
+    /// </summary>
+    /// <param name="innerClient">The wrapped client instance.</param>
+    protected DelegatingChatClient(IChatClient innerClient)
+    {
+        InnerClient = Throw.IfNull(innerClient);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>Gets the inner <see cref="IChatClient" />.</summary>
+    protected IChatClient InnerClient { get; }
+
+    /// <summary>Provides a mechanism for releasing unmanaged resources.</summary>
+    /// <param name="disposing">true if being called from <see cref="Dispose()"/>; otherwise, false.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            InnerClient.Dispose();
+        }
+    }
+
+    /// <inheritdoc />
+    public virtual ChatClientMetadata Metadata => InnerClient.Metadata;
+
+    /// <inheritdoc />
+    public virtual Task<ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return InnerClient.CompleteAsync(chatMessages, options, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public virtual IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return InnerClient.CompleteStreamingAsync(chatMessages, options, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public virtual TService? GetService<TService>(object? key = null)
+        where TService : class
+    {
+#pragma warning disable S3060 // "is" should not be used with "this"
+        // If the key is non-null, we don't know what it means so pass through to the inner service
+        return key is null && this is TService service ? service : InnerClient.GetService<TService>(key);
+#pragma warning restore S3060
+    }
+}

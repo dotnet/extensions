@@ -48,6 +48,9 @@ bld/
 *.VisualState.xml
 TestResult.xml
 
+# VERIFY
+*.received.*
+
 # Build Results of an ATL Project
 [Dd]ebugPS/
 [Rr]eleasePS/
@@ -310,3 +313,4 @@ BenchmarkDotNet.artifacts/
 /_TEST
 
 *.binlog
+/eng/scripts/repo-digest.html

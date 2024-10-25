@@ -7,6 +7,7 @@ trigger:
   branches:
     include:
       - main
+      - dev
       - release/*
       - internal/release/*
   paths:
@@ -28,6 +29,7 @@ pr:
   branches:
     include:
       - main
+      - dev
       - release/*
       - internal/release/*
   paths:
@@ -119,10 +121,15 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     sdl:
+      policheck:
+        enabled: true
+        exclusionsFile: $(Build.SourcesDirectory)\.config\PoliCheckExclusions.xml
       sourceAnalysisPool:
         name: NetCore1ESPool-Internal
         image: windows.vs2022preview.amd64
         os: windows
+      tsa:
+        enabled: true
     customBuildTags:
     - ES365AIMigrationTooling
 
@@ -136,7 +143,7 @@ extends:
         parameters:
           enableMicrobuild: true
           enableTelemetry: true
-          enableSourceIndex: false
+          enableSourceIndex: true
           runAsPublic: ${{ variables['runAsPublic'] }}
           # Publish build logs
           enablePublishBuildArtifacts: true

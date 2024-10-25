@@ -1,0 +1,11 @@
+// IMPORTANT: This file is read by the merge flow from main branch only. 
+{
+    "merge-flow-configurations": {
+        // Automate opening PRs to merge extensions main branch back to dev
+        // Disable this for now as dev branch has been merged to main
+        // "main":{
+        //     "MergeToBranch": "dev",
+        //     "ExtraSwitches": "-QuietComments"
+        // }
+    }
+}

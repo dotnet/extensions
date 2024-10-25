@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.Extensions.AI</RootNamespace>
+    <Description>Abstractions for generative AI.</Description>
+    <Workstream>AI</Workstream>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Stage>preview</Stage>
+    <MinCodeCoverage>0</MinCodeCoverage>
+    <MinMutationScore>0</MinMutationScore>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
+    <NoWarn>$(NoWarn);CA2227;CA1034;SA1316;S3253</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
+    <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
+    <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  
+</Project>

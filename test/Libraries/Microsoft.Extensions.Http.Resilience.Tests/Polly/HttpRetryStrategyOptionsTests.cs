@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Http.Resilience.Test.Hedging;
 using Polly;
 using Polly.Retry;
 using Xunit;
@@ -19,16 +21,15 @@ public class HttpRetryStrategyOptionsTests
 #pragma warning disable S2330
     public static readonly IEnumerable<object[]> HandledExceptionsClassified = new[]
     {
-        new object[] { new InvalidCastException(), false },
-        new object[] { new HttpRequestException(), true }
+        new object[] { new InvalidCastException(), null!, false },
+        [new HttpRequestException(), null!, true],
+        [new OperationCanceledExceptionMock(new TimeoutException()), null!, true],
+        [new OperationCanceledExceptionMock(new TimeoutException()), default(CancellationToken), true],
+        [new OperationCanceledExceptionMock(new InvalidOperationException()), default(CancellationToken), false],
+        [new OperationCanceledExceptionMock(new TimeoutException()), new CancellationToken(canceled: true), false],
     };
 
-    private readonly HttpRetryStrategyOptions _testClass;
-
-    public HttpRetryStrategyOptionsTests()
-    {
-        _testClass = new HttpRetryStrategyOptions();
-    }
+    private readonly HttpRetryStrategyOptions _testClass = new();
 
     [Fact]
     public void Ctor_Defaults()
@@ -63,9 +64,10 @@ public class HttpRetryStrategyOptionsTests
 
     [Theory]
     [MemberData(nameof(HandledExceptionsClassified))]
-    public async Task ShouldHandleException_DefaultValue_ShouldClassify(Exception exception, bool expectedToHandle)
+    public async Task ShouldHandleException_DefaultValue_ShouldClassify(Exception exception, CancellationToken? token, bool expectedToHandle)
     {
-        var shouldHandle = await _testClass.ShouldHandle(CreateArgs(Outcome.FromException<HttpResponseMessage>(exception)));
+        var args = CreateArgs(Outcome.FromException<HttpResponseMessage>(exception), token ?? default);
+        var shouldHandle = await _testClass.ShouldHandle(args);
         Assert.Equal(expectedToHandle, shouldHandle);
     }
 
@@ -86,9 +88,10 @@ public class HttpRetryStrategyOptionsTests
 
     [Theory]
     [MemberData(nameof(HandledExceptionsClassified))]
-    public async Task ShouldHandleException_DefaultInstance_ShouldClassify(Exception exception, bool expectedToHandle)
+    public async Task ShouldHandleException_DefaultInstance_ShouldClassify(Exception exception, CancellationToken? token, bool expectedToHandle)
     {
-        var shouldHandle = await new HttpRetryStrategyOptions().ShouldHandle(CreateArgs(Outcome.FromException<HttpResponseMessage>(exception)));
+        var args = CreateArgs(Outcome.FromException<HttpResponseMessage>(exception), token ?? default);
+        var shouldHandle = await new HttpRetryStrategyOptions().ShouldHandle(args);
         Assert.Equal(expectedToHandle, shouldHandle);
     }
 
@@ -96,7 +99,7 @@ public class HttpRetryStrategyOptionsTests
     public async Task ShouldRetryAfterHeader_InvalidOutcomes_ShouldReturnNull()
     {
         var options = new HttpRetryStrategyOptions { ShouldRetryAfterHeader = true };
-        using var responseMessage = new HttpResponseMessage { };
+        using var responseMessage = new HttpResponseMessage();
 
         Assert.NotNull(options.DelayGenerator);
 
@@ -153,7 +156,8 @@ public class HttpRetryStrategyOptionsTests
         Assert.Equal(shouldRetryAfterHeader, options.DelayGenerator != null);
     }
 
-    private static RetryPredicateArguments<HttpResponseMessage> CreateArgs(Outcome<HttpResponseMessage> outcome)
-        => new(ResilienceContextPool.Shared.Get(), outcome, 0);
-
+    private static RetryPredicateArguments<HttpResponseMessage> CreateArgs(
+        Outcome<HttpResponseMessage> outcome,
+        CancellationToken cancellationToken = default)
+            => new(ResilienceContextPool.Shared.Get(cancellationToken), outcome, 0);
 }

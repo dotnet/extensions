@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Shared.Diagnostics;
 using Microsoft.Shared.Pools;
 
@@ -19,6 +21,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 {
     private const int Thousand = 1000;
     private const int CpuShares = 1024;
+    private static readonly ObjectPool<BufferWriter<char>> _sharedBufferWriterPool = BufferWriterPool.CreateBufferWriterPool<char>();
 
     /// <remarks>
     /// File contains the amount of CPU time (in microseconds) available to the group during each accounting period.
@@ -85,7 +88,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
 
     private readonly IFileSystem _fileSystem;
     private readonly long _userHz;
-    private readonly BufferWriter<char> _buffer = new();
 
     public LinuxUtilizationParserCgroupV2(IFileSystem fileSystem, IUserHz userHz)
     {
@@ -104,24 +106,23 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             return GetHostCpuUsageInNanoseconds();
         }
 
-        _fileSystem.ReadAll(_cpuacctUsage, _buffer);
-        var usage = _buffer.WrittenSpan;
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        _fileSystem.ReadAll(_cpuacctUsage, bufferWriter.Buffer);
+        ReadOnlySpan<char> usage = bufferWriter.Buffer.WrittenSpan;
 
         if (!usage.StartsWith(Usage_usec))
         {
             Throw.InvalidOperationException($"Could not parse '{_cpuacctUsage}'. We expected first line of the file to start with '{Usage_usec}' but it was '{new string(usage)}' instead.");
         }
 
-        var cpuUsage = usage.Slice(Usage_usec.Length, usage.Length - Usage_usec.Length);
+        ReadOnlySpan<char> cpuUsage = usage.Slice(Usage_usec.Length, usage.Length - Usage_usec.Length);
 
-        var next = GetNextNumber(cpuUsage, out var microseconds);
+        int next = GetNextNumber(cpuUsage, out long microseconds);
 
         if (microseconds == -1)
         {
             Throw.InvalidOperationException($"Could not get cpu usage from '{_cpuacctUsage}'. Expected positive number, but got '{new string(usage)}'.");
         }
-
-        _buffer.Reset();
 
         // In cgroup v2, the Units are microseconds for usage_usec.
         // We multiply by 1000 to convert to nanoseconds to keep the common calculation logic.
@@ -134,21 +135,22 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         const int NumberOfColumnsRepresentingCpuUsage = 8;
         const int NanosecondsInSecond = 1_000_000_000;
 
-        _fileSystem.ReadFirstLine(_procStat, _buffer);
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        _fileSystem.ReadFirstLine(_procStat, bufferWriter.Buffer);
 
-        var stat = _buffer.WrittenSpan;
-        var total = 0L;
+        ReadOnlySpan<char> stat = bufferWriter.Buffer.WrittenSpan;
+        long total = 0L;
 
-        if (!_buffer.WrittenSpan.StartsWith(StartingTokens))
+        if (!bufferWriter.Buffer.WrittenSpan.StartsWith(StartingTokens))
         {
-            Throw.InvalidOperationException($"Expected proc/stat to start with '{StartingTokens}' but it was '{new string(_buffer.WrittenSpan)}'.");
+            Throw.InvalidOperationException($"Expected proc/stat to start with '{StartingTokens}' but it was '{new string(bufferWriter.Buffer.WrittenSpan)}'.");
         }
 
         stat = stat.Slice(StartingTokens.Length, stat.Length - StartingTokens.Length);
 
-        for (var i = 0; i < NumberOfColumnsRepresentingCpuUsage; i++)
+        for (int i = 0; i < NumberOfColumnsRepresentingCpuUsage; i++)
         {
-            var next = GetNextNumber(stat, out var number);
+            int next = GetNextNumber(stat, out long number);
 
             if (number != -1)
             {
@@ -164,8 +166,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             stat = stat.Slice(next, stat.Length - next);
         }
 
-        _buffer.Reset();
-
         return (long)(total / (double)_userHz * NanosecondsInSecond);
     }
 
@@ -176,7 +176,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// </remarks>
     public float GetCgroupLimitedCpus()
     {
-        if (TryGetCpuUnitsFromCgroups(_fileSystem, out var cpus))
+        if (LinuxUtilizationParserCgroupV2.TryGetCpuUnitsFromCgroups(_fileSystem, out float cpus))
         {
             return cpus;
         }
@@ -190,7 +190,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// </remarks>
     public float GetCgroupRequestCpu()
     {
-        if (TryGetCgroupRequestCpu(_fileSystem, out var cpuPodRequest))
+        if (TryGetCgroupRequestCpu(_fileSystem, out float cpuPodRequest))
         {
             return cpuPodRequest / CpuShares;
         }
@@ -203,24 +203,33 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// </remarks>
     public ulong GetAvailableMemoryInBytes()
     {
-        const long UnsetCgroupMemoryLimit = 9_223_372_036_854_771_712;
-
         if (!_fileSystem.Exists(_memoryLimitInBytes))
         {
             return GetHostAvailableMemory();
         }
 
-        _fileSystem.ReadAll(_memoryLimitInBytes, _buffer);
+        const long UnsetCgroupMemoryLimit = 9_223_372_036_854_771_712;
+        long maybeMemory = UnsetCgroupMemoryLimit;
 
-        var memoryBuffer = _buffer.WrittenSpan;
-        _ = GetNextNumber(memoryBuffer, out var maybeMemory);
-
-        if (maybeMemory == -1)
+        // Constrain the scope of the buffer because GetHostAvailableMemory is allocating its own buffer.
+        using (ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool))
         {
-            Throw.InvalidOperationException($"Could not parse '{_memoryLimitInBytes}' content. Expected to find available memory in bytes but got '{new string(memoryBuffer)}' instead.");
-        }
+            _fileSystem.ReadAll(_memoryLimitInBytes, bufferWriter.Buffer);
 
-        _buffer.Reset();
+            ReadOnlySpan<char> memoryBuffer = bufferWriter.Buffer.WrittenSpan;
+
+            if (memoryBuffer.Equals("max\n", StringComparison.InvariantCulture))
+            {
+                return GetHostAvailableMemory();
+            }
+
+            _ = GetNextNumber(memoryBuffer, out maybeMemory);
+
+            if (maybeMemory == -1)
+            {
+                Throw.InvalidOperationException($"Could not parse '{_memoryLimitInBytes}' content. Expected to find available memory in bytes but got '{new string(memoryBuffer)}' instead.");
+            }
+        }
 
         return maybeMemory == UnsetCgroupMemoryLimit
             ? GetHostAvailableMemory()
@@ -230,33 +239,34 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     public long GetMemoryUsageInBytesFromSlices(string pattern)
     {
         // In cgroup v2, we need to read memory usage from all slices, which are directories in /sys/fs/cgroup/*.slice.
-        string[] memoryUsageInBytesSlicesPath = _fileSystem.GetDirectoryNames("/sys/fs/cgroup/", pattern);
+        IReadOnlyCollection<string> memoryUsageInBytesSlicesPath = _fileSystem.GetDirectoryNames("/sys/fs/cgroup/", pattern);
 
         long memoryUsageInBytesTotal = 0;
 
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
         foreach (string path in memoryUsageInBytesSlicesPath)
         {
-            var memoryUsageInBytesFile = new FileInfo(path + "/memory.current");
+            FileInfo memoryUsageInBytesFile = new(Path.Combine(path, "memory.current"));
             if (!_fileSystem.Exists(memoryUsageInBytesFile))
             {
                 continue;
             }
 
-            _fileSystem.ReadAll(memoryUsageInBytesFile, _buffer);
+            _fileSystem.ReadAll(memoryUsageInBytesFile, bufferWriter.Buffer);
 
-            var memoryUsageFile = _buffer.WrittenSpan;
-            var next = GetNextNumber(memoryUsageFile, out var containerMemoryUsage);
+            ReadOnlySpan<char> memoryUsageFile = bufferWriter.Buffer.WrittenSpan;
+            int next = GetNextNumber(memoryUsageFile, out long containerMemoryUsage);
 
             if (containerMemoryUsage == 0 || containerMemoryUsage == -1)
             {
                 memoryUsageInBytesTotal = 0;
                 Throw.InvalidOperationException(
-                    $"We tried to read '{memoryUsageInBytesFile}', and we expected to get a positive number but instead it was: '{containerMemoryUsage}'.");
+                    $"We tried to read '{memoryUsageInBytesFile}', and we expected to get a positive number but instead it was: '{memoryUsageFile}'.");
             }
 
             memoryUsageInBytesTotal += containerMemoryUsage;
 
-            _buffer.Reset();
+            bufferWriter.Buffer.Reset();
         }
 
         return memoryUsageInBytesTotal;
@@ -277,26 +287,28 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             return GetHostAvailableMemory();
         }
 
-        _fileSystem.ReadAll(_memoryStat, _buffer);
-        var memoryFile = _buffer.WrittenSpan;
+        ReadOnlySpan<char> memoryFile;
+        using (ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool))
+        {
+            _fileSystem.ReadAll(_memoryStat, bufferWriter.Buffer);
+            memoryFile = bufferWriter.Buffer.WrittenSpan;
+        }
 
-        var index = memoryFile.IndexOf(InactiveFile.AsSpan());
+        int index = memoryFile.IndexOf(InactiveFile.AsSpan());
 
         if (index == -1)
         {
             Throw.InvalidOperationException($"Unable to find inactive_file from '{_memoryStat}'.");
         }
 
-        var inactiveMemorySlice = memoryFile.Slice(index + InactiveFile.Length, memoryFile.Length - index - InactiveFile.Length);
+        ReadOnlySpan<char> inactiveMemorySlice = memoryFile.Slice(index + InactiveFile.Length, memoryFile.Length - index - InactiveFile.Length);
 
-        _ = GetNextNumber(inactiveMemorySlice, out var inactiveMemory);
+        _ = GetNextNumber(inactiveMemorySlice, out long inactiveMemory);
 
         if (inactiveMemory == -1)
         {
             Throw.InvalidOperationException($"The value of inactive_file found in '{_memoryStat}' is not a positive number: '{new string(inactiveMemorySlice)}'.");
         }
-
-        _buffer.Reset();
 
         long memoryUsage = 0;
 
@@ -309,7 +321,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             memoryUsage = GetMemoryUsageInBytesPod();
         }
 
-        var memoryUsageTotal = memoryUsage - inactiveMemory;
+        long memoryUsageTotal = memoryUsage - inactiveMemory;
 
         if (memoryUsageTotal < 0)
         {
@@ -326,17 +338,18 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         // The value we are interested in starts with this. We just want to make sure it is true.
         const string MemTotal = "MemTotal:";
 
-        _fileSystem.ReadFirstLine(_memInfo, _buffer);
-        var firstLine = _buffer.WrittenSpan;
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        _fileSystem.ReadFirstLine(_memInfo, bufferWriter.Buffer);
+        ReadOnlySpan<char> firstLine = bufferWriter.Buffer.WrittenSpan;
 
         if (!firstLine.StartsWith(MemTotal))
         {
             Throw.InvalidOperationException($"Could not parse '{_memInfo}'. We expected first line of the file to start with '{MemTotal}' but it was '{new string(firstLine)}' instead.");
         }
 
-        var totalMemory = firstLine.Slice(MemTotal.Length, firstLine.Length - MemTotal.Length);
+        ReadOnlySpan<char> totalMemory = firstLine.Slice(MemTotal.Length, firstLine.Length - MemTotal.Length);
 
-        var next = GetNextNumber(totalMemory, out var totalMemoryAvailable);
+        int next = GetNextNumber(totalMemory, out long totalMemoryAvailable);
 
         if (totalMemoryAvailable == -1)
         {
@@ -348,10 +361,10 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             Throw.InvalidOperationException($"Could not parse '{_memInfo}'. We expected to get memory usage followed by the unit (kB, MB, GB) but found no unit: '{new string(firstLine)}'.");
         }
 
-        var unit = totalMemory.Slice(totalMemory.Length - 2, 2);
-        var memory = (ulong)totalMemoryAvailable;
+        ReadOnlySpan<char> unit = totalMemory.Slice(totalMemory.Length - 2, 2);
+        ulong memory = (ulong)totalMemoryAvailable;
 
-        var u = unit switch
+        ulong u = unit switch
         {
             "kB" => memory << 10,
             "MB" => memory << 20,
@@ -360,8 +373,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             _ => throw new InvalidOperationException(
                 $"We tried to convert total memory usage value from '{_memInfo}' to bytes, but we've got a unit that we don't recognize: '{new string(unit)}'.")
         };
-
-        _buffer.Reset();
 
         return u;
     }
@@ -372,29 +383,30 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// </remarks>
     public float GetHostCpuCount()
     {
-        _fileSystem.ReadFirstLine(_cpuSetCpus, _buffer);
-        var stats = _buffer.WrittenSpan;
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        _fileSystem.ReadFirstLine(_cpuSetCpus, bufferWriter.Buffer);
+        ReadOnlySpan<char> stats = bufferWriter.Buffer.WrittenSpan;
 
         if (stats.IsEmpty)
         {
             ThrowException(stats);
         }
 
-        var cpuCount = 0L;
+        long cpuCount = 0L;
 
         // Iterate over groups (comma-separated)
         while (true)
         {
-            var groupIndex = stats.IndexOf(',');
+            int groupIndex = stats.IndexOf(',');
 
-            var group = groupIndex == -1 ? stats : stats.Slice(0, groupIndex);
+            ReadOnlySpan<char> group = groupIndex == -1 ? stats : stats.Slice(0, groupIndex);
 
-            var rangeIndex = group.IndexOf('-');
+            int rangeIndex = group.IndexOf('-');
 
             if (rangeIndex == -1)
             {
                 // Single number
-                _ = GetNextNumber(group, out var singleCpu);
+                _ = GetNextNumber(group, out long singleCpu);
 
                 if (singleCpu == -1)
                 {
@@ -406,11 +418,11 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             else
             {
                 // Range
-                var first = group.Slice(0, rangeIndex);
-                _ = GetNextNumber(first, out var startCpu);
+                ReadOnlySpan<char> first = group.Slice(0, rangeIndex);
+                _ = GetNextNumber(first, out long startCpu);
 
-                var second = group.Slice(rangeIndex + 1);
-                var next = GetNextNumber(second, out var endCpu);
+                ReadOnlySpan<char> second = group.Slice(rangeIndex + 1);
+                int next = GetNextNumber(second, out long endCpu);
 
                 if (endCpu == -1 || startCpu == -1 || endCpu < startCpu || next != -1)
                 {
@@ -428,8 +440,6 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             stats = stats.Slice(groupIndex + 1);
         }
 
-        _buffer.Reset();
-
         return cpuCount;
 
         static void ThrowException(ReadOnlySpan<char> content) =>
@@ -444,7 +454,7 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
         Justification = "We are adding another digit, so we need to multiply by ten.")]
     private static int GetNextNumber(ReadOnlySpan<char> buffer, out long number)
     {
-        var numberStart = 0;
+        int numberStart = 0;
 
         while (numberStart < buffer.Length && char.IsWhiteSpace(buffer[numberStart]))
         {
@@ -457,12 +467,12 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
             return -1;
         }
 
-        var numberEnd = numberStart;
+        int numberEnd = numberStart;
         number = 0;
 
         while (numberEnd < buffer.Length && char.IsDigit(buffer[numberEnd]))
         {
-            var current = buffer[numberEnd] - '0';
+            int current = buffer[numberEnd] - '0';
             number *= 10;
             number += current;
             numberEnd++;
@@ -474,100 +484,115 @@ internal sealed class LinuxUtilizationParserCgroupV2 : ILinuxUtilizationParser
     /// <remarks>
     /// If the file doesn't exist, we assume that the system is a Host and we read the CPU usage from /proc/stat.
     /// </remarks>
-    private bool TryGetCpuUnitsFromCgroups(IFileSystem fileSystem, out float cpuUnits)
+    private static bool TryGetCpuUnitsFromCgroups(IFileSystem fileSystem, out float cpuUnits)
     {
-        if (!_fileSystem.Exists(_cpuCfsQuaotaPeriodUs))
+        if (!fileSystem.Exists(_cpuCfsQuaotaPeriodUs))
         {
             cpuUnits = 0;
             return false;
         }
 
-        fileSystem.ReadFirstLine(_cpuCfsQuaotaPeriodUs, _buffer);
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        fileSystem.ReadFirstLine(_cpuCfsQuaotaPeriodUs, bufferWriter.Buffer);
 
-        var quotaBuffer = _buffer.WrittenSpan;
+        ReadOnlySpan<char> quotaBuffer = bufferWriter.Buffer.WrittenSpan;
 
         if (quotaBuffer.IsEmpty || (quotaBuffer.Length == 2 && quotaBuffer[0] == '-' && quotaBuffer[1] == '1'))
         {
-            _buffer.Reset();
             cpuUnits = -1;
             return false;
         }
 
-        var nextQuota = GetNextNumber(quotaBuffer, out var quota);
+        if (quotaBuffer.StartsWith("max", StringComparison.InvariantCulture))
+        {
+            cpuUnits = 0;
+            return false;
+        }
+
+        _ = GetNextNumber(quotaBuffer, out long quota);
 
         if (quota == -1)
         {
             Throw.InvalidOperationException($"Could not parse '{_cpuCfsQuaotaPeriodUs}'. Expected an integer but got: '{new string(quotaBuffer)}'.");
         }
 
-        var quotaString = quota.ToString(CultureInfo.CurrentCulture);
-        var index = quotaBuffer.IndexOf(quotaString.AsSpan());
-        var cpuPeriodSlice = quotaBuffer.Slice(index + quotaString.Length, quotaBuffer.Length - index - quotaString.Length);
-        _ = GetNextNumber(cpuPeriodSlice, out var period);
+        string quotaString = quota.ToString(CultureInfo.CurrentCulture);
+        int index = quotaBuffer.IndexOf(quotaString.AsSpan());
+        ReadOnlySpan<char> cpuPeriodSlice = quotaBuffer.Slice(index + quotaString.Length, quotaBuffer.Length - index - quotaString.Length);
+        _ = GetNextNumber(cpuPeriodSlice, out long period);
 
         if (period == -1)
         {
             Throw.InvalidOperationException($"Could not parse '{_cpuCfsQuaotaPeriodUs}'. Expected to get an integer but got: '{new string(cpuPeriodSlice)}'.");
         }
 
-        _buffer.Reset();
         cpuUnits = (float)quota / period;
 
         return true;
     }
 
-    private bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)
+    private static bool TryGetCgroupRequestCpu(IFileSystem fileSystem, out float cpuUnits)
     {
-        if (!_fileSystem.Exists(_cpuPodWeight))
+        const long CpuPodWeightPossibleMax = 10_000;
+        const long CpuPodWeightPossibleMin = 1;
+
+        if (!fileSystem.Exists(_cpuPodWeight))
         {
             cpuUnits = 0;
             return false;
         }
 
-        fileSystem.ReadFirstLine(_cpuPodWeight, _buffer);
-        var cpuPodWeightBuffer = _buffer.WrittenSpan;
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        fileSystem.ReadFirstLine(_cpuPodWeight, bufferWriter.Buffer);
+        ReadOnlySpan<char> cpuPodWeightBuffer = bufferWriter.Buffer.WrittenSpan;
 
         if (cpuPodWeightBuffer.IsEmpty || (cpuPodWeightBuffer.Length == 2 && cpuPodWeightBuffer[0] == '-' && cpuPodWeightBuffer[1] == '1'))
         {
-            Throw.InvalidOperationException($"Could not parse '{_cpuPodWeight}' content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
+            Throw.InvalidOperationException(
+                $"Could not parse '{_cpuPodWeight}' content. Expected to find CPU weight but got '{new string(cpuPodWeightBuffer)}' instead.");
         }
 
-        _ = GetNextNumber(cpuPodWeightBuffer, out var cpuPodWeight);
+        _ = GetNextNumber(cpuPodWeightBuffer, out long cpuPodWeight);
 
         if (cpuPodWeight == -1)
         {
-            Throw.InvalidOperationException($"Could not parse '{_cpuPodWeight}'. Expected to get an integer but got: '{cpuPodWeight}'.");
+            Throw.InvalidOperationException(
+                $"Could not parse '{_cpuPodWeight}' content. Expected to get an integer but got: '{cpuPodWeightBuffer}'.");
         }
 
-        // Calculate CPU pod request in millicores based on the weight, using the formula:
-        // y = (1 + ((x - 2) * 9999) / 262142), where y is the CPU weight and x is the CPU share (cgroup v1)
-        // https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2
-        var cpuPodShare = ((cpuPodWeight * 262142) + 19997) / 9999;
-        if (cpuPodShare == -1)
+        if (cpuPodWeight < CpuPodWeightPossibleMin || cpuPodWeight > CpuPodWeightPossibleMax)
         {
-            Throw.InvalidOperationException($"Could not calculate CPU share from CPU weight '{cpuPodShare}'");
+            Throw.ArgumentOutOfRangeException("CPU weight",
+                $"Expected to find CPU weight in range [{CpuPodWeightPossibleMin}-{CpuPodWeightPossibleMax}] in '{_cpuPodWeight}', but got '{cpuPodWeight}' instead.");
         }
 
-        _buffer.Reset();
-        cpuUnits = cpuPodShare;
+        // The formula to calculate CPU pod weight (measured in millicores) from CPU share:
+        // y = (1 + ((x - 2) * 9999) / 262142),
+        // where y is the CPU pod weight (e.g. cpuPodWeight) and x is the CPU share of cgroup v1 (e.g. cpuUnits).
+        // https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2254-cgroup-v2#phase-1-convert-from-cgroups-v1-settings-to-v2
+        // We invert the formula to calculate CPU share from CPU pod weight:
+#pragma warning disable S109 // Magic numbers should not be used - using the formula, forgive.
+        cpuUnits = ((cpuPodWeight - 1) * 262142 / 9999) + 2;
+#pragma warning restore S109 // Magic numbers should not be used
+
         return true;
     }
 
     private long GetMemoryUsageInBytesPod()
     {
-        _fileSystem.ReadAll(_memoryUsageInBytes, _buffer);
+        using ReturnableBufferWriter<char> bufferWriter = new(_sharedBufferWriterPool);
+        _fileSystem.ReadAll(_memoryUsageInBytes, bufferWriter.Buffer);
 
-        var memoryUsageFile = _buffer.WrittenSpan;
-        var next = GetNextNumber(memoryUsageFile, out long memoryUsage);
+        ReadOnlySpan<char> memoryUsageFile = bufferWriter.Buffer.WrittenSpan;
+        int next = GetNextNumber(memoryUsageFile, out long memoryUsage);
 
         // this file format doesn't expect to contain anything after the number.
         if (memoryUsage == -1)
         {
             Throw.InvalidOperationException(
-                $"We tried to read '{_memoryUsageInBytes}', and we expected to get a positive number but instead it was: '{memoryUsage}'.");
+                $"We tried to read '{_memoryUsageInBytes}', and we expected to get a positive number but instead it was: '{memoryUsageFile}'.");
         }
 
-        _buffer.Reset();
         return memoryUsage;
     }
 }

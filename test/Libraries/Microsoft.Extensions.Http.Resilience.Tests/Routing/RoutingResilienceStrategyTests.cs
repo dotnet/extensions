@@ -4,7 +4,6 @@
 using System;
 using System.Net.Http;
 using FluentAssertions;
-using Microsoft.Extensions.Http.Resilience.Internal;
 using Microsoft.Extensions.Http.Resilience.Routing.Internal;
 using Moq;
 using Polly;
@@ -23,13 +22,23 @@ public class RoutingResilienceStrategyTests
     }
 
     [Fact]
+    public void RequestMessageIsNull_Throws()
+    {
+        var strategy = Create(() => Mock.Of<RequestRoutingStrategy>());
+        var context = ResilienceContextPool.Shared.Get();
+        context.SetRequestMessage(null);
+
+        strategy.Invoking(s => s.Execute(_ => { }, context)).Should().Throw<InvalidOperationException>().WithMessage("The HTTP request message was not found in the resilience context.");
+    }
+
+    [Fact]
     public void NoRoutingProvider_Ok()
     {
         using var request = new HttpRequestMessage();
 
         var strategy = Create(null);
         var context = ResilienceContextPool.Shared.Get();
-        context.Properties.Set(ResilienceKeys.RequestMessage, request);
+        context.SetRequestMessage(request);
 
         strategy.Invoking(s => s.Execute(_ => { }, context)).Should().NotThrow();
     }

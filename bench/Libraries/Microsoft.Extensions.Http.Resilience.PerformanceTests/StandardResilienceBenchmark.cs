@@ -78,4 +78,10 @@ public class StandardResilienceBenchmark
     {
         return _v8!.SendAsync(Request, _cancellationToken);
     }
+
+    [Benchmark]
+    public HttpResponseMessage StandardPipeline_Polly_V8_Sync()
+    {
+        return _v8!.Send(Request, _cancellationToken);
+    }
 }

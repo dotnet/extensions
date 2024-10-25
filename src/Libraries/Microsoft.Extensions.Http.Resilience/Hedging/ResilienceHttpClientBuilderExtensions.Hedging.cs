@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
@@ -94,7 +94,7 @@ public static partial class ResilienceHttpClientBuilderExtensions
                 requestMessage.SetResilienceContext(args.ActionContext);
 
                 // replace the request message
-                args.ActionContext.Properties.Set(ResilienceKeys.RequestMessage, requestMessage);
+                args.ActionContext.SetRequestMessage(requestMessage);
 
                 if (args.PrimaryContext.Properties.TryGetValue(ResilienceKeys.RoutingStrategy, out var routingPipeline))
                 {
@@ -140,20 +140,14 @@ public static partial class ResilienceHttpClientBuilderExtensions
             })
             .SelectPipelineByAuthority();
 
+        // Disable the HttpClient timeout to allow the timeout strategies to control the timeout.
+        _ = builder.ConfigureHttpClient(client => client.Timeout = Timeout.InfiniteTimeSpan);
+
         return new StandardHedgingHandlerBuilder(builder.Name, builder.Services, routingBuilder);
     }
-
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
-        Justification = "The EmptyResilienceStrategyOptions doesn't have any properties to validate.")]
-    private static ResiliencePipelineBuilder<HttpResponseMessage> AddStrategy(this ResiliencePipelineBuilder<HttpResponseMessage> builder, Func<StrategyBuilderContext, ResilienceStrategy> factory) =>
-        builder.AddStrategy(factory, new EmptyResilienceStrategyOptions());
 
     private sealed record StandardHedgingHandlerBuilder(
         string Name,
         IServiceCollection Services,
         IRoutingStrategyBuilder RoutingStrategyBuilder) : IStandardHedgingHandlerBuilder;
-
-    private sealed class EmptyResilienceStrategyOptions : ResilienceStrategyOptions
-    {
-    }
 }

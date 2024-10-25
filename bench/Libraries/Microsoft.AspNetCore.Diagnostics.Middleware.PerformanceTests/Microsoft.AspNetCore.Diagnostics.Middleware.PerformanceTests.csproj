@@ -6,6 +6,7 @@
 
   <PropertyGroup>
     <InjectSharedPools>true</InjectSharedPools>
+    <SkipSharedPoolsReferences>true</SkipSharedPoolsReferences>
   </PropertyGroup>
 
   <ItemGroup>

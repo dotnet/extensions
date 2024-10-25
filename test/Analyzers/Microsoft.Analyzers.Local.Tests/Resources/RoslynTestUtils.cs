@@ -146,7 +146,7 @@ internal static class RoslynTestUtils
         }
         catch (ArgumentOutOfRangeException)
         {
-            Assert.True(false, $"Unexpected warning {actual}");
+            Assert.Fail($"Unexpected warning {actual}");
         }
     }
 
@@ -257,9 +257,10 @@ internal static class RoslynTestUtils
         var analyzers = ImmutableArray.Create(analyzer);
 
         var comp = await proj!.GetCompilationAsync().ConfigureAwait(false);
-        var diags = await comp!.WithAnalyzers(analyzers, options).GetAllDiagnosticsAsync().ConfigureAwait(false);
+        var result = await comp!.WithAnalyzers(analyzers, options)
+            .GetAnalysisResultAsync(CancellationToken.None).ConfigureAwait(false);
 
-        return Sort(diags);
+        return Sort(result.GetAllDiagnostics());
     }
 
     private static IReadOnlyList<Diagnostic> Sort(ImmutableArray<Diagnostic> diags)
@@ -538,7 +539,7 @@ internal static class RoslynTestUtils
             }
 
             var comp = await _project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
-            var diags = await comp!.WithAnalyzers(_analyzers, cancellationToken: cancellationToken)
+            var diags = await comp!.WithAnalyzers(_analyzers)
                                    .GetAllDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
 
             return diags.Where(d => _fixer.FixableDiagnosticIds.Contains(d.Id));

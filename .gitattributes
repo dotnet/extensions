@@ -58,6 +58,3 @@
 *.dbproj text=auto
 *.sln text=auto
 
-*.png filter=lfs diff=lfs merge=lfs -text
-*.jpg filter=lfs diff=lfs merge=lfs -text
-*.dll filter=lfs diff=lfs merge=lfs -text

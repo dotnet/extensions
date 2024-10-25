@@ -1,8 +1,14 @@
 <Project>
 
+  <PropertyGroup>
+    <!-- Preview packages: do not use stable branding and do not warn about lack of [Experimental] -->
+    <SuppressFinalPackageVersion Condition="'$(Stage)' == 'preview'">true</SuppressFinalPackageVersion>
+    <NoWarn Condition="'$(Stage)' == 'preview'">$(NoWarn);LA0003</NoWarn>
+  </PropertyGroup>
+
   <!-- Produce errors if we don't have all the right properties defined -->
   <Target Name="_CheckPropsExist" Condition="'$(IsPackable)' == 'true' and '$(Stage)' != '' and $(Stage) != 'transport'" BeforeTargets="Build">
-    <Error Condition="'$(Stage)' != 'dev' AND '$(Stage)' != 'normal' AND '$(Stage)' != 'obsolete'" Text="Stage property must be dev|normal|obsolete" />
+    <Error Condition="'$(Stage)' != 'dev' AND '$(Stage)' != 'normal' AND '$(Stage)' != 'obsolete' AND '$(Stage)' != 'preview'" Text="Stage property must be dev|normal|obsolete|preview" />
     <Error Condition="'$(Description)' == ''" Text="Missing Description property." />
     <Error Condition="'$(Workstream)' == ''" Text="Missing Workstream property." />
     <Error Condition="'$(MinCodeCoverage)' == ''" Text="Missing MinCodeCoverage property." />

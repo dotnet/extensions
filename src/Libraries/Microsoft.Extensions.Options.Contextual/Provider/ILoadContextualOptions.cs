@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Extensions.Options.Contextual.Provider;
 
 /// <summary>
-/// Used to retrieve named configuration data from a contextual options provider implementation.
+/// Provides functionality to retrieve named configuration data from a contextual options provider implementation.
 /// </summary>
 /// <typeparam name="TOptions">The type of options configured.</typeparam>
 public interface ILoadContextualOptions<TOptions>

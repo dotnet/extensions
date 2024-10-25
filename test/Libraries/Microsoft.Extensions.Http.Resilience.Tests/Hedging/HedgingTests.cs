@@ -35,6 +35,7 @@ public abstract class HedgingTests<TBuilder> : IDisposable
     private readonly Func<RequestRoutingStrategy> _requestRoutingStrategyFactory;
     private readonly IServiceCollection _services;
     private readonly Queue<HttpResponseMessage> _responses = new();
+    private ServiceProvider? _serviceProvider;
     private bool _failure;
 
     private protected HedgingTests(Func<IHttpClientBuilder, Func<RequestRoutingStrategy>, TBuilder> createDefaultBuilder)
@@ -63,10 +64,20 @@ public abstract class HedgingTests<TBuilder> : IDisposable
         _requestRoutingStrategyMock.VerifyAll();
         _cancellationTokenSource.Cancel();
         _cancellationTokenSource.Dispose();
+        _serviceProvider?.Dispose();
+        foreach (var response in _responses)
+        {
+            response.Dispose();
+        }
     }
 
-    [Fact]
-    public async Task SendAsync_EnsureContextFlows()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task Send_EnsureContextFlows(bool asynchronous = true)
     {
         var key = new ResiliencePropertyKey<string>("custom-data");
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
@@ -93,13 +104,18 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await SendRequest(client, request, asynchronous, _cancellationTokenSource.Token);
 
         Assert.Equal(2, calls);
     }
 
-    [Fact]
-    public async Task SendAsync_NoErrors_ShouldReturnSingleResponse()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task Send_NoErrors_ShouldReturnSingleResponse(bool asynchronous = true)
     {
         SetupRouting();
         SetupRoutes(1, "https://enpoint-{0}:80/");
@@ -108,15 +124,20 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         AddResponse(HttpStatusCode.OK);
 
-        var response = await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await SendRequest(client, request, asynchronous, _cancellationTokenSource.Token);
         AssertNoResponse();
 
         Assert.Single(Requests);
         Assert.Equal("https://enpoint-1:80/some-path?query", Requests[0]);
     }
 
-    [Fact]
-    public async Task SendAsync_NoRoutes_Throws()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task Send_NoRoutes_Throws(bool asynchronous = true)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
 
@@ -127,12 +148,18 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await client.SendAsync(request, _cancellationTokenSource.Token));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await SendRequest(client, request, asynchronous, _cancellationTokenSource.Token));
         Assert.Equal("The routing strategy did not provide any route URL on the first attempt.", exception.Message);
     }
 
-    [Fact]
-    public async Task SendAsync_NoRoutesLeftAndNoResult_ShouldThrow()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task Send_NoRoutesLeftAndNoResult_ShouldThrow(bool asynchronous = true)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
 
@@ -143,15 +170,21 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await client.SendAsync(request, _cancellationTokenSource.Token));
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(
+            async () => await SendRequest(client, request, asynchronous, _cancellationTokenSource.Token));
         Assert.Equal("Something went wrong!", exception.Message);
 
         Assert.Equal(2, Requests.Count);
         Assert.Equal(2, Requests.Distinct().Count());
     }
 
-    [Fact]
-    public async Task SendAsync_NoRoutesLeftAndSomeResultPresent_ShouldReturn()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task Send_NoRoutesLeftAndSomeResultPresent_ShouldReturn(bool asynchronous = true)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
 
@@ -164,13 +197,18 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        var result = await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var result = await SendRequest(client, request, asynchronous, _cancellationTokenSource.Token);
         Assert.Equal(DefaultHedgingAttempts + 1, Requests.Count);
         Assert.Equal(HttpStatusCode.ServiceUnavailable, result.StatusCode);
     }
 
-    [Fact]
-    public async Task SendAsync_EnsureDistinctContextForEachAttempt()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task Send_EnsureDistinctContextForEachAttempt(bool asynchronous = true)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
 
@@ -183,13 +221,18 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await SendRequest(client, request, asynchronous, _cancellationTokenSource.Token);
 
         RequestContexts.Distinct().OfType<ResilienceContext>().Should().HaveCount(3);
     }
 
-    [Fact]
-    public async Task SendAsync_EnsureContextReplacedInRequestMessage()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task Send_EnsureContextReplacedInRequestMessage(bool asynchronous = true)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
         var originalContext = ResilienceContextPool.Shared.Get();
@@ -204,15 +247,20 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await SendRequest(client, request, asynchronous, _cancellationTokenSource.Token);
 
         RequestContexts.Distinct().OfType<ResilienceContext>().Should().HaveCount(3);
 
         request.GetResilienceContext().Should().Be(originalContext);
     }
 
-    [Fact]
-    public async Task SendAsync_NoRoutesLeft_EnsureLessThanMaxHedgedAttempts()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task Send_NoRoutesLeft_EnsureLessThanMaxHedgedAttempts(bool asynchronous = true)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
 
@@ -226,12 +274,17 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        var result = await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var _ = await SendRequest(client, request, asynchronous, _cancellationTokenSource.Token);
         Assert.Equal(2, Requests.Count);
     }
 
-    [Fact]
-    public async Task SendAsync_FailedExecution_ShouldReturnResponseFromHedging()
+    [Theory]
+#if NET6_0_OR_GREATER
+    [CombinatorialData]
+#else
+    [InlineData(true)]
+#endif
+    public async Task Send_FailedExecution_ShouldReturnResponseFromHedging(bool asynchronous = true)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, "https://to-be-replaced:1234/some-path?query");
 
@@ -244,12 +297,29 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
         using var client = CreateClientWithHandler();
 
-        var result = await client.SendAsync(request, _cancellationTokenSource.Token);
+        using var result = await SendRequest(client, request, asynchronous, _cancellationTokenSource.Token);
         Assert.Equal(3, Requests.Count);
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         Assert.Equal("https://enpoint-1:80/some-path?query", Requests[0]);
         Assert.Equal("https://enpoint-2:80/some-path?query", Requests[1]);
         Assert.Equal("https://enpoint-3:80/some-path?query", Requests[2]);
+    }
+
+    protected static Task<HttpResponseMessage> SendRequest(
+        HttpClient client, HttpRequestMessage request, bool asynchronous, CancellationToken cancellationToken = default)
+    {
+#if NET6_0_OR_GREATER
+        if (asynchronous)
+        {
+            return client.SendAsync(request, cancellationToken);
+        }
+        else
+        {
+            return Task.FromResult(client.Send(request, cancellationToken));
+        }
+#else
+        return client.SendAsync(request, cancellationToken);
+#endif
     }
 
     protected void AssertNoResponse() => Assert.Empty(_responses);
@@ -268,7 +338,12 @@ public abstract class HedgingTests<TBuilder> : IDisposable
 
     protected abstract void ConfigureHedgingOptions(Action<HttpHedgingStrategyOptions> configure);
 
-    protected HttpClient CreateClientWithHandler() => _services.BuildServiceProvider().GetRequiredService<IHttpClientFactory>().CreateClient(ClientId);
+    protected HttpClient CreateClientWithHandler()
+    {
+        _serviceProvider?.Dispose();
+        _serviceProvider = _services.BuildServiceProvider();
+        return _serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(ClientId);
+    }
 
     private Task<HttpResponseMessage> InnerHandlerFunction(HttpRequestMessage request, CancellationToken cancellationToken)
     {

@@ -1,4 +1,12 @@
 <Project>
+  <ItemGroup Condition="'$(InjectCompilerFeatureRequiredOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\CompilerFeatureRequiredAttribute\*.cs" LinkBase="LegacySupport\CompilerFeatureRequiredAttribute" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(InjectRequiredMemberOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\RequiredMemberAttribute\*.cs" LinkBase="LegacySupport\RequiredMemberAttribute" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(InjectDiagnosticAttributesOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\DiagnosticAttributes\*.cs" LinkBase="LegacySupport\DiagnosticAttributes" />
   </ItemGroup>
@@ -7,11 +15,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\IsExternalInit\*.cs" LinkBase="LegacySupport\IsExternalInit" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectTrimAttributesOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
+  <ItemGroup Condition="'$(InjectTrimAttributesOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1' or '$(TargetFramework)' == 'netcoreapp3.1')">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\TrimAttributes\*.cs" LinkBase="LegacySupport\TrimAttributes" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectCallerAttributesOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0')">
+  <ItemGroup Condition="'$(InjectCallerAttributesOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1')">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\CallerAttributes\*.cs" LinkBase="LegacySupport\CallerAttributes" />
   </ItemGroup>
 
@@ -47,7 +55,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\TaskWaitAsync\*.cs" LinkBase="LegacySupport\TaskWaitAsync" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(InjectExperimentalAttributeOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0')">
+  <ItemGroup Condition="'$(InjectExperimentalAttributeOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1' or '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'net6.0' or '$(TargetFramework)' == 'net7.0')">
     <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\ExperimentalAttribute\*.cs" LinkBase="LegacySupport\ExperimentalAttribute" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(InjectObsoleteAttributeOnLegacy)' == 'true' AND ('$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp3.1')">
+    <Compile Include="$(MSBuildThisFileDirectory)\..\..\src\LegacySupport\ObsoleteAttribute\*.cs" LinkBase="LegacySupport\ObsoleteAttribute" />
   </ItemGroup>
 </Project>

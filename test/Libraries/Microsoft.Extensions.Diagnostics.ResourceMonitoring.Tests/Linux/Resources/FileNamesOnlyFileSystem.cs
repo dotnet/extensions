@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Shared.Pools;
@@ -17,7 +18,7 @@ internal sealed class FileNamesOnlyFileSystem : IFileSystem
         return fileInfo.Exists;
     }
 
-    public string[] GetDirectoryNames(string directory, string pattern)
+    public IReadOnlyCollection<string> GetDirectoryNames(string directory, string pattern)
     {
         throw new NotSupportedException();
     }
@@ -53,5 +54,16 @@ internal sealed class FileNamesOnlyFileSystem : IFileSystem
         }
 
         return min;
+    }
+
+    public IEnumerable<ReadOnlyMemory<char>> ReadAllByLines(FileInfo file, BufferWriter<char> destination)
+    {
+        string[] lines = File.ReadAllLines($"{_directory}/{file.Name}");
+        foreach (var line in lines)
+        {
+            destination.Reset();
+            destination.Write(line);
+            yield return destination.WrittenMemory;
+        }
     }
 }

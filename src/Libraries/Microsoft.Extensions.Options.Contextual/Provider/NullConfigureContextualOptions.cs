@@ -4,7 +4,7 @@
 namespace Microsoft.Extensions.Options.Contextual.Provider;
 
 /// <summary>
-/// Helper class.
+/// Provides helper methods for a configuration context. This class can't be inherited.
 /// </summary>
 public static class NullConfigureContextualOptions
 {
@@ -13,7 +13,6 @@ public static class NullConfigureContextualOptions
     /// </summary>
     /// <typeparam name="TOptions">The options type to configure.</typeparam>
     /// <returns>A do-nothing instance of <see cref="IConfigureContextualOptions{TOptions}"/>.</returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S4049:Properties should be preferred", Justification = "Not possible for generic methods.")]
     public static IConfigureContextualOptions<TOptions> GetInstance<TOptions>()
         where TOptions : class
         => NullConfigureContextualOptions<TOptions>.Instance;

@@ -3,12 +3,14 @@
 
 using System.Net.Http;
 using System.Threading.Tasks;
+using Polly.CircuitBreaker;
 using Polly.Hedging;
+using Polly.Timeout;
 
 namespace Microsoft.Extensions.Http.Resilience;
 
 /// <summary>
-/// Implementation of the <see cref="HedgingStrategyOptions{TResult}"/> for <see cref="HttpResponseMessage"/> results.
+/// Implementation of the <see cref="HedgingStrategyOptions{TResult}"/> class for <see cref="HttpResponseMessage"/> results.
 /// </summary>
 public class HttpHedgingStrategyOptions : HedgingStrategyOptions<HttpResponseMessage>
 {
@@ -16,11 +18,12 @@ public class HttpHedgingStrategyOptions : HedgingStrategyOptions<HttpResponseMes
     /// Initializes a new instance of the <see cref="HttpHedgingStrategyOptions"/> class.
     /// </summary>
     /// <remarks>
-    /// By default the options is set to handle only transient failures,
-    /// i.e. timeouts, 5xx responses and <see cref="HttpRequestException"/> exceptions.
+    /// By default, the options are configured to handle only transient failures.
+    /// Specifically, this includes HTTP status codes 408, 429, 500 and above, 
+    /// as well as <see cref="HttpRequestException"/>, <see cref="BrokenCircuitException"/>, and <see cref="TimeoutRejectedException"/> exceptions.
     /// </remarks>
     public HttpHedgingStrategyOptions()
     {
-        ShouldHandle = args => new ValueTask<bool>(HttpClientHedgingResiliencePredicates.IsTransient(args.Outcome));
+        ShouldHandle = args => new ValueTask<bool>(HttpClientHedgingResiliencePredicates.IsTransient(args.Outcome, args.Context.CancellationToken));
     }
 }

@@ -3,6 +3,7 @@
 This repository contains a suite of libraries that provide facilities commonly needed when creating production-ready applications. Initially developed to support high-scale and high-availability services within Microsoft, such as Microsoft Teams, these libraries deliver functionality that can help make applications more efficient, more robust, and more manageable.
 
 The major functional areas this repo addresses are:
+- AI: Abstractions and middlewares for working with generative AI models and services.
 - Compliance: Mechanisms to help manage application data according to privacy regulations and policies, which includes a data annotation framework, audit report generation, and telemetry redaction.
 - Diagnostics: Provides a set of APIs that can be used to gather and report diagnostic information about the health of a service.
 - Contextual Options: Extends the .NET Options model to enable experimentations in production.
@@ -52,4 +53,4 @@ General .NET OSS discussions: [.NET Foundation Discussions](https://github.com/d
 
 ## License
 
-.NET (including the runtime repo) is licensed under the [MIT](LICENSE.TXT) license.
+.NET (including the runtime repo) is licensed under the [MIT](LICENSE) license.

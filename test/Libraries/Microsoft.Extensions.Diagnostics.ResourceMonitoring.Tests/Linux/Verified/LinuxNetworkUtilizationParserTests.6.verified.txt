@@ -1,0 +1,9 @@
+﻿{
+  Type: InvalidOperationException,
+  Message: Could not parse '/proc/net/tcp6'. File was empty.,
+  StackTrace:
+at Microsoft.Shared.Diagnostics.Throw.InvalidOperationException(String message)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network.LinuxNetworkUtilizationParser.GetTcpStateInfo(FileInfo file)
+at Microsoft.Extensions.Diagnostics.ResourceMonitoring.Linux.Network.LinuxNetworkUtilizationParser.GetTcpIPv6StateInfo()
+at Xunit.Record.Exception(Func`1 testCode)
+}

@@ -158,6 +158,60 @@ public class FakeTimeProviderTests
     }
 
     [Fact]
+    public void AdjustTimeForwardWorks()
+    {
+        var tp = new FakeTimeProvider();
+
+        var t1Tick = 0;
+        var t1 = tp.CreateTimer(_ =>
+        {
+            t1Tick++;
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.Zero);
+
+        tp.AdjustTime(tp.GetUtcNow() + TimeSpan.FromMilliseconds(999));
+        Assert.Equal(0, t1Tick);
+
+        tp.AdjustTime(tp.GetUtcNow() + TimeSpan.FromMilliseconds(1));
+        Assert.Equal(0, t1Tick);
+
+        tp.AdjustTime(tp.GetUtcNow() + TimeSpan.FromSeconds(10));
+        Assert.Equal(0, t1Tick);
+
+        tp.Advance(TimeSpan.FromMilliseconds(999));
+        Assert.Equal(0, t1Tick);
+
+        tp.Advance(TimeSpan.FromMilliseconds(1));
+        Assert.Equal(1, t1Tick);
+    }
+
+    [Fact]
+    public void AdjustTimeBackwardWorks()
+    {
+        var tp = new FakeTimeProvider();
+
+        var t1Tick = 0;
+        var t1 = tp.CreateTimer(_ =>
+        {
+            t1Tick++;
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.Zero);
+
+        tp.AdjustTime(tp.GetUtcNow() - TimeSpan.FromMilliseconds(999));
+        Assert.Equal(0, t1Tick);
+
+        tp.AdjustTime(tp.GetUtcNow() - TimeSpan.FromMilliseconds(1));
+        Assert.Equal(0, t1Tick);
+
+        tp.AdjustTime(tp.GetUtcNow() - TimeSpan.FromSeconds(10));
+        Assert.Equal(0, t1Tick);
+
+        tp.Advance(TimeSpan.FromMilliseconds(999));
+        Assert.Equal(0, t1Tick);
+
+        tp.Advance(TimeSpan.FromMilliseconds(1));
+        Assert.Equal(1, t1Tick);
+    }
+
+    [Fact]
     public void ToStr()
     {
         var dto = new DateTimeOffset(new DateTime(2022, 1, 2, 3, 4, 5, 6), TimeSpan.Zero);
@@ -219,6 +273,7 @@ public class FakeTimeProviderTests
         await Assert.ThrowsAsync<TaskCanceledException>(() => timeProvider.Delay(TimeSpan.FromTicks(1), cts.Token));
     }
 
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
     [Fact]
     public async Task WaitAsync()
     {
@@ -244,6 +299,7 @@ public class FakeTimeProviderTests
         Assert.False(t.IsFaulted);
         Assert.False(t.IsCanceled);
     }
+#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
 
     [Fact]
     public async Task WaitAsync_InfiniteTimeout()
@@ -293,7 +349,7 @@ public class FakeTimeProviderTests
         cts.Cancel();
 
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
-        await Assert.ThrowsAsync<TaskCanceledException>(() => t).ConfigureAwait(false);
+        await Assert.ThrowsAsync<TaskCanceledException>(() => t);
 #pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
     }
 
@@ -380,5 +436,58 @@ public class FakeTimeProviderTests
 
         // Assert
         Assert.Single(calls);
+    }
+
+    [Fact]
+    public void SimulateRetryPolicy()
+    {
+        // Arrange
+        var retries = 42;
+        var tries = 0;
+        var taskDelay = 0.5;
+        var delay = 1;
+        var provider = new FakeTimeProvider();
+
+        async Task<int> simulatedPollyRetry()
+        {
+            while (true)
+            {
+                try
+                {
+                    // simulate task that takes some time to complete
+                    await provider.Delay(TimeSpan.FromSeconds(taskDelay));
+                    tries++;
+
+                    if (tries <= retries)
+                    {
+                        // the task failed, trigger retry
+                        throw new InvalidOperationException();
+                    }
+
+                    return tries;
+                }
+                catch (InvalidOperationException)
+                {
+                    // ConfigureAwait(true) is required to ensure that tasks continue on the captured context
+                    await provider.Delay(TimeSpan.FromSeconds(delay)).ConfigureAwait(true);
+                }
+            }
+        }
+
+        // Act
+        var result = simulatedPollyRetry();
+
+        for (int i = 0; i < retries; i++)
+        {
+            // advance time for simulated task delay
+            provider.Advance(TimeSpan.FromSeconds(taskDelay));
+
+            // advance time for retry delay
+            provider.Advance(TimeSpan.FromSeconds(delay));
+        }
+
+        // Assert
+        Assert.False(result.IsCompleted);
+        Assert.Equal(retries, tries);
     }
 }

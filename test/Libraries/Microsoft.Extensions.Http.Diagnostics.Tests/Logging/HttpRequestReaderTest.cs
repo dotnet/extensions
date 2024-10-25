@@ -99,8 +99,8 @@ public class HttpRequestReaderTest
         var logRecord = new LogRecord();
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
-        await reader.ReadResponseAsync(logRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
+        await reader.ReadRequestAsync(logRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
+        await reader.ReadResponseAsync(logRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
         logRecord.Should().BeEquivalentTo(expectedRecord);
     }
@@ -156,8 +156,8 @@ public class HttpRequestReaderTest
         var actualRecord = new LogRecord();
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
-        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
-        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
+        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
+        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
         actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
@@ -227,8 +227,8 @@ public class HttpRequestReaderTest
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
         var actualRecord = new LogRecord();
-        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
-        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
+        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
+        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
         actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
@@ -302,8 +302,8 @@ public class HttpRequestReaderTest
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
         var actualRecord = new LogRecord();
-        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
-        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
+        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
+        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
         actualRecord.Should().BeEquivalentTo(expectedRecord, o => o.Excluding(x => x.PathParameters));
 
@@ -362,7 +362,7 @@ public class HttpRequestReaderTest
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
         var actualRecord = new LogRecord();
-        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
+        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
 
         actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
@@ -432,8 +432,8 @@ public class HttpRequestReaderTest
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
         var actualRecord = new LogRecord();
-        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
-        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
+        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
+        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
         actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
@@ -499,8 +499,8 @@ public class HttpRequestReaderTest
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
         var actualRecord = new LogRecord();
-        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
-        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
+        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
+        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
         actualRecord.Should().BeEquivalentTo(expectedRecord);
     }
@@ -567,8 +567,8 @@ public class HttpRequestReaderTest
         var requestHeadersBuffer = new List<KeyValuePair<string, string>>();
         var responseHeadersBuffer = new List<KeyValuePair<string, string>>();
         var actualRecord = new LogRecord();
-        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
-        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None).ConfigureAwait(false);
+        await reader.ReadRequestAsync(actualRecord, httpRequestMessage, requestHeadersBuffer, CancellationToken.None);
+        await reader.ReadResponseAsync(actualRecord, httpResponseMessage, responseHeadersBuffer, CancellationToken.None);
 
         actualRecord.Should().BeEquivalentTo(expectedRecord);
     }

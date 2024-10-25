@@ -12,7 +12,6 @@ using Microsoft.Gen.Logging.Model;
 using Microsoft.Gen.Shared;
 
 #pragma warning disable S1067 // Expressions should not be too complex
-#pragma warning disable S1168 // Empty arrays and collections should be returned instead of null
 
 namespace Microsoft.Gen.Logging.Parsing;
 
@@ -123,6 +122,11 @@ internal partial class Parser
 
                 foreach (var property in members.Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>())
                 {
+                    if (property.IsIndexer)
+                    {
+                        continue;
+                    }
+
                     var logPropertiesAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogPropertiesAttribute, property);
                     var logPropertyIgnoreAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.LogPropertyIgnoreAttribute, property);
                     var tagProviderAttribute = ParserUtilities.GetSymbolAttributeAnnotationOrDefault(symbols.TagProviderAttribute, property);
@@ -306,12 +310,6 @@ internal partial class Parser
                         {
                             continue;
                         }
-                    }
-
-                    if (lp.HasDataClassification && (lp.HasProperties || lp.HasTagProvider))
-                    {
-                        Diag(DiagDescriptors.CantUseDataClassificationWithLogPropertiesOrTagProvider, property.GetLocation());
-                        lp.ClassificationAttributeTypes.Clear();
                     }
 
                     if ((logPropertiesAttribute is null)

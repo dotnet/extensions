@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Shared.Pools;
 
@@ -22,7 +25,7 @@ internal sealed class OSFileSystem : IFileSystem
         return fileInfo.Exists;
     }
 
-    public string[] GetDirectoryNames(string directory, string pattern)
+    public IReadOnlyCollection<string> GetDirectoryNames(string directory, string pattern)
     {
         return Directory.GetDirectories(directory, pattern)
                 .ToArray();
@@ -43,6 +46,60 @@ internal sealed class OSFileSystem : IFileSystem
 
     public void ReadAll(FileInfo file, BufferWriter<char> destination)
         => ReadUntilTerminatorOrEnd(file, destination, null);
+
+    public IEnumerable<ReadOnlyMemory<char>> ReadAllByLines(FileInfo file, BufferWriter<char> destination)
+    {
+        const int MaxStackalloc = 256;
+
+        if (!file.Exists)
+        {
+            throw new FileNotFoundException();
+        }
+
+        Memory<byte> buffer = ArrayPool<byte>.Shared.Rent(MaxStackalloc);
+        try
+        {
+            using FileStream stream = file.OpenRead();
+
+            int read = stream.Read(buffer.Span);
+            while (read > 0)
+            {
+                var start = 0;
+                var end = 0;
+
+                for (end = 0; end < read; end++)
+                {
+                    if (buffer.Span[end] == (byte)'\n')
+                    {
+                        var length = end - start;
+                        _ = Encoding.ASCII.GetChars(buffer.Span.Slice(start, length), destination.GetSpan(length));
+                        destination.Advance(length);
+                        start = end + 1;
+                        yield return destination.WrittenMemory;
+                        destination.Reset();
+                    }
+                }
+
+                // Set the comparison in the while loop to end when the file has not been completely read into the buffer.
+                // It will then advance the last character to the destination for the next time yield return is called.
+                if (start < read)
+                {
+                    var length = read - start;
+                    _ = Encoding.ASCII.GetChars(buffer.Span.Slice(start, length), destination.GetSpan(length));
+                    destination.Advance(length);
+                }
+
+                read = stream.Read(buffer.Span);
+            }
+        }
+        finally
+        {
+            if (MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> arraySegment) && arraySegment.Array != null)
+            {
+                ArrayPool<byte>.Shared.Return(arraySegment.Array);
+            }
+        }
+    }
 
     [SkipLocalsInit]
     private static void ReadUntilTerminatorOrEnd(FileInfo file, BufferWriter<char> destination, byte? terminator)

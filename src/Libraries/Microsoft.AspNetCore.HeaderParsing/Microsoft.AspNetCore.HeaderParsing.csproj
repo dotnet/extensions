@@ -8,14 +8,15 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCoreTargetFrameworks)</TargetFrameworks>
+    <!-- using the ConfigurationBinder source generator is blocked by https://github.com/dotnet/runtime/issues/94547, which was only fixed in 9.0+ -->
+    <EnableConfigurationBindingGenerator Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">true</EnableConfigurationBindingGenerator>
     <UseLoggingGenerator>true</UseLoggingGenerator>
     <UseMetricsGenerator>true</UseMetricsGenerator>
     <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectGetOrAddOnLegacy>true</InjectGetOrAddOnLegacy>
 
-    <!-- using the ConfigurationBinder source generator is blocked by https://github.com/dotnet/runtime/issues/94547 -->
-    <IsAotCompatible>false</IsAotCompatible>
-    <NoWarn>$(NoWarn);IL2026</NoWarn>
+    <IsAotCompatible Condition="'$(EnableConfigurationBindingGenerator)' != 'true'">false</IsAotCompatible>
+    <NoWarn Condition="'$(EnableConfigurationBindingGenerator)' != 'true'">$(NoWarn);IL2026</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

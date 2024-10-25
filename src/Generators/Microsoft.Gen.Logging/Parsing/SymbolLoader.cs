@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Microsoft.Gen.Shared;
 
 namespace Microsoft.Gen.Logging.Parsing;
 
@@ -19,6 +20,7 @@ internal static class SymbolLoader
     internal const string LogLevelType = "Microsoft.Extensions.Logging.LogLevel";
     internal const string ExceptionType = "System.Exception";
     internal const string DataClassificationAttribute = "Microsoft.Extensions.Compliance.Classification.DataClassificationAttribute";
+    internal const string NoDataClassificationAttribute = "Microsoft.Extensions.Compliance.Classification.NoDataClassificationAttribute";
     internal const string IEnrichmentPropertyBag = "Microsoft.Extensions.Diagnostics.Enrichment.IEnrichmentPropertyBag";
     internal const string IFormatProviderType = "System.IFormatProvider";
     internal const string ISpanFormattableType = "System.ISpanFormattable";
@@ -51,15 +53,16 @@ internal static class SymbolLoader
         Compilation compilation,
         Action<DiagnosticDescriptor, Location?, object?[]?> diagCallback)
     {
-        var loggerSymbol = compilation.GetTypeByMetadataName(ILoggerType);
-        var logLevelSymbol = compilation.GetTypeByMetadataName(LogLevelType);
-        var loggerMessageAttributeSymbol = compilation.GetTypeByMetadataName(LoggerMessageAttribute);
-        var logPropertiesAttributeSymbol = compilation.GetTypeByMetadataName(LogPropertiesAttribute);
-        var tagProviderAttributeSymbol = compilation.GetTypeByMetadataName(TagProviderAttribute);
-        var tagNameAttributeSymbol = compilation.GetTypeByMetadataName(TagNameAttribute);
-        var tagCollectorSymbol = compilation.GetTypeByMetadataName(ITagCollectorType);
-        var logPropertyIgnoreAttributeSymbol = compilation.GetTypeByMetadataName(LogPropertyIgnoreAttribute);
-        var dataClassificationAttribute = compilation.GetTypeByMetadataName(DataClassificationAttribute);
+        var loggerSymbol = compilation.GetBestTypeByMetadataName(ILoggerType);
+        var logLevelSymbol = compilation.GetBestTypeByMetadataName(LogLevelType);
+        var loggerMessageAttributeSymbol = compilation.GetBestTypeByMetadataName(LoggerMessageAttribute);
+        var logPropertiesAttributeSymbol = compilation.GetBestTypeByMetadataName(LogPropertiesAttribute);
+        var tagProviderAttributeSymbol = compilation.GetBestTypeByMetadataName(TagProviderAttribute);
+        var tagNameAttributeSymbol = compilation.GetBestTypeByMetadataName(TagNameAttribute);
+        var tagCollectorSymbol = compilation.GetBestTypeByMetadataName(ITagCollectorType);
+        var logPropertyIgnoreAttributeSymbol = compilation.GetBestTypeByMetadataName(LogPropertyIgnoreAttribute);
+        var dataClassificationAttribute = compilation.GetBestTypeByMetadataName(DataClassificationAttribute);
+        var noDataClassificationAttribute = compilation.GetBestTypeByMetadataName(NoDataClassificationAttribute);
 
 #pragma warning disable S1067 // Expressions should not be too complex
         if (loggerSymbol == null
@@ -76,7 +79,7 @@ internal static class SymbolLoader
         }
 #pragma warning restore S1067 // Expressions should not be too complex
 
-        var exceptionSymbol = compilation.GetTypeByMetadataName(ExceptionType);
+        var exceptionSymbol = compilation.GetBestTypeByMetadataName(ExceptionType);
         if (exceptionSymbol == null)
         {
             diagCallback(DiagDescriptors.MissingRequiredType, null, new object[] { ExceptionType });
@@ -84,14 +87,14 @@ internal static class SymbolLoader
         }
 
         var enumerableSymbol = compilation.GetSpecialType(SpecialType.System_Collections_IEnumerable);
-        var formatProviderSymbol = compilation.GetTypeByMetadataName(IFormatProviderType)!;
-        var spanFormattableSymbol = compilation.GetTypeByMetadataName(ISpanFormattableType);
+        var formatProviderSymbol = compilation.GetBestTypeByMetadataName(IFormatProviderType)!;
+        var spanFormattableSymbol = compilation.GetBestTypeByMetadataName(ISpanFormattableType);
 
         var ignorePropsSymbols = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
 
         foreach (var ign in _ignored)
         {
-            var s = compilation.GetTypeByMetadataName(ign);
+            var s = compilation.GetBestTypeByMetadataName(ign);
             if (s != null)
             {
                 _ = ignorePropsSymbols.Add(s);
@@ -113,6 +116,7 @@ internal static class SymbolLoader
             enumerableSymbol,
             formatProviderSymbol,
             spanFormattableSymbol,
-            dataClassificationAttribute);
+            dataClassificationAttribute,
+            noDataClassificationAttribute);
     }
 }
