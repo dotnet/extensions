@@ -14,8 +14,6 @@
     <UseMetricsReportsGenerator>true</UseMetricsReportsGenerator>
     <InjectGetOrAddOnLegacy>false</InjectGetOrAddOnLegacy>
     <InjectTaskWaitAsyncOnLegacy>true</InjectTaskWaitAsyncOnLegacy>
-    <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
-    <InjectExperimentalAttributeOnLegacy>true</InjectExperimentalAttributeOnLegacy>
     <InjectTrimAttributesOnLegacy>false</InjectTrimAttributesOnLegacy>
     <InjectSharedDebugger>true</InjectSharedDebugger>
     <InjectSharedDataValidation>false</InjectSharedDataValidation>
