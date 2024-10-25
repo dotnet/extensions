@@ -94,7 +94,7 @@ public static class SamplingLoggerBuilderExtensions
     /// Adds a logging sampler instance to the logging infrastructure.
     /// </summary>
     /// <param name="builder">The dependency injection container to add logging to.</param>
-    /// <param name="sampler">The sampler isntance to add.</param>
+    /// <param name="sampler">The sampler instance to add.</param>
     /// <returns>The value of <paramref name="builder"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="builder"/> or <paramref name="sampler"/> is <see langword="null"/>.</exception>    
     public static ILoggingBuilder AddSampler(this ILoggingBuilder builder, LoggerSampler sampler)

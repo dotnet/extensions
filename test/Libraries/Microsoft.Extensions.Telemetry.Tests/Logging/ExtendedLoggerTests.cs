@@ -126,17 +126,14 @@ public static class ExtendedLoggerTests
         const string Category = "C1";
 
         using var provider = new Provider();
+        using var factory = Utils.CreateLoggerFactory(
+             builder =>
+             {
+                 builder.AddProvider(provider);
+                 builder.AddRatioBasedSampler(0, LogLevel.Warning, null, null);
+             });
 
-        using var lf = new ExtendedLoggerFactory(
-            providers: new[] { provider },
-            filterOptions: new StaticOptionsMonitor<LoggerFilterOptions>(new()),
-            sampler: new RatioBasedSampler(0, LogLevel.Warning, null, null),
-            enrichmentOptions: null,
-            redactionOptions: null,
-            enrichers: Array.Empty<ILogEnricher>(),
-            staticEnrichers: Array.Empty<IStaticLogEnricher>());
-
-        var logger = lf.CreateLogger(Category);
+        var logger = factory.CreateLogger(Category);
         logger.LogWarning("MSG0");
 
         logger.Log(LogLevel.Warning, new EventId(2, "ID2"), "some state", null, (_, _) => "MSG2");

@@ -2,12 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Shared.DiagnosticIds;
 
 namespace Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Contains the parameters helping make sampling decisions for logs.
 /// </summary>
+[Experimental(diagnosticId: DiagnosticIds.Experiments.Telemetry, UrlFormat = DiagnosticIds.UrlFormat)]
 public readonly struct SamplingParameters : IEquatable<SamplingParameters>
 {
     /// <summary>
