@@ -286,7 +286,7 @@ internal sealed class ExtendedLoggerFactory : ILoggerFactory
             };
         }
 
-        return new LoggerConfig(_staticTags,
+        return new(_staticTags,
                 _enrichers,
                 _sampler,
                 enrichmentOptions.CaptureStackTraces,

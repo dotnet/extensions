@@ -43,7 +43,7 @@ internal sealed partial class ExtendedLogger : ILogger
             var msgState = (LoggerMessageState?)(object?)state;
             if (msgState != null)
             {
-                ModernPath<TState>(logLevel, eventId, msgState, exception, (Func<LoggerMessageState, Exception?, string>)(object)formatter);
+                ModernPath(logLevel, eventId, msgState, exception, (Func<LoggerMessageState, Exception?, string>)(object)formatter);
                 return;
             }
         }
@@ -204,7 +204,7 @@ internal sealed partial class ExtendedLogger : ILogger
         }
     }
 
-    private void ModernPath<TState>(LogLevel logLevel, EventId eventId, LoggerMessageState msgState, Exception? exception, Func<LoggerMessageState, Exception?, string> formatter)
+    private void ModernPath(LogLevel logLevel, EventId eventId, LoggerMessageState msgState, Exception? exception, Func<LoggerMessageState, Exception?, string> formatter)
     {
         var loggers = MessageLoggers;
         var config = _factory.Config;
@@ -263,7 +263,6 @@ internal sealed partial class ExtendedLogger : ILogger
         for (int i = 0; i < loggers.Length; i++)
         {
             ref readonly MessageLogger loggerInfo = ref loggers[i];
-
             if (loggerInfo.IsNotFilteredOut(logLevel))
             {
                 if (!config.Sampler.ShouldSample(new SamplingParameters(logLevel, loggerInfo.Category!, eventId)))
