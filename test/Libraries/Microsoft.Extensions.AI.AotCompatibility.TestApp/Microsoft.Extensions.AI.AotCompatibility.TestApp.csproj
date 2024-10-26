@@ -2,35 +2,25 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net9.0</TargetFrameworks>
+    <TargetFrameworks>$(LatestTargetFramework)</TargetFrameworks>
     <PublishAot>true</PublishAot>
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
-    <SelfContained>true</SelfContained>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI\Microsoft.Extensions.AI.csproj" />
     <TrimmerRootAssembly Include="Microsoft.Extensions.AI" />
-
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Abstractions\Microsoft.Extensions.AI.Abstractions.csproj" />
     <TrimmerRootAssembly Include="Microsoft.Extensions.AI.Abstractions" />
-
+    <TrimmerRootAssembly Include="Microsoft.Extensions.AI.Ollama" />
     <!-- Azure.AI.Inference produces many warnings
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.AzureAIInference\Microsoft.Extensions.AI.AzureAIInference.csproj" />
     <TrimmerRootAssembly Include="Microsoft.Extensions.AI.AzureAIInference" />
     -->
-
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.Ollama\Microsoft.Extensions.AI.Ollama.csproj" />
-    <TrimmerRootAssembly Include="Microsoft.Extensions.AI.Ollama" />
-
     <!-- OpenAI produces a few warnings
-    <ProjectReference Include="..\..\..\src\Libraries\Microsoft.Extensions.AI.OpenAI\Microsoft.Extensions.AI.OpenAI.csproj" />
     <TrimmerRootAssembly Include="Microsoft.Extensions.AI.OpenAI" />
     -->
+
+    <TrimmerRootAssembly Update="@(TrimmerRootAssembly)" Path="$(RepoRoot)\src\Libraries\%(Identity)\%(Identity).csproj" />
+    <ProjectReference Include="@(TrimmerRootAssembly->'%(Path)')" />
   </ItemGroup>
 
 </Project>
