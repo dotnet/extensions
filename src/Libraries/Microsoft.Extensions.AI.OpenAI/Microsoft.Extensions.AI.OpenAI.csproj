@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="OpenAI" />
+    <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
