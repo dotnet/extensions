@@ -48,11 +48,11 @@ internal sealed partial class JsonContext : JsonSerializerContext
     {
         // If reflection-based serialization is enabled by default, use it, as it's the most permissive in terms of what it can serialize,
         // and we want to be flexible in terms of what can be put into the various collections in the object model.
-        // Otherwise, use the source-generated options to enable Native AOT.
+        // Otherwise, use the source-generated options to enable trimming and Native AOT.
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
-            // Keep in sync with the JsonSourceGenerationOptions on JsonContext below.
+            // Keep in sync with the JsonSourceGenerationOptions attribute on JsonContext above.
             JsonSerializerOptions options = new(JsonSerializerDefaults.Web)
             {
                 TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
