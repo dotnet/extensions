@@ -267,8 +267,7 @@ public sealed partial class OpenAIChatClient : IChatClient
 
                     existing.CallId ??= toolCallUpdate.ToolCallId;
                     existing.Name ??= toolCallUpdate.FunctionName;
-                    if (toolCallUpdate.FunctionArgumentsUpdate is { } update &&
-                        !update.ToMemory().IsEmpty) // workaround for https://github.com/dotnet/runtime/issues/68262 in 6.0.0 package
+                    if (toolCallUpdate.FunctionArgumentsUpdate is { } update && !update.ToMemory().IsEmpty)
                     {
                         _ = (existing.Arguments ??= new()).Append(update.ToString());
                     }
