@@ -11,11 +11,10 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.Extensions.AI;
 
-/// <summary>Provides cached options around JSON serialization to be used by the project.</summary>
-internal static partial class JsonDefaults
+public static partial class AIJsonUtilities
 {
-    /// <summary>Gets the <see cref="JsonSerializerOptions"/> singleton to use for serialization-related operations.</summary>
-    public static JsonSerializerOptions Options { get; } = CreateDefaultOptions();
+    /// <summary>Gets the <see cref="JsonSerializerOptions"/> singleton used as the default in JSON serialization operations.</summary>
+    public static JsonSerializerOptions DefaultOptions { get; } = CreateDefaultOptions();
 
     /// <summary>Creates the default <see cref="JsonSerializerOptions"/> to use for serialization-related operations.</summary>
     [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
@@ -24,12 +23,12 @@ internal static partial class JsonDefaults
     {
         // If reflection-based serialization is enabled by default, use it, as it's the most permissive in terms of what it can serialize,
         // and we want to be flexible in terms of what can be put into the various collections in the object model.
-        // Otherwise, use the source-generated options to enable Native AOT.
+        // Otherwise, use the source-generated options to enable trimming and Native AOT.
 
         if (JsonSerializer.IsReflectionEnabledByDefault)
         {
-            // Keep in sync with the JsonSourceGenerationOptions on JsonContext below.
-            var options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+            // Keep in sync with the JsonSourceGenerationOptions attribute on JsonContext below.
+            JsonSerializerOptions options = new(JsonSerializerDefaults.Web)
             {
                 TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
                 Converters = { new JsonStringEnumConverter() },

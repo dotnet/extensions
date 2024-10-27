@@ -43,7 +43,7 @@ public class LoggingEmbeddingGeneratorTests
             .UseLogging()
             .Use(innerGenerator);
 
-        await generator.GenerateAsync("Blue whale");
+        await generator.GenerateEmbeddingAsync("Blue whale");
 
         if (level is LogLevel.Trace)
         {

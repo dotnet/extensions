@@ -47,7 +47,7 @@ public class AzureAIInferenceChatClientTests
         ChatCompletionsClient client = new(endpoint, new AzureKeyCredential("key"));
 
         IChatClient chatClient = client.AsChatClient(model);
-        Assert.Equal("AzureAIInference", chatClient.Metadata.ProviderName);
+        Assert.Equal("az.ai.inference", chatClient.Metadata.ProviderName);
         Assert.Equal(endpoint, chatClient.Metadata.ProviderUri);
         Assert.Equal(model, chatClient.Metadata.ModelId);
     }
@@ -201,9 +201,9 @@ public class AzureAIInferenceChatClientTests
         {
             Assert.Equal("chatcmpl-ADxFKtX6xIwdWRN42QvBj2u1RZpCK", updates[i].CompletionId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
-            Assert.All(updates[i].Contents, u => Assert.Equal("gpt-4o-mini-2024-07-18", u.ModelId));
+            Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
-            Assert.Equal(i < 10 ? 1 : 0, updates[i].Contents.Count);
+            Assert.Equal(i is < 10 or 11 ? 1 : 0, updates[i].Contents.Count);
             Assert.Equal(i < 10 ? null : ChatFinishReason.Stop, updates[i].FinishReason);
         }
     }
@@ -322,6 +322,90 @@ public class AzureAIInferenceChatClientTests
     }
 
     [Fact]
+    public async Task NullAssistantText_ContentEmpty_NonStreaming()
+    {
+        const string Input = """
+            {
+                "messages": [
+                    {
+                        "content": "",
+                        "role": "assistant"
+                    },
+                    {
+                        "content": [
+                            {
+                                "text": "hello!",
+                                "type": "text"
+                            }
+                        ],
+                        "role": "user"
+                    }
+                ],
+                "model": "gpt-4o-mini"
+            }
+            """;
+
+        const string Output = """
+            {
+              "id": "chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P",
+              "object": "chat.completion",
+              "created": 1727894187,
+              "model": "gpt-4o-mini-2024-07-18",
+              "choices": [
+                {
+                  "index": 0,
+                  "message": {
+                    "role": "assistant",
+                    "content": "Hello.",
+                    "refusal": null
+                  },
+                  "logprobs": null,
+                  "finish_reason": "stop"
+                }
+              ],
+              "usage": {
+                "prompt_tokens": 42,
+                "completion_tokens": 15,
+                "total_tokens": 57,
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                },
+                "completion_tokens_details": {
+                  "reasoning_tokens": 0
+                }
+              },
+              "system_fingerprint": "fp_f85bea6784"
+            }
+            """;
+
+        using VerbatimHttpHandler handler = new(Input, Output);
+        using HttpClient httpClient = new(handler);
+        using IChatClient client = CreateChatClient(httpClient, "gpt-4o-mini");
+
+        List<ChatMessage> messages =
+        [
+            new(ChatRole.Assistant, (string?)null),
+            new(ChatRole.User, "hello!"),
+        ];
+
+        var response = await client.CompleteAsync(messages);
+        Assert.NotNull(response);
+
+        Assert.Equal("chatcmpl-ADyV17bXeSm5rzUx3n46O7m3M0o3P", response.CompletionId);
+        Assert.Equal("Hello.", response.Message.Text);
+        Assert.Single(response.Message.Contents);
+        Assert.Equal(ChatRole.Assistant, response.Message.Role);
+        Assert.Equal("gpt-4o-mini-2024-07-18", response.ModelId);
+        Assert.Equal(DateTimeOffset.FromUnixTimeSeconds(1_727_894_187), response.CreatedAt);
+        Assert.Equal(ChatFinishReason.Stop, response.FinishReason);
+
+        Assert.NotNull(response.Usage);
+        Assert.Equal(42, response.Usage.InputTokenCount);
+        Assert.Equal(15, response.Usage.OutputTokenCount);
+        Assert.Equal(57, response.Usage.TotalTokenCount);
+    }
+
+    [Fact]
     public async Task FunctionCallContent_NonStreaming()
     {
         const string Input = """
@@ -340,6 +424,7 @@ public class AzureAIInferenceChatClientTests
                 "model": "gpt-4o-mini",
                 "tools": [
                     {
+                        "type": "function",
                         "function": {
                             "name": "GetPersonAge",
                             "description": "Gets the age of the specified person.",
@@ -353,8 +438,7 @@ public class AzureAIInferenceChatClientTests
                                     }
                                 }
                             }
-                        },
-                        "type": "function"
+                        }
                     }
                 ],
                 "tool_choice": "auto"
@@ -451,6 +535,7 @@ public class AzureAIInferenceChatClientTests
                 "model": "gpt-4o-mini",
                 "tools": [
                     {
+                        "type": "function",
                         "function": {
                             "name": "GetPersonAge",
                             "description": "Gets the age of the specified person.",
@@ -464,8 +549,7 @@ public class AzureAIInferenceChatClientTests
                                     }
                                 }
                             }
-                        },
-                        "type": "function"
+                        }
                     }
                 ],
                 "tool_choice": "auto"
@@ -516,7 +600,7 @@ public class AzureAIInferenceChatClientTests
         {
             Assert.Equal("chatcmpl-ADymNiWWeqCJqHNFXiI1QtRcLuXcl", updates[i].CompletionId);
             Assert.Equal(createdAt, updates[i].CreatedAt);
-            Assert.All(updates[i].Contents, u => Assert.Equal("gpt-4o-mini-2024-07-18", u.ModelId));
+            Assert.Equal("gpt-4o-mini-2024-07-18", updates[i].ModelId);
             Assert.Equal(ChatRole.Assistant, updates[i].Role);
             Assert.Equal(i < 7 ? null : ChatFinishReason.ToolCalls, updates[i].FinishReason);
         }
@@ -531,6 +615,6 @@ public class AzureAIInferenceChatClientTests
         new ChatCompletionsClient(
             new("http://somewhere"),
             new AzureKeyCredential("key"),
-            new ChatCompletionsClientOptions { Transport = new HttpClientTransport(httpClient) })
+            new AzureAIInferenceClientOptions { Transport = new HttpClientTransport(httpClient) })
             .AsChatClient(modelId);
 }

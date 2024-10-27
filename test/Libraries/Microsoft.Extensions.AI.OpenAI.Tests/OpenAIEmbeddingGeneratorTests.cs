@@ -42,13 +42,17 @@ public class OpenAIEmbeddingGeneratorTests
         Assert.Throws<ArgumentException>("modelId", () => client.AsEmbeddingGenerator("   "));
     }
 
-    [Fact]
-    public void AsEmbeddingGenerator_OpenAIClient_ProducesExpectedMetadata()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AsEmbeddingGenerator_OpenAIClient_ProducesExpectedMetadata(bool useAzureOpenAI)
     {
         Uri endpoint = new("http://localhost/some/endpoint");
         string model = "amazingModel";
 
-        OpenAIClient client = new(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
+        var client = useAzureOpenAI ?
+            new AzureOpenAIClient(endpoint, new ApiKeyCredential("key")) :
+            new OpenAIClient(new ApiKeyCredential("key"), new OpenAIClientOptions { Endpoint = endpoint });
 
         IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = client.AsEmbeddingGenerator(model);
         Assert.Equal("openai", embeddingGenerator.Metadata.ProviderName);
@@ -57,25 +61,6 @@ public class OpenAIEmbeddingGeneratorTests
 
         embeddingGenerator = client.GetEmbeddingClient(model).AsEmbeddingGenerator();
         Assert.Equal("openai", embeddingGenerator.Metadata.ProviderName);
-        Assert.Equal(endpoint, embeddingGenerator.Metadata.ProviderUri);
-        Assert.Equal(model, embeddingGenerator.Metadata.ModelId);
-    }
-
-    [Fact]
-    public void AsEmbeddingGenerator_AzureOpenAIClient_ProducesExpectedMetadata()
-    {
-        Uri endpoint = new("http://localhost/some/endpoint");
-        string model = "amazingModel";
-
-        AzureOpenAIClient client = new(endpoint, new ApiKeyCredential("key"));
-
-        IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = client.AsEmbeddingGenerator(model);
-        Assert.Equal("azureopenai", embeddingGenerator.Metadata.ProviderName);
-        Assert.Equal(endpoint, embeddingGenerator.Metadata.ProviderUri);
-        Assert.Equal(model, embeddingGenerator.Metadata.ModelId);
-
-        embeddingGenerator = client.GetEmbeddingClient(model).AsEmbeddingGenerator();
-        Assert.Equal("azureopenai", embeddingGenerator.Metadata.ProviderName);
         Assert.Equal(endpoint, embeddingGenerator.Metadata.ProviderUri);
         Assert.Equal(model, embeddingGenerator.Metadata.ModelId);
     }

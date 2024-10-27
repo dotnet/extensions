@@ -3,7 +3,6 @@
 
 namespace Microsoft.Extensions.AI;
 
-#pragma warning disable S3218 // Inner class members should not shadow outer class "static" or type members
 #pragma warning disable CA1716 // Identifiers should not match keywords
 #pragma warning disable S4041 // Type names should not match namespaces
 
@@ -15,6 +14,11 @@ internal static class OpenTelemetryConsts
     public const string SecondsUnit = "s";
     public const string TokensUnit = "token";
 
+    public static class Event
+    {
+        public const string Name = "event.name";
+    }
+
     public static class Error
     {
         public const string Type = "error.type";
@@ -22,9 +26,16 @@ internal static class OpenTelemetryConsts
 
     public static class GenAI
     {
-        public const string Completion = "gen_ai.completion";
-        public const string Prompt = "gen_ai.prompt";
-        public const string System = "gen_ai.system";
+        public const string Choice = "gen_ai.choice";
+        public const string SystemName = "gen_ai.system";
+
+        public const string Chat = "chat";
+        public const string Embed = "embed";
+
+        public static class Assistant
+        {
+            public const string Message = "gen_ai.assistant.message";
+        }
 
         public static class Client
         {
@@ -43,12 +54,6 @@ internal static class OpenTelemetryConsts
             }
         }
 
-        public static class Content
-        {
-            public const string Completion = "gen_ai.content.completion";
-            public const string Prompt = "gen_ai.content.prompt";
-        }
-
         public static class Operation
         {
             public const string Name = "gen_ai.operation.name";
@@ -65,6 +70,8 @@ internal static class OpenTelemetryConsts
             public const string Temperature = "gen_ai.request.temperature";
             public const string TopK = "gen_ai.request.top_k";
             public const string TopP = "gen_ai.request.top_p";
+
+            public static string PerProvider(string providerName, string parameterName) => $"gen_ai.{providerName}.request.{parameterName}";
         }
 
         public static class Response
@@ -76,9 +83,24 @@ internal static class OpenTelemetryConsts
             public const string OutputTokens = "gen_ai.response.output_tokens";
         }
 
+        public static class System
+        {
+            public const string Message = "gen_ai.system.message";
+        }
+
         public static class Token
         {
             public const string Type = "gen_ai.token.type";
+        }
+
+        public static class Tool
+        {
+            public const string Message = "gen_ai.tool.message";
+        }
+
+        public static class User
+        {
+            public const string Message = "gen_ai.user.message";
         }
     }
 

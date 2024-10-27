@@ -18,6 +18,9 @@ public class ChatOptions
     /// <summary>Gets or sets the "nucleus sampling" factor (or "top p") for generating chat responses.</summary>
     public float? TopP { get; set; }
 
+    /// <summary>Gets or sets a count indicating how many of the most probable tokens the model should consider when generating the next part of the text.</summary>
+    public int? TopK { get; set; }
+
     /// <summary>Gets or sets the frequency penalty for generating chat responses.</summary>
     public float? FrequencyPenalty { get; set; }
 
@@ -68,6 +71,7 @@ public class ChatOptions
             Temperature = Temperature,
             MaxOutputTokens = MaxOutputTokens,
             TopP = TopP,
+            TopK = TopK,
             FrequencyPenalty = FrequencyPenalty,
             PresencePenalty = PresencePenalty,
             ResponseFormat = ResponseFormat,

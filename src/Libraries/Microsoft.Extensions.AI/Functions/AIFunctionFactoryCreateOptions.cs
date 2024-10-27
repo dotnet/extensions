@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public sealed class AIFunctionFactoryCreateOptions
 {
-    private JsonSerializerOptions _options = JsonDefaults.Options;
+    private JsonSerializerOptions _options = AIJsonUtilities.DefaultOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AIFunctionFactoryCreateOptions"/> class.

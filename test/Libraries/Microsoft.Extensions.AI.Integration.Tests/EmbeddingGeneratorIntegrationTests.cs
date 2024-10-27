@@ -44,7 +44,7 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
     {
         SkipIfNotEnabled();
 
-        var embeddings = await _embeddingGenerator.GenerateAsync("Using AI with .NET");
+        var embeddings = await _embeddingGenerator.GenerateAsync(["Using AI with .NET"]);
 
         Assert.NotNull(embeddings.Usage);
         Assert.NotNull(embeddings.Usage.InputTokenCount);
@@ -87,10 +87,10 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
             .Use(CreateEmbeddingGenerator()!);
 
         string input = "Red, White, and Blue";
-        var embedding1 = await generator.GenerateAsync(input);
-        var embedding2 = await generator.GenerateAsync(input);
-        var embedding3 = await generator.GenerateAsync(input + "... and Green");
-        var embedding4 = await generator.GenerateAsync(input);
+        var embedding1 = await generator.GenerateEmbeddingAsync(input);
+        var embedding2 = await generator.GenerateEmbeddingAsync(input);
+        var embedding3 = await generator.GenerateEmbeddingAsync(input + "... and Green");
+        var embedding4 = await generator.GenerateEmbeddingAsync(input);
 
         var callCounter = generator.GetService<CallCountingEmbeddingGenerator>();
         Assert.NotNull(callCounter);
@@ -111,14 +111,14 @@ public abstract class EmbeddingGeneratorIntegrationTests : IDisposable
             .Build();
 
         var embeddingGenerator = new EmbeddingGeneratorBuilder<string, Embedding<float>>()
-            .UseOpenTelemetry(sourceName)
+            .UseOpenTelemetry(sourceName: sourceName)
             .Use(CreateEmbeddingGenerator()!);
 
-        _ = await embeddingGenerator.GenerateAsync("Hello, world!");
+        _ = await embeddingGenerator.GenerateEmbeddingAsync("Hello, world!");
 
         Assert.Single(activities);
         var activity = activities.Single();
-        Assert.StartsWith("embedding", activity.DisplayName);
+        Assert.StartsWith("embed", activity.DisplayName);
         Assert.StartsWith("http", (string)activity.GetTagItem("server.address")!);
         Assert.Equal(embeddingGenerator.Metadata.ProviderUri?.Port, (int)activity.GetTagItem("server.port")!);
         Assert.NotNull(activity.Id);

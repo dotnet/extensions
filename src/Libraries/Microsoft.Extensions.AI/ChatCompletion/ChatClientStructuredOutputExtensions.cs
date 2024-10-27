@@ -1,16 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Schema;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Shared.Diagnostics;
-using static Microsoft.Extensions.AI.FunctionCallHelpers;
 
 namespace Microsoft.Extensions.AI;
 
@@ -19,6 +18,13 @@ namespace Microsoft.Extensions.AI;
 /// </summary>
 public static class ChatClientStructuredOutputExtensions
 {
+    private static readonly AIJsonSchemaCreateOptions _inferenceOptions = new()
+    {
+        IncludeSchemaKeyword = true,
+        DisallowAdditionalProperties = true,
+        IncludeTypeInEnumSchemas = true
+    };
+
     /// <summary>Sends chat messages to the model, requesting a response matching the type <typeparamref name="T"/>.</summary>
     /// <param name="chatClient">The <see cref="IChatClient"/>.</param>
     /// <param name="chatMessages">The chat content to send.</param>
@@ -40,9 +46,8 @@ public static class ChatClientStructuredOutputExtensions
         IList<ChatMessage> chatMessages,
         ChatOptions? options = null,
         bool? useNativeJsonSchema = null,
-        CancellationToken cancellationToken = default)
-        where T : class =>
-        CompleteAsync<T>(chatClient, chatMessages, JsonDefaults.Options, options, useNativeJsonSchema, cancellationToken);
+        CancellationToken cancellationToken = default) =>
+        CompleteAsync<T>(chatClient, chatMessages, AIJsonUtilities.DefaultOptions, options, useNativeJsonSchema, cancellationToken);
 
     /// <summary>Sends a user chat text message to the model, requesting a response matching the type <typeparamref name="T"/>.</summary>
     /// <param name="chatClient">The <see cref="IChatClient"/>.</param>
@@ -61,8 +66,7 @@ public static class ChatClientStructuredOutputExtensions
         string chatMessage,
         ChatOptions? options = null,
         bool? useNativeJsonSchema = null,
-        CancellationToken cancellationToken = default)
-        where T : class =>
+        CancellationToken cancellationToken = default) =>
         CompleteAsync<T>(chatClient, [new ChatMessage(ChatRole.User, chatMessage)], options, useNativeJsonSchema, cancellationToken);
 
     /// <summary>Sends a user chat text message to the model, requesting a response matching the type <typeparamref name="T"/>.</summary>
@@ -84,8 +88,7 @@ public static class ChatClientStructuredOutputExtensions
         JsonSerializerOptions serializerOptions,
         ChatOptions? options = null,
         bool? useNativeJsonSchema = null,
-        CancellationToken cancellationToken = default)
-        where T : class =>
+        CancellationToken cancellationToken = default) =>
         CompleteAsync<T>(chatClient, [new ChatMessage(ChatRole.User, chatMessage)], serializerOptions, options, useNativeJsonSchema, cancellationToken);
 
     /// <summary>Sends chat messages to the model, requesting a response matching the type <typeparamref name="T"/>.</summary>
@@ -112,7 +115,6 @@ public static class ChatClientStructuredOutputExtensions
         ChatOptions? options = null,
         bool? useNativeJsonSchema = null,
         CancellationToken cancellationToken = default)
-        where T : class
     {
         _ = Throw.IfNull(chatClient);
         _ = Throw.IfNull(chatMessages);
@@ -120,26 +122,33 @@ public static class ChatClientStructuredOutputExtensions
 
         serializerOptions.MakeReadOnly();
 
-        var schemaNode = (JsonObject)serializerOptions.GetJsonSchemaAsNode(typeof(T), new()
-        {
-            TreatNullObliviousAsNonNullable = true,
-            TransformSchemaNode = static (context, node) =>
-            {
-                if (node is JsonObject obj)
-                {
-                    if (obj.TryGetPropertyValue("enum", out _)
-                        && !obj.TryGetPropertyValue("type", out _))
-                    {
-                        obj.Insert(0, "type", "string");
-                    }
-                }
+        var schemaElement = AIJsonUtilities.CreateJsonSchema(
+            type: typeof(T),
+            serializerOptions: serializerOptions,
+            inferenceOptions: _inferenceOptions);
 
-                return node;
-            },
-        });
-        schemaNode.Insert(0, "$schema", "https://json-schema.org/draft/2020-12/schema");
-        schemaNode.Add("additionalProperties", false);
-        var schema = JsonSerializer.Serialize(schemaNode, JsonDefaults.Options.GetTypeInfo(typeof(JsonNode)));
+        bool isWrappedInObject;
+        string schema;
+        if (SchemaRepresentsObject(schemaElement))
+        {
+            // For object-representing schemas, we can use them as-is
+            isWrappedInObject = false;
+            schema = JsonSerializer.Serialize(schemaElement, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonElement)));
+        }
+        else
+        {
+            // For non-object-representing schemas, we wrap them in an object schema, because all
+            // the real LLM providers today require an object schema as the root. This is currently
+            // true even for providers that support native structured output.
+            isWrappedInObject = true;
+            schema = JsonSerializer.Serialize(new JsonObject
+            {
+                { "$schema", "https://json-schema.org/draft/2020-12/schema" },
+                { "type", "object" },
+                { "properties", new JsonObject { { "data", JsonElementToJsonNode(schemaElement) } } },
+                { "additionalProperties", false },
+            }, AIJsonUtilities.DefaultOptions.GetTypeInfo(typeof(JsonObject)));
+        }
 
         ChatMessage? promptAugmentation = null;
         options = (options ?? new()).Clone();
@@ -153,7 +162,7 @@ public static class ChatClientStructuredOutputExtensions
             // the LLM backend is meant to do whatever's needed to explain the schema to the LLM.
             options.ResponseFormat = ChatResponseFormat.ForJsonSchema(
                 schema,
-                schemaName: SanitizeMetadataName(typeof(T).Name),
+                schemaName: AIFunctionFactory.SanitizeMemberName(typeof(T).Name),
                 schemaDescription: typeof(T).GetCustomAttribute<DescriptionAttribute>()?.Description);
         }
         else
@@ -162,7 +171,7 @@ public static class ChatClientStructuredOutputExtensions
 
             // When not using native structured output, augment the chat messages with a schema prompt
 #pragma warning disable SA1118 // Parameter should not span multiple lines
-            promptAugmentation = new ChatMessage(ChatRole.System, $$"""
+            promptAugmentation = new ChatMessage(ChatRole.User, $$"""
                 Respond with a JSON value conforming to the following schema:
                 ```
                 {{schema}}
@@ -176,7 +185,7 @@ public static class ChatClientStructuredOutputExtensions
         try
         {
             var result = await chatClient.CompleteAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
-            return new ChatCompletion<T>(result, serializerOptions);
+            return new ChatCompletion<T>(result, serializerOptions) { IsWrappedInObject = isWrappedInObject };
         }
         finally
         {
@@ -185,5 +194,33 @@ public static class ChatClientStructuredOutputExtensions
                 _ = chatMessages.Remove(promptAugmentation);
             }
         }
+    }
+
+    private static bool SchemaRepresentsObject(JsonElement schemaElement)
+    {
+        if (schemaElement.ValueKind is JsonValueKind.Object)
+        {
+            foreach (var property in schemaElement.EnumerateObject())
+            {
+                if (property.NameEquals("type"u8))
+                {
+                    return property.Value.ValueKind == JsonValueKind.String
+                        && property.Value.ValueEquals("object"u8);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static JsonNode? JsonElementToJsonNode(JsonElement element)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.Null => null,
+            JsonValueKind.Array => JsonArray.Create(element),
+            JsonValueKind.Object => JsonObject.Create(element),
+            _ => JsonValue.Create(element)
+        };
     }
 }

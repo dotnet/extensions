@@ -21,15 +21,10 @@
   <PropertyGroup>
     <InjectCompilerFeatureRequiredOnLegacy>true</InjectCompilerFeatureRequiredOnLegacy>
     <InjectRequiredMemberOnLegacy>true</InjectRequiredMemberOnLegacy>
-    <InjectSharedCollectionExtensions>true</InjectSharedCollectionExtensions>
     <InjectSharedDiagnosticIds>true</InjectSharedDiagnosticIds>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="../Microsoft.Extensions.AI.Abstractions/Contents/FunctionCallHelpers.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Net.Http.Json" />

@@ -17,14 +17,14 @@ public class OllamaEmbeddingGeneratorTests
     [Fact]
     public void Ctor_InvalidArgs_Throws()
     {
-        Assert.Throws<ArgumentNullException>("endpoint", () => new OllamaEmbeddingGenerator(null!));
-        Assert.Throws<ArgumentException>("modelId", () => new OllamaEmbeddingGenerator(new("http://localhost"), "   "));
+        Assert.Throws<ArgumentNullException>("endpoint", () => new OllamaEmbeddingGenerator((string)null!));
+        Assert.Throws<ArgumentException>("modelId", () => new OllamaEmbeddingGenerator(new Uri("http://localhost"), "   "));
     }
 
     [Fact]
     public void GetService_SuccessfullyReturnsUnderlyingClient()
     {
-        using OllamaEmbeddingGenerator generator = new(new("http://localhost"));
+        using OllamaEmbeddingGenerator generator = new("http://localhost");
 
         Assert.Same(generator, generator.GetService<OllamaEmbeddingGenerator>());
         Assert.Same(generator, generator.GetService<IEmbeddingGenerator<string, Embedding<float>>>());
@@ -76,7 +76,7 @@ public class OllamaEmbeddingGeneratorTests
 
         using VerbatimHttpHandler handler = new(Input, Output);
         using HttpClient httpClient = new(handler);
-        using IEmbeddingGenerator<string, Embedding<float>> generator = new OllamaEmbeddingGenerator(new("http://localhost:11434"), "all-minilm", httpClient);
+        using IEmbeddingGenerator<string, Embedding<float>> generator = new OllamaEmbeddingGenerator("http://localhost:11434", "all-minilm", httpClient);
 
         var response = await generator.GenerateAsync([
             "hello, world!",

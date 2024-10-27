@@ -29,7 +29,7 @@ public class DistributedCachingChatClient : CachingChatClient
         : base(innerClient)
     {
         _storage = Throw.IfNull(storage);
-        _jsonSerializerOptions = JsonDefaults.Options;
+        _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
     }
 
     /// <summary>Gets or sets JSON serialization options to use when serializing cache data.</summary>

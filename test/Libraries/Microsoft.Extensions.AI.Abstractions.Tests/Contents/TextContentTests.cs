@@ -15,9 +15,8 @@ public class TextContentTests
     {
         TextContent c = new(text);
         Assert.Null(c.RawRepresentation);
-        Assert.Null(c.ModelId);
         Assert.Null(c.AdditionalProperties);
-        Assert.Equal(text, c.Text);
+        Assert.Equal(text ?? string.Empty, c.Text);
     }
 
     [Fact]
@@ -30,22 +29,22 @@ public class TextContentTests
         c.RawRepresentation = raw;
         Assert.Same(raw, c.RawRepresentation);
 
-        Assert.Null(c.ModelId);
-        c.ModelId = "modelId";
-        Assert.Equal("modelId", c.ModelId);
-
         Assert.Null(c.AdditionalProperties);
         AdditionalPropertiesDictionary props = new() { { "key", "value" } };
         c.AdditionalProperties = props;
         Assert.Same(props, c.AdditionalProperties);
 
-        Assert.Null(c.Text);
+        Assert.Equal(string.Empty, c.Text);
         c.Text = "text";
         Assert.Equal("text", c.Text);
         Assert.Equal("text", c.ToString());
 
         c.Text = null;
-        Assert.Null(c.Text);
+        Assert.Equal(string.Empty, c.Text);
+        Assert.Equal(string.Empty, c.ToString());
+
+        c.Text = string.Empty;
+        Assert.Equal(string.Empty, c.Text);
         Assert.Equal(string.Empty, c.ToString());
     }
 }

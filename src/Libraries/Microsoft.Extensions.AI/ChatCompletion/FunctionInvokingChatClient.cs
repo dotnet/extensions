@@ -552,7 +552,7 @@ public class FunctionInvokingChatClient : DelegatingChatClient
                 functionResult = message;
             }
 
-            return new FunctionResultContent(result.CallContent.CallId, result.CallContent.Name, functionResult, result.Exception);
+            return new FunctionResultContent(result.CallContent.CallId, result.CallContent.Name, functionResult) { Exception = result.Exception };
         }
     }
 

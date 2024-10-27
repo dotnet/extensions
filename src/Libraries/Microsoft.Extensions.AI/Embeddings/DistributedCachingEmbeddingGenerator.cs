@@ -34,7 +34,7 @@ public class DistributedCachingEmbeddingGenerator<TInput, TEmbedding> : CachingE
     {
         _ = Throw.IfNull(storage);
         _storage = storage;
-        _jsonSerializerOptions = JsonDefaults.Options;
+        _jsonSerializerOptions = AIJsonUtilities.DefaultOptions;
     }
 
     /// <summary>Gets or sets JSON serialization options to use when serializing cache data.</summary>

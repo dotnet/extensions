@@ -56,6 +56,46 @@ public sealed class FunctionCallContent : AIContent
     [JsonIgnore]
     public Exception? Exception { get; set; }
 
+    /// <summary>
+    /// Creates a new instance of <see cref="FunctionCallContent"/> parsing arguments using a specified encoding and parser.
+    /// </summary>
+    /// <typeparam name="TEncoding">The encoding format from which to parse function call arguments.</typeparam>
+    /// <param name="encodedArguments">The input arguments encoded in <typeparamref name="TEncoding"/>.</param>
+    /// <param name="callId">The function call ID.</param>
+    /// <param name="name">The function name.</param>
+    /// <param name="argumentParser">The parsing implementation converting the encoding to a dictionary of arguments.</param>
+    /// <returns>A new instance of <see cref="FunctionCallContent"/> containing the parse result.</returns>
+    public static FunctionCallContent CreateFromParsedArguments<TEncoding>(
+        TEncoding encodedArguments,
+        string callId,
+        string name,
+        Func<TEncoding, IDictionary<string, object?>?> argumentParser)
+    {
+        _ = Throw.IfNull(callId);
+        _ = Throw.IfNull(name);
+        _ = Throw.IfNull(encodedArguments);
+        _ = Throw.IfNull(argumentParser);
+
+        IDictionary<string, object?>? arguments = null;
+        Exception? parsingException = null;
+
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            arguments = argumentParser(encodedArguments);
+        }
+        catch (Exception ex)
+        {
+            parsingException = new InvalidOperationException("Error parsing function call arguments.", ex);
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+        return new FunctionCallContent(callId, name, arguments)
+        {
+            Exception = parsingException
+        };
+    }
+
     /// <summary>Gets a string representing this instance to display in the debugger.</summary>
     private string DebuggerDisplay
     {

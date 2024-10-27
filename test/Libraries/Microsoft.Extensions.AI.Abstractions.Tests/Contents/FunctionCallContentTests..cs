@@ -21,7 +21,6 @@ public class FunctionCallContentTests
         FunctionCallContent c = new("callId1", "name");
 
         Assert.Null(c.RawRepresentation);
-        Assert.Null(c.ModelId);
         Assert.Null(c.AdditionalProperties);
 
         Assert.Equal("callId1", c.CallId);
@@ -39,7 +38,6 @@ public class FunctionCallContentTests
         FunctionCallContent c = new("id", "name", args);
 
         Assert.Null(c.RawRepresentation);
-        Assert.Null(c.ModelId);
         Assert.Null(c.AdditionalProperties);
 
         Assert.Equal("name", c.Name);
@@ -56,10 +54,6 @@ public class FunctionCallContentTests
         object raw = new();
         c.RawRepresentation = raw;
         Assert.Same(raw, c.RawRepresentation);
-
-        Assert.Null(c.ModelId);
-        c.ModelId = "modelId";
-        Assert.Equal("modelId", c.ModelId);
 
         Assert.Null(c.AdditionalProperties);
         AdditionalPropertiesDictionary props = new() { { "key", "value" } };
@@ -273,5 +267,73 @@ public class FunctionCallContentTests
 
         protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>>? arguments, CancellationToken cancellationToken) =>
             Task.FromResult<object?>(arguments);
+    }
+
+    [Fact]
+    public static void CreateFromParsedArguments_ObjectJsonInput_ReturnsElementArgumentDictionary()
+    {
+        var content = FunctionCallContent.CreateFromParsedArguments(
+            """{"Key1":{}, "Key2":null, "Key3" : [], "Key4" : 42, "Key5" : true }""",
+            "callId",
+            "functionName",
+            argumentParser: static json => JsonSerializer.Deserialize<Dictionary<string, object?>>(json));
+
+        Assert.NotNull(content);
+        Assert.Null(content.Exception);
+        Assert.NotNull(content.Arguments);
+        Assert.Equal(5, content.Arguments.Count);
+        Assert.Collection(content.Arguments,
+            kvp =>
+            {
+                Assert.Equal("Key1", kvp.Key);
+                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.Object });
+            },
+            kvp =>
+            {
+                Assert.Equal("Key2", kvp.Key);
+                Assert.Null(kvp.Value);
+            },
+            kvp =>
+            {
+                Assert.Equal("Key3", kvp.Key);
+                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.Array });
+            },
+            kvp =>
+            {
+                Assert.Equal("Key4", kvp.Key);
+                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.Number });
+            },
+            kvp =>
+            {
+                Assert.Equal("Key5", kvp.Key);
+                Assert.True(kvp.Value is JsonElement { ValueKind: JsonValueKind.True });
+            });
+    }
+
+    [Theory]
+    [InlineData(typeof(JsonException))]
+    [InlineData(typeof(InvalidOperationException))]
+    [InlineData(typeof(NotSupportedException))]
+    public static void CreateFromParsedArguments_ParseException_HasExpectedHandling(Type exceptionType)
+    {
+        var exc = (Exception)Activator.CreateInstance(exceptionType)!;
+        var content = FunctionCallContent.CreateFromParsedArguments(exc, "callId", "functionName", ThrowingParser);
+
+        Assert.Equal("functionName", content.Name);
+        Assert.Equal("callId", content.CallId);
+        Assert.Null(content.Arguments);
+        Assert.IsType<InvalidOperationException>(content.Exception);
+        Assert.Same(exc, content.Exception.InnerException);
+
+        static Dictionary<string, object?> ThrowingParser(Exception ex) => throw ex;
+    }
+
+    [Fact]
+    public static void CreateFromParsedArguments_NullInput_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => FunctionCallContent.CreateFromParsedArguments((string)null!, "callId", "functionName", _ => null));
+        Assert.Throws<ArgumentNullException>(() => FunctionCallContent.CreateFromParsedArguments("{}", null!, "functionName", _ => null));
+        Assert.Throws<ArgumentNullException>(() => FunctionCallContent.CreateFromParsedArguments("{}", "callId", null!, _ => null));
+        Assert.Throws<ArgumentNullException>(() => FunctionCallContent.CreateFromParsedArguments("{}", "callId", "functionName", null!));
     }
 }

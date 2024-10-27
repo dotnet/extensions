@@ -19,21 +19,14 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <InjectSharedCollectionExtensions>true</InjectSharedCollectionExtensions>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../Microsoft.Extensions.AI.Abstractions/Contents/FunctionCallHelpers.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="OpenAI" />
+    <PackageReference Include="System.Memory.Data" />
     <PackageReference Include="System.Text.Json" />
-
-    <!-- To resolve a conflict -->
-    <PackageReference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 
   <ItemGroup>

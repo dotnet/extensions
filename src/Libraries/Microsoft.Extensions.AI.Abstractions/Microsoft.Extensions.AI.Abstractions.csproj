@@ -19,13 +19,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <InjectSharedCollectionExtensions>true</InjectSharedCollectionExtensions>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 

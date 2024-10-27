@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 
 namespace Microsoft.Extensions.AI;
@@ -21,6 +20,18 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
 
     /// <summary>The <see cref="HttpClient"/> to use for sending requests.</summary>
     private readonly HttpClient _httpClient;
+
+    /// <summary>Initializes a new instance of the <see cref="OllamaEmbeddingGenerator"/> class.</summary>
+    /// <param name="endpoint">The endpoint URI where Ollama is hosted.</param>
+    /// <param name="modelId">
+    /// The id of the model to use. This may also be overridden per request via <see cref="ChatOptions.ModelId"/>.
+    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model id.
+    /// </param>
+    /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
+    public OllamaEmbeddingGenerator(string endpoint, string? modelId = null, HttpClient? httpClient = null)
+        : this(new Uri(Throw.IfNull(endpoint)), modelId, httpClient)
+    {
+    }
 
     /// <summary>Initializes a new instance of the <see cref="OllamaEmbeddingGenerator"/> class.</summary>
     /// <param name="endpoint">The endpoint URI where Ollama is hosted.</param>
@@ -60,7 +71,8 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
     }
 
     /// <inheritdoc />
-    public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
+        IEnumerable<string> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
     {
         _ = Throw.IfNull(values);
 
@@ -75,12 +87,12 @@ public sealed class OllamaEmbeddingGenerator : IEmbeddingGenerator<string, Embed
 
         if (options?.AdditionalProperties is { } requestProps)
         {
-            if (requestProps.TryGetConvertedValue("keep_alive", out long keepAlive))
+            if (requestProps.TryGetValue("keep_alive", out long keepAlive))
             {
                 request.KeepAlive = keepAlive;
             }
 
-            if (requestProps.TryGetConvertedValue("truncate", out bool truncate))
+            if (requestProps.TryGetValue("truncate", out bool truncate))
             {
                 request.Truncate = truncate;
             }

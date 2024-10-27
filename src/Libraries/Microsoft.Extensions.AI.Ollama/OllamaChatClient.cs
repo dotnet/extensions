@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -11,21 +12,35 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Shared.Collections;
 using Microsoft.Shared.Diagnostics;
 
 #pragma warning disable EA0011 // Consider removing unnecessary conditional access operator (?)
+#pragma warning disable SA1204 // Static elements should appear before instance elements
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>An <see cref="IChatClient"/> for Ollama.</summary>
 public sealed class OllamaChatClient : IChatClient
 {
+    private static readonly JsonElement _defaultParameterSchema = JsonDocument.Parse("{}").RootElement;
+
     /// <summary>The api/chat endpoint URI.</summary>
     private readonly Uri _apiChatEndpoint;
 
     /// <summary>The <see cref="HttpClient"/> to use for sending requests.</summary>
     private readonly HttpClient _httpClient;
+
+    /// <summary>Initializes a new instance of the <see cref="OllamaChatClient"/> class.</summary>
+    /// <param name="endpoint">The endpoint URI where Ollama is hosted.</param>
+    /// <param name="modelId">
+    /// The id of the model to use. This may also be overridden per request via <see cref="ChatOptions.ModelId"/>.
+    /// Either this parameter or <see cref="ChatOptions.ModelId"/> must provide a valid model id.
+    /// </param>
+    /// <param name="httpClient">An <see cref="HttpClient"/> instance to use for HTTP operations.</param>
+    public OllamaChatClient(string endpoint, string? modelId = null, HttpClient? httpClient = null)
+        : this(new Uri(Throw.IfNull(endpoint)), modelId, httpClient)
+    {
+    }
 
     /// <summary>Initializes a new instance of the <see cref="OllamaChatClient"/> class.</summary>
     /// <param name="endpoint">The endpoint URI where Ollama is hosted.</param>
@@ -112,16 +127,20 @@ public sealed class OllamaChatClient : IChatClient
 #endif
             .ConfigureAwait(false);
 
-        await foreach (OllamaChatResponse? chunk in JsonSerializer.DeserializeAsyncEnumerable(
-            httpResponseStream,
-            JsonContext.Default.OllamaChatResponse,
-            topLevelValues: true,
-            cancellationToken).ConfigureAwait(false))
+        using var streamReader = new StreamReader(httpResponseStream);
+#if NET
+        while ((await streamReader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) is { } line)
+#else
+        while ((await streamReader.ReadLineAsync().ConfigureAwait(false)) is { } line)
+#endif
         {
+            var chunk = JsonSerializer.Deserialize(line, JsonContext.Default.OllamaChatResponse);
             if (chunk is null)
             {
                 continue;
             }
+
+            string? modelId = chunk.Model ?? Metadata.ModelId;
 
             StreamingChatCompletionUpdate update = new()
             {
@@ -129,18 +148,17 @@ public sealed class OllamaChatClient : IChatClient
                 CreatedAt = DateTimeOffset.TryParse(chunk.CreatedAt, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset createdAt) ? createdAt : null,
                 AdditionalProperties = ParseOllamaChatResponseProps(chunk),
                 FinishReason = ToFinishReason(chunk),
+                ModelId = modelId,
             };
-
-            string? modelId = chunk.Model ?? Metadata.ModelId;
 
             if (chunk.Message is { } message)
             {
-                update.Contents.Add(new TextContent(message.Content) { ModelId = modelId });
+                update.Contents.Add(new TextContent(message.Content));
             }
 
             if (ParseOllamaChatResponseUsage(chunk) is { } usage)
             {
-                update.Contents.Add(new UsageContent(usage) { ModelId = modelId });
+                update.Contents.Add(new UsageContent(usage));
             }
 
             yield return update;
@@ -257,7 +275,6 @@ public sealed class OllamaChatClient : IChatClient
             TransferMetadataValue<float>(nameof(OllamaRequestOptions.repeat_penalty), (options, value) => options.repeat_penalty = value);
             TransferMetadataValue<long>(nameof(OllamaRequestOptions.seed), (options, value) => options.seed = value);
             TransferMetadataValue<float>(nameof(OllamaRequestOptions.tfs_z), (options, value) => options.tfs_z = value);
-            TransferMetadataValue<int>(nameof(OllamaRequestOptions.top_k), (options, value) => options.top_k = value);
             TransferMetadataValue<float>(nameof(OllamaRequestOptions.typical_p), (options, value) => options.typical_p = value);
             TransferMetadataValue<bool>(nameof(OllamaRequestOptions.use_mmap), (options, value) => options.use_mmap = value);
             TransferMetadataValue<bool>(nameof(OllamaRequestOptions.use_mlock), (options, value) => options.use_mlock = value);
@@ -292,13 +309,18 @@ public sealed class OllamaChatClient : IChatClient
             {
                 (request.Options ??= new()).top_p = topP;
             }
+
+            if (options.TopK is int topK)
+            {
+                (request.Options ??= new()).top_k = topK;
+            }
         }
 
         return request;
 
         void TransferMetadataValue<T>(string propertyName, Action<OllamaRequestOptions, T> setOption)
         {
-            if (options.AdditionalProperties?.TryGetConvertedValue(propertyName, out T? t) is true)
+            if (options.AdditionalProperties?.TryGetValue(propertyName, out T? t) is true)
             {
                 request.Options ??= new();
                 setOption(request.Options, t);
@@ -356,6 +378,8 @@ public sealed class OllamaChatClient : IChatClient
                     break;
 
                 case FunctionCallContent fcc:
+                {
+                    JsonSerializerOptions serializerOptions = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
                     yield return new OllamaChatRequestMessage
                     {
                         Role = "assistant",
@@ -363,13 +387,16 @@ public sealed class OllamaChatClient : IChatClient
                         {
                             CallId = fcc.CallId,
                             Name = fcc.Name,
-                            Arguments = FunctionCallHelpers.FormatFunctionParametersAsJsonElement(fcc.Arguments, ToolCallJsonSerializerOptions),
+                            Arguments = JsonSerializer.SerializeToElement(fcc.Arguments, serializerOptions.GetTypeInfo(typeof(IDictionary<string, object?>))),
                         }, JsonContext.Default.OllamaFunctionCallContent)
                     };
                     break;
+                }
 
                 case FunctionResultContent frc:
-                    JsonElement jsonResult = FunctionCallHelpers.FormatFunctionResultAsJsonElement(frc.Result, ToolCallJsonSerializerOptions);
+                {
+                    JsonSerializerOptions serializerOptions = ToolCallJsonSerializerOptions ?? JsonContext.Default.Options;
+                    JsonElement jsonResult = JsonSerializer.SerializeToElement(frc.Result, serializerOptions.GetTypeInfo(typeof(object)));
                     yield return new OllamaChatRequestMessage
                     {
                         Role = "tool",
@@ -380,6 +407,7 @@ public sealed class OllamaChatClient : IChatClient
                         }, JsonContext.Default.OllamaFunctionResultContent)
                     };
                     break;
+                }
             }
         }
 
@@ -389,7 +417,7 @@ public sealed class OllamaChatClient : IChatClient
         }
     }
 
-    private OllamaTool ToOllamaTool(AIFunction function) => new()
+    private static OllamaTool ToOllamaTool(AIFunction function) => new()
     {
         Type = "function",
         Function = new OllamaFunctionTool
@@ -400,7 +428,7 @@ public sealed class OllamaChatClient : IChatClient
             {
                 Properties = function.Metadata.Parameters.ToDictionary(
                     p => p.Name,
-                    p => FunctionCallHelpers.InferParameterJsonSchema(p, function.Metadata, ToolCallJsonSerializerOptions)),
+                    p => p.Schema is JsonElement e ? e : _defaultParameterSchema),
                 Required = function.Metadata.Parameters.Where(p => p.IsRequired).Select(p => p.Name).ToList(),
             },
         }

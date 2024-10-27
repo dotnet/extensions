@@ -42,6 +42,7 @@ public class ChatCompletion
     /// If there are multiple choices, this property returns the first choice.
     /// If <see cref="Choices"/> is empty, this will throw. Use <see cref="Choices"/> to access all choices directly."/>.
     /// </remarks>
+    [JsonIgnore]
     public ChatMessage Message
     {
         get
@@ -59,7 +60,7 @@ public class ChatCompletion
     /// <summary>Gets or sets the ID of the chat completion.</summary>
     public string? CompletionId { get; set; }
 
-    /// <summary>Gets or sets the model ID using in the creation of the chat completion.</summary>
+    /// <summary>Gets or sets the model ID used in the creation of the chat completion.</summary>
     public string? ModelId { get; set; }
 
     /// <summary>Gets or sets a timestamp for the chat completion.</summary>
