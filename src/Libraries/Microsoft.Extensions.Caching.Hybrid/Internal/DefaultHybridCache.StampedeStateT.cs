@@ -15,6 +15,7 @@ internal partial class DefaultHybridCache
 {
     internal sealed class StampedeState<TState, T> : StampedeState
     {
+        // note on terminology: L1 and L2 are, for brevity, used interchangeably with "local" and "distributed" cache, i.e. `IMemoryCache` and `IDistributedCache`
         private const HybridCacheEntryFlags FlagsDisableL1AndL2Write = HybridCacheEntryFlags.DisableLocalCacheWrite | HybridCacheEntryFlags.DisableDistributedCacheWrite;
 
         private readonly TaskCompletionSource<CacheItem<T>>? _result;
@@ -196,7 +197,7 @@ internal partial class DefaultHybridCache
                             HybridCacheEventSource.Log.DistributedCacheFailed();
                         }
 
-                        Cache._logger.CacheBackendReadFailure(ex);
+                        Cache._logger.CacheUnderlyingDataQueryFailure(ex);
                         result = default; // treat as "miss"
                     }
 
@@ -216,21 +217,21 @@ internal partial class DefaultHybridCache
                     {
                         if (eventSourceEnabled)
                         {
-                            HybridCacheEventSource.Log.BackendExecuteStart();
+                            HybridCacheEventSource.Log.UnderlyingDataQueryStart();
                         }
 
                         newValue = await _underlying!(_state!, SharedToken).ConfigureAwait(false);
 
                         if (eventSourceEnabled)
                         {
-                            HybridCacheEventSource.Log.BackendExecuteComplete();
+                            HybridCacheEventSource.Log.UnderlyingDataQueryComplete();
                         }
                     }
                     catch
                     {
                         if (eventSourceEnabled)
                         {
-                            HybridCacheEventSource.Log.BackendExecuteFailed();
+                            HybridCacheEventSource.Log.UnderlyingDataQueryFailed();
                         }
 
                         throw;
@@ -261,6 +262,8 @@ internal partial class DefaultHybridCache
                         BufferChunk bufferToRelease = default;
                         if (Cache.TrySerialize(newValue, out var buffer, out var serializer))
                         {
+                            // note we also capture the resolved serializer ^^^ - we'll need it again later
+
                             // protect "buffer" (this is why we "reserved") for writing to L2 if needed; SetResultPreSerialized
                             // *may* (depending on context) claim this buffer, in which case "bufferToRelease" gets reset, and
                             // the final RecycleIfAppropriate() is a no-op; however, the buffer is valid in either event,
@@ -292,6 +295,9 @@ internal partial class DefaultHybridCache
                                 }
                                 catch (Exception ex)
                                 {
+                                    // log the L2 write failure, but that doesn't need to interrupt the app flow (so:
+                                    // don't rethrow); L1 will still reduce impact, and L1 without L2 is better than
+                                    // hard failure every time
                                     Cache._logger.CacheBackendWriteFailure(ex);
                                 }
                             }

@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Microsoft.Extensions.Caching.Hybrid.Internal;
 
-[EventSource(Name = "HybridCache", Guid = "447667be-e2b5-4962-b3b8-f2c591ec517c")]
+[EventSource(Name = "Microsoft-Extensions-HybridCache")]
 internal sealed class HybridCacheEventSource : EventSource
 {
     public static readonly HybridCacheEventSource Log = new();
@@ -19,9 +19,9 @@ internal sealed class HybridCacheEventSource : EventSource
     private const int EventIdDistributedCacheHit = 4;
     private const int EventIdDistributedCacheMiss = 5;
     private const int EventIdDistributedCacheFailed = 6;
-    private const int EventIdBackendExecuteStart = 7;
-    private const int EventIdBackendExecuteComplete = 8;
-    private const int EventIdBackendExecuteFailed = 9;
+    private const int EventIdUnderlyingDataQueryStart = 7;
+    private const int EventIdUnderlyingDataQueryComplete = 8;
+    private const int EventIdUnderlyingDataQueryFailed = 9;
     private const int EventIdLocalCacheWrite = 10;
     private const int EventIdDistributedCacheWrite = 11;
     private const int EventIdStampedeJoin = 12;
@@ -31,8 +31,8 @@ internal sealed class HybridCacheEventSource : EventSource
     private long _totalLocalCacheMiss;
     private long _totalDistributedCacheHit;
     private long _totalDistributedCacheMiss;
-    private long _totalBackendExecute;
-    private long _currentBackendExecute;
+    private long _totalUnderlyingDataQuery;
+    private long _currentUnderlyingDataQuery;
     private long _currentDistributedFetch;
     private long _totalLocalCacheWrite;
     private long _totalDistributedCacheWrite;
@@ -50,8 +50,8 @@ internal sealed class HybridCacheEventSource : EventSource
         Volatile.Write(ref _totalLocalCacheMiss, 0);
         Volatile.Write(ref _totalDistributedCacheHit, 0);
         Volatile.Write(ref _totalDistributedCacheMiss, 0);
-        Volatile.Write(ref _totalBackendExecute, 0);
-        Volatile.Write(ref _currentBackendExecute, 0);
+        Volatile.Write(ref _totalUnderlyingDataQuery, 0);
+        Volatile.Write(ref _currentUnderlyingDataQuery, 0);
         Volatile.Write(ref _currentDistributedFetch, 0);
         Volatile.Write(ref _totalLocalCacheWrite, 0);
         Volatile.Write(ref _totalDistributedCacheWrite, 0);
@@ -87,6 +87,9 @@ internal sealed class HybridCacheEventSource : EventSource
     public void DistributedCacheHit()
     {
         DebugAssertEnabled();
+
+        // note: not concerned about off-by-one here, i.e. don't panic
+        // about these two being atomic ref each-other - just the overall shape
         _ = Interlocked.Increment(ref _totalDistributedCacheHit);
         _ = Interlocked.Decrement(ref _currentDistributedFetch);
         WriteEvent(EventIdDistributedCacheHit);
@@ -96,6 +99,9 @@ internal sealed class HybridCacheEventSource : EventSource
     public void DistributedCacheMiss()
     {
         DebugAssertEnabled();
+
+        // note: not concerned about off-by-one here, i.e. don't panic
+        // about these two being atomic ref each-other - just the overall shape
         _ = Interlocked.Increment(ref _totalDistributedCacheMiss);
         _ = Interlocked.Decrement(ref _currentDistributedFetch);
         WriteEvent(EventIdDistributedCacheMiss);
@@ -109,30 +115,30 @@ internal sealed class HybridCacheEventSource : EventSource
         WriteEvent(EventIdDistributedCacheFailed);
     }
 
-    [Event(EventIdBackendExecuteStart, Level = EventLevel.Verbose)]
-    public void BackendExecuteStart()
+    [Event(EventIdUnderlyingDataQueryStart, Level = EventLevel.Verbose)]
+    public void UnderlyingDataQueryStart()
     {
-        // should be followed by BackendExecuteComplete or BackendExecuteFailed
+        // should be followed by UnderlyingDataQueryComplete or UnderlyingDataQueryFailed
         DebugAssertEnabled();
-        _ = Interlocked.Increment(ref _totalBackendExecute);
-        _ = Interlocked.Increment(ref _currentBackendExecute);
-        WriteEvent(EventIdBackendExecuteStart);
+        _ = Interlocked.Increment(ref _totalUnderlyingDataQuery);
+        _ = Interlocked.Increment(ref _currentUnderlyingDataQuery);
+        WriteEvent(EventIdUnderlyingDataQueryStart);
     }
 
-    [Event(EventIdBackendExecuteComplete, Level = EventLevel.Verbose)]
-    public void BackendExecuteComplete()
+    [Event(EventIdUnderlyingDataQueryComplete, Level = EventLevel.Verbose)]
+    public void UnderlyingDataQueryComplete()
     {
         DebugAssertEnabled();
-        _ = Interlocked.Decrement(ref _currentBackendExecute);
-        WriteEvent(EventIdBackendExecuteComplete);
+        _ = Interlocked.Decrement(ref _currentUnderlyingDataQuery);
+        WriteEvent(EventIdUnderlyingDataQueryComplete);
     }
 
-    [Event(EventIdBackendExecuteFailed, Level = EventLevel.Error)]
-    public void BackendExecuteFailed()
+    [Event(EventIdUnderlyingDataQueryFailed, Level = EventLevel.Error)]
+    public void UnderlyingDataQueryFailed()
     {
         DebugAssertEnabled();
-        _ = Interlocked.Decrement(ref _currentBackendExecute);
-        WriteEvent(EventIdBackendExecuteFailed);
+        _ = Interlocked.Decrement(ref _currentUnderlyingDataQuery);
+        WriteEvent(EventIdUnderlyingDataQueryFailed);
     }
 
     [Event(EventIdLocalCacheWrite, Level = EventLevel.Verbose)]
@@ -172,8 +178,8 @@ internal sealed class HybridCacheEventSource : EventSource
                 new("total-local-cache-misses", this, () => Volatile.Read(ref _totalLocalCacheMiss)) { DisplayName = "Total Local Cache Misses" },
                 new("total-distributed-cache-hits", this, () => Volatile.Read(ref _totalDistributedCacheHit)) { DisplayName = "Total Distributed Cache Hits" },
                 new("total-distributed-cache-misses", this, () => Volatile.Read(ref _totalDistributedCacheMiss)) { DisplayName = "Total Distributed Cache Misses" },
-                new("total-data-execute", this, () => Volatile.Read(ref _totalBackendExecute)) { DisplayName = "Total Data Executions" },
-                new("current-data-execute", this, () => Volatile.Read(ref _currentBackendExecute)) { DisplayName = "Current Data Executions" },
+                new("total-data-execute", this, () => Volatile.Read(ref _totalUnderlyingDataQuery)) { DisplayName = "Total Data Executions" },
+                new("current-data-execute", this, () => Volatile.Read(ref _currentUnderlyingDataQuery)) { DisplayName = "Current Data Executions" },
                 new("current-distributed-cache-fetches", this, () => Volatile.Read(ref _currentDistributedFetch)) { DisplayName = "Current Distributed Cache Fetches" },
                 new("total-local-cache-writes", this, () => Volatile.Read(ref _totalLocalCacheWrite)) { DisplayName = "Total Local Cache Writes" },
                 new("total-distributed-cache-writes", this, () => Volatile.Read(ref _totalDistributedCacheWrite)) { DisplayName = "Total Distributed Cache Writes" },

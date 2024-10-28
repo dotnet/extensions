@@ -9,6 +9,8 @@ namespace Microsoft.Extensions.Caching.Hybrid.Tests;
 // dummy implementation for collecting test output
 internal class LogCollector : ILoggerProvider
 {
+    private readonly List<(string categoryName, LogLevel logLevel, EventId eventId, Exception? exception, string message)> _items = [];
+
     public (string categoryName, LogLevel logLevel, EventId eventId, Exception? exception, string message)[] ToArray()
     {
         lock (_items)
@@ -59,8 +61,6 @@ internal class LogCollector : ILoggerProvider
             }
         }
     }
-
-    private readonly List<(string categoryName, LogLevel logLevel, EventId eventId, Exception? exception, string message)> _items = [];
 
     ILogger ILoggerProvider.CreateLogger(string categoryName) => new TypedLogCollector(this, categoryName);
 

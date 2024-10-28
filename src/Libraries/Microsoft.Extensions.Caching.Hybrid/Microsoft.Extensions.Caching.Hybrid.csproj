@@ -4,7 +4,7 @@
     <Description>Multi-level caching implementation building on and extending IDistributedCache</Description>
     <TargetFrameworks>$(NetCoreTargetFrameworks)$(ConditionalNet462);netstandard2.0;netstandard2.1</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>cache;distributedcache;hybrid;hybridcache</PackageTags>
+    <PackageTags>cache;distributedcache;hybridcache</PackageTags>
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     <InjectIsExternalInitOnLegacy>true</InjectIsExternalInitOnLegacy>
     <InjectCallerAttributesOnLegacy>true</InjectCallerAttributesOnLegacy>

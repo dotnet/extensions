@@ -14,7 +14,7 @@ public class HybridCacheEventSourceTests
         using var eventSource = new HybridCacheEventSource();
 
         // Assert
-        Assert.Equal("HybridCache", eventSource.Name);
-        Assert.Equal(Guid.Parse("447667be-e2b5-4962-b3b8-f2c591ec517c"), eventSource.Guid);
+        Assert.Equal("Microsoft-Extensions-HybridCache", eventSource.Name);
+        Assert.Equal(Guid.Parse("b3aca39e-5dc9-5e21-f669-b72225b66cfc"), eventSource.Guid); // from name
     }
 }

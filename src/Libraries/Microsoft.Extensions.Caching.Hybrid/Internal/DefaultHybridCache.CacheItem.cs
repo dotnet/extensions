@@ -93,6 +93,9 @@ internal partial class DefaultHybridCache
         // Attempt to get a value that was *not* previously reserved.
         // Note on ILogger usage: we don't want to propagate and store this everywhere.
         // It is used for reporting deserialization problems - pass it as needed.
+        // (CacheItem gets into the IMemoryCache - let's minimize the onward reachable set
+        // of that cache, by only handing it leaf nodes of a "tree", not a "graph" with
+        // backwards access - we can also limit object size at the same time)
         public abstract bool TryGetValue(ILogger log, out T value);
 
         // get a value that *was* reserved, countermanding our reservation in the process
