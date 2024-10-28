@@ -25,7 +25,7 @@ internal partial class DefaultHybridCache
             buffer = default; // we're taking over the lifetime; the caller no longer has it!
         }
 
-        public void SetValue(T fallbackValue)
+        public void SetFallbackValue(T fallbackValue)
         {
             _fallbackValue = fallbackValue;
         }

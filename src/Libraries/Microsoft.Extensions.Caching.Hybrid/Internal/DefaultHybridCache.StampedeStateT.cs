@@ -424,7 +424,7 @@ internal partial class DefaultHybridCache
                     if (serializer is null)
                     {
                         // serialization is failing; set fallback value
-                        mutable.SetValue(value);
+                        mutable.SetFallbackValue(value);
                     }
                     else
                     {
