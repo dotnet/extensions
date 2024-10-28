@@ -19,6 +19,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <InjectJsonSchemaExporterOnLegacy>true</InjectJsonSchemaExporterOnLegacy>
     <InjectSharedEmptyCollections>true</InjectSharedEmptyCollections>
     <InjectStringHashOnLegacy>true</InjectStringHashOnLegacy>
     <InjectStringSyntaxAttributeOnLegacy>true</InjectStringSyntaxAttributeOnLegacy>

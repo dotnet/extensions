@@ -20,6 +20,8 @@
     <PackageVersion Include="Verify.Xunit" Version="20.4.0" />
     <PackageVersion Include="Xunit.Combinatorial" Version="1.6.24" />
     <PackageVersion Include="xunit.extensibility.execution" Version="2.4.2" />
+    <PackageVersion Include="JsonSchema.Net" Version="7.2.3" />
+    <PackageVersion Include="JsonSchema.Net.Generation" Version="4.3.0.2" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
