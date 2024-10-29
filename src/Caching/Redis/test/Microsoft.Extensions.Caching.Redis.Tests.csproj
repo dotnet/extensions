@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Caching.Redis" />
-    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)"/>
   </ItemGroup>
 
 </Project>
