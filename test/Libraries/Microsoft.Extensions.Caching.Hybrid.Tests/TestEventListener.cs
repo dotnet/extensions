@@ -99,7 +99,7 @@ public sealed class TestEventListener : EventListener
                             {
                                 if (isIncrement && _counters.TryGetValue(name, out var oldPair))
                                 {
-                                    value += oldPair.value; // abuse dynamic to handle type combinations
+                                    value += oldPair.value; // treat as delta from old
                                 }
 
                                 Debug.WriteLine($"{name}={value}");
